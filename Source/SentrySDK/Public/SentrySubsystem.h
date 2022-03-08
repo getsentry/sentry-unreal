@@ -15,11 +15,10 @@ class SENTRYSDK_API USentrySubsystem : public UGameInstanceSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	/**
-	 * Initializes Sentry SDK with given settings. Value specified in ProjectSettings > Plugins > SentrySDK are used by default.
-	 *
-	 * @param sentrySettings Settings object to support runtime configuration changes.
-	 */
+	/** Initializes Sentry SDK with values specified in ProjectSettings > Plugins > SentrySDK. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize(USentrySettings* sentrySettings);
+	void Initialize();
+
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void CaptureError();
 };

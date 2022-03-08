@@ -53,8 +53,10 @@ public class SentrySDK : ModuleRules
 		// Additional routine for iOS
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/IOS"));
+
 			PublicAdditionalFrameworks.Add(new Framework("Sentry", "../ThirdParty/IOS/Sentry.embeddedframework.zip"));
-			
+
 			PrivateDependencyModuleNames.AddRange(new string[] { "Launch" });
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 
