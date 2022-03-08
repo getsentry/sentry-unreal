@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+
+#include "SentryDataTypes.h"
+
 #include "SentrySubsystem.generated.h"
 
 class USentrySettings;
@@ -18,6 +21,9 @@ public:
 	/** Initializes Sentry SDK with values specified in ProjectSettings > Plugins > SentrySDK. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Initialize();
+	
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void CaptureMessage(const FString& Message, ESentryLevel Level);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureError();

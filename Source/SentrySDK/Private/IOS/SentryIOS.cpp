@@ -12,6 +12,37 @@ void SentryIOS::InitWithSettings(const USentrySettings* settings)
 	}];
 }
 
+void SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
+{
+	SentryLevel lvl;
+
+	switch (level)
+	{
+	case ESentryLevel::Debug:
+		lvl = kSentryLevelDebug;
+		break;
+	case ESentryLevel::Info:
+		lvl = kSentryLevelInfo;
+		break;
+	case ESentryLevel::Warning:
+		lvl = kSentryLevelWarning;
+		break;
+	case ESentryLevel::Error:
+		lvl = kSentryLevelError;
+		break;
+	case ESentryLevel::Fatal:
+		lvl = kSentryLevelFatal;
+		break;
+	default:
+		NSLog(@"Unknown sentry level used while capturing message!");
+	}
+
+	SentryScope* scope = [[SentryScope alloc] init];
+	[scope setLevel:lvl];
+
+	[SentrySDK captureMessage:message.GetNSString() withScope:scope];
+}
+
 void SentryIOS::CaptureError()
 {
 	NSError* error = [NSError errorWithDomain:@"YourErrorDomain" code:0 userInfo: nil];

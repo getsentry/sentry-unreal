@@ -34,6 +34,15 @@ void USentrySubsystem::Initialize()
 #endif
 }
 
+void USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
+{
+#if PLATFORM_ANDROID
+	// TODO
+#elif PLATFORM_IOS
+	SentryIOS::CaptureMessage(Message, Level);
+#endif
+}
+
 void USentrySubsystem::CaptureError()
 {
 #if PLATFORM_ANDROID
