@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Modules/ModuleInterface.h"
 
 class USentrySettings;
 
-class FSentrySDKModule : public IModuleInterface
+class FSentryModule : public IModuleInterface
 {
 public:
 	/** IModuleInterface implementation */
@@ -19,7 +20,7 @@ public:
 	 *
 	 * @return Returns singleton instance, loading the module on demand if needed.
 	 */
-	static inline FSentrySDKModule& Get();
+	static inline FSentryModule& Get();
 
 	/**
 	 * Check if this module is loaded and ready. It is only valid to call Get() if IsAvailable() returns true.

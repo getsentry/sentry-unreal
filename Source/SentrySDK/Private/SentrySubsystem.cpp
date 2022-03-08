@@ -1,13 +1,13 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySubsystem.h"
-#include "SentrySDK.h"
+#include "SentryModule.h"
 
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	USentrySettings* Settings = FSentrySDKModule::Get().GetSettings();
+	USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 	Initialize(Settings);
 }

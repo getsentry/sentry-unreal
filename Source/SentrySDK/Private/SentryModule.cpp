@@ -1,17 +1,17 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentrySDK.h"
+#include "SentryModule.h"
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
 #include "Modules/ModuleManager.h"
-#include "ISettingsModule.h"
+#include "Developer/Settings/Public/ISettingsModule.h"
 
-#define LOCTEXT_NAMESPACE "FSentrySDKModule"
+#define LOCTEXT_NAMESPACE "FSentryModule"
 
-const FName FSentrySDKModule::ModuleName = "SentrySDK";
+const FName FSentryModule::ModuleName = "SentrySDK";
 
-void FSentrySDKModule::StartupModule()
+void FSentryModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 	SentrySettings = NewObject<USentrySettings>(GetTransientPackage(), "SentrySettings", RF_Standalone);
@@ -26,7 +26,7 @@ void FSentrySDKModule::StartupModule()
 	}
 }
 
-void FSentrySDKModule::ShutdownModule()
+void FSentryModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -47,23 +47,23 @@ void FSentrySDKModule::ShutdownModule()
 	}
 }
 
-FSentrySDKModule& FSentrySDKModule::Get()
+FSentryModule& FSentryModule::Get()
 {
-	return FModuleManager::LoadModuleChecked<FSentrySDKModule>(ModuleName);
+	return FModuleManager::LoadModuleChecked<FSentryModule>(ModuleName);
 }
 
-bool FSentrySDKModule::IsAvailable()
+bool FSentryModule::IsAvailable()
 {
 	return FModuleManager::Get().IsModuleLoaded(ModuleName);
 }
 
-USentrySettings* FSentrySDKModule::GetSettings() const
+USentrySettings* FSentryModule::GetSettings() const
 {
 	return SentrySettings;
 }
 
 #undef LOCTEXT_NAMESPACE
 
-IMPLEMENT_MODULE(FSentrySDKModule, SentrySDK)
+IMPLEMENT_MODULE(FSentryModule, SentrySDK)
 
 DEFINE_LOG_CATEGORY(LogSentrySdk);
