@@ -38,8 +38,7 @@ public class SentrySDK : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
-				"Settings"
+				"SlateCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 		);
