@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+
+#include "SentryDataTypes.generated.h"
+
 UENUM(BlueprintType)
 enum class ESentryLevel : uint8
 {
