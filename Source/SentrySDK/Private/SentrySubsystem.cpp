@@ -34,6 +34,16 @@ void USentrySubsystem::Initialize()
 #endif
 }
 
+void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
+	ESentryLevel Level)
+{
+#if PLATFORM_ANDROID
+	// TODO
+#elif PLATFORM_IOS
+	return SentryIOS::AddBreadcrumb(Message, Category, Type, Data, Level);
+#endif
+}
+
 FGuid USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 #if PLATFORM_ANDROID

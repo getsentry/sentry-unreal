@@ -24,6 +24,30 @@ public:
 	void Initialize();
 
 	/**
+	 * Adds a breadcrumb to the current Scope.
+	 *
+	 * @param Message If a message is provided it’s rendered as text and the whitespace is preserved.
+	 * Very long text might be abbreviated in the UI.
+	 * 
+	 * @param Category Categories are dotted strings that indicate what the crumb is or where it comes from.
+	 * Typically it’s a module name or a descriptive string. For instance ui.click could be used to indicate that a click
+	 * happened in the UI or flask could be used to indicate that the event originated in the Flask framework.
+	 * 
+	 * @param Type The type of breadcrumb.
+	 * The default type is default which indicates no specific handling.
+	 * Other types are currently http for HTTP requests and navigation for navigation events.
+	 * 
+	 * @param Data Data associated with this breadcrumb.
+	 * Contains a sub-object whose contents depend on the breadcrumb type.
+	 * Additional parameters that are unsupported by the type are rendered as a key/value table.
+	 * 
+	 * @param Level Breadcrumb level.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
+	void AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
+		ESentryLevel Level = ESentryLevel::Info);
+
+	/**
 	 * Captures the message.
 	 *
 	 * @param Message The message to send.

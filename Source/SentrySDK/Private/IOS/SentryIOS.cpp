@@ -13,6 +13,29 @@ void SentryIOS::InitWithSettings(const USentrySettings* settings)
 	}];
 }
 
+void SentryIOS::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+{
+	SentryBreadcrumb* breadcrumb = [[SentryBreadcrumb alloc] init];
+
+	breadcrumb.message = message.GetNSString();
+	breadcrumb.level = SentryConvertorsIOS::SentryLevelToNative(level);
+
+	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:data.Num()];
+	for (auto it = data.CreateConstIterator(); it; ++it)
+	{
+		[dict setValue:it.Value().GetNSString() forKey:it.Key().GetNSString()];
+	}
+
+	breadcrumb.data = dict;
+	
+	if(!category.IsEmpty())
+		breadcrumb.category = category.GetNSString();
+	if(!type.IsEmpty())
+		breadcrumb.type = type.GetNSString();
+
+	[SentrySDK addBreadcrumb:breadcrumb];
+}
+
 FGuid SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
