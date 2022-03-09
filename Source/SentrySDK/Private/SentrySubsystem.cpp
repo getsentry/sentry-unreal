@@ -38,6 +38,7 @@ FGuid USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Leve
 {
 #if PLATFORM_ANDROID
 	// TODO
+	return FGuid();
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, Level);
 #else
@@ -49,6 +50,7 @@ FGuid USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FC
 {
 #if PLATFORM_ANDROID
 	// TODO
+	return FGuid();
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, OnConfigureScope, Level);
 #else
@@ -60,6 +62,7 @@ FGuid USentrySubsystem::CaptureError()
 {
 #if PLATFORM_ANDROID
 	// TODO
+	return FGuid();
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureError();
 #else
