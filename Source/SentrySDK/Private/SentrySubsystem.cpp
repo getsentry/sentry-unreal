@@ -34,20 +34,35 @@ void USentrySubsystem::Initialize()
 #endif
 }
 
-void USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
+FGuid USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 #if PLATFORM_ANDROID
 	// TODO
 #elif PLATFORM_IOS
-	SentryIOS::CaptureMessage(Message, Level);
+	return SentryIOS::CaptureMessage(Message, Level);
+#else
+	return FGuid();
 #endif
 }
 
-void USentrySubsystem::CaptureError()
+FGuid USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
 #if PLATFORM_ANDROID
 	// TODO
 #elif PLATFORM_IOS
-	SentryIOS::CaptureError();
+	return SentryIOS::CaptureMessage(Message, OnConfigureScope, Level);
+#else
+	return FGuid();
+#endif
+}
+
+FGuid USentrySubsystem::CaptureError()
+{
+#if PLATFORM_ANDROID
+	// TODO
+#elif PLATFORM_IOS
+	return SentryIOS::CaptureError();
+#else
+	return FGuid();
 #endif
 }

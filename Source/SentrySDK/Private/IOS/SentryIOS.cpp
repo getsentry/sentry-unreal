@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryIOS.h"
+#include "SentryConvertorsIOS.h"
 
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>
@@ -12,39 +13,28 @@ void SentryIOS::InitWithSettings(const USentrySettings* settings)
 	}];
 }
 
-void SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
+FGuid SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	SentryLevel lvl;
+	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
+		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
+	}];
 
-	switch (level)
-	{
-	case ESentryLevel::Debug:
-		lvl = kSentryLevelDebug;
-		break;
-	case ESentryLevel::Info:
-		lvl = kSentryLevelInfo;
-		break;
-	case ESentryLevel::Warning:
-		lvl = kSentryLevelWarning;
-		break;
-	case ESentryLevel::Error:
-		lvl = kSentryLevelError;
-		break;
-	case ESentryLevel::Fatal:
-		lvl = kSentryLevelFatal;
-		break;
-	default:
-		NSLog(@"Unknown sentry level used while capturing message!");
-	}
-
-	SentryScope* scope = [[SentryScope alloc] init];
-	[scope setLevel:lvl];
-
-	[SentrySDK captureMessage:message.GetNSString() withScope:scope];
+	return FGuid([id sentryIdString]);
 }
 
-void SentryIOS::CaptureError()
+FGuid SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+{
+	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
+		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
+		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
+	}];
+
+	return FGuid([id sentryIdString]);
+}
+
+FGuid SentryIOS::CaptureError()
 {
 	NSError* error = [NSError errorWithDomain:@"YourErrorDomain" code:0 userInfo: nil];
-	[SentrySDK captureError:error];
+	SentryId* id = [SentrySDK captureError:error];
+	return FGuid([id sentryIdString]);
 }
