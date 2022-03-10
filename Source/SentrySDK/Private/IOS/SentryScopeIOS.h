@@ -11,6 +11,7 @@
 class SentryScopeIOS
 {
 public:
+	void Init();
 	void InitWithNativeObject(SentryScope* scope);
 
 	void SetTagValue(const FString& Key, const FString& Value);

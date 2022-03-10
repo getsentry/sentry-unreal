@@ -6,6 +6,17 @@
 #include "IOS/SentryScopeIOS.h"
 #endif
 
+USentryScope::USentryScope()
+{
+#if PLATFORM_IOS
+	if (USentryScope::StaticClass()->GetDefaultObject() != this)
+	{
+		_scopeNativeImplIOS = MakeShareable(new SentryScopeIOS());
+		_scopeNativeImplIOS->Init();
+	}
+#endif
+}
+
 void USentryScope::SetTagValue(const FString& Key, const FString& Value)
 {
 #if PLATFORM_IOS

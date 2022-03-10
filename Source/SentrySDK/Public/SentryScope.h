@@ -16,6 +16,8 @@ class SENTRYSDK_API USentryScope : public UObject
 	GENERATED_BODY()
 
 public:
+	USentryScope();
+	
 	/** Sets a global tag. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetTagValue(const FString& Key, const FString& Value);
