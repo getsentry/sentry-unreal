@@ -18,7 +18,8 @@
 		{
 			"Name": "SentrySDK",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS" ]
 		}
 	]
 }
