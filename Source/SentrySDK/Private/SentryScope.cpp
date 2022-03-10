@@ -65,6 +65,6 @@ void USentryScope::Clear()
 #if PLATFORM_IOS
 void USentryScope::InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scope)
 {
-	_scopeIOS = scope;
+	_scopeNativeImplIOS = scope;
 }
 #endif
