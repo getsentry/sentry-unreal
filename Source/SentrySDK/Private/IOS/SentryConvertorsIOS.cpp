@@ -32,6 +32,30 @@ SentryLevel SentryConvertorsIOS::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
+NSDictionary* SentryConvertorsIOS::StringMapToNative(const TMap<FString, FString>& map)
+{
+	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:map.Num()];
+
+	for (auto it = map.CreateConstIterator(); it; ++it)
+	{
+		[dict setValue:it.Value().GetNSString() forKey:it.Key().GetNSString()];
+	}
+
+	return dict;
+}
+
+NSArray* SentryConvertorsIOS::StringArrayToNative(const TArray<FString>& array)
+{
+	NSMutableArray *arr = [NSMutableArray arrayWithCapacity:array.Num()];
+
+	for (auto it = array.CreateConstIterator(); it; ++it)
+	{
+		[arr addObject:it->GetNSString()];
+	}
+
+	return arr;
+}
+
 USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(TSharedPtr<SentryScopeIOS> scope)
 {
 	USentryScope* unrealScope = NewObject<USentryScope>();

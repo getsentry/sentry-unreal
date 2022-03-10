@@ -20,14 +20,7 @@ void SentryIOS::AddBreadcrumb(const FString& message, const FString& category, c
 
 	breadcrumb.message = message.GetNSString();
 	breadcrumb.level = SentryConvertorsIOS::SentryLevelToNative(level);
-
-	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:data.Num()];
-	for (auto it = data.CreateConstIterator(); it; ++it)
-	{
-		[dict setValue:it.Value().GetNSString() forKey:it.Key().GetNSString()];
-	}
-
-	breadcrumb.data = dict;
+	breadcrumb.data = SentryConvertorsIOS::StringMapToNative(data);
 	
 	if(!category.IsEmpty())
 		breadcrumb.category = category.GetNSString();

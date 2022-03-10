@@ -27,13 +27,7 @@ void SentryScopeIOS::RemoveTag(const FString& key)
 
 void SentryScopeIOS::SetTags(const TMap<FString, FString>& tags)
 {
-	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:tags.Num()];
-	for (auto it = tags.CreateConstIterator(); it; ++it)
-	{
-		[dict setValue:it.Value().GetNSString() forKey:it.Key().GetNSString()];
-	}
-
-	[_scopeIOS setTags:dict];
+	[_scopeIOS setTags:SentryConvertorsIOS::StringMapToNative(tags)];
 }
 
 void SentryScopeIOS::SetDist(const FString& dist)
@@ -48,13 +42,7 @@ void SentryScopeIOS::SetEnvironment(const FString& environment)
 
 void SentryScopeIOS::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	NSMutableArray *arr = [NSMutableArray arrayWithCapacity:fingerprint.Num()];
-	for (auto it = fingerprint.CreateConstIterator(); it; ++it)
-	{
-		[arr addObject:it->GetNSString()];
-	}
-
-	[_scopeIOS setFingerprint:arr];
+	[_scopeIOS setFingerprint:SentryConvertorsIOS::StringArrayToNative(fingerprint)];
 }
 
 void SentryScopeIOS::SetLevel(ESentryLevel level)
