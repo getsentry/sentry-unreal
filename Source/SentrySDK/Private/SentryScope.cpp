@@ -3,68 +3,67 @@
 #include "SentryScope.h"
 
 #if PLATFORM_IOS
-#import <Sentry/Sentry.h>
-#include "IOS/SentryConvertorsIOS.h"
+#include "IOS/SentryScopeIOS.h"
 #endif
 
 void USentryScope::SetTagValue(const FString& Key, const FString& Value)
 {
 #if PLATFORM_IOS
-	// TODO
+	_scopeNativeImplIOS->SetTagValue(Key, Value);
 #endif
 }
 
 void USentryScope::RemoveTag(const FString& Key)
 {
 #if PLATFORM_IOS
-	// TODO
+	_scopeNativeImplIOS->RemoveTag(Key);
 #endif
 }
 
 void USentryScope::SetTags(const TMap<FString, FString>& Tags)
 {
 #if PLATFORM_IOS
-	// TODO
+	_scopeNativeImplIOS->SetTags(Tags);
 #endif
 }
 
 void USentryScope::SetDist(const FString& Dist)
 {
 #if PLATFORM_IOS
-	// TODO
+	_scopeNativeImplIOS->SetDist(Dist);
 #endif
 }
 
 void USentryScope::SetEnvironment(const FString& Environment)
 {
 #if PLATFORM_IOS
-	// TODO
+	_scopeNativeImplIOS->SetEnvironment(Environment);
 #endif
 }
 
 void USentryScope::SetFingerprint(const TArray<FString>& Fingerprint)
 {
 #if PLATFORM_IOS
-	// TODO
+	_scopeNativeImplIOS->SetFingerprint(Fingerprint);
 #endif
 }
 
 void USentryScope::SetLevel(ESentryLevel Level)
 {
 #if PLATFORM_IOS
-	[_scopeIOS setLevel:SentryConvertorsIOS::SentryLevelToNative(Level)];
+	_scopeNativeImplIOS->SetLevel(Level);
 #endif
 }
 
 void USentryScope::Clear()
 {
 #if PLATFORM_IOS
-	// TODO
+	_scopeNativeImplIOS->Clear();
 #endif
 }
 
 #if PLATFORM_IOS
-void USentryScope::InitWithNativeObjectIOS(SentryScope* scope)
+void USentryScope::InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scope)
 {
 	_scopeIOS = scope;
 }

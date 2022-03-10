@@ -3,7 +3,7 @@
 #pragma once
 
 #if PLATFORM_IOS
-@class SentryScope;
+class SentryScopeIOS;
 #endif
 
 #include "SentryDataTypes.h"
@@ -49,12 +49,12 @@ public:
 	void Clear();
 
 #if PLATFORM_IOS
-	void InitWithNativeObjectIOS(SentryScope* scope);
+	void InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scope);
 #endif
 
 private:
 #if PLATFORM_IOS
-	SentryScope* _scopeIOS;
+	TSharedPtr<SentryScopeIOS> _scopeNativeImplIOS;
 #endif
 };
 

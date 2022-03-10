@@ -6,6 +6,7 @@
 
 #import <Sentry/Sentry.h>
 
+class SentryScopeIOS;
 class USentryScope;
 
 class SentryConvertorsIOS
@@ -15,5 +16,5 @@ public:
 	static SentryLevel SentryLevelToNative(ESentryLevel level);
 
 	/** Conversions from native iOS types */
-	static USentryScope* SentryScopeToUnreal(SentryScope* scope);
+	static USentryScope* SentryScopeToUnreal(TSharedPtr<SentryScopeIOS> scope);
 };

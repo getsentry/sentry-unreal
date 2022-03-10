@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryIOS.h"
+#include "SentryScopeIOS.h"
 #include "SentryConvertorsIOS.h"
 
 #import <Foundation/Foundation.h>
@@ -49,7 +50,11 @@ FGuid SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeDel
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
-		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
+
+		TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS());
+		scopeNativeImpl->InitWithNativeObject(scope);
+
+		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scopeNativeImpl));
 	}];
 
 	return FGuid([id sentryIdString]);
