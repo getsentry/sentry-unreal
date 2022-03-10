@@ -14,13 +14,13 @@ public:
 	void Init();
 	void InitWithNativeObject(SentryScope* scope);
 
-	void SetTagValue(const FString& Key, const FString& Value);
-	void RemoveTag(const FString& Key);
-	void SetTags(const TMap<FString, FString>& Tags);
-	void SetDist(const FString& Dist);
-	void SetEnvironment(const FString& Environment);
-	void SetFingerprint(const TArray<FString>& Fingerprint);
-	void SetLevel(ESentryLevel Level);
+	void SetTagValue(const FString& key, const FString& value);
+	void RemoveTag(const FString& key);
+	void SetTags(const TMap<FString, FString>& tags);
+	void SetDist(const FString& dist);
+	void SetEnvironment(const FString& environment);
+	void SetFingerprint(const TArray<FString>& fingerprint);
+	void SetLevel(ESentryLevel level);
 	void Clear();
 
 private:
