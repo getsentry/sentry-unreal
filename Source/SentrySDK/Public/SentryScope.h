@@ -2,13 +2,13 @@
 
 #pragma once
 
-#if PLATFORM_IOS
-class SentryScopeIOS;
-#endif
-
 #include "SentryDataTypes.h"
 
 #include "SentryScope.generated.h"
+
+#if PLATFORM_IOS
+class SentryScopeIOS;
+#endif
 
 UCLASS(BlueprintType)
 class SENTRYSDK_API USentryScope : public UObject
@@ -51,7 +51,8 @@ public:
 	void Clear();
 
 #if PLATFORM_IOS
-	void InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scope);
+	void InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scopeImpl);
+	TSharedPtr<SentryScopeIOS> GetNativeImplIOS();
 #endif
 
 private:

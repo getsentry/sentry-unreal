@@ -15,6 +15,11 @@ void SentryScopeIOS::InitWithNativeObject(SentryScope* scope)
 	_scopeIOS = scope;
 }
 
+SentryScope* SentryScopeIOS::GetNativeObject()
+{
+	return _scopeIOS;
+}
+
 void SentryScopeIOS::SetTagValue(const FString& key, const FString& value)
 {
 	[_scopeIOS setTagValue:value.GetNSString() forKey:key.GetNSString()];
