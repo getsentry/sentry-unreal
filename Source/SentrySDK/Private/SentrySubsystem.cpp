@@ -44,7 +44,7 @@ void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Cate
 #endif
 }
 
-FGuid USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
+FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 #if PLATFORM_ANDROID
 	// TODO
@@ -52,11 +52,11 @@ FGuid USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Leve
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, Level);
 #else
-	return FGuid();
+	return FString();
 #endif
 }
 
-FGuid USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
+FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
 #if PLATFORM_ANDROID
 	// TODO
@@ -64,11 +64,11 @@ FGuid USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FC
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, OnConfigureScope, Level);
 #else
-	return FGuid();
+	return FString();
 #endif
 }
 
-FGuid USentrySubsystem::CaptureError()
+FString USentrySubsystem::CaptureError()
 {
 #if PLATFORM_ANDROID
 	// TODO
@@ -76,6 +76,6 @@ FGuid USentrySubsystem::CaptureError()
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureError();
 #else
-	return FGuid();
+	return FString();
 #endif
 }

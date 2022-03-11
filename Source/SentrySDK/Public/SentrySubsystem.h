@@ -54,7 +54,7 @@ public:
 	 * @param Level The message level.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	FGuid CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
+	FString CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
 
 	/**
 	 * Captures the message with a configurable scope.
@@ -66,8 +66,8 @@ public:
 	 * @param Level The message level.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
-	FGuid CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+	FString CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	FGuid CaptureError();
+	FString CaptureError();
 };

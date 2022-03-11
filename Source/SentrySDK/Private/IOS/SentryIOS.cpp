@@ -30,16 +30,16 @@ void SentryIOS::AddBreadcrumb(const FString& message, const FString& category, c
 	[SentrySDK addBreadcrumb:breadcrumb];
 }
 
-FGuid SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
+FString SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
 	}];
 
-	return FGuid([id sentryIdString]);
+	return FString([id sentryIdString]);
 }
 
-FGuid SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+FString SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
@@ -50,12 +50,12 @@ FGuid SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeDel
 		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scopeNativeImpl));
 	}];
 
-	return FGuid([id sentryIdString]);
+	return FString([id sentryIdString]);
 }
 
-FGuid SentryIOS::CaptureError()
+FString SentryIOS::CaptureError()
 {
 	NSError* error = [NSError errorWithDomain:@"YourErrorDomain" code:0 userInfo: nil];
 	SentryId* id = [SentrySDK captureError:error];
-	return FGuid([id sentryIdString]);
+	return FString([id sentryIdString]);
 }
