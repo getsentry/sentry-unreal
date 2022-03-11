@@ -53,6 +53,24 @@ FString SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeD
 	return FString([id sentryIdString]);
 }
 
+FString SentryIOS::CaptureEvent(USentryEvent* event)
+{
+	SentryId* id = [SentrySDK captureEvent:event->GetNativeImplIOS()->GetNativeObject()];
+	return FString([id sentryIdString]);
+}
+
+FString SentryIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+{
+	SentryId* id = [SentrySDK captureEvent:event->GetNativeImplIOS()->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
+		TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS());
+		scopeNativeImpl->InitWithNativeObject(scope);
+
+		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scopeNativeImpl));
+	}];
+
+	return FString([id sentryIdString]);
+}
+
 FString SentryIOS::CaptureError()
 {
 	NSError* error = [NSError errorWithDomain:@"YourErrorDomain" code:0 userInfo: nil];

@@ -11,6 +11,7 @@
 #include "SentrySubsystem.generated.h"
 
 class USentrySettings;
+class USentryEvent;
 
 UCLASS()
 class SENTRYSDK_API USentrySubsystem : public UGameInstanceSubsystem
@@ -67,6 +68,23 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	FString CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+
+	/**
+	 * Captures a manually created event and sends it to Sentry.
+	 *
+	 * @param Event The event to send to Sentry.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	FString CaptureEvent(USentryEvent* Event);
+
+	/**
+	 * Captures a manually created event and sends it to Sentry.
+	 *
+	 * @param Event The event to send to Sentry.
+	 * @param Scope The scope containing event metadata.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	FString CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	FString CaptureError();

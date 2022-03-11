@@ -3,6 +3,7 @@
 #include "SentrySubsystem.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
+#include "SentryEvent.h"
 
 #if PLATFORM_ANDROID
 // TODO
@@ -63,6 +64,30 @@ FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const 
 	return FString();
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, OnConfigureScope, Level);
+#else
+	return FString();
+#endif
+}
+
+FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
+{
+#if PLATFORM_ANDROID
+	// TODO
+	return FString();
+#elif PLATFORM_IOS
+	return SentryIOS::CaptureEvent(Event);
+#else
+	return FString();
+#endif
+}
+
+FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
+{
+#if PLATFORM_ANDROID
+	// TODO
+	return FString();
+#elif PLATFORM_IOS
+	return SentryIOS::CaptureEventWithScope(Event, OnConfigureScope);
 #else
 	return FString();
 #endif
