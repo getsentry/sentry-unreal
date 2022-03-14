@@ -62,5 +62,16 @@ public class SentrySDK : ModuleRules
 
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "SentrySDK_IOS_UPL.xml"));
 		}
+
+		// Additional routine for Android
+		if (Target.Platform == UnrealTargetPlatform.Android)
+		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Android"));
+
+			PublicDependencyModuleNames.AddRange(new string[] { "Launch" });
+			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
+
+			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "SentrySdk_Android_UPL.xml"));
+		}
 	}
 }

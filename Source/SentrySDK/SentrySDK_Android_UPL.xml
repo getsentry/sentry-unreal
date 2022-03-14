@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+    <init>
+        <log text="Sentry SDK Android UPL initialization"/>
+    </init>
+
+    <prebuildCopies>
+        <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/com/sentry/unreal" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-5.6.3.jar" dst="$S(BuildDir)/gradle/app/libs/sentry-5.6.3.jar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-ndk-release.aar" />
+    </prebuildCopies>
+
+    <androidManifestUpdates>
+        <addElements tag="application">
+            <meta-data android:name="io.sentry.auto-init" android:value="false"/>
+        </addElements>
+    </androidManifestUpdates>
+
+    <gradleProperties>
+        <insert>
+            android.useAndroidX=true
+            android.enableJetifier=true
+        </insert>
+    </gradleProperties>
+
+    <buildGradleAdditions>
+        <insert>
+            android {
+                compileOptions {
+                    targetCompatibility JavaVersion.VERSION_1_8
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                }
+            }
+
+            dependencies {
+                implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
+                implementation 'com.google.code.gson:gson:2.8.7'
+            }
+
+            repositories {
+                mavenCentral()
+            }
+        </insert>
+    </buildGradleAdditions>
+
+    <baseBuildGradleAdditions>
+        <insert>
+            allprojects {
+                def mappings = [
+                    'android.arch.lifecycle.Lifecycle': 'androidx.lifecycle.Lifecycle',
+                    'android.arch.lifecycle.LifecycleObserver': 'androidx.lifecycle.LifecycleObserver',
+                    'android.arch.lifecycle.OnLifecycleEvent': 'androidx.lifecycle.OnLifecycleEvent',
+                    'android.arch.lifecycle.ProcessLifecycleOwner': 'androidx.lifecycle.ProcessLifecycleOwner',
+                    'android.arch.lifecycle': 'androidx.lifecycle',
+                    'android.support.annotation': 'androidx.annotation',
+                    'android.support.v13.app.FragmentCompat': 'androidx.legacy.app.FragmentCompat',
+                    'android.support.v4.app.ActivityCompat': 'androidx.core.app.ActivityCompat',
+                    'android.support.v4.app.NotificationCompat': 'androidx.core.app.NotificationCompat',
+                    'android.support.v4.app.NotificationManagerCompat': 'androidx.core.app.NotificationManagerCompat',
+                    'android.support.v4.content.ContextCompat': 'androidx.core.content.ContextCompat',
+                    'android.support.v4.content.FileProvider': 'androidx.core.content.FileProvider',
+                ]
+    
+                beforeEvaluate { project ->
+                    project.rootProject.projectDir.traverse(type: groovy.io.FileType.FILES, nameFilter: ~/.*\.java$/) { f ->
+                        mappings.each { entry ->
+                            if (f.getText('UTF-8').contains(entry.key)) {
+                                println "Updating ${entry.key} to ${entry.value} in file ${f}"
+                                ant.replace(file: f, token: entry.key, value: entry.value)
+                            }
+                        }
+                    }
+                }
+            }
+        </insert>
+    </baseBuildGradleAdditions>
+
+    <buildscriptGradleAdditions>
+        <insert>
+            dependencies {
+                classpath 'com.android.tools.build:gradle:3.5.4'
+            }
+        </insert>
+    </buildscriptGradleAdditions>
+</root>
