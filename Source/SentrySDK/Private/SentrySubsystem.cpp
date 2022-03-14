@@ -6,7 +6,7 @@
 #include "SentryEvent.h"
 
 #if PLATFORM_ANDROID
-// TODO
+#include "Android/SentryAndroid.h"
 #endif
 
 #if PLATFORM_IOS
@@ -29,7 +29,7 @@ void USentrySubsystem::Initialize()
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 #if PLATFORM_ANDROID
-	// TODO
+	SentryAndroid::InitWithSettings(Settings);
 #elif PLATFORM_IOS
 	SentryIOS::InitWithSettings(Settings);
 #endif
