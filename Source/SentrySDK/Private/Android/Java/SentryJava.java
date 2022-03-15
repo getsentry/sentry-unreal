@@ -28,7 +28,7 @@ public class SentryJava {
 	}
 
 	public static String captureMessage(final String message, final int level) {
-		return Sentry.captureMessage(message, parseSentryLogLevel(level)).toString();
+		return Sentry.captureMessage(message, SentryUtilsJava.parseSentryLogLevel(level)).toString();
 	}
 
 	public static String captureMessageWithScope(final String message, final int level, final long callback) throws InterruptedException {
@@ -37,7 +37,7 @@ public class SentryJava {
 		Sentry.withScope(new ScopeCallback() {
 			@Override
 			public void run(@NonNull Scope scope) {
-				scope.setLevel(parseSentryLogLevel(level));
+				scope.setLevel(SentryUtilsJava.parseSentryLogLevel(level));
 				onConfigureScope(callback, scope);
 				Sentry.captureMessage(message);
 				doneSignal.countDown();
@@ -47,24 +47,6 @@ public class SentryJava {
 		return Sentry.getLastEventId().toString();
 	}
 
-	// TODO Move to another class
-	public static void setScopeLevel(final Scope scope, final int level) {
-		scope.setLevel(parseSentryLogLevel(level));
-	}
-
 	// TODO Move to another class or find a way to use enums with JNI
-	private static SentryLevel parseSentryLogLevel(int level) {
-		switch (level) {
-			case 1:
-				return SentryLevel.INFO;
-			case 2:
-				return SentryLevel.WARNING;
-			case 3:
-				return SentryLevel.ERROR;
-			case 4:
-				return SentryLevel.FATAL;
-		}
 
-		return SentryLevel.DEBUG;
-	}
 }
