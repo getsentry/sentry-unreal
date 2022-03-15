@@ -12,6 +12,8 @@ class SentryConvertorsAndroid
 public:
 	/** Conversions to native Java types */
 	static jstring StringToNative(FString string);
+	static jobject StringArrayToNative(const TArray<FString>& stringArray);
+	static jobject StringMapToNative(const TMap<FString, FString>& stringMap);
 
 	/** Conversions from native Java types */
 	static FString StringToUnreal(jstring string);

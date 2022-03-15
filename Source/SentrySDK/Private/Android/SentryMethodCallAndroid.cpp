@@ -3,7 +3,6 @@
 #include "SentryMethodCallAndroid.h"
 
 #include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
 #include "Android/AndroidJava.h"
 
 void SentryMethodCallAndroid::CallStaticVoidMethod(const ANSICHAR* ClassName, const ANSICHAR* MethodName, const ANSICHAR* MethodSignature, ...)
@@ -46,4 +45,22 @@ FString SentryMethodCallAndroid::CallStaticStringMethod(const ANSICHAR* ClassNam
 	Env->DeleteLocalRef(Class);
 
 	return Result;
+}
+
+void SentryMethodCallAndroid::CallVoidMethod(jobject object, const ANSICHAR* MethodName, const ANSICHAR* MethodSignature, ...)
+{
+	bool bIsOptional = false;
+
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+
+	jclass Class = Env->GetObjectClass(object);
+
+	jmethodID Method = FJavaWrapper::FindMethod(Env, Class, MethodName, MethodSignature, bIsOptional);
+
+	va_list Args;
+	va_start(Args, MethodSignature);
+	Env->CallVoidMethodV(object, Method, Args);
+	va_end(Args);
+
+	Env->DeleteLocalRef(Class);
 }

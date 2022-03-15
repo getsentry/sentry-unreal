@@ -22,7 +22,7 @@ void SentryScopeAndroid::Init()
 
 void SentryScopeAndroid::InitWithNativeObject(jobject scope)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();	
 	_scopeAndroid = Env->NewGlobalRef(scope);
 }
 
@@ -33,17 +33,22 @@ jobject SentryScopeAndroid::GetNativeObject()
 
 void SentryScopeAndroid::SetTagValue(const FString& key, const FString& value)
 {
-	// TODO
+	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",
+		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
 }
 
 void SentryScopeAndroid::RemoveTag(const FString& key)
 {
-	// TODO
+	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "removeTag", "(Ljava/lang/String;)V",
+		SentryConvertorsAndroid::StringToNative(key));
 }
 
 void SentryScopeAndroid::SetTags(const TMap<FString, FString>& tags)
 {
-	// TODO
+	for (const auto& tag : tags)
+	{
+		SetTagValue(tag.Key, tag.Value);
+	}
 }
 
 void SentryScopeAndroid::SetDist(const FString& dist)
@@ -58,7 +63,8 @@ void SentryScopeAndroid::SetEnvironment(const FString& environment)
 
 void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	// TODO
+	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "setFingerprint", "(Ljava/util/List;)V",
+		SentryConvertorsAndroid::StringArrayToNative(fingerprint));
 }
 
 void SentryScopeAndroid::SetLevel(ESentryLevel level)
@@ -69,5 +75,5 @@ void SentryScopeAndroid::SetLevel(ESentryLevel level)
 
 void SentryScopeAndroid::Clear()
 {
-	// TODO
+	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "clear", "()V");
 }

@@ -28,5 +28,5 @@ public:
 private:
 	jobject _scopeAndroid;
 
-	static const ANSICHAR* SentryScopeAndroid::SentryScopeJavaClassName;
+	static const ANSICHAR* SentryScopeJavaClassName;
 };
