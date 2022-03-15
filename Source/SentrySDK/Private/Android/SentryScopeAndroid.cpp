@@ -22,7 +22,7 @@ void SentryScopeAndroid::Init()
 
 void SentryScopeAndroid::InitWithNativeObject(jobject scope)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();	
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 	_scopeAndroid = Env->NewGlobalRef(scope);
 }
 
@@ -53,12 +53,12 @@ void SentryScopeAndroid::SetTags(const TMap<FString, FString>& tags)
 
 void SentryScopeAndroid::SetDist(const FString& dist)
 {
-	// TODO
+	SetTagValue("dist", dist);
 }
 
 void SentryScopeAndroid::SetEnvironment(const FString& environment)
 {
-	// TODO
+	SetTagValue("environment", environment);
 }
 
 void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
