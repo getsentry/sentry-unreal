@@ -6,6 +6,10 @@
 
 #include "SentryScope.generated.h"
 
+#if PLATFORM_ANDROID
+class SentryScopeAndroid;
+#endif
+
 #if PLATFORM_IOS
 class SentryScopeIOS;
 #endif
@@ -50,12 +54,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Clear();
 
+#if PLATFORM_ANDROID
+	void InitWithNativeImplAndroid(TSharedPtr<SentryScopeAndroid> scopeImpl);
+	TSharedPtr<SentryScopeAndroid> GetNativeImplAndroid();
+#endif
+
 #if PLATFORM_IOS
 	void InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scopeImpl);
 	TSharedPtr<SentryScopeIOS> GetNativeImplIOS();
 #endif
 
 private:
+
+#if PLATFORM_ANDROID
+	TSharedPtr<SentryScopeAndroid> _scopeNativeImplAndroid;
+#endif
+
 #if PLATFORM_IOS
 	TSharedPtr<SentryScopeIOS> _scopeNativeImplIOS;
 #endif

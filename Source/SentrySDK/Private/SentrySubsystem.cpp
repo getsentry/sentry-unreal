@@ -48,8 +48,7 @@ void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Cate
 FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 #if PLATFORM_ANDROID
-	// TODO
-	return FString();
+	return SentryAndroid::CaptureMessage(Message, Level);
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, Level);
 #else
@@ -60,8 +59,7 @@ FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Le
 FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
 #if PLATFORM_ANDROID
-	// TODO
-	return FString();
+	return SentryAndroid::CaptureMessage(Message, OnConfigureScope, Level);
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, OnConfigureScope, Level);
 #else
