@@ -4,6 +4,9 @@
 
 #include "Android/AndroidJNI.h"
 
+class SentryScopeAndroid;
+class USentryScope;
+
 class SentryConvertorsAndroid
 {
 public:
@@ -12,4 +15,5 @@ public:
 
 	/** Conversions from native Java types */
 	static FString StringToUnreal(jstring string);
+	static USentryScope* SentryScopeToUnreal(TSharedPtr<SentryScopeAndroid> scope);
 };

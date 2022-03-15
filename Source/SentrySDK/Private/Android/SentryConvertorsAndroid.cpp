@@ -1,6 +1,8 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryConvertorsAndroid.h"
+#include "SentryScope.h"
+#include "SentryScopeAndroid.h"
 
 #include "Android/AndroidJava.h"
 
@@ -21,4 +23,11 @@ FString SentryConvertorsAndroid::StringToUnreal(jstring string)
 	Env->ReleaseStringUTFChars(string, UTFString);
 	Env->DeleteLocalRef(string);
 	return Result;
+}
+
+USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(TSharedPtr<SentryScopeAndroid> scope)
+{
+	USentryScope* unrealScope = NewObject<USentryScope>();
+	unrealScope->InitWithNativeImplAndroid(scope);
+	return unrealScope;
 }
