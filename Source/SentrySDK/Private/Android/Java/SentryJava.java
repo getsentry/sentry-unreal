@@ -46,7 +46,4 @@ public class SentryJava {
 		doneSignal.await();
 		return Sentry.getLastEventId().toString();
 	}
-
-	// TODO Move to another class or find a way to use enums with JNI
-
 }
