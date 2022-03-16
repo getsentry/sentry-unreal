@@ -26,7 +26,7 @@ public:
 	void Clear();
 
 private:
-	jobject _scopeAndroid;
+	jobject ScopeAndroid;
 
 	static const ANSICHAR* SentryScopeJavaClassName;
 };

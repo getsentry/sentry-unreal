@@ -7,27 +7,27 @@
 
 void SentryEventIOS::Init()
 {
-	_eventIOS = [[SentryEvent alloc] init];
+	EventIOS = [[SentryEvent alloc] init];
 }
 
 void SentryEventIOS::InitWithNativeObject(SentryEvent* event)
 {
-	_eventIOS = event;
+	EventIOS = event;
 }
 
 SentryEvent* SentryEventIOS::GetNativeObject()
 {
-	return _eventIOS;
+	return EventIOS;
 }
 
 void SentryEventIOS::SetMessage(const FString& message)
 {
 	SentryMessage* msg = [SentryMessage alloc];
 	msg.message = message.GetNSString();
-	_eventIOS.message = msg;
+	EventIOS.message = msg;
 }
 
 void SentryEventIOS::SetLevel(ESentryLevel level)
 {
-	_eventIOS.level = SentryConvertorsIOS::SentryLevelToNative(level);
+	EventIOS.level = SentryConvertorsIOS::SentryLevelToNative(level);
 }

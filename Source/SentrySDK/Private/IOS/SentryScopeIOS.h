@@ -25,5 +25,5 @@ public:
 	void Clear();
 
 private:
-	SentryScope* _scopeIOS;
+	SentryScope* ScopeIOS;
 };

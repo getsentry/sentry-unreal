@@ -19,5 +19,5 @@ public:
 	void SetLevel(ESentryLevel level);
 
 private:
-	SentryEvent* _eventIOS;
+	SentryEvent* EventIOS;
 };

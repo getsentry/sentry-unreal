@@ -12,7 +12,7 @@ const ANSICHAR* SentryScopeAndroid::SentryScopeJavaClassName = "com/sentry/unrea
 SentryScopeAndroid::~SentryScopeAndroid()
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	Env->DeleteGlobalRef(_scopeAndroid);
+	Env->DeleteGlobalRef(ScopeAndroid);
 }
 
 void SentryScopeAndroid::Init()
@@ -23,23 +23,23 @@ void SentryScopeAndroid::Init()
 void SentryScopeAndroid::InitWithNativeObject(jobject scope)
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	_scopeAndroid = Env->NewGlobalRef(scope);
+	ScopeAndroid = Env->NewGlobalRef(scope);
 }
 
 jobject SentryScopeAndroid::GetNativeObject()
 {
-	return _scopeAndroid;
+	return ScopeAndroid;
 }
 
 void SentryScopeAndroid::SetTagValue(const FString& key, const FString& value)
 {
-	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",
 		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
 }
 
 void SentryScopeAndroid::RemoveTag(const FString& key)
 {
-	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "removeTag", "(Ljava/lang/String;)V",
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "removeTag", "(Ljava/lang/String;)V",
 		SentryConvertorsAndroid::StringToNative(key));
 }
 
@@ -63,17 +63,17 @@ void SentryScopeAndroid::SetEnvironment(const FString& environment)
 
 void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "setFingerprint", "(Ljava/util/List;)V",
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setFingerprint", "(Ljava/util/List;)V",
 		SentryConvertorsAndroid::StringArrayToNative(fingerprint));
 }
 
 void SentryScopeAndroid::SetLevel(ESentryLevel level)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryScopeJavaClassName, "setScopeLevel", "(Lio/sentry/Scope;I)V",
-		_scopeAndroid, (int)level);
+		ScopeAndroid, static_cast<int>(level));
 }
 
 void SentryScopeAndroid::Clear()
 {
-	SentryMethodCallAndroid::CallVoidMethod(_scopeAndroid, "clear", "()V");
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "clear", "()V");
 }

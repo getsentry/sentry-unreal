@@ -7,17 +7,17 @@
 
 void SentryScopeIOS::Init()
 {
-	_scopeIOS = [[SentryScope alloc] init];
+	ScopeIOS = [[SentryScope alloc] init];
 }
 
 void SentryScopeIOS::InitWithNativeObject(SentryScope* scope)
 {
-	_scopeIOS = scope;
+	ScopeIOS = scope;
 }
 
 SentryScope* SentryScopeIOS::GetNativeObject()
 {
-	return _scopeIOS;
+	return ScopeIOS;
 }
 
 void SentryScopeIOS::SetTagValue(const FString& key, const FString& value)
