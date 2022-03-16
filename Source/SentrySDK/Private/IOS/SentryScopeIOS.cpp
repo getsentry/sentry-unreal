@@ -22,40 +22,40 @@ SentryScope* SentryScopeIOS::GetNativeObject()
 
 void SentryScopeIOS::SetTagValue(const FString& key, const FString& value)
 {
-	[_scopeIOS setTagValue:value.GetNSString() forKey:key.GetNSString()];
+	[ScopeIOS setTagValue:value.GetNSString() forKey:key.GetNSString()];
 }
 
 void SentryScopeIOS::RemoveTag(const FString& key)
 {
-	[_scopeIOS removeTagForKey:key.GetNSString()];
+	[ScopeIOS removeTagForKey:key.GetNSString()];
 }
 
 void SentryScopeIOS::SetTags(const TMap<FString, FString>& tags)
 {
-	[_scopeIOS setTags:SentryConvertorsIOS::StringMapToNative(tags)];
+	[ScopeIOS setTags:SentryConvertorsIOS::StringMapToNative(tags)];
 }
 
 void SentryScopeIOS::SetDist(const FString& dist)
 {
-	[_scopeIOS setDist:dist.GetNSString()];
+	[ScopeIOS setDist:dist.GetNSString()];
 }
 
 void SentryScopeIOS::SetEnvironment(const FString& environment)
 {
-	[_scopeIOS setEnvironment:environment.GetNSString()];
+	[ScopeIOS setEnvironment:environment.GetNSString()];
 }
 
 void SentryScopeIOS::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	[_scopeIOS setFingerprint:SentryConvertorsIOS::StringArrayToNative(fingerprint)];
+	[ScopeIOS setFingerprint:SentryConvertorsIOS::StringArrayToNative(fingerprint)];
 }
 
 void SentryScopeIOS::SetLevel(ESentryLevel level)
 {
-	[_scopeIOS setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
+	[ScopeIOS setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
 }
 
 void SentryScopeIOS::Clear()
 {
-	[_scopeIOS clear];
+	[ScopeIOS clear];
 }
