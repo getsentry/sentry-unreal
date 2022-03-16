@@ -81,7 +81,7 @@ public:
 	 * Captures a manually created event and sends it to Sentry.
 	 *
 	 * @param Event The event to send to Sentry.
-	 * @param Scope The scope containing event metadata.
+	 * @param OnConfigureScope The callback to configure the scope.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	FString CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
