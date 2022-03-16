@@ -18,16 +18,16 @@ void SentryAndroid::InitWithSettings(const USentrySettings* settings)
 
 FString SentryAndroid::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;I)Ljava/lang/String;",
-		SentryConvertorsAndroid::StringToNative(message), (int)level);
+	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Ljava/lang/String;",
+		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level));
 }
 
 FString SentryAndroid::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onScopeConfigure);
-	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;IJ)Ljava/lang/String;",
-		SentryConvertorsAndroid::StringToNative(message), (int)level, (jlong)scopeCallback);
+	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Ljava/lang/String;",
+		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
 }
 
 JNI_METHOD void Java_com_sentry_unreal_SentryJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong objAddr, jobject scope)

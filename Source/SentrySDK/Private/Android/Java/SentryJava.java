@@ -27,17 +27,17 @@ public class SentryJava {
 		});
 	}
 
-	public static String captureMessage(final String message, final int level) {
-		return Sentry.captureMessage(message, SentryUtilsJava.parseSentryLogLevel(level)).toString();
+	public static String captureMessage(final String message, final SentryLevel level) {
+		return Sentry.captureMessage(message, level).toString();
 	}
 
-	public static String captureMessageWithScope(final String message, final int level, final long callback) throws InterruptedException {
+	public static String captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
 		// TODO Find another solution for returning ID since CountDownLatch blocks game thread
 		final CountDownLatch doneSignal = new CountDownLatch(1);
 		Sentry.withScope(new ScopeCallback() {
 			@Override
 			public void run(@NonNull Scope scope) {
-				scope.setLevel(SentryUtilsJava.parseSentryLogLevel(level));
+				scope.setLevel(level);
 				onConfigureScope(callback, scope);
 				Sentry.captureMessage(message);
 				doneSignal.countDown();

@@ -27,6 +27,4 @@ public:
 
 private:
 	jobject ScopeAndroid;
-
-	static const ANSICHAR* SentryScopeJavaClassName;
 };

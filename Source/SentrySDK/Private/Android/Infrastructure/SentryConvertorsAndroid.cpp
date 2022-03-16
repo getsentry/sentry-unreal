@@ -7,6 +7,56 @@
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJava.h"
 
+jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
+{
+	jobject nativeLevel;
+
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+	
+	jclass levelEnumClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/SentryLevel");
+
+	jfieldID debugEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "DEBUG", "Lio/sentry/SentryLevel;");
+	jfieldID infoEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "INFO", "Lio/sentry/SentryLevel;");
+	jfieldID warningEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "WARNING", "Lio/sentry/SentryLevel;");
+	jfieldID errorEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "ERROR", "Lio/sentry/SentryLevel;");
+	jfieldID fatalEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "FATAL", "Lio/sentry/SentryLevel;");
+
+	switch (level)
+	{
+	case ESentryLevel::Debug:
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField);;
+		break;
+	case ESentryLevel::Info:
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField);;
+		break;
+	case ESentryLevel::Warning:
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField);;
+		break;
+	case ESentryLevel::Error:
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField);;
+		break;
+	case ESentryLevel::Fatal:
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField);;
+		break;
+	}
+
+	return nativeLevel;
+}
+
+jobject SentryConvertorsAndroid::SentryMessageToNative(FString message)
+{
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+
+	jclass messageClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/protocol/Message");
+	jmethodID messageCtor = Env->GetMethodID(messageClass, "<init>", "()V");
+	jobject messageObject = Env->NewObject(messageClass, messageCtor);
+	jmethodID setMessageMethod = Env->GetMethodID(messageClass, "setMessage", "(Ljava/lang/String;)V");
+
+	Env->CallVoidMethod(messageObject, setMessageMethod, StringToNative(message));
+
+	return messageObject;
+}
+
 jstring SentryConvertorsAndroid::StringToNative(FString string)
 {
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();

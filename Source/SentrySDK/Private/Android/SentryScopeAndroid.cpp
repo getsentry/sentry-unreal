@@ -7,8 +7,6 @@
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJava.h"
 
-const ANSICHAR* SentryScopeAndroid::SentryScopeJavaClassName = "com/sentry/unreal/SentryScopeJava";
-
 SentryScopeAndroid::~SentryScopeAndroid()
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
@@ -69,8 +67,8 @@ void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
 
 void SentryScopeAndroid::SetLevel(ESentryLevel level)
 {
-	SentryMethodCallAndroid::CallStaticVoidMethod(SentryScopeJavaClassName, "setScopeLevel", "(Lio/sentry/Scope;I)V",
-		ScopeAndroid, static_cast<int>(level));
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setLevel", "(Lio/sentry/SentryLevel;)V",
+		SentryConvertorsAndroid::SentryLevelToNative(level));
 }
 
 void SentryScopeAndroid::Clear()
