@@ -70,8 +70,7 @@ FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const 
 FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 {
 #if PLATFORM_ANDROID
-	// TODO
-	return FString();
+	return SentryAndroid::CaptureEvent(Event);
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureEvent(Event);
 #else
@@ -82,8 +81,7 @@ FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
 #if PLATFORM_ANDROID
-	// TODO
-	return FString();
+	return SentryAndroid::CaptureEventWithScope(Event, OnConfigureScope);
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureEventWithScope(Event, OnConfigureScope);
 #else

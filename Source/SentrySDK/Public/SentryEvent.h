@@ -6,6 +6,10 @@
 
 #include "SentryEvent.generated.h"
 
+#if PLATFORM_ANDROID
+class SentryEventAndroid;
+#endif
+
 #if PLATFORM_IOS
 class SentryEventIOS;
 #endif
@@ -26,12 +30,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetLevel(ESentryLevel Level);
 
+#if PLATFORM_ANDROID
+	void InitWithNativeImplAndroid(TSharedPtr<SentryEventAndroid> eventImpl);
+	TSharedPtr<SentryEventAndroid> GetNativeImplAndroid();
+#endif
+
 #if PLATFORM_IOS
 	void InitWithNativeImplIOS(TSharedPtr<SentryEventIOS> eventImpl);
 	TSharedPtr<SentryEventIOS> GetNativeImplIOS();
 #endif
 
 private:
+
+#if PLATFORM_ANDROID
+	TSharedPtr<SentryEventAndroid> _eventNativeImplAndroid;
+#endif
+
 #if PLATFORM_IOS
 	TSharedPtr<SentryEventIOS> _eventNativeImplIOS;
 #endif

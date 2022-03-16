@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import io.sentry.Scope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
+import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
@@ -40,6 +41,25 @@ public class SentryJava {
 				scope.setLevel(level);
 				onConfigureScope(callback, scope);
 				Sentry.captureMessage(message);
+				doneSignal.countDown();
+			}
+		});
+		doneSignal.await();
+		return Sentry.getLastEventId().toString();
+	}
+
+	public static String captureEvent(final SentryEvent event) {
+		return Sentry.captureEvent(event).toString();
+	}
+
+	public static String captureEventWithScope(final SentryEvent event, final long callback) throws InterruptedException {
+		// TODO Find another solution for returning ID since CountDownLatch blocks game thread
+		final CountDownLatch doneSignal = new CountDownLatch(1);
+		Sentry.withScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
+				onConfigureScope(callback, scope);
+				Sentry.captureEvent(event);
 				doneSignal.countDown();
 			}
 		});
