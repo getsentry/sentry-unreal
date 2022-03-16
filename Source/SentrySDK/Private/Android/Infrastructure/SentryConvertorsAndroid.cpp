@@ -2,7 +2,7 @@
 
 #include "SentryConvertorsAndroid.h"
 #include "SentryScope.h"
-#include "SentryScopeAndroid.h"
+#include "Android/SentryScopeAndroid.h"
 
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJava.h"

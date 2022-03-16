@@ -2,7 +2,7 @@
 
 #include "SentryIOS.h"
 #include "SentryScopeIOS.h"
-#include "SentryConvertorsIOS.h"
+#include "Infrastructure/SentryConvertorsIOS.h"
 
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>

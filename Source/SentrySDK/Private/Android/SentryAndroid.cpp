@@ -3,9 +3,9 @@
 #include "SentryAndroid.h"
 #include "SentryScopeAndroid.h"
 #include "SentrySettings.h"
-#include "SentryMethodCallAndroid.h"
-#include "SentryConvertorsAndroid.h"
-#include "SentryScopeCallbackAndroid.h"
+#include "Callbacks/SentryScopeCallbackAndroid.h"
+#include "Infrastructure/SentryMethodCallAndroid.h"
+#include "Infrastructure/SentryConvertorsAndroid.h"
 
 const ANSICHAR* SentryAndroid::SentryJavaClassName = "com/sentry/unreal/SentryJava";
 
