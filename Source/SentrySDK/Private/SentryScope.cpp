@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryScope.h"
+#include "Interface/SentryScopeInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryScopeAndroid.h"
@@ -12,120 +13,63 @@
 
 USentryScope::USentryScope()
 {
-#if PLATFORM_ANDROID
 	if (USentryScope::StaticClass()->GetDefaultObject() != this)
 	{
-		_scopeNativeImplAndroid = MakeShareable(new SentryScopeAndroid());
-	}
+#if PLATFORM_ANDROID
+		ScopeNativeImpl = MakeShareable(new SentryScopeAndroid());
 #endif
 #if PLATFORM_IOS
-	if (USentryScope::StaticClass()->GetDefaultObject() != this)
-	{
-		_scopeNativeImplIOS = MakeShareable(new SentryScopeIOS());
-	}
+		ScopeNativeImpl = MakeShareable(new SentryScopeIOS());
 #endif
+	}
 }
 
 void USentryScope::SetTagValue(const FString& Key, const FString& Value)
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->SetTagValue(Key, Value);
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->SetTagValue(Key, Value);
-#endif
+	ScopeNativeImpl->SetTagValue(Key, Value);
 }
 
 void USentryScope::RemoveTag(const FString& Key)
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->RemoveTag(Key);
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->RemoveTag(Key);
-#endif
+	ScopeNativeImpl->RemoveTag(Key);
 }
 
 void USentryScope::SetTags(const TMap<FString, FString>& Tags)
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->SetTags(Tags);
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->SetTags(Tags);
-#endif
+	ScopeNativeImpl->SetTags(Tags);
 }
 
 void USentryScope::SetDist(const FString& Dist)
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->SetDist(Dist);
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->SetDist(Dist);
-#endif
+	ScopeNativeImpl->SetDist(Dist);
 }
 
 void USentryScope::SetEnvironment(const FString& Environment)
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->SetEnvironment(Environment);
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->SetEnvironment(Environment);
-#endif
+	ScopeNativeImpl->SetEnvironment(Environment);
 }
 
 void USentryScope::SetFingerprint(const TArray<FString>& Fingerprint)
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->SetFingerprint(Fingerprint);
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->SetFingerprint(Fingerprint);
-#endif
+	ScopeNativeImpl->SetFingerprint(Fingerprint);
 }
 
 void USentryScope::SetLevel(ESentryLevel Level)
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->SetLevel(Level);
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->SetLevel(Level);
-#endif
+	ScopeNativeImpl->SetLevel(Level);
 }
 
 void USentryScope::Clear()
 {
-#if PLATFORM_ANDROID
-	_scopeNativeImplAndroid->Clear();
-#endif
-#if PLATFORM_IOS
-	_scopeNativeImplIOS->Clear();
-#endif
+	ScopeNativeImpl->Clear();
 }
 
-#if PLATFORM_ANDROID
-void USentryScope::InitWithNativeImplAndroid(TSharedPtr<SentryScopeAndroid> scopeImpl)
+void USentryScope::InitWithNativeImpl(TSharedPtr<ISentryScope> scopeImpl)
 {
-	_scopeNativeImplAndroid = scopeImpl;
+	ScopeNativeImpl = scopeImpl;
 }
 
-TSharedPtr<SentryScopeAndroid> USentryScope::GetNativeImplAndroid()
+TSharedPtr<ISentryScope> USentryScope::GetNativeImpl()
 {
-	return _scopeNativeImplAndroid;
+	return ScopeNativeImpl;
 }
-#endif
-
-#if PLATFORM_IOS
-void USentryScope::InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scopeImpl)
-{
-	_scopeNativeImplIOS = scopeImpl;
-}
-
-TSharedPtr<SentryScopeIOS> USentryScope::GetNativeImplIOS()
-{
-	return _scopeNativeImplIOS;
-}
-#endif

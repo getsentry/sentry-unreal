@@ -60,6 +60,6 @@ USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
 {
 	TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS(scope));
 	USentryScope* unrealScope = NewObject<USentryScope>();
-	unrealScope->InitWithNativeImplIOS(scopeNativeImpl);
+	unrealScope->InitWithNativeImpl(scopeNativeImpl);
 	return unrealScope;
 }

@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryEvent.h"
+#include "Interface/SentryEventInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryEventAndroid.h"
@@ -12,60 +13,33 @@
 
 USentryEvent::USentryEvent()
 {
-#if PLATFORM_ANDROID
 	if (USentryEvent::StaticClass()->GetDefaultObject() != this)
 	{
-		_eventNativeImplAndroid = MakeShareable(new SentryEventAndroid());
-	}
+#if PLATFORM_ANDROID
+		EventNativeImpl = MakeShareable(new SentryEventAndroid());
 #endif
 #if PLATFORM_IOS
-	if (USentryEvent::StaticClass()->GetDefaultObject() != this)
-	{
-		_eventNativeImplIOS = MakeShareable(new SentryEventIOS());
-	}
+		EventNativeImpl = MakeShareable(new SentryEventIOS());
 #endif
+	}
 }
 
 void USentryEvent::SetMessage(const FString& Message)
 {
-#if PLATFORM_ANDROID
-	_eventNativeImplAndroid->SetMessage(Message);
-#endif
-#if PLATFORM_IOS
-	_eventNativeImplIOS->SetMessage(Message);
-#endif
+	EventNativeImpl->SetMessage(Message);
 }
 
 void USentryEvent::SetLevel(ESentryLevel Level)
 {
-#if PLATFORM_ANDROID
-	_eventNativeImplAndroid->SetLevel(Level);
-#endif
-#if PLATFORM_IOS
-	_eventNativeImplIOS->SetLevel(Level);
-#endif
+	EventNativeImpl->SetLevel(Level);
 }
 
-#if PLATFORM_ANDROID
-void USentryEvent::InitWithNativeImplAndroid(TSharedPtr<SentryEventAndroid> eventImpl)
+void USentryEvent::InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl)
 {
-	_eventNativeImplAndroid = eventImpl;
+	EventNativeImpl = eventImpl;
 }
 
-TSharedPtr<SentryEventAndroid> USentryEvent::GetNativeImplAndroid()
+TSharedPtr<ISentryEvent> USentryEvent::GetNativeImpl()
 {
-	return _eventNativeImplAndroid;
+	return EventNativeImpl;
 }
-#endif
-
-#if PLATFORM_IOS
-void USentryEvent::InitWithNativeImplIOS(TSharedPtr<SentryEventIOS> eventImpl)
-{
-	_eventNativeImplIOS = eventImpl;
-}
-
-TSharedPtr<SentryEventIOS> USentryEvent::GetNativeImplIOS()
-{
-	return _eventNativeImplIOS;
-}
-#endif

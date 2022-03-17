@@ -2,6 +2,7 @@
 
 #include "SentryIOS.h"
 #include "SentryScopeIOS.h"
+#include "SentryEventIOS.h"
 #include "Infrastructure/SentryConvertorsIOS.h"
 
 #import <Foundation/Foundation.h>
@@ -51,13 +52,17 @@ FString SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeD
 
 FString SentryIOS::CaptureEvent(USentryEvent* event)
 {
-	SentryId* id = [SentrySDK captureEvent:event->GetNativeImplIOS()->GetNativeObject()];
+	TSharedPtr<SentryEventIOS> eventIOS = StaticCastSharedPtr<SentryEventIOS>(event->GetNativeImpl());
+
+	SentryId* id = [SentrySDK captureEvent:eventIOS->GetNativeObject()];
 	return FString([id sentryIdString]);
 }
 
 FString SentryIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
-	SentryId* id = [SentrySDK captureEvent:event->GetNativeImplIOS()->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
+	TSharedPtr<SentryEventIOS> eventIOS = StaticCastSharedPtr<SentryEventIOS>(event->GetNativeImpl());
+
+	SentryId* id = [SentrySDK captureEvent:eventIOS->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
 		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 

@@ -34,16 +34,20 @@ FString SentryAndroid::CaptureMessage(const FString& message, const FConfigureSc
 
 FString SentryAndroid::CaptureEvent(USentryEvent* event)
 {
+	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureEvent", "(Lio/sentry/SentryEvent;)Ljava/lang/String;",
-		event->GetNativeImplAndroid()->GetNativeObject());
+		eventAndroid->GetNativeObject());
 }
 
 FString SentryAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
+	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
+
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onScopeConfigure);
+
 	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureEventWithScope", "(Lio/sentry/SentryEvent;J)Ljava/lang/String;",
-		event->GetNativeImplAndroid()->GetNativeObject(), (jlong)scopeCallback);
+		eventAndroid->GetNativeObject(), (jlong)scopeCallback);
 }
 
 JNI_METHOD void Java_com_sentry_unreal_SentryJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong objAddr, jobject scope)

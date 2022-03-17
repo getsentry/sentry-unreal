@@ -15,6 +15,11 @@ SentryEventIOS::SentryEventIOS(SentryEvent* event)
 	EventIOS = event;
 }
 
+SentryEventIOS::~SentryEventIOS()
+{
+	// Put custom destructor logic here if needed
+}
+
 SentryEvent* SentryEventIOS::GetNativeObject()
 {
 	return EventIOS;

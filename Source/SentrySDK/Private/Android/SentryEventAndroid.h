@@ -6,18 +6,19 @@
 #include "Android/AndroidJNI.h"
 
 #include "SentryDataTypes.h"
+#include "Interface/SentryEventInterface.h"
 
-class SentryEventAndroid
+class SentryEventAndroid : public ISentryEvent
 {
 public:
 	SentryEventAndroid();
 	SentryEventAndroid(jobject event);
-	~SentryEventAndroid();
+	virtual ~SentryEventAndroid() override;
 
 	jobject GetNativeObject();
 
-	void SetMessage(const FString& message);
-	void SetLevel(ESentryLevel level);
+	virtual void SetMessage(const FString& message) override;
+	virtual void SetLevel(ESentryLevel level) override;
 
 private:
 	jobject EventAndroid;

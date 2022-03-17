@@ -6,13 +6,7 @@
 
 #include "SentryScope.generated.h"
 
-#if PLATFORM_ANDROID
-class SentryScopeAndroid;
-#endif
-
-#if PLATFORM_IOS
-class SentryScopeIOS;
-#endif
+class ISentryScope;
 
 UCLASS(BlueprintType)
 class SENTRYSDK_API USentryScope : public UObject
@@ -54,25 +48,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Clear();
 
-#if PLATFORM_ANDROID
-	void InitWithNativeImplAndroid(TSharedPtr<SentryScopeAndroid> scopeImpl);
-	TSharedPtr<SentryScopeAndroid> GetNativeImplAndroid();
-#endif
-
-#if PLATFORM_IOS
-	void InitWithNativeImplIOS(TSharedPtr<SentryScopeIOS> scopeImpl);
-	TSharedPtr<SentryScopeIOS> GetNativeImplIOS();
-#endif
+	void InitWithNativeImpl(TSharedPtr<ISentryScope> scopeImpl);
+	TSharedPtr<ISentryScope> GetNativeImpl();
 
 private:
-
-#if PLATFORM_ANDROID
-	TSharedPtr<SentryScopeAndroid> _scopeNativeImplAndroid;
-#endif
-
-#if PLATFORM_IOS
-	TSharedPtr<SentryScopeIOS> _scopeNativeImplIOS;
-#endif
+	TSharedPtr<ISentryScope> ScopeNativeImpl;
 };
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureScopeDelegate, USentryScope*, Scope);

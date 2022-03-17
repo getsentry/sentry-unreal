@@ -126,6 +126,6 @@ USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
 {
 	TSharedPtr<SentryScopeAndroid> scopeNativeImpl = MakeShareable(new SentryScopeAndroid(scope));
 	USentryScope* unrealScope = NewObject<USentryScope>();
-	unrealScope->InitWithNativeImplAndroid(scopeNativeImpl);
+	unrealScope->InitWithNativeImpl(scopeNativeImpl);
 	return unrealScope;
 }

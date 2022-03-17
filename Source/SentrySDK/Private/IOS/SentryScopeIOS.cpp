@@ -15,6 +15,11 @@ SentryScopeIOS::SentryScopeIOS(SentryScope* scope)
 	ScopeIOS = scope;
 }
 
+SentryScopeIOS::~SentryScopeIOS()
+{
+	// Put custom destructor logic here if needed
+}
+
 SentryScope* SentryScopeIOS::GetNativeObject()
 {
 	return ScopeIOS;
