@@ -19,5 +19,5 @@ public:
 
 	/** Conversions from native Java types */
 	static FString StringToUnreal(jstring string);
-	static USentryScope* SentryScopeToUnreal(TSharedPtr<SentryScopeAndroid> scope);
+	static USentryScope* SentryScopeToUnreal(jobject scope);
 };

@@ -43,11 +43,7 @@ FString SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeD
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
-
-		TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS());
-		scopeNativeImpl->InitWithNativeObject(scope);
-
-		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scopeNativeImpl));
+		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 
 	return FString([id sentryIdString]);
@@ -62,10 +58,7 @@ FString SentryIOS::CaptureEvent(USentryEvent* event)
 FString SentryIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
 	SentryId* id = [SentrySDK captureEvent:event->GetNativeImplIOS()->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
-		TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS());
-		scopeNativeImpl->InitWithNativeObject(scope);
-
-		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scopeNativeImpl));
+		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 
 	return FString([id sentryIdString]);

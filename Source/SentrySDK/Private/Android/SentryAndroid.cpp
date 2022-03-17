@@ -52,9 +52,6 @@ JNI_METHOD void Java_com_sentry_unreal_SentryJava_onConfigureScope(JNIEnv* env, 
 
 	if (IsValid(callback))
 	{
-		TSharedPtr<SentryScopeAndroid> scopeNativeImpl = MakeShareable(new SentryScopeAndroid());
-		scopeNativeImpl->InitWithNativeObject(scope);
-
-		callback->ExecuteDelegate(SentryConvertorsAndroid::SentryScopeToUnreal(scopeNativeImpl));
+		callback->ExecuteDelegate(SentryConvertorsAndroid::SentryScopeToUnreal(scope));
 	}
 }

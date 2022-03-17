@@ -122,9 +122,11 @@ FString SentryConvertorsAndroid::StringToUnreal(jstring string)
 	return Result;
 }
 
-USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(TSharedPtr<SentryScopeAndroid> scope)
+USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
 {
+	TSharedPtr<SentryScopeAndroid> scopeNativeImpl = MakeShareable(new SentryScopeAndroid());
+	scopeNativeImpl->InitWithNativeObject(scope);
 	USentryScope* unrealScope = NewObject<USentryScope>();
-	unrealScope->InitWithNativeImplAndroid(scope);
+	unrealScope->InitWithNativeImplAndroid(scopeNativeImpl);
 	return unrealScope;
 }

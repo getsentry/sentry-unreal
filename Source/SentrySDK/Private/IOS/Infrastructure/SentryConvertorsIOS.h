@@ -6,7 +6,6 @@
 
 #import <Sentry/Sentry.h>
 
-class SentryScopeIOS;
 class USentryScope;
 
 class SentryConvertorsIOS
@@ -18,5 +17,5 @@ public:
 	static NSArray* StringArrayToNative(const TArray<FString>& array);
 
 	/** Conversions from native iOS types */
-	static USentryScope* SentryScopeToUnreal(TSharedPtr<SentryScopeIOS> scope);
+	static USentryScope* SentryScopeToUnreal(SentryScope* scope);
 };

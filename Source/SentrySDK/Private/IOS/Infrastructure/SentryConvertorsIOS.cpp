@@ -56,9 +56,11 @@ NSArray* SentryConvertorsIOS::StringArrayToNative(const TArray<FString>& array)
 	return arr;
 }
 
-USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(TSharedPtr<SentryScopeIOS> scope)
+USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
 {
+	TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS());
+	scopeNativeImpl->InitWithNativeObject(scope);
 	USentryScope* unrealScope = NewObject<USentryScope>();
-	unrealScope->InitWithNativeImplIOS(scope);
+	unrealScope->InitWithNativeImplIOS(scopeNativeImpl);
 	return unrealScope;
 }
