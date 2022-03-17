@@ -11,8 +11,9 @@
 class SentryEventIOS
 {
 public:
-	void Init();
-	void InitWithNativeObject(SentryEvent* event);
+	SentryEventIOS();
+	SentryEventIOS(SentryEvent* event);
+
 	SentryEvent* GetNativeObject();
 
 	void SetMessage(const FString& message);

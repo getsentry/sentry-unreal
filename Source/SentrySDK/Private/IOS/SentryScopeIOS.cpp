@@ -5,12 +5,12 @@
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>
 
-void SentryScopeIOS::Init()
+SentryScopeIOS::SentryScopeIOS()
 {
 	ScopeIOS = [[SentryScope alloc] init];
 }
 
-void SentryScopeIOS::InitWithNativeObject(SentryScope* scope)
+SentryScopeIOS::SentryScopeIOS(SentryScope* scope)
 {
 	ScopeIOS = scope;
 }

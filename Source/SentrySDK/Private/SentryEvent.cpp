@@ -22,7 +22,6 @@ USentryEvent::USentryEvent()
 	if (USentryEvent::StaticClass()->GetDefaultObject() != this)
 	{
 		_eventNativeImplIOS = MakeShareable(new SentryEventIOS());
-		_eventNativeImplIOS->Init();
 	}
 #endif
 }

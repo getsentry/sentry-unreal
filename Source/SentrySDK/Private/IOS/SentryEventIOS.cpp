@@ -5,12 +5,12 @@
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>
 
-void SentryEventIOS::Init()
+SentryEventIOS::SentryEventIOS()
 {
 	EventIOS = [[SentryEvent alloc] init];
 }
 
-void SentryEventIOS::InitWithNativeObject(SentryEvent* event)
+SentryEventIOS::SentryEventIOS(SentryEvent* event)
 {
 	EventIOS = event;
 }

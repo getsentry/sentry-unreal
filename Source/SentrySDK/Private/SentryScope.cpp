@@ -22,7 +22,6 @@ USentryScope::USentryScope()
 	if (USentryScope::StaticClass()->GetDefaultObject() != this)
 	{
 		_scopeNativeImplIOS = MakeShareable(new SentryScopeIOS());
-		_scopeNativeImplIOS->Init();
 	}
 #endif
 }
