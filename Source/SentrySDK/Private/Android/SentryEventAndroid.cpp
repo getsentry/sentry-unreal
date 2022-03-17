@@ -7,13 +7,7 @@
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJava.h"
 
-SentryEventAndroid::~SentryEventAndroid()
-{
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	Env->DeleteGlobalRef(EventAndroid);
-}
-
-void SentryEventAndroid::Init()
+SentryEventAndroid::SentryEventAndroid()
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 	jclass eventClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/SentryEvent");
@@ -22,10 +16,16 @@ void SentryEventAndroid::Init()
 	EventAndroid = Env->NewGlobalRef(eventObject);
 }
 
-void SentryEventAndroid::InitWithNativeObject(jobject event)
+SentryEventAndroid::SentryEventAndroid(jobject event)
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 	EventAndroid = Env->NewGlobalRef(event);
+}
+
+SentryEventAndroid::~SentryEventAndroid()
+{
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	Env->DeleteGlobalRef(EventAndroid);
 }
 
 jobject SentryEventAndroid::GetNativeObject()

@@ -16,7 +16,6 @@ USentryScope::USentryScope()
 	if (USentryScope::StaticClass()->GetDefaultObject() != this)
 	{
 		_scopeNativeImplAndroid = MakeShareable(new SentryScopeAndroid());
-		_scopeNativeImplAndroid->Init();
 	}
 #endif
 #if PLATFORM_IOS

@@ -10,10 +10,10 @@
 class SentryScopeAndroid
 {
 public:
+	SentryScopeAndroid();
+	SentryScopeAndroid(jobject scope);
 	~SentryScopeAndroid();
 
-	void Init();
-	void InitWithNativeObject(jobject scope);
 	jobject GetNativeObject();
 
 	void SetTagValue(const FString& key, const FString& value);

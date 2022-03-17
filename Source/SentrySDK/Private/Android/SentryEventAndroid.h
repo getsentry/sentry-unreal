@@ -10,10 +10,10 @@
 class SentryEventAndroid
 {
 public:
+	SentryEventAndroid();
+	SentryEventAndroid(jobject event);
 	~SentryEventAndroid();
 
-	void Init();
-	void InitWithNativeObject(jobject event);
 	jobject GetNativeObject();
 
 	void SetMessage(const FString& message);

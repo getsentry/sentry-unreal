@@ -47,6 +47,26 @@ FString SentryMethodCallAndroid::CallStaticStringMethod(const ANSICHAR* ClassNam
 	return Result;
 }
 
+jobject SentryMethodCallAndroid::CallStaticObjectMethod(const ANSICHAR* ClassName, const ANSICHAR* MethodName, const ANSICHAR* MethodSignature, ...)
+{
+	bool bIsOptional = false;
+
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+
+	jclass Class = FAndroidApplication::FindJavaClass(ClassName);
+
+	jmethodID Method = FJavaWrapper::FindStaticMethod(Env, Class, MethodName, MethodSignature, bIsOptional);
+
+	va_list Args;
+	va_start(Args, MethodSignature);
+	jobject Result = Env->CallStaticObjectMethodV(Class, Method, Args);
+	va_end(Args);
+
+	Env->DeleteLocalRef(Class);
+
+	return Result;
+}
+
 void SentryMethodCallAndroid::CallVoidMethod(jobject object, const ANSICHAR* MethodName, const ANSICHAR* MethodSignature, ...)
 {
 	bool bIsOptional = false;
@@ -63,4 +83,24 @@ void SentryMethodCallAndroid::CallVoidMethod(jobject object, const ANSICHAR* Met
 	va_end(Args);
 
 	Env->DeleteLocalRef(Class);
+}
+
+jobject SentryMethodCallAndroid::CallObjectMethod(jobject object, const ANSICHAR* MethodName, const ANSICHAR* MethodSignature, ...)
+{
+	bool bIsOptional = false;
+
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+
+	jclass Class = Env->GetObjectClass(object);
+
+	jmethodID Method = FJavaWrapper::FindMethod(Env, Class, MethodName, MethodSignature, bIsOptional);
+
+	va_list Args;
+	va_start(Args, MethodSignature);
+	jobject Result = Env->CallObjectMethodV(object, Method, Args);
+	va_end(Args);
+
+	Env->DeleteLocalRef(Class);
+
+	return Result;
 }

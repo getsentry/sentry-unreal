@@ -7,21 +7,28 @@
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJava.h"
 
+SentryScopeAndroid::SentryScopeAndroid()
+{
+	jobject hub = SentryMethodCallAndroid::CallStaticObjectMethod("io/sentry/Sentry", "getCurrentHub", "()Lio/sentry/Hub;");
+	jobject options = SentryMethodCallAndroid::CallObjectMethod(hub, "getOptions", "()Lio/sentry/SentryOptions;");
+
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	jclass scopeClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/Scope");
+	jmethodID scopeCtor = Env->GetMethodID(scopeClass, "<init>", "(Lio/sentry/SentryOptions;)V");
+	jobject scopeObject= Env->NewObject(scopeClass, scopeCtor, options);
+	ScopeAndroid = Env->NewGlobalRef(scopeObject);
+}
+
+SentryScopeAndroid::SentryScopeAndroid(jobject scope)
+{
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	ScopeAndroid = Env->NewGlobalRef(scope);
+}
+
 SentryScopeAndroid::~SentryScopeAndroid()
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 	Env->DeleteGlobalRef(ScopeAndroid);
-}
-
-void SentryScopeAndroid::Init()
-{
-	// TODO Some default native object initialization is required
-}
-
-void SentryScopeAndroid::InitWithNativeObject(jobject scope)
-{
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	ScopeAndroid = Env->NewGlobalRef(scope);
 }
 
 jobject SentryScopeAndroid::GetNativeObject()

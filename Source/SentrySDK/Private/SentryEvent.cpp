@@ -16,7 +16,6 @@ USentryEvent::USentryEvent()
 	if (USentryEvent::StaticClass()->GetDefaultObject() != this)
 	{
 		_eventNativeImplAndroid = MakeShareable(new SentryEventAndroid());
-		_eventNativeImplAndroid->Init();
 	}
 #endif
 #if PLATFORM_IOS
