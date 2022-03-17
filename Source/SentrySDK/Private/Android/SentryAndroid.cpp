@@ -49,13 +49,3 @@ FString SentryAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigu
 	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureEventWithScope", "(Lio/sentry/SentryEvent;J)Ljava/lang/String;",
 		eventAndroid->GetNativeObject(), (jlong)scopeCallback);
 }
-
-JNI_METHOD void Java_com_sentry_unreal_SentryJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong objAddr, jobject scope)
-{
-	USentryScopeCallbackAndroid* callback = reinterpret_cast<USentryScopeCallbackAndroid*>(objAddr);
-
-	if (IsValid(callback))
-	{
-		callback->ExecuteDelegate(SentryConvertorsAndroid::SentryScopeToUnreal(scope));
-	}
-}
