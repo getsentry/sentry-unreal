@@ -20,14 +20,14 @@ public:
 	 *
 	 * @return Returns singleton instance, loading the module on demand if needed.
 	 */
-	static inline FSentryModule& Get();
+	static FSentryModule& Get();
 
 	/**
 	 * Check if this module is loaded and ready. It is only valid to call Get() if IsAvailable() returns true.
 	 *
 	 * @return True if the module is loaded and ready to use.
 	 */
-	static inline bool IsAvailable();
+	static bool IsAvailable();
 
 	/** Getter for internal settings object to support runtime configuration changes. */
 	USentrySettings* GetSettings() const;
