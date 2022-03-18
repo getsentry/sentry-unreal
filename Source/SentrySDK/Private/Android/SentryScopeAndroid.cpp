@@ -9,7 +9,7 @@
 
 SentryScopeAndroid::SentryScopeAndroid()
 {
-	jobject hub = SentryMethodCallAndroid::CallStaticObjectMethod("io/sentry/Sentry", "getCurrentHub", "()Lio/sentry/Hub;");
+	jobject hub = SentryMethodCallAndroid::CallStaticObjectMethod("io/sentry/Sentry", "getCurrentHub", "()Lio/sentry/IHub;");
 	jobject options = SentryMethodCallAndroid::CallObjectMethod(hub, "getOptions", "()Lio/sentry/SentryOptions;");
 
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
