@@ -18,6 +18,16 @@ void SentryAndroid::InitWithSettings(const USentrySettings* settings)
 		SentryConvertorsAndroid::StringToNative(settings->DsnUrl));
 }
 
+void SentryAndroid::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "addBreadcrumb", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/HashMap;Lio/sentry/SentryLevel;)V",
+		SentryConvertorsAndroid::StringToNative(message),
+		SentryConvertorsAndroid::StringToNative(category),
+		SentryConvertorsAndroid::StringToNative(type),
+		SentryConvertorsAndroid::StringMapToNative(data),
+		SentryConvertorsAndroid::SentryLevelToNative(level));
+}
+
 FString SentryAndroid::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Ljava/lang/String;",
@@ -28,6 +38,7 @@ FString SentryAndroid::CaptureMessage(const FString& message, const FConfigureSc
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onScopeConfigure);
+
 	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Ljava/lang/String;",
 		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
 }
@@ -35,6 +46,7 @@ FString SentryAndroid::CaptureMessage(const FString& message, const FConfigureSc
 FString SentryAndroid::CaptureEvent(USentryEvent* event)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
+
 	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureEvent", "(Lio/sentry/SentryEvent;)Ljava/lang/String;",
 		eventAndroid->GetNativeObject());
 }

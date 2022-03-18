@@ -39,7 +39,7 @@ void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Cate
 	ESentryLevel Level)
 {
 #if PLATFORM_ANDROID
-	// TODO
+	return SentryAndroid::AddBreadcrumb(Message, Category, Type, Data, Level);
 #elif PLATFORM_IOS
 	return SentryIOS::AddBreadcrumb(Message, Category, Type, Data, Level);
 #endif

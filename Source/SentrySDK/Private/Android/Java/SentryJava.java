@@ -6,8 +6,11 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import io.sentry.Breadcrumb;
 import io.sentry.Scope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
@@ -26,6 +29,19 @@ public class SentryJava {
 				options.setDsn(dsnUrl);
 			}
 		});
+	}
+
+	public static void addBreadcrumb(final String message, final String category, final String type, final HashMap<String, String> data, final SentryLevel level) {
+		Breadcrumb breadcrumb = new Breadcrumb();
+		breadcrumb.setMessage(message);
+		breadcrumb.setCategory(category);
+		breadcrumb.setType(type);
+		breadcrumb.setLevel(level);
+		for (Map.Entry<String,String> entry : data.entrySet()) {
+			breadcrumb.setData(entry.getKey(), entry.getValue());
+		}
+
+		Sentry.addBreadcrumb(breadcrumb);
 	}
 
 	public static String captureMessage(final String message, final SentryLevel level) {
