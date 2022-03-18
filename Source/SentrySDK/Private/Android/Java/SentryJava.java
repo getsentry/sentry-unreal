@@ -17,14 +17,16 @@ import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
+import io.sentry.android.core.SentryAndroid;
+import io.sentry.android.core.SentryAndroidOptions;
 
 public class SentryJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 
 	public static void init(Activity activity, final String dsnUrl) {
-		Sentry.init(new Sentry.OptionsConfiguration<SentryOptions>() {
+		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
 			@Override
-			public void configure(SentryOptions options) {
+			public void configure(SentryAndroidOptions options) {
 				options.setDsn(dsnUrl);
 			}
 		});
