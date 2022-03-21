@@ -4,6 +4,7 @@
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
+#include "Interfaces/IPluginManager.h"
 #include "Modules/ModuleManager.h"
 #include "Developer/Settings/Public/ISettingsModule.h"
 
@@ -24,6 +25,27 @@ void FSentryModule::StartupModule()
 			LOCTEXT("RuntimeSettingsDescription", "Configure Sentry SDK"),
 			SentrySettings);
 	}
+
+#if PLATFORM_WINDOWS
+	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("SentrySDK"))->GetBaseDir();
+	const FString DLLPath = PluginDir / TEXT("Binaries/Win64/");
+
+	FPlatformProcess::PushDllDirectory(*DLLPath);
+
+	mDllHandleSentry = FPlatformProcess::GetDllHandle(*(DLLPath + "sentry.dll"));
+
+	FPlatformProcess::PopDllDirectory(*DLLPath);
+#endif
+#if PLATFORM_MAC
+	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("SentrySDK"))->GetBaseDir();
+	const FString DLLPath = PluginDir / TEXT("Binaries/Mac/");
+
+	FPlatformProcess::PushDllDirectory(*DLLPath);
+
+	mDllHandleSentry = FPlatformProcess::GetDllHandle(*(DLLPath + "sentry.dylib"));
+
+	FPlatformProcess::PopDllDirectory(*DLLPath);
+#endif
 }
 
 void FSentryModule::ShutdownModule()
@@ -45,6 +67,14 @@ void FSentryModule::ShutdownModule()
 	{
 		SentrySettings = nullptr;
 	}
+
+#if PLATFORM_WINDOWS || PLATFORM_MAC
+	if (mDllHandleSentry)
+	{
+		FPlatformProcess::FreeDllHandle(mDllHandleSentry);
+		mDllHandleSentry = nullptr;
+	}
+#endif
 }
 
 FSentryModule& FSentryModule::Get()

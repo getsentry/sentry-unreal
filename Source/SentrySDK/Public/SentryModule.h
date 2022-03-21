@@ -36,4 +36,6 @@ public:
 
 private:
 	USentrySettings* SentrySettings = nullptr;
+
+	void* mDllHandleSentry;
 };

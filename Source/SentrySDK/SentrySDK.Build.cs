@@ -128,6 +128,6 @@ public class SentrySDK : ModuleRules
 		PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
 
 		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
-		PublicDelayLoadDLLs.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
+		PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
 	}
 }
