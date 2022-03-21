@@ -38,7 +38,8 @@ public class SentrySDK : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore"
+				"SlateCore",
+				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
 		);
@@ -73,5 +74,60 @@ public class SentrySDK : ModuleRules
 
 			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "SentrySdk_Android_UPL.xml"));
 		}
+
+		// Additional routine for Desktop platforms
+		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString(), "include"));
+
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
+		}
+
+		// Additional routine for Windows
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			LoadThirdPartyLibrary("sentry", Target);
+		}
+	}
+
+	public void LoadThirdPartyLibrary(string libname, ReadOnlyTargetRules Target)
+	{
+		string StaticLibExtension = string.Empty;
+		string DynamicLibExtension = string.Empty;
+
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			StaticLibExtension = ".lib";
+			DynamicLibExtension = ".dll";
+		}
+		if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			StaticLibExtension = ".a";
+			DynamicLibExtension = ".dylib";
+		}
+
+		// Link libraries
+		string ThirdPartyPath = Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString());
+
+		string StaticLibrariesPath = Path.Combine(ThirdPartyPath, "lib");
+		string DynamicLibrariesPath = Path.Combine(ThirdPartyPath, "bin");
+
+		// Copy dynamic libraries to Binaries folder
+		string BinariesPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries", Target.Platform.ToString()));
+
+		if (!Directory.Exists(BinariesPath))
+		{
+			Directory.CreateDirectory(BinariesPath);
+		}
+
+		if (!File.Exists(Path.Combine(BinariesPath, libname + DynamicLibExtension)))
+		{
+			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DynamicLibExtension), Path.Combine(BinariesPath, libname + DynamicLibExtension), true);
+		}
+
+		PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
+
+		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
+		PublicDelayLoadDLLs.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
 	}
 }

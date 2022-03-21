@@ -32,6 +32,8 @@ void USentrySubsystem::Initialize()
 	SentryAndroid::InitWithSettings(Settings);
 #elif PLATFORM_IOS
 	SentryIOS::InitWithSettings(Settings);
+#elif PLATFORM_WINDOWS || PLATFORM_MAC
+	SentryDesktop::InitWithSettings(Settings);
 #endif
 }
 
@@ -51,6 +53,8 @@ FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Le
 	return SentryAndroid::CaptureMessage(Message, Level);
 #elif PLATFORM_IOS
 	return SentryIOS::CaptureMessage(Message, Level);
+#elif PLATFORM_WINDOWS || PLATFORM_MAC
+	return SentryDesktop::CaptureMessage(Message, Level);
 #else
 	return FString();
 #endif
