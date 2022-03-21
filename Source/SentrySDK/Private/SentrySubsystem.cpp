@@ -13,6 +13,10 @@
 #include "IOS/SentryIOS.h"
 #endif
 
+#if PLATFORM_WINDOWS || PLATFORM_MAC
+#include "Desktop/SentryDesktop.h"
+#endif
+
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);

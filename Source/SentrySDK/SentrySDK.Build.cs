@@ -88,6 +88,12 @@ public class SentrySDK : ModuleRules
 		{
 			LoadThirdPartyLibrary("sentry", Target);
 		}
+
+		// Additional routine for Mac
+		if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			LoadThirdPartyLibrary("libsentry", Target);
+		}
 	}
 
 	public void LoadThirdPartyLibrary(string libname, ReadOnlyTargetRules Target)
@@ -125,9 +131,16 @@ public class SentrySDK : ModuleRules
 			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DynamicLibExtension), Path.Combine(BinariesPath, libname + DynamicLibExtension), true);
 		}
 
-		PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
+			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
+		}
+		if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
+		}
 
 		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
-		PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
 	}
 }
