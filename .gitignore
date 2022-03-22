@@ -23,7 +23,6 @@
 *.la
 
 # Executables
-*.exe
 *.out
 *.app
 *.ipa
