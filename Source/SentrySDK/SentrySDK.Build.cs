@@ -87,12 +87,14 @@ public class SentrySDK : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			LoadThirdPartyLibrary("sentry", Target);
+			LoadCrashpadHandler("crashpad_handler.exe", Target);
 		}
 
 		// Additional routine for Mac
 		if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			LoadThirdPartyLibrary("libsentry", Target);
+			LoadCrashpadHandler("crashpad_handler", Target);
 		}
 	}
 
@@ -142,5 +144,27 @@ public class SentrySDK : ModuleRules
 		}
 
 		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
+	}
+
+	public void LoadCrashpadHandler(string HandlerName, ReadOnlyTargetRules Target)
+	{
+		string ThirdPartyPath = Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString());
+
+		string HandlerPath = Path.Combine(ThirdPartyPath, "bin");
+
+		// Copy crashpad handler executable to Binaries folder
+		string BinariesPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries", Target.Platform.ToString()));
+
+		if (!Directory.Exists(BinariesPath))
+		{
+			Directory.CreateDirectory(BinariesPath);
+		}
+
+		if (!File.Exists(Path.Combine(BinariesPath, HandlerName)))
+		{
+			File.Copy(Path.Combine(HandlerPath, HandlerName), Path.Combine(BinariesPath, HandlerName), true);
+		}
+
+		RuntimeDependencies.Add(Path.Combine(BinariesPath, HandlerName));
 	}
 }
