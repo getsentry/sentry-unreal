@@ -26,46 +26,73 @@ USentryScope::USentryScope()
 
 void USentryScope::SetTagValue(const FString& Key, const FString& Value)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->SetTagValue(Key, Value);
 }
 
 void USentryScope::RemoveTag(const FString& Key)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->RemoveTag(Key);
 }
 
 void USentryScope::SetTags(const TMap<FString, FString>& Tags)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->SetTags(Tags);
 }
 
 void USentryScope::SetDist(const FString& Dist)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->SetDist(Dist);
 }
 
 void USentryScope::SetEnvironment(const FString& Environment)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->SetEnvironment(Environment);
 }
 
 void USentryScope::SetFingerprint(const TArray<FString>& Fingerprint)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->SetFingerprint(Fingerprint);
 }
 
 void USentryScope::SetLevel(ESentryLevel Level)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->SetLevel(Level);
 }
 
 void USentryScope::Clear()
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl->Clear();
 }
 
 void USentryScope::InitWithNativeImpl(TSharedPtr<ISentryScope> scopeImpl)
 {
+	if (!ScopeNativeImpl)
+		return;
+
 	ScopeNativeImpl = scopeImpl;
 }
 

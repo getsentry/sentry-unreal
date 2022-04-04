@@ -26,16 +26,25 @@ USentryEvent::USentryEvent()
 
 void USentryEvent::SetMessage(const FString& Message)
 {
+	if (!EventNativeImpl)
+		return;
+
 	EventNativeImpl->SetMessage(Message);
 }
 
 void USentryEvent::SetLevel(ESentryLevel Level)
 {
+	if (!EventNativeImpl)
+		return;
+
 	EventNativeImpl->SetLevel(Level);
 }
 
 void USentryEvent::InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl)
 {
+	if (!EventNativeImpl)
+		return;
+
 	EventNativeImpl = eventImpl;
 }
 
