@@ -1,0 +1,15 @@
+// Copyright (c) 2022 Sentry. All Rights Reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+
+class ISentryUserFeedback
+{
+public:
+	virtual ~ISentryUserFeedback() = default;
+
+	virtual void SetName(const FString& name) = 0;
+	virtual void SetEmail(const FString& email) = 0;
+	virtual void SetComment(const FString& comment) = 0;
+};
