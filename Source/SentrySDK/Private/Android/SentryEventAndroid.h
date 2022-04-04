@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Android/AndroidJNI.h"
 
-#include "SentryDataTypes.h"
 #include "Interface/SentryEventInterface.h"
 
 class SentryEventAndroid : public ISentryEvent

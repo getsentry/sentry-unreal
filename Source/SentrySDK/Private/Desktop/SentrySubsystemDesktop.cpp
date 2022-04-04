@@ -37,26 +37,26 @@ void SentrySubsystemDesktop::AddBreadcrumb(const FString& message, const FString
 	
 }
 
-FString SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
+USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	sentry_value_t sentryEvent = sentry_value_new_message_event(SENTRY_LEVEL_INFO, NULL, TCHAR_TO_ANSI(*message));
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
 
 	// TODO Add sentry_uuid_t to FString conversion
-	return FString();
+	return nullptr;
 }
 
-FString SentrySubsystemDesktop::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
-	return FString();
+	return nullptr;
 }
 
-FString SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
+USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 {
-	return FString();
+	return nullptr;
 }
 
-FString SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
-	return FString();
+	return nullptr;
 }

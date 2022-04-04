@@ -3,6 +3,9 @@
 #include "SentrySubsystemIOS.h"
 #include "SentryScopeIOS.h"
 #include "SentryEventIOS.h"
+#include "SentrySettings.h"
+#include "SentryEvent.h"
+#include "SentryId.h"
 #include "Infrastructure/SentryConvertorsIOS.h"
 
 #import <Foundation/Foundation.h>
@@ -31,34 +34,34 @@ void SentrySubsystemIOS::AddBreadcrumb(const FString& message, const FString& ca
 	[SentrySDK addBreadcrumb:breadcrumb];
 }
 
-FString SentrySubsystemIOS::CaptureMessage(const FString& message, ESentryLevel level)
+USentryId* SentrySubsystemIOS::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
 	}];
 
-	return FString([id sentryIdString]);
+	return SentryConvertorsIOS::SentryIdToUnreal(id);
 }
 
-FString SentrySubsystemIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
 		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 
-	return FString([id sentryIdString]);
+	return SentryConvertorsIOS::SentryIdToUnreal(id);
 }
 
-FString SentrySubsystemIOS::CaptureEvent(USentryEvent* event)
+USentryId* SentrySubsystemIOS::CaptureEvent(USentryEvent* event)
 {
 	TSharedPtr<SentryEventIOS> eventIOS = StaticCastSharedPtr<SentryEventIOS>(event->GetNativeImpl());
 
 	SentryId* id = [SentrySDK captureEvent:eventIOS->GetNativeObject()];
-	return FString([id sentryIdString]);
+	return SentryConvertorsIOS::SentryIdToUnreal(id);
 }
 
-FString SentrySubsystemIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+USentryId* SentrySubsystemIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
 	TSharedPtr<SentryEventIOS> eventIOS = StaticCastSharedPtr<SentryEventIOS>(event->GetNativeImpl());
 
@@ -66,5 +69,5 @@ FString SentrySubsystemIOS::CaptureEventWithScope(USentryEvent* event, const FCo
 		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 
-	return FString([id sentryIdString]);
+	return SentryConvertorsIOS::SentryIdToUnreal(id);
 }

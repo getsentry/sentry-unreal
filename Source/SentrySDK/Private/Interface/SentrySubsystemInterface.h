@@ -9,6 +9,7 @@
 
 class USentrySettings;
 class USentryEvent;
+class USentryId;
 
 class ISentrySubsystem
 {
@@ -17,8 +18,8 @@ public:
 
 	virtual void InitWithSettings(const USentrySettings* settings) = 0;
 	virtual void AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level) = 0;
-	virtual FString CaptureMessage(const FString& message, ESentryLevel level) = 0;
-	virtual FString CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level) = 0;
-	virtual FString CaptureEvent(USentryEvent* event) = 0;
-	virtual FString CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) = 0;
+	virtual USentryId* CaptureMessage(const FString& message, ESentryLevel level) = 0;
+	virtual USentryId* CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level) = 0;
+	virtual USentryId* CaptureEvent(USentryEvent* event) = 0;
+	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) = 0;
 };

@@ -7,6 +7,7 @@
 #import <Sentry/Sentry.h>
 
 class USentryScope;
+class USentryId;
 
 class SentryConvertorsIOS
 {
@@ -18,4 +19,5 @@ public:
 
 	/** Conversions from native iOS types */
 	static USentryScope* SentryScopeToUnreal(SentryScope* scope);
+	static USentryId* SentryIdToUnreal(SentryId* id);
 };

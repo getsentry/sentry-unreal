@@ -2,10 +2,14 @@
 
 #include "SentryConvertorsAndroid.h"
 #include "SentryScope.h"
+#include "SentryId.h"
+
 #include "Android/SentryScopeAndroid.h"
+#include "Android/SentryIdAndroid.h"
 
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJava.h"
+#include "Android/SentryIdAndroid.h"
 
 jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 {
@@ -128,4 +132,12 @@ USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
 	USentryScope* unrealScope = NewObject<USentryScope>();
 	unrealScope->InitWithNativeImpl(scopeNativeImpl);
 	return unrealScope;
+}
+
+USentryId* SentryConvertorsAndroid::SentryIdToUnreal(jobject id)
+{
+	TSharedPtr<SentryIdAndroid> idNativeImpl = MakeShareable(new SentryIdAndroid(id));
+	USentryId* unrealId = NewObject<USentryId>();
+	unrealId->InitWithNativeImpl(idNativeImpl);
+	return unrealId;
 }

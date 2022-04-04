@@ -19,6 +19,7 @@ import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
+import io.sentry.protocol.SentryId;
 
 public class SentryJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
@@ -45,11 +46,11 @@ public class SentryJava {
 		Sentry.addBreadcrumb(breadcrumb);
 	}
 
-	public static String captureMessage(final String message, final SentryLevel level) {
-		return Sentry.captureMessage(message, level).toString();
+	public static SentryId captureMessage(final String message, final SentryLevel level) {
+		return Sentry.captureMessage(message, level);
 	}
 
-	public static String captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
+	public static SentryId captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
 		// TODO Find another solution for returning ID since CountDownLatch blocks game thread
 		final CountDownLatch doneSignal = new CountDownLatch(1);
 		Sentry.withScope(new ScopeCallback() {
@@ -62,14 +63,14 @@ public class SentryJava {
 			}
 		});
 		doneSignal.await();
-		return Sentry.getLastEventId().toString();
+		return Sentry.getLastEventId();
 	}
 
-	public static String captureEvent(final SentryEvent event) {
-		return Sentry.captureEvent(event).toString();
+	public static SentryId captureEvent(final SentryEvent event) {
+		return Sentry.captureEvent(event);
 	}
 
-	public static String captureEventWithScope(final SentryEvent event, final long callback) throws InterruptedException {
+	public static SentryId captureEventWithScope(final SentryEvent event, final long callback) throws InterruptedException {
 		// TODO Find another solution for returning ID since CountDownLatch blocks game thread
 		final CountDownLatch doneSignal = new CountDownLatch(1);
 		Sentry.withScope(new ScopeCallback() {
@@ -81,6 +82,6 @@ public class SentryJava {
 			}
 		});
 		doneSignal.await();
-		return Sentry.getLastEventId().toString();
+		return Sentry.getLastEventId();
 	}
 }

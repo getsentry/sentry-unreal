@@ -2,7 +2,10 @@
 
 #include "SentryConvertorsIOS.h"
 #include "SentryScope.h"
-#include "SentryScopeIOS.h"
+#include "SentryId.h"
+
+#include "IOS/SentryScopeIOS.h"
+#include "IOS/SentryIdIOS.h"
 
 SentryLevel SentryConvertorsIOS::SentryLevelToNative(ESentryLevel level)
 {
@@ -62,4 +65,12 @@ USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
 	USentryScope* unrealScope = NewObject<USentryScope>();
 	unrealScope->InitWithNativeImpl(scopeNativeImpl);
 	return unrealScope;
+}
+
+USentryId* SentryConvertorsIOS::SentryIdToUnreal(SentryId* id)
+{
+	TSharedPtr<SentryIdIOS> idNativeImpl = MakeShareable(new SentryIdIOS(id));
+	USentryId* unrealId = NewObject<USentryId>();
+	unrealId->InitWithNativeImpl(idNativeImpl);
+	return unrealId;
 }

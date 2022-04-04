@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Android/AndroidJNI.h"
 
-#include "SentryDataTypes.h"
 #include "Interface/SentryScopeInterface.h"
 
 class SentryScopeAndroid : public ISentryScope

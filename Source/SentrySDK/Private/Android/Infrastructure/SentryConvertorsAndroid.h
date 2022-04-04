@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include "SentryDataTypes.h"
+
 #include "Android/AndroidJNI.h"
 
-class SentryScopeAndroid;
 class USentryScope;
+class USentryId;
 
 class SentryConvertorsAndroid
 {
@@ -20,4 +22,5 @@ public:
 	/** Conversions from native Java types */
 	static FString StringToUnreal(jstring string);
 	static USentryScope* SentryScopeToUnreal(jobject scope);
+	static USentryId* SentryIdToUnreal(jobject id);
 };

@@ -4,6 +4,7 @@
 #include "SentryModule.h"
 #include "SentrySettings.h"
 #include "SentryEvent.h"
+#include "SentryId.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentrySubsystemAndroid.h"
@@ -46,8 +47,7 @@ void USentrySubsystem::Initialize()
 	SubsystemNativeImpl->InitWithSettings(Settings);
 }
 
-void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
-                                     ESentryLevel Level)
+void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
 {
 	if (!SubsystemNativeImpl)
 		return;
@@ -55,34 +55,34 @@ void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Cate
 	SubsystemNativeImpl->AddBreadcrumb(Message, Category, Type, Data, Level);
 }
 
-FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
+USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 	if (!SubsystemNativeImpl)
-		return FString();
+		return nullptr;
 
 	return SubsystemNativeImpl->CaptureMessage(Message, Level);
 }
 
-FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
+USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
 	if (!SubsystemNativeImpl)
-		return FString();
+		return nullptr;
 
 	return SubsystemNativeImpl->CaptureMessage(Message, OnConfigureScope, Level);
 }
 
-FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
+USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 {
 	if (!SubsystemNativeImpl)
-		return FString();
+		return nullptr;
 
 	return SubsystemNativeImpl->CaptureEvent(Event);
 }
 
-FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
+USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
 	if (!SubsystemNativeImpl)
-		return FString();
+		return nullptr;
 
 	return SubsystemNativeImpl->CaptureEventWithScope(Event, OnConfigureScope);
 }

@@ -5,6 +5,7 @@
 #include "SentryEventAndroid.h"
 #include "SentrySettings.h"
 #include "SentryEvent.h"
+#include "SentryId.h"
 #include "Callbacks/SentryScopeCallbackAndroid.h"
 #include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
@@ -28,36 +29,44 @@ void SentrySubsystemAndroid::AddBreadcrumb(const FString& message, const FString
 		SentryConvertorsAndroid::SentryLevelToNative(level));
 }
 
-FString SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
+USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Ljava/lang/String;",
+	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Lio/sentry/protocol/SentryId;",
 		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level));
+
+	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
 
-FString SentrySubsystemAndroid::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onScopeConfigure);
 
-	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Ljava/lang/String;",
+	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Lio/sentry/protocol/SentryId;",
 		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
+		
+	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
 
-FString SentrySubsystemAndroid::CaptureEvent(USentryEvent* event)
+USentryId* SentrySubsystemAndroid::CaptureEvent(USentryEvent* event)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 
-	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureEvent", "(Lio/sentry/SentryEvent;)Ljava/lang/String;",
+	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureEvent", "(Lio/sentry/SentryEvent;)Lio/sentry/protocol/SentryId;",
 		eventAndroid->GetNativeObject());
+
+	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
 
-FString SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onScopeConfigure);
 
-	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureEventWithScope", "(Lio/sentry/SentryEvent;J)Ljava/lang/String;",
+	jobject id = SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureEventWithScope", "(Lio/sentry/SentryEvent;J)Lio/sentry/protocol/SentryId;",
 		eventAndroid->GetNativeObject(), (jlong)scopeCallback);
+
+	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }

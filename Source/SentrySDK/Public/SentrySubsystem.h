@@ -12,6 +12,7 @@
 
 class USentrySettings;
 class USentryEvent;
+class USentryId;
 class ISentrySubsystem;
 
 UCLASS()
@@ -56,7 +57,7 @@ public:
 	 * @param Level The message level.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	FString CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
+	USentryId* CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
 
 	/**
 	 * Captures the message with a configurable scope.
@@ -68,7 +69,7 @@ public:
 	 * @param Level The message level.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
-	FString CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
 
 	/**
 	 * Captures a manually created event and sends it to Sentry.
@@ -76,7 +77,7 @@ public:
 	 * @param Event The event to send to Sentry.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	FString CaptureEvent(USentryEvent* Event);
+	USentryId* CaptureEvent(USentryEvent* Event);
 
 	/**
 	 * Captures a manually created event and sends it to Sentry.
@@ -85,7 +86,7 @@ public:
 	 * @param OnConfigureScope The callback to configure the scope.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	FString CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
+	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;

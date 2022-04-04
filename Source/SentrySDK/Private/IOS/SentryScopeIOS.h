@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
-#include "SentryDataTypes.h"
 #include "Interface/SentryScopeInterface.h"
 
 @class SentryScope;
