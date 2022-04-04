@@ -6,23 +6,31 @@
 #include "SentryEvent.h"
 
 #if PLATFORM_ANDROID
-#include "Android/SentryAndroid.h"
+#include "Android/SentrySubsystemAndroid.h"
 #endif
 
 #if PLATFORM_IOS
-#include "IOS/SentryIOS.h"
+#include "IOS/SentrySubsystemIOS.h"
 #endif
 
 #if PLATFORM_WINDOWS || PLATFORM_MAC
-#include "Desktop/SentryDesktop.h"
+#include "Desktop/SentrySubsystemDesktop.h"
 #endif
 
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+#if PLATFORM_ANDROID
+	SubsystemNativeImpl = MakeShareable(new SentrySubsystemAndroid());
+#elif PLATFORM_IOS
+	SubsystemNativeImpl = MakeShareable(new SentrySubsystemIOS());
+#elif PLATFORM_WINDOWS || PLATFORM_MAC
+	SubsystemNativeImpl = MakeShareable(new SentrySubsystemDesktop());
+#endif
+
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	if(Settings->InitAutomatically)
+	if (Settings->InitAutomatically)
 	{
 		Initialize();
 	}
@@ -32,79 +40,49 @@ void USentrySubsystem::Initialize()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-#if PLATFORM_ANDROID
-	SentryAndroid::InitWithSettings(Settings);
-#elif PLATFORM_IOS
-	SentryIOS::InitWithSettings(Settings);
-#elif PLATFORM_WINDOWS || PLATFORM_MAC
-	SentryDesktop::InitWithSettings(Settings);
-#endif
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->InitWithSettings(Settings);
 }
 
 void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
-	ESentryLevel Level)
+                                     ESentryLevel Level)
 {
-#if PLATFORM_ANDROID
-	return SentryAndroid::AddBreadcrumb(Message, Category, Type, Data, Level);
-#elif PLATFORM_IOS
-	return SentryIOS::AddBreadcrumb(Message, Category, Type, Data, Level);
-#endif
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->AddBreadcrumb(Message, Category, Type, Data, Level);
 }
 
 FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
-#if PLATFORM_ANDROID
-	return SentryAndroid::CaptureMessage(Message, Level);
-#elif PLATFORM_IOS
-	return SentryIOS::CaptureMessage(Message, Level);
-#elif PLATFORM_WINDOWS || PLATFORM_MAC
-	return SentryDesktop::CaptureMessage(Message, Level);
-#else
-	return FString();
-#endif
+	if (!SubsystemNativeImpl)
+		return FString();
+
+	return SubsystemNativeImpl->CaptureMessage(Message, Level);
 }
 
 FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
-#if PLATFORM_ANDROID
-	return SentryAndroid::CaptureMessage(Message, OnConfigureScope, Level);
-#elif PLATFORM_IOS
-	return SentryIOS::CaptureMessage(Message, OnConfigureScope, Level);
-#else
-	return FString();
-#endif
+	if (!SubsystemNativeImpl)
+		return FString();
+
+	return SubsystemNativeImpl->CaptureMessage(Message, OnConfigureScope, Level);
 }
 
 FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 {
-#if PLATFORM_ANDROID
-	return SentryAndroid::CaptureEvent(Event);
-#elif PLATFORM_IOS
-	return SentryIOS::CaptureEvent(Event);
-#else
-	return FString();
-#endif
+	if (!SubsystemNativeImpl)
+		return FString();
+
+	return SubsystemNativeImpl->CaptureEvent(Event);
 }
 
 FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
-#if PLATFORM_ANDROID
-	return SentryAndroid::CaptureEventWithScope(Event, OnConfigureScope);
-#elif PLATFORM_IOS
-	return SentryIOS::CaptureEventWithScope(Event, OnConfigureScope);
-#else
-	return FString();
-#endif
-}
+	if (!SubsystemNativeImpl)
+		return FString();
 
-FString USentrySubsystem::CaptureError()
-{
-#if PLATFORM_ANDROID
-	// TODO
-	return FString();
-#elif PLATFORM_IOS
-	return SentryIOS::CaptureError();
-#else
-	return FString();
-#endif
+	return SubsystemNativeImpl->CaptureEventWithScope(Event, OnConfigureScope);
 }

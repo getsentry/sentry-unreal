@@ -7,6 +7,7 @@
 #include "Interfaces/IPluginManager.h"
 #include "Modules/ModuleManager.h"
 #include "Developer/Settings/Public/ISettingsModule.h"
+#include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "FSentryModule"
 

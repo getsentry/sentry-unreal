@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryIOS.h"
+#include "SentrySubsystemIOS.h"
 #include "SentryScopeIOS.h"
 #include "SentryEventIOS.h"
 #include "Infrastructure/SentryConvertorsIOS.h"
@@ -8,14 +8,14 @@
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>
 
-void SentryIOS::InitWithSettings(const USentrySettings* settings)
+void SentrySubsystemIOS::InitWithSettings(const USentrySettings* settings)
 {
 	[SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
 		options.dsn = settings->DsnUrl.GetNSString();
 	}];
 }
 
-void SentryIOS::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+void SentrySubsystemIOS::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
 {
 	SentryBreadcrumb* breadcrumb = [[SentryBreadcrumb alloc] init];
 
@@ -31,7 +31,7 @@ void SentryIOS::AddBreadcrumb(const FString& message, const FString& category, c
 	[SentrySDK addBreadcrumb:breadcrumb];
 }
 
-FString SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
+FString SentrySubsystemIOS::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
@@ -40,7 +40,7 @@ FString SentryIOS::CaptureMessage(const FString& message, ESentryLevel level)
 	return FString([id sentryIdString]);
 }
 
-FString SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+FString SentrySubsystemIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
@@ -50,7 +50,7 @@ FString SentryIOS::CaptureMessage(const FString& message, const FConfigureScopeD
 	return FString([id sentryIdString]);
 }
 
-FString SentryIOS::CaptureEvent(USentryEvent* event)
+FString SentrySubsystemIOS::CaptureEvent(USentryEvent* event)
 {
 	TSharedPtr<SentryEventIOS> eventIOS = StaticCastSharedPtr<SentryEventIOS>(event->GetNativeImpl());
 
@@ -58,7 +58,7 @@ FString SentryIOS::CaptureEvent(USentryEvent* event)
 	return FString([id sentryIdString]);
 }
 
-FString SentryIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+FString SentrySubsystemIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
 	TSharedPtr<SentryEventIOS> eventIOS = StaticCastSharedPtr<SentryEventIOS>(event->GetNativeImpl());
 
@@ -66,12 +66,5 @@ FString SentryIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureSc
 		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 
-	return FString([id sentryIdString]);
-}
-
-FString SentryIOS::CaptureError()
-{
-	NSError* error = [NSError errorWithDomain:@"YourErrorDomain" code:0 userInfo: nil];
-	SentryId* id = [SentrySDK captureError:error];
 	return FString([id sentryIdString]);
 }

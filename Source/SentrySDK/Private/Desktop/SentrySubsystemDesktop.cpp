@@ -1,10 +1,12 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryDesktop.h"
+#include "SentrySubsystemDesktop.h"
 
 #include "SentrySettings.h"
 #include "SentryEvent.h"
 #include "SentryModule.h"
+
+#include "Misc/Paths.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
@@ -14,7 +16,7 @@
 #include "sentry.h"
 #endif
 
-void SentryDesktop::InitWithSettings(const USentrySettings* settings)
+void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 {
 #if PLATFORM_WINDOWS
 	const FString HandlerExecutableName = TEXT("crashpad_handler.exe");
@@ -30,12 +32,12 @@ void SentryDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_init(options);
 }
 
-void SentryDesktop::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+void SentrySubsystemDesktop::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
 {
 	
 }
 
-FString SentryDesktop::CaptureMessage(const FString& message, ESentryLevel level)
+FString SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	sentry_value_t sentryEvent = sentry_value_new_message_event(SENTRY_LEVEL_INFO, NULL, TCHAR_TO_ANSI(*message));
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
@@ -44,17 +46,17 @@ FString SentryDesktop::CaptureMessage(const FString& message, ESentryLevel level
 	return FString();
 }
 
-FString SentryDesktop::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+FString SentrySubsystemDesktop::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	return FString();
 }
 
-FString SentryDesktop::CaptureEvent(USentryEvent* event)
+FString SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 {
 	return FString();
 }
 
-FString SentryDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+FString SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
 	return FString();
 }

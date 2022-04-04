@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryAndroid.h"
+#include "SentrySubsystemAndroid.h"
 #include "SentryScopeAndroid.h"
 #include "SentryEventAndroid.h"
 #include "SentrySettings.h"
@@ -9,16 +9,16 @@
 #include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
 
-const ANSICHAR* SentryAndroid::SentryJavaClassName = "com/sentry/unreal/SentryJava";
+const ANSICHAR* SentrySubsystemAndroid::SentryJavaClassName = "com/sentry/unreal/SentryJava";
 
-void SentryAndroid::InitWithSettings(const USentrySettings* settings)
+void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;)V",
 		FJavaWrapper::GameActivityThis,
 		SentryConvertorsAndroid::StringToNative(settings->DsnUrl));
 }
 
-void SentryAndroid::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+void SentrySubsystemAndroid::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "addBreadcrumb", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/HashMap;Lio/sentry/SentryLevel;)V",
 		SentryConvertorsAndroid::StringToNative(message),
@@ -28,13 +28,13 @@ void SentryAndroid::AddBreadcrumb(const FString& message, const FString& categor
 		SentryConvertorsAndroid::SentryLevelToNative(level));
 }
 
-FString SentryAndroid::CaptureMessage(const FString& message, ESentryLevel level)
+FString SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	return SentryMethodCallAndroid::CallStaticStringMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Ljava/lang/String;",
 		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level));
 }
 
-FString SentryAndroid::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+FString SentrySubsystemAndroid::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onScopeConfigure);
@@ -43,7 +43,7 @@ FString SentryAndroid::CaptureMessage(const FString& message, const FConfigureSc
 		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
 }
 
-FString SentryAndroid::CaptureEvent(USentryEvent* event)
+FString SentrySubsystemAndroid::CaptureEvent(USentryEvent* event)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 
@@ -51,7 +51,7 @@ FString SentryAndroid::CaptureEvent(USentryEvent* event)
 		eventAndroid->GetNativeObject());
 }
 
-FString SentryAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+FString SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 

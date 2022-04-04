@@ -12,6 +12,7 @@
 
 class USentrySettings;
 class USentryEvent;
+class ISentrySubsystem;
 
 UCLASS()
 class SENTRYSDK_API USentrySubsystem : public UGameInstanceSubsystem
@@ -86,6 +87,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	FString CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	FString CaptureError();
+private:
+	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 };
