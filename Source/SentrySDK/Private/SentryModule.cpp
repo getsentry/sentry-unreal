@@ -4,6 +4,8 @@
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
+#include "UObject/Package.h"
+#include "UObject/UObjectGlobals.h"
 #include "Interfaces/IPluginManager.h"
 #include "Modules/ModuleManager.h"
 #include "Developer/Settings/Public/ISettingsModule.h"
