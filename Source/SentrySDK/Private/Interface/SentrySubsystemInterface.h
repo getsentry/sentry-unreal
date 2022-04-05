@@ -10,6 +10,7 @@
 class USentrySettings;
 class USentryEvent;
 class USentryId;
+class USentryUserFeedback;
 
 class ISentrySubsystem
 {
@@ -22,4 +23,5 @@ public:
 	virtual USentryId* CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level) = 0;
 	virtual USentryId* CaptureEvent(USentryEvent* event) = 0;
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) = 0;
+	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) = 0;
 };

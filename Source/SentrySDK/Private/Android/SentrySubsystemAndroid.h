@@ -13,6 +13,7 @@ public:
 	virtual USentryId* CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level) override;
 	virtual USentryId* CaptureEvent(USentryEvent* event) override;
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) override;
+	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) override;
 
 private:
 	static const ANSICHAR* SentryJavaClassName;

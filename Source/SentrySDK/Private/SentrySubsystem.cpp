@@ -5,6 +5,7 @@
 #include "SentrySettings.h"
 #include "SentryEvent.h"
 #include "SentryId.h"
+#include "SentryUserFeedback.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentrySubsystemAndroid.h"
@@ -85,4 +86,23 @@ USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FC
 		return nullptr;
 
 	return SubsystemNativeImpl->CaptureEventWithScope(Event, OnConfigureScope);
+}
+
+void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback);
+}
+
+void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comment, const FString& Name)
+{
+	USentryUserFeedback* UserFeedback = NewObject<USentryUserFeedback>();
+	UserFeedback->Initialize(EventId);
+	UserFeedback->SetEmail(Email);
+	UserFeedback->SetComment(Comment);
+	UserFeedback->SetName(Name);
+
+	CaptureUserFeedback(UserFeedback);
 }

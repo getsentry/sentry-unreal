@@ -1,11 +1,15 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySubsystemIOS.h"
-#include "SentryScopeIOS.h"
 #include "SentryEventIOS.h"
-#include "SentrySettings.h"
+#include "SentryScopeIOS.h"
+#include "SentryUserFeedbackIOS.h"
+
 #include "SentryEvent.h"
 #include "SentryId.h"
+#include "SentrySettings.h"
+#include "SentryUserFeedback.h"
+
 #include "Infrastructure/SentryConvertorsIOS.h"
 
 #import <Foundation/Foundation.h>
@@ -70,4 +74,11 @@ USentryId* SentrySubsystemIOS::CaptureEventWithScope(USentryEvent* event, const 
 	}];
 
 	return SentryConvertorsIOS::SentryIdToUnreal(id);
+}
+
+void SentrySubsystemIOS::CaptureUserFeedback(USentryUserFeedback* userFeedback)
+{
+	TSharedPtr<SentryUserFeedbackIOS> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackIOS>(userFeedback->GetNativeImpl());
+
+	[SentrySDK captureUserFeedback:userFeedbackIOS->GetNativeObject()];
 }

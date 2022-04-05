@@ -4,6 +4,7 @@
 
 #include "SentrySettings.h"
 #include "SentryEvent.h"
+#include "SentryUserFeedback.h"
 #include "SentryModule.h"
 
 #include "Misc/Paths.h"
@@ -42,7 +43,6 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentr
 	sentry_value_t sentryEvent = sentry_value_new_message_event(SENTRY_LEVEL_INFO, NULL, TCHAR_TO_ANSI(*message));
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
 
-	// TODO Add sentry_uuid_t to FString conversion
 	return nullptr;
 }
 
@@ -59,4 +59,8 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
 	return nullptr;
+}
+
+void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)
+{
 }

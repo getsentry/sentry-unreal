@@ -1,14 +1,17 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySubsystemAndroid.h"
-#include "SentryScopeAndroid.h"
 #include "SentryEventAndroid.h"
-#include "SentrySettings.h"
+#include "SentryUserFeedbackAndroid.h"
+
 #include "SentryEvent.h"
 #include "SentryId.h"
+#include "SentrySettings.h"
+#include "SentryUserFeedback.h"
+
 #include "Callbacks/SentryScopeCallbackAndroid.h"
-#include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryMethodCallAndroid.h"
 
 const ANSICHAR* SentrySubsystemAndroid::SentryJavaClassName = "com/sentry/unreal/SentryJava";
 
@@ -69,4 +72,12 @@ USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, co
 		eventAndroid->GetNativeObject(), (jlong)scopeCallback);
 
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
+}
+
+void SentrySubsystemAndroid::CaptureUserFeedback(USentryUserFeedback* userFeedback)
+{
+	TSharedPtr<SentryUserFeedbackAndroid> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackAndroid>(userFeedback->GetNativeImpl());
+
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "captureUserFeedback", "(Lio/sentry/UserFeedback;)V",
+		userFeedbackIOS->GetNativeObject());
 }

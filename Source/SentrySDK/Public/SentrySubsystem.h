@@ -13,6 +13,7 @@
 class USentrySettings;
 class USentryEvent;
 class USentryId;
+class USentryUserFeedback;
 class ISentrySubsystem;
 
 UCLASS()
@@ -87,6 +88,25 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
+
+	/**
+	 * Captures a user feedback.
+	 *
+	 * @param UserFeedback The user feedback to send to Sentry.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
+
+	/**
+	 * Captures a user feedback.
+	 *
+	 * @param EventId The event Id.
+	 * @param Email The user email.
+	 * @param Comment The user comments.
+	 * @param Name The optional username.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comment, const FString& Name);
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
