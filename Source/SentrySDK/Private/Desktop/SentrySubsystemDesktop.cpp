@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySubsystemDesktop.h"
+#include "SentryEventDesktop.h"
 
 #include "SentrySettings.h"
 #include "SentryEvent.h"
@@ -46,7 +47,7 @@ void SentrySubsystemDesktop::AddBreadcrumb(const FString& message, const FString
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), NULL, TCHAR_TO_ANSI(*message));
+	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_ANSI(*message));
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
@@ -58,7 +59,10 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, const 
 
 USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 {
-	return nullptr;
+	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event->GetNativeImpl());
+
+	sentry_uuid_t id = sentry_capture_event(eventDesktop->GetNativeObject());
+	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
 USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
