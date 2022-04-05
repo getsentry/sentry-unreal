@@ -16,12 +16,11 @@ import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
-import io.sentry.SentryOptions;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
 import io.sentry.protocol.SentryId;
 
-public class SentryJava {
+public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 
 	public static void init(Activity activity, final String dsnUrl) {
@@ -46,10 +45,6 @@ public class SentryJava {
 		Sentry.addBreadcrumb(breadcrumb);
 	}
 
-	public static SentryId captureMessage(final String message, final SentryLevel level) {
-		return Sentry.captureMessage(message, level);
-	}
-
 	public static SentryId captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
 		// TODO Find another solution for returning ID since CountDownLatch blocks game thread
 		final CountDownLatch doneSignal = new CountDownLatch(1);
@@ -64,10 +59,6 @@ public class SentryJava {
 		});
 		doneSignal.await();
 		return Sentry.getLastEventId();
-	}
-
-	public static SentryId captureEvent(final SentryEvent event) {
-		return Sentry.captureEvent(event);
 	}
 
 	public static SentryId captureEventWithScope(final SentryEvent event, final long callback) throws InterruptedException {

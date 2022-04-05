@@ -17,4 +17,5 @@ public:
 
 private:
 	static const ANSICHAR* SentryJavaClassName;
+	static const ANSICHAR* SentryBridgeJavaClassName;
 };

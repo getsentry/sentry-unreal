@@ -5,7 +5,7 @@
 
 #include "Android/AndroidJNI.h"
 
-JNI_METHOD void Java_com_sentry_unreal_SentryJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong objAddr, jobject scope)
+JNI_METHOD void Java_com_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong objAddr, jobject scope)
 {
 	USentryScopeCallbackAndroid* callback = reinterpret_cast<USentryScopeCallbackAndroid*>(objAddr);
 
