@@ -7,15 +7,10 @@
 #include "SentryUserFeedback.h"
 #include "SentryModule.h"
 
-#include "Misc/Paths.h"
+#include "Convenience/SentryInclude.h"
+#include "Infrastructure/SentryConvertorsDesktop.h"
 
-#if PLATFORM_WINDOWS
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include "sentry.h"
-#include "Windows/HideWindowsPlatformTypes.h"
-#elif PLATFORM_MAC
-#include "sentry.h"
-#endif
+#include "Misc/Paths.h"
 
 void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 {
@@ -35,15 +30,25 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 void SentrySubsystemDesktop::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
 {
-	
+	sentry_value_t sentryBreadcrumb = sentry_value_new_breadcrumb(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
+
+	if (!category.IsEmpty())
+		sentry_value_set_by_key(sentryBreadcrumb, "category", sentry_value_new_string(TCHAR_TO_ANSI(*category)));
+
+	FString levelStr = SentryConvertorsDesktop::SentryLevelToString(level);
+	if (!levelStr.IsEmpty())
+		sentry_value_set_by_key(sentryBreadcrumb, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
+
+	sentry_value_set_by_key(sentryBreadcrumb, "data", SentryConvertorsDesktop::StringMapToNative(data));
+
+	sentry_add_breadcrumb(sentryBreadcrumb);
 }
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	sentry_value_t sentryEvent = sentry_value_new_message_event(SENTRY_LEVEL_INFO, NULL, TCHAR_TO_ANSI(*message));
+	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), NULL, TCHAR_TO_ANSI(*message));
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
-
-	return nullptr;
+	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)

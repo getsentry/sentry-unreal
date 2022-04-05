@@ -29,7 +29,7 @@ void SentrySubsystemIOS::AddBreadcrumb(const FString& message, const FString& ca
 	breadcrumb.message = message.GetNSString();
 	breadcrumb.level = SentryConvertorsIOS::SentryLevelToNative(level);
 	breadcrumb.data = SentryConvertorsIOS::StringMapToNative(data);
-	
+
 	if(!category.IsEmpty())
 		breadcrumb.category = category.GetNSString();
 	if(!type.IsEmpty())
