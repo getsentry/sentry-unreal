@@ -102,11 +102,11 @@ public:
 	 *
 	 * @param EventId The event Id.
 	 * @param Email The user email.
-	 * @param Comment The user comments.
+	 * @param Comments The user comments.
 	 * @param Name The optional username.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comment, const FString& Name);
+	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name);
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;

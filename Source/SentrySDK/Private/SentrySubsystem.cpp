@@ -96,12 +96,12 @@ void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback);
 }
 
-void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comment, const FString& Name)
+void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name)
 {
 	USentryUserFeedback* UserFeedback = NewObject<USentryUserFeedback>();
 	UserFeedback->Initialize(EventId);
 	UserFeedback->SetEmail(Email);
-	UserFeedback->SetComment(Comment);
+	UserFeedback->SetComment(Comments);
 	UserFeedback->SetName(Name);
 
 	CaptureUserFeedback(UserFeedback);
