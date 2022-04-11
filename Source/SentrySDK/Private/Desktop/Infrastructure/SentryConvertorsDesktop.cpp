@@ -5,6 +5,9 @@
 
 #include "Desktop/SentryIdDesktop.h"
 
+#include "UObject/Package.h"
+#include "UObject/UObjectGlobals.h"
+
 sentry_level_e SentryConvertorsDesktop::SentryLevelToNative(ESentryLevel level)
 {
 	sentry_level_e desktopLevel = {};
