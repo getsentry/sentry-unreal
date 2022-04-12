@@ -54,5 +54,5 @@ void SentryEventAndroid::SetLevel(ESentryLevel level)
 ESentryLevel SentryEventAndroid::GetLevel() const
 {
 	jobject level = SentryMethodCallAndroid::CallObjectMethod(EventAndroid, "getLevel", "()Lio/sentry/SentryLevel;");
-	return SentryConvertorsAndroid::SentryLevelToNative(level);
+	return SentryConvertorsAndroid::SentryLevelToUnreal(level);
 }
