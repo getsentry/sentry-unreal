@@ -16,7 +16,9 @@ public:
 	SentryEvent* GetNativeObject();
 
 	virtual void SetMessage(const FString& message) override;
+	virtual FString GetMessage() const override;
 	virtual void SetLevel(ESentryLevel level) override;
+	virtual ESentryLevel GetLevel() const override;
 
 private:
 	SentryEvent* EventIOS;

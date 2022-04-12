@@ -39,12 +39,28 @@ void USentryEvent::SetMessage(const FString& Message)
 	EventNativeImpl->SetMessage(Message);
 }
 
+FString USentryEvent::GetMessage() const
+{
+	if(!EventNativeImpl)
+		return FString();
+
+	return EventNativeImpl->GetMessage();
+}
+
 void USentryEvent::SetLevel(ESentryLevel Level)
 {
 	if (!EventNativeImpl)
 		return;
 
 	EventNativeImpl->SetLevel(Level);
+}
+
+ESentryLevel USentryEvent::GetLevel() const
+{
+	if(!EventNativeImpl)
+		return ESentryLevel::Debug;
+
+	return EventNativeImpl->GetLevel();
 }
 
 void USentryEvent::InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl)

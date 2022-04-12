@@ -59,6 +59,34 @@ NSArray* SentryConvertorsIOS::StringArrayToNative(const TArray<FString>& array)
 	return arr;
 }
 
+ESentryLevel SentryConvertorsIOS::SentryLevelToUnreal(SentryLevel level)
+{
+	ESentryLevel unrealLevel = ESentryLevel::Debug;
+
+	switch (level)
+	{
+	case kSentryLevelDebug:
+		unrealLevel = ESentryLevel::Debug;
+		break;
+	case kSentryLevelInfo:
+		unrealLevel = ESentryLevel::Info;
+		break;
+	case kSentryLevelWarning:
+		unrealLevel = ESentryLevel::Warning;
+		break;
+	case kSentryLevelError:
+		unrealLevel = ESentryLevel::Error;
+		break;
+	case kSentryLevelFatal:
+		unrealLevel = ESentryLevel::Fatal;
+		break;
+	default:
+		NSLog(@"Unknown sentry level value used!");
+	}
+
+	return unrealLevel;
+}
+
 USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
 {
 	TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS(scope));

@@ -18,6 +18,7 @@ public:
 	static NSArray* StringArrayToNative(const TArray<FString>& array);
 
 	/** Conversions from native iOS types */
+	static ESentryLevel SentryLevelToUnreal(SentryLevel level);
 	static USentryScope* SentryScopeToUnreal(SentryScope* scope);
 	static USentryId* SentryIdToUnreal(SentryId* id);
 };

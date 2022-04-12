@@ -46,6 +46,18 @@ sentry_value_t SentryConvertorsDesktop::StringMapToNative(const TMap<FString, FS
 	return sentryObject;
 }
 
+ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
+{
+	FString levelStr = FString(sentry_value_as_string(level));
+
+	UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("ESentryLevel"), true);
+	if (!Enum)
+	{
+		return ESentryLevel::Debug;
+	}
+	return static_cast<ESentryLevel>(Enum->GetValueByName(FName(*levelStr)));
+}
+
 USentryId* SentryConvertorsDesktop::SentryIdToUnreal(sentry_uuid_t id)
 {
 	TSharedPtr<SentryIdDesktop> idNativeImpl = MakeShareable(new SentryIdDesktop(id));

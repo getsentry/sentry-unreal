@@ -39,8 +39,20 @@ void SentryEventAndroid::SetMessage(const FString& message)
 		SentryConvertorsAndroid::SentryMessageToNative(message));
 }
 
+FString SentryEventAndroid::GetMessage() const
+{
+	jobject message = SentryMethodCallAndroid::CallObjectMethod(EventAndroid, "getMessage", "()Lio/sentry/protocol/Message;");
+	return SentryConvertorsAndroid::SentryMessageToUnreal(message);
+}
+
 void SentryEventAndroid::SetLevel(ESentryLevel level)
 {
 	SentryMethodCallAndroid::CallVoidMethod(EventAndroid, "setLevel", "(Lio/sentry/SentryLevel;)V",
 		SentryConvertorsAndroid::SentryLevelToNative(level));
+}
+
+ESentryLevel SentryEventAndroid::GetLevel() const
+{
+	jobject level = SentryMethodCallAndroid::CallObjectMethod(EventAndroid, "getLevel", "()Lio/sentry/SentryLevel;");
+	return SentryConvertorsAndroid::SentryLevelToNative(level);
 }

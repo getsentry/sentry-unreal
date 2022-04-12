@@ -28,19 +28,19 @@ jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 	switch (level)
 	{
 	case ESentryLevel::Debug:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField);;
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField);
 		break;
 	case ESentryLevel::Info:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField);;
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField);
 		break;
 	case ESentryLevel::Warning:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField);;
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField);
 		break;
 	case ESentryLevel::Error:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField);;
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField);
 		break;
 	case ESentryLevel::Fatal:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField);;
+		nativeLevel = Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField);
 		break;
 	}
 
@@ -114,6 +114,46 @@ jobject SentryConvertorsAndroid::StringMapToNative(const TMap<FString, FString>&
 	}
 
 	return hashMap;
+}
+
+ESentryLevel SentryConvertorsAndroid::SentryLevelToNative(jobject level)
+{
+	ESentryLevel unrealLevel = ESentryLevel::Debug;
+
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+
+	jclass levelEnumClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/SentryLevel");
+
+	jfieldID debugEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "DEBUG", "Lio/sentry/SentryLevel;");
+	jfieldID infoEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "INFO", "Lio/sentry/SentryLevel;");
+	jfieldID warningEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "WARNING", "Lio/sentry/SentryLevel;");
+	jfieldID errorEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "ERROR", "Lio/sentry/SentryLevel;");
+	jfieldID fatalEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "FATAL", "Lio/sentry/SentryLevel;");
+
+	if(level == Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField))
+		unrealLevel = ESentryLevel::Debug;
+	if(level == Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField))
+		unrealLevel = ESentryLevel::Info;
+	if(level == Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField))
+		unrealLevel = ESentryLevel::Warning;
+	if(level == Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField))
+		unrealLevel = ESentryLevel::Error;
+	if(level == Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField))
+		unrealLevel = ESentryLevel::Fatal;
+
+	return unrealLevel;
+}
+
+FString SentryConvertorsAndroid::SentryMessageToUnreal(jobject message)
+{
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+
+	jclass messageClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/protocol/Message");
+	jmethodID getMessageMethod = Env->GetMethodID(messageClass, "getMessage", "()Ljava/lang/String;");
+
+	jstring messageStr = static_cast<jstring>(Env->CallObjectMethod(message, getMessageMethod));
+
+	return StringToUnreal(messageStr);
 }
 
 FString SentryConvertorsAndroid::StringToUnreal(jstring string)

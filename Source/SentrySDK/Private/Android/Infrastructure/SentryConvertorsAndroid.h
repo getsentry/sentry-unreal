@@ -20,6 +20,8 @@ public:
 	static jobject StringMapToNative(const TMap<FString, FString>& stringMap);
 
 	/** Conversions from native Java types */
+	static ESentryLevel SentryLevelToNative(jobject level);
+	static FString SentryMessageToUnreal(jobject message);
 	static FString StringToUnreal(jstring string);
 	static USentryScope* SentryScopeToUnreal(jobject scope);
 	static USentryId* SentryIdToUnreal(jobject id);
