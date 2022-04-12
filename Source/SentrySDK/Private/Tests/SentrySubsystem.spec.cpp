@@ -2,7 +2,10 @@
 
 #include "SentryEvent.h"
 #include "SentryModule.h"
+
+#if PLATFORM_WINDOWS || PLATFORM_MAC
 #include "Desktop/SentrySubsystemDesktop.h"
+#endif
 
 #include "Misc/AutomationTest.h"
 
@@ -16,7 +19,10 @@ void SentrySubsystemSpec::Define()
 {
 	BeforeEach([this]()
 	{
+#if PLATFORM_WINDOWS || PLATFORM_MAC
+		// Subsystem implementation for desktop is used in order to avoid unnecessary complications with proper USentrySubsystem instantiation 
 		SentrySubsystemDesktopImpl = MakeShareable(new SentrySubsystemDesktop());
+#endif
 
 		const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 		SentrySubsystemDesktopImpl->InitWithSettings(Settings);
