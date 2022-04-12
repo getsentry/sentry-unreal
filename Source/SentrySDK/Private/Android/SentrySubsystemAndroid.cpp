@@ -41,7 +41,7 @@ USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentr
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onScopeConfigure);

@@ -69,7 +69,7 @@ USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, con
 	if (!SubsystemNativeImpl)
 		return nullptr;
 
-	return SubsystemNativeImpl->CaptureMessage(Message, OnConfigureScope, Level);
+	return SubsystemNativeImpl->CaptureMessageWithScope(Message, OnConfigureScope, Level);
 }
 
 USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)

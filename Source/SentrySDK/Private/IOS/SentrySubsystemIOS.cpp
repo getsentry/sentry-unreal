@@ -47,7 +47,7 @@ USentryId* SentrySubsystemIOS::CaptureMessage(const FString& message, ESentryLev
 	return SentryConvertorsIOS::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemIOS::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemIOS::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];

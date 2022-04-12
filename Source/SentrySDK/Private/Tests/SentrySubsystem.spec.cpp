@@ -39,7 +39,7 @@ void SentrySubsystemSpec::Define()
 		It("should always return null if scoped version used", [this]()
 		{
 			const FConfigureScopeDelegate testDelegate;
-			const USentryId* eventId = SentrySubsystemDesktopImpl->CaptureMessage(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
+			const USentryId* eventId = SentrySubsystemDesktopImpl->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
 			TestNull("Event ID is null", eventId);
 		});
 	});

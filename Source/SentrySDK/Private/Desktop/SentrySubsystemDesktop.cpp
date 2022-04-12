@@ -2,6 +2,7 @@
 
 #include "SentrySubsystemDesktop.h"
 #include "SentryEventDesktop.h"
+#include "SentryDefines.h"
 
 #include "SentrySettings.h"
 #include "SentryEvent.h"
@@ -52,8 +53,9 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentr
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
+	UE_LOG(LogSentrySdk, Warning, TEXT("CaptureMessageWithScope method is not supported for the current platform."));
 	return nullptr;
 }
 
@@ -67,9 +69,11 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 
 USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
+	UE_LOG(LogSentrySdk, Warning, TEXT("CaptureEventWithScope method is not supported for the current platform."));
 	return nullptr;
 }
 
 void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)
 {
+	UE_LOG(LogSentrySdk, Warning, TEXT("CaptureUserFeedback method is not supported for the current platform."));
 }
