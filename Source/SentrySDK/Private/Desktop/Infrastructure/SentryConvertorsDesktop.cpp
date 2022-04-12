@@ -2,6 +2,7 @@
 
 #include "SentryConvertorsDesktop.h"
 #include "SentryId.h"
+#include "SentryDefines.h"
 
 #include "Desktop/SentryIdDesktop.h"
 
@@ -29,6 +30,8 @@ sentry_level_e SentryConvertorsDesktop::SentryLevelToNative(ESentryLevel level)
 	case ESentryLevel::Fatal:
 		desktopLevel = SENTRY_LEVEL_FATAL;
 		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
 	}
 
 	return desktopLevel;
@@ -53,6 +56,7 @@ ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
 	UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("ESentryLevel"), true);
 	if (!Enum)
 	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
 		return ESentryLevel::Debug;
 	}
 	return static_cast<ESentryLevel>(Enum->GetValueByName(FName(*levelStr)));

@@ -3,6 +3,7 @@
 #include "SentryConvertorsAndroid.h"
 #include "SentryScope.h"
 #include "SentryId.h"
+#include "SentryDefines.h"
 
 #include "Android/SentryScopeAndroid.h"
 #include "Android/SentryIdAndroid.h"
@@ -42,6 +43,8 @@ jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 	case ESentryLevel::Fatal:
 		nativeLevel = Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField);
 		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Null will be returned."));
 	}
 
 	return nativeLevel;
@@ -131,17 +134,18 @@ ESentryLevel SentryConvertorsAndroid::SentryLevelToNative(jobject level)
 	jfieldID fatalEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "FATAL", "Lio/sentry/SentryLevel;");
 
 	if(level == Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField))
-		unrealLevel = ESentryLevel::Debug;
+		return ESentryLevel::Debug;
 	if(level == Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField))
-		unrealLevel = ESentryLevel::Info;
+		return ESentryLevel::Info;
 	if(level == Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField))
-		unrealLevel = ESentryLevel::Warning;
+		return ESentryLevel::Warning;
 	if(level == Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField))
-		unrealLevel = ESentryLevel::Error;
+		return ESentryLevel::Error;
 	if(level == Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField))
-		unrealLevel = ESentryLevel::Fatal;
+		return ESentryLevel::Fatal;
 
-	return unrealLevel;
+	UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
+	return ESentryLevel::Debug;
 }
 
 FString SentryConvertorsAndroid::SentryMessageToUnreal(jobject message)

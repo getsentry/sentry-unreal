@@ -3,6 +3,7 @@
 #include "SentryConvertorsIOS.h"
 #include "SentryScope.h"
 #include "SentryId.h"
+#include "SentryDefines.h"
 
 #include "IOS/SentryScopeIOS.h"
 #include "IOS/SentryIdIOS.h"
@@ -29,7 +30,7 @@ SentryLevel SentryConvertorsIOS::SentryLevelToNative(ESentryLevel level)
 		nativeLevel = kSentryLevelFatal;
 		break;
 	default:
-		NSLog(@"Unknown sentry level value used!");
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
 	}
 
 	return nativeLevel;
@@ -81,7 +82,7 @@ ESentryLevel SentryConvertorsIOS::SentryLevelToUnreal(SentryLevel level)
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
-		NSLog(@"Unknown sentry level value used!");
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
 	}
 
 	return unrealLevel;
