@@ -19,6 +19,7 @@ public:
 
 	/** Conversions from native iOS types */
 	static ESentryLevel SentryLevelToUnreal(SentryLevel level);
+	static TMap<FString, FString> StringMapToUnreal(NSDictionary* dict);
 	static USentryScope* SentryScopeToUnreal(SentryScope* scope);
 	static USentryId* SentryIdToUnreal(SentryId* id);
 };

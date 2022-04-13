@@ -88,6 +88,18 @@ ESentryLevel SentryConvertorsIOS::SentryLevelToUnreal(SentryLevel level)
 	return unrealLevel;
 }
 
+TMap<FString, FString> SentryConvertorsIOS::StringMapToUnreal(NSDictionary* dict)
+{
+	TMap<FString, FString> map;
+
+	for(id key in dict)
+	{
+		map.Add(FString(key), FString(dict[key]));
+	}
+
+	return map;
+}
+
 USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
 {
 	TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS(scope));
