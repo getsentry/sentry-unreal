@@ -25,4 +25,5 @@ public:
 	static FString StringToUnreal(jstring string);
 	static USentryScope* SentryScopeToUnreal(jobject scope);
 	static USentryId* SentryIdToUnreal(jobject id);
+	static TMap<FString, FString> StringMapToUnreal(jobject stringMap);
 };

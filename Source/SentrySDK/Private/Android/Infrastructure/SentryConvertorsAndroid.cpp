@@ -17,7 +17,7 @@ jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 	jobject nativeLevel;
 
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
-	
+
 	jclass levelEnumClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/SentryLevel");
 
 	jfieldID debugEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "DEBUG", "Lio/sentry/SentryLevel;");
@@ -189,4 +189,44 @@ USentryId* SentryConvertorsAndroid::SentryIdToUnreal(jobject id)
 	USentryId* unrealId = NewObject<USentryId>();
 	unrealId->InitWithNativeImpl(idNativeImpl);
 	return unrealId;
+}
+
+TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)
+{
+	TMap<FString, FString> result;
+
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+
+	jclass mapClass = Env->FindClass("java/util/HashMap");
+	jmethodID entrySetMethod = Env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
+	jobject set = Env->CallObjectMethod(map, entrySetMethod);
+
+	jclass setClass = Env->FindClass("java/util/Set");
+	jmethodID iteratorMethod = Env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
+	jobject iter = Env->CallObjectMethod(set, iteratorMethod);
+	
+	jclass iteratorClass = Env->FindClass("java/util/Iterator");
+	jmethodID hasNextMethod = Env->GetMethodID(iteratorClass, "hasNext", "()Z");
+	jmethodID nextMethod = Env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
+	
+	jclass entryClass = Env->FindClass("java/util/Map$Entry");
+	jmethodID getKeyMethod = Env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
+	jmethodID getValueMethod = Env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
+	
+	while (Env->CallBooleanMethod(iter, hasNextMethod))
+	{
+		jobject entry = Env->CallObjectMethod(iter, nextMethod);
+
+		jstring javaKey = static_cast<jstring>(Env->CallObjectMethod(entry, getKeyMethod));
+		jstring javaValue = static_cast<jstring>(Env->CallObjectMethod(entry, getValueMethod));
+
+		FString Key = StringToUnreal(javaKey);
+		FString Value = StringToUnreal(javaValue);
+
+		result.Add(Key, Value);
+
+		Env->DeleteLocalRef(entry);
+	}
+
+	return result;
 }
