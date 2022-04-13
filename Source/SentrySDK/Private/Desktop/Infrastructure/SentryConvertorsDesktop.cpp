@@ -70,6 +70,16 @@ USentryId* SentryConvertorsDesktop::SentryIdToUnreal(sentry_uuid_t id)
 	return unrealId;
 }
 
+TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t map)
+{
+	TMap<FString, FString> unrealMap;
+
+	// TODO Add implementation. Parsing a Json returned by sentry_value_to_json can be a good solution here.
+	UE_LOG(LogSentrySdk, Warning, TEXT("StringMapToUnreal method is not supported for the current platform."));
+
+	return unrealMap;
+}
+
 FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
 {
 	const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("ESentryLevel"), true);

@@ -18,6 +18,7 @@ public:
 	/** Conversions from native desktop (Windows/Mac) types */
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);
 	static USentryId* SentryIdToUnreal(sentry_uuid_t id);
+	static TMap<FString, FString> StringMapToUnreal(sentry_value_t map);
 
 	/** Other conversions */
 	static FString SentryLevelToString(ESentryLevel level);
