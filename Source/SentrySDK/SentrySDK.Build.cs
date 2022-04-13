@@ -1,8 +1,13 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 using System.IO;
-using Tools.DotNETCommon;
 using UnrealBuildTool;
+
+#if UE_5_0_OR_LATER
+using EpicGames.Core;
+#else
+using Tools.DotNETCommon;
+#endif
 
 public class SentrySDK : ModuleRules
 {
