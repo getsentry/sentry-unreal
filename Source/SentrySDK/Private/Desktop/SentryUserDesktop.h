@@ -13,6 +13,8 @@ public:
 	SentryUserDesktop(sentry_value_t user);
 	virtual ~SentryUserDesktop() override;
 
+	sentry_value_t GetNativeObject();
+
 	virtual void SetEmail(const FString& email) override;
 	virtual FString GetEmail() const override;
 	virtual void SetId(const FString& id) override;

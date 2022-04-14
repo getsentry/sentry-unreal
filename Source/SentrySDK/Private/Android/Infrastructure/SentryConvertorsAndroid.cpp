@@ -197,7 +197,7 @@ TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)
 
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 
-	jclass mapClass = Env->FindClass("java/util/HashMap");
+	jclass mapClass = Env->FindClass("java/util/Map");
 	jmethodID entrySetMethod = Env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
 	jobject set = Env->CallObjectMethod(map, entrySetMethod);
 

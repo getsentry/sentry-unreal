@@ -14,4 +14,5 @@ public:
 	virtual USentryId* CaptureEvent(USentryEvent* event) override;
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) override;
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) override;
+	virtual void SetUser(USentryUser* user) override;
 };

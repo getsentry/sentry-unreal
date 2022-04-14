@@ -22,6 +22,11 @@ SentryUserDesktop::~SentryUserDesktop()
 	// Put custom destructor logic here if needed
 }
 
+sentry_value_t SentryUserDesktop::GetNativeObject()
+{
+	return UserDesktop;
+}
+
 void SentryUserDesktop::SetEmail(const FString& email)
 {
 	sentry_value_set_by_key(UserDesktop, "email", sentry_value_new_string(TCHAR_TO_ANSI(*email)));

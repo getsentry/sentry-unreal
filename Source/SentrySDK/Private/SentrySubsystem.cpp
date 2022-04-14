@@ -106,3 +106,11 @@ void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const F
 
 	CaptureUserFeedback(UserFeedback);
 }
+
+void USentrySubsystem::SetUser(USentryUser* User)
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->SetUser(User);
+}

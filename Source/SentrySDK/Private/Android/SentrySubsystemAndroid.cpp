@@ -3,11 +3,13 @@
 #include "SentrySubsystemAndroid.h"
 #include "SentryEventAndroid.h"
 #include "SentryUserFeedbackAndroid.h"
+#include "SentryUserAndroid.h"
 
 #include "SentryEvent.h"
 #include "SentryId.h"
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
+#include "SentryUser.h"
 
 #include "Callbacks/SentryScopeCallbackAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
@@ -77,8 +79,16 @@ USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, co
 
 void SentrySubsystemAndroid::CaptureUserFeedback(USentryUserFeedback* userFeedback)
 {
-	TSharedPtr<SentryUserFeedbackAndroid> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackAndroid>(userFeedback->GetNativeImpl());
+	TSharedPtr<SentryUserFeedbackAndroid> userFeedbackAndroid = StaticCastSharedPtr<SentryUserFeedbackAndroid>(userFeedback->GetNativeImpl());
 
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "captureUserFeedback", "(Lio/sentry/UserFeedback;)V",
-		userFeedbackIOS->GetNativeObject());
+		userFeedbackAndroid->GetNativeObject());
+}
+
+void SentrySubsystemAndroid::SetUser(USentryUser* user)
+{
+	TSharedPtr<SentryUserAndroid> userAndroid = StaticCastSharedPtr<SentryUserAndroid>(user->GetNativeImpl());
+
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "setUser", "(Lio/sentry/protocol/User;)V",
+		userAndroid->GetNativeObject());
 }

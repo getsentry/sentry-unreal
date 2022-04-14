@@ -11,6 +11,7 @@ class USentrySettings;
 class USentryEvent;
 class USentryId;
 class USentryUserFeedback;
+class USentryUser;
 
 class ISentrySubsystem
 {
@@ -24,4 +25,5 @@ public:
 	virtual USentryId* CaptureEvent(USentryEvent* event) = 0;
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) = 0;
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) = 0;
+	virtual void SetUser(USentryUser* user) = 0;
 };

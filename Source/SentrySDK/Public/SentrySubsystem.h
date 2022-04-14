@@ -14,6 +14,7 @@ class USentrySettings;
 class USentryEvent;
 class USentryId;
 class USentryUserFeedback;
+class USentryUser;
 class ISentrySubsystem;
 
 UCLASS()
@@ -107,6 +108,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name);
+
+	/**
+	 * Sets a user for the current scope.
+	 *
+	 * @param User The user.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetUser(USentryUser* User);
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;

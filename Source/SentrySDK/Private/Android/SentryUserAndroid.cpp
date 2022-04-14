@@ -27,15 +27,20 @@ SentryUserAndroid::~SentryUserAndroid()
 	Env->DeleteGlobalRef(UserAndroid);
 }
 
+jobject SentryUserAndroid::GetNativeObject()
+{
+	return UserAndroid;
+}
+
 void SentryUserAndroid::SetEmail(const FString& email)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "getEmail", "(Ljava/lang/String;)V",
+	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setEmail", "(Ljava/lang/String;)V",
 		SentryConvertorsAndroid::StringToNative(email));
 }
 
 FString SentryUserAndroid::GetEmail() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserAndroid, "getMessage", "()Ljava/lang/String;");
+	return SentryMethodCallAndroid::CallStringMethod(UserAndroid, "getEmail", "()Ljava/lang/String;");
 }
 
 void SentryUserAndroid::SetId(const FString& id)

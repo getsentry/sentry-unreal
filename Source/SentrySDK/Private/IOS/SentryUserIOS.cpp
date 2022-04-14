@@ -22,6 +22,11 @@ SentryUserIOS::~SentryUserIOS()
 	// Put custom destructor logic here if needed
 }
 
+SentryUser* SentryUserIOS::GetNativeObject()
+{
+	return UserIOS;
+}
+
 void SentryUserIOS::SetEmail(const FString& email)
 {
 	UserIOS.email = email.GetNSString();

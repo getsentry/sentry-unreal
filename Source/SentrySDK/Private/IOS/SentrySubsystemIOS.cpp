@@ -3,12 +3,14 @@
 #include "SentrySubsystemIOS.h"
 #include "SentryEventIOS.h"
 #include "SentryScopeIOS.h"
+#include "SentryUserIOS.h"
 #include "SentryUserFeedbackIOS.h"
 
 #include "SentryEvent.h"
 #include "SentryId.h"
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
+#include "SentryUser.h"
 
 #include "Infrastructure/SentryConvertorsIOS.h"
 
@@ -81,4 +83,11 @@ void SentrySubsystemIOS::CaptureUserFeedback(USentryUserFeedback* userFeedback)
 	TSharedPtr<SentryUserFeedbackIOS> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackIOS>(userFeedback->GetNativeImpl());
 
 	[SentrySDK captureUserFeedback:userFeedbackIOS->GetNativeObject()];
+}
+
+void SentrySubsystemIOS::SetUser(USentryUser* user)
+{
+	TSharedPtr<SentryUserIOS> userIOS = StaticCastSharedPtr<SentryUserIOS>(user->GetNativeImpl());
+
+	[SentrySDK setUser:userIOS->GetNativeObject()];
 }
