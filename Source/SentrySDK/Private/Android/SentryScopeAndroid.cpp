@@ -42,6 +42,17 @@ void SentryScopeAndroid::SetTagValue(const FString& key, const FString& value)
 		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
 }
 
+FString SentryScopeAndroid::GetTagValue(const FString& key) const
+{
+	TMap<FString, FString> tags = GetTags();
+	FString* tagValue = tags.Find(key);
+
+	if (!tagValue)
+		return FString();
+
+	return *tagValue;
+}
+
 void SentryScopeAndroid::RemoveTag(const FString& key)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "removeTag", "(Ljava/lang/String;)V",
@@ -56,14 +67,30 @@ void SentryScopeAndroid::SetTags(const TMap<FString, FString>& tags)
 	}
 }
 
+TMap<FString, FString> SentryScopeAndroid::GetTags() const
+{
+	jobject tags = SentryMethodCallAndroid::CallObjectMethod(ScopeAndroid, "getTags", "()Ljava/util/Map;");
+	return SentryConvertorsAndroid::StringMapToUnreal(tags);
+}
+
 void SentryScopeAndroid::SetDist(const FString& dist)
 {
 	SetTagValue("dist", dist);
 }
 
+FString SentryScopeAndroid::GetDist() const
+{
+	return GetTagValue("dist");
+}
+
 void SentryScopeAndroid::SetEnvironment(const FString& environment)
 {
 	SetTagValue("environment", environment);
+}
+
+FString SentryScopeAndroid::GetEnvironment() const
+{
+	return GetTagValue("environment");
 }
 
 void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
@@ -72,10 +99,22 @@ void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
 		SentryConvertorsAndroid::StringArrayToNative(fingerprint));
 }
 
+TArray<FString> SentryScopeAndroid::GetFingerprint() const
+{
+	jobject fingerprint = SentryMethodCallAndroid::CallObjectMethod(ScopeAndroid, "getFingerprint", "()Ljava/util/List;");
+	return SentryConvertorsAndroid::StringListToUnreal(fingerprint);
+}
+
 void SentryScopeAndroid::SetLevel(ESentryLevel level)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setLevel", "(Lio/sentry/SentryLevel;)V",
 		SentryConvertorsAndroid::SentryLevelToNative(level));
+}
+
+ESentryLevel SentryScopeAndroid::GetLevel() const
+{
+	jobject level = SentryMethodCallAndroid::CallObjectMethod(ScopeAndroid, "getLevel", "()Lio/sentry/SentryLevel;");
+	return SentryConvertorsAndroid::SentryLevelToUnreal(level);
 }
 
 void SentryScopeAndroid::Clear()

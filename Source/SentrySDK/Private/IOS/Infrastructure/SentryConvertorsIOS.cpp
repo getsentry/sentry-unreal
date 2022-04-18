@@ -10,7 +10,7 @@
 
 SentryLevel SentryConvertorsIOS::SentryLevelToNative(ESentryLevel level)
 {
-	SentryLevel nativeLevel;
+	SentryLevel nativeLevel = kSentryLevelDebug;
 
 	switch (level)
 	{
@@ -100,6 +100,15 @@ TMap<FString, FString> SentryConvertorsIOS::StringMapToUnreal(NSDictionary* dict
 	return map;
 }
 
+TArray<FString> SentryConvertorsIOS::StringArrayToUnreal(NSArray* array)
+{
+	TArray<FString> arr;
+
+	
+
+	return arr;
+}
+
 USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
 {
 	TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS(scope));
@@ -114,4 +123,30 @@ USentryId* SentryConvertorsIOS::SentryIdToUnreal(SentryId* id)
 	USentryId* unrealId = NewObject<USentryId>();
 	unrealId->InitWithNativeImpl(idNativeImpl);
 	return unrealId;
+}
+
+SentryLevel SentryConvertorsIOS::StringToSentryLevel(NSString* string)
+{
+	SentryLevel nativeLevel = kSentryLevelDebug;
+
+	if ([string isEqualToString:@"debug"]) {
+		nativeLevel = kSentryLevelDebug;
+	}
+	else if ([string isEqualToString:@"info"]) {
+		nativeLevel = kSentryLevelInfo;
+	}
+	else if ([string isEqualToString:@"warning"]) {
+		nativeLevel = kSentryLevelWarning;
+	}
+	else if ([string isEqualToString:@"error"]) {
+		nativeLevel = kSentryLevelError;
+	}
+	else if ([string isEqualToString:@"fatal"]) {
+		nativeLevel = kSentryLevelFatal;
+	}
+	else {
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
+	}
+
+	return nativeLevel;
 }

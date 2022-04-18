@@ -230,3 +230,25 @@ TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)
 
 	return result;
 }
+
+TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
+{
+	TArray<FString> result;
+
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+
+	jclass listClass = Env->FindClass("java/util/List");
+	jmethodID toArrayMethod = Env->GetMethodID(listClass, "toArray", "()[Ljava/lang/Object;");
+
+	jobjectArray objectArray = static_cast<jobjectArray>(Env->CallObjectMethod(stringList, toArrayMethod));
+
+	int length = Env->GetArrayLength(objectArray);
+
+	for (int i = 0; i < length; i++)
+	{
+		jstring javaString = static_cast<jstring>(Env->GetObjectArrayElement(objectArray, i));
+		result.Add(StringToUnreal(javaString));
+	}
+
+	return result;
+}
