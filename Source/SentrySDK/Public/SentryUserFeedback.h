@@ -36,7 +36,7 @@ public:
 
 	/** Sets comments of the user about what happened. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetComment(const FString& Comment);
+	void SetComment(const FString& Comments);
 
 	/** Gets comments of the user about what happened. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")

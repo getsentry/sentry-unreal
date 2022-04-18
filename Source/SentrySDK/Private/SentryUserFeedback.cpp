@@ -54,12 +54,12 @@ FString USentryUserFeedback::GetEmail() const
 	return UserFeedbackNativeImpl->GetEmail();
 }
 
-void USentryUserFeedback::SetComment(const FString& Comment)
+void USentryUserFeedback::SetComment(const FString& Comments)
 {
 	if (!UserFeedbackNativeImpl)
 		return;
 
-	UserFeedbackNativeImpl->SetComment(Comment);
+	UserFeedbackNativeImpl->SetComment(Comments);
 }
 
 FString USentryUserFeedback::GetComment() const
