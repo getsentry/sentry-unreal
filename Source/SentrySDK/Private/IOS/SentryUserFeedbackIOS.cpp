@@ -30,12 +30,27 @@ void SentryUserFeedbackIOS::SetName(const FString& name)
 	UserFeedbackIOS.name = name.GetNSString();
 }
 
+FString SentryUserFeedbackIOS::GetName() const
+{
+	return FString(UserFeedbackIOS.name);
+}
+
 void SentryUserFeedbackIOS::SetEmail(const FString& email)
 {
 	UserFeedbackIOS.email = email.GetNSString();
 }
 
+FString SentryUserFeedbackIOS::GetEmail() const
+{
+	return FString(UserFeedbackIOS.email);
+}
+
 void SentryUserFeedbackIOS::SetComment(const FString& comment)
 {
 	UserFeedbackIOS.comments = comment.GetNSString();
+}
+
+FString SentryUserFeedbackIOS::GetComment() const
+{
+	return FString(UserFeedbackIOS.comments);
 }

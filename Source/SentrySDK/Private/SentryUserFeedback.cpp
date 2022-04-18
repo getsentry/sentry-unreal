@@ -30,6 +30,14 @@ void USentryUserFeedback::SetName(const FString& Name)
 	UserFeedbackNativeImpl->SetName(Name);
 }
 
+FString USentryUserFeedback::GetName() const
+{
+	if(!UserFeedbackNativeImpl)
+		return FString();
+
+	return UserFeedbackNativeImpl->GetName();
+}
+
 void USentryUserFeedback::SetEmail(const FString& Email)
 {
 	if (!UserFeedbackNativeImpl)
@@ -38,12 +46,28 @@ void USentryUserFeedback::SetEmail(const FString& Email)
 	UserFeedbackNativeImpl->SetEmail(Email);
 }
 
+FString USentryUserFeedback::GetEmail() const
+{
+	if(!UserFeedbackNativeImpl)
+		return FString();
+
+	return UserFeedbackNativeImpl->GetEmail();
+}
+
 void USentryUserFeedback::SetComment(const FString& Comment)
 {
 	if (!UserFeedbackNativeImpl)
 		return;
 
 	UserFeedbackNativeImpl->SetComment(Comment);
+}
+
+FString USentryUserFeedback::GetComment() const
+{
+	if (!UserFeedbackNativeImpl)
+		return FString();
+
+	return UserFeedbackNativeImpl->GetComment();
 }
 
 void USentryUserFeedback::InitWithNativeImpl(TSharedPtr<ISentryUserFeedback> userFeedbackImpl)

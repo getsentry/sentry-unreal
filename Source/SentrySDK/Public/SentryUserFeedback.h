@@ -22,13 +22,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetName(const FString& Name);
 
+	/** Gets the name of the user. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetName() const;
+
 	/** Sets the email of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetEmail(const FString& Email);
 
+	/** Gets the email of the user. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetEmail() const;
+
 	/** Sets comments of the user about what happened. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetComment(const FString& Comment);
+
+	/** Gets comments of the user about what happened. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetComment() const;
 
 	void InitWithNativeImpl(TSharedPtr<ISentryUserFeedback> userFeedbackImpl);
 	TSharedPtr<ISentryUserFeedback> GetNativeImpl();

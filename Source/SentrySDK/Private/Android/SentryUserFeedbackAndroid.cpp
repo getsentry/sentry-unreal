@@ -40,14 +40,29 @@ void SentryUserFeedbackAndroid::SetName(const FString& name)
 		SentryConvertorsAndroid::StringToNative(name));
 }
 
+FString SentryUserFeedbackAndroid::GetName() const
+{
+	return SentryMethodCallAndroid::CallStringMethod(UserFeedbackAndroid, "getName", "()Ljava/lang/String;");
+}
+
 void SentryUserFeedbackAndroid::SetEmail(const FString& email)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setEmail", "(Ljava/lang/String;)V",
 		SentryConvertorsAndroid::StringToNative(email));
 }
 
+FString SentryUserFeedbackAndroid::GetEmail() const
+{
+	return SentryMethodCallAndroid::CallStringMethod(UserFeedbackAndroid, "getEmail", "()Ljava/lang/String;");
+}
+
 void SentryUserFeedbackAndroid::SetComment(const FString& comment)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setComments", "(Ljava/lang/String;)V",
 		SentryConvertorsAndroid::StringToNative(comment));
+}
+
+FString SentryUserFeedbackAndroid::GetComment() const
+{
+	return SentryMethodCallAndroid::CallStringMethod(UserFeedbackAndroid, "getComments", "()Ljava/lang/String;");
 }
