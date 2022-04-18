@@ -114,3 +114,11 @@ void USentrySubsystem::SetUser(USentryUser* User)
 
 	SubsystemNativeImpl->SetUser(User);
 }
+
+void USentrySubsystem::RemoveUser()
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->RemoveUser();
+}

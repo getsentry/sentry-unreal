@@ -15,6 +15,7 @@ public:
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) override;
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) override;
 	virtual void SetUser(USentryUser* user) override;
+	virtual void RemoveUser() override;
 
 private:
 	static const ANSICHAR* SentryJavaClassName;

@@ -91,3 +91,8 @@ void SentrySubsystemIOS::SetUser(USentryUser* user)
 
 	[SentrySDK setUser:userIOS->GetNativeObject()];
 }
+
+void SentrySubsystemIOS::RemoveUser()
+{
+	[SentrySDK setUser:nil];
+}

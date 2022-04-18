@@ -92,3 +92,8 @@ void SentrySubsystemAndroid::SetUser(USentryUser* user)
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "setUser", "(Lio/sentry/protocol/User;)V",
 		userAndroid->GetNativeObject());
 }
+
+void SentrySubsystemAndroid::RemoveUser()
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
+}

@@ -117,6 +117,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetUser(USentryUser* User);
 
+	/** Removes a user for the current scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveUser();
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 };

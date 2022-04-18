@@ -85,3 +85,8 @@ void SentrySubsystemDesktop::SetUser(USentryUser* user)
 	TSharedPtr<SentryUserDesktop> userDesktop = StaticCastSharedPtr<SentryUserDesktop>(user->GetNativeImpl());
 	sentry_set_user(userDesktop->GetNativeObject());
 }
+
+void SentrySubsystemDesktop::RemoveUser()
+{
+	sentry_remove_user();
+}

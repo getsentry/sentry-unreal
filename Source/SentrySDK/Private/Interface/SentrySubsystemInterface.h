@@ -26,4 +26,5 @@ public:
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure) = 0;
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) = 0;
 	virtual void SetUser(USentryUser* user) = 0;
+	virtual void RemoveUser() = 0;
 };
