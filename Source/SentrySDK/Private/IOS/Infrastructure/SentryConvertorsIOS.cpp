@@ -104,7 +104,10 @@ TArray<FString> SentryConvertorsIOS::StringArrayToUnreal(NSArray* array)
 {
 	TArray<FString> arr;
 
-	
+	for (id object in array)
+	{
+		arr.Add(FString(object));
+	}
 
 	return arr;
 }
