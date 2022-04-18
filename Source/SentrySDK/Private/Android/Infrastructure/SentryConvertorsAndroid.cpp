@@ -77,7 +77,7 @@ jobject SentryConvertorsAndroid::StringArrayToNative(const TArray<FString>& stri
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 
-	jclass listClass = Env->FindClass("java/util/List");
+	jclass listClass = Env->FindClass("java/util/ArrayList");
 	jmethodID listCtor = Env->GetMethodID(listClass, "<init>", "()V");
 	jobject list = Env->NewObject(listClass, listCtor);
 	jmethodID addMethod = Env->GetMethodID(listClass, "add", "(Ljava/lang/Object;)Z");
