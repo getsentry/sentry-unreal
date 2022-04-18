@@ -49,7 +49,6 @@ public:
 	/** Sets the IP address of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetData(const TMap<FString, FString>& Data);
-	         
 
 	/** Gets the IP address of the user. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
