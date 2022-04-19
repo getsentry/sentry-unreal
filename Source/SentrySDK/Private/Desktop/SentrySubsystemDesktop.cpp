@@ -32,6 +32,11 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_init(options);
 }
 
+void SentrySubsystemDesktop::Close()
+{
+	sentry_close();
+}
+
 void SentrySubsystemDesktop::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
 {
 	sentry_value_t sentryBreadcrumb = sentry_value_new_breadcrumb(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));

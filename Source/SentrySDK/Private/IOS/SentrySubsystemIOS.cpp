@@ -24,6 +24,11 @@ void SentrySubsystemIOS::InitWithSettings(const USentrySettings* settings)
 	}];
 }
 
+void SentrySubsystemIOS::Close()
+{
+	[SentrySDK close];
+}
+
 void SentrySubsystemIOS::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
 {
 	SentryBreadcrumb* breadcrumb = [[SentryBreadcrumb alloc] init];

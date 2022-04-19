@@ -28,6 +28,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Initialize();
 
+	/** Closes the Sentry SDK. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Close();
+
 	/**
 	 * Adds a breadcrumb to the current Scope.
 	 *

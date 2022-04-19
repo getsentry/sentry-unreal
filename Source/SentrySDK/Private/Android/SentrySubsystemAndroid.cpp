@@ -25,6 +25,11 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 		SentryConvertorsAndroid::StringToNative(settings->DsnUrl));
 }
 
+void SentrySubsystemAndroid::Close()
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "close", "()V");
+}
+
 void SentrySubsystemAndroid::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "addBreadcrumb", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/HashMap;Lio/sentry/SentryLevel;)V",

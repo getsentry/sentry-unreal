@@ -48,6 +48,14 @@ void USentrySubsystem::Initialize()
 	SubsystemNativeImpl->InitWithSettings(Settings);
 }
 
+void USentrySubsystem::Close()
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->Close();
+}
+
 void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
 {
 	if (!SubsystemNativeImpl)
