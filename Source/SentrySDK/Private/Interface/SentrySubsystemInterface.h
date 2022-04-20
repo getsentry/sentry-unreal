@@ -29,4 +29,7 @@ public:
 	virtual void SetUser(USentryUser* user) = 0;
 	virtual void RemoveUser() = 0;
 	virtual void ConfigureScope(const FConfigureScopeDelegate& onConfigureScope) = 0;
+	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
+	virtual void SetTag(const FString& key, const FString& value) = 0;
+	virtual void RemoveTag(const FString& key) = 0;
 };

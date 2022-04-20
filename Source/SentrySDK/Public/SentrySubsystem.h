@@ -134,6 +134,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
 
+	/**
+	 * Sets context values which will be used for enriching events. 
+	 *
+	 * @param Key Context key.
+	 * @param Values Context values.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+
+	/**
+	 * Sets global tag - key/value string pair which will be attached to every event.
+	 *
+	 * @param Key Tag key.
+	 * @param Value Tag value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetTag(const FString& Key, const FString& Value);
+
+	/**
+	 * Removes global tag.
+	 *
+	 * @param Key Tag key.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveTag(const FString& Key);
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 };

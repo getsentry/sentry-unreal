@@ -84,4 +84,31 @@ public class SentryBridgeJava {
 			}
 		});
 	}
+
+	public static void setContext(final String key, final HashMap<String, String> values) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
+				scope.setContexts(key, values);
+			}
+		});
+	}
+
+	public static void setTag(final String key, final String value) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
+				scope.setTag(key, value);
+			}
+		});
+	}
+
+	public static void removeTag(final String key) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
+				scope.removeTag(key);
+			}
+		});
+	}
 }

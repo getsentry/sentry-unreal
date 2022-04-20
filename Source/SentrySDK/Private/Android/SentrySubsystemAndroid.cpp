@@ -55,7 +55,7 @@ USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& messag
 
 	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryBridgeJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Lio/sentry/protocol/SentryId;",
 		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
-		
+
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
 
@@ -110,4 +110,22 @@ void SentrySubsystemAndroid::ConfigureScope(const FConfigureScopeDelegate& onCon
 
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "configureScope", "(J)V",
 		(jlong)scopeCallback);
+}
+
+void SentrySubsystemAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringMapToNative(values));
+}
+
+void SentrySubsystemAndroid::SetTag(const FString& key, const FString& value)
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",
+		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
+}
+
+void SentrySubsystemAndroid::RemoveTag(const FString& key)
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "removeTag", "(Ljava/lang/String;)V",
+		SentryConvertorsAndroid::StringToNative(key));
 }

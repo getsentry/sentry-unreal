@@ -138,3 +138,27 @@ void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigure
 
 	SubsystemNativeImpl->ConfigureScope(OnConfigureScope);
 }
+
+void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->SetContext(Key, Values);
+}
+
+void USentrySubsystem::SetTag(const FString& Key, const FString& Value)
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->SetTag(Key, Value);
+}
+
+void USentrySubsystem::RemoveTag(const FString& Key)
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->RemoveTag(Key);
+}

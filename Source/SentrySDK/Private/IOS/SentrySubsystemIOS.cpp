@@ -108,3 +108,24 @@ void SentrySubsystemIOS::ConfigureScope(const FConfigureScopeDelegate& onConfigu
 		onConfigureScope.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 }
+
+void SentrySubsystemIOS::SetContext(const FString& key, const TMap<FString, FString>& values)
+{
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope setContextValue:SentryConvertorsIOS::StringMapToNative(values) forKey:key.GetNSString()];
+	}];
+}
+
+void SentrySubsystemIOS::SetTag(const FString& key, const FString& value)
+{
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope setTagValue:value.GetNSString() forKey:key.GetNSString()];
+	}];
+}
+
+void SentrySubsystemIOS::RemoveTag(const FString& key)
+{
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope removeTagForKey:key.GetNSString()];
+	}];
+}

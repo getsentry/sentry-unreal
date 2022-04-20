@@ -100,3 +100,18 @@ void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onCon
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("CaptureUserFeedback method is not supported for the current platform."));
 }
+
+void SentrySubsystemDesktop::SetContext(const FString& key, const TMap<FString, FString>& values)
+{
+	sentry_set_context(TCHAR_TO_ANSI(*key), SentryConvertorsDesktop::StringMapToNative(values));
+}
+
+void SentrySubsystemDesktop::SetTag(const FString& key, const FString& value)
+{
+	sentry_set_tag(TCHAR_TO_ANSI(*key), TCHAR_TO_ANSI(*value));
+}
+
+void SentrySubsystemDesktop::RemoveTag(const FString& key)
+{
+	sentry_remove_tag(TCHAR_TO_ANSI(*key));
+}

@@ -18,4 +18,7 @@ public:
 	virtual void SetUser(USentryUser* user) override;
 	virtual void RemoveUser() override;
 	virtual void ConfigureScope(const FConfigureScopeDelegate& onConfigureScope) override;
+	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) override;
+	virtual void SetTag(const FString& key, const FString& value) override;
+	virtual void RemoveTag(const FString& key) override;
 };
