@@ -66,6 +66,11 @@ void SentrySubsystemSpec::Define()
 			TestNull("Event ID is null", eventId);
 		});
 	});
+
+	AfterEach([this]
+	{
+		SentrySubsystemDesktopImpl->Close();
+	});
 }
 
 #endif

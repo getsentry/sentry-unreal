@@ -21,13 +21,13 @@ void SentryEventSpec::Define()
 	{
 		It("should persist their values", [this]()
 		{
-			FString testMessage = FString(TEXT("Test event message"));
+			const FString TestMessage = FString(TEXT("Test event message"));
 
 			SentryEvent->SetLevel(ESentryLevel::Fatal);
-			SentryEvent->SetMessage(testMessage);
+			SentryEvent->SetMessage(TestMessage);
 
 			TestEqual("Event level", SentryEvent->GetLevel(), ESentryLevel::Fatal);
-			TestEqual("Event message", SentryEvent->GetMessage(), testMessage);
+			TestEqual("Event message", SentryEvent->GetMessage(), TestMessage);
 		});
 	});
 }
