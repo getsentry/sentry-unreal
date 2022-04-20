@@ -75,4 +75,13 @@ public class SentryBridgeJava {
 		doneSignal.await();
 		return Sentry.getLastEventId();
 	}
+
+	public static void configureScope(final long callback) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
+				onConfigureScope(callback, scope);
+			}
+		});
+	}
 }

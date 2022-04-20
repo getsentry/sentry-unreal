@@ -95,3 +95,8 @@ void SentrySubsystemDesktop::RemoveUser()
 {
 	sentry_remove_user();
 }
+
+void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("CaptureUserFeedback method is not supported for the current platform."));
+}

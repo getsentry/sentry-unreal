@@ -130,3 +130,11 @@ void USentrySubsystem::RemoveUser()
 
 	SubsystemNativeImpl->RemoveUser();
 }
+
+void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope)
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->ConfigureScope(OnConfigureScope);
+}

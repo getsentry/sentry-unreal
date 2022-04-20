@@ -48,10 +48,10 @@ USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentr
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onConfigureScope, ESentryLevel level)
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
-	scopeCallback->BindDelegate(onScopeConfigure);
+	scopeCallback->BindDelegate(onConfigureScope);
 
 	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryBridgeJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Lio/sentry/protocol/SentryId;",
 		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
@@ -69,12 +69,12 @@ USentryId* SentrySubsystemAndroid::CaptureEvent(USentryEvent* event)
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onConfigureScope)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
-	scopeCallback->BindDelegate(onScopeConfigure);
+	scopeCallback->BindDelegate(onConfigureScope);
 
 	jobject id = SentryMethodCallAndroid::CallStaticObjectMethod(SentryBridgeJavaClassName, "captureEventWithScope", "(Lio/sentry/SentryEvent;J)Lio/sentry/protocol/SentryId;",
 		eventAndroid->GetNativeObject(), (jlong)scopeCallback);
@@ -101,4 +101,13 @@ void SentrySubsystemAndroid::SetUser(USentryUser* user)
 void SentrySubsystemAndroid::RemoveUser()
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
+}
+
+void SentrySubsystemAndroid::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
+{
+	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
+	scopeCallback->BindDelegate(onConfigureScope);
+
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "configureScope", "(J)V",
+		(jlong)scopeCallback);
 }

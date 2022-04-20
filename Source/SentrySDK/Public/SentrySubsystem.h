@@ -125,6 +125,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveUser();
 
+	/**
+	 * Configures the scope through the callback.
+	 * Sentry SDK uses the Scope to attach contextual data to events.
+	 *
+	 * @param OnConfigureScope The callback to configure the scope.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
+	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 };

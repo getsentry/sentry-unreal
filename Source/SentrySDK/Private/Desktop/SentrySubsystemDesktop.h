@@ -17,4 +17,5 @@ public:
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) override;
 	virtual void SetUser(USentryUser* user) override;
 	virtual void RemoveUser() override;
+	virtual void ConfigureScope(const FConfigureScopeDelegate& onConfigureScope) override;
 };

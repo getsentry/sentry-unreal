@@ -54,11 +54,11 @@ USentryId* SentrySubsystemIOS::CaptureMessage(const FString& message, ESentryLev
 	return SentryConvertorsIOS::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemIOS::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemIOS::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onConfigureScope, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
-		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 
 	return SentryConvertorsIOS::SentryIdToUnreal(id);
@@ -72,12 +72,12 @@ USentryId* SentrySubsystemIOS::CaptureEvent(USentryEvent* event)
 	return SentryConvertorsIOS::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+USentryId* SentrySubsystemIOS::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onConfigureScope)
 {
 	TSharedPtr<SentryEventIOS> eventIOS = StaticCastSharedPtr<SentryEventIOS>(event->GetNativeImpl());
 
 	SentryId* id = [SentrySDK captureEvent:eventIOS->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
-		onScopeConfigure.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
 	}];
 
 	return SentryConvertorsIOS::SentryIdToUnreal(id);
@@ -100,4 +100,11 @@ void SentrySubsystemIOS::SetUser(USentryUser* user)
 void SentrySubsystemIOS::RemoveUser()
 {
 	[SentrySDK setUser:nil];
+}
+
+void SentrySubsystemIOS::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
+{
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		onConfigureScope.ExecuteIfBound(SentryConvertorsIOS::SentryScopeToUnreal(scope));
+	}];
 }
