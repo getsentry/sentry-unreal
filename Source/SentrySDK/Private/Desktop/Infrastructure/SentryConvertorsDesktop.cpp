@@ -8,6 +8,9 @@
 
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonReader.h"
 
 sentry_level_e SentryConvertorsDesktop::SentryLevelToNative(ESentryLevel level)
 {
@@ -74,8 +77,23 @@ TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t
 {
 	TMap<FString, FString> unrealMap;
 
-	// TODO Add implementation. Parsing a Json returned by sentry_value_to_json can be a good solution here.
-	UE_LOG(LogSentrySdk, Warning, TEXT("StringMapToUnreal method is not supported for the current platform."));
+	FString mapJsonString = FString(sentry_value_to_json(map));
+
+	TSharedPtr<FJsonObject> jsonObject;
+	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
+	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonObject);
+	if (!bDeserializeSuccess) {
+		UE_LOG(LogSentrySdk, Error, TEXT("StringMapToUnreal failed to deserialize map Json."));
+		return unrealMap;
+	}
+
+	TArray<FString> keysArr;
+	jsonObject->Values.GetKeys(keysArr);
+
+	for (auto it = keysArr.CreateConstIterator(); it; ++it)
+	{
+		unrealMap.Add(*it, jsonObject->GetStringField(*it));
+	}
 
 	return unrealMap;
 }
