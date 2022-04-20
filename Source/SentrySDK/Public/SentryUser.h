@@ -46,11 +46,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetIpAddress() const;
 
-	/** Sets the IP address of the user. */
+	/** Sets additional arbitrary fields related to the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetData(const TMap<FString, FString>& Data);
 
-	/** Gets the IP address of the user. */
+	/** Gets additional arbitrary fields related to the user. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TMap<FString, FString> GetData() const;
 
