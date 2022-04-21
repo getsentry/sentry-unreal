@@ -111,4 +111,13 @@ public class SentryBridgeJava {
 			}
 		});
 	}
+
+	public static void setLevel(final SentryLevel level) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
+				scope.setLevel(level);
+			}
+		});
+	}
 }

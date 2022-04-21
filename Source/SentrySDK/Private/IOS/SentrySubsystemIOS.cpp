@@ -129,3 +129,10 @@ void SentrySubsystemIOS::RemoveTag(const FString& key)
 		[scope removeTagForKey:key.GetNSString()];
 	}];
 }
+
+void SentrySubsystemIOS::SetLevel(ESentryLevel level)
+{
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope setLevel:SentryConvertorsIOS::SentryLevelToNative(level)];
+	}];
+}

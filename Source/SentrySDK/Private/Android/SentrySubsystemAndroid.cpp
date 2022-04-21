@@ -129,3 +129,9 @@ void SentrySubsystemAndroid::RemoveTag(const FString& key)
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "removeTag", "(Ljava/lang/String;)V",
 		SentryConvertorsAndroid::StringToNative(key));
 }
+
+void SentrySubsystemAndroid::SetLevel(ESentryLevel level)
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setLevel", "(Lio/sentry/SentryLevel;)V",
+		SentryConvertorsAndroid::SentryLevelToNative(level));
+}

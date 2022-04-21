@@ -32,4 +32,5 @@ public:
 	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual void RemoveTag(const FString& key) = 0;
+	virtual void SetLevel(ESentryLevel level) = 0;
 };

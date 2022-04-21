@@ -162,3 +162,11 @@ void USentrySubsystem::RemoveTag(const FString& Key)
 
 	SubsystemNativeImpl->RemoveTag(Key);
 }
+
+void USentrySubsystem::SetLevel(ESentryLevel Level)
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->SetLevel(Level);
+}

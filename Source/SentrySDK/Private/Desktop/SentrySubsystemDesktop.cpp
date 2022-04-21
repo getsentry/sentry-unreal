@@ -115,3 +115,8 @@ void SentrySubsystemDesktop::RemoveTag(const FString& key)
 {
 	sentry_remove_tag(TCHAR_TO_ANSI(*key));
 }
+
+void SentrySubsystemDesktop::SetLevel(ESentryLevel level)
+{
+	sentry_set_level(SentryConvertorsDesktop::SentryLevelToNative(level));
+}

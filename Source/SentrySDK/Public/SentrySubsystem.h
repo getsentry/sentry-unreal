@@ -160,6 +160,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveTag(const FString& Key);
 
+	/**
+	 * Sets the level of all events sent.
+	 *
+	 * @param Level Event level.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetLevel(ESentryLevel Level);
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 };
