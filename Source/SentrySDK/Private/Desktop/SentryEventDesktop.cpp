@@ -37,7 +37,7 @@ FString SentryEventDesktop::GetMessage() const
 
 void SentryEventDesktop::SetLevel(ESentryLevel level)
 {
-	FString levelStr = SentryConvertorsDesktop::SentryLevelToString(level);
+	FString levelStr = SentryConvertorsDesktop::SentryLevelToString(level).ToLower();
 	if (!levelStr.IsEmpty())
 		sentry_value_set_by_key(EventDesktop, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
 }
