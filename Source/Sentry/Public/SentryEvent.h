@@ -9,7 +9,7 @@
 class ISentryEvent;
 
 UCLASS(BlueprintType)
-class SENTRYSDK_API USentryEvent : public UObject
+class SENTRY_API USentryEvent : public UObject
 {
 	GENERATED_BODY()
 

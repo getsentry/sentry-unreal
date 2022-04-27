@@ -9,9 +9,9 @@ using EpicGames.Core;
 using Tools.DotNETCommon;
 #endif
 
-public class SentrySDK : ModuleRules
+public class Sentry : ModuleRules
 {
-	public SentrySDK(ReadOnlyTargetRules Target) : base(Target)
+	public Sentry(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -67,7 +67,7 @@ public class SentrySDK : ModuleRules
 			PrivateDependencyModuleNames.AddRange(new string[] { "Launch" });
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 
-			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "SentrySDK_IOS_UPL.xml"));
+			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 		}
 
 		// Additional routine for Android
@@ -78,7 +78,7 @@ public class SentrySDK : ModuleRules
 			PublicDependencyModuleNames.AddRange(new string[] { "Launch" });
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 
-			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "SentrySdk_Android_UPL.xml"));
+			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Sentry_Android_UPL.xml"));
 		}
 
 		// Additional routine for Desktop platforms

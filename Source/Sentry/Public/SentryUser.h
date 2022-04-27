@@ -7,7 +7,7 @@
 class ISentryUser;
 
 UCLASS(BlueprintType)
-class SENTRYSDK_API USentryUser : public UObject
+class SENTRY_API USentryUser : public UObject
 {
 	GENERATED_BODY()
 

@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "0.0.1",
-	"FriendlyName": "Sentry SDK",
-	"Description": "Sentry SDK catches all your errors and performance issues, and shows you how to fix them before they bring down the player experience.",
+	"FriendlyName": "Sentry",
+	"Description": "Sentry catches all your errors and performance issues, and shows you how to fix them before they bring down the player experience.",
 	"Category": "Code Plugins",
 	"CreatedBy": "Sentry",
 	"CreatedByURL": "https://sentry.io/",
@@ -16,7 +16,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "SentrySDK",
+			"Name": "Sentry",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS" ]

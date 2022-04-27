@@ -18,7 +18,7 @@ class USentryUser;
 class ISentrySubsystem;
 
 UCLASS()
-class SENTRYSDK_API USentrySubsystem : public UGameInstanceSubsystem
+class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:

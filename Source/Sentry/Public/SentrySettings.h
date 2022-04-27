@@ -7,7 +7,7 @@
 #include "SentrySettings.generated.h"
 
 UCLASS(Config = Engine, defaultconfig)
-class SENTRYSDK_API USentrySettings : public UObject
+class SENTRY_API USentrySettings : public UObject
 {
 	GENERATED_UCLASS_BODY()
 

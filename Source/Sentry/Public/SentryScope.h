@@ -9,7 +9,7 @@
 class ISentryScope;
 
 UCLASS(BlueprintType)
-class SENTRYSDK_API USentryScope : public UObject
+class SENTRY_API USentryScope : public UObject
 {
 	GENERATED_BODY()
 

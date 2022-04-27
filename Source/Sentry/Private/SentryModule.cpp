@@ -13,7 +13,7 @@
 
 #define LOCTEXT_NAMESPACE "FSentryModule"
 
-const FName FSentryModule::ModuleName = "SentrySDK";
+const FName FSentryModule::ModuleName = "Sentry";
 
 void FSentryModule::StartupModule()
 {
@@ -23,9 +23,9 @@ void FSentryModule::StartupModule()
 
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		SettingsModule->RegisterSettings("Project", "Plugins", "SentrySdk",
-			LOCTEXT("RuntimeSettingsName", "Sentry SDK"),
-			LOCTEXT("RuntimeSettingsDescription", "Configure Sentry SDK"),
+		SettingsModule->RegisterSettings("Project", "Plugins", "Sentry",
+			LOCTEXT("RuntimeSettingsName", "Sentry"),
+			LOCTEXT("RuntimeSettingsDescription", "Configure Sentry"),
 			SentrySettings);
 	}
 
@@ -50,7 +50,7 @@ void FSentryModule::ShutdownModule()
 
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		SettingsModule->UnregisterSettings("Project", "Plugins", "SentrySdk");
+		SettingsModule->UnregisterSettings("Project", "Plugins", "Sentry");
 	}
 
 	if (!GExitPurge)
@@ -101,13 +101,13 @@ FString FSentryModule::GetBinariesPath()
 	PlatformName = TEXT("Mac");
 #endif
 
-	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("SentrySDK"))->GetBaseDir();
+	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
 	return FPaths::Combine(PluginDir, TEXT("Binaries"), PlatformName);
 }
 
 #undef LOCTEXT_NAMESPACE
 
-IMPLEMENT_MODULE(FSentryModule, SentrySDK)
+IMPLEMENT_MODULE(FSentryModule, Sentry)
 
 DEFINE_LOG_CATEGORY(LogSentrySdk);

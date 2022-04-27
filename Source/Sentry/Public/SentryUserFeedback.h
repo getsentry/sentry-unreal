@@ -8,7 +8,7 @@ class USentryId;
 class ISentryUserFeedback;
 
 UCLASS(BlueprintType)
-class SENTRYSDK_API USentryUserFeedback : public UObject
+class SENTRY_API USentryUserFeedback : public UObject
 {
 	GENERATED_BODY()
 

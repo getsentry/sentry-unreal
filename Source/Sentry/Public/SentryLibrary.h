@@ -14,7 +14,7 @@ class USentryUserFeedback;
 class USentryId;
 
 UCLASS()
-class SENTRYSDK_API USentryLibrary : public UBlueprintFunctionLibrary
+class SENTRY_API USentryLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
