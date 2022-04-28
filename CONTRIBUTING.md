@@ -31,3 +31,7 @@ Other Sentry libraries are provided along with the plugin source code and can be
 ### Content
 
 There is a demo level (`SentryDemo.umap`) in plugin's Content folder which presents a simple UI allowing to send some test events to Sentry. `W_SentryDemo` blueprint implementation shows how to call the plugin API and can be used as a reference.
+
+### Tests
+
+In order to run automation tests navigate to `Settings -> Plugins -> Testing` and enable all the plugins available there. Editor restart will be required for the changes to take effect. After that `Windows -> Test Automation` menu will appear which opens the `Session Frontend` window. Switch to `Automation` tab there and select `Sentry` within the list of existing tests. Hit `Start Tests` button to run the tests and check the result.
