@@ -13,8 +13,14 @@
 
 #include "Convenience/SentryInclude.h"
 #include "Infrastructure/SentryConvertorsDesktop.h"
+#include "CrashReporter/SentryCrashReporter.h"
 
 #include "Misc/Paths.h"
+
+SentrySubsystemDesktop::SentrySubsystemDesktop()
+{
+	crashReporter = MakeShareable(new SentryCrashReporter);
+}
 
 void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 {
@@ -89,11 +95,15 @@ void SentrySubsystemDesktop::SetUser(USentryUser* user)
 {
 	TSharedPtr<SentryUserDesktop> userDesktop = StaticCastSharedPtr<SentryUserDesktop>(user->GetNativeImpl());
 	sentry_set_user(userDesktop->GetNativeObject());
+
+	crashReporter->SetUser(user);
 }
 
 void SentrySubsystemDesktop::RemoveUser()
 {
 	sentry_remove_user();
+
+	crashReporter->RemoveUser();
 }
 
 void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
@@ -104,16 +114,22 @@ void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onCon
 void SentrySubsystemDesktop::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	sentry_set_context(TCHAR_TO_ANSI(*key), SentryConvertorsDesktop::StringMapToNative(values));
+
+	crashReporter->SetContext(key, values);
 }
 
 void SentrySubsystemDesktop::SetTag(const FString& key, const FString& value)
 {
 	sentry_set_tag(TCHAR_TO_ANSI(*key), TCHAR_TO_ANSI(*value));
+
+	crashReporter->SetTag(key, value);
 }
 
 void SentrySubsystemDesktop::RemoveTag(const FString& key)
 {
 	sentry_remove_tag(TCHAR_TO_ANSI(*key));
+
+	crashReporter->RemoveTag(key);
 }
 
 void SentrySubsystemDesktop::SetLevel(ESentryLevel level)

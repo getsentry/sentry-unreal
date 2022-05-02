@@ -4,9 +4,13 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
+class SentryCrashReporter;
+
 class SentrySubsystemDesktop : public ISentrySubsystem
 {
 public:
+	SentrySubsystemDesktop();
+
 	virtual void InitWithSettings(const USentrySettings* settings) override;
 	virtual void Close() override;
 	virtual void AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level) override;
@@ -22,4 +26,7 @@ public:
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetLevel(ESentryLevel level) override;
+
+private:
+	TSharedPtr<SentryCrashReporter> crashReporter;
 };
