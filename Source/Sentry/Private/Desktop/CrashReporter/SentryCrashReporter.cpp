@@ -21,6 +21,13 @@ void SentryCrashReporter::SetUser(USentryUser* user)
 	userConfig->SetStringField(TEXT("id"), user->GetId());
 	userConfig->SetStringField(TEXT("ip_address"), user->GetIpAddress());
 
+	const TMap<FString, FString>& userData = user->GetData();
+
+	for (auto it = userData.CreateConstIterator(); it; ++it)
+	{
+		userConfig->SetStringField(it.Key(), it.Value());
+	}
+
 	crashReporterConfig->SetObjectField(TEXT("user"), userConfig);
 
 	UpdateCrashReporterConfig();
