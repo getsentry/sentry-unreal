@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+
 class USentryUser;
+class FJsonObject;
 
 class SentryCrashReporter
 {
