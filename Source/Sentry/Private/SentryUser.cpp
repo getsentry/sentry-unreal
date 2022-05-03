@@ -17,15 +17,18 @@
 
 USentryUser::USentryUser()
 {
+	if (USentryUser::StaticClass()->GetDefaultObject() != this)
+	{
 #if PLATFORM_ANDROID
-	UserNativeImpl = MakeShareable(new SentryUserAndroid());
+		UserNativeImpl = MakeShareable(new SentryUserAndroid());
 #endif
 #if PLATFORM_IOS
-	UserNativeImpl = MakeShareable(new SentryUserIOS());
+		UserNativeImpl = MakeShareable(new SentryUserIOS());
 #endif
 #if PLATFORM_WINDOWS || PLATFORM_MAC
-	UserNativeImpl = MakeShareable(new SentryUserDesktop());
+		UserNativeImpl = MakeShareable(new SentryUserDesktop());
 #endif
+	}
 }
 
 void USentryUser::SetEmail(const FString& Email)
