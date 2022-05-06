@@ -110,3 +110,13 @@ ESentryLevel USentryBreadcrumb::GetLevel() const
 
 	return BreadcrumbNativeImpl->GetLevel();
 }
+
+void USentryBreadcrumb::InitWithNativeImpl(TSharedPtr<ISentryBreadcrumb> breadcrumbImpl)
+{
+	BreadcrumbNativeImpl = breadcrumbImpl;
+}
+
+TSharedPtr<ISentryBreadcrumb> USentryBreadcrumb::GetNativeImpl()
+{
+	return BreadcrumbNativeImpl;
+}

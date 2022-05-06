@@ -11,6 +11,7 @@
 #include "SentrySubsystem.generated.h"
 
 class USentrySettings;
+class USentryBreadcrumb;
 class USentryEvent;
 class USentryId;
 class USentryUserFeedback;
@@ -35,6 +36,14 @@ public:
 	/**
 	 * Adds a breadcrumb to the current Scope.
 	 *
+	 * @param Breadcrumb The breadcrumb to send to Sentry.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddBreadcrumb(USentryBreadcrumb* Breadcrumb);
+
+	/**
+	 * Adds a breadcrumb to the current Scope.
+	 *
 	 * @param Message If a message is provided it’s rendered as text and the whitespace is preserved.
 	 * Very long text might be abbreviated in the UI.
 	 * 
@@ -53,7 +62,7 @@ public:
 	 * @param Level Breadcrumb level.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
-	void AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
+	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
 		ESentryLevel Level = ESentryLevel::Info);
 
 	/**

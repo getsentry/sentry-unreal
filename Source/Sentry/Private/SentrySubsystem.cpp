@@ -3,6 +3,7 @@
 #include "SentrySubsystem.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
+#include "SentryBreadcrumb.h"
 #include "SentryEvent.h"
 #include "SentryId.h"
 #include "SentryUserFeedback.h"
@@ -56,12 +57,24 @@ void USentrySubsystem::Close()
 	SubsystemNativeImpl->Close();
 }
 
-void USentrySubsystem::AddBreadcrumb(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 {
 	if (!SubsystemNativeImpl)
 		return;
 
-	SubsystemNativeImpl->AddBreadcrumb(Message, Category, Type, Data, Level);
+	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb);
+}
+
+void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+{
+	USentryBreadcrumb* Breadcrumb = NewObject<USentryBreadcrumb>();
+	Breadcrumb->SetMessage(Message);
+	Breadcrumb->SetCategory(Category);
+	Breadcrumb->SetType(Type);
+	Breadcrumb->SetData(Data);
+	Breadcrumb->SetLevel(Level);
+
+	AddBreadcrumb(Breadcrumb);
 }
 
 USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)

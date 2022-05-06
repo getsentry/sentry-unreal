@@ -2,11 +2,13 @@
 
 #include "SentrySubsystemDesktop.h"
 #include "SentryEventDesktop.h"
+#include "SentryBreadcrumbDesktop.h"
 #include "SentryUserDesktop.h"
 #include "SentryDefines.h"
 
 #include "SentrySettings.h"
 #include "SentryEvent.h"
+#include "SentryBreadcrumb.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
 #include "SentryModule.h"
@@ -43,20 +45,11 @@ void SentrySubsystemDesktop::Close()
 	sentry_close();
 }
 
-void SentrySubsystemDesktop::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
-	sentry_value_t sentryBreadcrumb = sentry_value_new_breadcrumb(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
+	TSharedPtr<SentryBreadcrumbDesktop> breadcrumbDesktop = StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb->GetNativeImpl());
 
-	if (!category.IsEmpty())
-		sentry_value_set_by_key(sentryBreadcrumb, "category", sentry_value_new_string(TCHAR_TO_ANSI(*category)));
-
-	FString levelStr = SentryConvertorsDesktop::SentryLevelToString(level);
-	if (!levelStr.IsEmpty())
-		sentry_value_set_by_key(sentryBreadcrumb, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
-
-	sentry_value_set_by_key(sentryBreadcrumb, "data", SentryConvertorsDesktop::StringMapToNative(data));
-
-	sentry_add_breadcrumb(sentryBreadcrumb);
+	sentry_add_breadcrumb(breadcrumbDesktop->GetNativeObject());
 }
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)

@@ -1,12 +1,14 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySubsystemIOS.h"
+#include "SentryBreadcrumbIOS.h"
 #include "SentryEventIOS.h"
 #include "SentryScopeIOS.h"
 #include "SentryUserIOS.h"
 #include "SentryUserFeedbackIOS.h"
 
 #include "SentryEvent.h"
+#include "SentryBreadcrumb.h"
 #include "SentryId.h"
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
@@ -29,20 +31,11 @@ void SentrySubsystemIOS::Close()
 	[SentrySDK close];
 }
 
-void SentrySubsystemIOS::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+void SentrySubsystemIOS::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
-	SentryBreadcrumb* breadcrumb = [[SentryBreadcrumb alloc] init];
+	TSharedPtr<SentryBreadcrumbIOS> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbIOS>(breadcrumb->GetNativeImpl());
 
-	breadcrumb.message = message.GetNSString();
-	breadcrumb.level = SentryConvertorsIOS::SentryLevelToNative(level);
-	breadcrumb.data = SentryConvertorsIOS::StringMapToNative(data);
-
-	if(!category.IsEmpty())
-		breadcrumb.category = category.GetNSString();
-	if(!type.IsEmpty())
-		breadcrumb.type = type.GetNSString();
-
-	[SentrySDK addBreadcrumb:breadcrumb];
+	[SentrySDK addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
 USentryId* SentrySubsystemIOS::CaptureMessage(const FString& message, ESentryLevel level)

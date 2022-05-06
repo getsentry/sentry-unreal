@@ -9,7 +9,7 @@ class SentrySubsystemIOS : public ISentrySubsystem
 public:
 	virtual void InitWithSettings(const USentrySettings* settings) override;
 	virtual void Close() override;
-	virtual void AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level) override;
+	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
 	virtual USentryId* CaptureMessage(const FString& message, ESentryLevel level) override;
 	virtual USentryId* CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onConfigureScope, ESentryLevel level) override;
 	virtual USentryId* CaptureEvent(USentryEvent* event) override;

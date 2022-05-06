@@ -22,6 +22,11 @@ SentryBreadcrumbIOS::~SentryBreadcrumbIOS()
 	// Put custom destructor logic here if needed
 }
 
+SentryBreadcrumb* SentryBreadcrumbIOS::GetNativeObject()
+{
+	return BreadcrumbIOS;
+}
+
 void SentryBreadcrumbIOS::SetMessage(const FString& message)
 {
 	BreadcrumbIOS.message = message.GetNSString();

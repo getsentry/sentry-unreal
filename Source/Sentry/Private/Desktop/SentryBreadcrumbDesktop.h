@@ -13,6 +13,8 @@ public:
 	SentryBreadcrumbDesktop(sentry_value_t breadcrumb);
 	virtual ~SentryBreadcrumbDesktop() override;
 
+	sentry_value_t GetNativeObject();
+
 	virtual void SetMessage(const FString& message) override;
 	virtual FString GetMessage() const override;
 	virtual void SetType(const FString& type) override;

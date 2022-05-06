@@ -1,11 +1,14 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySubsystemAndroid.h"
+
 #include "SentryEventAndroid.h"
+#include "SentryBreadcrumbAndroid.h"
 #include "SentryUserFeedbackAndroid.h"
 #include "SentryUserAndroid.h"
 
 #include "SentryEvent.h"
+#include "SentryBreadcrumb.h"
 #include "SentryId.h"
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
@@ -30,14 +33,12 @@ void SentrySubsystemAndroid::Close()
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "close", "()V");
 }
 
-void SentrySubsystemAndroid::AddBreadcrumb(const FString& message, const FString& category, const FString& type, const TMap<FString, FString>& data, ESentryLevel level)
+void SentrySubsystemAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
-	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "addBreadcrumb", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/HashMap;Lio/sentry/SentryLevel;)V",
-		SentryConvertorsAndroid::StringToNative(message),
-		SentryConvertorsAndroid::StringToNative(category),
-		SentryConvertorsAndroid::StringToNative(type),
-		SentryConvertorsAndroid::StringMapToNative(data),
-		SentryConvertorsAndroid::SentryLevelToNative(level));
+	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb->GetNativeImpl());
+
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "addBreadcrumb", "(Lio/sentry/Breadcrumb;)V",
+		breadcrumbAndroid->GetNativeObject());
 }
 
 USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
