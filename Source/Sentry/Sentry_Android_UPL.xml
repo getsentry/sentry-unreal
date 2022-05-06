@@ -24,6 +24,14 @@
         </insert>
     </gradleProperties>
 
+    <proguardAdditions>
+        <insert>
+            -dontwarn com.sentry.unreal.**
+            -keep class com.sentry.unreal.** { *; }
+            -keep interface com.sentry.unreal.** { *; }
+        </insert>
+    </proguardAdditions>
+
     <buildGradleAdditions>
         <insert>
             android {
