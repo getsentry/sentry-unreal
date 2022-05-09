@@ -146,6 +146,62 @@ ESentryLevel USentryScope::GetLevel() const
 	return ScopeNativeImpl->GetLevel();
 }
 
+void USentryScope::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+{
+	if(!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->SetContext(Key, Values);
+}
+
+void USentryScope::RemoveContext(const FString& Key)
+{
+	if(!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->RemoveContext(Key);
+}
+
+void USentryScope::SetExtraValue(const FString& Key, const FString& Value)
+{
+	if(!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->SetExtraValue(Key, Value);
+}
+
+FString USentryScope::GetExtraValue(const FString& Key) const
+{
+	if(!ScopeNativeImpl)
+		return FString();
+
+	return ScopeNativeImpl->GetExtraValue(Key);
+}
+
+void USentryScope::RemoveExtra(const FString& Key)
+{
+	if(!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->RemoveExtra(Key);
+}
+
+void USentryScope::SetExtras(const TMap<FString, FString>& Extras)
+{
+	if(!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->SetExtras(Extras);
+}
+
+TMap<FString, FString> USentryScope::GetExtras() const
+{
+	if (!ScopeNativeImpl)
+		return TMap<FString, FString>();
+
+	return ScopeNativeImpl->GetExtras();
+}
+
 void USentryScope::Clear()
 {
 	if (!ScopeNativeImpl)

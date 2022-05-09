@@ -135,6 +135,55 @@ ESentryLevel SentryScopeAndroid::GetLevel() const
 	return SentryConvertorsAndroid::SentryLevelToUnreal(level);
 }
 
+void SentryScopeAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
+{
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setContexts", "(Ljava/lang/String;Ljava/lang/Object;)V",
+		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringMapToNative(values));
+}
+
+void SentryScopeAndroid::RemoveContext(const FString& key)
+{
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "removeContexts", "(Ljava/lang/String;)V",
+		SentryConvertorsAndroid::StringToNative(key));
+}
+
+void SentryScopeAndroid::SetExtraValue(const FString& key, const FString& value)
+{
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setExtra", "(Ljava/lang/String;Ljava/lang/String;)V",
+		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
+}
+
+FString SentryScopeAndroid::GetExtraValue(const FString& key) const
+{
+	TMap<FString, FString> extras = GetTags();
+	FString* extraValue = extras.Find(key);
+
+	if (!extraValue)
+		return FString();
+
+	return *extraValue;
+}
+
+void SentryScopeAndroid::RemoveExtra(const FString& key)
+{
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "removeExtra", "(Ljava/lang/String;)V",
+		SentryConvertorsAndroid::StringToNative(key));
+}
+
+void SentryScopeAndroid::SetExtras(const TMap<FString, FString>& extras)
+{
+	for (const auto& extra : extras)
+	{
+		SetExtraValue(extra.Key, extra.Value);
+	}
+}
+
+TMap<FString, FString> SentryScopeAndroid::GetExtras() const
+{
+	jobject extras = SentryMethodCallAndroid::CallObjectMethod(ScopeAndroid, "getExtras", "()Ljava/util/Map;");
+	return SentryConvertorsAndroid::StringMapToUnreal(extras);
+}
+
 void SentryScopeAndroid::Clear()
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "clear", "()V");

@@ -77,6 +77,34 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	ESentryLevel GetLevel() const;
 
+	/** Sets context values which will be used for enriching events. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+
+	/** Sets context values which will be used for enriching events. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveContext(const FString& Key);
+
+	/** Sets a global extra. These will be sent with every event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetExtraValue(const FString& Key, const FString& Value);
+
+	/** Gets a global extra. These will be sent with every event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetExtraValue(const FString& Key) const;
+
+	/** Removes the extra for the specified key. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveExtra(const FString& Key);
+
+	/** Sets global extras. These will be sent with every event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetExtras(const TMap<FString, FString>& Extras);
+
+	/** Gets global extras. These will be sent with every event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	TMap<FString, FString> GetExtras() const;
+
 	/** Clears the current scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Clear();

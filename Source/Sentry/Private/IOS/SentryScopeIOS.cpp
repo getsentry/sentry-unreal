@@ -117,6 +117,44 @@ ESentryLevel SentryScopeIOS::GetLevel() const
 	return SentryConvertorsIOS::SentryLevelToUnreal(level);
 }
 
+void SentryScopeIOS::SetContext(const FString& key, const TMap<FString, FString>& values)
+{
+	[ScopeIOS setContextValue:SentryConvertorsIOS::StringMapToNative(values) forKey:key.GetNSString()];
+}
+
+void SentryScopeIOS::RemoveContext(const FString& key)
+{
+	[ScopeIOS removeContextForKey:key.GetNSString()];
+}
+
+void SentryScopeIOS::SetExtraValue(const FString& key, const FString& value)
+{
+	[ScopeIOS setExtraValue:value.GetNSString() forKey:key.GetNSString()];
+}
+
+FString SentryScopeIOS::GetExtraValue(const FString& key) const
+{
+	NSDictionary* scopeDict = [ScopeIOS serialize];
+	NSDictionary* extras = scopeDict[@"extra"];
+	return FString(extras[key.GetNSString()]);
+}
+
+void SentryScopeIOS::RemoveExtra(const FString& key)
+{
+	[ScopeIOS removeExtraForKey:key.GetNSString()];
+}
+
+void SentryScopeIOS::SetExtras(const TMap<FString, FString>& extras)
+{
+	[ScopeIOS setExtras:SentryConvertorsIOS::StringMapToNative(extras)];
+}
+
+TMap<FString, FString> SentryScopeIOS::GetExtras() const
+{
+	NSDictionary* scopeDict = [ScopeIOS serialize];
+	return SentryConvertorsIOS::StringMapToUnreal(scopeDict[@"extra"]);
+}
+
 void SentryScopeIOS::Clear()
 {
 	[ScopeIOS clear];
