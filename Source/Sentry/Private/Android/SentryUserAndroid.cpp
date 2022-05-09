@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryUserAndroid.h"
+
 #include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
 

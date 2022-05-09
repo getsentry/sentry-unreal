@@ -1,6 +1,11 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryScopeAndroid.h"
+
+#include "SentryBreadcrumbAndroid.h"
+
+#include "SentryBreadcrumb.h"
+
 #include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
 
@@ -34,6 +39,19 @@ SentryScopeAndroid::~SentryScopeAndroid()
 jobject SentryScopeAndroid::GetNativeObject()
 {
 	return ScopeAndroid;
+}
+
+void SentryScopeAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+{
+	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb->GetNativeImpl());
+
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "addBreadcrumb", "(Lio/sentry/Breadcrumb;)V",
+		breadcrumbAndroid->GetNativeObject());
+}
+
+void SentryScopeAndroid::ClearBreadcrumbs()
+{
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "clearBreadcrumbs", "()V");
 }
 
 void SentryScopeAndroid::SetTagValue(const FString& key, const FString& value)

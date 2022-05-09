@@ -2,6 +2,10 @@
 
 #include "SentryScopeIOS.h"
 
+#include "SentryBreadcrumbIOS.h"
+
+#include "SentryBreadcrumb.h"
+
 #include "Infrastructure/SentryConvertorsIOS.h"
 
 #import <Foundation/Foundation.h>
@@ -25,6 +29,18 @@ SentryScopeIOS::~SentryScopeIOS()
 SentryScope* SentryScopeIOS::GetNativeObject()
 {
 	return ScopeIOS;
+}
+
+void SentryScopeIOS::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+{
+	TSharedPtr<SentryBreadcrumbIOS> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbIOS>(breadcrumb->GetNativeImpl());
+
+	[ScopeIOS addBreadcrumb:breadcrumbIOS->GetNativeObject()];
+}
+
+void SentryScopeIOS::ClearBreadcrumbs()
+{
+	[ScopeIOS clearBreadcrumbs];
 }
 
 void SentryScopeIOS::SetTagValue(const FString& key, const FString& value)

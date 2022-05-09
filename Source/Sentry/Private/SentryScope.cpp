@@ -1,6 +1,8 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryScope.h"
+#include "SentryBreadcrumb.h"
+
 #include "Interface/SentryScopeInterface.h"
 
 #if PLATFORM_ANDROID
@@ -22,6 +24,22 @@ USentryScope::USentryScope()
 		ScopeNativeImpl = MakeShareable(new SentryScopeIOS());
 #endif
 	}
+}
+
+void USentryScope::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
+{
+	if (!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->AddBreadcrumb(Breadcrumb);
+}
+
+void USentryScope::ClearBreadcrumbs()
+{
+	if (!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->ClearBreadcrumbs();
 }
 
 void USentryScope::SetTagValue(const FString& Key, const FString& Value)

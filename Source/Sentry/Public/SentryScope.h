@@ -7,6 +7,7 @@
 #include "SentryScope.generated.h"
 
 class ISentryScope;
+class USentryBreadcrumb;
 
 UCLASS(BlueprintType)
 class SENTRY_API USentryScope : public UObject
@@ -15,6 +16,14 @@ class SENTRY_API USentryScope : public UObject
 
 public:
 	USentryScope();
+
+	/** Adds a breadcrumb to the current Scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddBreadcrumb(USentryBreadcrumb* Breadcrumb);
+
+	/** Clear all breadcrumbs of the current Scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void ClearBreadcrumbs();
 
 	/** Sets a global tag. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
