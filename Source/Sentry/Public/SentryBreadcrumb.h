@@ -32,11 +32,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetType() const;
 
-	/** Sets type of the breadcrumb. */
+	/** Sets category of the breadcrumb. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetCategory(const FString& Category);
 
-	/** Gets type of the breadcrumb. */
+	/** Gets category of the breadcrumb. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetCategory() const;
 

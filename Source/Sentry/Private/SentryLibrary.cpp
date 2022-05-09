@@ -2,6 +2,7 @@
 
 #include "SentryLibrary.h"
 #include "SentryEvent.h"
+#include "SentryBreadcrumb.h"
 #include "SentryUser.h"
 #include "SentryUserFeedback.h"
 #include "SentryId.h"
@@ -51,6 +52,20 @@ USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(USentryId* EventId
 		UserFeedback->SetComment(Comments);
 
 	return UserFeedback;
+}
+
+USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
+	const TMap<FString, FString>& Data, ESentryLevel Level)
+{
+	USentryBreadcrumb* Breadcrumb = NewObject<USentryBreadcrumb>();
+
+	Breadcrumb->SetMessage(Message);
+	Breadcrumb->SetCategory(Category);
+	Breadcrumb->SetType(Type);
+	Breadcrumb->SetData(Data);
+	Breadcrumb->SetLevel(Level);
+
+	return Breadcrumb;
 }
 
 void USentryLibrary::Crash()

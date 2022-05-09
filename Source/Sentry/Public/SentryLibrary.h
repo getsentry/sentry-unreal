@@ -9,6 +9,7 @@
 #include "SentryLibrary.generated.h"
 
 class USentryEvent;
+class USentryBreadcrumb;
 class USentryUser;
 class USentryUserFeedback;
 class USentryId;
@@ -51,6 +52,19 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static USentryUserFeedback* CreateSentryUserFeedback(USentryId* EventId, const FString& Name, const FString& Email, const FString& Comments);
+
+	/**
+	 * Creates breadcrumb.
+	 *
+	 * @param Message Message of the breadcrumb.
+	 * @param Type Type of the breadcrumb.
+	 * @param Category Category of the breadcrumb.
+	 * @param Data Data associated with the breadcrumb.
+	 * @param Level Level of the breadcrumb.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
+	static USentryBreadcrumb* CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
+		const TMap<FString, FString>& Data, ESentryLevel Level = ESentryLevel::Info);
 
 	/** Crashes the application. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
