@@ -6,6 +6,9 @@
 
 class ISentryUser;
 
+/**
+ * Information about the user who triggered an event.
+ */
 UCLASS(BlueprintType)
 class SENTRY_API USentryUser : public UObject
 {

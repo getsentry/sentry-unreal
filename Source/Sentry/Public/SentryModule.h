@@ -23,13 +23,13 @@ public:
 	static FSentryModule& Get();
 
 	/**
-	 * Check if this module is loaded and ready. It is only valid to call Get() if IsAvailable() returns true.
+	 * Checks if this module is loaded and ready. It is only valid to call Get() if IsAvailable() returns true.
 	 *
 	 * @return True if the module is loaded and ready to use.
 	 */
 	static bool IsAvailable();
 
-	/** Getter for internal settings object to support runtime configuration changes. */
+	/** Gets internal settings object to support runtime configuration changes. */
 	USentrySettings* GetSettings() const;
 
 	/** Gets path to plugin's binaries folder. */

@@ -6,6 +6,9 @@
 #include "UObject/NoExportTypes.h"
 #include "SentrySettings.generated.h"
 
+/**
+ * Sentry settings used for plugin configuration.
+ */
 UCLASS(Config = Engine, defaultconfig)
 class SENTRY_API USentrySettings : public UObject
 {

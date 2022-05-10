@@ -7,6 +7,9 @@
 class USentryId;
 class ISentryUserFeedback;
 
+/**
+ * Additional information about what happened to an event.
+ */
 UCLASS(BlueprintType)
 class SENTRY_API USentryUserFeedback : public UObject
 {

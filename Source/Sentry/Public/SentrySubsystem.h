@@ -18,6 +18,9 @@ class USentryUserFeedback;
 class USentryUser;
 class ISentrySubsystem;
 
+/**
+ * Sentry main API entry point.
+ */
 UCLASS()
 class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
 {

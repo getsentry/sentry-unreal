@@ -9,6 +9,9 @@
 class ISentryScope;
 class USentryBreadcrumb;
 
+/**
+ * Scope data to be sent with the event.
+ */
 UCLASS(BlueprintType)
 class SENTRY_API USentryScope : public UObject
 {

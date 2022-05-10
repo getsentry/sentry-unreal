@@ -8,6 +8,9 @@
 
 class ISentryEvent;
 
+/**
+ * Data being sent to Sentry.
+ */
 UCLASS(BlueprintType)
 class SENTRY_API USentryEvent : public UObject
 {

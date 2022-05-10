@@ -14,6 +14,9 @@ class USentryUser;
 class USentryUserFeedback;
 class USentryId;
 
+/**
+ * Utility functions for Sentry.
+ */
 UCLASS()
 class SENTRY_API USentryLibrary : public UBlueprintFunctionLibrary
 {

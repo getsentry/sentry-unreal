@@ -6,6 +6,9 @@
 
 class ISentryId;
 
+/**
+ * Unique identifier of the event.
+ */
 UCLASS(BlueprintType)
 class SENTRY_API USentryId : public UObject
 {
