@@ -65,7 +65,11 @@ public:
 	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
 		ESentryLevel Level = ESentryLevel::Info);
 
-	/** Clear all breadcrumbs of the current Scope. */
+	/**
+	 * Clear all breadcrumbs of the current Scope.
+	 *
+	 * @note: Not supported for Mac/Windows.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void ClearBreadcrumbs();
 
@@ -86,6 +90,8 @@ public:
 	 * @param Message The message to send.
 	 * @param OnConfigureScope The callback to configure the scope.
 	 * @param Level The message level.
+	 *
+	 * @note: Not supported for Mac/Windows.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
@@ -103,6 +109,8 @@ public:
 	 *
 	 * @param Event The event to send to Sentry.
 	 * @param OnConfigureScope The callback to configure the scope.
+	 *
+	 * @note: Not supported for Mac/Windows.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
@@ -111,6 +119,8 @@ public:
 	 * Captures a user feedback.
 	 *
 	 * @param UserFeedback The user feedback to send to Sentry.
+	 *
+	 * @note: Not supported for Mac/Windows.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
@@ -122,6 +132,8 @@ public:
 	 * @param Email The user email.
 	 * @param Comments The user comments.
 	 * @param Name The optional username.
+	 *
+	 * @note: Not supported for Mac/Windows.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name);
@@ -143,6 +155,8 @@ public:
 	 * Sentry SDK uses the Scope to attach contextual data to events.
 	 *
 	 * @param OnConfigureScope The callback to configure the scope.
+	 *
+	 * @note: Not supported for Mac/Windows.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
