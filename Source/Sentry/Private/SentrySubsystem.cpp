@@ -77,6 +77,14 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 	AddBreadcrumb(Breadcrumb);
 }
 
+void USentrySubsystem::ClearBreadcrumbs()
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->ClearBreadcrumbs();
+}
+
 USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 	if (!SubsystemNativeImpl)

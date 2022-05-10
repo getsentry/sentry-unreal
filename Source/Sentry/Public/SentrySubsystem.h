@@ -65,6 +65,10 @@ public:
 	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
 		ESentryLevel Level = ESentryLevel::Info);
 
+	/** Clear all breadcrumbs of the current Scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void ClearBreadcrumbs();
+
 	/**
 	 * Captures the message.
 	 *

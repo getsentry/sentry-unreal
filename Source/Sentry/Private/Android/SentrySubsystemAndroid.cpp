@@ -41,6 +41,11 @@ void SentrySubsystemAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 		breadcrumbAndroid->GetNativeObject());
 }
 
+void SentrySubsystemAndroid::ClearBreadcrumbs()
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "clearBreadcrumbs", "()V");
+}
+
 USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Lio/sentry/protocol/SentryId;",

@@ -52,6 +52,11 @@ void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 	sentry_add_breadcrumb(breadcrumbDesktop->GetNativeObject());
 }
 
+void SentrySubsystemDesktop::ClearBreadcrumbs()
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("CaptureMessageWithScope method is not supported for the current platform."));
+}
+
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_ANSI(*message));

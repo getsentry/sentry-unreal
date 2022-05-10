@@ -38,6 +38,13 @@ void SentrySubsystemIOS::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 	[SentrySDK addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
+void SentrySubsystemIOS::ClearBreadcrumbs()
+{
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope clearBreadcrumbs];
+	}];
+}
+
 USentryId* SentrySubsystemIOS::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	SentryId* id = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
