@@ -2,19 +2,23 @@
 
 #include "SentryAttachmentIOS.h"
 
+#include "Infrastructure/SentryConvertorsIOS.h"
+
 SentryAttachmentIOS::SentryAttachmentIOS(const TArray<uint8>& data, const FString& filename, const FString& contentType)
 {
-	
+	AttachmentIOS = [[SentryAttachment alloc] initWithData:SentryConvertorsIOS::ByteDataToNative(data)
+		filename:filename.GetNSString() contentType:contentType.GetNSString()];
 }
 
 SentryAttachmentIOS::SentryAttachmentIOS(const FString& path, const FString& filename, const FString& contentType)
 {
-	
+	AttachmentIOS = [[SentryAttachment alloc] initWithPath:path.GetNSString()
+		filename:filename.GetNSString() contentType:contentType.GetNSString()];
 }
 
 SentryAttachmentIOS::~SentryAttachmentIOS()
 {
-	
+	// Put custom destructor logic here if needed
 }
 
 SentryAttachment* SentryAttachmentIOS::GetNativeObject()
@@ -24,20 +28,20 @@ SentryAttachment* SentryAttachmentIOS::GetNativeObject()
 
 TArray<uint8> SentryAttachmentIOS::GetData() const
 {
-	return TArray<uint8>();
+	return SentryConvertorsIOS::ByteDataToUnreal(AttachmentIOS.data);
 }
 
 FString SentryAttachmentIOS::GetPath() const
 {
-	return FString();
+	return FString(AttachmentIOS.path);
 }
 
 FString SentryAttachmentIOS::GetFilename() const
 {
-	return FString();
+	return FString(AttachmentIOS.filename);
 }
 
 FString SentryAttachmentIOS::GetContentType() const
 {
-	return FString();
+	return FString(AttachmentIOS.contentType);
 }

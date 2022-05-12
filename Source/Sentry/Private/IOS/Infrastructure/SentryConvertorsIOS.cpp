@@ -60,6 +60,11 @@ NSArray* SentryConvertorsIOS::StringArrayToNative(const TArray<FString>& array)
 	return arr;
 }
 
+NSData* SentryConvertorsIOS::ByteDataToNative(const TArray<uint8>& array)
+{
+	return [NSData dataWithBytes:array.GetData() length:array.Num()];
+}
+
 ESentryLevel SentryConvertorsIOS::SentryLevelToUnreal(SentryLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
@@ -110,6 +115,20 @@ TArray<FString> SentryConvertorsIOS::StringArrayToUnreal(NSArray* array)
 	}
 
 	return arr;
+}
+
+TArray<uint8> SentryConvertorsIOS::ByteDataToUnreal(NSData* data)
+{
+	TArray<uint8> ByteData;
+
+	uint8* ByteArray = (uint8*)data.bytes;
+
+	for (int i = 0; i < data.length; i++)
+	{
+		ByteData.Add(ByteArray[i]);
+	}
+
+	return ByteData;
 }
 
 USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
