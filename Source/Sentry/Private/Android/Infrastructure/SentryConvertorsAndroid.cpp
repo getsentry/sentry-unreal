@@ -119,6 +119,26 @@ jobject SentryConvertorsAndroid::StringMapToNative(const TMap<FString, FString>&
 	return hashMap;
 }
 
+jbyteArray SentryConvertorsAndroid::ByteArrayToNative(const TArray<uint8>& byteArray)
+{
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+
+	jbyteArray javaByteArray = (jbyteArray)Env->NewByteArray(byteArray.Num());
+
+	jbyte* javaByteArrayPtr = (jbyte*)malloc(byteArray.Num() * sizeof(jbyte));
+
+	for (int i = 0; i < byteArray.Num(); i++)
+	{
+		javaByteArrayPtr[i] = byteArray[i];
+	}
+
+	Env->SetByteArrayRegion(javaByteArray, 0, byteArray.Num(), javaByteArrayPtr);
+
+	free(javaByteArrayPtr);
+
+	return javaByteArray;
+}
+
 ESentryLevel SentryConvertorsAndroid::SentryLevelToUnreal(jobject level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
@@ -248,6 +268,24 @@ TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
 	{
 		jstring javaString = static_cast<jstring>(Env->GetObjectArrayElement(objectArray, i));
 		result.Add(StringToUnreal(javaString));
+	}
+
+	return result;
+}
+
+TArray<uint8> SentryConvertorsAndroid::ByteArrayToUnreal(jbyteArray byteArray)
+{
+	TArray<uint8> result;
+
+	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+
+	jbyte* javaByte = Env->GetByteArrayElements(byteArray, 0);
+
+	int length = Env->GetArrayLength(byteArray);
+
+	for (int i = 0; i < length; i++)
+	{
+		result.Add(javaByte[i]);
 	}
 
 	return result;

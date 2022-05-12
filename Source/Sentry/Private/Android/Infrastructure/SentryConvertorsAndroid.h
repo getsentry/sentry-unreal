@@ -18,6 +18,7 @@ public:
 	static jstring StringToNative(FString string);
 	static jobject StringArrayToNative(const TArray<FString>& stringArray);
 	static jobject StringMapToNative(const TMap<FString, FString>& stringMap);
+	static jbyteArray ByteArrayToNative(const TArray<uint8>& byteArray);
 
 	/** Conversions from native Java types */
 	static ESentryLevel SentryLevelToUnreal(jobject level);
@@ -27,4 +28,5 @@ public:
 	static USentryId* SentryIdToUnreal(jobject id);
 	static TMap<FString, FString> StringMapToUnreal(jobject stringMap);
 	static TArray<FString> StringListToUnreal(jobject stringList);
+	static TArray<uint8> ByteArrayToUnreal(jbyteArray byteArray);
 };
