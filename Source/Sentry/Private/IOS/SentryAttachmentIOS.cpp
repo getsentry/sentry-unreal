@@ -4,6 +4,9 @@
 
 #include "Infrastructure/SentryConvertorsIOS.h"
 
+#import <Foundation/Foundation.h>
+#import <Sentry/Sentry.h>
+
 SentryAttachmentIOS::SentryAttachmentIOS(const TArray<uint8>& data, const FString& filename, const FString& contentType)
 {
 	AttachmentIOS = [[SentryAttachment alloc] initWithData:SentryConvertorsIOS::ByteDataToNative(data)
