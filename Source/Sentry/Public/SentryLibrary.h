@@ -99,4 +99,19 @@ public:
 	/** Generates assert. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static void Assert();
+
+	/** Converts string to byte array. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static TArray<uint8> StringToBytesArray(const FString& InString);
+
+	/**
+	 * Saves string to a file.
+	 *
+	 * @param InString Content of a file.
+	 * @param Filename Name of a file to be saved.
+	 *
+	 * @return Absolute path to a file with specified name and content.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static FString SaveStringToFile(const FString& InString, const FString& Filename);
 };
