@@ -8,6 +8,10 @@
 #include "SentryId.h"
 #include "SentryAttachment.h"
 
+#include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
 	USentryEvent* Event = NewObject<USentryEvent>();
