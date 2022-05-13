@@ -6,6 +6,7 @@
 #include "SentryUser.h"
 #include "SentryUserFeedback.h"
 #include "SentryId.h"
+#include "SentryAttachment.h"
 
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
@@ -66,6 +67,20 @@ USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message
 	Breadcrumb->SetLevel(Level);
 
 	return Breadcrumb;
+}
+
+USentryAttachment* USentryLibrary::CreateSentryAttachmentWithData(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType)
+{
+	USentryAttachment* Attachment = NewObject<USentryAttachment>();
+	Attachment->InitializeWithData(Data, Filename, ContentType);
+	return Attachment;
+}
+
+USentryAttachment* USentryLibrary::CreateSentryAttachmentWithPath(const FString& Path, const FString& Filename, const FString& ContentType)
+{
+	USentryAttachment* Attachment = NewObject<USentryAttachment>();
+	Attachment->InitializeWithPath(Path, Filename, ContentType);
+	return Attachment;
 }
 
 void USentryLibrary::Crash()

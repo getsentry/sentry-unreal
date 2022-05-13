@@ -13,6 +13,7 @@ class USentryBreadcrumb;
 class USentryUser;
 class USentryUserFeedback;
 class USentryId;
+class USentryAttachment;
 
 /**
  * Utility functions for Sentry.
@@ -68,6 +69,28 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
 	static USentryBreadcrumb* CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
 		const TMap<FString, FString>& Data, ESentryLevel Level = ESentryLevel::Info);
+
+	/**
+	 * Creates attachment with bytes and a filename.
+	 *
+	 * @param Data The data for the attachment.
+	 * @param Filename The name of the attachment to display in Sentry.
+	 * @param ContentType The content type of the attachment. Default is "application/octet-stream".
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static USentryAttachment* CreateSentryAttachmentWithData(const TArray<uint8>& Data, const FString& Filename,
+		const FString& ContentType = FString(TEXT("application/octet-stream")));
+
+	/**
+	 * Creates attachment with a path and a filename.
+	 *
+	 * @param Path The path string of the file to upload as an attachment.	
+	 * @param Filename The name of the attachment to display in Sentry.
+	 * @param ContentType The content type of the attachment. Default is "application/octet-stream".
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static USentryAttachment* CreateSentryAttachmentWithPath(const FString& Path, const FString& Filename,
+		const FString& ContentType = FString(TEXT("application/octet-stream")));
 
 	/** Crashes the application. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
