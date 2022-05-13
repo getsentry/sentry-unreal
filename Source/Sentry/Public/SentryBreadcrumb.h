@@ -8,7 +8,6 @@
 
 class ISentryBreadcrumb;
 
-
 /**
  * Information to create a trail of events that happened prior to an issue.
  */
