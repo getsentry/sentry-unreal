@@ -3,8 +3,10 @@
 #include "SentryScopeAndroid.h"
 
 #include "SentryBreadcrumbAndroid.h"
+#include "SentryAttachmentAndroid.h"
 
 #include "SentryBreadcrumb.h"
+#include "SentryAttachment.h"
 
 #include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
@@ -52,6 +54,19 @@ void SentryScopeAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 void SentryScopeAndroid::ClearBreadcrumbs()
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "clearBreadcrumbs", "()V");
+}
+
+void SentryScopeAndroid::AddAttachment(USentryAttachment* attachment)
+{
+	TSharedPtr<SentryAttachmentAndroid> attachmentAndroid = StaticCastSharedPtr<SentryAttachmentAndroid>(attachment->GetNativeImpl());
+
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "addAttachment", "(Lio/sentry/Attachment;)V",
+		attachmentAndroid->GetNativeObject());
+}
+
+void SentryScopeAndroid::ClearAttachments()
+{
+	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "clearAttachments", "()V");
 }
 
 void SentryScopeAndroid::SetTagValue(const FString& key, const FString& value)

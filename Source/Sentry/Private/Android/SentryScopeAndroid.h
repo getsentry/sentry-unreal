@@ -17,6 +17,8 @@ public:
 
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
+	virtual void AddAttachment(USentryAttachment* attachment) override;
+	virtual void ClearAttachments() override;
 	virtual void SetTagValue(const FString& key, const FString& value) override;
 	virtual FString GetTagValue(const FString& key) const override;
 	virtual void RemoveTag(const FString& key) override;

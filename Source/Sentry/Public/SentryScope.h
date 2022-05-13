@@ -8,6 +8,7 @@
 
 class ISentryScope;
 class USentryBreadcrumb;
+class USentryAttachment;
 
 /**
  * Scope data to be sent with the event.
@@ -27,6 +28,14 @@ public:
 	/** Clear all breadcrumbs of the current Scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void ClearBreadcrumbs();
+
+	/** Adds an attachment to the current Scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddAttachment(USentryAttachment* Attachment);
+
+	/** Clear all attachments of the current Scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void ClearAttachments();
 
 	/** Sets a global tag. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

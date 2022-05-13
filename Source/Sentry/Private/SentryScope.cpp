@@ -2,6 +2,7 @@
 
 #include "SentryScope.h"
 #include "SentryBreadcrumb.h"
+#include "SentryAttachment.h"
 
 #include "Interface/SentryScopeInterface.h"
 
@@ -40,6 +41,22 @@ void USentryScope::ClearBreadcrumbs()
 		return;
 
 	ScopeNativeImpl->ClearBreadcrumbs();
+}
+
+void USentryScope::AddAttachment(USentryAttachment* Attachment)
+{
+	if (!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->AddAttachment(Attachment);
+}
+
+void USentryScope::ClearAttachments()
+{
+	if (!ScopeNativeImpl)
+		return;
+
+	ScopeNativeImpl->ClearAttachments();
 }
 
 void USentryScope::SetTagValue(const FString& Key, const FString& Value)

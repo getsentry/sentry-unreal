@@ -3,8 +3,10 @@
 #include "SentryScopeIOS.h"
 
 #include "SentryBreadcrumbIOS.h"
+#include "SentryAttachmentIOS.h"
 
 #include "SentryBreadcrumb.h"
+#include "SentryAttachment.h"
 
 #include "Infrastructure/SentryConvertorsIOS.h"
 
@@ -41,6 +43,18 @@ void SentryScopeIOS::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 void SentryScopeIOS::ClearBreadcrumbs()
 {
 	[ScopeIOS clearBreadcrumbs];
+}
+
+void SentryScopeIOS::AddAttachment(USentryAttachment* attachment)
+{
+	TSharedPtr<SentryAttachmentIOS> attachmentIOS = StaticCastSharedPtr<SentryAttachmentIOS>(attachment->GetNativeImpl());
+
+	[ScopeIOS addAttachment:attachmentIOS->GetNativeObject()];
+}
+
+void SentryScopeIOS::ClearAttachments()
+{
+	[ScopeIOS clearAttachments];
 }
 
 void SentryScopeIOS::SetTagValue(const FString& key, const FString& value)
