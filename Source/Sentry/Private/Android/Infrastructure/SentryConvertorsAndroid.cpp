@@ -277,6 +277,11 @@ TArray<uint8> SentryConvertorsAndroid::ByteArrayToUnreal(jbyteArray byteArray)
 {
 	TArray<uint8> result;
 
+	if (!byteArray)
+	{
+		return result;
+	}
+
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 
 	jbyte* javaByte = Env->GetByteArrayElements(byteArray, 0);
