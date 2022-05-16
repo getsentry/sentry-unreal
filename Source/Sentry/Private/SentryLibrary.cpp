@@ -119,6 +119,11 @@ TArray<uint8> USentryLibrary::StringToBytesArray(const FString& InString)
 	return byteArray;
 }
 
+FString USentryLibrary::ByteArrayToString(const TArray<uint8>& Array)
+{
+	return BytesToString(Array.GetData(), Array.Num());
+}
+
 FString USentryLibrary::SaveStringToFile(const FString& InString, const FString& Filename)
 {
 	FString filePath = FPaths::Combine(FPaths::ProjectPersistentDownloadDir(), Filename);

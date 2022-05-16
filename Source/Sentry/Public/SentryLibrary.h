@@ -104,6 +104,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static TArray<uint8> StringToBytesArray(const FString& InString);
 
+	/** Converts byte array to string. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static FString ByteArrayToString(const TArray<uint8>& Array);
+
 	/**
 	 * Saves string to a file.
 	 *
