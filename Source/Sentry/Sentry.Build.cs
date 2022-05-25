@@ -82,7 +82,7 @@ public class Sentry : ModuleRules
 		}
 
 		// Additional routine for Desktop platforms
-		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac)
+		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString(), "include"));
 
@@ -98,6 +98,13 @@ public class Sentry : ModuleRules
 
 		// Additional routine for Mac
 		if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			LoadThirdPartyLibrary("libsentry", Target);
+			LoadCrashpadHandler("crashpad_handler", Target);
+		}
+
+		// Additional routine for Mac
+		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			LoadThirdPartyLibrary("libsentry", Target);
 			LoadCrashpadHandler("crashpad_handler", Target);
@@ -118,6 +125,11 @@ public class Sentry : ModuleRules
 		{
 			StaticLibExtension = ".a";
 			DynamicLibExtension = ".dylib";
+		}
+		if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			StaticLibExtension = ".a";
+			DynamicLibExtension = ".so";
 		}
 
 		// Link libraries
@@ -144,7 +156,7 @@ public class Sentry : ModuleRules
 			PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
 		}
-		if (Target.Platform == UnrealTargetPlatform.Mac)
+		if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
 		}
