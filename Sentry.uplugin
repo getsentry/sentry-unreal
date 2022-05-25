@@ -19,7 +19,7 @@
 			"Name": "Sentry",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS" ]
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
 		}
 	]
 }
