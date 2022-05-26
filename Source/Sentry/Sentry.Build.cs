@@ -103,7 +103,7 @@ public class Sentry : ModuleRules
 			LoadCrashpadHandler("crashpad_handler", Target);
 		}
 
-		// Additional routine for Mac
+		// Additional routine for Linux
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			LoadThirdPartyLibrary("libsentry", Target);

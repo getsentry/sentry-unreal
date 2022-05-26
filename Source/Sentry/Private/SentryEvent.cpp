@@ -11,7 +11,7 @@
 #include "IOS/SentryEventIOS.h"
 #endif
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentryEventDesktop.h"
 #endif
 
@@ -25,7 +25,7 @@ USentryEvent::USentryEvent()
 #if PLATFORM_IOS
 		EventNativeImpl = MakeShareable(new SentryEventIOS());
 #endif
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 		EventNativeImpl = MakeShareable(new SentryEventDesktop());
 #endif
 	}

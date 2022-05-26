@@ -33,9 +33,11 @@ void FSentryModule::StartupModule()
 	const FString SentryLibName = TEXT("sentry.dll");
 #elif PLATFORM_MAC
 	const FString SentryLibName = TEXT("libsentry.dylib");
+#elif PLATFORM_LINUX
+	const FString SentryLibName = TEXT("libsentry.so");
 #endif
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 	const FString BinariesDirPath = GetBinariesPath();
 	FPlatformProcess::PushDllDirectory(*BinariesDirPath);
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(*FPaths::Combine(BinariesDirPath, SentryLibName));
@@ -63,7 +65,7 @@ void FSentryModule::ShutdownModule()
 		SentrySettings = nullptr;
 	}
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 	if (mDllHandleSentry)
 	{
 		FPlatformProcess::FreeDllHandle(mDllHandleSentry);
@@ -99,6 +101,8 @@ FString FSentryModule::GetBinariesPath()
 	PlatformName = TEXT("Win64");
 #elif PLATFORM_MAC
 	PlatformName = TEXT("Mac");
+#elif PLATFORM_LINUX
+	PlatformName = TEXT("Linux");
 #endif
 
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();

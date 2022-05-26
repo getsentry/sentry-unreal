@@ -3,7 +3,7 @@
 #include "SentryEvent.h"
 #include "SentryModule.h"
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentrySubsystemDesktop.h"
 #endif
 
@@ -19,7 +19,7 @@ void SentrySubsystemSpec::Define()
 {
 	BeforeEach([this]()
 	{
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 		// Subsystem implementation for desktop is used in order to avoid unnecessary complications with proper USentrySubsystem instantiation 
 		SentrySubsystemDesktopImpl = MakeShareable(new SentrySubsystemDesktop());
 #endif
