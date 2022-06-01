@@ -6,10 +6,18 @@
 
     <prebuildCopies>
         <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/com/sentry/unreal" />
-        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-5.6.3.jar" dst="$S(BuildDir)/gradle/app/libs/sentry-5.6.3.jar" />
-        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
-        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-ndk-release.aar" />
     </prebuildCopies>
+
+    <AARImports>
+        <insertValue value="repository $S(PluginDir)/../ThirdParty/Android"/>
+        <insertNewline/>
+        <insert>
+            io.sentry,sentry,5.6.3
+            io.sentry,sentry-android-core,5.6.3
+            io.sentry,sentry-android-ndk,5.6.3
+        </insert>
+        <insertNewline/>
+    </AARImports>
 
     <androidManifestUpdates>
         <addElements tag="application">
