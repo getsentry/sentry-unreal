@@ -106,6 +106,18 @@ FString FSentryModule::GetBinariesPath()
 	return FPaths::Combine(PluginDir, TEXT("Binaries"), PlatformName);
 }
 
+FString FSentryModule::GetPluginVersion()
+{
+	TSharedPtr<IPlugin> plugin = IPluginManager::Get().FindPlugin(TEXT("Sentry"));
+
+	if(!plugin)
+	{
+		return FString();
+	}
+
+	return plugin->GetDescriptor().VersionName;
+}
+
 #undef LOCTEXT_NAMESPACE
 
 IMPLEMENT_MODULE(FSentryModule, Sentry)

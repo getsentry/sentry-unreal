@@ -8,6 +8,8 @@
 #include "SentryId.h"
 #include "SentryUserFeedback.h"
 
+#include "Misc/EngineVersion.h"
+
 #if PLATFORM_ANDROID
 #include "Android/SentrySubsystemAndroid.h"
 #endif
@@ -47,6 +49,8 @@ void USentrySubsystem::Initialize()
 		return;
 
 	SubsystemNativeImpl->InitWithSettings(Settings);
+
+	AddDefaultContext();
 }
 
 void USentrySubsystem::Close()
@@ -190,4 +194,16 @@ void USentrySubsystem::SetLevel(ESentryLevel Level)
 		return;
 
 	SubsystemNativeImpl->SetLevel(Level);
+}
+
+void USentrySubsystem::AddDefaultContext()
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	TMap<FString, FString> DefaultContext;
+	DefaultContext.Add(TEXT("Engine version"), FEngineVersion::Current().ToString(EVersionComponent::Changelist));
+	DefaultContext.Add(TEXT("Plugin version"), FSentryModule::Get().GetPluginVersion());
+
+	SubsystemNativeImpl->SetContext(TEXT("Unreal Engine"), DefaultContext);
 }

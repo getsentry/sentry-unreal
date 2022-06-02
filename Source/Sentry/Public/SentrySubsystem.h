@@ -199,5 +199,9 @@ public:
 	void SetLevel(ESentryLevel Level);
 
 private:
+	/** Adds default context data for all events captured by Sentry SDK. */
+	void AddDefaultContext();
+
+private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 };
