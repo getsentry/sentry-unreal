@@ -202,6 +202,9 @@ private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
 
+	/** Subscribe to specified game events in order to add corresponding breadcrumbs automatically. */
+	void ConfigureBreadcrumbs();
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 };

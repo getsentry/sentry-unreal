@@ -8,7 +8,9 @@
 #include "SentryId.h"
 #include "SentryUserFeedback.h"
 
+#include "Engine/World.h"
 #include "Misc/EngineVersion.h"
+#include "Misc/CoreDelegates.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentrySubsystemAndroid.h"
@@ -51,6 +53,7 @@ void USentrySubsystem::Initialize()
 	SubsystemNativeImpl->InitWithSettings(Settings);
 
 	AddDefaultContext();
+	ConfigureBreadcrumbs();
 }
 
 void USentrySubsystem::Close()
@@ -206,4 +209,62 @@ void USentrySubsystem::AddDefaultContext()
 	DefaultContext.Add(TEXT("Plugin version"), FSentryModule::Get().GetPluginVersion());
 
 	SubsystemNativeImpl->SetContext(TEXT("Unreal Engine"), DefaultContext);
+}
+
+void USentrySubsystem::ConfigureBreadcrumbs()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	if(Settings->bOnMapLoadingStarted)
+	{
+		FCoreUObjectDelegates::PreLoadMap.AddLambda([=](const FString& MapName)
+		{
+			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"),
+				{{TEXT("Map"), MapName}}, ESentryLevel::Info);
+		});
+	}
+
+	if(Settings->bOnMapLoaded)
+	{
+		FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda([=](UWorld* World)
+		{
+			if (World)
+			{
+				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"),
+					{{TEXT("Map"), World->GetMapName()}}, ESentryLevel::Info);
+			}
+			else
+			{
+				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"),
+					{{TEXT("Error"), TEXT("Map load failed")}}, ESentryLevel::Error);
+			}
+		});
+	}
+
+	if(Settings->bOnGameStateClassChanged)
+	{
+		FCoreDelegates::GameStateClassChanged.AddLambda([this](const FString& GameState)
+		{
+			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"),
+				{{TEXT("GameState"), GameState}}, ESentryLevel::Info);
+		});
+	}
+
+	if(Settings->bOnUserActivityStringChanged)
+	{
+		FCoreDelegates::UserActivityStringChanged.AddLambda([this](const FString& Activity)
+		{
+			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"),
+				{{TEXT("Activity"), Activity}}, ESentryLevel::Info);
+		});
+	}
+
+	if(Settings->bOnGameSessionIDChanged)
+	{
+		FCoreDelegates::GameSessionIDChanged.AddLambda([this](const FString& SessionId)
+		{
+			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"),
+				{{TEXT("Session ID"), SessionId}}, ESentryLevel::Info);
+		});
+	}
 }
