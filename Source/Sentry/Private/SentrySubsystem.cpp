@@ -215,7 +215,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	if(Settings->bOnMapLoadingStarted)
+	if(Settings->AutomaticBreadcrumbs.bOnMapLoadingStarted)
 	{
 		FCoreUObjectDelegates::PreLoadMap.AddLambda([=](const FString& MapName)
 		{
@@ -224,7 +224,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 		});
 	}
 
-	if(Settings->bOnMapLoaded)
+	if(Settings->AutomaticBreadcrumbs.bOnMapLoaded)
 	{
 		FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda([=](UWorld* World)
 		{
@@ -241,7 +241,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 		});
 	}
 
-	if(Settings->bOnGameStateClassChanged)
+	if(Settings->AutomaticBreadcrumbs.bOnGameStateClassChanged)
 	{
 		FCoreDelegates::GameStateClassChanged.AddLambda([this](const FString& GameState)
 		{
@@ -250,7 +250,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 		});
 	}
 
-	if(Settings->bOnUserActivityStringChanged)
+	if(Settings->AutomaticBreadcrumbs.bOnUserActivityStringChanged)
 	{
 		FCoreDelegates::UserActivityStringChanged.AddLambda([this](const FString& Activity)
 		{
@@ -259,7 +259,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 		});
 	}
 
-	if(Settings->bOnGameSessionIDChanged)
+	if(Settings->AutomaticBreadcrumbs.bOnGameSessionIDChanged)
 	{
 		FCoreDelegates::GameSessionIDChanged.AddLambda([this](const FString& SessionId)
 		{
