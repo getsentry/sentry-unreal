@@ -72,7 +72,7 @@ void SentryScopeAndroid::ClearAttachments()
 void SentryScopeAndroid::SetTagValue(const FString& key, const FString& value)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
+		*FJavaClassObject::GetJString(key), *FJavaClassObject::GetJString(value));
 }
 
 FString SentryScopeAndroid::GetTagValue(const FString& key) const
@@ -89,7 +89,7 @@ FString SentryScopeAndroid::GetTagValue(const FString& key) const
 void SentryScopeAndroid::RemoveTag(const FString& key)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "removeTag", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(key));
+		*FJavaClassObject::GetJString(key));
 }
 
 void SentryScopeAndroid::SetTags(const TMap<FString, FString>& tags)
@@ -153,19 +153,19 @@ ESentryLevel SentryScopeAndroid::GetLevel() const
 void SentryScopeAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setContexts", "(Ljava/lang/String;Ljava/lang/Object;)V",
-		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringMapToNative(values));
+		*FJavaClassObject::GetJString(key), SentryConvertorsAndroid::StringMapToNative(values));
 }
 
 void SentryScopeAndroid::RemoveContext(const FString& key)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "removeContexts", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(key));
+		*FJavaClassObject::GetJString(key));
 }
 
 void SentryScopeAndroid::SetExtraValue(const FString& key, const FString& value)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "setExtra", "(Ljava/lang/String;Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
+		*FJavaClassObject::GetJString(key), *FJavaClassObject::GetJString(value));
 }
 
 FString SentryScopeAndroid::GetExtraValue(const FString& key) const
@@ -182,7 +182,7 @@ FString SentryScopeAndroid::GetExtraValue(const FString& key) const
 void SentryScopeAndroid::RemoveExtra(const FString& key)
 {
 	SentryMethodCallAndroid::CallVoidMethod(ScopeAndroid, "removeExtra", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(key));
+		*FJavaClassObject::GetJString(key));
 }
 
 void SentryScopeAndroid::SetExtras(const TMap<FString, FString>& extras)

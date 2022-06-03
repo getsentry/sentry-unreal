@@ -59,18 +59,9 @@ jobject SentryConvertorsAndroid::SentryMessageToNative(FString message)
 	jobject messageObject = Env->NewObject(messageClass, messageCtor);
 	jmethodID setMessageMethod = Env->GetMethodID(messageClass, "setMessage", "(Ljava/lang/String;)V");
 
-	Env->CallVoidMethod(messageObject, setMessageMethod, StringToNative(message));
+	Env->CallVoidMethod(messageObject, setMessageMethod, *FJavaClassObject::GetJString(message));
 
 	return messageObject;
-}
-
-jstring SentryConvertorsAndroid::StringToNative(FString string)
-{
-	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
-	jstring local = Env->NewStringUTF(TCHAR_TO_UTF8(*string));
-	jstring result = (jstring)Env->NewGlobalRef(local);
-	Env->DeleteLocalRef(local);
-	return result;
 }
 
 jobject SentryConvertorsAndroid::StringArrayToNative(const TArray<FString>& stringArray)
@@ -84,7 +75,7 @@ jobject SentryConvertorsAndroid::StringArrayToNative(const TArray<FString>& stri
 
 	for (const auto& string : stringArray)
 	{
-		Env->CallBooleanMethod(list, addMethod, StringToNative(string));
+		Env->CallBooleanMethod(list, addMethod, *FJavaClassObject::GetJString(string));
 	}
 
 	Env->DeleteLocalRef(listClass);

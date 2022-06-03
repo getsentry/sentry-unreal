@@ -36,7 +36,7 @@ jobject SentryUserAndroid::GetNativeObject()
 void SentryUserAndroid::SetEmail(const FString& email)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setEmail", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(email));
+		*FJavaClassObject::GetJString(email));
 }
 
 FString SentryUserAndroid::GetEmail() const
@@ -47,7 +47,7 @@ FString SentryUserAndroid::GetEmail() const
 void SentryUserAndroid::SetId(const FString& id)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setId", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(id));
+		*FJavaClassObject::GetJString(id));
 }
 
 FString SentryUserAndroid::GetId() const
@@ -58,7 +58,7 @@ FString SentryUserAndroid::GetId() const
 void SentryUserAndroid::SetUsername(const FString& username)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setUsername", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(username));
+		*FJavaClassObject::GetJString(username));
 }
 
 FString SentryUserAndroid::GetUsername() const
@@ -69,7 +69,7 @@ FString SentryUserAndroid::GetUsername() const
 void SentryUserAndroid::SetIpAddress(const FString& ipAddress)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setIpAddress", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(ipAddress));
+		*FJavaClassObject::GetJString(ipAddress));
 }
 
 FString SentryUserAndroid::GetIpAddress() const

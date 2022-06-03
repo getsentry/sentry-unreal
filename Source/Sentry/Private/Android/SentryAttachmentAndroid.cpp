@@ -14,8 +14,8 @@ SentryAttachmentAndroid::SentryAttachmentAndroid(const TArray<uint8>& data, cons
 	jmethodID attachmentCtor = Env->GetMethodID(attachmentClass, "<init>", "([BLjava/lang/String;Ljava/lang/String;)V");
 	jobject attachmentObject= Env->NewObject(attachmentClass, attachmentCtor,
 		SentryConvertorsAndroid::ByteArrayToNative(data),
-		SentryConvertorsAndroid::StringToNative(filename),
-		SentryConvertorsAndroid::StringToNative(contentType));
+		*FJavaClassObject::GetJString(filename),
+		*FJavaClassObject::GetJString(contentType));
 	AttachmentAndroid = Env->NewGlobalRef(attachmentObject);
 }
 
@@ -25,9 +25,9 @@ SentryAttachmentAndroid::SentryAttachmentAndroid(const FString& path, const FStr
 	jclass attachmentClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/Attachment");
 	jmethodID attachmentCtor = Env->GetMethodID(attachmentClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	jobject attachmentObject= Env->NewObject(attachmentClass, attachmentCtor,
-		SentryConvertorsAndroid::StringToNative(path),
-		SentryConvertorsAndroid::StringToNative(filename),
-		SentryConvertorsAndroid::StringToNative(contentType));
+		*FJavaClassObject::GetJString(path),
+		*FJavaClassObject::GetJString(filename),
+		*FJavaClassObject::GetJString(contentType));
 	AttachmentAndroid = Env->NewGlobalRef(attachmentObject);
 }
 

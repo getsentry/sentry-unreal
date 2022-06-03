@@ -24,8 +24,7 @@ const ANSICHAR* SentrySubsystemAndroid::SentryBridgeJavaClassName = "com/sentry/
 void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;)V",
-		FJavaWrapper::GameActivityThis,
-		SentryConvertorsAndroid::StringToNative(settings->DsnUrl));
+		FJavaWrapper::GameActivityThis, *FJavaClassObject::GetJString(settings->DsnUrl));
 }
 
 void SentrySubsystemAndroid::Close()
@@ -49,7 +48,7 @@ void SentrySubsystemAndroid::ClearBreadcrumbs()
 USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Lio/sentry/protocol/SentryId;",
-		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level));
+		*FJavaClassObject::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level));
 
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
@@ -60,7 +59,7 @@ USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& messag
 	scopeCallback->BindDelegate(onConfigureScope);
 
 	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryBridgeJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Lio/sentry/protocol/SentryId;",
-		SentryConvertorsAndroid::StringToNative(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
+		*FJavaClassObject::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
 
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
@@ -121,19 +120,19 @@ void SentrySubsystemAndroid::ConfigureScope(const FConfigureScopeDelegate& onCon
 void SentrySubsystemAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",
-		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringMapToNative(values));
+		*FJavaClassObject::GetJString(key), SentryConvertorsAndroid::StringMapToNative(values));
 }
 
 void SentrySubsystemAndroid::SetTag(const FString& key, const FString& value)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(key), SentryConvertorsAndroid::StringToNative(value));
+		*FJavaClassObject::GetJString(key), *FJavaClassObject::GetJString(value));
 }
 
 void SentrySubsystemAndroid::RemoveTag(const FString& key)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "removeTag", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(key));
+		*FJavaClassObject::GetJString(key));
 }
 
 void SentrySubsystemAndroid::SetLevel(ESentryLevel level)

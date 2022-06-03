@@ -37,7 +37,7 @@ jobject SentryBreadcrumbAndroid::GetNativeObject()
 void SentryBreadcrumbAndroid::SetMessage(const FString& message)
 {
 	SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setMessage", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(message));
+		*FJavaClassObject::GetJString(message));
 }
 
 FString SentryBreadcrumbAndroid::GetMessage() const
@@ -48,7 +48,7 @@ FString SentryBreadcrumbAndroid::GetMessage() const
 void SentryBreadcrumbAndroid::SetType(const FString& type)
 {
 	SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setType", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(type));
+		*FJavaClassObject::GetJString(type));
 }
 
 FString SentryBreadcrumbAndroid::GetType() const
@@ -59,7 +59,7 @@ FString SentryBreadcrumbAndroid::GetType() const
 void SentryBreadcrumbAndroid::SetCategory(const FString& category)
 {
 	SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setCategory", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(category));
+		*FJavaClassObject::GetJString(category));
 }
 
 FString SentryBreadcrumbAndroid::GetCategory() const
@@ -72,7 +72,7 @@ void SentryBreadcrumbAndroid::SetData(const TMap<FString, FString>& data)
 	for (const auto& dataItem : data)
 	{
 		SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setData", "(Ljava/lang/String;Ljava/lang/Object;)V",
-			SentryConvertorsAndroid::StringToNative(dataItem.Key), SentryConvertorsAndroid::StringToNative(dataItem.Value));
+			*FJavaClassObject::GetJString(dataItem.Key), *FJavaClassObject::GetJString(dataItem.Value));
 	}
 }
 
