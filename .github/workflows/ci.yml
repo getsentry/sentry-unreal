@@ -1,0 +1,33 @@
+name: package-plugin-workflow
+
+on: [push]
+
+jobs:
+  package-plugin-job:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the UE plugin repo
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Pull UE docker image and start the container
+      - name: Run Docker container
+        run: |
+          echo ${{ secrets.UE_REPO_ACCESS_TOKEN }} | docker login ghcr.io -u ${{ secrets.UE_REPO_USER }} --password-stdin
+          docker run -td --name unreal \
+            -v ${{ github.workspace }}:/ue-docker-test \
+            --workdir /ue-docker-test \
+            ghcr.io/epicgames/unreal-engine:dev-slim-4.27
+
+      # Install required UE dependencies
+      - name: Setup environment
+        run: |
+          docker exec unreal sudo -H apt-get update
+          docker exec unreal sudo -H pip3 install --upgrade pip
+          docker exec unreal sudo -H pip3 install ue4cli
+          docker exec unreal ue4 setroot /home/ue4/UnrealEngine
+
+      # Package plugin
+      - name: Package plugin
+        run: docker exec unreal sudo ue4 package

@@ -1,9 +1,0 @@
-name: test-github-action
-on: [push]
-jobs:
-  check-bats-version:
-    runs-on: ubuntu-latest
-    steps:
-      - name: just echo a message
-        run: |
-          echo Hello!
