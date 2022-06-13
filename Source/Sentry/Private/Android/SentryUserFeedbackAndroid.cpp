@@ -37,7 +37,7 @@ jobject SentryUserFeedbackAndroid::GetNativeObject()
 void SentryUserFeedbackAndroid::SetName(const FString& name)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setName", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(name));
+		*FJavaClassObject::GetJString(name));
 }
 
 FString SentryUserFeedbackAndroid::GetName() const
@@ -48,7 +48,7 @@ FString SentryUserFeedbackAndroid::GetName() const
 void SentryUserFeedbackAndroid::SetEmail(const FString& email)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setEmail", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(email));
+		*FJavaClassObject::GetJString(email));
 }
 
 FString SentryUserFeedbackAndroid::GetEmail() const
@@ -59,7 +59,7 @@ FString SentryUserFeedbackAndroid::GetEmail() const
 void SentryUserFeedbackAndroid::SetComment(const FString& comment)
 {
 	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setComments", "(Ljava/lang/String;)V",
-		SentryConvertorsAndroid::StringToNative(comment));
+		*FJavaClassObject::GetJString(comment));
 }
 
 FString SentryUserFeedbackAndroid::GetComment() const
