@@ -12,10 +12,8 @@ jobs:
         include:
         - unreal: ue-4-27
           UE_IMAGE: "ghcr.io/epicgames/unreal-engine:dev-slim-4.27"
-          UE_VERSION: "ue4"
         - unreal: ue-5-0
           UE_IMAGE: "ghcr.io/epicgames/unreal-engine:dev-slim-5.0.2"
-          UE_VERSION: "ue5"
 
     container:
       image: ${{ matrix.UE_IMAGE }}
@@ -39,7 +37,7 @@ jobs:
 
       - name: Configuring UE CLI
         run:
-          ue4 setroot /home/${{ matrix.UE_VERSION }}/UnrealEngine
+          ue4 setroot /home/ue4/UnrealEngine
 
       - name: Package plugin
         run: ue4 package
