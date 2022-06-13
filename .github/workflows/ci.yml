@@ -5,29 +5,29 @@ on: [push]
 jobs:
   package-plugin-job:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/epicgames/unreal-engine:dev-slim-4.27
+      credentials:
+        username: ${{ secrets.UE_REPO_USER }}
+        password: ${{ secrets.UE_REPO_ACCESS_TOKEN }}
+      options: --user root
 
     steps:
-      # Checkout the UE plugin repo
       - name: Checkout
         uses: actions/checkout@v2
 
-      # Pull UE docker image and start the container
-      - name: Run Docker container
+      - name: Installing Linux Dependencies
         run: |
-          echo ${{ secrets.UE_REPO_ACCESS_TOKEN }} | docker login ghcr.io -u ${{ secrets.UE_REPO_USER }} --password-stdin
-          docker run -td --name unreal \
-            -v ${{ github.workspace }}:/ue-docker-test \
-            --workdir /ue-docker-test \
-            ghcr.io/epicgames/unreal-engine:dev-slim-4.27
+          sudo apt-get update
+          pip3 install --upgrade pip
 
-      # Install required UE dependencies
-      - name: Setup environment
-        run: |
-          docker exec unreal sudo -H apt-get update
-          docker exec unreal sudo -H pip3 install --upgrade pip
-          docker exec unreal sudo -H pip3 install ue4cli
-          docker exec unreal ue4 setroot /home/ue4/UnrealEngine
+      - name: Installing UE CLI
+        run:
+          pip3 install ue4cli
 
-      # Package plugin
+      - name: Configuring UE CLI
+        run:
+          ue4 setroot /home/ue4/UnrealEngine
+
       - name: Package plugin
-        run: docker exec unreal sudo ue4 package
+        run: ue4 package
