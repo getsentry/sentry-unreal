@@ -8,15 +8,10 @@ jobs:
 
     strategy:
       matrix:
-        unreal: [ue-4-27, ue-5-0]
-        include:
-        - unreal: ue-4-27
-          UE_IMAGE: "ghcr.io/epicgames/unreal-engine:dev-slim-4.27"
-        - unreal: ue-5-0
-          UE_IMAGE: "ghcr.io/epicgames/unreal-engine:dev-slim-5.0.2"
+        unreal: ['4.27', '5.0.2']
 
     container:
-      image: ${{ matrix.UE_IMAGE }}
+      image: ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}
       credentials:
         username: ${{ secrets.UE_REPO_USER }}
         password: ${{ secrets.UE_REPO_ACCESS_TOKEN }}
