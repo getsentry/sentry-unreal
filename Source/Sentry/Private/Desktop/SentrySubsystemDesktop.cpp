@@ -28,7 +28,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 {
 #if PLATFORM_WINDOWS
 	const FString HandlerExecutableName = TEXT("crashpad_handler.exe");
-#elif PLATFORM_MAC
+#elif PLATFORM_MAC || PLATFORM_LINUX
 	const FString HandlerExecutableName = TEXT("crashpad_handler");
 #endif
 

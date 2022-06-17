@@ -11,7 +11,7 @@
 #include "IOS/SentryBreadcrumbIOS.h"
 #endif
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentryBreadcrumbDesktop.h"
 #endif
 
@@ -25,7 +25,7 @@ USentryBreadcrumb::USentryBreadcrumb()
 #if PLATFORM_IOS
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbIOS());
 #endif
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbDesktop());
 #endif
 	}

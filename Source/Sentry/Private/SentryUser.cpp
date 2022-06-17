@@ -11,7 +11,7 @@
 #include "IOS/SentryUserIOS.h"
 #endif
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentryUserDesktop.h"
 #endif
 
@@ -25,7 +25,7 @@ USentryUser::USentryUser()
 #if PLATFORM_IOS
 		UserNativeImpl = MakeShareable(new SentryUserIOS());
 #endif
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 		UserNativeImpl = MakeShareable(new SentryUserDesktop());
 #endif
 	}

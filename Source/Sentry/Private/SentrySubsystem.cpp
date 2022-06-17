@@ -16,7 +16,7 @@
 #include "IOS/SentrySubsystemIOS.h"
 #endif
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentrySubsystemDesktop.h"
 #endif
 
@@ -28,7 +28,7 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	SubsystemNativeImpl = MakeShareable(new SentrySubsystemAndroid());
 #elif PLATFORM_IOS
 	SubsystemNativeImpl = MakeShareable(new SentrySubsystemIOS());
-#elif PLATFORM_WINDOWS || PLATFORM_MAC
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 	SubsystemNativeImpl = MakeShareable(new SentrySubsystemDesktop());
 #endif
 
