@@ -41,9 +41,13 @@ class SENTRY_API USentrySettings : public UObject
 	GENERATED_UCLASS_BODY()
 
 public:
-	UPROPERTY(Config, EditAnywhere, Category = "Core",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
 		Meta = (DisplayName = "DSN", ToolTip = "The DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard."))
 	FString DsnUrl;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
+		Meta = (DisplayName = "Release", ToolTip = "Release name which will be used for enriching events."))
+	FString Release;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Initialize SDK automatically", ToolTip = "Flag indicating whether to automatically initialize the SDK when the app starts."))

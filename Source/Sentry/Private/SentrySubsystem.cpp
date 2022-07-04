@@ -56,6 +56,15 @@ void USentrySubsystem::Initialize()
 	ConfigureBreadcrumbs();
 }
 
+void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
+{
+	USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	OnConfigureSettings.ExecuteIfBound(Settings);
+
+	Initialize();
+}
+
 void USentrySubsystem::Close()
 {
 	if (!SubsystemNativeImpl)
