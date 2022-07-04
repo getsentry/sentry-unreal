@@ -11,19 +11,19 @@ struct FAutomaticBreadcrumbs
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Config, EditAnywhere,
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Map loading started", ToolTip = "Flag indicating whether to automatically add breadcrumb when map loading starts."))
 	bool bOnMapLoadingStarted = false;
 
-	UPROPERTY(Config, EditAnywhere,
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Map loaded", ToolTip = "Flag indicating whether to automatically add breadcrumb after map was loaded."))
 	bool bOnMapLoaded = false;
 
-	UPROPERTY(Config, EditAnywhere,
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Game state class changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes game state."))
 	bool bOnGameStateClassChanged = false;
 
-	UPROPERTY(Config, EditAnywhere,
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Game session ID changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes the currently active game session."))
 	bool bOnGameSessionIDChanged = false;
 
