@@ -27,7 +27,7 @@ struct FAutomaticBreadcrumbs
 		Meta = (DisplayName = "Game session ID changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes the currently active game session."))
 	bool bOnGameSessionIDChanged = false;
 
-	UPROPERTY(Config, EditAnywhere,
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "User ativity string changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes the user activity hint string for analytics, crash reports, etc."))
 	bool bOnUserActivityStringChanged = false;
 };
