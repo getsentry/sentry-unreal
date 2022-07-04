@@ -4,6 +4,7 @@
 
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
+	, InitAutomatically(false)
 {
 	DsnUrl = TEXT("");
 }

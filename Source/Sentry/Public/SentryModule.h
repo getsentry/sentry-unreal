@@ -35,6 +35,9 @@ public:
 	/** Gets path to plugin's binaries folder. */
 	FString GetBinariesPath();
 
+	/** Gets plugin's version. */
+	static FString GetPluginVersion();
+
 	static const FName ModuleName;
 
 private:
