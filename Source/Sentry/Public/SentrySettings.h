@@ -6,28 +6,28 @@
 #include "UObject/NoExportTypes.h"
 #include "SentrySettings.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FAutomaticBreadcrumbs
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Map loading started", ToolTip = "Flag indicating whether to automatically add breadcrumb when map loading starts."))
 	bool bOnMapLoadingStarted = false;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Map loaded", ToolTip = "Flag indicating whether to automatically add breadcrumb after map was loaded."))
 	bool bOnMapLoaded = false;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Game state class changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes game state."))
 	bool bOnGameStateClassChanged = false;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Game session ID changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes the currently active game session."))
 	bool bOnGameSessionIDChanged = false;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "User ativity string changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes the user activity hint string for analytics, crash reports, etc."))
 	bool bOnUserActivityStringChanged = false;
 };
@@ -53,7 +53,7 @@ public:
 		Meta = (DisplayName = "Initialize SDK automatically", ToolTip = "Flag indicating whether to automatically initialize the SDK when the app starts."))
 	bool InitAutomatically;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Automatically add breadcrumbs"))
 	FAutomaticBreadcrumbs AutomaticBreadcrumbs;
 };
