@@ -18,6 +18,8 @@ class USentryUserFeedback;
 class USentryUser;
 class ISentrySubsystem;
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
+
 /**
  * Sentry main API entry point.
  */
@@ -31,6 +33,13 @@ public:
 	/** Initializes Sentry SDK with values specified in ProjectSettings > Plugins > SentrySDK. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Initialize();
+
+	/** Initializes Sentry SDK with values that override certain parameters specified in ProjectSettings > Plugins > SentrySDK.
+	 *
+	 * @param OnConfigureSettings The callback to configure the settings.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings);
 
 	/** Closes the Sentry SDK. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

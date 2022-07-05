@@ -7,4 +7,5 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, InitAutomatically(false)
 {
 	DsnUrl = TEXT("");
+	Release = TEXT("");
 }

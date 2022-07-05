@@ -13,6 +13,14 @@ SentryCrashReporter::SentryCrashReporter()
 	crashReporterConfig = MakeShareable(new FJsonObject);
 }
 
+void SentryCrashReporter::SetRelease(const FString& release)
+{
+	if (!release.IsEmpty())
+		crashReporterConfig->SetStringField(TEXT("release"), release);
+
+	UpdateCrashReporterConfig();
+}
+
 void SentryCrashReporter::SetUser(USentryUser* user)
 {
 	TSharedPtr<FJsonObject> userConfig = MakeShareable(new FJsonObject);

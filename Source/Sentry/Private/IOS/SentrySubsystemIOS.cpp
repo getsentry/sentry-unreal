@@ -23,6 +23,7 @@ void SentrySubsystemIOS::InitWithSettings(const USentrySettings* settings)
 {
 	[SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
 		options.dsn = settings->DsnUrl.GetNSString();
+		options.releaseName = settings->Release.GetNSString();
 	}];
 }
 

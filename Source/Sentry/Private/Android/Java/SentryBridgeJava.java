@@ -23,11 +23,12 @@ import io.sentry.protocol.SentryId;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 
-	public static void init(Activity activity, final String dsnUrl) {
+	public static void init(Activity activity, final String dsnUrl, final String releaseName) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
 			@Override
 			public void configure(SentryAndroidOptions options) {
 				options.setDsn(dsnUrl);
+				options.setRelease(releaseName);
 			}
 		});
 	}

@@ -36,8 +36,11 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
+	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
 	sentry_init(options);
+
+	crashReporter->SetRelease(settings->Release);
 }
 
 void SentrySubsystemDesktop::Close()
