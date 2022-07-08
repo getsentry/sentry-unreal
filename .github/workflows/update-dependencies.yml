@@ -6,7 +6,7 @@ jobs:
   cocoa:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: modules/sentry-cocoa
+      path: Modules/sentry-cocoa
       name: Cocoa SDK
     secrets:
       api_token: ${{ secrets.DOCKER_TOKEN }}
@@ -14,7 +14,7 @@ jobs:
   java:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: modules/sentry-java
+      path: Modules/sentry-java
       name: Java SDK
     secrets:
       api_token: ${{ secrets.DOCKER_TOKEN }}
@@ -22,7 +22,7 @@ jobs:
   native:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: modules/sentry-native
+      path: Modules/sentry-native
       name: Native SDK
     secrets:
       api_token: ${{ secrets.DOCKER_TOKEN }}
