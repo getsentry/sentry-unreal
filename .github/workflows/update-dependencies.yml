@@ -1,28 +1,33 @@
-name: update-dependencies-workflow
+name: update-dependencies
 
-on: [push]
+on: [workflow_dispatch]
 
 jobs:
-  cocoa:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
-    with:
-      path: Modules/sentry-cocoa
-      name: Cocoa SDK
-    secrets:
-      api_token: ${{ secrets.DOCKER_TOKEN }}
 
-  java:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+  macos-sdk:
+    uses: ./.github/workflows/build-sdk.yml
     with:
-      path: Modules/sentry-java
-      name: Java SDK
-    secrets:
-      api_token: ${{ secrets.DOCKER_TOKEN }}
+      target: Mac
+      runsOn: macos-latest
+      path: Modules/sentry-native
+
+  linux-sdk:
+    uses: ./.github/workflows/build-sdk.yml
+    with:
+      target: Linux
+      runsOn: ubuntu-latest
+      path: Modules/sentry-native
+
+  windows-sdk:
+    uses: ./.github/workflows/build-sdk.yml
+    with:
+      target: Win64
+      runsOn: windows-latest
+      path: Modules/sentry-native
 
   native:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    uses: ./.github/workflows/submodule.yml
+    needs: [macos-sdk, linux-sdk, windows-sdk]
     with:
-      path: Modules/sentry-native
       name: Native SDK
-    secrets:
-      api_token: ${{ secrets.DOCKER_TOKEN }}
+      path: Modules/sentry-native

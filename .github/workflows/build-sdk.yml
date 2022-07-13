@@ -1,0 +1,55 @@
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      path:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runsOn }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update submodule to the latest version
+        id: target
+        run: ./Scripts/update-submodule.ps1 -Path ${{ inputs.path }}
+        shell: pwsh
+
+      - name: Checkout submodule
+        if: steps.target.outputs.latestTag != steps.target.outputs.originalTag
+        run: ./Scripts/checkout-submodule.sh ${{ inputs.path }}
+
+      - name: Installing Linux Dependencies
+        if: ${{ inputs.target == 'Linux' && steps.target.outputs.latestTag != steps.target.outputs.originalTag}}
+        run: |
+          sudo apt-get update
+          sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
+
+      - name: Build Linux
+        if: ${{ inputs.target == 'Linux' && steps.target.outputs.latestTag != steps.target.outputs.originalTag}}
+        run: ./Scripts/build-native-linux.sh ${{ inputs.path }} Source/ThirdParty/${{ inputs.target }}
+
+      - name: Build Win64
+        if: ${{ inputs.target == 'Win64' && steps.target.outputs.latestTag != steps.target.outputs.originalTag}}
+        run: ./Scripts/build-native-windows.sh ${{ inputs.path }} Source/ThirdParty/${{ inputs.target }}
+
+      - name: Build Mac
+        if: ${{ inputs.target == 'Mac' && steps.target.outputs.latestTag != steps.target.outputs.originalTag}}
+        run: ./Scripts/build-native-mac.sh ${{ inputs.path }} Source/ThirdParty/${{ inputs.target }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.target }}-SDK
+          path: Source/ThirdParty/${{ inputs.target }}
+          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
