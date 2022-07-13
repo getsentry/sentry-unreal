@@ -1,9 +1,9 @@
-[submodule "Modules/sentry-cocoa"]
-	path = Modules/sentry-cocoa
-	url = https://github.com/getsentry/sentry-cocoa
 [submodule "Modules/sentry-java"]
 	path = Modules/sentry-java
 	url = https://github.com/getsentry/sentry-java.git
 [submodule "Modules/sentry-native"]
 	path = Modules/sentry-native
 	url = https://github.com/getsentry/sentry-native.git
+[submodule "Modules/sentry-cocoa"]
+	path = Modules/sentry-cocoa
+	url = https://github.com/getsentry/sentry-cocoa
