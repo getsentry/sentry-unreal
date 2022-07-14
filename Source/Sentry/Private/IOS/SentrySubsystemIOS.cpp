@@ -21,9 +21,13 @@
 
 void SentrySubsystemIOS::InitWithSettings(const USentrySettings* settings)
 {
-	[SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
-		options.dsn = settings->DsnUrl.GetNSString();
-	}];
+	NSMutableDictionary* dictOptions = [[NSMutableDictionary alloc] init];
+	dictOptions[@"sdk"] = @{ @"name" : @"sentry.cocoa.unreal" };
+
+	SentryOptions* options = [[SentryOptions alloc] initWithDict:dictOptions didFailWithError:nil];
+	options.dsn = settings->DsnUrl.GetNSString();
+
+	[SentrySDK startWithOptionsObject:options];
 }
 
 void SentrySubsystemIOS::Close()
