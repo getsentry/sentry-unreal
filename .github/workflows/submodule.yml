@@ -61,6 +61,20 @@ jobs:
           path: Source/ThirdParty/Mac
           wait-timeout: 3600
 
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        if: ${{ inputs.name == 'Java SDK' && steps.target.outputs.latestTag != steps.target.outputs.originalTag }}
+        with:
+          name: Android-SDK
+          path: Source/ThirdParty/Android
+          wait-timeout: 3600
+
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        if: ${{ inputs.name == 'Cocoa SDK' && steps.target.outputs.latestTag != steps.target.outputs.originalTag }}
+        with:
+          name: IOS-SDK
+          path: Source/ThirdParty/IOS
+          wait-timeout: 3600
+
       - run: git --no-pager diff
         if: steps.target.outputs.latestTag != steps.target.outputs.originalTag
 

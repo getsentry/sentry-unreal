@@ -25,9 +25,37 @@ jobs:
       runsOn: windows-latest
       path: Modules/sentry-native
 
+  android-sdk:
+    uses: ./.github/workflows/build-sdk.yml
+    with:
+      target: Android
+      runsOn: ubuntu-latest
+      path: Modules/sentry-java
+
+  ios-sdk:
+    uses: ./.github/workflows/build-sdk.yml
+    with:
+      target: IOS
+      runsOn: macos-latest
+      path: Modules/sentry-cocoa
+
   native:
     uses: ./.github/workflows/submodule.yml
     needs: [macos-sdk, linux-sdk, windows-sdk]
     with:
       name: Native SDK
       path: Modules/sentry-native
+
+  java:
+    uses: ./.github/workflows/submodule.yml
+    needs: android-sdk
+    with:
+      name: Java SDK
+      path: Modules/sentry-java
+
+  cocoa:
+    uses: ./.github/workflows/submodule.yml
+    needs: ios-sdk
+    with:
+      name: Cocoa SDK
+      path: Modules/sentry-cocoa

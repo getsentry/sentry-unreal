@@ -48,6 +48,14 @@ jobs:
         if: ${{ inputs.target == 'Mac' && steps.target.outputs.latestTag != steps.target.outputs.originalTag}}
         run: ./Scripts/build-native-mac.sh ${{ inputs.path }} Source/ThirdParty/${{ inputs.target }}
 
+      - name: Build Android
+        if: ${{ inputs.target == 'Android' && steps.target.outputs.latestTag != steps.target.outputs.originalTag}}
+        run: ./Scripts/build-java.sh ${{ inputs.path }} Source/ThirdParty/${{ inputs.target }}
+
+      - name: Build IOS
+        if: ${{ inputs.target == 'IOS' && steps.target.outputs.latestTag != steps.target.outputs.originalTag}}
+        run: ./Scripts/build-ios.sh ${{ inputs.path }} Source/ThirdParty/${{ inputs.target }}
+
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ inputs.target }}-SDK
