@@ -2,7 +2,10 @@
 export sentryNativeRoot=$1
 export sentryArtifactsDestination=$2
 
-cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal
+rm -rf "${sentryArtifactsDestination}/bin/"*
+rm -rf "${sentryArtifactsDestination}/include/"*
+
+cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14
 cmake --build "${sentryNativeRoot}/build" --target sentry --config RelWithDebInfo --parallel
 cmake --build "${sentryNativeRoot}/build" --target crashpad_handler --config Release --parallel
 
