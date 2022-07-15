@@ -4,58 +4,47 @@ on: [workflow_dispatch]
 
 jobs:
 
-  macos-sdk:
-    uses: ./.github/workflows/build-sdk.yml
+  native-linux:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      target: Mac
-      runsOn: macos-latest
-      path: Modules/sentry-native
+      path: Scripts/update-native-linux.sh
+      name: Native SDK (Linux)
+      runs-on: ubuntu-latest
+    secrets:
+      api_token: ${{ secrets.DEPLOY_KEY }}
 
-  linux-sdk:
-    uses: ./.github/workflows/build-sdk.yml
+  native-windows:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      target: Linux
-      runsOn: ubuntu-latest
-      path: Modules/sentry-native
+      path: Scripts/update-native-windows.sh
+      name: Native SDK (Windows)
+      runs-on: windows-latest
+    secrets:
+      api_token: ${{ secrets.DEPLOY_KEY }}
 
-  windows-sdk:
-    uses: ./.github/workflows/build-sdk.yml
+  native-mac:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      target: Win64
-      runsOn: windows-latest
-      path: Modules/sentry-native
-
-  android-sdk:
-    uses: ./.github/workflows/build-sdk.yml
-    with:
-      target: Android
-      runsOn: ubuntu-latest
-      path: Modules/sentry-java
-
-  ios-sdk:
-    uses: ./.github/workflows/build-sdk.yml
-    with:
-      target: IOS
-      runsOn: macos-latest
-      path: Modules/sentry-cocoa
-
-  native:
-    uses: ./.github/workflows/submodule.yml
-    needs: [macos-sdk, linux-sdk, windows-sdk]
-    with:
-      name: Native SDK
-      path: Modules/sentry-native
+      path: Scripts/update-native-mac.sh
+      name: Native SDK (Mac)
+      runs-on: macos-latest
+    secrets:
+      api_token: ${{ secrets.DEPLOY_KEY }}
 
   java:
-    uses: ./.github/workflows/submodule.yml
-    needs: android-sdk
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      name: Java SDK
-      path: Modules/sentry-java
+      path: Scripts/update-java.sh
+      name: Java SDK (Android)
+      runs-on: ubuntu-latest
+    secrets:
+      api_token: ${{ secrets.DEPLOY_KEY }}
 
   cocoa:
-    uses: ./.github/workflows/submodule.yml
-    needs: ios-sdk
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      name: Cocoa SDK
-      path: Modules/sentry-cocoa
+      path: Scripts/update-cocoa.sh
+      name: Cocoa SDK (iOS)
+      runs-on: macos-latest
+    secrets:
+      api_token: ${{ secrets.DEPLOY_KEY }}
