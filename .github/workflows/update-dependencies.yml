@@ -16,7 +16,7 @@ jobs:
   native-windows:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: Scripts/update-native-windows.sh
+      path: Scripts/update-native-windows.ps1
       name: Native SDK (Windows)
       runs-on: windows-latest
     secrets:
