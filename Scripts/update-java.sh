@@ -21,6 +21,8 @@ set-version)
     ./Scripts/checkout-submodule.sh $submodulePath
     ./Scripts/build-java.sh $submodulePath Source/ThirdParty/$targetPlatform
 
+    ./Scripts/bump-version-android.sh $version
+
     echo "Setting submodule version to '$version'"    
     ;;
 *)
