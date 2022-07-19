@@ -18,7 +18,7 @@ jobs:
       name: Native SDK (Linux)
       runs-on: ubuntu-latest
     secrets:
-      api_token: ${{ secrets.DEPLOY_KEY }}
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   native-windows:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
@@ -27,7 +27,7 @@ jobs:
       name: Native SDK (Windows)
       runs-on: windows-latest
     secrets:
-      api_token: ${{ secrets.DEPLOY_KEY }}
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   native-mac:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
@@ -36,7 +36,7 @@ jobs:
       name: Native SDK (Mac)
       runs-on: macos-latest
     secrets:
-      api_token: ${{ secrets.DEPLOY_KEY }}
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   java:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
@@ -45,7 +45,7 @@ jobs:
       name: Java SDK (Android)
       runs-on: ubuntu-latest
     secrets:
-      api_token: ${{ secrets.DEPLOY_KEY }}
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   cocoa:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
@@ -54,4 +54,4 @@ jobs:
       name: Cocoa SDK (iOS)
       runs-on: macos-latest
     secrets:
-      api_token: ${{ secrets.DEPLOY_KEY }}
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
