@@ -8,7 +8,11 @@ carthage build --project-directory "${sentryIosRoot}" --use-xcframeworks --no-sk
 
 cp -R "${sentryIosRoot}/Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
 
-mkdir "${sentryArtifactsDestination}/Sentry.embeddedframework"
-cp -R "${sentryArtifactsDestination}/Sentry.framework" "${sentryArtifactsDestination}/Sentry.embeddedframework"
-zip -r "${sentryArtifactsDestination}/Sentry.embeddedframework.zip" "${sentryArtifactsDestination}/Sentry.embeddedframework"
-rm -rf "${sentryArtifactsDestination}/Sentry.embeddedframework"
+mkdir "Sentry.embeddedframework"
+
+cp -R "${sentryArtifactsDestination}/Sentry.framework" "Sentry.embeddedframework"
+zip -r "Sentry.embeddedframework.zip" "Sentry.embeddedframework"
+cp -R "Sentry.embeddedframework.zip" "${sentryArtifactsDestination}/Sentry.embeddedframework.zip"
+
+rm -rf "Sentry.embeddedframework"
+rm "Sentry.embeddedframework.zip"
