@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 export sentryJavaRoot=$1
 export sentryArtifactsDestination=$2
 

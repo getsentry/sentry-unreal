@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 sed -i 's/io.sentry,sentry,.\..\../io.sentry,sentry,'$1'/g' Source/Sentry/Sentry_Android_UPL.xml
 sed -i 's/io.sentry,sentry-android-core,.\..\../io.sentry,sentry-android-core,'$1'/g' Source/Sentry/Sentry_Android_UPL.xml

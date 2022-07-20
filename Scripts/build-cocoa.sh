@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 export sentryIosRoot=$1
 export sentryArtifactsDestination=$2
 
