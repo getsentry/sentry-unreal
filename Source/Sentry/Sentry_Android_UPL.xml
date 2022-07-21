@@ -22,6 +22,7 @@
     <androidManifestUpdates>
         <addElements tag="application">
             <meta-data android:name="io.sentry.auto-init" android:value="false"/>
+            <meta-data android:name="io.sentry.sdk.name" android:value="sentry.java.android.unreal"/>
         </addElements>
     </androidManifestUpdates>
 
