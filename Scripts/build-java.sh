@@ -6,7 +6,9 @@ export sentryArtifactsDestination=$2
 
 rm -rf "${sentryArtifactsDestination}/"*
 
-"${sentryJavaRoot}/gradlew" -p "${sentryJavaRoot}" -PsentryAndroidSdkName=sentry.native.android.unreal :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
+pushd ${sentryJavaRoot}
+"${sentryJavaRoot}/gradlew" -PsentryAndroidSdkName=sentry.native.android.unreal :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
+popd
 
 cp "${sentryJavaRoot}/sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" "${sentryArtifactsDestination}/sentry-android-ndk-release.aar"
 cp "${sentryJavaRoot}/sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" "${sentryArtifactsDestination}/sentry-android-core-release.aar"
