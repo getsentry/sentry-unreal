@@ -13,6 +13,9 @@
 - Bump Native SDK (Linux) to v0.4.18 ([#36](https://github.com/getsentry/sentry-unreal/pull/36))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0418)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.17...0.4.18)
+- Bump Native SDK (Windows) to v0.4.18 ([#40](https://github.com/getsentry/sentry-unreal/pull/40))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0418)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.4.17...0.4.18)
 
 ## 0.0.1
 
