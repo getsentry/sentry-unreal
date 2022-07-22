@@ -155,15 +155,17 @@ public class Sentry : ModuleRules
 			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DynamicLibExtension), Path.Combine(BinariesPath, libname + DynamicLibExtension), true);
 		}
 
-		if (!File.Exists(Path.Combine(BinariesPath, libname + DebugSymbolsExtension)))
-		{
-			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DebugSymbolsExtension), Path.Combine(BinariesPath, libname + DebugSymbolsExtension), true);
-		}
-
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
+			
+			if (!File.Exists(Path.Combine(BinariesPath, libname + DebugSymbolsExtension)))
+			{
+				File.Copy(Path.Combine(DynamicLibrariesPath, libname + DebugSymbolsExtension), Path.Combine(BinariesPath, libname + DebugSymbolsExtension), true);
+			}
+			
+			RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DebugSymbolsExtension));
 		}
 		if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
@@ -171,7 +173,6 @@ public class Sentry : ModuleRules
 		}
 
 		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
-		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DebugSymbolsExtension));
 	}
 
 	public void LoadCrashpadHandler(string HandlerName, ReadOnlyTargetRules Target)
