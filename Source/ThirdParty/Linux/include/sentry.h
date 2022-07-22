@@ -30,7 +30,7 @@ extern "C" {
 #        define SENTRY_SDK_NAME "sentry.native"
 #    endif
 #endif
-#define SENTRY_SDK_VERSION "0.4.17"
+#define SENTRY_SDK_VERSION "0.4.18"
 #define SENTRY_SDK_USER_AGENT SENTRY_SDK_NAME "/" SENTRY_SDK_VERSION
 
 /* common platform detection */
@@ -409,14 +409,25 @@ SENTRY_EXPERIMENTAL_API sentry_value_t sentry_value_new_thread(
  *
  * See https://develop.sentry.dev/sdk/event-payloads/stacktrace/
  *
- * The returned object needs to be attached to either an exception
- * event, or a thread object.
+ * The returned object must be attached to either an exception or thread
+ * object.
  *
  * If `ips` is NULL the current stack trace is captured, otherwise `len`
  * stack trace instruction pointers are attached to the event.
  */
 SENTRY_EXPERIMENTAL_API sentry_value_t sentry_value_new_stacktrace(
     void **ips, size_t len);
+
+/**
+ * Sets the Stack Trace conforming to the Stack Trace Interface in a value.
+ *
+ * The value argument must be either an exception or thread object.
+ *
+ * If `ips` is NULL the current stack trace is captured, otherwise `len` stack
+ * trace instruction pointers are attached to the event.
+ */
+SENTRY_EXPERIMENTAL_API void sentry_value_set_stacktrace(
+    sentry_value_t value, void **ips, size_t len);
 
 /**
  * Adds an Exception to an Event value.
@@ -1762,6 +1773,21 @@ SENTRY_EXPERIMENTAL_API int sentry_get_crashed_last_run();
  * Returns 0 on success, 1 on error.
  */
 SENTRY_EXPERIMENTAL_API int sentry_clear_crashed_last_run();
+
+/**
+ * Sentry SDK version.
+ */
+SENTRY_EXPERIMENTAL_API const char *sentry_sdk_version();
+
+/**
+ * Sentry SDK name.
+ */
+SENTRY_EXPERIMENTAL_API const char *sentry_sdk_name();
+
+/**
+ * Sentry SDK User-Agent.
+ */
+SENTRY_EXPERIMENTAL_API const char *sentry_sdk_user_agent();
 
 #ifdef __cplusplus
 }
