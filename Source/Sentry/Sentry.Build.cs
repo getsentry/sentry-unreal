@@ -115,21 +115,25 @@ public class Sentry : ModuleRules
 	{
 		string StaticLibExtension = string.Empty;
 		string DynamicLibExtension = string.Empty;
+		string DebugSymbolsExtension = string.Empty;
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			StaticLibExtension = ".lib";
 			DynamicLibExtension = ".dll";
+			DebugSymbolsExtension = ".pdb";
 		}
 		if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			StaticLibExtension = ".a";
 			DynamicLibExtension = ".dylib";
+			DebugSymbolsExtension = ".dylib.dSYM";
 		}
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			StaticLibExtension = ".a";
 			DynamicLibExtension = ".so";
+			DebugSymbolsExtension = ".dbg.so";
 		}
 
 		// Link libraries
@@ -151,6 +155,11 @@ public class Sentry : ModuleRules
 			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DynamicLibExtension), Path.Combine(BinariesPath, libname + DynamicLibExtension), true);
 		}
 
+		if (!File.Exists(Path.Combine(BinariesPath, libname + DebugSymbolsExtension)))
+		{
+			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DebugSymbolsExtension), Path.Combine(BinariesPath, libname + DebugSymbolsExtension), true);
+		}
+
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
@@ -162,6 +171,7 @@ public class Sentry : ModuleRules
 		}
 
 		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
+		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DebugSymbolsExtension));
 	}
 
 	public void LoadCrashpadHandler(string HandlerName, ReadOnlyTargetRules Target)

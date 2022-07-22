@@ -23,8 +23,14 @@ extern "C" {
 #endif
 
 /* SDK Version */
-#define SENTRY_SDK_NAME "sentry.native"
-#define SENTRY_SDK_VERSION "0.4.15"
+#ifndef SENTRY_SDK_NAME
+#    ifdef __ANDROID__
+#        define SENTRY_SDK_NAME "sentry.native.android"
+#    else
+#        define SENTRY_SDK_NAME "sentry.native"
+#    endif
+#endif
+#define SENTRY_SDK_VERSION "0.4.18"
 #define SENTRY_SDK_USER_AGENT SENTRY_SDK_NAME "/" SENTRY_SDK_VERSION
 
 /* common platform detection */
@@ -403,14 +409,25 @@ SENTRY_EXPERIMENTAL_API sentry_value_t sentry_value_new_thread(
  *
  * See https://develop.sentry.dev/sdk/event-payloads/stacktrace/
  *
- * The returned object needs to be attached to either an exception
- * event, or a thread object.
+ * The returned object must be attached to either an exception or thread
+ * object.
  *
  * If `ips` is NULL the current stack trace is captured, otherwise `len`
  * stack trace instruction pointers are attached to the event.
  */
 SENTRY_EXPERIMENTAL_API sentry_value_t sentry_value_new_stacktrace(
     void **ips, size_t len);
+
+/**
+ * Sets the Stack Trace conforming to the Stack Trace Interface in a value.
+ *
+ * The value argument must be either an exception or thread object.
+ *
+ * If `ips` is NULL the current stack trace is captured, otherwise `len` stack
+ * trace instruction pointers are attached to the event.
+ */
+SENTRY_EXPERIMENTAL_API void sentry_value_set_stacktrace(
+    sentry_value_t value, void **ips, size_t len);
 
 /**
  * Adds an Exception to an Event value.
@@ -561,7 +578,6 @@ SENTRY_API void sentry_envelope_free(sentry_envelope_t *envelope);
 SENTRY_API sentry_value_t sentry_envelope_get_event(
     const sentry_envelope_t *envelope);
 
-#ifdef SENTRY_PERFORMANCE_MONITORING
 /**
  * Given an Envelope, returns the embedded Transaction if there is one.
  *
@@ -569,7 +585,6 @@ SENTRY_API sentry_value_t sentry_envelope_get_event(
  */
 SENTRY_EXPERIMENTAL_API sentry_value_t sentry_envelope_get_transaction(
     const sentry_envelope_t *envelope);
-#endif
 
 /**
  * Serializes the envelope.
@@ -704,6 +719,20 @@ SENTRY_API void sentry_transport_free(sentry_transport_t *transport);
  */
 SENTRY_API sentry_transport_t *sentry_new_function_transport(
     void (*func)(const sentry_envelope_t *envelope, void *data), void *data);
+
+/**
+ * This represents an interface for user-defined backends.
+ *
+ * Backends are responsible to handle crashes. They are maintained at runtime
+ * via various life-cycle hooks from the sentry-core.
+ *
+ * At this point none of those interfaces are exposed in the API including
+ * creation and destruction. The main use-case of the backend in the API at this
+ * point is to disable it via `sentry_options_set_backend` at runtime before it
+ * is initialized.
+ */
+struct sentry_backend_s;
+typedef struct sentry_backend_s sentry_backend_t;
 
 /* -- Options APIs -- */
 
@@ -1046,6 +1075,16 @@ SENTRY_API void sentry_options_set_shutdown_timeout(
  */
 SENTRY_API uint64_t sentry_options_get_shutdown_timeout(sentry_options_t *opts);
 
+/**
+ * Sets a user-defined backend.
+ *
+ * Since creation and destruction of backends is not exposed in the API, this
+ * can only be used to set the backend to `NULL`, which disables the backend in
+ * the initialization.
+ */
+SENTRY_API void sentry_options_set_backend(
+    sentry_options_t *opts, sentry_backend_t *backend);
+
 /* -- Global APIs -- */
 
 /**
@@ -1137,9 +1176,9 @@ SENTRY_API sentry_user_consent_t sentry_user_consent_get(void);
 /**
  * Sends a sentry event.
  *
- * If SENTRY_PERFORMANCE_MONITORING is enabled, returns a nil UUID if the event
- * being passed in is a transaction, and the transaction will not be sent nor
- * consumed. `sentry_transaction_finish` should be used to send transactions.
+ * If returns a nil UUID if the event being passed in is a transaction, and the
+ * transaction will not be sent nor consumed. `sentry_transaction_finish` should
+ * be used to send transactions.
  */
 SENTRY_API sentry_uuid_t sentry_capture_event(sentry_value_t event);
 
@@ -1229,7 +1268,6 @@ SENTRY_API void sentry_start_session(void);
  */
 SENTRY_API void sentry_end_session(void);
 
-#ifdef SENTRY_PERFORMANCE_MONITORING
 /**
  * Sets the maximum number of spans that can be attached to a
  * transaction.
@@ -1708,7 +1746,48 @@ SENTRY_EXPERIMENTAL_API void sentry_transaction_iter_headers(
     sentry_transaction_t *tx, sentry_iter_headers_function_t callback,
     void *userdata);
 
-#endif
+/**
+ * Returns whether the application has crashed on the last run.
+ *
+ * Notes:
+ *   * The underlying value is set by sentry_init() - it must be called first.
+ *   * Call sentry_clear_crashed_last_run() to reset for the next app run.
+ *
+ * Possible return values:
+ *   1 = the last run was a crash
+ *   0 = no crash recognized
+ *  -1 = sentry_init() hasn't been called yet
+ */
+SENTRY_EXPERIMENTAL_API int sentry_get_crashed_last_run();
+
+/**
+ * Clear the status of the "crashed-last-run". You should explicitly call
+ * this after sentry_init() if you're using sentry_get_crashed_last_run().
+ * Otherwise, the same information is reported on any subsequent runs.
+ *
+ * Notes:
+ *   * This doesn't change the value of sentry_get_crashed_last_run() yet.
+ *     However, if sentry_init() is called again, the value will change.
+ *   * This may only be called after sentry_init() and before sentry_close().
+ *
+ * Returns 0 on success, 1 on error.
+ */
+SENTRY_EXPERIMENTAL_API int sentry_clear_crashed_last_run();
+
+/**
+ * Sentry SDK version.
+ */
+SENTRY_EXPERIMENTAL_API const char *sentry_sdk_version();
+
+/**
+ * Sentry SDK name.
+ */
+SENTRY_EXPERIMENTAL_API const char *sentry_sdk_name();
+
+/**
+ * Sentry SDK User-Agent.
+ */
+SENTRY_EXPERIMENTAL_API const char *sentry_sdk_user_agent();
 
 #ifdef __cplusplus
 }
