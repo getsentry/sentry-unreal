@@ -37,7 +37,9 @@
         <insert>
             -dontwarn com.sentry.unreal.**
             -keep class com.sentry.unreal.** { *; }
+            -keep class io.sentry.** { *; }
             -keep interface com.sentry.unreal.** { *; }
+            -keep interface io.sentry.** { *; }
         </insert>
     </proguardAdditions>
 
