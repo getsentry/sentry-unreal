@@ -28,6 +28,9 @@
 - Bump Native SDK (Mac) to v0.5.0 ([#49](https://github.com/getsentry/sentry-unreal/pull/49))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#050)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.18...0.5.0)
+- Bump Native SDK (Linux) to v0.5.0 ([#48](https://github.com/getsentry/sentry-unreal/pull/48))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#050)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.4.18...0.5.0)
 
 ## 0.0.1
 
