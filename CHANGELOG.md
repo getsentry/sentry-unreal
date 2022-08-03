@@ -25,6 +25,9 @@
 - Bump Cocoa SDK (iOS) to v7.23.0 ([#46](https://github.com/getsentry/sentry-unreal/pull/46))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7230)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.22.0...7.23.0)
+- Bump Native SDK (Windows) to v0.5.0 ([#50](https://github.com/getsentry/sentry-unreal/pull/50))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#050)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.4.18...0.5.0)
 
 ## 0.0.1
 
