@@ -9,7 +9,7 @@
 Experimental Sentry SDK for Unreal Engine
 ===========
 
-Sentry [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/native/guides/ue4/).
+Sentry [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
 This SDK is a prototype, that packages Sentry's mobile SDKs into a Unreal Engine package.
 
 
