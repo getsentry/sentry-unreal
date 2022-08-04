@@ -19,7 +19,7 @@ To install the plugin `cd` to UE project root and create a new `Plugins` directo
 
 Before starting to use Sentry Unreal make sure that the plugin is enabled. In UE editor navigate to `Settings -> Plugins -> Code Plugins` menu and check its status.
 
-In order to send events and crash data to Sentry, UE project has to be associated with the corresponding Sentry project first. Open `Settings -> Project Settings -> Plugins -> Sentry SDK` and provide the valid DSN (more info about DSN [here](https://docs.sentry.io/product/sentry-basics/dsn-explainer/)).
+In order to send events and crash data to Sentry, UE project has to be associated with the corresponding Sentry project first. Open `Settings -> Project Settings -> Plugins -> Sentry SDK` and provide the valid Unreal Engine Specific DSN (more info about DSN [here](https://docs.sentry.io/product/sentry-basics/dsn-explainer/)).
 
 ## Plugin structure
 
