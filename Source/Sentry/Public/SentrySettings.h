@@ -42,7 +42,7 @@ class SENTRY_API USentrySettings : public UObject
 
 public:
 	UPROPERTY(Config, EditAnywhere, Category = "Core",
-		Meta = (DisplayName = "DSN", ToolTip = "The DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard."))
+		Meta = (DisplayName = "DSN", ToolTip = "The *Unreal Engine* DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard and look for the Unreal Engine Endpoint."))
 	FString DsnUrl;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
