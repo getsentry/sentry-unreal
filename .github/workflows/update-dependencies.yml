@@ -1,0 +1,57 @@
+name: update-dependencies
+
+on:
+  # Run every day.
+  schedule:
+    - cron: '0 3 * * *'
+  # And on on every PR merge so we get the updated dependencies ASAP, and to make sure the changelog doesn't conflict.
+  push:
+    branches:
+      - main
+
+jobs:
+
+  native-linux:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    with:
+      path: Scripts/update-native-linux.sh
+      name: Native SDK (Linux)
+      runs-on: ubuntu-latest
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  native-windows:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    with:
+      path: Scripts/update-native-windows.ps1
+      name: Native SDK (Windows)
+      runs-on: windows-latest
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  native-mac:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    with:
+      path: Scripts/update-native-mac.sh
+      name: Native SDK (Mac)
+      runs-on: macos-latest
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  java:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    with:
+      path: Scripts/update-java.sh
+      name: Java SDK (Android)
+      runs-on: ubuntu-latest
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  cocoa:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    with:
+      path: Scripts/update-cocoa.sh
+      name: Cocoa SDK (iOS)
+      runs-on: macos-latest
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}

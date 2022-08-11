@@ -153,8 +153,10 @@ NS_SWIFT_NAME(Options)
 
 /**
  * Describes the Sentry SDK and its configuration used to capture and transmit an event.
+ * This is reserved for internal use, and will be removed in a future version of the SDK.
  */
-@property (nonatomic, readonly, strong) SentrySdkInfo *sdkInfo;
+@property (nonatomic, readonly, strong) SentrySdkInfo *sdkInfo DEPRECATED_MSG_ATTRIBUTE(
+    "This property will be removed in a future version of the SDK");
 
 /**
  * The maximum size for each attachment in bytes. Default is 20 MiB / 20 * 1024 * 1024 bytes.
@@ -198,6 +200,21 @@ NS_SWIFT_NAME(Options)
  * Default value is <code>NO</code>
  */
 @property (nonatomic, assign) BOOL attachScreenshot;
+
+/**
+ * This feature is EXPERIMENTAL.
+ *
+ * When enabled, the SDK creates transactions for UI events like buttons clicks, switch toggles,
+ * and other ui elements that uses UIControl `sendAction:to:forEvent:`.
+ */
+@property (nonatomic, assign) BOOL enableUserInteractionTracing;
+
+/**
+ * How long an idle transaction waits for new children after all its child spans finished. Only UI
+ * event transactions are idle transactions. The default is 3 seconds.
+ */
+@property (nonatomic, assign) NSTimeInterval idleTimeout;
+
 #endif
 
 /**
@@ -271,13 +288,6 @@ NS_SWIFT_NAME(Options)
 @property (nullable, nonatomic, weak) id<NSURLSessionDelegate> urlSessionDelegate;
 
 /**
- * Controls if the `tracestate` header is attached to envelopes and HTTP client integrations.
- *
- * Note: this is an experimental API and will be removed without notice.
- */
-@property (nonatomic) BOOL experimentalEnableTraceSampling;
-
-/**
  * Wether the SDK should use swizzling or not. Default is YES.
  *
  * @discussion When turned off the following features are disabled: breadcrumbs for touch events and
@@ -298,11 +308,46 @@ NS_SWIFT_NAME(Options)
 
 #if SENTRY_TARGET_PROFILING_SUPPORTED
 /**
+ * This feature is experimental. Profiling is not supported on watchOS or tvOS.
+ *
+ * Indicates the percentage profiles being sampled out of the sampled transactions.
+ *
+ * The default is 0. The value needs to be >= 0.0 and <= 1.0. When setting a value out of range
+ * the SDK sets it to the default of 0.
+ *
+ * This property is dependent on `tracesSampleRate` -- if `tracesSampleRate` is 0 (default),
+ * no profiles will be collected no matter what this property is set to. This property is
+ * used to undersample profiles *relative to* `tracesSampleRate`.
+ */
+@property (nullable, nonatomic, strong) NSNumber *profilesSampleRate;
+
+/**
+ * This feature is experimental. Profiling is not supported on watchOS or tvOS.
+ *
+ * A callback to a user defined profiles sampler function. This is similar to setting
+ * `profilesSampleRate`, but instead of a static value, the callback function will be called to
+ * determine the sample rate.
+ */
+@property (nullable, nonatomic) SentryTracesSamplerCallback profilesSampler;
+
+/**
+ * If profiling should be enabled or not. Returns YES if either a profilesSampleRate > 0 and
+ * <=1 or a profilesSampler is set otherwise NO.
+ */
+@property (nonatomic, assign, readonly) BOOL isProfilingEnabled;
+
+/**
+ * DEPRECATED: Use `profilesSampleRate` instead. Setting `enableProfiling` to YES is the equivalent
+ * of setting `profilesSampleRate` to `1.0`. If `profilesSampleRate` is set, it will take precedence
+ * over this setting.
+ *
  * Whether to enable the sampling profiler. Default is NO.
  * @note This is a beta feature that is currently not available to all Sentry customers. This
  * feature is not supported on watchOS or tvOS.
  */
-@property (nonatomic, assign) BOOL enableProfiling;
+@property (nonatomic, assign) BOOL enableProfiling DEPRECATED_MSG_ATTRIBUTE(
+    "Use profilesSampleRate or profilesSampler instead. This property will be removed in a future "
+    "version of the SDK");
 #endif
 
 /**
@@ -312,6 +357,25 @@ NS_SWIFT_NAME(Options)
  * @see <https://develop.sentry.dev/sdk/client-reports/>
  */
 @property (nonatomic, assign) BOOL sendClientReports;
+
+/**
+ * When enabled, the SDK tracks when the application stops responding for a specific amount of
+ * time defined by the `appHangsTimeoutInterval` option.
+ */
+@property (nonatomic, assign) BOOL enableAppHangTracking;
+
+/**
+ * The minimum amount of time an app should be unresponsive to be classified as an App Hanging.
+ * The actual amount may be a little longer.
+ * Avoid using values lower than 100ms, which may cause a lot of app hangs events being transmitted.
+ * The default value is 2 seconds.
+ */
+@property (nonatomic, assign) NSTimeInterval appHangTimeoutInterval;
+
+/**
+ * When enabled, the SDK adds breadcrumbs for various system events. Default value is YES.
+ */
+@property (nonatomic, assign) BOOL enableAutoBreadcrumbTracking;
 
 @end
 

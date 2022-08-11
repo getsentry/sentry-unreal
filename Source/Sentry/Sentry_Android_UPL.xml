@@ -2,19 +2,25 @@
 <root xmlns:android="http://schemas.android.com/apk/res/android">
     <init>
         <log text="Sentry SDK Android UPL initialization"/>
+
+        <setBoolFromProperty result="bUploadSymbols" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="true" />
+        <setStringFromProperty result="ProjectName" ini="Engine" section="/Script/Sentry.SentrySettings" property="ProjectName"/>
+        <setStringFromProperty result="OrganisationName" ini="Engine" section="/Script/Sentry.SentrySettings" property="OrganisationName"/>
+        <setStringFromProperty result="AuthToken" ini="Engine" section="/Script/Sentry.SentrySettings" property="AuthToken"/>
     </init>
 
     <prebuildCopies>
         <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/com/sentry/unreal" />
+        <copyFile src="$S(PluginDir)/../../Resources/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
     </prebuildCopies>
 
     <AARImports>
         <insertValue value="repository $S(PluginDir)/../ThirdParty/Android"/>
         <insertNewline/>
         <insert>
-            io.sentry,sentry,6.0.0
-            io.sentry,sentry-android-core,6.0.0
-            io.sentry,sentry-android-ndk,6.0.0
+            io.sentry,sentry,6.3.1
+            io.sentry,sentry-android-core,6.3.1
+            io.sentry,sentry-android-ndk,6.3.1
         </insert>
         <insertNewline/>
     </AARImports>
@@ -22,6 +28,7 @@
     <androidManifestUpdates>
         <addElements tag="application">
             <meta-data android:name="io.sentry.auto-init" android:value="false"/>
+            <meta-data android:name="io.sentry.sdk.name" android:value="sentry.java.android.unreal"/>
         </addElements>
     </androidManifestUpdates>
 
@@ -36,9 +43,26 @@
         <insert>
             -dontwarn com.sentry.unreal.**
             -keep class com.sentry.unreal.** { *; }
+            -keep class io.sentry.** { *; }
             -keep interface com.sentry.unreal.** { *; }
+            -keep interface io.sentry.** { *; }
         </insert>
     </proguardAdditions>
+
+    <buildGradleAdditions>
+        <if condition="bUploadSymbols">
+            <true>
+                <insert>
+                    apply plugin: 'io.sentry.android.gradle'
+
+                    sentry {
+                        uploadNativeSymbols = true
+                        includeNativeSources = true
+                    }
+                </insert>
+            </true>
+        </if>
+    </buildGradleAdditions>
 
     <buildGradleAdditions>
         <insert>
@@ -90,6 +114,29 @@
             }
         </insert>
     </baseBuildGradleAdditions>
+    
+    <baseBuildGradleAdditions>
+        <if condition="bUploadSymbols">
+            <true>
+                <insert>
+                    allprojects {
+                        beforeEvaluate { project ->
+                            project.rootProject.projectDir.traverse(type: groovy.io.FileType.FILES, nameFilter: ~/sentry\.properties$/) { f ->
+                </insert>
+                <insertValue value="ant.replace(file: f, token: 'your-project', value: '$S(ProjectName)')"/>
+                <insertNewline/>
+                <insertValue value="ant.replace(file: f, token: 'your-org', value: '$S(OrganisationName)')"/>
+                <insertNewline/>
+                <insertValue value="ant.replace(file: f, token: 'YOUR_AUTH_TOKEN', value: '$S(AuthToken)')"/>
+                <insertNewline/>
+                <insert>
+                            }
+                        }
+                    }
+                </insert>
+            </true>
+        </if>
+    </baseBuildGradleAdditions>
 
     <buildscriptGradleAdditions>
         <insert>
@@ -97,5 +144,17 @@
                 classpath 'com.android.tools.build:gradle:3.5.4'
             }
         </insert>
+    </buildscriptGradleAdditions>
+
+    <buildscriptGradleAdditions>
+        <if condition="bUploadSymbols">
+            <true>
+                <insert>
+                    dependencies {
+                        classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5'
+                    }
+                </insert>
+            </true>
+        </if>
     </buildscriptGradleAdditions>
 </root>

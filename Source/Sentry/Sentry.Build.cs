@@ -115,21 +115,25 @@ public class Sentry : ModuleRules
 	{
 		string StaticLibExtension = string.Empty;
 		string DynamicLibExtension = string.Empty;
+		string DebugSymbolsExtension = string.Empty;
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			StaticLibExtension = ".lib";
 			DynamicLibExtension = ".dll";
+			DebugSymbolsExtension = ".pdb";
 		}
 		if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			StaticLibExtension = ".a";
 			DynamicLibExtension = ".dylib";
+			DebugSymbolsExtension = ".dylib.dSYM";
 		}
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			StaticLibExtension = ".a";
 			DynamicLibExtension = ".so";
+			DebugSymbolsExtension = ".dbg.so";
 		}
 
 		// Link libraries
@@ -155,6 +159,13 @@ public class Sentry : ModuleRules
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
+			
+			if (!File.Exists(Path.Combine(BinariesPath, libname + DebugSymbolsExtension)))
+			{
+				File.Copy(Path.Combine(DynamicLibrariesPath, libname + DebugSymbolsExtension), Path.Combine(BinariesPath, libname + DebugSymbolsExtension), true);
+			}
+			
+			RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DebugSymbolsExtension));
 		}
 		if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
