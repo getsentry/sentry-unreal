@@ -8,6 +8,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, UploadSymbolsAutomatically(false)
 {
 	DsnUrl = TEXT("");
+	Release = TEXT("");
 	ProjectName = TEXT("");
 	OrganisationName = TEXT("");
 	AuthToken = TEXT("");
