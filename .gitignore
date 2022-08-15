@@ -32,3 +32,8 @@ Intermediate/*
 
 # Other
 .DS_Store
+
+# Ignore package release
+test-package-release/
+package-release/
+package-release.zip

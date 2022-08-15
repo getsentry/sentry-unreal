@@ -3,6 +3,52 @@ name: package-plugin-workflow
 on: [push]
 
 jobs:
+  build:
+    name: Build - ${{ matrix.unity-version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Prepare Sentry package for release
+        shell: pwsh
+        run: ./scripts/packaging/pack.ps1
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.sha }}
+          if-no-files-found: error
+          # Adding the native libraries so the symbol collector craft target can find/upload them
+          path: |
+            package-release.zip
+          # TODO modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+
+  package-validation:
+    needs: [build]
+    name: UPM Package validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v2
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+
+      # If this step fails, you can accept the new file content by
+      # running the following script locally with 'accept' as an argument
+      # and committing the new snapshot file to your branch. i.e:
+      # pwsh ./scripts/test-contents.ps1 accept
+      - name: Verify package content against snapshot
+        shell: pwsh
+        run: ./scripts/packaging/test-contents.ps1
+
+  # TODO: describe what does this accomplish?
+  #       It's not doing anything with the package at the moment.
+  #       Is it a test? Or should we actually use the output of the final command for publishing?
   package-plugin-job:
     runs-on: ubuntu-latest
 
