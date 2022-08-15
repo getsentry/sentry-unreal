@@ -14,7 +14,7 @@
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
-	"Modules": [
+	"modules": [
 		{
 			"Name": "Sentry",
 			"Type": "Runtime",

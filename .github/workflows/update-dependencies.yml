@@ -14,7 +14,7 @@ jobs:
   native-linux:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: Scripts/update-native-linux.sh
+      path: scripts/update-native-linux.sh
       name: Native SDK (Linux)
       runs-on: ubuntu-latest
     secrets:
@@ -23,7 +23,7 @@ jobs:
   native-windows:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: Scripts/update-native-windows.ps1
+      path: scripts/update-native-windows.ps1
       name: Native SDK (Windows)
       runs-on: windows-latest
     secrets:
@@ -32,7 +32,7 @@ jobs:
   native-mac:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: Scripts/update-native-mac.sh
+      path: scripts/update-native-mac.sh
       name: Native SDK (Mac)
       runs-on: macos-latest
     secrets:
@@ -41,7 +41,7 @@ jobs:
   java:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: Scripts/update-java.sh
+      path: scripts/update-java.sh
       name: Java SDK (Android)
       runs-on: ubuntu-latest
     secrets:
@@ -50,7 +50,7 @@ jobs:
   cocoa:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: Scripts/update-cocoa.sh
+      path: scripts/update-cocoa.sh
       name: Cocoa SDK (iOS)
       runs-on: macos-latest
     secrets:

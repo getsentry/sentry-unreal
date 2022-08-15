@@ -7,7 +7,7 @@
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 #include "Interfaces/IPluginManager.h"
-#include "Modules/ModuleManager.h"
+#include "modules/ModuleManager.h"
 #include "Developer/Settings/Public/ISettingsModule.h"
 #include "Misc/Paths.h"
 
