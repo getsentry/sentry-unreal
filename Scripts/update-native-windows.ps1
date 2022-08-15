@@ -22,7 +22,7 @@ function set-version ([string] $version)
 
     git submodule foreach git submodule update --init --recursive
 
-    & ./Scripts/build-native-windows.ps1 $submodulePath Source/ThirdParty/$targetPlatform
+    & ./Scripts/build-native-windows.ps1 $submodulePath plugin-dev/Source/ThirdParty/$targetPlatform
 }
 
 switch ($Action)

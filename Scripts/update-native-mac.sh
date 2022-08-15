@@ -17,11 +17,11 @@ set-version)
     version=$2
 
     git -C $submodulePath checkout $version
-    
-    ./Scripts/checkout-submodule.sh $submodulePath
-    ./Scripts/build-native-mac.sh $submodulePath Source/ThirdParty/$targetPlatform
 
-    echo "Setting submodule version to '$version'"    
+    ./Scripts/checkout-submodule.sh $submodulePath
+    ./Scripts/build-native-mac.sh $submodulePath plugin-dev/Source/ThirdParty/$targetPlatform
+
+    echo "Setting submodule version to '$version'"
     ;;
 *)
     echo "Unknown argument $1"

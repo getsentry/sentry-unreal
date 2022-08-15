@@ -1,6 +1,6 @@
 # Contributing
 
-We love receiving PRs from the community with features and fixes. 
+We love receiving PRs from the community with features and fixes.
 For big feature it's advised to raise an issue to discuss it first.
 
 ## Getting started

@@ -20,11 +20,11 @@ set-version)
     sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
     git -C $submodulePath checkout $version
-    
-    ./Scripts/checkout-submodule.sh $submodulePath
-    ./Scripts/build-native-linux.sh $submodulePath Source/ThirdParty/$targetPlatform
 
-    echo "Setting submodule version to '$version'"    
+    ./Scripts/checkout-submodule.sh $submodulePath
+    ./Scripts/build-native-linux.sh $submodulePath plugin-dev/Source/ThirdParty/$targetPlatform
+
+    echo "Setting submodule version to '$version'"
     ;;
 *)
     echo "Unknown argument $1"
