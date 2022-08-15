@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "modules/ModuleInterface.h"
+#include "Modules/ModuleInterface.h"
 
 class USentrySettings;
 
