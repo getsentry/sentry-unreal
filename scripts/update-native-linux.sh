@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-submodulePath=$"Modules/sentry-native"
+submodulePath=$"modules/sentry-native"
 targetPlatform=$"Linux"
 
 case $1 in
 get-version)
-    git submodule update --init --no-fetch --single-branch $submodulePath > /dev/null
+    git submodule update --init --no-fetch --single-branch $submodulePath >/dev/null
     version=$(git -C $submodulePath describe --tags)
     echo $version
     ;;
@@ -20,11 +20,11 @@ set-version)
     sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
     git -C $submodulePath checkout $version
-    
-    ./Scripts/checkout-submodule.sh $submodulePath
-    ./Scripts/build-native-linux.sh $submodulePath Source/ThirdParty/$targetPlatform
 
-    echo "Setting submodule version to '$version'"    
+    ./scripts/checkout-submodule.sh $submodulePath
+    ./scripts/build-native-linux.sh $submodulePath plugin-dev/Source/ThirdParty/$targetPlatform
+
+    echo "Setting submodule version to '$version'"
     ;;
 *)
     echo "Unknown argument $1"

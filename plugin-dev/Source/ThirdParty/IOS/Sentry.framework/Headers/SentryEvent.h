@@ -111,7 +111,7 @@ NS_SWIFT_NAME(Event)
 @property (nonatomic, strong) NSDictionary<NSString *, id> *_Nullable sdk;
 
 /**
- * Modules of the event
+ * modules of the event
  */
 @property (nonatomic, strong) NSDictionary<NSString *, NSString *> *_Nullable modules;
 

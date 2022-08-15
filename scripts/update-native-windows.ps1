@@ -1,11 +1,11 @@
-param([string] $Action,[string] $Tag)
+param([string] $Action, [string] $Tag)
 
-$submodulePath="Modules/sentry-native"
-$targetPlatform="Win64"
+$submodulePath = "modules/sentry-native"
+$targetPlatform = "Win64"
 
 function get-version ()
 {
-    git submodule update --init --no-fetch --single-branch $submodulePath | out-null
+    git submodule update --init --no-fetch --single-branch $submodulePath | Out-Null
     $version = $(git -C $submodulePath describe --tags)
     return $version
 }
@@ -22,7 +22,7 @@ function set-version ([string] $version)
 
     git submodule foreach git submodule update --init --recursive
 
-    & ./Scripts/build-native-windows.ps1 $submodulePath Source/ThirdParty/$targetPlatform
+    & ./scripts/build-native-windows.ps1 $submodulePath plugin-dev/Source/ThirdParty/$targetPlatform
 }
 
 switch ($Action)

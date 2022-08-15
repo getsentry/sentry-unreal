@@ -38,7 +38,7 @@ jobs:
         run: |
           echo ${{ secrets.DOCKER_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker run -td --name unreal --user root \
-            -v ${{ github.workspace }}:/sentry-unreal \
+            -v ${{ github.workspace }}/plugin-dev:/sentry-unreal \
             --workdir /sentry-unreal \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}
 
