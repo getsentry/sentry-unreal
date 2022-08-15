@@ -1,0 +1,15 @@
+minVersion: 0.24.0
+changelogPolicy: auto
+targets:
+  # - name: symbol-collector
+  #   includeNames: /libsentry(-android)?\.so/
+  #   batchType: android
+  #   bundleIdPrefix: sentry-unity-android-ndk-
+  - name: upm
+    releaseRepoOwner: getsentry
+    releaseRepoName: unreal
+  - name: github
+    excludeNames: /^libsentry.*\.so$/
+  - name: registry
+    sdks:
+      upm:sentry-unreal:
