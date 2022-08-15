@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    name: Build - ${{ matrix.unity-version }}
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -103,3 +103,9 @@ jobs:
 
       - name: Package plugin
         run: docker exec unreal ue4 package
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ue-${{ matrix.unreal }}-package
+          if-no-files-found: error
+          path: plugin-dev/dist
