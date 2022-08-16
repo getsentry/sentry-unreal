@@ -10,18 +10,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Prepare Sentry package for release
+      - name: Prepare Sentry packages for release
         shell: pwsh
         run: ./scripts/packaging/pack.ps1
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
         with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
           if-no-files-found: error
-          # Adding the native libraries so the symbol collector craft target can find/upload them
           path: |
-            package-release.zip
+            sentry-unreal-*.zip
+          # Adding the native libraries so the symbol collector craft target can find/upload them
           # TODO modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
   package-validation:
@@ -35,7 +36,6 @@ jobs:
       - name: Download UPM package
         uses: actions/download-artifact@v2
         with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
 
       # If this step fails, you can accept the new file content by
@@ -46,10 +46,9 @@ jobs:
         shell: pwsh
         run: ./scripts/packaging/test-contents.ps1
 
-  # TODO: describe what does this accomplish?
-  #       It's not doing anything with the package at the moment.
-  #       Is it a test? Or should we actually use the output of the final command for publishing?
-  package-plugin-job:
+  # Smoke-test that the UnrealEnginge can package the plugin.
+  # TODO: does it make sense to thest packages created by the build job instead?
+  test-ue-packaging:
     runs-on: ubuntu-latest
 
     strategy:
@@ -103,9 +102,3 @@ jobs:
 
       - name: Package plugin
         run: docker exec unreal ue4 package
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ue-${{ matrix.unreal }}-package
-          if-no-files-found: error
-          path: plugin-dev/dist

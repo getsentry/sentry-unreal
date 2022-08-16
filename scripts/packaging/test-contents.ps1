@@ -6,17 +6,7 @@
 $ErrorActionPreference = "Stop"
 
 $projectRoot = "$PSScriptRoot/../.."
-$snapshotFile = "$PSScriptRoot/package-release.zip.snapshot"
-$packageFile = "$projectRoot/package-release.zip"
-
-Push-Location $projectRoot
-
-if (-not(Test-Path -Path $packageFile))
-{
-    Write-Host "Package '$packageFile' not found.
-Run 'scripts/pack.ps1' first."
-    exit 1
-}
+$snapshotFile = "$PSScriptRoot/package.snapshot"
 
 if (-not(Test-Path -Path $snapshotFile))
 {
@@ -25,31 +15,41 @@ Can't compare package contents against baseline."
     exit 2
 }
 
-$zip = [IO.Compression.ZipFile]::OpenRead($packageFile)
-try
+$packages = Get-ChildItem "$projectRoot/sentry-unreal-*.zip"
+$expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
+if ($packages.Length -ne $expectedPackagesCount)
 {
-    $snapshotContent = $zip.Entries.FullName.Replace("\", "/") | Sort-Object
-    if ($args.Count -gt 0 -and $args[0] -eq "accept")
-    {
-        # Override the snapshot file with the current package contents
-        $snapshotContent | Out-File $snapshotFile
-    }
-    $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
-    Write-Host $result
-    if ($result.count -eq 0)
-    {
-        Write-Host "Package contents match snapshot."
-    }
-    else
-    {
-        Write-Host "Package contents do not match snapshot."
-        $result | Format-Table -AutoSize
-        exit 3
-    }
+    throw "Invalid number of packages - expected $expectedPackagesCount, got $packages"
 }
-finally
+
+foreach ($packageFile in $packages)
 {
-    $zip.Dispose()
+    Write-Host "Testing $packageFile contents"
+    $zip = [IO.Compression.ZipFile]::OpenRead($packageFile)
+    try
+    {
+        $snapshotContent = $zip.Entries.FullName.Replace("\", "/") | Sort-Object
+        if ($args.Count -gt 0 -and $args[0] -eq "accept")
+        {
+            # Override the snapshot file with the current package contents
+            $snapshotContent | Out-File $snapshotFile
+        }
+        $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
+        if ($result.count -eq 0)
+        {
+            Write-Host "  PASS - package content matches the snapshot."
+        }
+        else
+        {
+            Write-Host "  FAIL - package content does not match the snapshot."
+            $result | Format-Table -AutoSize
+            exit 3
+        }
+    }
+    finally
+    {
+        $zip.Dispose()
+    }
 }
 
 # TODO
