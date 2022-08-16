@@ -49,13 +49,15 @@ jobs:
   # Smoke-test that the UnrealEnginge can package the plugin.
   # TODO: does it make sense to thest packages created by the build job instead?
   test-ue-packaging:
+    name: Test UE ${{ matrix.unreal }} packaging
     runs-on: ubuntu-latest
     needs: [build]
 
     strategy:
+      fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['4.26', '4.27', '5.0']
+        unreal: ['4.27', '5.0'] # 4.26 is not available
 
     steps:
       - name: Free disk space
@@ -68,7 +70,7 @@ jobs:
           sudo time rm -rf /usr/share/dotnet
           sudo time rm -rf /usr/share/swift
           sudo time rm -rf /usr/local/.ghcup
-          # sudo time rm -rf /usr/local/lib/node_modules
+          sudo time rm -rf /usr/local/lib/node_modules
           sudo time rm -rf /usr/lib/google-cloud-sdk
           sudo time rm -rf /opt/pipx
           sudo time rm -rf "$AGENT_TOOLSDIRECTORY"
