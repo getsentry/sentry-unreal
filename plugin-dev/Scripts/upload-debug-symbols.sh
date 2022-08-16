@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 export targetPlatform=$1
 export targetName=$2
@@ -12,14 +11,14 @@ CONFIG_PATH=$projectPath/Config
 
 echo "Sentry: Start debug symbols upload"
 
-if [ $targetType == "Editor" ]; then
+if [ $targetType = "Editor" ]; then
     echo "Sentry: Automatic symbols upload is not required for Editor target. Terminating..."
     exit
 fi
 
-if [ $targetPlatform == "IOS" ] || [ $targetPlatform == "Mac" ]; then
+if [ $targetPlatform = "IOS" ] || [ $targetPlatform = "Mac" ]; then
     SENTRY_CLI_EXEC=$pluginPath/Source/ThirdParty/CLI/sentry-cli-Darwin-universal
-elif [ $targetPlatform == "Linux" ]; then
+elif [ $targetPlatform = "Linux" ]; then
     SENTRY_CLI_EXEC=$pluginPath/Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
 else
     echo "Sentry: Unexpected platform ${targetPlatform}. Terminating..."
@@ -47,9 +46,9 @@ AUTH_TOKEN=$(awk -F "=" '/AuthToken/ {print $2}' ${CONFIG_PATH}/DefaultEngine.in
 echo "Sentry: Copy user credentials config file template to home directory"
 cp $pluginPath/Resources/sentry.properties $BINARIES_PATH/sentry.properties
 
-sed -i .backup 's/your-project/'$PROJECT_NAME'/g' $BINARIES_PATH/sentry.properties
-sed -i .backup 's/your-org/'$ORG_NAME'/g' $BINARIES_PATH/sentry.properties
-sed -i .backup 's/YOUR_AUTH_TOKEN/'$AUTH_TOKEN'/g' $BINARIES_PATH/sentry.properties
+sed -i.backup 's/your-project/'$PROJECT_NAME'/g' $BINARIES_PATH/sentry.properties
+sed -i.backup 's/your-org/'$ORG_NAME'/g' $BINARIES_PATH/sentry.properties
+sed -i.backup 's/YOUR_AUTH_TOKEN/'$AUTH_TOKEN'/g' $BINARIES_PATH/sentry.properties
 
 export SENTRY_PROPERTIES=$BINARIES_PATH/sentry.properties
 
