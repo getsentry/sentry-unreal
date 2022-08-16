@@ -25,10 +25,10 @@
 *.ipa
 
 # Binary Files
-Binaries/*
+plugin-dev/Binaries/*
 
 # Compiled source files for the engine to use
-Intermediate/*
+plugin-dev/Intermediate/*
 
 # Other
 .DS_Store
