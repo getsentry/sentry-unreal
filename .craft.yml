@@ -11,4 +11,4 @@ targets:
     includeNames: /^sentry-unreal-.*.zip$/i
   - name: registry
     sdks:
-      upm:sentry-unreal:
+      github:sentry-unreal:
