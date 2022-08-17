@@ -1,6 +1,9 @@
 # Visual Studio user specific files
 .vs/
 
+# Idea
+.idea/
+
 # Compiled Object files
 *.slo
 *.lo
@@ -25,10 +28,12 @@
 *.ipa
 
 # Binary Files
-Binaries/*
+plugin-dev/Binaries/*
+sample/Binaries/*
 
 # Compiled source files for the engine to use
-Intermediate/*
+plugin-dev/Intermediate/*
+sample/Intermediate/*
 
 # Other
 .DS_Store
