@@ -1,0 +1,70 @@
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runsOn }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Select submodule
+        id: env
+        run: |
+          if [[ "${{ inputs.target }}" == "Android" ]]; then
+            submodule="modules/sentry-java"
+          elif [[ "${{ inputs.target }}" == "IOS" ]]; then
+            submodule="modules/sentry-cocoa"
+          else
+            submodule="modules/sentry-native"
+          fi
+          echo "::set-output name=submodule::$submodule"
+          echo "::set-output name=path::plugin-dev/Source/ThirdParty/${{ inputs.target }}"
+          echo "::set-output name=buildScript::scripts/build-$(echo '${{ inputs.target }}' | tr '[:upper:]' '[:lower:]').sh"
+
+      - name: Get submodule status
+        run: git submodule status --cached ${{ steps.env.outputs.submodule }} | tee submodule-status
+
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: |
+            ${{ steps.env.outputs.path }}
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+          key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk.yml') }}
+
+      - name: Install Linux Dependencies
+        if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
+
+      - name: Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          git submodule update --init --recursive ${{ steps.env.outputs.submodule }}
+          mkdir -p '${{ steps.env.outputs.path }}'
+          ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.target }}-sdk
+          path: ${{ steps.env.outputs.path }}
+          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ inputs.target == 'Android' }}
+        with:
+          name: ${{ inputs.target }}-libraries
+          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+          retention-days: 1

@@ -36,3 +36,6 @@ Intermediate/*
 # Ignore package release
 package-release/
 sentry-unreal-*.zip
+
+# Prebuilt libraries & artifacts are collected in CI
+plugin-dev/Source/ThirdParty

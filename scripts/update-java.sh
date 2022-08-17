@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-submodulePath=$"modules/sentry-java"
-targetPlatform=$"Android"
+submodulePath="modules/sentry-java"
 
 case $1 in
 get-version)
@@ -15,15 +14,9 @@ get-repo)
     ;;
 set-version)
     version=$2
-
-    git -C $submodulePath checkout $version
-
-    ./scripts/checkout-submodule.sh $submodulePath
-    ./scripts/build-java.sh $submodulePath plugin-dev/Source/ThirdParty/$targetPlatform
-
-    ./scripts/bump-version-android.sh $version
-
     echo "Setting submodule version to '$version'"
+    git -C $submodulePath checkout $version
+    ./scripts/bump-version-android.sh $version
     ;;
 *)
     echo "Unknown argument $1"
