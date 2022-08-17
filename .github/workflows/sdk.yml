@@ -41,7 +41,7 @@ jobs:
           path: |
             ${{ steps.env.outputs.path }}
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh') }}
+          key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk.yml') }}
 
       - name: Install Linux Dependencies
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
@@ -49,18 +49,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
-      - name: Checkout submodule
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive ${{ steps.env.outputs.submodule }}
-
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
+        run: |
+          git submodule update --init --recursive ${{ steps.env.outputs.submodule }}
+          ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ inputs.target }}-sdk
-          path: ${{ steps.env.outputs.submodule }}
+          path: ${{ steps.env.outputs.path }}
           retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
 
       - uses: actions/upload-artifact@v2
