@@ -47,7 +47,6 @@ jobs:
         run: ./scripts/packaging/test-contents.ps1
 
   # Smoke-test that the UnrealEnginge can package the plugin.
-  # TODO: does it make sense to thest packages created by the build job instead?
   test-ue-packaging:
     name: Test UE ${{ matrix.unreal }} packaging
     runs-on: ubuntu-latest
@@ -93,7 +92,10 @@ jobs:
         with:
           name: ${{ github.sha }}
 
-      - run: unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d .
+      - name: Unzip package from the build job
+        run: |
+          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d .
+          rm -f sentry-unreal-*.zip
 
       - name: Install Linux Dependencies
         run: |
