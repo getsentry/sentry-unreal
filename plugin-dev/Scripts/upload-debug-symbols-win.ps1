@@ -1,6 +1,7 @@
 param([string] $TargetPlatform,[string] $TargetName,[string] $TargetType,[string] $ProjectPath,[string] $PluginPath)
 
-$BinariesPath = "$ProjectPath\Binaries\$TargetPlatform"
+$ProjectBinariesPath = "$ProjectPath\Binaries\$TargetPlatform"
+$PluginBinariesPath = "$PluginPath\Source\ThirdParty\$TargetPlatform"
 $ConfigPath = "$ProjectPath\Config"
 
 Write-Host "Sentry: Start debug symbols upload"
@@ -84,6 +85,6 @@ $SentryAuthToken = $ConfigIni.$SentrySettingsSection.AuthToken
 
 Write-Host "Sentry: Upload started"
 
-& $CliExec upload-dif --include-sources --log-level info --org $SentryProjectOrg --project $SentryProjectName --auth-token $SentryAuthToken $BinariesPath
+& $CliExec upload-dif --include-sources --log-level info --org $SentryProjectOrg --project $SentryProjectName --auth-token $SentryAuthToken $ProjectBinariesPath $PluginBinariesPath
 
 Write-Host "Sentry: Upload finished"

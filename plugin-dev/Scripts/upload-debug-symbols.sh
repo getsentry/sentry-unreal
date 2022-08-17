@@ -6,7 +6,8 @@ export targetType=$3
 export projectPath=$4
 export pluginPath=$5
 
-BINARIES_PATH=$projectPath/Binaries/$targetPlatform
+PROJECT_BINARIES_PATH=$projectPath/Binaries/$targetPlatform
+PLUGIN_BINARIES_PATH=$pluginPath/Source/ThirdParty/$targetPlatform
 CONFIG_PATH=$projectPath/Config
 
 echo "Sentry: Start debug symbols upload"
@@ -44,14 +45,14 @@ ORG_NAME=$(awk -F "=" '/OrganisationName/ {print $2}' ${CONFIG_PATH}/DefaultEngi
 AUTH_TOKEN=$(awk -F "=" '/AuthToken/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
 
 echo "Sentry: Copy user credentials config file template to home directory"
-cp $pluginPath/Resources/sentry.properties $BINARIES_PATH/sentry.properties
+cp $pluginPath/Resources/sentry.properties $PROJECT_BINARIES_PATH/sentry.properties
 
-sed -i.backup 's/your-project/'$PROJECT_NAME'/g' $BINARIES_PATH/sentry.properties
-sed -i.backup 's/your-org/'$ORG_NAME'/g' $BINARIES_PATH/sentry.properties
-sed -i.backup 's/YOUR_AUTH_TOKEN/'$AUTH_TOKEN'/g' $BINARIES_PATH/sentry.properties
+sed -i.backup 's/your-project/'$PROJECT_NAME'/g' $PROJECT_BINARIES_PATH/sentry.properties
+sed -i.backup 's/your-org/'$ORG_NAME'/g' $PROJECT_BINARIES_PATH/sentry.properties
+sed -i.backup 's/YOUR_AUTH_TOKEN/'$AUTH_TOKEN'/g' $PROJECT_BINARIES_PATH/sentry.properties
 
-export SENTRY_PROPERTIES=$BINARIES_PATH/sentry.properties
+export SENTRY_PROPERTIES=$PROJECT_BINARIES_PATH/sentry.properties
 
 chmod +x $SENTRY_CLI_EXEC
 
-$SENTRY_CLI_EXEC upload-dif --include-sources $BINARIES_PATH
+$SENTRY_CLI_EXEC upload-dif --include-sources $PROJECT_BINARIES_PATH $PLUGIN_BINARIES_PATH
