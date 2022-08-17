@@ -53,6 +53,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodule }}
+          mkdir -p '${{ steps.env.outputs.path }}'
           ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
 
       - uses: actions/upload-artifact@v2
