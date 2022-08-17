@@ -3,12 +3,73 @@ name: package-plugin-workflow
 on: [push]
 
 jobs:
+  android-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Android
+      runsOn: ubuntu-latest
+
+  ios-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: IOS
+      runsOn: macos-latest
+
+  macos-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Mac
+      runsOn: macos-latest
+
+  linux-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Linux
+      runsOn: ubuntu-latest
+
+  windows-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Win64
+      runsOn: windows-latest
+
   build:
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-sdk]
     name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Android-sdk
+          path: plugin-dev/Source/ThirdParty/Android
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Android-libraries
+          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: IOS-sdk
+          path: plugin-dev/Source/ThirdParty/IOS
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Mac-sdk
+          path: plugin-dev/Source/ThirdParty/Mac
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Linux-sdk
+          path: plugin-dev/Source/ThirdParty/Linux
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Win64-sdk
+          path: plugin-dev/Source/ThirdParty/Win64
 
       - name: Prepare Sentry packages for release
         shell: pwsh
