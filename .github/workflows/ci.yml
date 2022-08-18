@@ -43,7 +43,7 @@ jobs:
 
       - name: Download CLI
         shell: pwsh
-        run: ./scripts/download-senrty-cli.ps1
+        run: ./scripts/download-sentry-cli.ps1
 
       - uses: actions/download-artifact@v2
         with:
