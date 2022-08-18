@@ -41,6 +41,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Download CLI
+        run: sh ./scripts/download-sentry-cli.sh
+
       - uses: actions/download-artifact@v2
         with:
           name: Android-sdk

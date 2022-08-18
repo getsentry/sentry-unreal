@@ -5,6 +5,8 @@ Content/UI/W_SentryDemo.uasset
 LICENSE
 Resources/Icon128.png
 Resources/sentry.properties
+Scripts/upload-debug-symbols-win.ps1
+Scripts/upload-debug-symbols.sh
 Sentry.uplugin
 Source/Sentry/Private/Android/Callbacks/SentryScopeCallbackAndroid.cpp
 Source/Sentry/Private/Android/Callbacks/SentryScopeCallbackAndroid.h
@@ -183,3 +185,6 @@ Source/ThirdParty/Win64/bin/sentry.dll
 Source/ThirdParty/Win64/bin/sentry.pdb
 Source/ThirdParty/Win64/include/sentry.h
 Source/ThirdParty/Win64/lib/sentry.lib
+Source/ThirdParty/CLI/sentry-cli-Darwin-universal
+Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
+Source/ThirdParty/CLI/sentry-cli-Windows-x86_64.exe
