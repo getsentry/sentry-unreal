@@ -33,3 +33,11 @@ jobs:
       name: Cocoa SDK (iOS)
     secrets:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  cli:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    with:
+      path: modules/sentry-cli.properties
+      name: CLI
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
