@@ -83,8 +83,26 @@ $SentryProjectName = $ConfigIni.$SentrySettingsSection.ProjectName
 $SentryProjectOrg = $ConfigIni.$SentrySettingsSection.OrganisationName
 $SentryAuthToken = $ConfigIni.$SentrySettingsSection.AuthToken
 
+Write-Host "Sentry: Copy user credentials config file template to home directory"
+
+Copy-Item "$PluginPath\Resources\sentry.properties" -Destination "$ProjectBinariesPath\sentry.properties"
+
+(Get-Content "$ProjectBinariesPath\sentry.properties") -replace "your-project", "$SentryProjectName" | Out-File "$ProjectBinariesPath\sentry.properties"
+(Get-Content "$ProjectBinariesPath\sentry.properties") -replace "your-org", "$SentryProjectOrg" | Out-File "$ProjectBinariesPath\sentry.properties"
+(Get-Content "$ProjectBinariesPath\sentry.properties") -replace "YOUR_AUTH_TOKEN", "$SentryAuthToken" | Out-File "$ProjectBinariesPath\sentry.properties"
+
+
+$Env:SENTRY_PROPERTIES = "$ProjectBinariesPath\sentry.properties"
+Write-Host "Sentry: $env:SENTRY_PROPERTIES"
+
+
+
 Write-Host "Sentry: Upload started"
 
-& $CliExec upload-dif --include-sources --log-level info --org $SentryProjectOrg --project $SentryProjectName --auth-token $SentryAuthToken $ProjectBinariesPath $PluginBinariesPath
+Push-Location  "$PluginPath\Source\ThirdParty\CLI"
+
+.\sentry-cli-Windows-x86_64.exe upload-dif --include-sources --log-level info $ProjectBinariesPath $PluginBinariesPath
+
+Pop-Location
 
 Write-Host "Sentry: Upload finished"
