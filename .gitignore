@@ -32,3 +32,10 @@ plugin-dev/Intermediate/*
 
 # Other
 .DS_Store
+
+# Ignore package release
+package-release/
+sentry-unreal-*.zip
+
+# Prebuilt libraries & artifacts are collected in CI
+plugin-dev/Source/ThirdParty

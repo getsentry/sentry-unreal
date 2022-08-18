@@ -10,31 +10,11 @@ on:
       - main
 
 jobs:
-
-  native-linux:
+  native:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: scripts/update-native-linux.sh
-      name: Native SDK (Linux)
-      runs-on: ubuntu-latest
-    secrets:
-      api_token: ${{ secrets.CI_DEPLOY_KEY }}
-
-  native-windows:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
-    with:
-      path: scripts/update-native-windows.ps1
-      name: Native SDK (Windows)
-      runs-on: windows-latest
-    secrets:
-      api_token: ${{ secrets.CI_DEPLOY_KEY }}
-
-  native-mac:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
-    with:
-      path: scripts/update-native-mac.sh
-      name: Native SDK (Mac)
-      runs-on: macos-latest
+      path: modules/sentry-native
+      name: Native SDK
     secrets:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
@@ -43,15 +23,13 @@ jobs:
     with:
       path: scripts/update-java.sh
       name: Java SDK (Android)
-      runs-on: ubuntu-latest
     secrets:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   cocoa:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
-      path: scripts/update-cocoa.sh
+      path: modules/sentry-cocoa
       name: Cocoa SDK (iOS)
-      runs-on: macos-latest
     secrets:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
