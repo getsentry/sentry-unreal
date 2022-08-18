@@ -4,7 +4,7 @@ Write-Host "Downloading native SDKs from the latest CI pipeline"
 
 function findCiRun([string] $branch)
 {
-    Write-Host "Looking for the latest successful CI run on branch $branch"
+    Write-Host "Looking for the latest successful CI run on branch '$branch'"
     $id = gh run list --branch $branch --workflow package-plugin-workflow --json 'conclusion,databaseId' `
     | ConvertFrom-Json | Where-Object 'conclusion' -EQ 'success' | Select-Object -First 1 -ExpandProperty 'databaseId'
     if ( "$id" -eq "" )
@@ -28,11 +28,10 @@ if ( "$runId" -eq "" )
     }
 }
 
-$outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
-
+$outDir = "$(Resolve-Path "$PSScriptRoot/../plugin-dev/Source")/ThirdParty"
 if (-not (Test-Path $outDir))
 {
-    New-Item $outDir -ItemType Directory
+    New-Item $outDir -ItemType Directory > $null
 }
 
 $sdks = @("Android", "IOS", "Linux", "Mac", "Win64")
