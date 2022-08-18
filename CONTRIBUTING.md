@@ -23,7 +23,7 @@ To get started, we recommend running the init script:
 * `./scripts/init.sh` on macOS/Linux
 * `./scripts/init-win.ps1` on Windows
 
-This script links the checked out version of the plugin (the [plugin-dev](./plugin-dev/) directory) to the sample app and downloades the latest builds of native SDKs.
+This script links the checked out version of the plugin (the [plugin-dev](./plugin-dev/) directory) to the sample app and downloads the latest builds of native SDKs.
 
 ## Plugin structure
 
