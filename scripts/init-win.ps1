@@ -26,6 +26,13 @@ function setupPluginLink([string] $projectDir)
             return
         }
     }
+
+    $parentDir = Split-Path -Parent $linkPath
+    If (-not (Test-Path $parentDir))
+    {
+        New-Item -ItemType Directory -Path $parentDir
+    }
+
     Write-Host "Creating a link (directory junction) from $linkPath to $targetDir"
     New-Item $linkPath -ItemType Junction -Target $targetDir > $null
 }

@@ -26,6 +26,7 @@ setupPluginLink() {
         unlink "$linkPath"
     fi
 
+    mkdir -p "$(dirname "$linkPath")"
     echo "Creating a link from $linkPath to $targetDir"
     ln -s "$targetDir" "$linkPath"
 }
