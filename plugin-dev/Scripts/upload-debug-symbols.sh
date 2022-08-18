@@ -38,8 +38,6 @@ if [ $UPLOAD_SYMBOLS != "True" ]; then
     exit
 fi
 
-echo "Sentry: parse project settings"
-
 PROJECT_NAME=$(awk -F "=" '/ProjectName/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
 ORG_NAME=$(awk -F "=" '/OrganisationName/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
 AUTH_TOKEN=$(awk -F "=" '/AuthToken/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
