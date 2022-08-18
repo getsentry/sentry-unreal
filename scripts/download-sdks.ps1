@@ -1,0 +1,49 @@
+Set-StrictMode -Version latest
+
+Write-Host "Downloading native SDKs from the latest CI pipeline"
+
+function findCiRun([string] $branch)
+{
+    Write-Host "Looking for the latest successful CI run on branch $branch"
+    $id = gh run list --branch $branch --workflow package-plugin-workflow --json 'conclusion,databaseId' `
+    | ConvertFrom-Json | Where-Object 'conclusion' -EQ 'success' | Select-Object -First 1 -ExpandProperty 'databaseId'
+    if ( "$id" -eq "" )
+    {
+        Write-Warning "  ... no successful CI run found on $branch"
+    }
+    else
+    {
+        Write-Host "  ... found CI run ID: $id"
+        "$id"
+    }
+}
+
+$runId = findCiRun("$(git rev-parse --abbrev-ref HEAD)")
+if ( "$runId" -eq "" )
+{
+    $runId = findCiRun("main")
+    if ( "$runId" -eq "" )
+    {
+        exit 1
+    }
+}
+
+$outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
+
+if (-not (Test-Path $outDir))
+{
+    New-Item $outDir -ItemType Directory
+}
+
+$sdks = @("Android", "IOS", "Linux", "Mac", "Win64")
+foreach ($sdk in $sdks)
+{
+    $sdkDir = "$outDir/$sdk"
+    Write-Host "Downloading $sdk SDK to $sdkDir ..."
+    if (Test-Path $sdkDir)
+    {
+        Remove-Item "$outDir/$sdk" -Recurse
+    }
+
+    gh run download $runId -n "$sdk-sdk" -D $sdkDir
+}

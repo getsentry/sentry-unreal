@@ -12,6 +12,5 @@ public class SentryPlaygroundTarget : TargetRules
 		ExtraModuleNames.AddRange( new string[] { "SentryPlayground" } );
 
 		bOverrideBuildEnvironment = true;
-		AdditionalCompilerArguments = "-Wno-unused-but-set-variable";
 	}
 }
