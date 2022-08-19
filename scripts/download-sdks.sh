@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "Downloading native SDKs from the latest CI pipeline"
+
 mkdir -p "$(dirname $0)/../plugin-dev/Source/ThirdParty"
 cd "$(dirname $0)/../plugin-dev/Source/ThirdParty"
 
 findCiRun() {
-    echo "Looking for the latest successful CI run on branch $1" >/dev/stderr
+    echo "Looking for the latest successful CI run on branch '$1'" >/dev/stderr
     id=$(gh run list --branch $1 --workflow package-plugin-workflow \
         --json 'conclusion,databaseId' --jq 'first(.[] | select(.conclusion == "success") | .databaseId)')
     if [[ "$id" == "" ]]; then
