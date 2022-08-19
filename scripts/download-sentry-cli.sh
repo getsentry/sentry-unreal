@@ -12,8 +12,8 @@ cd "$(dirname $0)/../plugin-dev/Source/ThirdParty"
 mkdir -p "CLI"
 cd "CLI"
 
-declare -a platforms=("Darwin-universal" "Linux-x86_64" "Windows-x86_64")
+declare -a platforms=("Darwin-universal" "Linux-x86_64" "Windows-x86_64.exe")
 for platform in "${platforms[@]}"; do
     echo "Downloading Sentry CLI for $platform to $PWD ..."
-    curl -LI $baseUrl$platform
+    curl -LI $baseUrl$platform -o "sentry-cli-$platform"
 done
