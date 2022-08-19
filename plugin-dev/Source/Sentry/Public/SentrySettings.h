@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Engine/EngineTypes.h"
 #include "SentrySettings.generated.h"
 
 USTRUCT(BlueprintType)
@@ -62,14 +63,10 @@ public:
 	bool UploadSymbolsAutomatically;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Project name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
-	FString ProjectName;
+		Meta = (DisplayName = "Properties file", ToolTip = "Path to the `sentry.properties` file.", EditCondition = "UploadSymbolsAutomatically"))
+	FFilePath PropertiesFilePath;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Organisation name", ToolTip = "Name of the organisation associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
-	FString OrganisationName;
-	
-	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.", EditCondition = "UploadSymbolsAutomatically"))
-	FString AuthToken;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 };

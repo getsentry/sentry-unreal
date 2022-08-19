@@ -79,23 +79,10 @@ If (("$UploadSymbols" -eq "") -or ("$UploadSymbols" -eq "False"))
 
 Write-Host "Sentry: Parse project settings"
 
-$SentryProjectName = $ConfigIni.$SentrySettingsSection.ProjectName
-$SentryProjectOrg = $ConfigIni.$SentrySettingsSection.OrganisationName
-$SentryAuthToken = $ConfigIni.$SentrySettingsSection.AuthToken
+$PropertiesFile = $ConfigIni.$SentrySettingsSection.PropertiesFilePath
 
-Write-Host "Sentry: Copy user credentials config file template to home directory"
-
-Copy-Item "$PluginPath\Resources\sentry.properties" -Destination "$ProjectBinariesPath\sentry.properties"
-
-(Get-Content "$ProjectBinariesPath\sentry.properties") -replace "your-project", "$SentryProjectName" | Out-File "$ProjectBinariesPath\sentry.properties"
-(Get-Content "$ProjectBinariesPath\sentry.properties") -replace "your-org", "$SentryProjectOrg" | Out-File "$ProjectBinariesPath\sentry.properties"
-(Get-Content "$ProjectBinariesPath\sentry.properties") -replace "YOUR_AUTH_TOKEN", "$SentryAuthToken" | Out-File "$ProjectBinariesPath\sentry.properties"
-
-
-$Env:SENTRY_PROPERTIES = "$ProjectBinariesPath\sentry.properties"
+$env:SENTRY_PROPERTIES = $PropertiesFile
 Write-Host "Sentry: $env:SENTRY_PROPERTIES"
-
-
 
 Write-Host "Sentry: Upload started"
 

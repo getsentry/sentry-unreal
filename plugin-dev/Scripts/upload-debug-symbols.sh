@@ -38,18 +38,9 @@ if [ $UPLOAD_SYMBOLS != "True" ]; then
     exit
 fi
 
-PROJECT_NAME=$(awk -F "=" '/ProjectName/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
-ORG_NAME=$(awk -F "=" '/OrganisationName/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
-AUTH_TOKEN=$(awk -F "=" '/AuthToken/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
+PROP_FILE_PATH=$(awk -F \" '/PropertiesFilePath/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
 
-echo "Sentry: Copy user credentials config file template to home directory"
-cp $pluginPath/Resources/sentry.properties $PROJECT_BINARIES_PATH/sentry.properties
-
-sed -i.backup 's/your-project/'$PROJECT_NAME'/g' $PROJECT_BINARIES_PATH/sentry.properties
-sed -i.backup 's/your-org/'$ORG_NAME'/g' $PROJECT_BINARIES_PATH/sentry.properties
-sed -i.backup 's/YOUR_AUTH_TOKEN/'$AUTH_TOKEN'/g' $PROJECT_BINARIES_PATH/sentry.properties
-
-export SENTRY_PROPERTIES=$PROJECT_BINARIES_PATH/sentry.properties
+export SENTRY_PROPERTIES=$PROP_FILE_PATH
 
 chmod +x $SENTRY_CLI_EXEC
 
