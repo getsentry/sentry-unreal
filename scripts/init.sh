@@ -33,3 +33,4 @@ setupPluginLink() {
 
 setupPluginLink "sample"
 "$(dirname "$0")/download-sdks.sh"
+"$(dirname "$0")/download-cli.sh"
