@@ -4,7 +4,7 @@
         <log text="Sentry SDK Android UPL initialization"/>
 
         <setBoolFromProperty result="bUploadSymbols" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="true" />
-        
+
         <setStringFromProperty result="PropertiesFilePath" ini="Engine" section="/Script/Sentry.SentrySettings" property="PropertiesFilePath"/>
         <setStringReplace result="PropertiesFilePath" source="$S(PropertiesFilePath)" find="(FilePath=&quot;" with=""/>
         <setStringReplace result="PropertiesFilePath" source="$S(PropertiesFilePath)" find="&quot;)" with=""/>
@@ -12,19 +12,11 @@
 
     <prebuildCopies>
         <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/com/sentry/unreal" />
-        <copyFile src="$S(PropertiesFilePath)" dst="$S(BuildDir)/gradle/sentry.properties" />
+        <copyFile src="$S(PluginDir)/../../Resources/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry.jar" dst="$S(BuildDir)/gradle/app/libs/sentry.jar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-ndk-release.aar" />
     </prebuildCopies>
-
-    <AARImports>
-        <insertValue value="repository $S(PluginDir)/../ThirdParty/Android"/>
-        <insertNewline/>
-        <insert>
-            io.sentry,sentry,6.3.1
-            io.sentry,sentry-android-core,6.3.1
-            io.sentry,sentry-android-ndk,6.3.1
-        </insert>
-        <insertNewline/>
-    </AARImports>
 
     <androidManifestUpdates>
         <addElements tag="application">
@@ -101,7 +93,7 @@
                     'android.support.v4.content.ContextCompat': 'androidx.core.content.ContextCompat',
                     'android.support.v4.content.FileProvider': 'androidx.core.content.FileProvider',
                 ]
-    
+
                 beforeEvaluate { project ->
                     project.rootProject.projectDir.traverse(type: groovy.io.FileType.FILES, nameFilter: ~/.*\.java$/) { f ->
                         mappings.each { entry ->
