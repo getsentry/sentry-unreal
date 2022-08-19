@@ -79,7 +79,7 @@ If (("$UploadSymbols" -eq "") -or ("$UploadSymbols" -eq "False"))
 
 Write-Host "Sentry: Parse project settings"
 
-$PropertiesFile = [regex]::Match($ConfigIni.$SentrySettingsSection.PropertiesFilePath, '".*?"').Groups[1].Value
+$PropertiesFile = [regex]::Match($ConfigIni.$SentrySettingsSection.PropertiesFilePath, '"([^"]+)"').Groups[1].Value
 
 $env:SENTRY_PROPERTIES = $PropertiesFile
 
