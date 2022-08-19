@@ -4,7 +4,6 @@ Content/Maps/SentryDemo.umap
 Content/UI/W_SentryDemo.uasset
 LICENSE
 Resources/Icon128.png
-Resources/sentry.properties
 Scripts/upload-debug-symbols-win.ps1
 Scripts/upload-debug-symbols.sh
 Sentry.uplugin

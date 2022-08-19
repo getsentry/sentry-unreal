@@ -64,9 +64,5 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Properties file", ToolTip = "Path to the `sentry.properties` file.", EditCondition = "UploadSymbolsAutomatically"))
-	FFilePath PropertiesFilePath;
-
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
+    FString PropertiesFilePath;
 };
