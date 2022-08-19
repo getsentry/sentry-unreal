@@ -7,19 +7,23 @@ For big feature it's advised to raise an issue to discuss it first.
 
 ### Setup Unreal Engine
 
-In order to get the Unreal Engine we recommend using [Epic Games Launcher](https://store.epicgames.com/en-US/download) which allows to download and install specific UE versions and their components. Sentry Unreal is compatible with UE 4.25 and newer. Enabling Android and iOS target platforms support during engine installation will allow using this plugin in mobile applications as well.
+In order to get the Unreal Engine we recommend using [Epic Games Launcher](https://store.epicgames.com/en-US/download).
+To use the [sample project](./sample), use the UnrealEngine version specified in `EngineAssociation` property in [SentryPlayground.uproject](sample/SentryPlayground.uproject).
 
-### Install the plugin
+#### Android build support
+
+To be able to build for Android, make sure to configure the SDK & NDK according to the [documentation](https://docs.unrealengine.com/4.27/en-US/SharingAndReleasing/Mobile/Android/Setup/AndroidStudio/). You will need to install NDK specifically at version 21.1.6352462 with UnrealEngine 4.27.
+
+### First setup
 
 > Currently this method is available only for C++ UE projects! Blueprint project can be converted to a C++ one simply by adding an empty class via Editor.
 
-To install the plugin `cd` to UE project root and create a new `Plugins` directory there (`mkdir Plugins`). Then clone the repo into it `cd Plugins`, `git@github.com:getsentry/sentry-unreal.git`. On the next project launch UE will prompt to build SentrySDK module.
+To get started, we recommend running the init script:
 
-### Configure project
+* `./scripts/init.sh` on macOS/Linux
+* `./scripts/init-win.ps1` on Windows
 
-Before starting to use Sentry Unreal make sure that the plugin is enabled. In UE editor navigate to `Settings -> Plugins -> Code Plugins` menu and check its status.
-
-In order to send events and crash data to Sentry, UE project has to be associated with the corresponding Sentry project first. Open `Settings -> Project Settings -> Plugins -> Sentry SDK` and provide the valid DSN (more info about DSN [here](https://docs.sentry.io/product/sentry-basics/dsn-explainer/)).
+This script links the checked out version of the plugin (the [plugin-dev](./plugin-dev/) directory) to the sample app and downloads the latest builds of native SDKs.
 
 ## Plugin structure
 

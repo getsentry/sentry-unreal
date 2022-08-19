@@ -1,34 +1,21 @@
-# Visual Studio user specific files
-.vs/
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-
-# Executables
-*.out
-*.app
-*.ipa
+# IDEs
+.vs
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
 
 # Binary Files
-Binaries/*
+plugin-dev/Binaries/*
 
 # Compiled source files for the engine to use
-Intermediate/*
+plugin-dev/Intermediate/*
+
+# plugin-dev link
+**/Plugins/sentry
 
 # Other
 .DS_Store
