@@ -37,6 +37,7 @@
 - Bump Java SDK (Android) to v6.3.1 ([#51](https://github.com/getsentry/sentry-unreal/pull/51))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#631)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.3.0...6.3.1)
+- Revert Android libraries importing mechanism ([#68](https://github.com/getsentry/sentry-unreal/pull/68))
 
 ## 0.0.1
 
