@@ -21,5 +21,17 @@
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
 		}
-	]
+	],
+	"PostBuildSteps":
+	{
+		"Mac": [
+			"sh $(PluginDir)/Scripts/upload-debug-symbols.sh $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+		],
+		"Linux": [
+			"sh $(PluginDir)/Scripts/upload-debug-symbols.sh $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+		],
+		"Win64": [
+			"powershell -ExecutionPolicy RemoteSigned -File $(PluginDir)/Scripts/upload-debug-symbols-win.ps1 $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+		]
+	}
 }
