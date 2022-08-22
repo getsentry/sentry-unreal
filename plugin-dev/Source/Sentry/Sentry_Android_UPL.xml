@@ -11,7 +11,7 @@
     </init>
 
     <prebuildCopies>
-        <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/com/sentry/unreal" />
+        <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/io/sentry/unreal" />
         <copyFile src="$S(ProjectDir)/$S(PropertiesFilePath)" dst="$S(BuildDir)/gradle/sentry.properties" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry.jar" dst="$S(BuildDir)/gradle/app/libs/sentry.jar" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
@@ -34,10 +34,8 @@
 
     <proguardAdditions>
         <insert>
-            -dontwarn com.sentry.unreal.**
-            -keep class com.sentry.unreal.** { *; }
+            -dontwarn io.sentry.unreal.**
             -keep class io.sentry.** { *; }
-            -keep interface com.sentry.unreal.** { *; }
             -keep interface io.sentry.** { *; }
         </insert>
     </proguardAdditions>
