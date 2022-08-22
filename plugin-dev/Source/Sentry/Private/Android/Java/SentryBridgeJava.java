@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-package com.sentry.unreal;
+package io.sentry.unreal;
 
 import android.app.Activity;
 
