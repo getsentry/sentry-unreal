@@ -17,6 +17,8 @@ cp "${sentryNativeRoot}/build/libsentry.so" "${sentryArtifactsDestination}/bin/l
 cp "${sentryNativeRoot}/build/crashpad_build/handler/crashpad_handler" "${sentryArtifactsDestination}/bin/crashpad_handler"
 cp "${sentryNativeRoot}/include/sentry.h" "${sentryArtifactsDestination}/include/sentry.h"
 
+chmod +x "${sentryArtifactsDestination}/bin/crashpad_handler"
+
 pushd ${sentryArtifactsDestination}/bin
 objcopy --add-gnu-debuglink="libsentry.dbg.so" "libsentry.so"
 popd
