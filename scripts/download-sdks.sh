@@ -30,4 +30,5 @@ for sdk in "${sdks[@]}"; do
     echo "Downloading $sdk SDK to $PWD/$sdk ..."
     rm -rf "./$sdk"
     gh run download $runId -n "$sdk-sdk" -D $sdk
+    find $sdk -name "crashpad_handler" -exec chmod +x {} \;
 done
