@@ -6,11 +6,10 @@ function getProperty {
 }
 
 baseUrl="$(getProperty 'repo')/releases/download/$(getProperty 'version')/sentry-cli-"
+cd "$(dirname $0)/../plugin-dev/Source/ThirdParty/CLI"
 
-mkdir -p "$(dirname $0)/../plugin-dev/Source/ThirdParty"
-cd "$(dirname $0)/../plugin-dev/Source/ThirdParty"
-mkdir -p "CLI"
-cd "CLI"
+# Remove previous contents of the directory (remove all ignored files).
+git clean -fXd .
 
 declare -a platforms=("Darwin-universal" "Linux-x86_64" "Windows-x86_64.exe")
 for platform in "${platforms[@]}"; do
