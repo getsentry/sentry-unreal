@@ -14,7 +14,7 @@ mkdir "${sentryArtifactsDestination}/include"
 
 strip -s "${sentryNativeRoot}/build/libsentry.so" -w -K sentry_[^_]* -o "${sentryArtifactsDestination}/bin/libsentry.so"
 cp "${sentryNativeRoot}/build/libsentry.so" "${sentryArtifactsDestination}/bin/libsentry.dbg.so"
-cp "${sentryNativeRoot}/build/crashpad_build/handler/crashpad_handler" "${sentryArtifactsDestination}/bin/crashpad_handler"
+strip -x "${sentryNativeRoot}/build/crashpad_build/handler/crashpad_handler" -o "${sentryArtifactsDestination}/bin/crashpad_handler"
 cp "${sentryNativeRoot}/include/sentry.h" "${sentryArtifactsDestination}/include/sentry.h"
 
 pushd ${sentryArtifactsDestination}/bin
