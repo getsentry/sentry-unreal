@@ -115,7 +115,6 @@ jobs:
   test-ue-packaging:
     name: Test UE ${{ matrix.unreal }} packaging
     runs-on: ubuntu-latest
-    needs: [build, package-validation]
 
     strategy:
       fail-fast: false
@@ -168,20 +167,16 @@ jobs:
           ue4 setroot /home/ue4/UnrealEngine '
 
       - name: Download packages
-        uses: actions/download-artifact@v2
+        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: ${{ github.sha }}
-
-      - name: 'Test 1: build plugin'
-        run: |
-          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d plugin
-          docker exec -w /workspace/plugin unreal ue4 package
+          wait-timeout: 600
 
       - uses: actions/checkout@v3
         with:
           path: checkout
 
-      - name: 'Test 2: build sample app'
+      - name: Build sample app
         run: |
           unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/sample/Plugins/sentry
           docker exec -w /workspace/checkout/sample unreal ue4 package
