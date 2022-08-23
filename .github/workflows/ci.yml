@@ -152,6 +152,11 @@ jobs:
             --workdir /sentry-unreal \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}
 
+      - name: Setup UE CLI
+        run: |
+          docker exec unreal pip3 install ue4cli
+          docker exec unreal ue4 setroot /home/ue4/UnrealEngine
+
       - name: Download packages
         uses: actions/download-artifact@v2
         with:
@@ -159,21 +164,17 @@ jobs:
 
       - name: Unzip package from the build job
         run: |
-          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d .
+          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d plugin
           rm -f sentry-unreal-*.zip
 
-      - name: Install Linux Dependencies
-        run: |
-          docker exec unreal sudo apt-get update
-          docker exec unreal pip3 install --upgrade pip
-
-      - name: Install UE CLI
-        run:
-          docker exec unreal pip3 install ue4cli
-
-      - name: Configure UE CLI
-        run:
-          docker exec unreal ue4 setroot /home/ue4/UnrealEngine
-
-      - name: Package plugin
+      - name: 'Test 1: package plugin'
         run: docker exec unreal ue4 package
+
+      - uses: actions/checkout@v3
+        with:
+          path: checkout
+
+      - name: 'Test 2: build sample app'
+        run: |
+          ln -s ${{ github.workspace }}/plugin checkout/sample/Plugins/sentry
+          docker exec unreal bash -c 'cd sample ; ue4 package'
