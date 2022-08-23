@@ -18,5 +18,7 @@ foreach ($engineVersion in $engineVersions)
     $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '",') + @($pluginSpec[1..($pluginSpec.count)])
     $newPluginSpec | Out-File 'package-release/Sentry.uplugin'
 
+    # Note: unlike `zip` (the info-ZIP program), Compress-archive doesn't preserve file permissions.
+    # If we want to do that, we should switch to `zip` call and only package on Linux/macOS.
     Compress-Archive "package-release/*" -DestinationPath $packageName -Force
 }
