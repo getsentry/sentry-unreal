@@ -158,7 +158,8 @@ jobs:
           docker logout ghcr.io
           # Fixup UID and GID of the user in the container to match the GH action user
           docker exec --user root unreal groupmod -g $gid ue4
-          docker exec --user root unreal usermod -u $uid -g $gid ue4
+          # usermod spurriously fails on the first run on UE5 docker image
+          docker exec --user root unreal bash -c "usermod -u $uid -g $gid ue4 || usermod -u $uid -g $gid ue4"
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
