@@ -17,5 +17,3 @@ cp "${sentryNativeRoot}/build/libsentry.dylib" "${sentryArtifactsDestination}/bi
 cp -R "${sentryNativeRoot}/build/libsentry.dylib.dSYM" "${sentryArtifactsDestination}/bin/libsentry.dylib.dSYM"
 cp "${sentryNativeRoot}/build/crashpad_build/handler/crashpad_handler" "${sentryArtifactsDestination}/bin/crashpad_handler"
 cp "${sentryNativeRoot}/include/sentry.h" "${sentryArtifactsDestination}/include/sentry.h"
-
-chmod +x "${sentryArtifactsDestination}/bin/crashpad_handler"
