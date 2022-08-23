@@ -172,13 +172,10 @@ jobs:
         with:
           name: ${{ github.sha }}
 
-      - name: Unzip UE v${{ matrix.unreal }} plugin package
+      - name: 'Test 1: build plugin'
         run: |
           unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d plugin
-          rm -f sentry-unreal-*.zip
-
-      - name: 'Test 1: build plugin'
-        run: docker exec -w /workspace/plugin unreal ue4 package
+          docker exec -w /workspace/plugin unreal ue4 package
 
       - uses: actions/checkout@v3
         with:
@@ -186,5 +183,5 @@ jobs:
 
       - name: 'Test 2: build sample app'
         run: |
-          ln -s ${{ github.workspace }}/plugin checkout/sample/Plugins/sentry
+          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/sample/Plugins/sentry
           docker exec -w /workspace/checkout/sample unreal ue4 package
