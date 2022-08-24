@@ -161,6 +161,11 @@ jobs:
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
+          # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
+          # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
+          docker exec --user root unreal bash -c "
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux "
+
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
