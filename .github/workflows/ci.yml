@@ -161,7 +161,6 @@ jobs:
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
-          docker exec --user root unreal chown -R $uid /home/ue4/UnrealEngine
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
@@ -182,4 +181,4 @@ jobs:
       - name: Build sample app
         run: |
           unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/sample/Plugins/sentry
-          docker exec -w /workspace/checkout/sample unreal ue4 package
+          docker exec -w /workspace/checkout/sample unreal ue4 package Development
