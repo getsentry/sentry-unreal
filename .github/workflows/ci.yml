@@ -181,4 +181,4 @@ jobs:
       - name: Build sample app
         run: |
           unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/sample/Plugins/sentry
-          docker exec -w /workspace/checkout/sample unreal ue4 package Development
+          docker exec -w /workspace/checkout/sample unreal ue4 package
