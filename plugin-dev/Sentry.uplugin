@@ -31,7 +31,7 @@
 			"sh $(PluginDir)/Scripts/upload-debug-symbols.sh $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
 		],
 		"Win64": [
-			"powershell -ExecutionPolicy RemoteSigned -File $(PluginDir)/Scripts/upload-debug-symbols-win.ps1 $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+			"pwsh -ExecutionPolicy bypass -File $(PluginDir)/Scripts/upload-debug-symbols-win.ps1 $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
 		]
 	}
 }
