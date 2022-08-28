@@ -1,4 +1,7 @@
 param([string] $TargetPlatform, [string] $TargetName, [string] $TargetType, [string] $ProjectPath, [string] $PluginPath)
+Write-Host "Running PowerShell $($PSVersionTable.PSVersion)."
+#Requires -Version 7.0
+Write-Host "Requires Powershell version 7.0 or higher"
 
 $ProjectBinariesPath = "$ProjectPath\Binaries\$TargetPlatform"
 $PluginBinariesPath = "$PluginPath\Source\ThirdParty\$TargetPlatform"
