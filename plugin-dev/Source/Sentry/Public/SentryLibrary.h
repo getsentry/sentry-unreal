@@ -92,14 +92,6 @@ public:
 	static USentryAttachment* CreateSentryAttachmentWithPath(const FString& Path, const FString& Filename,
 		const FString& ContentType = FString(TEXT("application/octet-stream")));
 
-	/** Crashes the application. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static void Crash();
-
-	/** Generates assert. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static void Assert();
-
 	/** Converts string to byte array. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static TArray<uint8> StringToBytesArray(const FString& InString);
