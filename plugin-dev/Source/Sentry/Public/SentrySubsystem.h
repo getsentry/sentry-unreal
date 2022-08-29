@@ -29,6 +29,7 @@ class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 
 	/** Initializes Sentry SDK with values specified in ProjectSettings > Plugins > SentrySDK. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -214,6 +215,15 @@ private:
 	/** Subscribe to specified game events in order to add corresponding breadcrumbs automatically. */
 	void ConfigureBreadcrumbs();
 
+	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
+	void DismissAutomaticBreadcrumbs();
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
+
+	FDelegateHandle PreLoadMapDelegate;
+	FDelegateHandle PostLoadMapDelegate;
+	FDelegateHandle GameStateChangedDelegate;
+	FDelegateHandle UserActivityChangedDelegate;
+	FDelegateHandle GameSessionIDChangedDelegate;
 };
