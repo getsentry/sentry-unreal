@@ -200,7 +200,7 @@ jobs:
         with:
           name: UE ${{ matrix.unreal }} app build logs
           path: |
-            /home/gh/Library/Logs/Unreal Engine/LocalBuildLogs
+            '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs'
             checkout/${{ matrix.app }}/Saved/Logs
             checkout/${{ matrix.app }}/Saved/Stats
             checkout/${{ matrix.app }}/Saved/MaterialStats
