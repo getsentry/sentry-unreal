@@ -186,7 +186,7 @@ jobs:
 
       - name: Build sample app
         run: |
-          docker exec -w /workspace/test/SmokeTest unreal ue4 package
+          docker exec -w /workspace/checkout/test/SmokeTest unreal ue4 package
 
       - name: Collect build info
         if: ${{ always() }}
