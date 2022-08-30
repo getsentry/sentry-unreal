@@ -216,7 +216,7 @@ private:
 	void ConfigureBreadcrumbs();
 
 	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
-	void DismissAutomaticBreadcrumbs();
+	void DisableAutomaticBreadcrumbs();
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;

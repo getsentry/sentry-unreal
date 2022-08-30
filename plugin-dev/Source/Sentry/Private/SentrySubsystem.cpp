@@ -47,7 +47,7 @@ void USentrySubsystem::Deinitialize()
 {
 	Super::Deinitialize();
 
-	DismissAutomaticBreadcrumbs();
+	DisableAutomaticBreadcrumbs();
 }
 
 void USentrySubsystem::Initialize()
@@ -285,7 +285,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	}
 }
 
-void USentrySubsystem::DismissAutomaticBreadcrumbs()
+void USentrySubsystem::DisableAutomaticBreadcrumbs()
 {
 	if(PreLoadMapDelegate.IsValid())
 	{
