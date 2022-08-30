@@ -121,6 +121,7 @@ jobs:
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0'] # 4.26 is not available
+        app: [ 'test/SmokeTest' ]
 
     steps:
       - name: Free disk space
@@ -184,9 +185,14 @@ jobs:
         with:
           path: checkout
 
+      - uses: actions/cache@v2
+        with:
+          path: checkout/${{ matrix.app }}/Intermediate
+          key: ${{ matrix.app }}-${{ matrix.unreal }} }}
+
       - name: Build sample app
         run: |
-          docker exec -w /workspace/checkout/test/SmokeTest unreal ue4 package
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
 
       - name: Collect build info
         if: ${{ always() }}
@@ -195,7 +201,7 @@ jobs:
           name: UE ${{ matrix.unreal }} app build logs
           path: |
             /home/gh/Library/Logs/Unreal Engine/LocalBuildLogs
-            checkout/test/SmokeTest/Saved/Logs
-            checkout/test/SmokeTest/Saved/Stats
-            checkout/test/SmokeTest/Saved/MaterialStats
-            checkout/test/SmokeTest/Saved/MaterialStatsDebug
+            checkout/${{ matrix.app }}/Saved/Logs
+            checkout/${{ matrix.app }}/Saved/Stats
+            checkout/${{ matrix.app }}/Saved/MaterialStats
+            checkout/${{ matrix.app }}/Saved/MaterialStatsDebug
