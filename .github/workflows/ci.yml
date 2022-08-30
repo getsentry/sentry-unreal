@@ -187,3 +187,16 @@ jobs:
       - name: Build sample app
         run: |
           docker exec -w /workspace/checkout/test/SmokeTest unreal ue4 package
+          ls -alh checkout/test/SmokeTest/Saved/
+
+      - name: Collect build info
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Sample app build info
+          path: checkout/test/SmokeTest
+          # path: |
+          #   checkout/test/SmokeTest/Saved/Logs
+          #   checkout/test/SmokeTest/Saved/Stats
+          #   checkout/test/SmokeTest/Saved/MaterialStats
+          #   checkout/test/SmokeTest/Saved/MaterialStatsDebug
