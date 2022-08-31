@@ -172,7 +172,6 @@ jobs:
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved"
 
-
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
           pip3 install --upgrade pip ;
@@ -188,11 +187,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: checkout
-
-      - uses: actions/cache@v2
-        with:
-          path: checkout/${{ matrix.app }}/Intermediate
-          key: ${{ matrix.app }}-${{ matrix.unreal }} }}
 
       - name: Build ${{ matrix.app }} app
         if: ${{ matrix.app }}
