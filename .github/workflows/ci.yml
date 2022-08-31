@@ -111,9 +111,8 @@ jobs:
         shell: pwsh
         run: ./scripts/packaging/test-contents.ps1
 
-  # Smoke-test that the UnrealEnginge can package the plugin.
-  test-ue-packaging:
-    name: Test UE ${{ matrix.unreal }} packaging
+  test:
+    name: Test UE ${{ matrix.unreal }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -184,7 +183,14 @@ jobs:
           name: ${{ github.sha }}
           wait-timeout: 600
 
+      - name: Test packaging
+        if: ${{ ! matrix.app }}
+        run: |
+          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d plugin
+          docker exec -w /workspace/plugin unreal ue4 package
+
       - uses: actions/checkout@v3
+        if: ${{ matrix.app }}
         with:
           path: checkout
 
