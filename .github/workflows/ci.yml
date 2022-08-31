@@ -205,3 +205,8 @@ jobs:
             checkout/${{ matrix.app }}/Saved/Stats
             checkout/${{ matrix.app }}/Saved/MaterialStats
             checkout/${{ matrix.app }}/Saved/MaterialStatsDebug
+
+      - name: Run tests
+        if: ${{ matrix.app }}
+        run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
