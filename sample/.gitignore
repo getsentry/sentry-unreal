@@ -76,3 +76,4 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 **/sentry.properties
+dist

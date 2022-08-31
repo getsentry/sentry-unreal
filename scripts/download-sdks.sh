@@ -2,8 +2,6 @@
 set -euo pipefail
 
 echo "Downloading native SDKs from the latest CI pipeline"
-
-mkdir -p "$(dirname $0)/../plugin-dev/Source/ThirdParty"
 cd "$(dirname $0)/../plugin-dev/Source/ThirdParty"
 
 findCiRun() {

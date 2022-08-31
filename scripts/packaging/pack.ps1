@@ -1,7 +1,7 @@
-Remove-Item "package-release" -Recurse -ErrorAction SilentlyContinue
+Remove-Item "package-release" -Force -Recurse -ErrorAction SilentlyContinue
 New-Item "package-release" -ItemType Directory
 
-$exclude = @('Sentry.uplugin')
+$exclude = @('Sentry.uplugin', '.gitkeep')
 
 Copy-Item "plugin-dev/*" "package-release/" -Exclude $exclude -Recurse
 Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
@@ -18,5 +18,16 @@ foreach ($engineVersion in $engineVersions)
     $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '",') + @($pluginSpec[1..($pluginSpec.count)])
     $newPluginSpec | Out-File 'package-release/Sentry.uplugin'
 
-    Compress-Archive "package-release/*" -DestinationPath $packageName -Force
+    Remove-Item -ErrorAction SilentlyContinue $packageName
+
+    # Note: unlike `zip` (the info-ZIP program), Compress-archive doesn't preserve file permissions - messing up later usage on unix-based systems.
+    Push-Location package-release
+    try
+    {
+        zip -r -1 -v ../$packageName ./*
+    }
+    finally
+    {
+        Pop-Location
+    }
 }
