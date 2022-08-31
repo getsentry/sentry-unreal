@@ -121,7 +121,11 @@ jobs:
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0'] # 4.26 is not available
-        app: [ 'test/SmokeTest' ]
+
+        # Unreal 5.0 takes ~1 hour to build the app so skip for now
+        include:
+          - unreal: '4.27'
+            app: sample
 
     steps:
       - name: Free disk space
@@ -190,13 +194,15 @@ jobs:
           path: checkout/${{ matrix.app }}/Intermediate
           key: ${{ matrix.app }}-${{ matrix.unreal }} }}
 
-      - name: Build sample app
+      - name: Build ${{ matrix.app }} app
+        if: ${{ matrix.app }}
         run: |
+          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs/
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
 
       - name: Collect build info
-        if: ${{ always() }}
+        if: ${{ always() && matrix.app }}
         uses: actions/upload-artifact@v2
         with:
           name: UE ${{ matrix.unreal }} app build logs
