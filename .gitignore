@@ -24,5 +24,13 @@ plugin-dev/Intermediate/*
 package-release/
 sentry-unreal-*.zip
 
-# Prebuilt libraries & artifacts are collected in CI
-plugin-dev/Source/ThirdParty
+# Prebuilt libraries & artifacts are collected in CI.
+# Note: cannot use wildcard because then we couldn't white-list .gitkeep
+plugin-dev/Source/ThirdParty/Android
+plugin-dev/Source/ThirdParty/IOS
+plugin-dev/Source/ThirdParty/Linux
+plugin-dev/Source/ThirdParty/Mac
+plugin-dev/Source/ThirdParty/Win64
+plugin-dev/Source/ThirdParty/CLI/*
+!plugin-dev/Source/ThirdParty/.gitkeep
+!plugin-dev/Source/ThirdParty/CLI/.gitkeep
