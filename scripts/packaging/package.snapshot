@@ -126,6 +126,14 @@ Source/Sentry/Public/SentryUserFeedback.h
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry_IOS_UPL.xml
 Source/Sentry/Sentry.Build.cs
+Source/SentryEditor/
+Source/SentryEditor/Private/
+Source/SentryEditor/Private/SentryEditorModule.cpp
+Source/SentryEditor/Private/SentrySettingsCustomization.cpp
+Source/SentryEditor/Public/
+Source/SentryEditor/Public/SentryEditorModule.h
+Source/SentryEditor/Public/SentrySettingsCustomization.h
+Source/SentryEditor/SentryEditor.Build.cs
 Source/ThirdParty/
 Source/ThirdParty/Android/
 Source/ThirdParty/Android/sentry-android-core-release.aar

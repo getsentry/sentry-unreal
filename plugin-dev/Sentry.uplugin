@@ -20,6 +20,12 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
+		},
+		{
+			"Name": "SentryEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
 		}
 	],
 	"PostBuildSteps":
