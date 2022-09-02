@@ -77,9 +77,13 @@ If ("$UploadSymbols".ToLower() -ne "true")
     Exit
 }
 
-Write-Host "Sentry: Parse project settings"
+$PropertiesFile = "$ProjectPath/sentry.properties"
 
-$PropertiesFile = "$ProjectPath/$($ConfigIni.$SentrySettingsSection.PropertiesFilePath)".Replace('\', '/')
+If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
+{
+    Write-Host "Sentry: Automatic symbols upload is not configured in plugin settings or properties file is missing. Skipping..."
+    Exit
+}
 
 Write-Host "Sentry: Upload started using PropertiesFile '$PropertiesFile'"
 

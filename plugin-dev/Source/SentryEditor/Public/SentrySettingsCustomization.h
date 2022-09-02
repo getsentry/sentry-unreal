@@ -11,4 +11,19 @@ public:
 
 	/** IDetailCustomization implementation */
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+
+private:
+	void DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder);
+
+	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);
+
+	void UpdateProjectName();
+	void UpdateOrganizationName();
+	void UpdateAuthToken();
+
+	void UpdatePropertiesFile(const FString& PropertyName, const FString& PropertyValue); 
+
+	TSharedPtr<IPropertyHandle> ProjectNameHandle;
+	TSharedPtr<IPropertyHandle> OrganizationNameHandle;
+	TSharedPtr<IPropertyHandle> AuthTokenHandle;
 };

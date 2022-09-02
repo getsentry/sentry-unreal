@@ -22,6 +22,7 @@ public class SentryEditor : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
+                "EditorStyle",
                 "Sentry"
             }
         );
