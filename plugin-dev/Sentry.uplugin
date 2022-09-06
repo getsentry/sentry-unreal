@@ -10,7 +10,7 @@
 	"DocsURL": "https://docs.sentry.io/",
 	"MarketplaceURL": "",
 	"SupportURL": "https://docs.sentry.io/support/",
-	"CanContainContent": true,
+	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
