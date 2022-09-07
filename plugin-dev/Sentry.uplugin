@@ -31,13 +31,13 @@
 	"PostBuildSteps":
 	{
 		"Mac": [
-			"sh $(PluginDir)/Scripts/upload-debug-symbols.sh $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+			"sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		],
 		"Linux": [
-			"sh $(PluginDir)/Scripts/upload-debug-symbols.sh $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+			"sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		],
 		"Win64": [
-			"powershell -ExecutionPolicy Bypass -File $(PluginDir)/Scripts/upload-debug-symbols-win.ps1 $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+			"powershell -ExecutionPolicy Bypass -File \"$(PluginDir)/Scripts/upload-debug-symbols-win.ps1\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		]
 	}
 }
