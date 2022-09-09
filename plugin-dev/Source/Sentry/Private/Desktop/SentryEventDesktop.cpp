@@ -8,6 +8,7 @@
 SentryEventDesktop::SentryEventDesktop()
 {
 	EventDesktop = sentry_value_new_event();
+	sentry_value_freeze(EventDesktop);
 }
 
 SentryEventDesktop::SentryEventDesktop(sentry_value_t event)
@@ -18,6 +19,7 @@ SentryEventDesktop::SentryEventDesktop(sentry_value_t event)
 SentryEventDesktop::~SentryEventDesktop()
 {
 	// Put custom destructor logic here if needed
+	UE_LOG(LogSentrySdk, Log, TEXT("EventDesktop destructor"));
 }
 
 sentry_value_t SentryEventDesktop::GetNativeObject()
