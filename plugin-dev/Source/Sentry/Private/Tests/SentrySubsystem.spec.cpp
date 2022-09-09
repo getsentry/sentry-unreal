@@ -76,7 +76,9 @@ void SentrySubsystemSpec::Define()
 			USentryEvent* testEvent = NewObject<USentryEvent>();
 			SentrySubsystemDesktopImpl->CaptureEvent(testEvent);
 
+			TestNotNull("Event is non-null", testEvent);
 			TestEqual("Event level matches global settings", testEvent->GetLevel(), ESentryLevel::Fatal);
+			TestNotNull("Event is non-null", testEvent);
 		});
 	});
 

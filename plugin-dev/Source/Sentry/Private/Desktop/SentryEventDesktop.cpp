@@ -8,7 +8,6 @@
 SentryEventDesktop::SentryEventDesktop()
 {
 	EventDesktop = sentry_value_new_event();
-	sentry_value_freeze(EventDesktop);
 }
 
 SentryEventDesktop::SentryEventDesktop(sentry_value_t event)
@@ -19,7 +18,6 @@ SentryEventDesktop::SentryEventDesktop(sentry_value_t event)
 SentryEventDesktop::~SentryEventDesktop()
 {
 	// Put custom destructor logic here if needed
-	UE_LOG(LogSentrySdk, Log, TEXT("EventDesktop destructor"));
 }
 
 sentry_value_t SentryEventDesktop::GetNativeObject()
@@ -47,15 +45,6 @@ void SentryEventDesktop::SetLevel(ESentryLevel level)
 
 ESentryLevel SentryEventDesktop::GetLevel() const
 {
-	if(sentry_value_refcount(EventDesktop) == 0)
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("EventDesktop ref count equals zero"));
-	}
-	else
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("EventDesktop ref count is not zero"));
-	}
-
 	sentry_value_t level = sentry_value_get_by_key(EventDesktop, "level");
 	return SentryConvertorsDesktop::SentryLevelToUnreal(level);
 }
