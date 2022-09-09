@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryEventDesktop.h"
+#include "SentryDefines.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
@@ -44,6 +45,15 @@ void SentryEventDesktop::SetLevel(ESentryLevel level)
 
 ESentryLevel SentryEventDesktop::GetLevel() const
 {
+	if(sentry_value_refcount(EventDesktop) == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("EventDesktop ref count equals zero"));
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("EventDesktop ref count is not zero"));
+	}
+
 	sentry_value_t level = sentry_value_get_by_key(EventDesktop, "level");
 	return SentryConvertorsDesktop::SentryLevelToUnreal(level);
 }
