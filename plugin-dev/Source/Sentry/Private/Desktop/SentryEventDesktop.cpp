@@ -22,6 +22,7 @@ SentryEventDesktop::~SentryEventDesktop()
 
 sentry_value_t SentryEventDesktop::GetNativeObject()
 {
+	sentry_value_incref(EventDesktop);
 	return EventDesktop;
 }
 
