@@ -79,7 +79,6 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
 	sentry_uuid_t id = sentry_capture_event(nativeEvent);
-	sentry_value_decref(nativeEvent);
 
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
