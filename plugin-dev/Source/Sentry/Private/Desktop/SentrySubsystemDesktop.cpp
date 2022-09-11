@@ -40,6 +40,8 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
 	sentry_init(options);
 
+	sentry_reinstall_backend();
+
 	crashReporter->SetRelease(settings->Release);
 }
 
@@ -79,7 +81,7 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
 	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST CaptureEvent1 %d"), sentry_value_refcount(nativeEvent));
-	sentry_uuid_t id = sentry_capture_event(nativeEvent);
+		sentry_uuid_t id = sentry_capture_event(nativeEvent);
 	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST CaptureEvent2 %d"), sentry_value_refcount(nativeEvent));
 
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
