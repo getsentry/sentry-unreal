@@ -32,7 +32,7 @@ void SentrySubsystemSpec::Define()
 		GConfig->GetString(*SentrySection, TEXT("DsnUrl"), dsnUrl, ConfigFileName);
 
 		USentrySettings* Settings = FSentryModule::Get().GetSettings();
-		Settings->DsnUrl = dsnUrl;
+		Settings->DsnUrl = "https://93c7a68867db43539980de54f09b139a@o447951.ingest.sentry.io/6253052";
 		SentrySubsystemDesktopImpl->InitWithSettings(Settings);
 	});
 
