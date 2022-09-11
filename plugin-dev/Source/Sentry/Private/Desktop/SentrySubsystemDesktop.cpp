@@ -34,11 +34,17 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
 
+	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST InitWithSettings %s"), *HandlerPath);
+
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
-	sentry_init(options);
+	sentry_options_set_debug(options, 1);
+
+	int res = sentry_init(options);
+
+	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST InitWithSettings res %d"), res);
 
 	sentry_reinstall_backend();
 
