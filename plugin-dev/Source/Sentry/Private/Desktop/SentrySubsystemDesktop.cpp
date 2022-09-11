@@ -78,7 +78,9 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event->GetNativeImpl());
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
+	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST CaptureEvent1 %d"), sentry_value_refcount(nativeEvent));
 	sentry_uuid_t id = sentry_capture_event(nativeEvent);
+	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST CaptureEvent2 %d"), sentry_value_refcount(nativeEvent));
 
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
