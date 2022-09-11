@@ -7,6 +7,7 @@
 #include "Desktop/SentrySubsystemDesktop.h"
 #endif
 
+#include "SentrySettings.h"
 #include "Misc/AutomationTest.h"
 
 #if WITH_AUTOMATION_TESTS
@@ -24,7 +25,14 @@ void SentrySubsystemSpec::Define()
 		SentrySubsystemDesktopImpl = MakeShareable(new SentrySubsystemDesktop());
 #endif
 
-		const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+		const FString SentrySection = "/Script/Sentry.SentrySettings";
+		const FString ConfigFileName = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectConfigDir() + "DefaultEngine.ini"));
+
+		FString dsnUrl;
+		GConfig->GetString(*SentrySection, TEXT("DsnUrl"), dsnUrl, ConfigFileName);
+
+		USentrySettings* Settings = FSentryModule::Get().GetSettings();
+		Settings->DsnUrl = dsnUrl;
 		SentrySubsystemDesktopImpl->InitWithSettings(Settings);
 	});
 
