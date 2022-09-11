@@ -34,19 +34,13 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST InitWithSettings %s"), *HandlerPath);
+	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST InitWithSettings %s"), *settings->DsnUrl);
 
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
-	sentry_options_set_debug(options, 1);
-
-	int res = sentry_init(options);
-
-	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST InitWithSettings res %d"), res);
-
-	sentry_reinstall_backend();
+	sentry_init(options);
 
 	crashReporter->SetRelease(settings->Release);
 }
@@ -86,9 +80,7 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event->GetNativeImpl());
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
-	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST CaptureEvent1 %d"), sentry_value_refcount(nativeEvent));
-		sentry_uuid_t id = sentry_capture_event(nativeEvent);
-	UE_LOG(LogSentrySdk, Log, TEXT("MEMTEST CaptureEvent2 %d"), sentry_value_refcount(nativeEvent));
+	sentry_uuid_t id = sentry_capture_event(nativeEvent);
 
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
