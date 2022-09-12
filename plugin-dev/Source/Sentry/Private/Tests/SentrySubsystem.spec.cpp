@@ -68,19 +68,6 @@ void SentrySubsystemSpec::Define()
 		});
 	});
 
-	Describe("Set Level", [this]()
-	{
-		It("should affect events to be captured", [this]()
-		{
-			SentrySubsystemDesktopImpl->SetLevel(ESentryLevel::Fatal);
-
-			USentryEvent* testEvent = NewObject<USentryEvent>();
-			SentrySubsystemDesktopImpl->CaptureEvent(testEvent);
-
-			TestEqual("Event level matches global settings", testEvent->GetLevel(), ESentryLevel::Fatal);
-		});
-	});
-
 	AfterEach([this]
 	{
 		SentrySubsystemDesktopImpl->Close();
