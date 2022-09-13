@@ -7,6 +7,7 @@
 #include "Desktop/SentrySubsystemDesktop.h"
 #endif
 
+#include "SentrySettings.h"
 #include "Misc/AutomationTest.h"
 
 #if WITH_AUTOMATION_TESTS
@@ -24,7 +25,7 @@ void SentrySubsystemSpec::Define()
 		SentrySubsystemDesktopImpl = MakeShareable(new SentrySubsystemDesktop());
 #endif
 
-		const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+		USentrySettings* Settings = FSentryModule::Get().GetSettings();
 		SentrySubsystemDesktopImpl->InitWithSettings(Settings);
 	});
 
@@ -64,19 +65,6 @@ void SentrySubsystemSpec::Define()
 
 			const USentryId* eventId = SentrySubsystemDesktopImpl->CaptureEventWithScope(testEvent, testDelegate);
 			TestNull("Event ID is null", eventId);
-		});
-	});
-
-	Describe("Set Level", [this]()
-	{
-		It("should affect events to be captured", [this]()
-		{
-			SentrySubsystemDesktopImpl->SetLevel(ESentryLevel::Fatal);
-
-			USentryEvent* testEvent = NewObject<USentryEvent>();
-			SentrySubsystemDesktopImpl->CaptureEvent(testEvent);
-
-			TestEqual("Event level matches global settings", testEvent->GetLevel(), ESentryLevel::Fatal);
 		});
 	});
 

@@ -77,7 +77,9 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 {
 	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event->GetNativeImpl());
 
-	sentry_uuid_t id = sentry_capture_event(eventDesktop->GetNativeObject());
+	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
+	sentry_uuid_t id = sentry_capture_event(nativeEvent);
+
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
