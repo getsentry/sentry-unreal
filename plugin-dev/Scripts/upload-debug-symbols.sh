@@ -44,7 +44,6 @@ if [ ! -f "$SENTRY_PROPERTIES" ]; then
     exit 1
 fi
 
-export SENTRY_PROPERTIES="$projectPath/sentry.properties"
 
 echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
 
