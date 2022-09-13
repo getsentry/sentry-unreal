@@ -198,8 +198,6 @@ jobs:
         if: ${{ matrix.app }}
         run: |
           unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
-          # XXX temporary to check debug failing test
-          mv checkout/${{ matrix.app }}/Plugins/sentry/Source/ThirdParty/Linux/bin/libsentry.dbg.so checkout/${{ matrix.app }}/Plugins/sentry/Source/ThirdParty/Linux/bin/libsentry.so
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
 
