@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add debug symbols upload settings ([#94](https://github.com/getsentry/sentry-unreal/pull/94))
+
 ### Features
 
 - Add debug symbols upload ([#45](https://github.com/getsentry/sentry-unreal/pull/45), [#59](https://github.com/getsentry/sentry-unreal/pull/59))
