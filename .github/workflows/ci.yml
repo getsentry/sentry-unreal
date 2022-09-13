@@ -199,7 +199,7 @@ jobs:
         if: ${{ always() && matrix.app }}
         uses: actions/upload-artifact@v2
         with:
-          name: UE ${{ matrix.unreal }} app build logs
+          name: UE ${{ matrix.unreal }} ${{ matrix.app }} build logs
           path: |
             checkout/${{ matrix.app }}/Saved/Logs
             checkout/${{ matrix.app }}/Saved/Stats
