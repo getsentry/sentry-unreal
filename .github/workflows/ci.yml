@@ -120,13 +120,7 @@ jobs:
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0'] # 4.26 is not available
-
-        # Unreal 5.0 takes ~1 hour to build the app so skip for now
-        include:
-          - unreal: '4.27'
-            app: sample
-          - unreal: '5.0'
-            app: sample
+        app: ['sample']
 
     steps:
       - name: Free disk space
@@ -179,42 +173,37 @@ jobs:
           pip3 install -Iv ue4cli==0.0.54 ;
           ue4 setroot /home/ue4/UnrealEngine '
 
-      - name: Download packages
+      - name: Download package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: ${{ github.sha }}
           wait-timeout: 600
 
-      - name: Test packaging
-        if: ${{ ! matrix.app }}
-        run: |
-          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d plugin
-          docker exec -w /workspace/plugin unreal ue4 package
-
       - uses: actions/checkout@v3
-        if: ${{ matrix.app }}
         with:
           path: checkout
 
-      - name: Build ${{ matrix.app }} app
-        if: ${{ matrix.app }}
-        run: |
-          unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
-          # docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
-          # docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
-
-      # - name: Collect build info
-      #   if: ${{ always() && matrix.app }}
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: UE ${{ matrix.unreal }} app build logs
-      #     path: |
-      #       checkout/${{ matrix.app }}/Saved/Logs
-      #       checkout/${{ matrix.app }}/Saved/Stats
-      #       checkout/${{ matrix.app }}/Saved/MaterialStats
-      #       checkout/${{ matrix.app }}/Saved/MaterialStatsDebug
+      - name: Extract package to ${{ matrix.app }}/Plugins
+        run: unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
 
       - name: Run tests
-        if: ${{ matrix.app }}
+        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
+
+      - name: Build & package ${{ matrix.app }}
+        # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
+        if: ${{ matrix.unreal == '4.27'}}
+        id: package-app
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
+
+      - name: Collect ${{ matrix.app }} build info
+        if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
+        uses: actions/upload-artifact@v2
+        with:
+          name: UE ${{ matrix.unreal }} app build logs
+          path: |
+            checkout/${{ matrix.app }}/Saved/Logs
+            checkout/${{ matrix.app }}/Saved/Stats
+            checkout/${{ matrix.app }}/Saved/MaterialStats
+            checkout/${{ matrix.app }}/Saved/MaterialStatsDebug
