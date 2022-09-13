@@ -125,6 +125,8 @@ jobs:
         include:
           - unreal: '4.27'
             app: sample
+          - unreal: '5.0'
+            app: sample
 
     steps:
       - name: Free disk space
@@ -198,19 +200,19 @@ jobs:
         if: ${{ matrix.app }}
         run: |
           unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
+          # docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
+          # docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
 
-      - name: Collect build info
-        if: ${{ always() && matrix.app }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: UE ${{ matrix.unreal }} app build logs
-          path: |
-            checkout/${{ matrix.app }}/Saved/Logs
-            checkout/${{ matrix.app }}/Saved/Stats
-            checkout/${{ matrix.app }}/Saved/MaterialStats
-            checkout/${{ matrix.app }}/Saved/MaterialStatsDebug
+      # - name: Collect build info
+      #   if: ${{ always() && matrix.app }}
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: UE ${{ matrix.unreal }} app build logs
+      #     path: |
+      #       checkout/${{ matrix.app }}/Saved/Logs
+      #       checkout/${{ matrix.app }}/Saved/Stats
+      #       checkout/${{ matrix.app }}/Saved/MaterialStats
+      #       checkout/${{ matrix.app }}/Saved/MaterialStatsDebug
 
       - name: Run tests
         if: ${{ matrix.app }}
