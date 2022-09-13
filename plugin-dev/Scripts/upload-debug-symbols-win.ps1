@@ -81,8 +81,8 @@ $PropertiesFile = "$ProjectPath/sentry.properties"
 
 If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
 {
-    Write-Host "Sentry: Automatic symbols upload is not configured in plugin settings or properties file is missing. Skipping..."
-    Exit
+    Write-Error "Sentry: Properties file is missing"
+    Exit 1
 }
 
 Write-Host "Sentry: Upload started using PropertiesFile '$PropertiesFile'"
