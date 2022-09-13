@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add debug symbols upload settings ([#94](https://github.com/getsentry/sentry-unreal/pull/94))
+
 ### Fixes
 
 - packaged plugin `EngineVersion` should include `.0` patch version ([#101](https://github.com/getsentry/sentry-unreal/pull/101))

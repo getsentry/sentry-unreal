@@ -38,9 +38,12 @@ if [ $UPLOAD_SYMBOLS != "True" ]; then
     exit
 fi
 
-PROP_FILE_PATH=$(awk -F "=" '/PropertiesFilePath/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
+export SENTRY_PROPERTIES="$projectPath/sentry.properties"
+if [ ! -f "$SENTRY_PROPERTIES" ]; then
+    echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'"
+    exit 1
+fi
 
-export SENTRY_PROPERTIES="$projectPath/$PROP_FILE_PATH"
 
 echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
 

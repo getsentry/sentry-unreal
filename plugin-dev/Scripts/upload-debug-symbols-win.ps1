@@ -77,9 +77,13 @@ If ("$UploadSymbols".ToLower() -ne "true")
     Exit
 }
 
-Write-Host "Sentry: Parse project settings"
+$PropertiesFile = "$ProjectPath/sentry.properties"
 
-$PropertiesFile = "$ProjectPath/$($ConfigIni.$SentrySettingsSection.PropertiesFilePath)".Replace('\', '/')
+If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
+{
+    Write-Error "Sentry: Properties file is missing: '$PropertiesFile'"
+    Exit 1
+}
 
 Write-Host "Sentry: Upload started using PropertiesFile '$PropertiesFile'"
 
