@@ -81,7 +81,7 @@ $PropertiesFile = "$ProjectPath/sentry.properties"
 
 If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
 {
-    Write-Error "Sentry: Properties file is missing"
+    Write-Error "Sentry: Properties file is missing: '$PropertiesFile'"
     Exit 1
 }
 
