@@ -6,7 +6,7 @@
 </p>
 <p align="center">
 
-Experimental Sentry SDK for Unreal Engine
+Sentry SDK for Unreal Engine
 ===========
 
 Sentry [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).

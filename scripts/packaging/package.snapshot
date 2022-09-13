@@ -1,11 +1,6 @@
 CHANGELOG.md
 Config/
 Config/FilterPlugin.ini
-Content/
-Content/Maps/
-Content/Maps/SentryDemo.umap
-Content/UI/
-Content/UI/W_SentryDemo.uasset
 LICENSE
 Resources/
 Resources/Icon128.png

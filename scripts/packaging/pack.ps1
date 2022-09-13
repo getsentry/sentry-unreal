@@ -15,7 +15,7 @@ foreach ($engineVersion in $engineVersions)
     $packageName = "sentry-unreal-$version-engine$engineVersion.zip"
     Write-Host "Creating a release package for Unreal $engineVersion as $packageName"
 
-    $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '",') + @($pluginSpec[1..($pluginSpec.count)])
+    $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '.0",') + @($pluginSpec[1..($pluginSpec.count)])
     $newPluginSpec | Out-File 'package-release/Sentry.uplugin'
 
     Remove-Item -ErrorAction SilentlyContinue $packageName
