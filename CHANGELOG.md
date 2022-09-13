@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- packaged plugin `EngineVersion` should include `.0` patch version ([#101](https://github.com/getsentry/sentry-unreal/pull/101))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v7.24.1 to v7.25.0 ([#98](https://github.com/getsentry/sentry-unreal/pull/98))
