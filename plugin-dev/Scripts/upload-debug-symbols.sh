@@ -38,8 +38,9 @@ if [ $UPLOAD_SYMBOLS != "True" ]; then
     exit
 fi
 
-if [ ! -f "$projectPath/sentry.properties" ]; then
-    echo "Sentry: Properties file is missing"
+export SENTRY_PROPERTIES="$projectPath/sentry.properties"
+if [ ! -f "$SENTRY_PROPERTIES" ]; then
+    echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'"
     exit 1
 fi
 
