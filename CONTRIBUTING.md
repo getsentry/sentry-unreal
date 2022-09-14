@@ -32,12 +32,12 @@ This script links the checked out version of the plugin (the [plugin-dev](./plug
 Sentry Unreal plugin consists of a single module `SentrySDK`. It declares the plugin API and contains separate implementations for each platform that is supported (Android/iOS/Desktop).
 Other Sentry libraries are provided along with the plugin source code and can be found in `Source/ThirdParty` directory.
 
-### Content
-
-There is a demo level (`SentryDemo.umap`) in plugin's Content folder which presents a simple UI allowing to send some test events to Sentry. `W_SentryDemo` blueprint implementation shows how to call the plugin API and can be used as a reference.
-
-In order to run the demo level navigate to `Content Browser -> Sentry Content -> Maps` and open `SentryDemo` map. Hit play to launch the demo. If `Sentry Content` folder is not visible in `Contant Browser` open `View Options` menu in lower-right corner and make sure that `Show Plugin Content` option is enabled.
-
 ### Tests
 
 In order to run automation tests navigate to `Settings -> Plugins -> Testing` and enable all the plugins available there. Editor restart will be required for the changes to take effect. After that `Windows -> Test Automation` menu will appear which opens the `Session Frontend` window. Switch to `Automation` tab there and select `Sentry` within the list of existing tests. Hit `Start Tests` button to run the tests and check the result.
+
+## Sample project
+
+There is a demo level (`SentryDemo.umap`) in project's Content folder which presents a simple UI allowing to send some test events to Sentry. `W_SentryDemo` blueprint implementation shows how to call the plugin API and can be used as a reference.
+
+In order to run the demo level navigate to `Content Browser -> Content -> Maps` and open `SentryDemo` map. Hit play to launch the demo.

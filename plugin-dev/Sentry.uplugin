@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "0.0.1",
+	"VersionName": "0.1.1",
 	"FriendlyName": "Sentry",
 	"Description": "Sentry catches all your errors and performance issues, and shows you how to fix them before they bring down the player experience.",
 	"Category": "Code Plugins",
@@ -10,7 +10,7 @@
 	"DocsURL": "https://docs.sentry.io/",
 	"MarketplaceURL": "",
 	"SupportURL": "https://docs.sentry.io/support/",
-	"CanContainContent": true,
+	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
@@ -20,18 +20,24 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
+		},
+		{
+			"Name": "SentryEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
 		}
 	],
 	"PostBuildSteps":
 	{
 		"Mac": [
-			"sh $(PluginDir)/Scripts/upload-debug-symbols.sh $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+			"sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		],
 		"Linux": [
-			"sh $(PluginDir)/Scripts/upload-debug-symbols.sh $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+			"sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		],
 		"Win64": [
-			"pwsh -ExecutionPolicy bypass -File $(PluginDir)/Scripts/upload-debug-symbols-win.ps1 $(TargetPlatform) $(TargetName) $(TargetType) $(ProjectDir) $(PluginDir)"
+			"pwsh -ExecutionPolicy Bypass -File \"$(PluginDir)/Scripts/upload-debug-symbols-win.ps1\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		]
 	}
 }

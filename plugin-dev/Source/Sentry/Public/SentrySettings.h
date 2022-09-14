@@ -62,7 +62,18 @@ public:
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
 	bool UploadSymbolsAutomatically;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Properties file", ToolTip = "Path to the `sentry.properties` file.", EditCondition = "UploadSymbolsAutomatically"))
-    FString PropertiesFilePath;
+	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
+	FString ProjectName;
+
+	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organisation associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
+	FString OrgName;
+
+	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.", EditCondition = "UploadSymbolsAutomatically"))
+	FString AuthToken;
+
+private:
+	void LoadDebugSymbolsProperties();
 };

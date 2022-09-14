@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryEventDesktop.h"
+#include "SentryDefines.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 

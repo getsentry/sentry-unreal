@@ -43,6 +43,13 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	}
 }
 
+void USentrySubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+
+	DisableAutomaticBreadcrumbs();
+}
+
 void USentrySubsystem::Initialize()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
@@ -226,7 +233,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 
 	if(Settings->AutomaticBreadcrumbs.bOnMapLoadingStarted)
 	{
-		FCoreUObjectDelegates::PreLoadMap.AddLambda([=](const FString& MapName)
+		PreLoadMapDelegate = FCoreUObjectDelegates::PreLoadMap.AddLambda([=](const FString& MapName)
 		{
 			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"),
 				{{TEXT("Map"), MapName}}, ESentryLevel::Info);
@@ -235,7 +242,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 
 	if(Settings->AutomaticBreadcrumbs.bOnMapLoaded)
 	{
-		FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda([=](UWorld* World)
+		PostLoadMapDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda([=](UWorld* World)
 		{
 			if (World)
 			{
@@ -252,7 +259,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 
 	if(Settings->AutomaticBreadcrumbs.bOnGameStateClassChanged)
 	{
-		FCoreDelegates::GameStateClassChanged.AddLambda([this](const FString& GameState)
+		GameStateChangedDelegate = FCoreDelegates::GameStateClassChanged.AddLambda([this](const FString& GameState)
 		{
 			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"),
 				{{TEXT("GameState"), GameState}}, ESentryLevel::Info);
@@ -261,7 +268,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 
 	if(Settings->AutomaticBreadcrumbs.bOnUserActivityStringChanged)
 	{
-		FCoreDelegates::UserActivityStringChanged.AddLambda([this](const FString& Activity)
+		UserActivityChangedDelegate = FCoreDelegates::UserActivityStringChanged.AddLambda([this](const FString& Activity)
 		{
 			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"),
 				{{TEXT("Activity"), Activity}}, ESentryLevel::Info);
@@ -270,10 +277,38 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 
 	if(Settings->AutomaticBreadcrumbs.bOnGameSessionIDChanged)
 	{
-		FCoreDelegates::GameSessionIDChanged.AddLambda([this](const FString& SessionId)
+		GameSessionIDChangedDelegate = FCoreDelegates::GameSessionIDChanged.AddLambda([this](const FString& SessionId)
 		{
 			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"),
 				{{TEXT("Session ID"), SessionId}}, ESentryLevel::Info);
 		});
+	}
+}
+
+void USentrySubsystem::DisableAutomaticBreadcrumbs()
+{
+	if(PreLoadMapDelegate.IsValid())
+	{
+		FCoreUObjectDelegates::PreLoadMap.Remove(PreLoadMapDelegate);
+	}
+
+	if(PostLoadMapDelegate.IsValid())
+	{
+		FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(PostLoadMapDelegate);
+	}
+
+	if(GameStateChangedDelegate.IsValid())
+	{
+		FCoreDelegates::GameStateClassChanged.Remove(GameStateChangedDelegate);
+	}
+
+	if(UserActivityChangedDelegate.IsValid())
+	{
+		FCoreDelegates::UserActivityStringChanged.Remove(UserActivityChangedDelegate);
+	}
+
+	if(GameSessionIDChangedDelegate.IsValid())
+	{
+		FCoreDelegates::GameSessionIDChanged.Remove(GameSessionIDChangedDelegate);
 	}
 }
