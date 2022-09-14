@@ -9,9 +9,34 @@
 Sentry SDK for Unreal Engine
 ===========
 
-Sentry [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
-This SDK is a prototype, that packages Sentry's mobile SDKs into a Unreal Engine package.
+This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for both desktop and mobile. Also, it [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
 
+## Downloads
+
+The SDK can be downloaded from the [Releases] page, which also lists the
+changelog of every version.
+
+[releases]: https://github.com/getsentry/sentry-unreal/releases
+
+## Supported Platforms and Unreal Engine version
+
+The SDK currently supports and is tested on the following platforms:
+
+- Windows
+- macOS
+- Android
+- iOS
+
+The SDK complies with three latest engine versions.
+
+## Known Limitations
+
+- Currently automatic crash capturing works only for mobile platforms. In order to capture crahes on Windows and Mac
+[Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/)
+
+## Development
+
+Please see the [contribution guide](./CONTRIBUTING.md).
 
 ## Resources
 
