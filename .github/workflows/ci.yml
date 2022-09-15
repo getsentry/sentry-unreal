@@ -1,6 +1,6 @@
 name: package-plugin-workflow
 
-on: [push]
+on: push
 
 jobs:
   android-sdk:
