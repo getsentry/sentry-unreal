@@ -34,9 +34,11 @@ The SDK complies with three latest engine versions.
 - Currently automatic crash capturing works only for mobile platforms. In order to capture crahes on Windows and Mac
 [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/)
   
-- Using UGS binaries requires tagging of files to ensure the crashpad_handler.exe is present. Such as the following. 
-  					<Tag Files="#EditorBinaries$(EditorPlatform)" Filter="*.target" With="#TargetReceipts"/>
-					<TagReceipt Files="#TargetReceipts" RuntimeDependencies="true" With="#BinariesToArchive$(EditorPlatform)"/>
+- Using UGS binaries requires tagging of files to ensure the crashpad_handler.exe and sentry.dll is present. For inclusion in build graph, you'd want something like this: 
+					<Tag Files="#EditorBinaries$(EditorPlatform)" Filter="*.target" With="#TargetReceipts"/>
+					<TagReceipt Files="#TargetReceipts" RuntimeDependencies="true" With="#RuntimeDependencies"/>
+					<Tag Files="#RuntimeDependencies" Filter="sentry.dll;crashpad_handler.exe" With="#BinariesToArchive$(EditorPlatform)"/>
+					<Tag Files="#RuntimeDependencies" Filter="sentry.pdb" With="#SymbolsToArchive$(EditorPlatform)"/>
 
 ## Development
 
