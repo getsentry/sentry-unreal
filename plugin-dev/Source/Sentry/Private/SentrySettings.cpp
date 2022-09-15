@@ -3,6 +3,7 @@
 #include "SentrySettings.h"
 
 #include "Misc/Paths.h"
+#include "Misc/ConfigCacheIni.h"
 
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

@@ -4,6 +4,8 @@
 
 #include "IDetailCustomization.h"
 
+class IPropertyHandle;
+
 class FSentrySettingsCustomization : public IDetailCustomization
 {
 public:
