@@ -6,11 +6,4 @@ on:
 
 jobs:
   danger:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - run: npx danger ci
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: getsentry/github-workflows/.github/workflows/danger.yml@3530284e77ea2ac65c1081402c66d04181f2e742
