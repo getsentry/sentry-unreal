@@ -31,7 +31,7 @@ The SDK complies with three latest engine versions.
 
 ## Known Limitations
 
-- Currently automatic crash capturing works only for mobile platforms. In order to capture crahes on Windows and Mac
+- Currently automatic crash capturing works only for mobile platforms. In order to capture crashes on Windows and Mac,
 [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/)
 
 ## Development
