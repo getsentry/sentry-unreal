@@ -38,7 +38,6 @@ The SDK complies with three latest engine versions.
 					<Tag Files="#EditorBinaries$(EditorPlatform)" Filter="*.target" With="#TargetReceipts"/>
 					<TagReceipt Files="#TargetReceipts" RuntimeDependencies="true" With="#RuntimeDependencies"/>
 					<Tag Files="#RuntimeDependencies" Filter="sentry.dll;crashpad_handler.exe" With="#BinariesToArchive$(EditorPlatform)"/>
-					<Tag Files="#RuntimeDependencies" Filter="sentry.pdb" With="#SymbolsToArchive$(EditorPlatform)"/>
 
 ## Development
 
