@@ -33,6 +33,12 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 #endif
 
 	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
+	
+	if (!FPaths::FileExists(HandlerPath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Crashpad_handler.exe doesn't exist - Is it included in the UGS Binaries zip or compiled locally?."));
+		return;
+	}
 
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
