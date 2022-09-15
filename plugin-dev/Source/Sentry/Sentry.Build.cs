@@ -153,6 +153,8 @@ public class Sentry : ModuleRules
 		if (!File.Exists(Path.Combine(BinariesPath, libname + DynamicLibExtension)))
 		{
 			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DynamicLibExtension), Path.Combine(BinariesPath, libname + DynamicLibExtension), true);
+			string sentrydll = Path.Combine(BinariesPath, libname + DynamicLibExtension);
+			File.SetAttributes(sentrydll, File.GetAttributes(sentrydll) & ~FileAttributes.ReadOnly);
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
@@ -164,8 +166,8 @@ public class Sentry : ModuleRules
 			{
 				File.Copy(Path.Combine(DynamicLibrariesPath, libname + DebugSymbolsExtension), Path.Combine(BinariesPath, libname + DebugSymbolsExtension), true);
 				// When copying we need the file writeable for UGS Binary Zips, otherwise UGS will fail to sync. Perforce is usually read only by default.
-				string sentrydll = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
-				File.SetAttributes(sentrydll, File.GetAttributes(sentrydll) & ~FileAttributes.ReadOnly);
+				string sentrysymbols = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
+				File.SetAttributes(sentrysymbols, File.GetAttributes(sentrysymbols) & ~FileAttributes.ReadOnly);
 			}
 			
 			RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DebugSymbolsExtension));
