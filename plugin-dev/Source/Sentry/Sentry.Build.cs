@@ -163,6 +163,9 @@ public class Sentry : ModuleRules
 			if (!File.Exists(Path.Combine(BinariesPath, libname + DebugSymbolsExtension)))
 			{
 				File.Copy(Path.Combine(DynamicLibrariesPath, libname + DebugSymbolsExtension), Path.Combine(BinariesPath, libname + DebugSymbolsExtension), true);
+				// When copying we need the file writeable for UGS Binary Zips, otherwise UGS will fail to sync. Perforce is usually read only by default.
+				string sentrydll = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
+				File.SetAttributes(sentrydll, File.GetAttributes(sentrydll) & ~FileAttributes.ReadOnly);
 			}
 			
 			RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DebugSymbolsExtension));
@@ -192,6 +195,9 @@ public class Sentry : ModuleRules
 		if (!File.Exists(Path.Combine(BinariesPath, HandlerName)))
 		{
 			File.Copy(Path.Combine(HandlerPath, HandlerName), Path.Combine(BinariesPath, HandlerName), true);
+			// When copying we need the file writeable for UGS Binary Zips, otherwise UGS will fail to sync. Perforce is usually read only by default.
+			string crashhandler = Path.Combine(BinariesPath, HandlerName);
+			File.SetAttributes(Path.Combine(BinariesPath, HandlerName), File.GetAttributes(crashhandler) & ~FileAttributes.ReadOnly);
 		}
 
 		RuntimeDependencies.Add(Path.Combine(BinariesPath, HandlerName));
