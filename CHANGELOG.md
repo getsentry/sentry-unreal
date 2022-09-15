@@ -9,6 +9,7 @@
 ### Fixes
 
 - Packaged plugin `EngineVersion` should include `.0` patch version ([#101](https://github.com/getsentry/sentry-unreal/pull/101))
+- Plugin packaging issues on Windows ([#110](https://github.com/getsentry/sentry-unreal/pull/110))
 
 ### Dependencies
 
