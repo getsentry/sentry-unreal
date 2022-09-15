@@ -8,8 +8,11 @@
 #include "DetailWidgetRow.h"
 #include "EditorStyleSet.h"
 #include "Misc/Paths.h"
+#include "Misc/ConfigCacheIni.h"
+#include "PropertyHandle.h"
 
 #include "Widgets/Text/SRichTextBlock.h"
+#include "Widgets/Layout/SBorder.h"
 
 TSharedRef<IDetailCustomization> FSentrySettingsCustomization::MakeInstance()
 {

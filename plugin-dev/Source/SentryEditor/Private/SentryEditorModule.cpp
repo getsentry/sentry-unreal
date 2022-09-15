@@ -5,6 +5,7 @@
 #include "SentrySettingsCustomization.h"
 
 #include "Modules/ModuleManager.h"
+#include "PropertyEditorModule.h"
 
 #define LOCTEXT_NAMESPACE "FSentryEditorModule"
 
