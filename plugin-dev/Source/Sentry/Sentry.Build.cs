@@ -139,67 +139,67 @@ public class Sentry : ModuleRules
 		// Link libraries
 		string ThirdPartyPath = Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString());
 
-		string StaticLibrariesPath = Path.Combine(ThirdPartyPath, "lib");
-		string DynamicLibrariesPath = Path.Combine(ThirdPartyPath, "bin");
-
-		// Copy dynamic libraries to Binaries folder
 		string BinariesPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries", Target.Platform.ToString()));
+
+		string SourceStaticLibPath = Path.Combine(ThirdPartyPath, "lib", libname + StaticLibExtension);
+		string SourceDynamicLibPath = Path.Combine(ThirdPartyPath, "bin", libname + DynamicLibExtension);
+		string SourceSymbolsPath = Path.Combine(ThirdPartyPath, "bin", libname + DebugSymbolsExtension);
+		string BinariesDynamicLibPath = Path.Combine(BinariesPath, libname + DynamicLibExtension);
+		string BinariesSymbolsPath = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
 
 		if (!Directory.Exists(BinariesPath))
 		{
 			Directory.CreateDirectory(BinariesPath);
 		}
 
-		if (!File.Exists(Path.Combine(BinariesPath, libname + DynamicLibExtension)))
+		if (!File.Exists(BinariesDynamicLibPath))
 		{
-			File.Copy(Path.Combine(DynamicLibrariesPath, libname + DynamicLibExtension), Path.Combine(BinariesPath, libname + DynamicLibExtension), true);
-			string sentrydll = Path.Combine(BinariesPath, libname + DynamicLibExtension);
-			File.SetAttributes(sentrydll, File.GetAttributes(sentrydll) & ~FileAttributes.ReadOnly);
+			File.Copy(SourceDynamicLibPath, BinariesDynamicLibPath, true);
+			// Make Sentry library writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
+			File.SetAttributes(BinariesDynamicLibPath, File.GetAttributes(BinariesDynamicLibPath) & ~FileAttributes.ReadOnly);
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			PublicAdditionalLibraries.Add(Path.Combine(StaticLibrariesPath, libname + StaticLibExtension));
+			PublicAdditionalLibraries.Add(SourceStaticLibPath);
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
-			
-			if (!File.Exists(Path.Combine(BinariesPath, libname + DebugSymbolsExtension)))
+
+			if (!File.Exists(BinariesSymbolsPath))
 			{
-				File.Copy(Path.Combine(DynamicLibrariesPath, libname + DebugSymbolsExtension), Path.Combine(BinariesPath, libname + DebugSymbolsExtension), true);
-				// When copying we need the file writeable for UGS Binary Zips, otherwise UGS will fail to sync. Perforce is usually read only by default.
-				string sentrysymbols = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
-				File.SetAttributes(sentrysymbols, File.GetAttributes(sentrysymbols) & ~FileAttributes.ReadOnly);
+				File.Copy(SourceSymbolsPath, BinariesSymbolsPath, true);
+				// Make debug symbols writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
+				File.SetAttributes(BinariesSymbolsPath, File.GetAttributes(BinariesSymbolsPath) & ~FileAttributes.ReadOnly);
 			}
-			
-			RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DebugSymbolsExtension));
+
+			RuntimeDependencies.Add(BinariesSymbolsPath);
 		}
 		if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			PublicAdditionalLibraries.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
+			PublicAdditionalLibraries.Add(BinariesDynamicLibPath);
 		}
 
-		RuntimeDependencies.Add(Path.Combine(BinariesPath, libname + DynamicLibExtension));
+		RuntimeDependencies.Add(BinariesDynamicLibPath);
 	}
 
 	public void LoadCrashpadHandler(string HandlerName, ReadOnlyTargetRules Target)
 	{
 		string ThirdPartyPath = Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString());
 
-		string HandlerPath = Path.Combine(ThirdPartyPath, "bin");
-
-		// Copy crashpad handler executable to Binaries folder
 		string BinariesPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries", Target.Platform.ToString()));
+
+		string SourceHandlerPath = Path.Combine(ThirdPartyPath, "bin", HandlerName);
+		string BinariesHandlerPath = Path.Combine(BinariesPath, HandlerName);
 
 		if (!Directory.Exists(BinariesPath))
 		{
 			Directory.CreateDirectory(BinariesPath);
 		}
 
-		if (!File.Exists(Path.Combine(BinariesPath, HandlerName)))
+		if (!File.Exists(BinariesHandlerPath))
 		{
-			File.Copy(Path.Combine(HandlerPath, HandlerName), Path.Combine(BinariesPath, HandlerName), true);
-			// When copying we need the file writeable for UGS Binary Zips, otherwise UGS will fail to sync. Perforce is usually read only by default.
-			string crashhandler = Path.Combine(BinariesPath, HandlerName);
-			File.SetAttributes(Path.Combine(BinariesPath, HandlerName), File.GetAttributes(crashhandler) & ~FileAttributes.ReadOnly);
+			File.Copy(SourceHandlerPath, BinariesHandlerPath, true);
+			// Make crashpad handler writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
+			File.SetAttributes(BinariesHandlerPath, File.GetAttributes(BinariesHandlerPath) & ~FileAttributes.ReadOnly);
 		}
 
 		RuntimeDependencies.Add(Path.Combine(BinariesPath, HandlerName));
