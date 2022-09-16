@@ -171,7 +171,7 @@ public class Sentry : ModuleRules
 				File.SetAttributes(BinariesSymbolsPath, File.GetAttributes(BinariesSymbolsPath) & ~FileAttributes.ReadOnly);
 			}
 
-			RuntimeDependencies.Add(BinariesDynamicLibPath);
+			RuntimeDependencies.Add(BinariesSymbolsPath);
 		}
 		if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
