@@ -47,34 +47,23 @@ public class SentryBridgeJava {
 	}
 
 	public static SentryId captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
-		// TODO Find another solution for returning ID since CountDownLatch blocks game thread
-		final CountDownLatch doneSignal = new CountDownLatch(1);
-		Sentry.withScope(new ScopeCallback() {
+		SentryId messageId = Sentry.captureMessage(message, new ScopeCallback() {
 			@Override
 			public void run(@NonNull Scope scope) {
-				scope.setLevel(level);
 				onConfigureScope(callback, scope);
-				Sentry.captureMessage(message);
-				doneSignal.countDown();
 			}
 		});
-		doneSignal.await();
-		return Sentry.getLastEventId();
+		return messageId;
 	}
 
 	public static SentryId captureEventWithScope(final SentryEvent event, final long callback) throws InterruptedException {
-		// TODO Find another solution for returning ID since CountDownLatch blocks game thread
-		final CountDownLatch doneSignal = new CountDownLatch(1);
-		Sentry.withScope(new ScopeCallback() {
+		SentryId eventId = Sentry.captureEvent(event, new ScopeCallback() {
 			@Override
 			public void run(@NonNull Scope scope) {
 				onConfigureScope(callback, scope);
-				Sentry.captureEvent(event);
-				doneSignal.countDown();
 			}
 		});
-		doneSignal.await();
-		return Sentry.getLastEventId();
+		return eventId;
 	}
 
 	public static void configureScope(final long callback) {
