@@ -50,6 +50,7 @@ public class SentryBridgeJava {
 		SentryId messageId = Sentry.captureMessage(message, new ScopeCallback() {
 			@Override
 			public void run(@NonNull Scope scope) {
+				scope.setLevel(level);
 				onConfigureScope(callback, scope);
 			}
 		});
