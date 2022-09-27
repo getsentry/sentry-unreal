@@ -12,6 +12,7 @@
 - Plugin packaging issues on Windows ([#110](https://github.com/getsentry/sentry-unreal/pull/110))
 - Sentry libs linking for desktop ([#114](https://github.com/getsentry/sentry-unreal/pull/114))
 - Fix sentry-cocoa SDK name ([#118](https://github.com/getsentry/sentry-unreal/pull/118))
+- Fix scoped event/message capturing on Android ([#116](https://github.com/getsentry/sentry-unreal/pull/116))
 
 ### Dependencies
 
