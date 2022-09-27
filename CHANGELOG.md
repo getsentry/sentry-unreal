@@ -11,6 +11,7 @@
 - Packaged plugin `EngineVersion` should include `.0` patch version ([#101](https://github.com/getsentry/sentry-unreal/pull/101))
 - Plugin packaging issues on Windows ([#110](https://github.com/getsentry/sentry-unreal/pull/110))
 - Sentry libs linking for desktop ([#114](https://github.com/getsentry/sentry-unreal/pull/114))
+- Fix sentry-cocoa SDK name ([#118](https://github.com/getsentry/sentry-unreal/pull/118))
 
 ### Dependencies
 
