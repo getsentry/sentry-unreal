@@ -129,7 +129,7 @@ jobs:
           # time df -h
           sudo time swapoff -a
           sudo time rm -f /swapfile
-          # sudo time rm -rf /usr/local/lib/android
+          sudo time rm -rf /usr/local/lib/android
           sudo time rm -rf /usr/share/dotnet
           sudo time rm -rf /usr/share/swift
           sudo time rm -rf /usr/local/.ghcup
