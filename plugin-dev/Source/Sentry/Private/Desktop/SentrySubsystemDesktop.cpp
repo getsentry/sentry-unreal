@@ -53,7 +53,10 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
-	sentry_init(options);
+
+	int initResult = sentry_init(options);
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
 
 	crashReporter->SetRelease(settings->Release);
 }
