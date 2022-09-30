@@ -47,11 +47,13 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 		return;
 	}
 
+	const FString DatabasePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::Combine(FPaths::ProjectSavedDir(), ".sentry-native"));
+
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
-	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*FSentryModule::Get().GetBinariesPath()));
+	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*DatabasePath));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
 
