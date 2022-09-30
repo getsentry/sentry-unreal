@@ -31,6 +31,9 @@
 - Bump Cocoa SDK (iOS) from v7.25.1 to v7.26.0 ([#120](https://github.com/getsentry/sentry-unreal/pull/120))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7260)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.25.1...7.26.0)
+- Bump Cocoa SDK (iOS) from v7.26.0 to v7.27.0 ([#122](https://github.com/getsentry/sentry-unreal/pull/122))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7270)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.26.0...7.27.0)
 
 ## 0.1.1
 
