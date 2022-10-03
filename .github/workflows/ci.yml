@@ -187,7 +187,7 @@ jobs:
         run: unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
 
       - name: Run tests
-        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal sudo ue4 test --filter Product
+        run: docker exec -u root -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
 
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
