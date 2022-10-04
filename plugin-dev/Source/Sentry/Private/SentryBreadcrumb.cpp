@@ -1,17 +1,14 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryBreadcrumb.h"
+
 #include "Interface/SentryBreadcrumbInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryBreadcrumbAndroid.h"
-#endif
-
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 #include "IOS/SentryBreadcrumbIOS.h"
-#endif
-
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentryBreadcrumbDesktop.h"
 #endif
 
@@ -21,11 +18,9 @@ USentryBreadcrumb::USentryBreadcrumb()
 	{
 #if PLATFORM_ANDROID
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbAndroid());
-#endif
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbIOS());
-#endif
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbDesktop());
 #endif
 	}

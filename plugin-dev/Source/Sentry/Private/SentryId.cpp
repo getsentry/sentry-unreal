@@ -1,13 +1,12 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryId.h"
+
 #include "Interface/SentryIdInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryIdAndroid.h"
-#endif
-
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 #include "IOS/SentryIdIOS.h"
 #endif
 
@@ -17,8 +16,7 @@ USentryId::USentryId()
 	{
 #if PLATFORM_ANDROID
 		SentryIdNativeImpl = MakeShareable(new SentryIdAndroid());
-#endif
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 		SentryIdNativeImpl = MakeShareable(new SentryIdIOS());
 #endif
 	}
