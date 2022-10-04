@@ -1,13 +1,12 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryAttachment.h"
+
 #include "Interface/SentryAttachmentInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryAttachmentAndroid.h"
-#endif
-
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 #include "IOS/SentryAttachmentIOS.h"
 #endif
 
@@ -15,8 +14,7 @@ void USentryAttachment::InitializeWithData(const TArray<uint8>& Data, const FStr
 {
 #if PLATFORM_ANDROID
 	AttachmentNativeImpl = MakeShareable(new SentryAttachmentAndroid(Data, Filename, ContentType));
-#endif
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 	AttachmentNativeImpl = MakeShareable(new SentryAttachmentIOS(Data, Filename, ContentType));
 #endif
 }
@@ -25,8 +23,7 @@ void USentryAttachment::InitializeWithPath(const FString& Path, const FString& F
 {
 #if PLATFORM_ANDROID
 	AttachmentNativeImpl = MakeShareable(new SentryAttachmentAndroid(Path, Filename, ContentType));
-#endif
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 	AttachmentNativeImpl = MakeShareable(new SentryAttachmentIOS(Path, Filename, ContentType));
 #endif
 }

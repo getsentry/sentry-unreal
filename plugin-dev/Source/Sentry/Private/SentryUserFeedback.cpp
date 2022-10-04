@@ -2,13 +2,12 @@
 
 #include "SentryUserFeedback.h"
 #include "SentryId.h"
+
 #include "Interface/SentryUserFeedbackInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryUserFeedbackAndroid.h"
-#endif
-
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 #include "IOS/SentryUserFeedbackIOS.h"
 #endif
 
@@ -16,8 +15,7 @@ void USentryUserFeedback::Initialize(USentryId* EventId)
 {
 #if PLATFORM_ANDROID
 	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackAndroid(EventId));
-#endif
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackIOS(EventId));
 #endif
 }

@@ -12,15 +12,13 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/CoreDelegates.h"
 
+#include "Interface/SentrySubsystemInterface.h"
+
 #if PLATFORM_ANDROID
 #include "Android/SentrySubsystemAndroid.h"
-#endif
-
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 #include "IOS/SentrySubsystemIOS.h"
-#endif
-
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentrySubsystemDesktop.h"
 #endif
 
