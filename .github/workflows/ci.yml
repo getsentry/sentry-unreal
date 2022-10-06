@@ -186,9 +186,6 @@ jobs:
       - name: Extract package to ${{ matrix.app }}/Plugins
         run: unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
 
-      - name: TEST
-        run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
-
       - name: Run tests
         run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
 
