@@ -47,7 +47,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 		return;
 	}
 
-	const FString DatabasePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("sentry-native")));
+	const FString DatabasePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native")));
 
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
