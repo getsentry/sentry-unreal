@@ -157,6 +157,7 @@ jobs:
             --workdir /workspace \
             --user $uid:$gid \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+            --env CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
@@ -189,9 +190,6 @@ jobs:
 
       - name: TEST
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
-
-      - name: CA TEST 2
-        run: docker exec unreal /bin/bash -c "export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt"
 
       - name: Run tests
         run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
