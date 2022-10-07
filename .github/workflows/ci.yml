@@ -172,7 +172,7 @@ jobs:
           pip3 install --upgrade pip ;
           pip3 install -Iv ue4cli==0.0.54 ;
           ue4 setroot /home/ue4/UnrealEngine ;
-          sudo apt-get install ca-certificates '
+          apt-get install ca-certificates '
 
       - name: Download package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
