@@ -142,6 +142,7 @@ jobs:
           # time docker rmi $(docker image ls -aq)
           # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
           df -h
+          cat /etc/ssl/certs/ca-certificates.crt
 
       - name: Start Docker container
         run: |
@@ -190,6 +191,9 @@ jobs:
 
       - name: TEST
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
+        
+      - name: TEST1
+        run: docker exec -w /workspace/checkout unreal cat /etc/ssl/certs/ca-certificates.crt
 
       - name: Run tests
         run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
