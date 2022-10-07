@@ -165,8 +165,8 @@ jobs:
           # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved"
-            apt-get install ca-certificates
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved ;
+            apt-get install ca-certificates"
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
