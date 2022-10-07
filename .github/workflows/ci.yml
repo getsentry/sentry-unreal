@@ -166,6 +166,7 @@ jobs:
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved"
+            apt-get install ca-certificates
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
@@ -188,9 +189,6 @@ jobs:
 
       - name: TEST
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
-
-      - name: CA TEST 1
-        run: docker exec unreal /bin/bash "sudo apt-get install ca-certificates"
 
       - name: CA TEST 2
         run: docker exec unreal /bin/bash "export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt"
