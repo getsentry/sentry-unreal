@@ -192,7 +192,9 @@ jobs:
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
         
       - name: TEST1
-        run: docker exec -w /workspace/checkout unreal cat /etc/ssl/certs/ca-certificates.crt
+        run: |
+            docker exec -w /workspace/checkout unreal cat /etc/ssl/certs/ca-certificates.crt
+            docker exec -w /workspace/checkout unreal curl-config --configure
 
       - name: Run tests
         run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
