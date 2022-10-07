@@ -142,7 +142,6 @@ jobs:
           # time docker rmi $(docker image ls -aq)
           # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
           df -h
-          sudo apt-get install ca-certificates
 
       - name: Start Docker container
         run: |
@@ -190,10 +189,13 @@ jobs:
       - name: TEST
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
-      - name: Run tests
+      - name: CA TEST 1
+        run: docker exec unreal /bin/bash "sudo apt-get install ca-certificates"
+
+      - name: CA TEST 2
         run: docker exec unreal /bin/bash "export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt"
 
-      - name: CA TEST
+      - name: Run tests
         run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
 
       - name: Build & package ${{ matrix.app }}
