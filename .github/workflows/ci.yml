@@ -165,14 +165,14 @@ jobs:
           # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved ;
-            apt-get install ca-certificates"
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved "
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
           pip3 install --upgrade pip ;
           pip3 install -Iv ue4cli==0.0.54 ;
-          ue4 setroot /home/ue4/UnrealEngine '
+          ue4 setroot /home/ue4/UnrealEngine ;
+          sudo apt-get install ca-certificates '
 
       - name: Download package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -191,7 +191,7 @@ jobs:
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
       - name: CA TEST 2
-        run: docker exec unreal /bin/bash "export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt"
+        run: docker exec unreal /bin/bash -c "export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt"
 
       - name: Run tests
         run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
