@@ -190,11 +190,11 @@ jobs:
       - name: TEST
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
-      - name: CA TEST
-        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
-
       - name: Run tests
         run: docker exec unreal /bin/bash "export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt"
+
+      - name: CA TEST
+        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
 
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
