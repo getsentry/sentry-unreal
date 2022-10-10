@@ -157,16 +157,17 @@ jobs:
             --workdir /workspace \
             --user $uid:$gid \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-            --env CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
+          # Ensure CA certs are in the right directory (needed for running tests)
+          docker exec --user root unreal bash -c "
+            mkdir -p /etc/pki/tls/certs ;
+            cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt "
           # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
           # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
           docker exec --user root unreal bash -c "
-            mkdir -p /etc/pki/tls/certs ;
-            cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved "
 
@@ -189,7 +190,8 @@ jobs:
       - name: Extract package to ${{ matrix.app }}/Plugins
         run: unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
 
-      - name: TEST
+      - name: Set permissions for ${{ matrix.app }}
+        # sentry-native requires write access to sample project directory in order to initialize itself properly
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
       - name: Run tests
