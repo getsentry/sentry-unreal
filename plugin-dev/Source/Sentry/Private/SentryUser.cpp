@@ -1,17 +1,14 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryUser.h"
+
 #include "Interface/SentryUserInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryUserAndroid.h"
-#endif
-
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 #include "IOS/SentryUserIOS.h"
-#endif
-
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentryUserDesktop.h"
 #endif
 
@@ -21,11 +18,9 @@ USentryUser::USentryUser()
 	{
 #if PLATFORM_ANDROID
 		UserNativeImpl = MakeShareable(new SentryUserAndroid());
-#endif
-#if PLATFORM_IOS
+#elif PLATFORM_IOS
 		UserNativeImpl = MakeShareable(new SentryUserIOS());
-#endif
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 		UserNativeImpl = MakeShareable(new SentryUserDesktop());
 #endif
 	}

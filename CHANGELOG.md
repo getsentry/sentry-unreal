@@ -14,6 +14,7 @@
 - Fix sentry-cocoa SDK name ([#118](https://github.com/getsentry/sentry-unreal/pull/118))
 - Fix scoped event/message capturing on Android ([#116](https://github.com/getsentry/sentry-unreal/pull/116))
 - Fix event capturing on Linux ([#123](https://github.com/getsentry/sentry-unreal/pull/123))
+- Fix incomplete type forward declaration ([#125](https://github.com/getsentry/sentry-unreal/pull/125))
 
 ### Dependencies
 
@@ -26,12 +27,21 @@
 - Bump Java SDK (Android) from v6.4.1 to v6.4.2 ([#115](https://github.com/getsentry/sentry-unreal/pull/115))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#642)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.4.2)
-- Bump CLI from v2.5.2 to v2.6.0 ([#117](https://github.com/getsentry/sentry-unreal/pull/117))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#260)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.6.0)
+- Bump CLI from v2.5.2 to v2.7.0 ([#117](https://github.com/getsentry/sentry-unreal/pull/117), [#126](https://github.com/getsentry/sentry-unreal/pull/126))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#270)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.7.0)
 - Bump Cocoa SDK (iOS) from v7.25.1 to v7.26.0 ([#120](https://github.com/getsentry/sentry-unreal/pull/120))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7260)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.25.1...7.26.0)
+- Bump Cocoa SDK (iOS) from v7.26.0 to v7.27.0 ([#122](https://github.com/getsentry/sentry-unreal/pull/122))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7270)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.26.0...7.27.0)
+- Bump Cocoa SDK (iOS) from v7.27.0 to v7.27.1 ([#128](https://github.com/getsentry/sentry-unreal/pull/128))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7271)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.27.0...7.27.1)
+- Bump Java SDK (Android) from v6.4.2 to v6.4.3 ([#127](https://github.com/getsentry/sentry-unreal/pull/127))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#643)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.4.2...6.4.3)
 
 ## 0.1.1
 
