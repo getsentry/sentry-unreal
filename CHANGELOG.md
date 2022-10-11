@@ -13,6 +13,7 @@
 - Sentry libs linking for desktop ([#114](https://github.com/getsentry/sentry-unreal/pull/114))
 - Fix sentry-cocoa SDK name ([#118](https://github.com/getsentry/sentry-unreal/pull/118))
 - Fix scoped event/message capturing on Android ([#116](https://github.com/getsentry/sentry-unreal/pull/116))
+- Fix event capturing on Linux ([#123](https://github.com/getsentry/sentry-unreal/pull/123))
 - Fix incomplete type forward declaration ([#125](https://github.com/getsentry/sentry-unreal/pull/125))
 
 ### Dependencies

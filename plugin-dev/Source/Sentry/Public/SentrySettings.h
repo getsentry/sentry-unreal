@@ -54,6 +54,10 @@ public:
 		Meta = (DisplayName = "Initialize SDK automatically", ToolTip = "Flag indicating whether to automatically initialize the SDK when the app starts."))
 	bool InitAutomatically;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging on desktop."))
+	bool EnableVerboseLogging;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Automatically add breadcrumbs"))
 	FAutomaticBreadcrumbs AutomaticBreadcrumbs;

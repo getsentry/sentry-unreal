@@ -13,11 +13,18 @@
 #include "SentryUser.h"
 #include "SentryModule.h"
 
-#include "Convenience/SentryInclude.h"
 #include "Infrastructure/SentryConvertorsDesktop.h"
 #include "CrashReporter/SentryCrashReporter.h"
 
 #include "Misc/Paths.h"
+
+void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, void *userdata)
+{
+	char buffer[512];
+	vsnprintf(buffer, 512, message, args);
+
+	UE_LOG(LogSentrySdk, Log, TEXT("%s"), *FString(buffer));
+}
 
 SentrySubsystemDesktop::SentrySubsystemDesktop()
 {
@@ -40,11 +47,19 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 		return;
 	}
 
+	const FString DatabasePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native")));
+
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
-	sentry_init(options);
+	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*DatabasePath));
+	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
+	sentry_options_set_debug(options, settings->EnableVerboseLogging);
+
+	int initResult = sentry_init(options);
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
 
 	crashReporter->SetRelease(settings->Release);
 }

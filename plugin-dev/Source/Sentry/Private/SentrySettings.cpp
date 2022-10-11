@@ -8,6 +8,7 @@
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, InitAutomatically(false)
+	, EnableVerboseLogging(true)
 	, UploadSymbolsAutomatically(false)
 {
 	DsnUrl = TEXT("");
