@@ -3,19 +3,19 @@
     <init>
         <log text="Sentry SDK Android UPL initialization"/>
 
-        <setBoolFromProperty result="bUploadSymbols" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="true" />
-
-        <setStringFromProperty result="PropertiesFilePath" ini="Engine" section="/Script/Sentry.SentrySettings" property="PropertiesFilePath"/>
-        <setStringReplace result="PropertiesFilePath" source="$S(PropertiesFilePath)" find="(FilePath=&quot;" with=""/>
-        <setStringReplace result="PropertiesFilePath" source="$S(PropertiesFilePath)" find="&quot;)" with=""/>
+        <setBoolFromProperty result="bUploadSymbols" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="false" />
     </init>
 
     <prebuildCopies>
         <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/io/sentry/unreal" />
-        <copyFile src="$S(ProjectDir)/$S(PropertiesFilePath)" dst="$S(BuildDir)/gradle/sentry.properties" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry.jar" dst="$S(BuildDir)/gradle/app/libs/sentry.jar" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-ndk-release.aar" />
+        <if condition="bUploadSymbols">
+            <true>
+                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
+            </true>
+        </if>
     </prebuildCopies>
 
     <androidManifestUpdates>
