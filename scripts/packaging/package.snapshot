@@ -162,6 +162,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryFrame.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryHub.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryId.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryIntegrationProtocol.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMeasurementUnit.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMechanism.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMechanismMeta.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMessage.h
