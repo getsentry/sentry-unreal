@@ -15,6 +15,7 @@
 - Fix scoped event/message capturing on Android ([#116](https://github.com/getsentry/sentry-unreal/pull/116))
 - Fix event capturing on Linux ([#123](https://github.com/getsentry/sentry-unreal/pull/123))
 - Fix incomplete type forward declaration ([#125](https://github.com/getsentry/sentry-unreal/pull/125))
+- Fix Android packaging issue ([#133](https://github.com/getsentry/sentry-unreal/pull/133))
 
 ### Dependencies
 
