@@ -43,8 +43,8 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 				[
 					SNew(SRichTextBlock)
 						.Text(FText::FromString(TEXT("Note that the Sentry SDK creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, that should <RichTextBlock.TextHighlight>NOT</> be made publicly available.")))
-						.TextStyle(FEditorStyle::Get(), "MessageLog")
-						.DecoratorStyleSet(&FEditorStyle::Get())
+						.TextStyle(FAppStyle::Get(), "MessageLog")
+						.DecoratorStyleSet(&FAppStyle::Get())
 						.AutoWrapText(true)
 				]
 			]
