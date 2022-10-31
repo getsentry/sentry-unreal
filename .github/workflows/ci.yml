@@ -80,7 +80,7 @@ jobs:
         run: ./scripts/packaging/pack.ps1
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
@@ -207,7 +207,7 @@ jobs:
 
       - name: Collect ${{ matrix.app }} build info
         if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: UE ${{ matrix.unreal }} ${{ matrix.app }} build logs
           path: |
