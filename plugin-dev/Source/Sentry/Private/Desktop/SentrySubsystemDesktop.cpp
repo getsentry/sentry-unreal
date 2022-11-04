@@ -17,6 +17,7 @@
 #include "CrashReporter/SentryCrashReporter.h"
 
 #include "Misc/Paths.h"
+#include "HAL/FileManager.h"
 
 void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, void *userdata)
 {
