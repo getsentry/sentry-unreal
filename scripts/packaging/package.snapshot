@@ -159,6 +159,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryError.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryEvent.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryException.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryFrame.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryHub.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryId.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryIntegrationProtocol.h
@@ -169,6 +170,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMessage.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryNSError.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryOptions.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryProfilingConditionals.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryRequest.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySampleDecision.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySamplingContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryScope.h
