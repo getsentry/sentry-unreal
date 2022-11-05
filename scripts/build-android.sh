@@ -4,6 +4,8 @@ set -euo pipefail
 export sentryJavaRoot=$1
 export sentryArtifactsDestination=$2
 
+export JAVA_HOME=$(JAVA_HOME_17_X64)
+
 rm -rf "${sentryArtifactsDestination}/"*
 
 pushd ${sentryJavaRoot}
