@@ -6,13 +6,19 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
-#include "EditorStyleSet.h"
+
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
 
 #include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Layout/SBorder.h"
+
+#if ENGINE_MAJOR_VERSION >= 5
+#include "Styling/AppStyle.h"
+#else
+#include "EditorStyleSet.h"
+#endif
 
 TSharedRef<IDetailCustomization> FSentrySettingsCustomization::MakeInstance()
 {
@@ -30,6 +36,12 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 {
 	IDetailCategoryBuilder& DebugSymbolsCategory = DetailBuilder.EditCategory(TEXT("Debug Symbols"));
 
+#if ENGINE_MAJOR_VERSION >= 5
+	const ISlateStyle& Style = FAppStyle::Get();
+#else
+	const ISlateStyle& Style = FEditorStyle::Get();
+#endif
+
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
 		.WholeRowWidget
 		[
@@ -43,8 +55,8 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 				[
 					SNew(SRichTextBlock)
 						.Text(FText::FromString(TEXT("Note that the Sentry SDK creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, that should <RichTextBlock.TextHighlight>NOT</> be made publicly available.")))
-						.TextStyle(FEditorStyle::Get(), "MessageLog")
-						.DecoratorStyleSet(&FEditorStyle::Get())
+						.TextStyle(Style, "MessageLog")
+						.DecoratorStyleSet(&Style)
 						.AutoWrapText(true)
 				]
 			]
