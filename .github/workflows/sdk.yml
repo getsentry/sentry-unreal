@@ -49,6 +49,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
+      - uses: actions/setup-java@v3
+        if: ${{ inputs.target == 'Android' }}
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
