@@ -28,9 +28,6 @@ jobs:
           else
             submodule="modules/sentry-native"
           fi
-          echo "::set-output name=submodule::$submodule"
-          echo "::set-output name=path::plugin-dev/Source/ThirdParty/${{ inputs.target }}"
-          echo "::set-output name=buildScript::scripts/build-$(echo '${{ inputs.target }}' | tr '[:upper:]' '[:lower:]').sh"
 
       - name: Get submodule status
         run: git submodule status --cached ${{ steps.env.outputs.submodule }} | tee submodule-status
@@ -49,9 +46,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
-      - name: Setup Java 17 for Android
+      uses: actions/setup-java@v3
         if: ${{ inputs.target == 'Android' }}
-        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
