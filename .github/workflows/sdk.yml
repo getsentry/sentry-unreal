@@ -54,6 +54,7 @@ jobs:
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodule }}
           mkdir -p '${{ steps.env.outputs.path }}'
+          export JAVA_HOME=$(JAVA_HOME_17_X64)
           ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
 
       - uses: actions/upload-artifact@v3.1.1
