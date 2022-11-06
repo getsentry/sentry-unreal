@@ -56,7 +56,7 @@ ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
 {
 	FString levelStr = FString(sentry_value_as_string(level));
 
-	UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("ESentryLevel"), true);
+	UEnum* Enum = FindObject<UEnum>(nullptr, TEXT("ESentryLevel"), true);
 	if (!Enum)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
@@ -100,7 +100,7 @@ TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t
 
 FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
 {
-	const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("ESentryLevel"), true);
+	const UEnum* EnumPtr = FindObject<UEnum>(nullptr, TEXT("ESentryLevel"), true);
 
 	if (!EnumPtr)
 	{
