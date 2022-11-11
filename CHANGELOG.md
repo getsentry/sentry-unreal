@@ -5,6 +5,7 @@
 ### Features
 
 - Add debug symbols upload settings ([#94](https://github.com/getsentry/sentry-unreal/pull/94))
+- Add editor menu for automatic CRC configuration ([#152](https://github.com/getsentry/sentry-unreal/pull/152))
 
 ### Fixes
 
