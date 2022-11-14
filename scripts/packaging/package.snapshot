@@ -142,7 +142,6 @@ Source/ThirdParty/IOS/
 Source/ThirdParty/IOS/Sentry.embeddedframework.zip
 Source/ThirdParty/IOS/Sentry.framework/
 Source/ThirdParty/IOS/Sentry.framework/Headers/
-Source/ThirdParty/IOS/Sentry.framework/Headers/PrivateSentrySDKOnly.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/Sentry.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryAppStartMeasurement.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryAttachment.h
@@ -196,6 +195,7 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/NSData+SentryCompression.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/NSDate+SentryExtras.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/NSDictionary+SentrySanitize.h
+Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/PrivateSentrySDKOnly.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAsynchronousOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAutoSessionTrackingIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashInstallationReporter.h
