@@ -76,6 +76,9 @@
 - Bump Cocoa SDK (iOS) from v7.30.2 to v7.31.0 ([#153](https://github.com/getsentry/sentry-unreal/pull/153))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7310)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.30.2...7.31.0)
+- Bump Java SDK (Android) from v6.7.0 to v6.7.1 ([#156](https://github.com/getsentry/sentry-unreal/pull/156))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#671)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.7.0...6.7.1)
 
 ## 0.1.1
 
