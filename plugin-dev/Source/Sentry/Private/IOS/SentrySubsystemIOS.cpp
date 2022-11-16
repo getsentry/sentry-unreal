@@ -18,6 +18,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>
+#import <Sentry/PrivateSentrySDKOnly.h>
 
 void SentrySubsystemIOS::InitWithSettings(const USentrySettings* settings)
 {
