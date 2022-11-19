@@ -17,6 +17,10 @@ class SENTRY_API USentryId : public UObject
 public:
 	USentryId();
 
+	/** Gets string representation of the event ID. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString ToString() const;
+
 	void InitWithNativeImpl(TSharedPtr<ISentryId> idImpl);
 	TSharedPtr<ISentryId> GetNativeImpl();
 

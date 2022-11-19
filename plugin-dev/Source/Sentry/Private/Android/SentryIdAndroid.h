@@ -15,6 +15,8 @@ public:
 
 	jobject GetNativeObject();
 
+	virtual FString ToString() const override;
+
 private:
 	jobject IdAndroid;
 };

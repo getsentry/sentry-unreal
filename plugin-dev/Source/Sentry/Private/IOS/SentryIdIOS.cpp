@@ -24,3 +24,8 @@ SentryId* SentryIdIOS::GetNativeObject()
 {
 	return IdIOS;
 }
+
+FString SentryIdIOS::ToString() const
+{
+	return FString(IdIOS.sentryIdString);
+}

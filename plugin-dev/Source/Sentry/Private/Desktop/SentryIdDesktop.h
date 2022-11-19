@@ -15,6 +15,8 @@ public:
 
 	sentry_uuid_t GetNativeObject();
 
+	virtual FString ToString() const override;
+
 private:
 	sentry_uuid_t IdDesktop;
 };
