@@ -82,6 +82,9 @@
 - Bump Java SDK (Android) from v6.7.0 to v6.7.1 ([#156](https://github.com/getsentry/sentry-unreal/pull/156))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#671)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.7.0...6.7.1)
+- Bump Java SDK (Android) from v6.7.1 to v6.8.0 ([#158](https://github.com/getsentry/sentry-unreal/pull/158))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#680)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.7.1...6.8.0)
 
 ## 0.1.1
 
