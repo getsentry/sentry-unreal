@@ -119,7 +119,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['4.27', '5.0'] # 4.26 is not available
+        unreal: ['4.27', '5.0', '5.1']
         app: ['sample']
 
     steps:
