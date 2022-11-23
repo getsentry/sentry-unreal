@@ -13,6 +13,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 {
 	DsnUrl = TEXT("");
 	Release = TEXT("");
+	CrashReporterUrl = TEXT("");
 
 	LoadDebugSymbolsProperties();
 }

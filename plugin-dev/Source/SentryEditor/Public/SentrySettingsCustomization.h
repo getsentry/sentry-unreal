@@ -5,6 +5,7 @@
 #include "IDetailCustomization.h"
 
 class IPropertyHandle;
+class FSlateHyperlinkRun;
 
 class FSentrySettingsCustomization : public IDetailCustomization
 {
@@ -23,9 +24,15 @@ private:
 	void UpdateOrganizationName();
 	void UpdateAuthToken();
 
-	void UpdatePropertiesFile(const FString& PropertyName, const FString& PropertyValue); 
+	void UpdatePropertiesFile(const FString& PropertyName, const FString& PropertyValue);
+	void UpdateCrcConfig(const FString& Url);
+
+	// Gets path to CRC's DefaultEngine.ini in engine directory
+	FString GetCrcConfigPath();
 
 	TSharedPtr<IPropertyHandle> ProjectNameHandle;
 	TSharedPtr<IPropertyHandle> OrganizationNameHandle;
 	TSharedPtr<IPropertyHandle> AuthTokenHandle;
+
+	static const FString DefaultCrcEndpoint;
 };

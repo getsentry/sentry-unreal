@@ -6,6 +6,7 @@
 
 - Add debug symbols upload settings ([#94](https://github.com/getsentry/sentry-unreal/pull/94))
 - Add conversion to FString for SentryId ([#161](https://github.com/getsentry/sentry-unreal/pull/161))
+- Add editor menu for automatic CRC configuration ([#152](https://github.com/getsentry/sentry-unreal/pull/152))
 
 ### Fixes
 
