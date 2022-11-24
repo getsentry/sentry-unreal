@@ -15,6 +15,8 @@ public:
 
 	SentryId* GetNativeObject();
 
+	virtual FString ToString() const override;
+
 private:
 	SentryId* IdIOS;
 };

@@ -8,6 +8,8 @@
 #include "Android/SentryIdAndroid.h"
 #elif PLATFORM_IOS
 #include "IOS/SentryIdIOS.h"
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#include "Desktop/SentryIdDesktop.h"
 #endif
 
 USentryId::USentryId()
@@ -18,8 +20,18 @@ USentryId::USentryId()
 		SentryIdNativeImpl = MakeShareable(new SentryIdAndroid());
 #elif PLATFORM_IOS
 		SentryIdNativeImpl = MakeShareable(new SentryIdIOS());
+#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+		SentryIdNativeImpl = MakeShareable(new SentryIdDesktop());
 #endif
 	}
+}
+
+FString USentryId::ToString() const
+{
+	if(!SentryIdNativeImpl)
+		return FString();
+
+	return SentryIdNativeImpl->ToString();
 }
 
 void USentryId::InitWithNativeImpl(TSharedPtr<ISentryId> idImpl)

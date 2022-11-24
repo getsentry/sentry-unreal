@@ -21,3 +21,10 @@ sentry_uuid_t SentryIdDesktop::GetNativeObject()
 {
 	return IdDesktop;
 }
+
+FString SentryIdDesktop::ToString() const
+{
+	char IdString[37];
+	sentry_uuid_as_string(&IdDesktop, IdString);
+	return FString(IdString);
+}

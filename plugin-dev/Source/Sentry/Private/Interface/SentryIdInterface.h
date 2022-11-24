@@ -8,4 +8,6 @@ class ISentryId
 {
 public:
 	virtual ~ISentryId() = default;
+
+	virtual FString ToString() const = 0;
 };

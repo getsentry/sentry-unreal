@@ -2,6 +2,8 @@
 
 #include "SentryIdAndroid.h"
 
+#include "Infrastructure/SentryMethodCallAndroid.h"
+
 SentryIdAndroid::SentryIdAndroid()
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
@@ -26,4 +28,9 @@ SentryIdAndroid::~SentryIdAndroid()
 jobject SentryIdAndroid::GetNativeObject()
 {
 	return IdAndroid;
+}
+
+FString SentryIdAndroid::ToString() const
+{
+	return SentryMethodCallAndroid::CallStringMethod(IdAndroid, "toString", "()Ljava/lang/String;");
 }
