@@ -28,9 +28,9 @@ jobs:
           else
             submodule="modules/sentry-native"
           fi
-          echo "::set-output name=submodule::$submodule"
-          echo "::set-output name=path::plugin-dev/Source/ThirdParty/${{ inputs.target }}"
-          echo "::set-output name=buildScript::scripts/build-$(echo '${{ inputs.target }}' | tr '[:upper:]' '[:lower:]').sh"
+          echo "submodule=$submodule" >> $GITHUB_OUTPUT
+          echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
+          echo "buildScript=scripts/build-$(echo '${{ inputs.target }}' | tr '[:upper:]' '[:lower:]').sh" >> $GITHUB_OUTPUT
 
       - name: Get submodule status
         run: git submodule status --cached ${{ steps.env.outputs.submodule }} | tee submodule-status
