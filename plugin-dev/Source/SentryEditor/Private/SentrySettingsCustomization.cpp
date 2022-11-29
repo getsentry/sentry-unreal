@@ -14,6 +14,10 @@
 #include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Layout/SBorder.h"
 
+#include "Launch/Resources/Version.h"
+#include "Slate/Public/Widgets/Input/SButton.h"
+#include "EditorStyle.h"
+
 #if ENGINE_MAJOR_VERSION >= 5
 #include "Styling/AppStyle.h"
 #else
