@@ -19,6 +19,10 @@
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 
+#if PLATFORM_WINDOWS
+#include "Windows/WindowsPlatformMisc.h"
+#endif
+
 void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, void *userdata)
 {
 	char buffer[512];
@@ -61,6 +65,13 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	int initResult = sentry_init(options);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
+
+#if PLATFORM_WINDOWS
+	if(settings->EnableAutoCrashCapturing)
+	{
+		FPlatformMisc::SetCrashHandlingType(ECrashHandlingType::Disabled);
+	}
+#endif
 
 	crashReporter->SetRelease(settings->Release);
 }
