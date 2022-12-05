@@ -63,7 +63,7 @@ public:
 	FAutomaticBreadcrumbs AutomaticBreadcrumbs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-	Meta = (DisplayName = "Enable automatic crash capturing (Windows)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
+	Meta = (DisplayName = "Enable automatic crash capturing (Windows, UE 5.1+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
 	bool EnableAutoCrashCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",

@@ -18,6 +18,7 @@
 
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
+#include "Launch/Resources/Version.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
@@ -66,7 +67,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
 
-#if PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
 	if(settings->EnableAutoCrashCapturing)
 	{
 		FPlatformMisc::SetCrashHandlingType(ECrashHandlingType::Disabled);
