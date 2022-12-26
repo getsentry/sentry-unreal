@@ -152,20 +152,20 @@ public class Sentry : ModuleRules
 			PublicAdditionalLibraries.Add(SourceStaticLibPath);
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
 
-			RuntimeDependencies.Add(BinariesSymbolsPath, SourceSymbolsPath);
-
 			// Make debug symbols writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-			File.SetAttributes(BinariesSymbolsPath, File.GetAttributes(BinariesSymbolsPath) & ~FileAttributes.ReadOnly);
+			File.SetAttributes(SourceSymbolsPath, File.GetAttributes(SourceSymbolsPath) & ~FileAttributes.ReadOnly);
+
+			RuntimeDependencies.Add(BinariesSymbolsPath, SourceSymbolsPath);
 		}
 		if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicAdditionalLibraries.Add(BinariesDynamicLibPath);
 		}
 
-		RuntimeDependencies.Add(BinariesDynamicLibPath, SourceDynamicLibPath);
-
 		// Make Sentry library writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-		File.SetAttributes(BinariesDynamicLibPath, File.GetAttributes(BinariesDynamicLibPath) & ~FileAttributes.ReadOnly);
+		File.SetAttributes(SourceDynamicLibPath, File.GetAttributes(SourceDynamicLibPath) & ~FileAttributes.ReadOnly);
+
+		RuntimeDependencies.Add(BinariesDynamicLibPath, SourceDynamicLibPath);
 	}
 
 	public void LoadCrashpadHandler(string HandlerName, ReadOnlyTargetRules Target)
@@ -177,9 +177,9 @@ public class Sentry : ModuleRules
 		string SourceHandlerPath = Path.Combine(ThirdPartyPath, "bin", HandlerName);
 		string BinariesHandlerPath = Path.Combine(BinariesPath, HandlerName);
 
-		RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
-
 		// Make crashpad handler writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-		File.SetAttributes(BinariesHandlerPath, File.GetAttributes(BinariesHandlerPath) & ~FileAttributes.ReadOnly);
+		File.SetAttributes(SourceHandlerPath, File.GetAttributes(SourceHandlerPath) & ~FileAttributes.ReadOnly);
+
+		RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
 	}
 }
