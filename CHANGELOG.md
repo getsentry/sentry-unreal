@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Java SDK (Android) from v6.8.0 to v6.9.0 ([#165](https://github.com/getsentry/sentry-unreal/pull/165))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#690)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.8.0...6.9.0)
+- Bump Cocoa SDK (iOS) from v7.31.2 to v7.31.3 ([#167](https://github.com/getsentry/sentry-unreal/pull/167))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7313)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.2...7.31.3)
+- Bump CLI from v2.9.0 to v2.11.0 ([#171](https://github.com/getsentry/sentry-unreal/pull/171), [#178](https://github.com/getsentry/sentry-unreal/pull/178))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2110)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.9.0...2.11.0)
+- Bump Java SDK (Android) from v6.9.0 to v6.9.1 ([#168](https://github.com/getsentry/sentry-unreal/pull/168))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#691)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.9.0...6.9.1)
+- Bump Java SDK (Android) from v6.9.1 to v6.9.2 ([#172](https://github.com/getsentry/sentry-unreal/pull/172))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#692)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.9.1...6.9.2)
+- Bump Cocoa SDK (iOS) from v7.31.3 to v7.31.4 ([#176](https://github.com/getsentry/sentry-unreal/pull/176))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/8.0.0/CHANGELOG.md#7314)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.3...7.31.4)
+- Bump Java SDK (Android) from v6.9.2 to v6.10.0 ([#177](https://github.com/getsentry/sentry-unreal/pull/177))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6100)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.9.2...6.10.0)
+- Bump Cocoa SDK (iOS) from v7.31.4 to v7.31.5 ([#179](https://github.com/getsentry/sentry-unreal/pull/179))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/8.0.0/CHANGELOG.md#7315)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.4...7.31.5)
+
+## 0.2.0
+
 ### Features
 
 - Add debug symbols upload settings ([#94](https://github.com/getsentry/sentry-unreal/pull/94))

@@ -12,5 +12,8 @@ public class SentryPlaygroundTarget : TargetRules
 		ExtraModuleNames.AddRange( new string[] { "SentryPlayground" } );
 
 		bOverrideBuildEnvironment = true;
+
+		bUsePCHFiles = false;
+		bUseUnityBuild = false;
 	}
 }
