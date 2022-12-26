@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Automatic crash capturing for UE 5.1 (Windows only) ([#175](https://github.com/getsentry/sentry-unreal/pull/175))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.8.0 to v6.9.0 ([#165](https://github.com/getsentry/sentry-unreal/pull/165))
