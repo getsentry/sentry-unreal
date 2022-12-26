@@ -18,6 +18,11 @@
 
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
+#include "Launch/Resources/Version.h"
+
+#if PLATFORM_WINDOWS
+#include "Windows/WindowsPlatformMisc.h"
+#endif
 
 void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, void *userdata)
 {
@@ -41,26 +46,33 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 #endif
 
 	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
-
-	if (!FPaths::FileExists(HandlerPath))
-	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Crashpad handler doesn't exist."));
-		return;
-	}
-
-	const FString DatabasePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native")));
+	const FString DatabasePath = FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native"));
 
 	sentry_options_t* options = sentry_options_new();
+
+#if PLATFORM_WINDOWS
+	sentry_options_set_handler_pathw(options, *FPaths::ConvertRelativePathToFull(HandlerPath));
+	sentry_options_set_database_pathw(options, *FPaths::ConvertRelativePathToFull(DatabasePath));
+#elif PLATFORM_MAC || PLATFORM_LINUX
+	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(HandlerPath)));
+	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(DatabasePath)));
+#endif
+
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
-	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*HandlerPath));
-	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*DatabasePath));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
 
 	int initResult = sentry_init(options);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
+
+#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+	if(settings->EnableAutoCrashCapturing)
+	{
+		FPlatformMisc::SetCrashHandlingType(ECrashHandlingType::Disabled);
+	}
+#endif
 
 	crashReporter->SetRelease(settings->Release);
 }

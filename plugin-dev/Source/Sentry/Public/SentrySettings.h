@@ -62,6 +62,10 @@ public:
 		Meta = (DisplayName = "Automatically add breadcrumbs"))
 	FAutomaticBreadcrumbs AutomaticBreadcrumbs;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Enable automatic crash capturing (Windows editor, UE 5.1+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
+	bool EnableAutoCrashCapturing;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
 	bool UploadSymbolsAutomatically;
