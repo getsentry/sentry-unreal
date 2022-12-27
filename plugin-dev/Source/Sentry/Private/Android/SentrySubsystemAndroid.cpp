@@ -18,6 +18,8 @@
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryMethodCallAndroid.h"
 
+#include "Android/AndroidJava.h"
+
 const ANSICHAR* SentrySubsystemAndroid::SentryJavaClassName = "io/sentry/Sentry";
 const ANSICHAR* SentrySubsystemAndroid::SentryBridgeJavaClassName = "io/sentry/unreal/SentryBridgeJava";
 

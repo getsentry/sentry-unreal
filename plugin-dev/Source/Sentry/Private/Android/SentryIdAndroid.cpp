@@ -4,6 +4,8 @@
 
 #include "Infrastructure/SentryMethodCallAndroid.h"
 
+#include "Android/AndroidApplication.h"
+
 SentryIdAndroid::SentryIdAndroid()
 {
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();

@@ -3,6 +3,8 @@
 #include "SentryEvent.h"
 #include "SentryModule.h"
 
+#include "Interface/SentrySubsystemInterface.h"
+
 #if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
 #include "Desktop/SentrySubsystemDesktop.h"
 #endif
