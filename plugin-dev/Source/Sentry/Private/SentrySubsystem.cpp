@@ -11,6 +11,8 @@
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/CoreDelegates.h"
+#include "Misc/App.h"
+#include "GenericPlatform/GenericPlatformMisc.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -58,6 +60,7 @@ void USentrySubsystem::Initialize()
 	SubsystemNativeImpl->InitWithSettings(Settings);
 
 	AddDefaultContext();
+	PromoteTags();
 	ConfigureBreadcrumbs();
 }
 
@@ -221,8 +224,33 @@ void USentrySubsystem::AddDefaultContext()
 	TMap<FString, FString> DefaultContext;
 	DefaultContext.Add(TEXT("Engine version"), FEngineVersion::Current().ToString(EVersionComponent::Changelist));
 	DefaultContext.Add(TEXT("Plugin version"), FSentryModule::Get().GetPluginVersion());
+	DefaultContext.Add(TEXT("Configuration"), LexToString(FApp::GetBuildConfiguration()));
+	DefaultContext.Add(TEXT("Target Type"), LexToString(FApp::GetBuildTargetType()));
+	DefaultContext.Add(TEXT("Engine mode"), FGenericPlatformMisc::GetEngineMode());
+	DefaultContext.Add(TEXT("Is game"), FApp::IsGame() ? TEXT("True") : TEXT("False"));
+	DefaultContext.Add(TEXT("Is standalone"), FApp::IsStandalone() ? TEXT("True") : TEXT("False"));
+	DefaultContext.Add(TEXT("Is unattended"), FApp::IsUnattended() ? TEXT("True") : TEXT("False"));
+	DefaultContext.Add(TEXT("Game name"), FApp::GetName());
 
 	SubsystemNativeImpl->SetContext(TEXT("Unreal Engine"), DefaultContext);
+}
+
+void USentrySubsystem::PromoteTags()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	if(Settings->TagsPromotion.bPromoteBuildConfiguration)
+		SubsystemNativeImpl->SetTag(TEXT("Configuration"), LexToString(FApp::GetBuildConfiguration()));
+	if(Settings->TagsPromotion.bPromoteTargetType)
+		SubsystemNativeImpl->SetTag(TEXT("Target Type"), LexToString(FApp::GetBuildTargetType()));
+	if(Settings->TagsPromotion.bPromoteEngineMode)
+		SubsystemNativeImpl->SetTag(TEXT("Engine Mode"), FGenericPlatformMisc::GetEngineMode());
+	if(Settings->TagsPromotion.bPromoteIsGame)
+		SubsystemNativeImpl->SetTag(TEXT("Is game"), FApp::IsGame() ? TEXT("True") : TEXT("False"));
+	if(Settings->TagsPromotion.bPromoteIsStandalone)
+		SubsystemNativeImpl->SetTag(TEXT("Is standalone"), FApp::IsStandalone() ? TEXT("True") : TEXT("False"));
+	if(Settings->TagsPromotion.bPromoteIsUnattended)
+		SubsystemNativeImpl->SetTag(TEXT("Is unattended"), FApp::IsUnattended() ? TEXT("True") : TEXT("False"));
 }
 
 void USentrySubsystem::ConfigureBreadcrumbs()
