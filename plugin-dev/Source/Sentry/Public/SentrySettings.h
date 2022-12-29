@@ -33,6 +33,36 @@ struct FAutomaticBreadcrumbs
 	bool bOnUserActivityStringChanged = false;
 };
 
+USTRUCT(BlueprintType)
+struct FTagsPromotion
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Build configuration", ToolTip = "Flag indicating whether the build configuration should be promoted to a captured event's tag."))
+	bool bPromoteBuildConfiguration = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Target type", ToolTip = "Flag indicating whether the target type should be promoted to a captured event's tag."))
+	bool bPromoteTargetType = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Engine mode", ToolTip = "Flag indicating whether the engine mode should be promoted to a captured event's tag."))
+	bool bPromoteEngineMode = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Is game", ToolTip = "Flag indicating whether the `IsGame` parameter should be promoted to a captured event's tag."))
+	bool bPromoteIsGame = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Is standalone", ToolTip = "Flag indicating whether the `IsStandalone` parameter should be promoted to a captured event's tag."))
+	bool bPromoteIsStandalone = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Is unattended", ToolTip = "Flag indicating whether the `IsUnattended` parameter should be promoted to a captured event's tag."))
+	bool bPromoteIsUnattended = true;
+};
+
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -61,6 +91,10 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Automatically add breadcrumbs"))
 	FAutomaticBreadcrumbs AutomaticBreadcrumbs;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Promote values to tags"))
+	FTagsPromotion TagsPromotion;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Enable automatic crash capturing (Windows editor, UE 5.1+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))

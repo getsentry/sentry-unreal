@@ -212,6 +212,9 @@ private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
 
+	/** Promote specified values to tags for all events captured by Sentry SDK. */
+	void PromoteTags();
+
 	/** Subscribe to specified game events in order to add corresponding breadcrumbs automatically. */
 	void ConfigureBreadcrumbs();
 

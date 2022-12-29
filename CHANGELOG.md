@@ -5,6 +5,7 @@
 ### Features
 
 - Automatic crash capturing for UE 5.1 (Windows only) ([#175](https://github.com/getsentry/sentry-unreal/pull/175))
+- Add extra event context params and and tags promotion ([#183](https://github.com/getsentry/sentry-unreal/pull/183))
 
 ### Dependencies
 
