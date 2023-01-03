@@ -41,6 +41,10 @@ The SDK complies with three latest engine versions.
 <Tag Files="#RuntimeDependencies" Filter="sentry.dll;crashpad_handler.exe" With="#BinariesToArchive$(EditorPlatform)"/>
  ```
 
+- In order to fix errors during the Android debug symbols upload in UE 5.0 or newer (Windows) the default `Android File Server` plugin has to be disabled first.
+
+- To avoid issues with running certain plugin scripts on Windows using [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?WT.mc_id=THOMASMAURER-blog-thmaure&view=powershell-7.3&viewFallbackFrom=powershell-7) is recommended.
+
 ## Development
 
 Please see the [contribution guide](./CONTRIBUTING.md).
