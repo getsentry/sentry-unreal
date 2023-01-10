@@ -4,6 +4,8 @@
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
+#if USE_SENTRY_NATIVE
+
 SentryUserDesktop::SentryUserDesktop()
 {
 	UserDesktop = sentry_value_new_object();
@@ -88,3 +90,5 @@ TMap<FString, FString> SentryUserDesktop::GetData()
 	sentry_value_t data = sentry_value_get_by_key(UserDesktop, "data");
 	return SentryConvertorsDesktop::StringMapToUnreal(data);
 }
+
+#endif

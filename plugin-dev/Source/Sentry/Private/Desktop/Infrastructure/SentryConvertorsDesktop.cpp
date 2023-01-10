@@ -12,6 +12,8 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonReader.h"
 
+#if USE_SENTRY_NATIVE
+
 sentry_level_e SentryConvertorsDesktop::SentryLevelToNative(ESentryLevel level)
 {
 	sentry_level_e desktopLevel = {};
@@ -112,3 +114,5 @@ FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
 
 	return Result;
 }
+
+#endif

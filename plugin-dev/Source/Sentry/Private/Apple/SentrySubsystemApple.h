@@ -4,7 +4,7 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-class SentrySubsystemIOS : public ISentrySubsystem
+class SentrySubsystemApple : public ISentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* settings) override;

@@ -6,6 +6,8 @@
 
 #include "Interface/SentryBreadcrumbInterface.h"
 
+#if USE_SENTRY_NATIVE
+
 class SentryBreadcrumbDesktop : public ISentryBreadcrumb
 {
 public:
@@ -29,3 +31,5 @@ public:
 private:
 	sentry_value_t BreadcrumbDesktop;
 };
+
+#endif

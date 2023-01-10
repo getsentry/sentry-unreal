@@ -5,6 +5,8 @@
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
+#if USE_SENTRY_NATIVE
+
 SentryEventDesktop::SentryEventDesktop()
 {
 	EventDesktop = sentry_value_new_event();
@@ -48,3 +50,5 @@ ESentryLevel SentryEventDesktop::GetLevel() const
 	sentry_value_t level = sentry_value_get_by_key(EventDesktop, "level");
 	return SentryConvertorsDesktop::SentryLevelToUnreal(level);
 }
+
+#endif

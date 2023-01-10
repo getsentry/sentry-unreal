@@ -6,9 +6,9 @@
 
 #if PLATFORM_ANDROID
 #include "Android/SentryBreadcrumbAndroid.h"
-#elif PLATFORM_IOS
-#include "IOS/SentryBreadcrumbIOS.h"
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+#include "Apple/SentryBreadcrumbApple.h"
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 #include "Desktop/SentryBreadcrumbDesktop.h"
 #endif
 
@@ -18,9 +18,9 @@ USentryBreadcrumb::USentryBreadcrumb()
 	{
 #if PLATFORM_ANDROID
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbAndroid());
-#elif PLATFORM_IOS
-		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbIOS());
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbApple());
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbDesktop());
 #endif
 	}

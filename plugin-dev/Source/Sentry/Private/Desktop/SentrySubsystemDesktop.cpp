@@ -24,6 +24,8 @@
 #include "Windows/WindowsPlatformMisc.h"
 #endif
 
+#if USE_SENTRY_NATIVE
+
 void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, void *userdata)
 {
 	char buffer[512];
@@ -41,7 +43,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 {
 #if PLATFORM_WINDOWS
 	const FString HandlerExecutableName = TEXT("crashpad_handler.exe");
-#elif PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_LINUX
 	const FString HandlerExecutableName = TEXT("crashpad_handler");
 #endif
 
@@ -53,7 +55,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 #if PLATFORM_WINDOWS
 	sentry_options_set_handler_pathw(options, *FPaths::ConvertRelativePathToFull(HandlerPath));
 	sentry_options_set_database_pathw(options, *FPaths::ConvertRelativePathToFull(DatabasePath));
-#elif PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_LINUX
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(HandlerPath)));
 	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(DatabasePath)));
 #endif
@@ -173,3 +175,5 @@ void SentrySubsystemDesktop::SetLevel(ESentryLevel level)
 {
 	sentry_set_level(SentryConvertorsDesktop::SentryLevelToNative(level));
 }
+
+#endif

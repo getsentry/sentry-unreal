@@ -6,6 +6,8 @@
 
 #include "Interface/SentryUserInterface.h"
 
+#if USE_SENTRY_NATIVE
+
 class SentryUserDesktop : public ISentryUser
 {
 public:
@@ -29,3 +31,5 @@ public:
 private:
 	sentry_value_t UserDesktop;
 };
+
+#endif

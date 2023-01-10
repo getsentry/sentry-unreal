@@ -8,6 +8,8 @@
 
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 
+#if USE_SENTRY_NATIVE
+
 SentryCrashReporter::SentryCrashReporter()
 {
 	crashReporterConfig = MakeShareable(new FJsonObject);
@@ -105,3 +107,5 @@ void SentryCrashReporter::UpdateCrashReporterConfig()
 
 	FGenericCrashContext::SetGameData(TEXT("__sentry"), config);
 }
+
+#endif

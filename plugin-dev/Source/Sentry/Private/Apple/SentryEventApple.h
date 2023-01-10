@@ -6,12 +6,12 @@
 
 @class SentryEvent;
 
-class SentryEventIOS : public ISentryEvent
+class SentryEventApple : public ISentryEvent
 {
 public:
-	SentryEventIOS();
-	SentryEventIOS(SentryEvent* event);
-	virtual ~SentryEventIOS() override;
+	SentryEventApple();
+	SentryEventApple(SentryEvent* event);
+	virtual ~SentryEventApple() override;
 
 	SentryEvent* GetNativeObject();
 
@@ -21,5 +21,5 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	SentryEvent* EventIOS;
+	SentryEvent* EventApple;
 };

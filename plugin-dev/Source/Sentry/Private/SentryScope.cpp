@@ -8,8 +8,8 @@
 
 #if PLATFORM_ANDROID
 #include "Android/SentryScopeAndroid.h"
-#elif PLATFORM_IOS
-#include "IOS/SentryScopeIOS.h"
+#elif PLATFORM_IOS || PLATFORM_MAC
+#include "Apple/SentryScopeApple.h"
 #endif
 
 USentryScope::USentryScope()
@@ -18,8 +18,8 @@ USentryScope::USentryScope()
 	{
 #if PLATFORM_ANDROID
 		ScopeNativeImpl = MakeShareable(new SentryScopeAndroid());
-#elif PLATFORM_IOS
-		ScopeNativeImpl = MakeShareable(new SentryScopeIOS());
+#elif PLATFORM_IOS || PLATFORM_MAC
+		ScopeNativeImpl = MakeShareable(new SentryScopeApple());
 #endif
 	}
 }

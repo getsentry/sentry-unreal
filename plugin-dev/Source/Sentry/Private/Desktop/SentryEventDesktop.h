@@ -6,6 +6,8 @@
 
 #include "Interface/SentryEventInterface.h"
 
+#if USE_SENTRY_NATIVE
+
 class SentryEventDesktop : public ISentryEvent
 {
 public:
@@ -23,3 +25,5 @@ public:
 private:
 	sentry_value_t EventDesktop;
 };
+
+#endif

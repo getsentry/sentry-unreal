@@ -6,9 +6,9 @@
 
 #if PLATFORM_ANDROID
 #include "Android/SentryIdAndroid.h"
-#elif PLATFORM_IOS
-#include "IOS/SentryIdIOS.h"
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+#include "Apple/SentryIdApple.h"
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 #include "Desktop/SentryIdDesktop.h"
 #endif
 
@@ -18,9 +18,9 @@ USentryId::USentryId()
 	{
 #if PLATFORM_ANDROID
 		SentryIdNativeImpl = MakeShareable(new SentryIdAndroid());
-#elif PLATFORM_IOS
-		SentryIdNativeImpl = MakeShareable(new SentryIdIOS());
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+		SentryIdNativeImpl = MakeShareable(new SentryIdApple());
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 		SentryIdNativeImpl = MakeShareable(new SentryIdDesktop());
 #endif
 	}

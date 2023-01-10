@@ -7,16 +7,16 @@
 
 #if PLATFORM_ANDROID
 #include "Android/SentryUserFeedbackAndroid.h"
-#elif PLATFORM_IOS
-#include "IOS/SentryUserFeedbackIOS.h"
+#elif PLATFORM_IOS || PLATFORM_MAC
+#include "Apple/SentryUserFeedbackApple.h"
 #endif
 
 void USentryUserFeedback::Initialize(USentryId* EventId)
 {
 #if PLATFORM_ANDROID
 	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackAndroid(EventId));
-#elif PLATFORM_IOS
-	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackIOS(EventId));
+#elif PLATFORM_IOS || PLATFORM_MAC
+	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackApple(EventId));
 #endif
 }
 

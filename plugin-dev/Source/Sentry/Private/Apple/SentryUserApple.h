@@ -6,12 +6,12 @@
 
 @class SentryUser;
 
-class SentryUserIOS : public ISentryUser
+class SentryUserApple : public ISentryUser
 {
 public:
-	SentryUserIOS();
-	SentryUserIOS(SentryUser* user);
-	virtual ~SentryUserIOS() override;
+	SentryUserApple();
+	SentryUserApple(SentryUser* user);
+	virtual ~SentryUserApple() override;
 
 	SentryUser* GetNativeObject();
 
@@ -27,5 +27,5 @@ public:
 	virtual TMap<FString, FString> GetData() override;
 
 private:
-	SentryUser* UserIOS;
+	SentryUser* UserApple;
 };

@@ -6,6 +6,8 @@
 
 #include "Interface/SentryIdInterface.h"
 
+#if USE_SENTRY_NATIVE
+
 class SentryIdDesktop : public ISentryId
 {
 public:
@@ -20,3 +22,5 @@ public:
 private:
 	sentry_uuid_t IdDesktop;
 };
+
+#endif

@@ -6,9 +6,9 @@
 
 #if PLATFORM_ANDROID
 #include "Android/SentryEventAndroid.h"
-#elif PLATFORM_IOS
-#include "IOS/SentryEventIOS.h"
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+#include "Apple/SentryEventApple.h"
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 #include "Desktop/SentryEventDesktop.h"
 #endif
 
@@ -18,9 +18,9 @@ USentryEvent::USentryEvent()
 	{
 #if PLATFORM_ANDROID
 		EventNativeImpl = MakeShareable(new SentryEventAndroid());
-#elif PLATFORM_IOS
-		EventNativeImpl = MakeShareable(new SentryEventIOS());
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+		EventNativeImpl = MakeShareable(new SentryEventApple());
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 		EventNativeImpl = MakeShareable(new SentryEventDesktop());
 #endif
 	}
