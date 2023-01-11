@@ -4,7 +4,7 @@ set -euo pipefail
 export sentryNativeRoot=$1
 export sentryArtifactsDestination=$2
 
-rm -rf "${sentryArtifactsDestination}"
+rm -rf "${sentryArtifactsDestination}/"*
 rm -rf "${sentryNativeRoot}/build"
 
 # Build for an older GLIBC so that it can run with the old GLIBC included in EpicGames' Unreal docker images.
