@@ -43,12 +43,6 @@ jobs:
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk.yml') }}
 
-      - name: Install Linux Dependencies
-        if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
-
       - uses: actions/setup-java@v3
         if: ${{ inputs.target == 'Android' }}
         with:
