@@ -13,5 +13,5 @@ mkdir "${sentryArtifactsDestination}/include"
 
 cp "${sentryCocoaRoot}/Carthage/Build/Mac/Sentry.framework/Sentry" "${sentryArtifactsDestination}/bin/sentry.dylib"
 
-cp -R "${sentryCocoaRoot}/Carthage/Build/Mac/Sentry.framework/Headers" "${sentryArtifactsDestination}/include/Headers"
-cp -R "${sentryCocoaRoot}/Carthage/Build/Mac/Sentry.framework/PrivateHeaders" "${sentryArtifactsDestination}/include/PrivateHeaders"
+cp -rL "${sentryCocoaRoot}/Carthage/Build/Mac/Sentry.framework/Headers" "${sentryArtifactsDestination}/include/Headers"
+cp -rL "${sentryCocoaRoot}/Carthage/Build/Mac/Sentry.framework/PrivateHeaders" "${sentryArtifactsDestination}/include/PrivateHeaders"
