@@ -156,20 +156,16 @@ public class Sentry : ModuleRules
 		string BinariesDynamicLibPath = Path.Combine(BinariesPath, libname + DynamicLibExtension);
 		string BinariesSymbolsPath = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
 
-		// Make Sentry library writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-		File.SetAttributes(SourceDynamicLibPath, File.GetAttributes(SourceDynamicLibPath) & ~FileAttributes.ReadOnly);
-
-		RuntimeDependencies.Add(BinariesDynamicLibPath, SourceDynamicLibPath);
+		CopyPluginBinary(SourceDynamicLibPath, BinariesDynamicLibPath, BinariesPath);
+		RuntimeDependencies.Add(BinariesDynamicLibPath);
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			PublicAdditionalLibraries.Add(SourceStaticLibPath);
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
 
-			// Make debug symbols writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-			File.SetAttributes(SourceSymbolsPath, File.GetAttributes(SourceSymbolsPath) & ~FileAttributes.ReadOnly);
-
-			RuntimeDependencies.Add(BinariesSymbolsPath, SourceSymbolsPath);
+			CopyPluginBinary(SourceSymbolsPath, BinariesSymbolsPath, BinariesPath);
+			RuntimeDependencies.Add(BinariesSymbolsPath);
 		}
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
@@ -186,9 +182,23 @@ public class Sentry : ModuleRules
 		string SourceHandlerPath = Path.Combine(ThirdPartyPath, "bin", HandlerName);
 		string BinariesHandlerPath = Path.Combine(BinariesPath, HandlerName);
 
-		// Make crashpad handler writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-		File.SetAttributes(SourceHandlerPath, File.GetAttributes(SourceHandlerPath) & ~FileAttributes.ReadOnly);
+		CopyPluginBinary(SourceHandlerPath, BinariesHandlerPath, BinariesPath);
+		RuntimeDependencies.Add(BinariesHandlerPath);
+	}
 
-		RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
+	public void CopyPluginBinary(string SourceFile, string DestFile, string DestFolder)
+	{
+		if (!Directory.Exists(DestFolder))
+		{
+			Directory.CreateDirectory(DestFolder);
+		}
+
+		if (!File.Exists(DestFile))
+		{
+			File.Copy(SourceFile, DestFile, true);
+
+			// Make binary writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
+			File.SetAttributes(DestFile, File.GetAttributes(DestFile) & ~FileAttributes.ReadOnly);
+		}
 	}
 }
