@@ -81,7 +81,7 @@ public:
 	/**
 	 * Clear all breadcrumbs of the current Scope.
 	 *
-	 * @note: Not supported for Mac/Windows.
+	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void ClearBreadcrumbs();
@@ -104,7 +104,7 @@ public:
 	 * @param OnConfigureScope The callback to configure the scope.
 	 * @param Level The message level.
 	 *
-	 * @note: Not supported for Mac/Windows.
+	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
@@ -123,7 +123,7 @@ public:
 	 * @param Event The event to send to Sentry.
 	 * @param OnConfigureScope The callback to configure the scope.
 	 *
-	 * @note: Not supported for Mac/Windows.
+	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
@@ -133,7 +133,7 @@ public:
 	 *
 	 * @param UserFeedback The user feedback to send to Sentry.
 	 *
-	 * @note: Not supported for Mac/Windows.
+	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
@@ -146,7 +146,7 @@ public:
 	 * @param Comments The user comments.
 	 * @param Name The optional username.
 	 *
-	 * @note: Not supported for Mac/Windows.
+	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name);
@@ -169,7 +169,7 @@ public:
 	 *
 	 * @param OnConfigureScope The callback to configure the scope.
 	 *
-	 * @note: Not supported for Mac/Windows.
+	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);

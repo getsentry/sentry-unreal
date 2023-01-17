@@ -6,17 +6,17 @@
 
 @class SentryId;
 
-class SentryIdIOS : public ISentryId
+class SentryIdApple : public ISentryId
 {
 public:
-	SentryIdIOS();
-	SentryIdIOS(SentryId* id);
-	virtual ~SentryIdIOS() override;
+	SentryIdApple();
+	SentryIdApple(SentryId* id);
+	virtual ~SentryIdApple() override;
 
 	SentryId* GetNativeObject();
 
 	virtual FString ToString() const override;
 
 private:
-	SentryId* IdIOS;
+	SentryId* IdApple;
 };

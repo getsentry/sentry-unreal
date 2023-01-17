@@ -6,9 +6,9 @@
 
 #if PLATFORM_ANDROID
 #include "Android/SentryUserAndroid.h"
-#elif PLATFORM_IOS
-#include "IOS/SentryUserIOS.h"
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+#include "Apple/SentryUserApple.h"
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 #include "Desktop/SentryUserDesktop.h"
 #endif
 
@@ -18,9 +18,9 @@ USentryUser::USentryUser()
 	{
 #if PLATFORM_ANDROID
 		UserNativeImpl = MakeShareable(new SentryUserAndroid());
-#elif PLATFORM_IOS
-		UserNativeImpl = MakeShareable(new SentryUserIOS());
-#elif PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_IOS || PLATFORM_MAC
+		UserNativeImpl = MakeShareable(new SentryUserApple());
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
 		UserNativeImpl = MakeShareable(new SentryUserDesktop());
 #endif
 	}

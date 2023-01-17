@@ -6,12 +6,12 @@
 
 @class SentryBreadcrumb;
 
-class SentryBreadcrumbIOS : public ISentryBreadcrumb
+class SentryBreadcrumbApple : public ISentryBreadcrumb
 {
 public:
-	SentryBreadcrumbIOS();
-	SentryBreadcrumbIOS(SentryBreadcrumb* breadcrumb);
-	virtual ~SentryBreadcrumbIOS() override;
+	SentryBreadcrumbApple();
+	SentryBreadcrumbApple(SentryBreadcrumb* breadcrumb);
+	virtual ~SentryBreadcrumbApple() override;
 
 	SentryBreadcrumb* GetNativeObject();
 
@@ -27,5 +27,5 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	SentryBreadcrumb* BreadcrumbIOS;
+	SentryBreadcrumb* BreadcrumbApple;
 };

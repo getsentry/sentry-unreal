@@ -6,6 +6,8 @@
 
 class SentryCrashReporter;
 
+#if USE_SENTRY_NATIVE
+
 class SentrySubsystemDesktop : public ISentrySubsystem
 {
 public:
@@ -31,3 +33,5 @@ public:
 private:
 	TSharedPtr<SentryCrashReporter> crashReporter;
 };
+
+#endif

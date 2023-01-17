@@ -1,14 +1,14 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryConvertorsIOS.h"
+#include "SentryConvertorsApple.h"
 #include "SentryScope.h"
 #include "SentryId.h"
 #include "SentryDefines.h"
 
-#include "IOS/SentryScopeIOS.h"
-#include "IOS/SentryIdIOS.h"
+#include "Apple/SentryScopeApple.h"
+#include "Apple/SentryIdApple.h"
 
-SentryLevel SentryConvertorsIOS::SentryLevelToNative(ESentryLevel level)
+SentryLevel SentryConvertorsApple::SentryLevelToNative(ESentryLevel level)
 {
 	SentryLevel nativeLevel = kSentryLevelDebug;
 
@@ -36,7 +36,7 @@ SentryLevel SentryConvertorsIOS::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
-NSDictionary* SentryConvertorsIOS::StringMapToNative(const TMap<FString, FString>& map)
+NSDictionary* SentryConvertorsApple::StringMapToNative(const TMap<FString, FString>& map)
 {
 	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:map.Num()];
 
@@ -48,7 +48,7 @@ NSDictionary* SentryConvertorsIOS::StringMapToNative(const TMap<FString, FString
 	return dict;
 }
 
-NSArray* SentryConvertorsIOS::StringArrayToNative(const TArray<FString>& array)
+NSArray* SentryConvertorsApple::StringArrayToNative(const TArray<FString>& array)
 {
 	NSMutableArray *arr = [NSMutableArray arrayWithCapacity:array.Num()];
 
@@ -60,12 +60,12 @@ NSArray* SentryConvertorsIOS::StringArrayToNative(const TArray<FString>& array)
 	return arr;
 }
 
-NSData* SentryConvertorsIOS::ByteDataToNative(const TArray<uint8>& array)
+NSData* SentryConvertorsApple::ByteDataToNative(const TArray<uint8>& array)
 {
 	return [NSData dataWithBytes:array.GetData() length:array.Num()];
 }
 
-ESentryLevel SentryConvertorsIOS::SentryLevelToUnreal(SentryLevel level)
+ESentryLevel SentryConvertorsApple::SentryLevelToUnreal(SentryLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
 
@@ -93,7 +93,7 @@ ESentryLevel SentryConvertorsIOS::SentryLevelToUnreal(SentryLevel level)
 	return unrealLevel;
 }
 
-TMap<FString, FString> SentryConvertorsIOS::StringMapToUnreal(NSDictionary* dict)
+TMap<FString, FString> SentryConvertorsApple::StringMapToUnreal(NSDictionary* dict)
 {
 	TMap<FString, FString> map;
 
@@ -105,7 +105,7 @@ TMap<FString, FString> SentryConvertorsIOS::StringMapToUnreal(NSDictionary* dict
 	return map;
 }
 
-TArray<FString> SentryConvertorsIOS::StringArrayToUnreal(NSArray* array)
+TArray<FString> SentryConvertorsApple::StringArrayToUnreal(NSArray* array)
 {
 	TArray<FString> arr;
 
@@ -117,7 +117,7 @@ TArray<FString> SentryConvertorsIOS::StringArrayToUnreal(NSArray* array)
 	return arr;
 }
 
-TArray<uint8> SentryConvertorsIOS::ByteDataToUnreal(NSData* data)
+TArray<uint8> SentryConvertorsApple::ByteDataToUnreal(NSData* data)
 {
 	TArray<uint8> ByteData;
 
@@ -131,23 +131,23 @@ TArray<uint8> SentryConvertorsIOS::ByteDataToUnreal(NSData* data)
 	return ByteData;
 }
 
-USentryScope* SentryConvertorsIOS::SentryScopeToUnreal(SentryScope* scope)
+USentryScope* SentryConvertorsApple::SentryScopeToUnreal(SentryScope* scope)
 {
-	TSharedPtr<SentryScopeIOS> scopeNativeImpl = MakeShareable(new SentryScopeIOS(scope));
+	TSharedPtr<SentryScopeApple> scopeNativeImpl = MakeShareable(new SentryScopeApple(scope));
 	USentryScope* unrealScope = NewObject<USentryScope>();
 	unrealScope->InitWithNativeImpl(scopeNativeImpl);
 	return unrealScope;
 }
 
-USentryId* SentryConvertorsIOS::SentryIdToUnreal(SentryId* id)
+USentryId* SentryConvertorsApple::SentryIdToUnreal(SentryId* id)
 {
-	TSharedPtr<SentryIdIOS> idNativeImpl = MakeShareable(new SentryIdIOS(id));
+	TSharedPtr<SentryIdApple> idNativeImpl = MakeShareable(new SentryIdApple(id));
 	USentryId* unrealId = NewObject<USentryId>();
 	unrealId->InitWithNativeImpl(idNativeImpl);
 	return unrealId;
 }
 
-SentryLevel SentryConvertorsIOS::StringToSentryLevel(NSString* string)
+SentryLevel SentryConvertorsApple::StringToSentryLevel(NSString* string)
 {
 	SentryLevel nativeLevel = kSentryLevelDebug;
 

@@ -29,6 +29,9 @@ public:
 	 */
 	static bool IsAvailable();
 
+	/** Gets Sentry library handle for manual symbols loading. */
+	void* GetSentryLibHandle() const;
+
 	/** Gets internal settings object to support runtime configuration changes. */
 	USentrySettings* GetSettings() const;
 

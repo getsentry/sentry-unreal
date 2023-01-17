@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#if USE_SENTRY_NATIVE
+
 class USentryUser;
 class FJsonObject;
 
@@ -25,3 +27,5 @@ protected:
 private:
 	TSharedPtr<FJsonObject> crashReporterConfig;
 };
+
+#endif

@@ -8,6 +8,6 @@
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include "sentry.h"
 #include "Windows/HideWindowsPlatformTypes.h"
-#elif PLATFORM_MAC || PLATFORM_LINUX
+#elif PLATFORM_LINUX
 #include "sentry.h"
 #endif

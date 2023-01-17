@@ -4,12 +4,12 @@
 
 #include "SentryDataTypes.h"
 
-#import <Sentry/Sentry.h>
+#include "Convenience/SentryInclude.h"
 
 class USentryScope;
 class USentryId;
 
-class SentryConvertorsIOS
+class SentryConvertorsApple
 {
 public:
 	/** Conversions to native iOS types */

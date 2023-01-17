@@ -2,6 +2,8 @@
 
 #include "SentryIdDesktop.h"
 
+#if USE_SENTRY_NATIVE
+
 SentryIdDesktop::SentryIdDesktop()
 {
 	IdDesktop = sentry_uuid_new_v4();
@@ -28,3 +30,5 @@ FString SentryIdDesktop::ToString() const
 	sentry_uuid_as_string(&IdDesktop, IdString);
 	return FString(IdString);
 }
+
+#endif

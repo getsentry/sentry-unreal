@@ -6,6 +6,8 @@
 
 #include "Convenience/SentryInclude.h"
 
+#if USE_SENTRY_NATIVE
+
 class USentryId;
 
 class SentryConvertorsDesktop
@@ -23,3 +25,5 @@ public:
 	/** Other conversions */
 	static FString SentryLevelToString(ESentryLevel level);
 };
+
+#endif

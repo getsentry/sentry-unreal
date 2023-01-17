@@ -32,7 +32,7 @@ void FSentryModule::StartupModule()
 #if PLATFORM_WINDOWS
 	const FString SentryLibName = TEXT("sentry.dll");
 #elif PLATFORM_MAC
-	const FString SentryLibName = TEXT("libsentry.dylib");
+	const FString SentryLibName = TEXT("sentry.dylib");
 #elif PLATFORM_LINUX
 	const FString SentryLibName = TEXT("libsentry.so");
 #endif
@@ -82,6 +82,11 @@ FSentryModule& FSentryModule::Get()
 bool FSentryModule::IsAvailable()
 {
 	return FModuleManager::Get().IsModuleLoaded(ModuleName);
+}
+
+void* FSentryModule::GetSentryLibHandle() const
+{
+	return mDllHandleSentry;
 }
 
 USentrySettings* FSentryModule::GetSettings() const

@@ -4,6 +4,8 @@
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
+#if USE_SENTRY_NATIVE
+
 SentryBreadcrumbDesktop::SentryBreadcrumbDesktop()
 {
     BreadcrumbDesktop = sentry_value_new_breadcrumb("", "");
@@ -80,3 +82,5 @@ ESentryLevel SentryBreadcrumbDesktop::GetLevel() const
 	sentry_value_t level = sentry_value_get_by_key(BreadcrumbDesktop, "level");
 	return SentryConvertorsDesktop::SentryLevelToUnreal(level);
 }
+
+#endif

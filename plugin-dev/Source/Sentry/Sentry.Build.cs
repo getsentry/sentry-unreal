@@ -60,7 +60,7 @@ public class Sentry : ModuleRules
 		// Additional routine for iOS
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/IOS"));
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Apple"));
 
 			PublicAdditionalFrameworks.Add(new Framework("Sentry", "../ThirdParty/IOS/Sentry.embeddedframework.zip"));
 
@@ -85,29 +85,38 @@ public class Sentry : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString(), "include"));
-
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
 		}
 
 		// Additional routine for Windows
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
+
 			LoadThirdPartyLibrary("sentry", Target);
 			LoadCrashpadHandler("crashpad_handler.exe", Target);
-		}
 
-		// Additional routine for Mac
-		if (Target.Platform == UnrealTargetPlatform.Mac)
-		{
-			LoadThirdPartyLibrary("libsentry", Target);
-			LoadCrashpadHandler("crashpad_handler", Target);
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
 
 		// Additional routine for Linux
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
+
 			LoadThirdPartyLibrary("libsentry", Target);
 			LoadCrashpadHandler("crashpad_handler", Target);
+
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+		}
+		
+		// Additional routine for Mac
+		if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Apple"));
+
+			LoadThirdPartyLibrary("sentry", Target);
+
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 		}
 	}
 
@@ -147,25 +156,21 @@ public class Sentry : ModuleRules
 		string BinariesDynamicLibPath = Path.Combine(BinariesPath, libname + DynamicLibExtension);
 		string BinariesSymbolsPath = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
 
+		CopyPluginBinary(SourceDynamicLibPath, BinariesDynamicLibPath, BinariesPath);
+		RuntimeDependencies.Add(BinariesDynamicLibPath);
+
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			PublicAdditionalLibraries.Add(SourceStaticLibPath);
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
 
-			// Make debug symbols writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-			File.SetAttributes(SourceSymbolsPath, File.GetAttributes(SourceSymbolsPath) & ~FileAttributes.ReadOnly);
-
-			RuntimeDependencies.Add(BinariesSymbolsPath, SourceSymbolsPath);
+			CopyPluginBinary(SourceSymbolsPath, BinariesSymbolsPath, BinariesPath);
+			RuntimeDependencies.Add(BinariesSymbolsPath);
 		}
-		if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
+		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicAdditionalLibraries.Add(BinariesDynamicLibPath);
 		}
-
-		// Make Sentry library writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-		File.SetAttributes(SourceDynamicLibPath, File.GetAttributes(SourceDynamicLibPath) & ~FileAttributes.ReadOnly);
-
-		RuntimeDependencies.Add(BinariesDynamicLibPath, SourceDynamicLibPath);
 	}
 
 	public void LoadCrashpadHandler(string HandlerName, ReadOnlyTargetRules Target)
@@ -177,9 +182,23 @@ public class Sentry : ModuleRules
 		string SourceHandlerPath = Path.Combine(ThirdPartyPath, "bin", HandlerName);
 		string BinariesHandlerPath = Path.Combine(BinariesPath, HandlerName);
 
-		// Make crashpad handler writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-		File.SetAttributes(SourceHandlerPath, File.GetAttributes(SourceHandlerPath) & ~FileAttributes.ReadOnly);
+		CopyPluginBinary(SourceHandlerPath, BinariesHandlerPath, BinariesPath);
+		RuntimeDependencies.Add(BinariesHandlerPath);
+	}
 
-		RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
+	public void CopyPluginBinary(string SourceFile, string DestFile, string DestFolder)
+	{
+		if (!Directory.Exists(DestFolder))
+		{
+			Directory.CreateDirectory(DestFolder);
+		}
+
+		if (!File.Exists(DestFile))
+		{
+			File.Copy(SourceFile, DestFile, true);
+
+			// Make binary writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
+			File.SetAttributes(DestFile, File.GetAttributes(DestFile) & ~FileAttributes.ReadOnly);
+		}
 	}
 }

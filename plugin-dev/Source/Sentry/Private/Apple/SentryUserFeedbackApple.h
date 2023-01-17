@@ -7,11 +7,11 @@
 class USentryId;
 @class SentryUserFeedback;
 
-class SentryUserFeedbackIOS : public ISentryUserFeedback
+class SentryUserFeedbackApple : public ISentryUserFeedback
 {
 public:
-	SentryUserFeedbackIOS(USentryId* eventId);
-	virtual ~SentryUserFeedbackIOS() override;
+	SentryUserFeedbackApple(USentryId* eventId);
+	virtual ~SentryUserFeedbackApple() override;
 
 	SentryUserFeedback* GetNativeObject();
 
@@ -23,5 +23,5 @@ public:
 	virtual FString GetComment() const override;
 
 private:
-	SentryUserFeedback* UserFeedbackIOS;
+	SentryUserFeedback* UserFeedbackApple;
 };
