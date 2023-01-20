@@ -8,6 +8,10 @@
 - Add extra event context params and and tags promotion ([#183](https://github.com/getsentry/sentry-unreal/pull/183))
 - Add automatic crash capturing for Mac ([#190](https://github.com/getsentry/sentry-unreal/pull/190))
 
+### Fixes
+
+- Fix Linux debug symbols upload when cross-compiling on Windows ([#196](https://github.com/getsentry/sentry-unreal/pull/196))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.8.0 to v6.9.0 ([#165](https://github.com/getsentry/sentry-unreal/pull/165))
