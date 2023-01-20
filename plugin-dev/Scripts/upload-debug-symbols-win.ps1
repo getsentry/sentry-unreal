@@ -12,9 +12,14 @@ If ($TargetType -eq "Editor")
     Exit
 }
 
-If ($TargetPlatform -eq "Win64")
+If ($TargetPlatform -eq "Win64" -or $TargetPlatform -eq "Linux")
 {
     $CliExec = "$PluginPath\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe"
+}
+Elseif ($TargetPlatform -eq "Android")
+{
+    Write-Warning "Sentry: Debug symbols upload for Android is handled by Sentry's gradle plugin if enabled"
+    Exit
 }
 Else
 {
