@@ -32,5 +32,9 @@ setupPluginLink() {
 }
 
 setupPluginLink "sample"
+if [[ -d "sample 5.1" ]]; then
+    setupPluginLink "sample 5.1"
+fi
+
 "$(dirname "$0")/download-sdks.sh"
 "$(dirname "$0")/download-cli.sh"
