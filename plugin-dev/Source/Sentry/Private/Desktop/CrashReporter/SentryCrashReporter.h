@@ -15,6 +15,7 @@ public:
 	SentryCrashReporter();
 
 	void SetRelease(const FString& release);
+	void SetEnvironment(const FString& environment);
 	void SetUser(USentryUser* user);
 	void RemoveUser();
 	void SetContext(const FString& key, const TMap<FString, FString>& values);

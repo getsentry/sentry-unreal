@@ -14,6 +14,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 {
 	DsnUrl = TEXT("");
 	Release = TEXT("");
+	Environment = TEXT("");
 	CrashReporterUrl = TEXT("");
 
 	LoadDebugSymbolsProperties();
