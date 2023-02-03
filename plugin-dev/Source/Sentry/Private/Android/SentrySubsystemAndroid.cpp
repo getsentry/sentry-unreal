@@ -25,7 +25,7 @@ const ANSICHAR* SentrySubsystemAndroid::SentryBridgeJavaClassName = "io/sentry/u
 
 void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 {
-	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;)V",
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
 		FJavaWrapper::GameActivityThis, *FJavaClassObject::GetJString(settings->DsnUrl), *FJavaClassObject::GetJString(settings->Release), *FJavaClassObject::GetJString(settings->Environment));
 }
 
