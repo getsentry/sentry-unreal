@@ -183,7 +183,7 @@ public class Sentry : ModuleRules
 		string BinariesHandlerPath = Path.Combine(BinariesPath, HandlerName);
 
 		CopyPluginBinary(SourceHandlerPath, BinariesHandlerPath, BinariesPath);
-		RuntimeDependencies.Add(BinariesHandlerPath);
+		RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
 	}
 
 	public void CopyPluginBinary(string SourceFile, string DestFile, string DestFolder)
