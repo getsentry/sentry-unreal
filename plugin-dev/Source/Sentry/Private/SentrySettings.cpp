@@ -7,15 +7,24 @@
 
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
+	, DsnUrl()
 	, InitAutomatically(false)
 	, EnableVerboseLogging(true)
 	, EnableAutoCrashCapturing(true)
 	, UploadSymbolsAutomatically(false)
+	, CrashReporterUrl()
 {
-	DsnUrl = TEXT("");
-	Release = TEXT("");
-	Environment = TEXT("");
-	CrashReporterUrl = TEXT("");
+	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Release, GGameIni);
+
+#if WITH_EDITOR
+	Environment = TEXT("Editor");
+#elif UE_BUILD_SHIPPING
+	Environment = TEXT("Release");
+#elif UE_BUILD_DEVELOPMENT
+	Environment = TEXT("Development");
+#elif UE_BUILD_DEBUG
+	Environment = TEXT("Debug");
+#endif
 
 	LoadDebugSymbolsProperties();
 }
