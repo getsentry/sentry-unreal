@@ -23,6 +23,14 @@ void SentryCrashReporter::SetRelease(const FString& release)
 	UpdateCrashReporterConfig();
 }
 
+void SentryCrashReporter::SetEnvironment(const FString& environment)
+{
+	if (!environment.IsEmpty())
+		crashReporterConfig->SetStringField(TEXT("environment"), environment);
+
+	UpdateCrashReporterConfig();
+}
+
 void SentryCrashReporter::SetUser(USentryUser* user)
 {
 	TSharedPtr<FJsonObject> userConfig = MakeShareable(new FJsonObject);

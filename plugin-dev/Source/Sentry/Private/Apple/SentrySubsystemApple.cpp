@@ -27,6 +27,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 	[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
 		options.dsn = settings->DsnUrl.GetNSString();
 		options.releaseName = settings->Release.GetNSString();
+		options.environment = settings->Environment.GetNSString();
 	}];
 }
 

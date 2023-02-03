@@ -62,6 +62,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
+	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
 
@@ -77,6 +78,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 #endif
 
 	crashReporter->SetRelease(settings->Release);
+	crashReporter->SetEnvironment(settings->Environment);
 }
 
 void SentrySubsystemDesktop::Close()

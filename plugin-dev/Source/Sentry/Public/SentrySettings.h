@@ -80,6 +80,10 @@ public:
 		Meta = (DisplayName = "Release", ToolTip = "Release name which will be used for enriching events."))
 	FString Release;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
+		Meta = (DisplayName = "Environment", ToolTip = "Environment which will be used for enriching events."))
+	FString Environment;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Initialize SDK automatically", ToolTip = "Flag indicating whether to automatically initialize the SDK when the app starts."))
 	bool InitAutomatically;
