@@ -157,7 +157,6 @@ public class Sentry : ModuleRules
 		string BinariesSymbolsPath = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
 
 		CopyPluginBinary(SourceDynamicLibPath, BinariesDynamicLibPath, BinariesPath);
-		RuntimeDependencies.Add(BinariesDynamicLibPath);
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
@@ -165,7 +164,6 @@ public class Sentry : ModuleRules
 			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
 
 			CopyPluginBinary(SourceSymbolsPath, BinariesSymbolsPath, BinariesPath);
-			RuntimeDependencies.Add(BinariesSymbolsPath);
 		}
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
@@ -183,7 +181,6 @@ public class Sentry : ModuleRules
 		string BinariesHandlerPath = Path.Combine(BinariesPath, HandlerName);
 
 		CopyPluginBinary(SourceHandlerPath, BinariesHandlerPath, BinariesPath);
-		RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
 	}
 
 	public void CopyPluginBinary(string SourceFile, string DestFile, string DestFolder)
@@ -199,6 +196,7 @@ public class Sentry : ModuleRules
 
 			// Make binary writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
 			File.SetAttributes(DestFile, File.GetAttributes(DestFile) & ~FileAttributes.ReadOnly);
+			RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
 		}
 	}
 }
