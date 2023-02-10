@@ -196,7 +196,7 @@ public class Sentry : ModuleRules
 
 			// Make binary writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
 			File.SetAttributes(DestFile, File.GetAttributes(DestFile) & ~FileAttributes.ReadOnly);
-			RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
+			RuntimeDependencies.Add(DestFile, SourceFile);
 		}
 	}
 }
