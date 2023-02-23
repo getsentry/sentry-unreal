@@ -101,7 +101,7 @@ public:
 	FTagsPromotion TagsPromotion;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Enable automatic crash capturing (Windows editor, UE 5.1+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
+		Meta = (DisplayName = "Enable automatic crash capturing (Windows editor, UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
 	bool EnableAutoCrashCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",

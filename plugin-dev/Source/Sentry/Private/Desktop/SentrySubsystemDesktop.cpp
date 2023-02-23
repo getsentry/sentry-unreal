@@ -70,7 +70,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
 
-#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
 	if(settings->EnableAutoCrashCapturing)
 	{
 		FPlatformMisc::SetCrashHandlingType(ECrashHandlingType::Disabled);
