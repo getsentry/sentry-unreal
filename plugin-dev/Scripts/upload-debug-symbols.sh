@@ -41,17 +41,23 @@ if [ $UPLOAD_SYMBOLS != "True" ]; then
     exit
 fi
 
+INCLUDE_SOURCES=$(awk -F "=" '/IncludeSources/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
+
+CLI_ARGS=()
+if [ -z $INCLUDE_SOURCES -a $UPLOAD_SYMBOLS == "True" ]; then
+    CLI_ARGS+=(--include-sources)
+fi
+
 export SENTRY_PROPERTIES="$projectPath/sentry.properties"
 if [ ! -f "$SENTRY_PROPERTIES" ]; then
     echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'"
     exit 1
 fi
 
-
 echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
 
 chmod +x $SENTRY_CLI_EXEC
 
-$SENTRY_CLI_EXEC upload-dif --include-sources $PROJECT_BINARIES_PATH $PLUGIN_BINARIES_PATH
+$SENTRY_CLI_EXEC upload-dif $CLI_ARGS[@] $PROJECT_BINARIES_PATH $PLUGIN_BINARIES_PATH
 
 echo "Sentry: Upload finished"

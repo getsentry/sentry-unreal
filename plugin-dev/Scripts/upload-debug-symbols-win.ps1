@@ -82,6 +82,14 @@ If ("$UploadSymbols".ToLower() -ne "true")
     Exit
 }
 
+$IncludeSourceFiles = $ConfigIni.$SentrySettingsSection.IncludeSources
+
+$CliArgs = @()
+If ("$IncludeSourceFiles".ToLower() -eq "true")
+{
+    $CliArgs.Add("--include-sources")
+}
+
 $PropertiesFile = "$ProjectPath/sentry.properties"
 
 If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
@@ -93,6 +101,6 @@ If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
 Write-Host "Sentry: Upload started using PropertiesFile '$PropertiesFile'"
 
 $env:SENTRY_PROPERTIES = $PropertiesFile
-& $CliExec upload-dif --include-sources --log-level info $ProjectBinariesPath $PluginBinariesPath
+& $CliExec upload-dif $CliArgs --log-level info $ProjectBinariesPath $PluginBinariesPath
 
 Write-Host "Sentry: Upload finished"
