@@ -120,7 +120,7 @@ public:
 		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.", EditCondition = "UploadSymbolsAutomatically"))
 	FString AuthToken;
 
-	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Include sources", ToolTip = "Flag indicating whether to automatically scan the debug files for references to source code files and upload them if any.", EditCondition = "UploadSymbolsAutomatically"))
 	bool IncludeSources;
 

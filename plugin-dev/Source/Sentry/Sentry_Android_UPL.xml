@@ -49,9 +49,17 @@
 
                     sentry {
                         uploadNativeSymbols = true
-                        includeNativeSources = true
                     }
                 </insert>
+                <if condition="bIncludeSources">
+                    <true>
+                        <insert>
+                            sentry {
+                                includeNativeSources = true
+                            }
+                        </insert>
+                    </true>
+                </if> 
             </true>
         </if>
     </buildGradleAdditions>
