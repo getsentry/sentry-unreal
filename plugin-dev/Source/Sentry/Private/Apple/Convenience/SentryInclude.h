@@ -6,7 +6,7 @@
 
 #if PLATFORM_MAC
 #include "Headers/Sentry.h"
-#include "PrivateHeaders/PrivateSentrySDKOnly.h"
+#include "Headers/PrivateSentrySDKOnly.h"
 #elif PLATFORM_IOS
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>
