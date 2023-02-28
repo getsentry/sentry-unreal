@@ -87,7 +87,7 @@ $IncludeSourceFiles = $ConfigIni.$SentrySettingsSection.IncludeSources
 $CliArgs = @()
 If ("$IncludeSourceFiles".ToLower() -eq "true")
 {
-    $CliArgs.Add("--include-sources")
+    $CliArgs += "--include-sources"
 }
 
 $PropertiesFile = "$ProjectPath/sentry.properties"
