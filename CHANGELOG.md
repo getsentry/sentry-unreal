@@ -13,6 +13,7 @@
 
 - Fix Linux debug symbols upload when cross-compiling on Windows ([#196](https://github.com/getsentry/sentry-unreal/pull/196))
 - Fix crashpad staging issue ([#211](https://github.com/getsentry/sentry-unreal/pull/211))
+- Fix subsystem deinitialization ([#218](https://github.com/getsentry/sentry-unreal/pull/218))
 
 ### Dependencies
 
