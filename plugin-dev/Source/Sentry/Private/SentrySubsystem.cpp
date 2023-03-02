@@ -45,9 +45,9 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void USentrySubsystem::Deinitialize()
 {
-	Super::Deinitialize();
-
 	DisableAutomaticBreadcrumbs();
+
+	Super::Deinitialize();
 }
 
 void USentrySubsystem::Initialize()
