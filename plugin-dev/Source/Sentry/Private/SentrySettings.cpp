@@ -12,6 +12,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, EnableVerboseLogging(true)
 	, EnableAutoCrashCapturing(true)
 	, UploadSymbolsAutomatically(false)
+	, IncludeSources(false)
 	, CrashReporterUrl()
 {
 	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Release, GGameIni);

@@ -4,6 +4,7 @@
         <log text="Sentry SDK Android UPL initialization"/>
 
         <setBoolFromProperty result="bUploadSymbols" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="false" />
+        <setBoolFromProperty result="bIncludeSources" ini="Engine" section="/Script/Sentry.SentrySettings" property="IncludeSources" default="false" />
     </init>
 
     <prebuildCopies>
@@ -48,9 +49,17 @@
 
                     sentry {
                         uploadNativeSymbols = true
-                        includeNativeSources = true
                     }
                 </insert>
+                <if condition="bIncludeSources">
+                    <true>
+                        <insert>
+                            sentry {
+                                includeNativeSources = true
+                            }
+                        </insert>
+                    </true>
+                </if> 
             </true>
         </if>
     </buildGradleAdditions>

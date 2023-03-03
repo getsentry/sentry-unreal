@@ -120,6 +120,10 @@ public:
 		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.", EditCondition = "UploadSymbolsAutomatically"))
 	FString AuthToken;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Upload sources", ToolTip = "Flag indicating whether to automatically scan the debug files for references to source code files and upload them if any.", EditCondition = "UploadSymbolsAutomatically"))
+	bool IncludeSources;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
