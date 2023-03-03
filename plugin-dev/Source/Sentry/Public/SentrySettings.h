@@ -121,7 +121,7 @@ public:
 	FString AuthToken;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Include sources", ToolTip = "Flag indicating whether to automatically scan the debug files for references to source code files and upload them if any.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Upload sources", ToolTip = "Flag indicating whether to automatically scan the debug files for references to source code files and upload them if any.", EditCondition = "UploadSymbolsAutomatically"))
 	bool IncludeSources;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
