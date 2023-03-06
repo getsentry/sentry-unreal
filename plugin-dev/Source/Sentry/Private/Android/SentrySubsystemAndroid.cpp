@@ -6,6 +6,7 @@
 #include "SentryBreadcrumbAndroid.h"
 #include "SentryUserFeedbackAndroid.h"
 #include "SentryUserAndroid.h"
+#include "SentryDefines.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -20,13 +21,23 @@
 
 #include "Android/AndroidJava.h"
 
+#include "Misc/Paths.h"
+#include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "HAL/FileManager.h"
+
 const ANSICHAR* SentrySubsystemAndroid::SentryJavaClassName = "io/sentry/Sentry";
 const ANSICHAR* SentrySubsystemAndroid::SentryBridgeJavaClassName = "io/sentry/unreal/SentryBridgeJava";
 
 void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 {
-	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-		FJavaWrapper::GameActivityThis, *FJavaClassObject::GetJString(settings->DsnUrl), *FJavaClassObject::GetJString(settings->Release), *FJavaClassObject::GetJString(settings->Environment));
+	const FString LogFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+		FJavaWrapper::GameActivityThis,
+		*FJavaClassObject::GetJString(settings->DsnUrl),
+		*FJavaClassObject::GetJString(settings->Release),
+		*FJavaClassObject::GetJString(settings->Environment),
+		settings->EnableAutoLogAttachment ? *FJavaClassObject::GetJString(LogFilePath) : *FJavaClassObject::GetJString(FString()));
 }
 
 void SentrySubsystemAndroid::Close()

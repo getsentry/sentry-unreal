@@ -19,6 +19,7 @@
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 #include "Launch/Resources/Version.h"
+#include "GenericPlatform/GenericPlatformOutputDevices.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
@@ -50,7 +51,18 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
 	const FString DatabasePath = FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native"));
 
+	const FString LogFilePath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
+
 	sentry_options_t* options = sentry_options_new();
+
+	if(settings->EnableAutoLogAttachment)
+	{
+#if PLATFORM_WINDOWS
+		sentry_options_add_attachmentw(options, *FPaths::ConvertRelativePathToFull(LogFilePath));
+#elif PLATFORM_LINUX
+		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*FPaths::ConvertRelativePathToFull(LogFilePath)));
+#endif
+	}
 
 #if PLATFORM_WINDOWS
 	sentry_options_set_handler_pathw(options, *FPaths::ConvertRelativePathToFull(HandlerPath));

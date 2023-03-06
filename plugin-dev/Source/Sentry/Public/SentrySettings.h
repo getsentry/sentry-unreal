@@ -104,6 +104,10 @@ public:
 		Meta = (DisplayName = "Enable automatic crash capturing (Windows editor, UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
 	bool EnableAutoCrashCapturing;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Attach game log to captured events", ToolTip = "Flag indicating whether to attach game log automatically to captured events."))
+	bool EnableAutoLogAttachment;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
 	bool UploadSymbolsAutomatically;
