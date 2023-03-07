@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add automatic game log attachment to captured events ([#225](https://github.com/getsentry/sentry-unreal/pull/225))
+
 ## 0.3.0
 
 ### Features
