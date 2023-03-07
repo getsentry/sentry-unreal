@@ -105,7 +105,7 @@ public:
 	bool EnableAutoCrashCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Attach game log to captured events", ToolTip = "Flag indicating whether to attach game log automatically to captured events."))
+		Meta = (DisplayName = "Attach game log to captured events", ToolTip = "Flag indicating whether to attach game log automatically to captured events. Not available in shipping builds."))
 	bool EnableAutoLogAttachment;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
