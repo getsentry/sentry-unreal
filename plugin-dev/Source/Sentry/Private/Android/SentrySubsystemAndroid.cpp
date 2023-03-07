@@ -21,7 +21,6 @@
 
 #include "Android/AndroidJava.h"
 
-#include "Misc/Paths.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 
@@ -30,14 +29,16 @@ const ANSICHAR* SentrySubsystemAndroid::SentryBridgeJavaClassName = "io/sentry/u
 
 void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 {
-	const FString LogFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+	const FString LogFilePath = settings->EnableAutoLogAttachment
+		? IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename())
+		: FString();
 
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
 		FJavaWrapper::GameActivityThis,
 		*FJavaClassObject::GetJString(settings->DsnUrl),
 		*FJavaClassObject::GetJString(settings->Release),
 		*FJavaClassObject::GetJString(settings->Environment),
-		settings->EnableAutoLogAttachment ? *FJavaClassObject::GetJString(LogFilePath) : *FJavaClassObject::GetJString(FString()));
+		*FJavaClassObject::GetJString(LogFilePath));
 }
 
 void SentrySubsystemAndroid::Close()

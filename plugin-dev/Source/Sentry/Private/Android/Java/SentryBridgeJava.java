@@ -33,14 +33,14 @@ public class SentryBridgeJava {
 				options.setDsn(dsnUrl);
 				options.setRelease(releaseName);
 				options.setEnvironment(environment);
+			}
+		});
+
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
 				if(!gameLogPath.isEmpty()) {
-					options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
-						@Override
-						public SentryEvent execute(SentryEvent event, Hint hint) {
-							hint.addAttachment(new Attachment(gameLogPath));
-							return event;
-						}
-					});
+					scope.addAttachment(new Attachment(gameLogPath));
 				}
 			}
 		});

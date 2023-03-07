@@ -20,6 +20,9 @@
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
 
+#include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "HAL/FileManager.h"
+
 void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 {
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
@@ -28,6 +31,14 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 		options.dsn = settings->DsnUrl.GetNSString();
 		options.releaseName = settings->Release.GetNSString();
 		options.environment = settings->Environment.GetNSString();
+	}];
+
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		if(settings->EnableAutoLogAttachment) {
+			const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
+			[scope addAttachment:logAttachment];
+		}
 	}];
 }
 
