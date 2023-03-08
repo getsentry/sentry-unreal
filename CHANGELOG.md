@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add automatic game log attachment to captured events ([#225](https://github.com/getsentry/sentry-unreal/pull/225))
+- Added the option to automatically attach the game log to captured events ([#225](https://github.com/getsentry/sentry-unreal/pull/225))
 
 ### Dependencies
 
