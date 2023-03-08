@@ -10,12 +10,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import io.sentry.Attachment;
 import io.sentry.Breadcrumb;
+import io.sentry.Hint;
 import io.sentry.Scope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
+import io.sentry.SentryOptions;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
 import io.sentry.protocol.SentryId;
@@ -23,13 +26,22 @@ import io.sentry.protocol.SentryId;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 
-	public static void init(Activity activity, final String dsnUrl, final String releaseName, final String environment) {
+	public static void init(Activity activity, final String dsnUrl, final String releaseName, final String environment, final String gameLogPath) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
 			@Override
 			public void configure(SentryAndroidOptions options) {
 				options.setDsn(dsnUrl);
 				options.setRelease(releaseName);
 				options.setEnvironment(environment);
+			}
+		});
+
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull Scope scope) {
+				if(!gameLogPath.isEmpty()) {
+					scope.addAttachment(new Attachment(gameLogPath));
+				}
 			}
 		});
 	}

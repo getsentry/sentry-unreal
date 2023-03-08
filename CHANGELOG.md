@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added the option to automatically attach the game log to captured events ([#225](https://github.com/getsentry/sentry-unreal/pull/225))
+
 ### Dependencies
 
 - Bump CLI from v2.14.3 to v2.14.4 ([#224](https://github.com/getsentry/sentry-unreal/pull/224))
