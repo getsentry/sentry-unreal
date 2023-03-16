@@ -8,9 +8,9 @@
 
 ### Dependencies
 
-- Bump CLI from v2.14.3 to v2.14.4 ([#224](https://github.com/getsentry/sentry-unreal/pull/224))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2144)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.14.3...2.14.4)
+- Bump CLI from v2.14.3 to v2.15.1 ([#224](https://github.com/getsentry/sentry-unreal/pull/224), [#229](https://github.com/getsentry/sentry-unreal/pull/229))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2151)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.14.3...2.15.1)
 - Bump Cocoa SDK (iOS) from v8.2.0 to v8.3.0 ([#226](https://github.com/getsentry/sentry-unreal/pull/226))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#830)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.2.0...8.3.0)
