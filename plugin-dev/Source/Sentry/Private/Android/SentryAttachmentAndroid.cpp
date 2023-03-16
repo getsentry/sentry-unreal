@@ -1,64 +1,52 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryAttachmentAndroid.h"
-#include "Infrastructure/SentryMethodCallAndroid.h"
-#include "Infrastructure/SentryConvertorsAndroid.h"
 
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJava.h"
+#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryAttachmentAndroid::SentryAttachmentAndroid(const TArray<uint8>& data, const FString& filename, const FString& contentType)
+	: FJavaClassObject(GetClassName(), "([BLjava/lang/String;Ljava/lang/String;)V",
+		SentryConvertorsAndroid::ByteArrayToNative(data), *GetJString(filename), *GetJString(contentType))
+	, GetDataMethod(GetClassMethod("getBytes", "()[B"))
+	, GetPathMethod(GetClassMethod("getPathname", "()Ljava/lang/String;"))
+	, GetFilenameMethod(GetClassMethod("getFilename", "()Ljava/lang/String;"))
+	, GetContentTypeMethod(GetClassMethod("getContentType", "()Ljava/lang/String;"))
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	jclass attachmentClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/Attachment");
-	jmethodID attachmentCtor = Env->GetMethodID(attachmentClass, "<init>", "([BLjava/lang/String;Ljava/lang/String;)V");
-	jobject attachmentObject= Env->NewObject(attachmentClass, attachmentCtor,
-		SentryConvertorsAndroid::ByteArrayToNative(data),
-		*FJavaClassObject::GetJString(filename),
-		*FJavaClassObject::GetJString(contentType));
-	AttachmentAndroid = Env->NewGlobalRef(attachmentObject);
 }
 
 SentryAttachmentAndroid::SentryAttachmentAndroid(const FString& path, const FString& filename, const FString& contentType)
+	: FJavaClassObject(GetClassName(), "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+		*GetJString(path), *GetJString(filename), *GetJString(contentType))
+	, GetDataMethod(GetClassMethod("getBytes", "()[B"))
+	, GetPathMethod(GetClassMethod("getPathname", "()Ljava/lang/String;"))
+	, GetFilenameMethod(GetClassMethod("getFilename", "()Ljava/lang/String;"))
+	, GetContentTypeMethod(GetClassMethod("getContentType", "()Ljava/lang/String;"))
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	jclass attachmentClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/Attachment");
-	jmethodID attachmentCtor = Env->GetMethodID(attachmentClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
-	jobject attachmentObject= Env->NewObject(attachmentClass, attachmentCtor,
-		*FJavaClassObject::GetJString(path),
-		*FJavaClassObject::GetJString(filename),
-		*FJavaClassObject::GetJString(contentType));
-	AttachmentAndroid = Env->NewGlobalRef(attachmentObject);
 }
 
-SentryAttachmentAndroid::~SentryAttachmentAndroid()
+FName SentryAttachmentAndroid::GetClassName()
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	Env->DeleteGlobalRef(AttachmentAndroid);
-}
-
-jobject SentryAttachmentAndroid::GetNativeObject()
-{
-	return AttachmentAndroid;
+	return FName("io/sentry/Attachment");
 }
 
 TArray<uint8> SentryAttachmentAndroid::GetData() const
 {
-	jbyteArray data = static_cast<jbyteArray>(SentryMethodCallAndroid::CallObjectMethod(AttachmentAndroid, "getBytes", "()[B"));
-	return SentryConvertorsAndroid::ByteArrayToUnreal(data);
+	jobject data = const_cast<SentryAttachmentAndroid*>(this)->CallMethod<jobject>(GetDataMethod);
+	return SentryConvertorsAndroid::ByteArrayToUnreal(data ? *NewSentryScopedJavaObject(static_cast<jbyteArray>(data)) : nullptr);
 }
 
 FString SentryAttachmentAndroid::GetPath() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(AttachmentAndroid, "getPathname", "()Ljava/lang/String;");
+	return const_cast<SentryAttachmentAndroid*>(this)->CallMethod<FString>(GetPathMethod);
 }
 
 FString SentryAttachmentAndroid::GetFilename() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(AttachmentAndroid, "getFilename", "()Ljava/lang/String;");
+	return const_cast<SentryAttachmentAndroid*>(this)->CallMethod<FString>(GetFilenameMethod);
 }
 
 FString SentryAttachmentAndroid::GetContentType() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(AttachmentAndroid, "getContentType", "()Ljava/lang/String;");
+	return const_cast<SentryAttachmentAndroid*>(this)->CallMethod<FString>(GetContentTypeMethod);
 }

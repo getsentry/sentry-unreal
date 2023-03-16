@@ -51,7 +51,7 @@ void SentrySubsystemAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb->GetNativeImpl());
 
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "addBreadcrumb", "(Lio/sentry/Breadcrumb;)V",
-		breadcrumbAndroid->GetNativeObject());
+		breadcrumbAndroid->GetJObject());
 }
 
 void SentrySubsystemAndroid::ClearBreadcrumbs()
@@ -82,8 +82,8 @@ USentryId* SentrySubsystemAndroid::CaptureEvent(USentryEvent* event)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 
-	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureEvent", "(Lio/sentry/SentryEvent;)Lio/sentry/protocol/SentryId;",
-		eventAndroid->GetNativeObject());
+	jobject id = SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureEvent", "(Lio/sentry/SentryEvent;)Lio/sentry/protocol/SentryId;",
+		eventAndroid->GetJObject());
 
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
@@ -96,7 +96,7 @@ USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, co
 	scopeCallback->BindDelegate(onConfigureScope);
 
 	jobject id = SentryMethodCallAndroid::CallStaticObjectMethod(SentryBridgeJavaClassName, "captureEventWithScope", "(Lio/sentry/SentryEvent;J)Lio/sentry/protocol/SentryId;",
-		eventAndroid->GetNativeObject(), (jlong)scopeCallback);
+		eventAndroid->GetJObject(), (jlong)scopeCallback);
 
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
@@ -106,7 +106,7 @@ void SentrySubsystemAndroid::CaptureUserFeedback(USentryUserFeedback* userFeedba
 	TSharedPtr<SentryUserFeedbackAndroid> userFeedbackAndroid = StaticCastSharedPtr<SentryUserFeedbackAndroid>(userFeedback->GetNativeImpl());
 
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "captureUserFeedback", "(Lio/sentry/UserFeedback;)V",
-		userFeedbackAndroid->GetNativeObject());
+		userFeedbackAndroid->GetJObject());
 }
 
 void SentrySubsystemAndroid::SetUser(USentryUser* user)
@@ -114,7 +114,7 @@ void SentrySubsystemAndroid::SetUser(USentryUser* user)
 	TSharedPtr<SentryUserAndroid> userAndroid = StaticCastSharedPtr<SentryUserAndroid>(user->GetNativeImpl());
 
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "setUser", "(Lio/sentry/protocol/User;)V",
-		userAndroid->GetNativeObject());
+		userAndroid->GetJObject());
 }
 
 void SentrySubsystemAndroid::RemoveUser()

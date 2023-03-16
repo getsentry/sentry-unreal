@@ -5,64 +5,49 @@
 #include "SentryId.h"
 #include "SentryIdAndroid.h"
 
-#include "Infrastructure/SentryMethodCallAndroid.h"
-#include "Infrastructure/SentryConvertorsAndroid.h"
-
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJava.h"
-
 SentryUserFeedbackAndroid::SentryUserFeedbackAndroid(USentryId* eventId)
+	: FJavaClassObject(GetClassName(), "(Lio/sentry/protocol/SentryId;)V",
+		StaticCastSharedPtr<SentryIdAndroid>(eventId->GetNativeImpl())->GetJObject())
+	, SetNameMethod(GetClassMethod("setName", "(Ljava/lang/String;)V"))
+	, GetNameMethod(GetClassMethod("getName", "()Ljava/lang/String;"))
+	, SetEmailMethod(GetClassMethod("setEmail", "(Ljava/lang/String;)V"))
+	, GetEmailMethod(GetClassMethod("getEmail", "()Ljava/lang/String;"))
+	, SetCommentMethod(GetClassMethod("setComments", "(Ljava/lang/String;)V"))
+	, GetCommentMethod(GetClassMethod("getComments", "()Ljava/lang/String;"))
 {
-	TSharedPtr<SentryIdAndroid> idAndroid = StaticCastSharedPtr<SentryIdAndroid>(eventId->GetNativeImpl());
-
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-
-	jclass userFeedbackClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/UserFeedback");
-	jmethodID userFeedbackCtor = Env->GetMethodID(userFeedbackClass, "<init>", "(Lio/sentry/protocol/SentryId;)V");
-	jobject userFeedbackObject = Env->NewObject(userFeedbackClass, userFeedbackCtor, idAndroid->GetNativeObject());
-	UserFeedbackAndroid = Env->NewGlobalRef(userFeedbackObject);
 }
 
-SentryUserFeedbackAndroid::~SentryUserFeedbackAndroid()
+FName SentryUserFeedbackAndroid::GetClassName()
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	Env->DeleteGlobalRef(UserFeedbackAndroid);
-}
-
-jobject SentryUserFeedbackAndroid::GetNativeObject()
-{
-	return UserFeedbackAndroid;
+	return FName("io/sentry/UserFeedback");
 }
 
 void SentryUserFeedbackAndroid::SetName(const FString& name)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setName", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(name));
+	CallMethod<void>(SetNameMethod, *GetJString(name));
 }
 
 FString SentryUserFeedbackAndroid::GetName() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserFeedbackAndroid, "getName", "()Ljava/lang/String;");
+	return const_cast<SentryUserFeedbackAndroid*>(this)->CallMethod<FString>(GetNameMethod);
 }
 
 void SentryUserFeedbackAndroid::SetEmail(const FString& email)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setEmail", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(email));
+	CallMethod<void>(SetEmailMethod, *GetJString(email));
 }
 
 FString SentryUserFeedbackAndroid::GetEmail() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserFeedbackAndroid, "getEmail", "()Ljava/lang/String;");
+	return const_cast<SentryUserFeedbackAndroid*>(this)->CallMethod<FString>(GetEmailMethod);
 }
 
 void SentryUserFeedbackAndroid::SetComment(const FString& comment)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserFeedbackAndroid, "setComments", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(comment));
+	CallMethod<void>(SetCommentMethod, *GetJString(comment));
 }
 
 FString SentryUserFeedbackAndroid::GetComment() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserFeedbackAndroid, "getComments", "()Ljava/lang/String;");
+	return const_cast<SentryUserFeedbackAndroid*>(this)->CallMethod<FString>(GetCommentMethod);
 }

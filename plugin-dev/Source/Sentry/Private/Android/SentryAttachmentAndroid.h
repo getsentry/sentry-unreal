@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJNI.h"
+#include "Android/AndroidJava.h"
 
 #include "Interface/SentryAttachmentInterface.h"
 
-class SentryAttachmentAndroid : public ISentryAttachment
+class SentryAttachmentAndroid : public ISentryAttachment, public FJavaClassObject
 {
 public:
 	SentryAttachmentAndroid(const TArray<uint8>& data, const FString& filename, const FString& contentType);
 	SentryAttachmentAndroid(const FString& path, const FString& filename, const FString& contentType);
-	virtual ~SentryAttachmentAndroid() override;
 
-	jobject GetNativeObject();
+	static FName GetClassName();
 
 	virtual TArray<uint8> GetData() const override;
 	virtual FString GetPath() const override;
@@ -21,5 +20,8 @@ public:
 	virtual FString GetContentType() const override;
 
 private:
-	jobject AttachmentAndroid;
+	FJavaClassMethod GetDataMethod;
+	FJavaClassMethod GetPathMethod;
+	FJavaClassMethod GetFilenameMethod;
+	FJavaClassMethod GetContentTypeMethod;
 };

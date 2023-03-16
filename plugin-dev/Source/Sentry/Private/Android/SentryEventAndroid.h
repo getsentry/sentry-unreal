@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJNI.h"
+#include "Android/AndroidJava.h"
 
 #include "Interface/SentryEventInterface.h"
 
-class SentryEventAndroid : public ISentryEvent
+class SentryEventAndroid : public ISentryEvent, public FJavaClassObject
 {
 public:
 	SentryEventAndroid();
 	SentryEventAndroid(jobject event);
-	virtual ~SentryEventAndroid() override;
 
-	jobject GetNativeObject();
+	static FName GetClassName();
 
 	virtual void SetMessage(const FString& message) override;
 	virtual FString GetMessage() const override;
@@ -21,5 +20,8 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	jobject EventAndroid;
+	FJavaClassMethod SetMessageMethod;
+	FJavaClassMethod GetMessageMethod;
+	FJavaClassMethod SetLevelMethod;
+	FJavaClassMethod GetLevelMethod;
 };

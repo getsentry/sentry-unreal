@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJNI.h"
+#include "Android/AndroidJava.h"
 
 #include "Interface/SentryUserInterface.h"
 
-class SentryUserAndroid : public ISentryUser
+class SentryUserAndroid : public ISentryUser, public FJavaClassObject
 {
 public:
 	SentryUserAndroid();
 	SentryUserAndroid(jobject user);
-	virtual ~SentryUserAndroid() override;
 
-	jobject GetNativeObject();
+	static FName GetClassName();
 
 	virtual void SetEmail(const FString& email) override;
 	virtual FString GetEmail() const override;
@@ -27,5 +26,14 @@ public:
 	virtual TMap<FString, FString> GetData() override;
 
 private:
-	jobject UserAndroid;
+	FJavaClassMethod SetEmailMethod;
+	FJavaClassMethod GetEmailMethod;
+	FJavaClassMethod SetIdMethod;
+	FJavaClassMethod GetIdMethod;
+	FJavaClassMethod SetUsernameMethod;
+	FJavaClassMethod GetUsernameMethod;
+	FJavaClassMethod SetIpAddressMethod;
+	FJavaClassMethod GetIpAddressMethod;
+	FJavaClassMethod SetDataMethod;
+	FJavaClassMethod GetDataMethod;
 };

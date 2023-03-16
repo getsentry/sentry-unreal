@@ -2,21 +2,20 @@
 
 #pragma once
 
-#include "Android/AndroidJNI.h"
+#include "Android/AndroidJava.h"
 
 #include "Interface/SentryIdInterface.h"
 
-class SentryIdAndroid : public ISentryId
+class SentryIdAndroid : public ISentryId, public FJavaClassObject
 {
 public:
 	SentryIdAndroid();
 	SentryIdAndroid(jobject id);
-	virtual ~SentryIdAndroid() override;
 
-	jobject GetNativeObject();
+	static FName GetClassName();
 
 	virtual FString ToString() const override;
 
 private:
-	jobject IdAndroid;
+	FJavaClassMethod ToStringMethod;
 };
