@@ -2,15 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJava.h"
-
 #include "Interface/SentryUserInterface.h"
 
-class SentryUserAndroid : public ISentryUser, public FJavaClassObject
+#include "Infrastructure/SentryJavaClassWrapper.h"
+
+class SentryUserAndroid : public ISentryUser, public FSentryJavaClassWrapper
 {
 public:
 	SentryUserAndroid();
 	SentryUserAndroid(jobject user);
+
+	void SetupClassMethods();
 
 	static FName GetClassName();
 

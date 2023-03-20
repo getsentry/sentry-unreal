@@ -14,7 +14,7 @@ class SentryConvertorsAndroid
 public:
 	/** Conversions to native Java types */
 	static jobject SentryLevelToNative(ESentryLevel level);
-	static jobject SentryMessageToNative(FString message);
+	static jobject SentryMessageToNative(const FString& message);
 	static jobject StringArrayToNative(const TArray<FString>& stringArray);
 	static jobject StringMapToNative(const TMap<FString, FString>& stringMap);
 	static jbyteArray ByteArrayToNative(const TArray<uint8>& byteArray);

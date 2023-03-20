@@ -2,16 +2,18 @@
 
 #pragma once
 
-#include "Android/AndroidJava.h"
-
 #include "Interface/SentryUserFeedbackInterface.h"
+
+#include "Infrastructure/SentryJavaClassWrapper.h"
 
 class USentryId;
 
-class SentryUserFeedbackAndroid : public ISentryUserFeedback, public FJavaClassObject
+class SentryUserFeedbackAndroid : public ISentryUserFeedback, public FSentryJavaClassWrapper
 {
 public:
 	SentryUserFeedbackAndroid(USentryId* eventId);
+
+	void SetupClassMethods();
 
 	static FName GetClassName();
 

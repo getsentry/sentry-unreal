@@ -2,15 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJava.h"
-
 #include "Interface/SentryAttachmentInterface.h"
 
-class SentryAttachmentAndroid : public ISentryAttachment, public FJavaClassObject
+#include "Infrastructure/SentryJavaClassWrapper.h"
+
+class SentryAttachmentAndroid : public ISentryAttachment, public FSentryJavaClassWrapper
 {
 public:
 	SentryAttachmentAndroid(const TArray<uint8>& data, const FString& filename, const FString& contentType);
 	SentryAttachmentAndroid(const FString& path, const FString& filename, const FString& contentType);
+
+	void SetupClassMethods();
 
 	static FName GetClassName();
 

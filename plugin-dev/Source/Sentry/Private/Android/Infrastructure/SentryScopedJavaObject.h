@@ -5,7 +5,7 @@
 #include "Android/AndroidApplication.h"
 
 /**
- * Class that creates new global object reference if needed and automatically deletes it when out of scope
+ * Class that creates new global object reference if needed/possible and automatically deletes it when out of scope
  */
 template <typename T>
 class FSentryScopedJavaObject
@@ -14,12 +14,10 @@ public:
 	FSentryScopedJavaObject(const T& InObjRef, bool IsNewGlobalRefNeeded = false) 
 		: ObjRef(InObjRef)
 	{
-		check(ObjRef);
-
 		JNIEnv* Env = FAndroidApplication::GetJavaEnv();
 		check(Env);
 
-		if(IsNewGlobalRefNeeded)
+		if(ObjRef && IsNewGlobalRefNeeded)
 		{
 			ObjRef = (T)Env->NewGlobalRef(ObjRef);
 		}

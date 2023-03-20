@@ -2,15 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJava.h"
-
 #include "Interface/SentryEventInterface.h"
 
-class SentryEventAndroid : public ISentryEvent, public FJavaClassObject
+#include "Infrastructure/SentryJavaClassWrapper.h"
+
+class SentryEventAndroid : public ISentryEvent, public FSentryJavaClassWrapper
 {
 public:
 	SentryEventAndroid();
 	SentryEventAndroid(jobject event);
+
+	void SetupClassMethods();
 
 	static FName GetClassName();
 

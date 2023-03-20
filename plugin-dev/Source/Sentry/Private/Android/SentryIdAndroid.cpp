@@ -2,24 +2,21 @@
 
 #include "SentryIdAndroid.h"
 
-#include "Android/AndroidApplication.h"
-
 SentryIdAndroid::SentryIdAndroid()
-	: FJavaClassObject(GetClassName(), "()V")
-	, ToStringMethod(GetClassMethod("toString", "()Ljava/lang/String;"))
+	: FSentryJavaClassWrapper(GetClassName(), "()V")
 {
+	SetupClassMethods();
 }
 
 SentryIdAndroid::SentryIdAndroid(jobject id)
-	: SentryIdAndroid()
+	: FSentryJavaClassWrapper(GetClassName(), id)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	if(Env->IsInstanceOf(id, Class))
-	{
-		// Remove default object's global reference before re-assigning Object field
-		Env->DeleteGlobalRef(Object);
-		Object = Env->NewGlobalRef(id);
-	}
+	SetupClassMethods();
+}
+
+void SentryIdAndroid::SetupClassMethods()
+{
+	ToStringMethod = GetClassMethod("toString", "()Ljava/lang/String;");
 }
 
 FName SentryIdAndroid::GetClassName()
@@ -29,5 +26,5 @@ FName SentryIdAndroid::GetClassName()
 
 FString SentryIdAndroid::ToString() const
 {
-	return const_cast<SentryIdAndroid*>(this)->CallMethod<FString>(ToStringMethod);
+	return CallMethod<FString>(ToStringMethod);
 }

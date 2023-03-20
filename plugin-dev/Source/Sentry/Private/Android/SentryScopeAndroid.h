@@ -2,15 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJava.h"
-
 #include "Interface/SentryScopeInterface.h"
 
-class SentryScopeAndroid : public ISentryScope, public FJavaClassObject
+#include "Infrastructure/SentryJavaClassWrapper.h"
+
+class SentryScopeAndroid : public ISentryScope, public FSentryJavaClassWrapper
 {
 public:
 	SentryScopeAndroid();
 	SentryScopeAndroid(jobject scope);
+
+	void SetupClassMethods();
 
 	static FName GetClassName();
 

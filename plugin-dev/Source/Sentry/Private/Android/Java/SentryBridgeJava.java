@@ -8,11 +8,10 @@ import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import io.sentry.Attachment;
 import io.sentry.Breadcrumb;
-import io.sentry.Hint;
+import io.sentry.IHub;
 import io.sentry.Scope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
@@ -123,5 +122,10 @@ public class SentryBridgeJava {
 				scope.setLevel(level);
 			}
 		});
+	}
+
+	public static SentryOptions getOptions() {
+		IHub hub = Sentry.getCurrentHub();
+		return hub.getOptions();
 	}
 }

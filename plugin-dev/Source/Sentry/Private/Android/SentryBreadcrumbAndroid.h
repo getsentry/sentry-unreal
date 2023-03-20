@@ -2,15 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJava.h"
-
 #include "Interface/SentryBreadcrumbInterface.h"
 
-class SentryBreadcrumbAndroid : public ISentryBreadcrumb, public FJavaClassObject
+#include "Infrastructure/SentryJavaClassWrapper.h"
+
+class SentryBreadcrumbAndroid : public ISentryBreadcrumb, public FSentryJavaClassWrapper
 {
 public:
 	SentryBreadcrumbAndroid();
 	SentryBreadcrumbAndroid(jobject breadcrumb);
+
+	void SetupClassMethods();
 
 	static FName GetClassName();
 

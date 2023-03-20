@@ -50,7 +50,7 @@ jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
-jobject SentryConvertorsAndroid::SentryMessageToNative(FString message)
+jobject SentryConvertorsAndroid::SentryMessageToNative(const FString& message)
 {
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
