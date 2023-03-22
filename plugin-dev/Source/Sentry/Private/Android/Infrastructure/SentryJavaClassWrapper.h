@@ -4,6 +4,13 @@
 
 #include "Android/AndroidJava.h"
 
+struct FSentryJavaClassMethod
+{
+	FName Name;
+	FName Signature;
+	jmethodID Method;
+};
+
 class FSentryJavaClassWrapper
 {
 public:
@@ -14,10 +21,10 @@ public:
 	FSentryJavaClassWrapper(const FSentryJavaClassWrapper& rhs) = delete;
 	FSentryJavaClassWrapper& operator = (const FSentryJavaClassWrapper& rhs) = delete;
 
-	FJavaClassMethod GetClassMethod(const char* MethodName, const char* FunctionSignature);
+	FSentryJavaClassMethod GetClassMethod(const char* MethodName, const char* FunctionSignature);
 
 	template<typename ReturnType>
-	ReturnType CallMethod(FJavaClassMethod Method, ...) const;
+	ReturnType CallMethod(FSentryJavaClassMethod Method, ...) const;
 
 	jobject GetJObject() const;
 
@@ -29,22 +36,22 @@ protected:
 };
 
 template<>
-void FSentryJavaClassWrapper::CallMethod<void>(FJavaClassMethod Method, ...) const;
+void FSentryJavaClassWrapper::CallMethod<void>(FSentryJavaClassMethod Method, ...) const;
 
 template<>
-bool FSentryJavaClassWrapper::CallMethod<bool>(FJavaClassMethod Method, ...) const;
+bool FSentryJavaClassWrapper::CallMethod<bool>(FSentryJavaClassMethod Method, ...) const;
 
 template<>
-int FSentryJavaClassWrapper::CallMethod<int>(FJavaClassMethod Method, ...) const;
+int FSentryJavaClassWrapper::CallMethod<int>(FSentryJavaClassMethod Method, ...) const;
 
 template<>
-jobject FSentryJavaClassWrapper::CallMethod<jobject>(FJavaClassMethod Method, ...) const;
+jobject FSentryJavaClassWrapper::CallMethod<jobject>(FSentryJavaClassMethod Method, ...) const;
 
 template<>
-jobjectArray FSentryJavaClassWrapper::CallMethod<jobjectArray>(FJavaClassMethod Method, ...) const;
+jobjectArray FSentryJavaClassWrapper::CallMethod<jobjectArray>(FSentryJavaClassMethod Method, ...) const;
 
 template<>
-int64 FSentryJavaClassWrapper::CallMethod<int64>(FJavaClassMethod Method, ...) const;
+int64 FSentryJavaClassWrapper::CallMethod<int64>(FSentryJavaClassMethod Method, ...) const;
 
 template<>
-FString FSentryJavaClassWrapper::CallMethod<FString>(FJavaClassMethod Method, ...) const;
+FString FSentryJavaClassWrapper::CallMethod<FString>(FSentryJavaClassMethod Method, ...) const;

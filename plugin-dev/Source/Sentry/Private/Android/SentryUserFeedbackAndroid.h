@@ -25,10 +25,10 @@ public:
 	virtual FString GetComment() const override;
 
 private:
-	FJavaClassMethod SetNameMethod;
-	FJavaClassMethod GetNameMethod;
-	FJavaClassMethod SetEmailMethod;
-	FJavaClassMethod GetEmailMethod;
-	FJavaClassMethod SetCommentMethod;
-	FJavaClassMethod GetCommentMethod;
+	FSentryJavaClassMethod SetNameMethod;
+	FSentryJavaClassMethod GetNameMethod;
+	FSentryJavaClassMethod SetEmailMethod;
+	FSentryJavaClassMethod GetEmailMethod;
+	FSentryJavaClassMethod SetCommentMethod;
+	FSentryJavaClassMethod GetCommentMethod;
 };

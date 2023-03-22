@@ -22,8 +22,8 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	FJavaClassMethod SetMessageMethod;
-	FJavaClassMethod GetMessageMethod;
-	FJavaClassMethod SetLevelMethod;
-	FJavaClassMethod GetLevelMethod;
+	FSentryJavaClassMethod SetMessageMethod;
+	FSentryJavaClassMethod GetMessageMethod;
+	FSentryJavaClassMethod SetLevelMethod;
+	FSentryJavaClassMethod GetLevelMethod;
 };

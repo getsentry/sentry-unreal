@@ -53,10 +53,10 @@ FSentryJavaClassWrapper::~FSentryJavaClassWrapper()
 	JEnv->DeleteGlobalRef(Class);
 }
 
-FJavaClassMethod FSentryJavaClassWrapper::GetClassMethod(const char* MethodName, const char* FunctionSignature)
+FSentryJavaClassMethod FSentryJavaClassWrapper::GetClassMethod(const char* MethodName, const char* FunctionSignature)
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
-	FJavaClassMethod Method;
+	FSentryJavaClassMethod Method;
 	Method.Method = JEnv->GetMethodID(Class, MethodName, FunctionSignature);
 	Method.Name = MethodName;
 	Method.Signature = FunctionSignature;
@@ -82,7 +82,7 @@ void FSentryJavaClassWrapper::VerifyException() const
 }
 
 template<>
-void FSentryJavaClassWrapper::CallMethod<void>(FJavaClassMethod Method, ...) const
+void FSentryJavaClassWrapper::CallMethod<void>(FSentryJavaClassMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -93,7 +93,7 @@ void FSentryJavaClassWrapper::CallMethod<void>(FJavaClassMethod Method, ...) con
 }
 
 template<>
-bool FSentryJavaClassWrapper::CallMethod<bool>(FJavaClassMethod Method, ...) const
+bool FSentryJavaClassWrapper::CallMethod<bool>(FSentryJavaClassMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -105,7 +105,7 @@ bool FSentryJavaClassWrapper::CallMethod<bool>(FJavaClassMethod Method, ...) con
 }
 
 template<>
-int FSentryJavaClassWrapper::CallMethod<int>(FJavaClassMethod Method, ...) const
+int FSentryJavaClassWrapper::CallMethod<int>(FSentryJavaClassMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -117,7 +117,7 @@ int FSentryJavaClassWrapper::CallMethod<int>(FJavaClassMethod Method, ...) const
 }
 
 template<>
-jobject FSentryJavaClassWrapper::CallMethod<jobject>(FJavaClassMethod Method, ...) const
+jobject FSentryJavaClassWrapper::CallMethod<jobject>(FSentryJavaClassMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -131,7 +131,7 @@ jobject FSentryJavaClassWrapper::CallMethod<jobject>(FJavaClassMethod Method, ..
 }
 
 template<>
-jobjectArray FSentryJavaClassWrapper::CallMethod<jobjectArray>(FJavaClassMethod Method, ...) const
+jobjectArray FSentryJavaClassWrapper::CallMethod<jobjectArray>(FSentryJavaClassMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -145,7 +145,7 @@ jobjectArray FSentryJavaClassWrapper::CallMethod<jobjectArray>(FJavaClassMethod 
 }
 
 template<>
-int64 FSentryJavaClassWrapper::CallMethod<int64>(FJavaClassMethod Method, ...) const
+int64 FSentryJavaClassWrapper::CallMethod<int64>(FSentryJavaClassMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -157,7 +157,7 @@ int64 FSentryJavaClassWrapper::CallMethod<int64>(FJavaClassMethod Method, ...) c
 }
 
 template<>
-FString FSentryJavaClassWrapper::CallMethod<FString>(FJavaClassMethod Method, ...) const
+FString FSentryJavaClassWrapper::CallMethod<FString>(FSentryJavaClassMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;

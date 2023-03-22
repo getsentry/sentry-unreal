@@ -19,5 +19,5 @@ public:
 	virtual FString ToString() const override;
 
 private:
-	FJavaClassMethod ToStringMethod;
+	FSentryJavaClassMethod ToStringMethod;
 };

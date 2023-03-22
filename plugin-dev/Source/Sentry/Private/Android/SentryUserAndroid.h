@@ -28,14 +28,14 @@ public:
 	virtual TMap<FString, FString> GetData() override;
 
 private:
-	FJavaClassMethod SetEmailMethod;
-	FJavaClassMethod GetEmailMethod;
-	FJavaClassMethod SetIdMethod;
-	FJavaClassMethod GetIdMethod;
-	FJavaClassMethod SetUsernameMethod;
-	FJavaClassMethod GetUsernameMethod;
-	FJavaClassMethod SetIpAddressMethod;
-	FJavaClassMethod GetIpAddressMethod;
-	FJavaClassMethod SetDataMethod;
-	FJavaClassMethod GetDataMethod;
+	FSentryJavaClassMethod SetEmailMethod;
+	FSentryJavaClassMethod GetEmailMethod;
+	FSentryJavaClassMethod SetIdMethod;
+	FSentryJavaClassMethod GetIdMethod;
+	FSentryJavaClassMethod SetUsernameMethod;
+	FSentryJavaClassMethod GetUsernameMethod;
+	FSentryJavaClassMethod SetIpAddressMethod;
+	FSentryJavaClassMethod GetIpAddressMethod;
+	FSentryJavaClassMethod SetDataMethod;
+	FSentryJavaClassMethod GetDataMethod;
 };

@@ -22,8 +22,8 @@ public:
 	virtual FString GetContentType() const override;
 
 private:
-	FJavaClassMethod GetDataMethod;
-	FJavaClassMethod GetPathMethod;
-	FJavaClassMethod GetFilenameMethod;
-	FJavaClassMethod GetContentTypeMethod;
+	FSentryJavaClassMethod GetDataMethod;
+	FSentryJavaClassMethod GetPathMethod;
+	FSentryJavaClassMethod GetFilenameMethod;
+	FSentryJavaClassMethod GetContentTypeMethod;
 };
