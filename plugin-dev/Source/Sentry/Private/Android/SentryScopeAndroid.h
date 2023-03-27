@@ -4,9 +4,9 @@
 
 #include "Interface/SentryScopeInterface.h"
 
-#include "Infrastructure/SentryJavaClassWrapper.h"
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class SentryScopeAndroid : public ISentryScope, public FSentryJavaClassWrapper
+class SentryScopeAndroid : public ISentryScope, public FSentryJavaObjectWrapper
 {
 public:
 	SentryScopeAndroid();
@@ -14,7 +14,7 @@ public:
 
 	void SetupClassMethods();
 
-	static FName GetClassName();
+	static FSentryJavaClass GetClassName();
 
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
@@ -43,22 +43,22 @@ public:
 	virtual void Clear() override;
 
 private:
-	FSentryJavaClassMethod AddBreadcrumbMethod;
-	FSentryJavaClassMethod ClearBreadcrumbsMethod;
-	FSentryJavaClassMethod AddAttachmentMethod;
-	FSentryJavaClassMethod ClearAttachmentsMethod;
-	FSentryJavaClassMethod SetTagValueMethod;
-	FSentryJavaClassMethod RemoveTagMethod;
-	FSentryJavaClassMethod GetTagsMethod;
-	FSentryJavaClassMethod SetFingerprintMethod;
-	FSentryJavaClassMethod GetFingerprintMethod;
-	FSentryJavaClassMethod SetLevelMethod;
-	FSentryJavaClassMethod GetLevelMethod;
-	FSentryJavaClassMethod SetContextMethod;
-	FSentryJavaClassMethod RemoveContextMethod;
-	FSentryJavaClassMethod SetExtraValueMethod;
-	FSentryJavaClassMethod GetExtraValueMethod;
-	FSentryJavaClassMethod RemoveExtraMethod;
-	FSentryJavaClassMethod GetExtrasMethod;
-	FSentryJavaClassMethod ClearMethod;
+	FSentryJavaMethod AddBreadcrumbMethod;
+	FSentryJavaMethod ClearBreadcrumbsMethod;
+	FSentryJavaMethod AddAttachmentMethod;
+	FSentryJavaMethod ClearAttachmentsMethod;
+	FSentryJavaMethod SetTagValueMethod;
+	FSentryJavaMethod RemoveTagMethod;
+	FSentryJavaMethod GetTagsMethod;
+	FSentryJavaMethod SetFingerprintMethod;
+	FSentryJavaMethod GetFingerprintMethod;
+	FSentryJavaMethod SetLevelMethod;
+	FSentryJavaMethod GetLevelMethod;
+	FSentryJavaMethod SetContextMethod;
+	FSentryJavaMethod RemoveContextMethod;
+	FSentryJavaMethod SetExtraValueMethod;
+	FSentryJavaMethod GetExtraValueMethod;
+	FSentryJavaMethod RemoveExtraMethod;
+	FSentryJavaMethod GetExtrasMethod;
+	FSentryJavaMethod ClearMethod;
 };

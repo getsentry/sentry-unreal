@@ -6,14 +6,14 @@
 #include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryAttachmentAndroid::SentryAttachmentAndroid(const TArray<uint8>& data, const FString& filename, const FString& contentType)
-	: FSentryJavaClassWrapper(GetClassName(), "([BLjava/lang/String;Ljava/lang/String;)V",
+	: FSentryJavaObjectWrapper(GetClassName(), "([BLjava/lang/String;Ljava/lang/String;)V",
 		SentryConvertorsAndroid::ByteArrayToNative(data), *FJavaClassObject::GetJString(filename), *FJavaClassObject::GetJString(contentType))
 {
 	SetupClassMethods();
 }
 
 SentryAttachmentAndroid::SentryAttachmentAndroid(const FString& path, const FString& filename, const FString& contentType)
-	: FSentryJavaClassWrapper(GetClassName(), "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+	: FSentryJavaObjectWrapper(GetClassName(), "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
 		*FJavaClassObject::GetJString(path), *FJavaClassObject::GetJString(filename), *FJavaClassObject::GetJString(contentType))
 {
 	SetupClassMethods();
@@ -21,15 +21,15 @@ SentryAttachmentAndroid::SentryAttachmentAndroid(const FString& path, const FStr
 
 void SentryAttachmentAndroid::SetupClassMethods()
 {
-	GetDataMethod = GetClassMethod("getBytes", "()[B");
-	GetPathMethod = GetClassMethod("getPathname", "()Ljava/lang/String;");
-	GetFilenameMethod = GetClassMethod("getFilename", "()Ljava/lang/String;");
-	GetContentTypeMethod = GetClassMethod("getContentType", "()Ljava/lang/String;");
+	GetDataMethod = GetMethod("getBytes", "()[B");
+	GetPathMethod = GetMethod("getPathname", "()Ljava/lang/String;");
+	GetFilenameMethod = GetMethod("getFilename", "()Ljava/lang/String;");
+	GetContentTypeMethod = GetMethod("getContentType", "()Ljava/lang/String;");
 }
 
-FName SentryAttachmentAndroid::GetClassName()
+FSentryJavaClass SentryAttachmentAndroid::GetClassName()
 {
-	return FName("io/sentry/Attachment");
+	return FSentryJavaClass { "io/sentry/Attachment", ESentryJavaClassType::External };
 }
 
 TArray<uint8> SentryAttachmentAndroid::GetData() const

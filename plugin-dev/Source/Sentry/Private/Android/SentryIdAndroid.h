@@ -4,9 +4,9 @@
 
 #include "Interface/SentryIdInterface.h"
 
-#include "Infrastructure/SentryJavaClassWrapper.h"
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class SentryIdAndroid : public ISentryId, public FSentryJavaClassWrapper
+class SentryIdAndroid : public ISentryId, public FSentryJavaObjectWrapper
 {
 public:
 	SentryIdAndroid();
@@ -14,10 +14,10 @@ public:
 
 	void SetupClassMethods();
 
-	static FName GetClassName();
+	static FSentryJavaClass GetClassName();
 
 	virtual FString ToString() const override;
 
 private:
-	FSentryJavaClassMethod ToStringMethod;
+	FSentryJavaMethod ToStringMethod;
 };

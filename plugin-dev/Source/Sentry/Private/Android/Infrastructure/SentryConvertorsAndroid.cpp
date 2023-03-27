@@ -1,6 +1,8 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryConvertorsAndroid.h"
+#include "SentryJavaObjectWrapper.h"
+
 #include "SentryScope.h"
 #include "SentryId.h"
 #include "SentryDefines.h"
@@ -9,12 +11,11 @@
 #include "Android/SentryIdAndroid.h"
 
 #include "Android/AndroidApplication.h"
-#include "Android/AndroidJava.h"
-#include "Android/SentryIdAndroid.h"
+#include "Android/AndroidJavaEnv.h"
 
-jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
+TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 {
-	jobject nativeLevel;
+	TSharedPtr<FSentryJavaObjectWrapper> nativeLevel = nullptr;
 
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
@@ -26,22 +27,24 @@ jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 	jfieldID errorEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "ERROR", "Lio/sentry/SentryLevel;");
 	jfieldID fatalEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "FATAL", "Lio/sentry/SentryLevel;");
 
+	FSentryJavaClass SentryLevelJavaClass = FSentryJavaClass { "io/sentry/SentryLevel", ESentryJavaClassType::External };
+
 	switch (level)
 	{
 	case ESentryLevel::Debug:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField);
+		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryLevelJavaClass, Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField)));
 		break;
 	case ESentryLevel::Info:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField);
+		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryLevelJavaClass, Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField)));
 		break;
 	case ESentryLevel::Warning:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField);
+		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryLevelJavaClass, Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField)));
 		break;
 	case ESentryLevel::Error:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField);
+		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryLevelJavaClass, Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField)));
 		break;
 	case ESentryLevel::Fatal:
-		nativeLevel = Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField);
+		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryLevelJavaClass, Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField)));
 		break;
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Null will be returned."));
@@ -50,64 +53,43 @@ jobject SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
-jobject SentryConvertorsAndroid::SentryMessageToNative(const FString& message)
+TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::SentryMessageToNative(const FString& message)
 {
-	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+	FSentryJavaClass SentryMessageJavaClass = FSentryJavaClass { "io/sentry/protocol/Message", ESentryJavaClassType::External };
+	TSharedPtr<FSentryJavaObjectWrapper> NativeMessage = MakeShareable(new FSentryJavaObjectWrapper(SentryMessageJavaClass, "()V"));
+	FSentryJavaMethod SetMessageMethod = NativeMessage->GetMethod("setMessage", "(Ljava/lang/String;)V");
 
-	jclass messageClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/protocol/Message");
-	jmethodID messageCtor = Env->GetMethodID(messageClass, "<init>", "()V");
-	jobject messageObject = Env->NewObject(messageClass, messageCtor);
-	jmethodID setMessageMethod = Env->GetMethodID(messageClass, "setMessage", "(Ljava/lang/String;)V");
+	NativeMessage->CallMethod<void>(SetMessageMethod, *FJavaClassObject::GetJString(message));
 
-	Env->CallVoidMethod(messageObject, setMessageMethod, *FJavaClassObject::GetJString(message));
-
-	return messageObject;
+	return NativeMessage;
 }
 
-jobject SentryConvertorsAndroid::StringArrayToNative(const TArray<FString>& stringArray)
+TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringArrayToNative(const TArray<FString>& stringArray)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-
-	jclass listClass = Env->FindClass("java/util/ArrayList");
-	jmethodID listCtor = Env->GetMethodID(listClass, "<init>", "()V");
-	jobject list = Env->NewObject(listClass, listCtor);
-	jmethodID addMethod = Env->GetMethodID(listClass, "add", "(Ljava/lang/Object;)Z");
+	FSentryJavaClass ArrayListJavaClass = FSentryJavaClass { "java/util/ArrayList", ESentryJavaClassType::System };
+	TSharedPtr<FSentryJavaObjectWrapper> NativeArrayList = MakeShareable(new FSentryJavaObjectWrapper(ArrayListJavaClass, "()V"));
+	FSentryJavaMethod AddMethod = NativeArrayList->GetMethod("add", "(Ljava/lang/Object;)Z");
 
 	for (const auto& string : stringArray)
 	{
-		Env->CallBooleanMethod(list, addMethod, *FJavaClassObject::GetJString(string));
+		NativeArrayList->CallMethod<bool>(AddMethod, *FJavaClassObject::GetJString(string));
 	}
 
-	Env->DeleteLocalRef(listClass);
-
-	return list;
+	return NativeArrayList;
 }
 
-jobject SentryConvertorsAndroid::StringMapToNative(const TMap<FString, FString>& stringMap)
+TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringMapToNative(const TMap<FString, FString>& stringMap)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-
-	jclass hashMapClass = FJavaWrapper::FindClass(Env, "java/util/HashMap", false);
-	jmethodID hasMapCtor = FJavaWrapper::FindMethod(Env, hashMapClass, "<init>", "()V", false);
-	jmethodID putMethod = FJavaWrapper::FindMethod(Env, hashMapClass, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false);
-	jobject hashMap = Env->NewObject(hashMapClass, hasMapCtor);
+	FSentryJavaClass HashMapJavaClass = FSentryJavaClass { "java/util/HashMap", ESentryJavaClassType::System };
+	TSharedPtr<FSentryJavaObjectWrapper> NativeHashMap = MakeShareable(new FSentryJavaObjectWrapper(HashMapJavaClass, "()V"));
+	FSentryJavaMethod PutMethod = NativeHashMap->GetMethod("put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
 	for (const auto& dataPair : stringMap)
 	{
-		jobject key = Env->NewStringUTF(TCHAR_TO_UTF8(*dataPair.Key));
-		jobject value = Env->NewStringUTF(TCHAR_TO_UTF8(*dataPair.Value));
-		jobject prevValue = Env->CallObjectMethod(hashMap, putMethod, key, value);
-
-		if (prevValue)
-		{
-			Env->DeleteLocalRef(prevValue);
-		}
-
-		Env->DeleteLocalRef(key);
-		Env->DeleteLocalRef(value);
+		NativeHashMap->CallMethod<jobject>(PutMethod, *FJavaClassObject::GetJString(dataPair.Key), *FJavaClassObject::GetJString(dataPair.Value));
 	}
 
-	return hashMap;
+	return NativeHashMap;
 }
 
 jbyteArray SentryConvertorsAndroid::ByteArrayToNative(const TArray<uint8>& byteArray)
@@ -134,11 +116,11 @@ ESentryLevel SentryConvertorsAndroid::SentryLevelToUnreal(jobject level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
 
-	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+	FSentryJavaClass SentryLevelJavaClass = FSentryJavaClass { "io/sentry/SentryLevel", ESentryJavaClassType::External };
+	FSentryJavaObjectWrapper NativeLevel(SentryLevelJavaClass, level);
+	FSentryJavaMethod OrdinalMethod = NativeLevel.GetMethod("ordinal", "()I");
 
-	jclass levelEnumClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/SentryLevel");
-	jmethodID ordinalMethod = FJavaWrapper::FindMethod(Env, levelEnumClass, "ordinal", "()I", false);
-	jint levelValue = Env->CallIntMethod(level, ordinalMethod);
+	int levelValue = NativeLevel.CallMethod<int>(OrdinalMethod);
 
 	switch (levelValue)
 	{
@@ -166,24 +148,11 @@ ESentryLevel SentryConvertorsAndroid::SentryLevelToUnreal(jobject level)
 
 FString SentryConvertorsAndroid::SentryMessageToUnreal(jobject message)
 {
-	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+	FSentryJavaClass SentryMessageJavaClass = FSentryJavaClass { "io/sentry/protocol/Message", ESentryJavaClassType::External };
+	FSentryJavaObjectWrapper NativeMessage(SentryMessageJavaClass, message);
+	FSentryJavaMethod GetMessageMethod = NativeMessage.GetMethod("getMessage", "()Ljava/lang/String;");
 
-	jclass messageClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/protocol/Message");
-	jmethodID getMessageMethod = Env->GetMethodID(messageClass, "getMessage", "()Ljava/lang/String;");
-
-	jstring messageStr = static_cast<jstring>(Env->CallObjectMethod(message, getMessageMethod));
-
-	return StringToUnreal(messageStr);
-}
-
-FString SentryConvertorsAndroid::StringToUnreal(jstring string)
-{
-	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
-	const char* UTFString = Env->GetStringUTFChars(string, nullptr);
-	FString Result(UTF8_TO_TCHAR(UTFString));
-	Env->ReleaseStringUTFChars(string, UTFString);
-	Env->DeleteLocalRef(string);
-	return Result;
+	return NativeMessage.CallMethod<FString>(GetMessageMethod);
 }
 
 USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
@@ -206,37 +175,30 @@ TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)
 {
 	TMap<FString, FString> result;
 
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	FSentryJavaClass MapJavaClass = FSentryJavaClass { "java/util/Map", ESentryJavaClassType::System };
+	FSentryJavaObjectWrapper NativeMap(MapJavaClass, map);
+	FSentryJavaMethod EntrySetMethod = NativeMap.GetMethod("entrySet", "()Ljava/util/Set;");
 
-	jclass mapClass = Env->FindClass("java/util/Map");
-	jmethodID entrySetMethod = Env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
-	jobject set = Env->CallObjectMethod(map, entrySetMethod);
+	FSentryJavaClass SetJavaClass = FSentryJavaClass { "java/util/Set", ESentryJavaClassType::System };
+	FSentryJavaObjectWrapper NativeSet(SetJavaClass, NativeMap.CallMethod<jobject>(EntrySetMethod));
+	FSentryJavaMethod IteratorMethod = NativeSet.GetMethod("iterator", "()Ljava/util/Iterator;");
 
-	jclass setClass = Env->FindClass("java/util/Set");
-	jmethodID iteratorMethod = Env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
-	jobject iter = Env->CallObjectMethod(set, iteratorMethod);
-	
-	jclass iteratorClass = Env->FindClass("java/util/Iterator");
-	jmethodID hasNextMethod = Env->GetMethodID(iteratorClass, "hasNext", "()Z");
-	jmethodID nextMethod = Env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
-	
-	jclass entryClass = Env->FindClass("java/util/Map$Entry");
-	jmethodID getKeyMethod = Env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
-	jmethodID getValueMethod = Env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
-	
-	while (Env->CallBooleanMethod(iter, hasNextMethod))
+	FSentryJavaClass IteratorJavaClass = FSentryJavaClass { "java/util/Iterator", ESentryJavaClassType::System };
+	FSentryJavaObjectWrapper NativeIterator(IteratorJavaClass, NativeSet.CallMethod<jobject>(IteratorMethod));
+	FSentryJavaMethod HasNextMethod = NativeIterator.GetMethod("hasNext", "()Z");
+	FSentryJavaMethod NextMethod = NativeIterator.GetMethod("next", "()Ljava/lang/Object;");
+
+	while(NativeIterator.CallMethod<bool>(HasNextMethod))
 	{
-		jobject entry = Env->CallObjectMethod(iter, nextMethod);
+		FSentryJavaClass MapEntryJavaClass = FSentryJavaClass { "java/util/Map$Entry", ESentryJavaClassType::System };
+		FSentryJavaObjectWrapper NativeMapEntry(MapEntryJavaClass, NativeIterator.CallMethod<jobject>(NextMethod));
+		FSentryJavaMethod GetKeyMethod = NativeMapEntry.GetMethod("getKey", "()Ljava/lang/Object;");
+		FSentryJavaMethod GetValueMethod = NativeMapEntry.GetMethod("getValue", "()Ljava/lang/Object;");
 
-		jstring javaKey = static_cast<jstring>(Env->CallObjectMethod(entry, getKeyMethod));
-		jstring javaValue = static_cast<jstring>(Env->CallObjectMethod(entry, getValueMethod));
-
-		FString Key = StringToUnreal(javaKey);
-		FString Value = StringToUnreal(javaValue);
+		FString Key = NativeMapEntry.CallMethod<FString>(GetKeyMethod);
+		FString Value = NativeMapEntry.CallMethod<FString>(GetValueMethod);
 
 		result.Add(Key, Value);
-
-		Env->DeleteLocalRef(entry);
 	}
 
 	return result;
@@ -246,19 +208,20 @@ TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
 {
 	TArray<FString> result;
 
+	FSentryJavaClass ListJavaClass = FSentryJavaClass { "java/util/List", ESentryJavaClassType::System };
+	FSentryJavaObjectWrapper NativeList(ListJavaClass, stringList);
+	FSentryJavaMethod ToArrayMethod = NativeList.GetMethod("toArray", "()[Ljava/lang/Object;");
+	FSentryJavaMethod SizeMethod = NativeList.GetMethod("size", "()I");
+
+	jobjectArray objectArray = NativeList.CallMethod<jobjectArray>(ToArrayMethod);
+
+	int length = NativeList.CallMethod<int>(SizeMethod);
+
 	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-
-	jclass listClass = Env->FindClass("java/util/List");
-	jmethodID toArrayMethod = Env->GetMethodID(listClass, "toArray", "()[Ljava/lang/Object;");
-
-	jobjectArray objectArray = static_cast<jobjectArray>(Env->CallObjectMethod(stringList, toArrayMethod));
-
-	int length = Env->GetArrayLength(objectArray);
 
 	for (int i = 0; i < length; i++)
 	{
-		jstring javaString = static_cast<jstring>(Env->GetObjectArrayElement(objectArray, i));
-		result.Add(StringToUnreal(javaString));
+		result.Add(FJavaHelper::FStringFromLocalRef(Env, static_cast<jstring>(Env->GetObjectArrayElement(objectArray, i))));
 	}
 
 	return result;

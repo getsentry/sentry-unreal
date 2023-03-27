@@ -6,34 +6,34 @@
 #include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryBreadcrumbAndroid::SentryBreadcrumbAndroid()
-	: FSentryJavaClassWrapper(GetClassName(), "()V")
+	: FSentryJavaObjectWrapper(GetClassName(), "()V")
 {
 	SetupClassMethods();
 }
 
 SentryBreadcrumbAndroid::SentryBreadcrumbAndroid(jobject breadcrumb)
-	: FSentryJavaClassWrapper(GetClassName(), breadcrumb)
+	: FSentryJavaObjectWrapper(GetClassName(), breadcrumb)
 {
 	SetupClassMethods();
 }
 
 void SentryBreadcrumbAndroid::SetupClassMethods()
 {
-	SetMessageMethod = GetClassMethod("setMessage", "(Ljava/lang/String;)V");
-	GetMessageMethod = GetClassMethod("getMessage", "()Ljava/lang/String;");
-	SetTypeMethod = GetClassMethod("setType", "(Ljava/lang/String;)V");
-	GetTypeMethod = GetClassMethod("getType", "()Ljava/lang/String;");
-	SetCategoryMethod = GetClassMethod("setCategory", "(Ljava/lang/String;)V");
-	GetCategoryMethod = GetClassMethod("getCategory", "()Ljava/lang/String;");
-	SetDataMethod = GetClassMethod("setData", "(Ljava/lang/String;Ljava/lang/Object;)V");
-	GetDataMethod = GetClassMethod("getData", "()Ljava/util/Map;");
-	SetLevelMethod = GetClassMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
-	GetLevelMethod = GetClassMethod("getLevel", "()Lio/sentry/SentryLevel;");
+	SetMessageMethod = GetMethod("setMessage", "(Ljava/lang/String;)V");
+	GetMessageMethod = GetMethod("getMessage", "()Ljava/lang/String;");
+	SetTypeMethod = GetMethod("setType", "(Ljava/lang/String;)V");
+	GetTypeMethod = GetMethod("getType", "()Ljava/lang/String;");
+	SetCategoryMethod = GetMethod("setCategory", "(Ljava/lang/String;)V");
+	GetCategoryMethod = GetMethod("getCategory", "()Ljava/lang/String;");
+	SetDataMethod = GetMethod("setData", "(Ljava/lang/String;Ljava/lang/Object;)V");
+	GetDataMethod = GetMethod("getData", "()Ljava/util/Map;");
+	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
+	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
 }
 
-FName SentryBreadcrumbAndroid::GetClassName()
+FSentryJavaClass SentryBreadcrumbAndroid::GetClassName()
 {
-	return FName("io/sentry/Breadcrumb");
+	return FSentryJavaClass { "io/sentry/Breadcrumb", ESentryJavaClassType::External };
 }
 
 void SentryBreadcrumbAndroid::SetMessage(const FString& message)
@@ -82,7 +82,7 @@ TMap<FString, FString> SentryBreadcrumbAndroid::GetData() const
 
 void SentryBreadcrumbAndroid::SetLevel(ESentryLevel level)
 {
-	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level));
+	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel SentryBreadcrumbAndroid::GetLevel() const

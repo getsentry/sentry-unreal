@@ -4,18 +4,18 @@
 
 #include "Interface/SentryUserFeedbackInterface.h"
 
-#include "Infrastructure/SentryJavaClassWrapper.h"
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
 class USentryId;
 
-class SentryUserFeedbackAndroid : public ISentryUserFeedback, public FSentryJavaClassWrapper
+class SentryUserFeedbackAndroid : public ISentryUserFeedback, public FSentryJavaObjectWrapper
 {
 public:
 	SentryUserFeedbackAndroid(USentryId* eventId);
 
 	void SetupClassMethods();
 
-	static FName GetClassName();
+	static FSentryJavaClass GetClassName();
 
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
@@ -25,10 +25,10 @@ public:
 	virtual FString GetComment() const override;
 
 private:
-	FSentryJavaClassMethod SetNameMethod;
-	FSentryJavaClassMethod GetNameMethod;
-	FSentryJavaClassMethod SetEmailMethod;
-	FSentryJavaClassMethod GetEmailMethod;
-	FSentryJavaClassMethod SetCommentMethod;
-	FSentryJavaClassMethod GetCommentMethod;
+	FSentryJavaMethod SetNameMethod;
+	FSentryJavaMethod GetNameMethod;
+	FSentryJavaMethod SetEmailMethod;
+	FSentryJavaMethod GetEmailMethod;
+	FSentryJavaMethod SetCommentMethod;
+	FSentryJavaMethod GetCommentMethod;
 };

@@ -4,9 +4,9 @@
 
 #include "Interface/SentryUserInterface.h"
 
-#include "Infrastructure/SentryJavaClassWrapper.h"
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class SentryUserAndroid : public ISentryUser, public FSentryJavaClassWrapper
+class SentryUserAndroid : public ISentryUser, public FSentryJavaObjectWrapper
 {
 public:
 	SentryUserAndroid();
@@ -14,7 +14,7 @@ public:
 
 	void SetupClassMethods();
 
-	static FName GetClassName();
+	static FSentryJavaClass GetClassName();
 
 	virtual void SetEmail(const FString& email) override;
 	virtual FString GetEmail() const override;
@@ -28,14 +28,14 @@ public:
 	virtual TMap<FString, FString> GetData() override;
 
 private:
-	FSentryJavaClassMethod SetEmailMethod;
-	FSentryJavaClassMethod GetEmailMethod;
-	FSentryJavaClassMethod SetIdMethod;
-	FSentryJavaClassMethod GetIdMethod;
-	FSentryJavaClassMethod SetUsernameMethod;
-	FSentryJavaClassMethod GetUsernameMethod;
-	FSentryJavaClassMethod SetIpAddressMethod;
-	FSentryJavaClassMethod GetIpAddressMethod;
-	FSentryJavaClassMethod SetDataMethod;
-	FSentryJavaClassMethod GetDataMethod;
+	FSentryJavaMethod SetEmailMethod;
+	FSentryJavaMethod GetEmailMethod;
+	FSentryJavaMethod SetIdMethod;
+	FSentryJavaMethod GetIdMethod;
+	FSentryJavaMethod SetUsernameMethod;
+	FSentryJavaMethod GetUsernameMethod;
+	FSentryJavaMethod SetIpAddressMethod;
+	FSentryJavaMethod GetIpAddressMethod;
+	FSentryJavaMethod SetDataMethod;
+	FSentryJavaMethod GetDataMethod;
 };

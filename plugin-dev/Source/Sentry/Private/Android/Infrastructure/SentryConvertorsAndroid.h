@@ -8,21 +8,21 @@
 
 class USentryScope;
 class USentryId;
+class FSentryJavaObjectWrapper;
 
 class SentryConvertorsAndroid
 {
 public:
 	/** Conversions to native Java types */
-	static jobject SentryLevelToNative(ESentryLevel level);
-	static jobject SentryMessageToNative(const FString& message);
-	static jobject StringArrayToNative(const TArray<FString>& stringArray);
-	static jobject StringMapToNative(const TMap<FString, FString>& stringMap);
+	static TSharedPtr<FSentryJavaObjectWrapper> SentryLevelToNative(ESentryLevel level);
+	static TSharedPtr<FSentryJavaObjectWrapper> SentryMessageToNative(const FString& message);
+	static TSharedPtr<FSentryJavaObjectWrapper> StringArrayToNative(const TArray<FString>& stringArray);
+	static TSharedPtr<FSentryJavaObjectWrapper> StringMapToNative(const TMap<FString, FString>& stringMap);
 	static jbyteArray ByteArrayToNative(const TArray<uint8>& byteArray);
 
 	/** Conversions from native Java types */
 	static ESentryLevel SentryLevelToUnreal(jobject level);
 	static FString SentryMessageToUnreal(jobject message);
-	static FString StringToUnreal(jstring string);
 	static USentryScope* SentryScopeToUnreal(jobject scope);
 	static USentryId* SentryIdToUnreal(jobject id);
 	static TMap<FString, FString> StringMapToUnreal(jobject stringMap);

@@ -4,9 +4,9 @@
 
 #include "Interface/SentryEventInterface.h"
 
-#include "Infrastructure/SentryJavaClassWrapper.h"
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class SentryEventAndroid : public ISentryEvent, public FSentryJavaClassWrapper
+class SentryEventAndroid : public ISentryEvent, public FSentryJavaObjectWrapper
 {
 public:
 	SentryEventAndroid();
@@ -14,7 +14,7 @@ public:
 
 	void SetupClassMethods();
 
-	static FName GetClassName();
+	static FSentryJavaClass GetClassName();
 
 	virtual void SetMessage(const FString& message) override;
 	virtual FString GetMessage() const override;
@@ -22,8 +22,8 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	FSentryJavaClassMethod SetMessageMethod;
-	FSentryJavaClassMethod GetMessageMethod;
-	FSentryJavaClassMethod SetLevelMethod;
-	FSentryJavaClassMethod GetLevelMethod;
+	FSentryJavaMethod SetMessageMethod;
+	FSentryJavaMethod GetMessageMethod;
+	FSentryJavaMethod SetLevelMethod;
+	FSentryJavaMethod GetLevelMethod;
 };

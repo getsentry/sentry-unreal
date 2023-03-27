@@ -13,42 +13,42 @@
 #include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryScopeAndroid::SentryScopeAndroid()
-	: FSentryJavaClassWrapper(GetClassName(), "(Lio/sentry/SentryOptions;)V",
+	: FSentryJavaObjectWrapper(GetClassName(), "(Lio/sentry/SentryOptions;)V",
 		SentryMethodCallAndroid::CallStaticObjectMethod("io/sentry/unreal/SentryBridgeJava", "getOptions", "()Lio/sentry/SentryOptions;"))
 {
 	SetupClassMethods();
 }
 
 SentryScopeAndroid::SentryScopeAndroid(jobject scope)
-	: FSentryJavaClassWrapper(GetClassName(), scope)
+	: FSentryJavaObjectWrapper(GetClassName(), scope)
 {
 	SetupClassMethods();
 }
 
 void SentryScopeAndroid::SetupClassMethods()
 {
-	AddBreadcrumbMethod = GetClassMethod("addBreadcrumb", "(Lio/sentry/Breadcrumb;)V");
-	ClearBreadcrumbsMethod = GetClassMethod("clearBreadcrumbs", "()V");
-	AddAttachmentMethod = GetClassMethod("addAttachment", "(Lio/sentry/Attachment;)V");
-	ClearAttachmentsMethod = GetClassMethod("clearAttachments", "()V");
-	SetTagValueMethod = GetClassMethod("setTag", "(Ljava/lang/String;Ljava/lang/String;)V");
-	RemoveTagMethod = GetClassMethod("removeTag", "(Ljava/lang/String;)V");
-	GetTagsMethod = GetClassMethod("getTags", "()Ljava/util/Map;");
-	SetFingerprintMethod = GetClassMethod("setFingerprint", "(Ljava/util/List;)V");
-	GetFingerprintMethod = GetClassMethod("getFingerprint", "()Ljava/util/List;");
-	SetLevelMethod = GetClassMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
-	GetLevelMethod = GetClassMethod("getLevel", "()Lio/sentry/SentryLevel;");
-	SetContextMethod = GetClassMethod("setContexts", "(Ljava/lang/String;Ljava/lang/Object;)V");
-	RemoveContextMethod = GetClassMethod("removeContexts", "(Ljava/lang/String;)V");
-	SetExtraValueMethod = GetClassMethod("setExtra", "(Ljava/lang/String;Ljava/lang/String;)V");
-	RemoveExtraMethod = GetClassMethod("removeExtra", "(Ljava/lang/String;)V");
-	GetExtrasMethod = GetClassMethod("getExtras", "()Ljava/util/Map;");
-	ClearMethod = GetClassMethod("clear", "()V");
+	AddBreadcrumbMethod = GetMethod("addBreadcrumb", "(Lio/sentry/Breadcrumb;)V");
+	ClearBreadcrumbsMethod = GetMethod("clearBreadcrumbs", "()V");
+	AddAttachmentMethod = GetMethod("addAttachment", "(Lio/sentry/Attachment;)V");
+	ClearAttachmentsMethod = GetMethod("clearAttachments", "()V");
+	SetTagValueMethod = GetMethod("setTag", "(Ljava/lang/String;Ljava/lang/String;)V");
+	RemoveTagMethod = GetMethod("removeTag", "(Ljava/lang/String;)V");
+	GetTagsMethod = GetMethod("getTags", "()Ljava/util/Map;");
+	SetFingerprintMethod = GetMethod("setFingerprint", "(Ljava/util/List;)V");
+	GetFingerprintMethod = GetMethod("getFingerprint", "()Ljava/util/List;");
+	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
+	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
+	SetContextMethod = GetMethod("setContexts", "(Ljava/lang/String;Ljava/lang/Object;)V");
+	RemoveContextMethod = GetMethod("removeContexts", "(Ljava/lang/String;)V");
+	SetExtraValueMethod = GetMethod("setExtra", "(Ljava/lang/String;Ljava/lang/String;)V");
+	RemoveExtraMethod = GetMethod("removeExtra", "(Ljava/lang/String;)V");
+	GetExtrasMethod = GetMethod("getExtras", "()Ljava/util/Map;");
+	ClearMethod = GetMethod("clear", "()V");
 }
 
-FName SentryScopeAndroid::GetClassName()
+FSentryJavaClass SentryScopeAndroid::GetClassName()
 {
-	return FName("io/sentry/Scope");
+	return FSentryJavaClass{ "io/sentry/Scope", ESentryJavaClassType::External };
 }
 
 void SentryScopeAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
@@ -130,7 +130,7 @@ FString SentryScopeAndroid::GetEnvironment() const
 
 void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	CallMethod<void>(SetFingerprintMethod, SentryConvertorsAndroid::StringArrayToNative(fingerprint));
+	CallMethod<void>(SetFingerprintMethod, SentryConvertorsAndroid::StringArrayToNative(fingerprint)->GetJObject());
 }
 
 TArray<FString> SentryScopeAndroid::GetFingerprint() const
@@ -141,7 +141,7 @@ TArray<FString> SentryScopeAndroid::GetFingerprint() const
 
 void SentryScopeAndroid::SetLevel(ESentryLevel level)
 {
-	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level));
+	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel SentryScopeAndroid::GetLevel() const
@@ -152,7 +152,7 @@ ESentryLevel SentryScopeAndroid::GetLevel() const
 
 void SentryScopeAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
-	CallMethod<void>(SetContextMethod, *FJavaClassObject::GetJString(key), SentryConvertorsAndroid::StringMapToNative(values));
+	CallMethod<void>(SetContextMethod, *FJavaClassObject::GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentryScopeAndroid::RemoveContext(const FString& key)

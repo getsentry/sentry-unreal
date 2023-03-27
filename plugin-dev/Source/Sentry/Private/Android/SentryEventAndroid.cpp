@@ -6,33 +6,33 @@
 #include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryEventAndroid::SentryEventAndroid()
-	: FSentryJavaClassWrapper(GetClassName(), "()V")
+	: FSentryJavaObjectWrapper(GetClassName(), "()V")
 {
 	SetupClassMethods();
 }
 
 SentryEventAndroid::SentryEventAndroid(jobject event)
-	: FSentryJavaClassWrapper(GetClassName(), event)
+	: FSentryJavaObjectWrapper(GetClassName(), event)
 {
 	SetupClassMethods();
 }
 
 void SentryEventAndroid::SetupClassMethods()
 {
-	SetMessageMethod = GetClassMethod("setMessage", "(Lio/sentry/protocol/Message;)V");
-	GetMessageMethod = GetClassMethod("getMessage", "()Lio/sentry/protocol/Message;");
-	SetLevelMethod = GetClassMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
-	GetLevelMethod = GetClassMethod("getLevel", "()Lio/sentry/SentryLevel;");
+	SetMessageMethod = GetMethod("setMessage", "(Lio/sentry/protocol/Message;)V");
+	GetMessageMethod = GetMethod("getMessage", "()Lio/sentry/protocol/Message;");
+	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
+	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
 }
 
-FName SentryEventAndroid::GetClassName()
+FSentryJavaClass SentryEventAndroid::GetClassName()
 {
-	return FName("io/sentry/SentryEvent");
+	return FSentryJavaClass { "io/sentry/SentryEvent", ESentryJavaClassType::External };
 }
 
 void SentryEventAndroid::SetMessage(const FString& message)
 {
-	CallMethod<void>(SetMessageMethod, SentryConvertorsAndroid::SentryMessageToNative(message));
+	CallMethod<void>(SetMessageMethod, SentryConvertorsAndroid::SentryMessageToNative(message)->GetJObject());
 }
 
 FString SentryEventAndroid::GetMessage() const
@@ -43,7 +43,7 @@ FString SentryEventAndroid::GetMessage() const
 
 void SentryEventAndroid::SetLevel(ESentryLevel level)
 {
-	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level));
+	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel SentryEventAndroid::GetLevel() const

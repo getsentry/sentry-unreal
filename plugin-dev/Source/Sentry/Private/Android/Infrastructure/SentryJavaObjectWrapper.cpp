@@ -1,17 +1,22 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryJavaClassWrapper.h"
+#include "SentryJavaObjectWrapper.h"
 
 #include "Android/AndroidJavaEnv.h"
 
-FSentryJavaClassWrapper::FSentryJavaClassWrapper(FName ClassName, const char* CtorSignature, ...)
+#include "Android/AndroidJNI.h"
+
+FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, const char* CtorSignature, ...)
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 
 	ANSICHAR AnsiClassName[NAME_SIZE];
-	ClassName.GetPlainANSIString(AnsiClassName);
+	ClassData.Name.GetPlainANSIString(AnsiClassName);
 
-	Class = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
+	if(ClassData.Type == ESentryJavaClassType::System)
+		Class = FJavaWrapper::FindClassGlobalRef(JEnv, AnsiClassName, false);
+	if(ClassData.Type == ESentryJavaClassType::External)
+		Class = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
 	check(Class);
 
 	jmethodID Constructor = JEnv->GetMethodID(Class, "<init>", CtorSignature);
@@ -28,14 +33,17 @@ FSentryJavaClassWrapper::FSentryJavaClassWrapper(FName ClassName, const char* Ct
 }
 
 
-FSentryJavaClassWrapper::FSentryJavaClassWrapper(FName ClassName, jobject JavaClassInstance)
+FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, jobject JavaClassInstance)
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 
 	ANSICHAR AnsiClassName[NAME_SIZE];
-	ClassName.GetPlainANSIString(AnsiClassName);
+	ClassData.Name.GetPlainANSIString(AnsiClassName);
 
-	Class = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
+	if(ClassData.Type == ESentryJavaClassType::System)
+		Class = FJavaWrapper::FindClassGlobalRef(JEnv, AnsiClassName, false);
+	if(ClassData.Type == ESentryJavaClassType::External)
+		Class = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
 	check(Class);
 
 	if(!JEnv->IsInstanceOf(JavaClassInstance, Class))
@@ -46,17 +54,17 @@ FSentryJavaClassWrapper::FSentryJavaClassWrapper(FName ClassName, jobject JavaCl
 	Object = JEnv->NewGlobalRef(JavaClassInstance);
 }
 
-FSentryJavaClassWrapper::~FSentryJavaClassWrapper()
+FSentryJavaObjectWrapper::~FSentryJavaObjectWrapper()
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	JEnv->DeleteGlobalRef(Object);
 	JEnv->DeleteGlobalRef(Class);
 }
 
-FSentryJavaClassMethod FSentryJavaClassWrapper::GetClassMethod(const char* MethodName, const char* FunctionSignature)
+FSentryJavaMethod FSentryJavaObjectWrapper::GetMethod(const char* MethodName, const char* FunctionSignature)
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
-	FSentryJavaClassMethod Method;
+	FSentryJavaMethod Method;
 	Method.Method = JEnv->GetMethodID(Class, MethodName, FunctionSignature);
 	Method.Name = MethodName;
 	Method.Signature = FunctionSignature;
@@ -64,13 +72,13 @@ FSentryJavaClassMethod FSentryJavaClassWrapper::GetClassMethod(const char* Metho
 	return Method;
 }
 
-jobject FSentryJavaClassWrapper::GetJObject() const
+jobject FSentryJavaObjectWrapper::GetJObject() const
 {
 	check(Object);
 	return Object;
 }
 
-void FSentryJavaClassWrapper::VerifyException() const
+void FSentryJavaObjectWrapper::VerifyException() const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	if (JEnv->ExceptionCheck())
@@ -82,7 +90,7 @@ void FSentryJavaClassWrapper::VerifyException() const
 }
 
 template<>
-void FSentryJavaClassWrapper::CallMethod<void>(FSentryJavaClassMethod Method, ...) const
+void FSentryJavaObjectWrapper::CallMethod<void>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -93,7 +101,7 @@ void FSentryJavaClassWrapper::CallMethod<void>(FSentryJavaClassMethod Method, ..
 }
 
 template<>
-bool FSentryJavaClassWrapper::CallMethod<bool>(FSentryJavaClassMethod Method, ...) const
+bool FSentryJavaObjectWrapper::CallMethod<bool>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -105,7 +113,7 @@ bool FSentryJavaClassWrapper::CallMethod<bool>(FSentryJavaClassMethod Method, ..
 }
 
 template<>
-int FSentryJavaClassWrapper::CallMethod<int>(FSentryJavaClassMethod Method, ...) const
+int FSentryJavaObjectWrapper::CallMethod<int>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -117,7 +125,7 @@ int FSentryJavaClassWrapper::CallMethod<int>(FSentryJavaClassMethod Method, ...)
 }
 
 template<>
-jobject FSentryJavaClassWrapper::CallMethod<jobject>(FSentryJavaClassMethod Method, ...) const
+jobject FSentryJavaObjectWrapper::CallMethod<jobject>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -131,7 +139,7 @@ jobject FSentryJavaClassWrapper::CallMethod<jobject>(FSentryJavaClassMethod Meth
 }
 
 template<>
-jobjectArray FSentryJavaClassWrapper::CallMethod<jobjectArray>(FSentryJavaClassMethod Method, ...) const
+jobjectArray FSentryJavaObjectWrapper::CallMethod<jobjectArray>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -145,7 +153,7 @@ jobjectArray FSentryJavaClassWrapper::CallMethod<jobjectArray>(FSentryJavaClassM
 }
 
 template<>
-int64 FSentryJavaClassWrapper::CallMethod<int64>(FSentryJavaClassMethod Method, ...) const
+int64 FSentryJavaObjectWrapper::CallMethod<int64>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;
@@ -157,7 +165,7 @@ int64 FSentryJavaClassWrapper::CallMethod<int64>(FSentryJavaClassMethod Method, 
 }
 
 template<>
-FString FSentryJavaClassWrapper::CallMethod<FString>(FSentryJavaClassMethod Method, ...) const
+FString FSentryJavaObjectWrapper::CallMethod<FString>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
 	va_list Params;

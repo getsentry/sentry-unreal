@@ -6,34 +6,34 @@
 #include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryUserAndroid::SentryUserAndroid()
-	: FSentryJavaClassWrapper(GetClassName(), "()V")
+	: FSentryJavaObjectWrapper(GetClassName(), "()V")
 {
 	SetupClassMethods();
 }
 
 SentryUserAndroid::SentryUserAndroid(jobject user)
-	: FSentryJavaClassWrapper(GetClassName(), user)
+	: FSentryJavaObjectWrapper(GetClassName(), user)
 {
 	SetupClassMethods();
 }
 
 void SentryUserAndroid::SetupClassMethods()
 {
-	SetEmailMethod = GetClassMethod("setEmail", "(Ljava/lang/String;)V");
-	GetEmailMethod = GetClassMethod("getEmail", "()Ljava/lang/String;");
-	SetIdMethod = GetClassMethod("setId", "(Ljava/lang/String;)V");
-	GetIdMethod = GetClassMethod("getId", "()Ljava/lang/String;");
-	SetUsernameMethod = GetClassMethod("setUsername", "(Ljava/lang/String;)V");
-	GetUsernameMethod = GetClassMethod("getUsername", "()Ljava/lang/String;");
-	SetIpAddressMethod = GetClassMethod("setIpAddress", "(Ljava/lang/String;)V");
-	GetIpAddressMethod = GetClassMethod("getIpAddress", "()Ljava/lang/String;");
-	SetDataMethod = GetClassMethod("setOthers", "(Ljava/util/Map;)V");
-	GetDataMethod = GetClassMethod("getOthers", "()Ljava/util/Map;");
+	SetEmailMethod = GetMethod("setEmail", "(Ljava/lang/String;)V");
+	GetEmailMethod = GetMethod("getEmail", "()Ljava/lang/String;");
+	SetIdMethod = GetMethod("setId", "(Ljava/lang/String;)V");
+	GetIdMethod = GetMethod("getId", "()Ljava/lang/String;");
+	SetUsernameMethod = GetMethod("setUsername", "(Ljava/lang/String;)V");
+	GetUsernameMethod = GetMethod("getUsername", "()Ljava/lang/String;");
+	SetIpAddressMethod = GetMethod("setIpAddress", "(Ljava/lang/String;)V");
+	GetIpAddressMethod = GetMethod("getIpAddress", "()Ljava/lang/String;");
+	SetDataMethod = GetMethod("setOthers", "(Ljava/util/Map;)V");
+	GetDataMethod = GetMethod("getOthers", "()Ljava/util/Map;");
 }
 
-FName SentryUserAndroid::GetClassName()
+FSentryJavaClass SentryUserAndroid::GetClassName()
 {
-	return FName("io/sentry/protocol/User");
+	return FSentryJavaClass{ "io/sentry/protocol/User", ESentryJavaClassType::External };
 }
 
 void SentryUserAndroid::SetEmail(const FString& email)
@@ -78,7 +78,7 @@ FString SentryUserAndroid::GetIpAddress() const
 
 void SentryUserAndroid::SetData(const TMap<FString, FString>& data)
 {
-	CallMethod<void>(SetDataMethod, SentryConvertorsAndroid::StringMapToNative(data));
+	CallMethod<void>(SetDataMethod, SentryConvertorsAndroid::StringMapToNative(data)->GetJObject());
 }
 
 TMap<FString, FString> SentryUserAndroid::GetData()

@@ -4,9 +4,9 @@
 
 #include "Interface/SentryBreadcrumbInterface.h"
 
-#include "Infrastructure/SentryJavaClassWrapper.h"
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class SentryBreadcrumbAndroid : public ISentryBreadcrumb, public FSentryJavaClassWrapper
+class SentryBreadcrumbAndroid : public ISentryBreadcrumb, public FSentryJavaObjectWrapper
 {
 public:
 	SentryBreadcrumbAndroid();
@@ -14,7 +14,7 @@ public:
 
 	void SetupClassMethods();
 
-	static FName GetClassName();
+	static FSentryJavaClass GetClassName();
 
 	virtual void SetMessage(const FString& message) override;
 	virtual FString GetMessage() const override;
@@ -28,14 +28,14 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	FSentryJavaClassMethod SetMessageMethod;
-	FSentryJavaClassMethod GetMessageMethod;
-	FSentryJavaClassMethod SetTypeMethod;
-	FSentryJavaClassMethod GetTypeMethod;
-	FSentryJavaClassMethod SetCategoryMethod;
-	FSentryJavaClassMethod GetCategoryMethod;
-	FSentryJavaClassMethod SetDataMethod;
-	FSentryJavaClassMethod GetDataMethod;
-	FSentryJavaClassMethod SetLevelMethod;
-	FSentryJavaClassMethod GetLevelMethod;
+	FSentryJavaMethod SetMessageMethod;
+	FSentryJavaMethod GetMessageMethod;
+	FSentryJavaMethod SetTypeMethod;
+	FSentryJavaMethod GetTypeMethod;
+	FSentryJavaMethod SetCategoryMethod;
+	FSentryJavaMethod GetCategoryMethod;
+	FSentryJavaMethod SetDataMethod;
+	FSentryJavaMethod GetDataMethod;
+	FSentryJavaMethod SetLevelMethod;
+	FSentryJavaMethod GetLevelMethod;
 };

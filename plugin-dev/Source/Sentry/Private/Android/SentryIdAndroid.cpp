@@ -3,25 +3,25 @@
 #include "SentryIdAndroid.h"
 
 SentryIdAndroid::SentryIdAndroid()
-	: FSentryJavaClassWrapper(GetClassName(), "()V")
+	: FSentryJavaObjectWrapper(GetClassName(), "()V")
 {
 	SetupClassMethods();
 }
 
 SentryIdAndroid::SentryIdAndroid(jobject id)
-	: FSentryJavaClassWrapper(GetClassName(), id)
+	: FSentryJavaObjectWrapper(GetClassName(), id)
 {
 	SetupClassMethods();
 }
 
 void SentryIdAndroid::SetupClassMethods()
 {
-	ToStringMethod = GetClassMethod("toString", "()Ljava/lang/String;");
+	ToStringMethod = GetMethod("toString", "()Ljava/lang/String;");
 }
 
-FName SentryIdAndroid::GetClassName()
+FSentryJavaClass SentryIdAndroid::GetClassName()
 {
-	return FName("io/sentry/protocol/SentryId");
+	return FSentryJavaClass { "io/sentry/protocol/SentryId", ESentryJavaClassType::External };
 }
 
 FString SentryIdAndroid::ToString() const

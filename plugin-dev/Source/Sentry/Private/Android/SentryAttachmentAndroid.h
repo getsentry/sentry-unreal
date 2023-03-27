@@ -4,9 +4,9 @@
 
 #include "Interface/SentryAttachmentInterface.h"
 
-#include "Infrastructure/SentryJavaClassWrapper.h"
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class SentryAttachmentAndroid : public ISentryAttachment, public FSentryJavaClassWrapper
+class SentryAttachmentAndroid : public ISentryAttachment, public FSentryJavaObjectWrapper
 {
 public:
 	SentryAttachmentAndroid(const TArray<uint8>& data, const FString& filename, const FString& contentType);
@@ -14,7 +14,7 @@ public:
 
 	void SetupClassMethods();
 
-	static FName GetClassName();
+	static FSentryJavaClass GetClassName();
 
 	virtual TArray<uint8> GetData() const override;
 	virtual FString GetPath() const override;
@@ -22,8 +22,8 @@ public:
 	virtual FString GetContentType() const override;
 
 private:
-	FSentryJavaClassMethod GetDataMethod;
-	FSentryJavaClassMethod GetPathMethod;
-	FSentryJavaClassMethod GetFilenameMethod;
-	FSentryJavaClassMethod GetContentTypeMethod;
+	FSentryJavaMethod GetDataMethod;
+	FSentryJavaMethod GetPathMethod;
+	FSentryJavaMethod GetFilenameMethod;
+	FSentryJavaMethod GetContentTypeMethod;
 };

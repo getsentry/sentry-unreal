@@ -19,8 +19,6 @@
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryMethodCallAndroid.h"
 
-#include "Android/AndroidJava.h"
-
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 
@@ -62,7 +60,7 @@ void SentrySubsystemAndroid::ClearBreadcrumbs()
 USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryJavaClassName, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Lio/sentry/protocol/SentryId;",
-		*FJavaClassObject::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level));
+		*FJavaClassObject::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
 
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
@@ -73,7 +71,7 @@ USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& messag
 	scopeCallback->BindDelegate(onConfigureScope);
 
 	jobject id =  SentryMethodCallAndroid::CallStaticObjectMethod(SentryBridgeJavaClassName, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Lio/sentry/protocol/SentryId;",
-		*FJavaClassObject::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level), (jlong)scopeCallback);
+		*FJavaClassObject::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject(), (jlong)scopeCallback);
 
 	return SentryConvertorsAndroid::SentryIdToUnreal(id);
 }
@@ -134,7 +132,7 @@ void SentrySubsystemAndroid::ConfigureScope(const FConfigureScopeDelegate& onCon
 void SentrySubsystemAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",
-		*FJavaClassObject::GetJString(key), SentryConvertorsAndroid::StringMapToNative(values));
+		*FJavaClassObject::GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentrySubsystemAndroid::SetTag(const FString& key, const FString& value)
@@ -152,5 +150,5 @@ void SentrySubsystemAndroid::RemoveTag(const FString& key)
 void SentrySubsystemAndroid::SetLevel(ESentryLevel level)
 {
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setLevel", "(Lio/sentry/SentryLevel;)V",
-		SentryConvertorsAndroid::SentryLevelToNative(level));
+		SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
 }

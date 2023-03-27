@@ -6,7 +6,7 @@
 #include "SentryIdAndroid.h"
 
 SentryUserFeedbackAndroid::SentryUserFeedbackAndroid(USentryId* eventId)
-	: FSentryJavaClassWrapper(GetClassName(), "(Lio/sentry/protocol/SentryId;)V",
+	: FSentryJavaObjectWrapper(GetClassName(), "(Lio/sentry/protocol/SentryId;)V",
 		StaticCastSharedPtr<SentryIdAndroid>(eventId->GetNativeImpl())->GetJObject())
 {
 	SetupClassMethods();
@@ -14,17 +14,17 @@ SentryUserFeedbackAndroid::SentryUserFeedbackAndroid(USentryId* eventId)
 
 void SentryUserFeedbackAndroid::SetupClassMethods()
 {
-	SetNameMethod = GetClassMethod("setName", "(Ljava/lang/String;)V");
-	GetNameMethod = GetClassMethod("getName", "()Ljava/lang/String;");
-	SetEmailMethod = GetClassMethod("setEmail", "(Ljava/lang/String;)V");
-	GetEmailMethod = GetClassMethod("getEmail", "()Ljava/lang/String;");
-	SetCommentMethod = GetClassMethod("setComments", "(Ljava/lang/String;)V");
-	GetCommentMethod = GetClassMethod("getComments", "()Ljava/lang/String;");
+	SetNameMethod = GetMethod("setName", "(Ljava/lang/String;)V");
+	GetNameMethod = GetMethod("getName", "()Ljava/lang/String;");
+	SetEmailMethod = GetMethod("setEmail", "(Ljava/lang/String;)V");
+	GetEmailMethod = GetMethod("getEmail", "()Ljava/lang/String;");
+	SetCommentMethod = GetMethod("setComments", "(Ljava/lang/String;)V");
+	GetCommentMethod = GetMethod("getComments", "()Ljava/lang/String;");
 }
 
-FName SentryUserFeedbackAndroid::GetClassName()
+FSentryJavaClass SentryUserFeedbackAndroid::GetClassName()
 {
-	return FName("io/sentry/UserFeedback");
+	return FSentryJavaClass{ "io/sentry/UserFeedback", ESentryJavaClassType::External };
 }
 
 void SentryUserFeedbackAndroid::SetName(const FString& name)
