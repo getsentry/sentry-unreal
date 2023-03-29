@@ -3,7 +3,6 @@
 #include "SentryBreadcrumbAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
-#include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryBreadcrumbAndroid::SentryBreadcrumbAndroid()
 	: FSentryJavaObjectWrapper(GetClassName(), "()V")
@@ -76,7 +75,7 @@ void SentryBreadcrumbAndroid::SetData(const TMap<FString, FString>& data)
 
 TMap<FString, FString> SentryBreadcrumbAndroid::GetData() const
 {
-	auto data = NewSentryScopedJavaObject(CallMethod<jobject>(GetDataMethod));
+	auto data = CallObjectMethod<jobject>(GetDataMethod);
 	return SentryConvertorsAndroid::StringMapToUnreal(*data);
 }
 
@@ -87,6 +86,6 @@ void SentryBreadcrumbAndroid::SetLevel(ESentryLevel level)
 
 ESentryLevel SentryBreadcrumbAndroid::GetLevel() const
 {
-	auto level = NewSentryScopedJavaObject(CallMethod<jobject>(GetLevelMethod));
+	auto level = CallObjectMethod<jobject>(GetLevelMethod);
 	return SentryConvertorsAndroid::SentryLevelToUnreal(*level);
 }

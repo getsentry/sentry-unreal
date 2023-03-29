@@ -3,7 +3,6 @@
 #include "SentryAttachmentAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
-#include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryAttachmentAndroid::SentryAttachmentAndroid(const TArray<uint8>& data, const FString& filename, const FString& contentType)
 	: FSentryJavaObjectWrapper(GetClassName(), "([BLjava/lang/String;Ljava/lang/String;)V",
@@ -34,7 +33,7 @@ FSentryJavaClass SentryAttachmentAndroid::GetClassName()
 
 TArray<uint8> SentryAttachmentAndroid::GetData() const
 {
-	auto data = NewSentryScopedJavaObject(CallMethod<jobject>(GetDataMethod));
+	auto data = CallObjectMethod<jobject>(GetDataMethod);
 	return SentryConvertorsAndroid::ByteArrayToUnreal(static_cast<jbyteArray>(*data));
 }
 

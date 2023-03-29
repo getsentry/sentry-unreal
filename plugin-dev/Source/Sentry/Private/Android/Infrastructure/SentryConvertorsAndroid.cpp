@@ -86,7 +86,7 @@ TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringMapToNative(
 
 	for (const auto& dataPair : stringMap)
 	{
-		NativeHashMap->CallMethod<jobject>(PutMethod, *FJavaClassObject::GetJString(dataPair.Key), *FJavaClassObject::GetJString(dataPair.Value));
+		NativeHashMap->CallObjectMethod<jobject>(PutMethod, *FJavaClassObject::GetJString(dataPair.Key), *FJavaClassObject::GetJString(dataPair.Value));
 	}
 
 	return NativeHashMap;
@@ -180,18 +180,18 @@ TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)
 	FSentryJavaMethod EntrySetMethod = NativeMap.GetMethod("entrySet", "()Ljava/util/Set;");
 
 	FSentryJavaClass SetJavaClass = FSentryJavaClass { "java/util/Set", ESentryJavaClassType::System };
-	FSentryJavaObjectWrapper NativeSet(SetJavaClass, NativeMap.CallMethod<jobject>(EntrySetMethod));
+	FSentryJavaObjectWrapper NativeSet(SetJavaClass, *NativeMap.CallObjectMethod<jobject>(EntrySetMethod));
 	FSentryJavaMethod IteratorMethod = NativeSet.GetMethod("iterator", "()Ljava/util/Iterator;");
 
 	FSentryJavaClass IteratorJavaClass = FSentryJavaClass { "java/util/Iterator", ESentryJavaClassType::System };
-	FSentryJavaObjectWrapper NativeIterator(IteratorJavaClass, NativeSet.CallMethod<jobject>(IteratorMethod));
+	FSentryJavaObjectWrapper NativeIterator(IteratorJavaClass, *NativeSet.CallObjectMethod<jobject>(IteratorMethod));
 	FSentryJavaMethod HasNextMethod = NativeIterator.GetMethod("hasNext", "()Z");
 	FSentryJavaMethod NextMethod = NativeIterator.GetMethod("next", "()Ljava/lang/Object;");
 
 	while(NativeIterator.CallMethod<bool>(HasNextMethod))
 	{
 		FSentryJavaClass MapEntryJavaClass = FSentryJavaClass { "java/util/Map$Entry", ESentryJavaClassType::System };
-		FSentryJavaObjectWrapper NativeMapEntry(MapEntryJavaClass, NativeIterator.CallMethod<jobject>(NextMethod));
+		FSentryJavaObjectWrapper NativeMapEntry(MapEntryJavaClass, *NativeIterator.CallObjectMethod<jobject>(NextMethod));
 		FSentryJavaMethod GetKeyMethod = NativeMapEntry.GetMethod("getKey", "()Ljava/lang/Object;");
 		FSentryJavaMethod GetValueMethod = NativeMapEntry.GetMethod("getValue", "()Ljava/lang/Object;");
 
@@ -213,7 +213,7 @@ TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
 	FSentryJavaMethod ToArrayMethod = NativeList.GetMethod("toArray", "()[Ljava/lang/Object;");
 	FSentryJavaMethod SizeMethod = NativeList.GetMethod("size", "()I");
 
-	jobjectArray objectArray = NativeList.CallMethod<jobjectArray>(ToArrayMethod);
+	auto objectArray = NativeList.CallObjectMethod<jobjectArray>(ToArrayMethod);
 
 	int length = NativeList.CallMethod<int>(SizeMethod);
 
@@ -221,7 +221,7 @@ TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
 
 	for (int i = 0; i < length; i++)
 	{
-		result.Add(FJavaHelper::FStringFromLocalRef(Env, static_cast<jstring>(Env->GetObjectArrayElement(objectArray, i))));
+		result.Add(FJavaHelper::FStringFromLocalRef(Env, static_cast<jstring>(Env->GetObjectArrayElement(*objectArray, i))));
 	}
 
 	return result;

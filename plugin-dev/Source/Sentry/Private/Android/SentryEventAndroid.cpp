@@ -3,7 +3,6 @@
 #include "SentryEventAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
-#include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryEventAndroid::SentryEventAndroid()
 	: FSentryJavaObjectWrapper(GetClassName(), "()V")
@@ -37,7 +36,7 @@ void SentryEventAndroid::SetMessage(const FString& message)
 
 FString SentryEventAndroid::GetMessage() const
 {
-	auto message = NewSentryScopedJavaObject(CallMethod<jobject>(GetMessageMethod));
+	auto message = CallObjectMethod<jobject>(GetMessageMethod);
 	return SentryConvertorsAndroid::SentryMessageToUnreal(*message);
 }
 
@@ -48,6 +47,6 @@ void SentryEventAndroid::SetLevel(ESentryLevel level)
 
 ESentryLevel SentryEventAndroid::GetLevel() const
 {
-	auto level = NewSentryScopedJavaObject(CallMethod<jobject>(GetLevelMethod));
+	auto level = CallObjectMethod<jobject>(GetLevelMethod);
 	return SentryConvertorsAndroid::SentryLevelToUnreal(*level);
 }

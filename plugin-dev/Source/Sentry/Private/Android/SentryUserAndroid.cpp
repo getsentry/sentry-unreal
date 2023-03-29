@@ -3,7 +3,6 @@
 #include "SentryUserAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
-#include "Infrastructure/SentryScopedJavaObject.h"
 
 SentryUserAndroid::SentryUserAndroid()
 	: FSentryJavaObjectWrapper(GetClassName(), "()V")
@@ -83,6 +82,6 @@ void SentryUserAndroid::SetData(const TMap<FString, FString>& data)
 
 TMap<FString, FString> SentryUserAndroid::GetData()
 {
-	auto data = NewSentryScopedJavaObject(CallMethod<jobject>(GetDataMethod));
+	auto data = CallObjectMethod<jobject>(GetDataMethod);
 	return SentryConvertorsAndroid::StringMapToUnreal(*data);
 }

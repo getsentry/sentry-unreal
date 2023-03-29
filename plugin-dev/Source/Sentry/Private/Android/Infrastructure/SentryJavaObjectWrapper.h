@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Android/AndroidJava.h"
+#include "Android/AndroidJavaEnv.h"
 
 enum class ESentryJavaClassType : uint8
 {
@@ -37,6 +38,8 @@ public:
 
 	template<typename ReturnType>
 	ReturnType CallMethod(FSentryJavaMethod Method, ...) const;
+	template<typename ReturnType>
+	FScopedJavaObject<ReturnType> CallObjectMethod(FSentryJavaMethod Method, ...) const;
 
 	jobject GetJObject() const;
 
@@ -57,13 +60,13 @@ template<>
 int FSentryJavaObjectWrapper::CallMethod<int>(FSentryJavaMethod Method, ...) const;
 
 template<>
-jobject FSentryJavaObjectWrapper::CallMethod<jobject>(FSentryJavaMethod Method, ...) const;
-
-template<>
-jobjectArray FSentryJavaObjectWrapper::CallMethod<jobjectArray>(FSentryJavaMethod Method, ...) const;
-
-template<>
 int64 FSentryJavaObjectWrapper::CallMethod<int64>(FSentryJavaMethod Method, ...) const;
 
 template<>
 FString FSentryJavaObjectWrapper::CallMethod<FString>(FSentryJavaMethod Method, ...) const;
+
+template<>
+FScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethod<jobject>(FSentryJavaMethod Method, ...) const;
+
+template<>
+FScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethod<jobjectArray>(FSentryJavaMethod Method, ...) const;

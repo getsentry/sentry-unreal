@@ -2,8 +2,6 @@
 
 #include "SentryJavaObjectWrapper.h"
 
-#include "Android/AndroidJavaEnv.h"
-
 #include "Android/AndroidJNI.h"
 
 FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, const char* CtorSignature, ...)
@@ -125,34 +123,6 @@ int FSentryJavaObjectWrapper::CallMethod<int>(FSentryJavaMethod Method, ...) con
 }
 
 template<>
-jobject FSentryJavaObjectWrapper::CallMethod<jobject>(FSentryJavaMethod Method, ...) const
-{
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
-	va_list Params;
-	va_start(Params, Method);
-	jobject val = JEnv->CallObjectMethodV(Object, Method.Method, Params);
-	va_end(Params);
-	VerifyException();
-	jobject RetVal = JEnv->NewGlobalRef(val);
-	JEnv->DeleteLocalRef(val);
-	return RetVal;
-}
-
-template<>
-jobjectArray FSentryJavaObjectWrapper::CallMethod<jobjectArray>(FSentryJavaMethod Method, ...) const
-{
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
-	va_list Params;
-	va_start(Params, Method);
-	jobject val = JEnv->CallObjectMethodV(Object, Method.Method, Params);
-	va_end(Params);
-	VerifyException();
-	jobjectArray RetVal = (jobjectArray)JEnv->NewGlobalRef(val);
-	JEnv->DeleteLocalRef(val);
-	return RetVal;
-}
-
-template<>
 int64 FSentryJavaObjectWrapper::CallMethod<int64>(FSentryJavaMethod Method, ...) const
 {
 	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
@@ -175,4 +145,28 @@ FString FSentryJavaObjectWrapper::CallMethod<FString>(FSentryJavaMethod Method, 
 	VerifyException();
 	auto Result = FJavaHelper::FStringFromLocalRef(JEnv, RetVal);
 	return Result;
+}
+
+template<>
+FScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethod<jobject>(FSentryJavaMethod Method, ...) const
+{
+	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	va_list Params;
+	va_start(Params, Method);
+	jobject RetVal = JEnv->CallObjectMethodV(Object, Method.Method, Params);
+	va_end(Params);
+	VerifyException();
+	return NewScopedJavaObject(JEnv, RetVal);
+}
+
+template<>
+FScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethod<jobjectArray>(FSentryJavaMethod Method, ...) const
+{
+	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	va_list Params;
+	va_start(Params, Method);
+	jobject RetVal = JEnv->CallObjectMethodV(Object, Method.Method, Params);
+	va_end(Params);
+	VerifyException();
+	return NewScopedJavaObject(JEnv, (jobjectArray)RetVal);
 }
