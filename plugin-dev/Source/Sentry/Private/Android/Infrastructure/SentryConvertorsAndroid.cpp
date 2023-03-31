@@ -90,7 +90,7 @@ TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringMapToNative(
 
 jbyteArray SentryConvertorsAndroid::ByteArrayToNative(const TArray<uint8>& byteArray)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
 	jbyteArray javaByteArray = (jbyteArray)Env->NewByteArray(byteArray.Num());
 
@@ -206,7 +206,7 @@ TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
 
 	int length = NativeList.CallMethod<int>(SizeMethod);
 
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
 	for (int i = 0; i < length; i++)
 	{
@@ -225,7 +225,7 @@ TArray<uint8> SentryConvertorsAndroid::ByteArrayToUnreal(jbyteArray byteArray)
 		return result;
 	}
 
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
 	jbyte* javaByte = Env->GetByteArrayElements(byteArray, 0);
 
