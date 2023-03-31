@@ -14,8 +14,6 @@ public:
 
 	void SetupClassMethods();
 
-	static FSentryJavaClass GetClassName();
-
 	virtual TArray<uint8> GetData() const override;
 	virtual FString GetPath() const override;
 	virtual FString GetFilename() const override;

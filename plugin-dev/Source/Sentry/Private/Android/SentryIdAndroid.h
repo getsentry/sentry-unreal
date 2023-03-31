@@ -14,8 +14,6 @@ public:
 
 	void SetupClassMethods();
 
-	static FSentryJavaClass GetClassName();
-
 	virtual FString ToString() const override;
 
 private:

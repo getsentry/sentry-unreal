@@ -14,8 +14,6 @@ public:
 
 	void SetupClassMethods();
 
-	static FSentryJavaClass GetClassName();
-
 	virtual void SetMessage(const FString& message) override;
 	virtual FString GetMessage() const override;
 	virtual void SetLevel(ESentryLevel level) override;

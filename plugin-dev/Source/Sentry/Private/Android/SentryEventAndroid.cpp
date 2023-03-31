@@ -3,15 +3,16 @@
 #include "SentryEventAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryJavaClasses.h"
 
 SentryEventAndroid::SentryEventAndroid()
-	: FSentryJavaObjectWrapper(GetClassName(), "()V")
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryEvent, "()V")
 {
 	SetupClassMethods();
 }
 
 SentryEventAndroid::SentryEventAndroid(jobject event)
-	: FSentryJavaObjectWrapper(GetClassName(), event)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryEvent, event)
 {
 	SetupClassMethods();
 }
@@ -22,11 +23,6 @@ void SentryEventAndroid::SetupClassMethods()
 	GetMessageMethod = GetMethod("getMessage", "()Lio/sentry/protocol/Message;");
 	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
 	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
-}
-
-FSentryJavaClass SentryEventAndroid::GetClassName()
-{
-	return FSentryJavaClass { "io/sentry/SentryEvent", ESentryJavaClassType::External };
 }
 
 void SentryEventAndroid::SetMessage(const FString& message)

@@ -15,8 +15,6 @@ public:
 
 	void SetupClassMethods();
 
-	static FSentryJavaClass GetClassName();
-
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
 	virtual void SetEmail(const FString& email) override;

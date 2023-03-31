@@ -9,18 +9,19 @@
 #include "SentryAttachment.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryJavaClasses.h"
 
 const static FSentryJavaClass SentryBridgeJavaClass = FSentryJavaClass { "io/sentry/unreal/SentryBridgeJava", ESentryJavaClassType::External };
 
 SentryScopeAndroid::SentryScopeAndroid()
-	: FSentryJavaObjectWrapper(GetClassName(), "(Lio/sentry/SentryOptions;)V",
+	: FSentryJavaObjectWrapper(SentryJavaClasses::Scope, "(Lio/sentry/SentryOptions;)V",
 		*FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryBridgeJavaClass, "getOptions", "()Lio/sentry/SentryOptions;"))
 {
 	SetupClassMethods();
 }
 
 SentryScopeAndroid::SentryScopeAndroid(jobject scope)
-	: FSentryJavaObjectWrapper(GetClassName(), scope)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::Scope, scope)
 {
 	SetupClassMethods();
 }
@@ -44,11 +45,6 @@ void SentryScopeAndroid::SetupClassMethods()
 	RemoveExtraMethod = GetMethod("removeExtra", "(Ljava/lang/String;)V");
 	GetExtrasMethod = GetMethod("getExtras", "()Ljava/util/Map;");
 	ClearMethod = GetMethod("clear", "()V");
-}
-
-FSentryJavaClass SentryScopeAndroid::GetClassName()
-{
-	return FSentryJavaClass{ "io/sentry/Scope", ESentryJavaClassType::External };
 }
 
 void SentryScopeAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
@@ -75,7 +71,7 @@ void SentryScopeAndroid::ClearAttachments()
 
 void SentryScopeAndroid::SetTagValue(const FString& key, const FString& value)
 {
-	CallMethod<void>(SetTagValueMethod, *FJavaClassObject::GetJString(key), *FJavaClassObject::GetJString(value));
+	CallMethod<void>(SetTagValueMethod, *GetJString(key), *GetJString(value));
 }
 
 FString SentryScopeAndroid::GetTagValue(const FString& key) const
@@ -91,7 +87,7 @@ FString SentryScopeAndroid::GetTagValue(const FString& key) const
 
 void SentryScopeAndroid::RemoveTag(const FString& key)
 {
-	CallMethod<void>(RemoveTagMethod, *FJavaClassObject::GetJString(key));
+	CallMethod<void>(RemoveTagMethod, *GetJString(key));
 }
 
 void SentryScopeAndroid::SetTags(const TMap<FString, FString>& tags)
@@ -152,17 +148,17 @@ ESentryLevel SentryScopeAndroid::GetLevel() const
 
 void SentryScopeAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
-	CallMethod<void>(SetContextMethod, *FJavaClassObject::GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetContextMethod, *GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentryScopeAndroid::RemoveContext(const FString& key)
 {
-	CallMethod<void>(RemoveContextMethod, *FJavaClassObject::GetJString(key));
+	CallMethod<void>(RemoveContextMethod, *GetJString(key));
 }
 
 void SentryScopeAndroid::SetExtraValue(const FString& key, const FString& value)
 {
-	CallMethod<void>(SetExtraValueMethod, *FJavaClassObject::GetJString(key), *FJavaClassObject::GetJString(value));
+	CallMethod<void>(SetExtraValueMethod, *GetJString(key), *GetJString(value));
 }
 
 FString SentryScopeAndroid::GetExtraValue(const FString& key) const
@@ -178,7 +174,7 @@ FString SentryScopeAndroid::GetExtraValue(const FString& key) const
 
 void SentryScopeAndroid::RemoveExtra(const FString& key)
 {
-	CallMethod<void>(RemoveExtraMethod, *FJavaClassObject::GetJString(key));
+	CallMethod<void>(RemoveExtraMethod, *GetJString(key));
 }
 
 void SentryScopeAndroid::SetExtras(const TMap<FString, FString>& extras)

@@ -14,8 +14,6 @@ public:
 
 	void SetupClassMethods();
 
-	static FSentryJavaClass GetClassName();
-
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual void AddAttachment(USentryAttachment* attachment) override;

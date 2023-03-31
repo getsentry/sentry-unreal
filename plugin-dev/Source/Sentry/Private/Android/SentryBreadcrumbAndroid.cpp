@@ -3,15 +3,16 @@
 #include "SentryBreadcrumbAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryJavaClasses.h"
 
 SentryBreadcrumbAndroid::SentryBreadcrumbAndroid()
-	: FSentryJavaObjectWrapper(GetClassName(), "()V")
+	: FSentryJavaObjectWrapper(SentryJavaClasses::Breadcrumb, "()V")
 {
 	SetupClassMethods();
 }
 
 SentryBreadcrumbAndroid::SentryBreadcrumbAndroid(jobject breadcrumb)
-	: FSentryJavaObjectWrapper(GetClassName(), breadcrumb)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::Breadcrumb, breadcrumb)
 {
 	SetupClassMethods();
 }
@@ -30,14 +31,9 @@ void SentryBreadcrumbAndroid::SetupClassMethods()
 	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
 }
 
-FSentryJavaClass SentryBreadcrumbAndroid::GetClassName()
-{
-	return FSentryJavaClass { "io/sentry/Breadcrumb", ESentryJavaClassType::External };
-}
-
 void SentryBreadcrumbAndroid::SetMessage(const FString& message)
 {
-	CallMethod<void>(SetMessageMethod, *FJavaClassObject::GetJString(message));
+	CallMethod<void>(SetMessageMethod, *GetJString(message));
 }
 
 FString SentryBreadcrumbAndroid::GetMessage() const
@@ -47,7 +43,7 @@ FString SentryBreadcrumbAndroid::GetMessage() const
 
 void SentryBreadcrumbAndroid::SetType(const FString& type)
 {
-	CallMethod<void>(SetTypeMethod, *FJavaClassObject::GetJString(type));
+	CallMethod<void>(SetTypeMethod, *GetJString(type));
 }
 
 FString SentryBreadcrumbAndroid::GetType() const
@@ -57,7 +53,7 @@ FString SentryBreadcrumbAndroid::GetType() const
 
 void SentryBreadcrumbAndroid::SetCategory(const FString& category)
 {
-	CallMethod<void>(SetCategoryMethod, *FJavaClassObject::GetJString(category));
+	CallMethod<void>(SetCategoryMethod, *GetJString(category));
 }
 
 FString SentryBreadcrumbAndroid::GetCategory() const
@@ -69,7 +65,7 @@ void SentryBreadcrumbAndroid::SetData(const TMap<FString, FString>& data)
 {
 	for (const auto& dataItem : data)
 	{
-		CallMethod<void>(SetDataMethod, *FJavaClassObject::GetJString(dataItem.Key), *FJavaClassObject::GetJString(dataItem.Value));
+		CallMethod<void>(SetDataMethod, *GetJString(dataItem.Key), *GetJString(dataItem.Value));
 	}
 }
 

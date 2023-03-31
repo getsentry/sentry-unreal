@@ -2,28 +2,9 @@
 
 #pragma once
 
-#include "Android/AndroidJava.h"
+#include "SentryDataTypesAndroid.h"
+
 #include "Android/AndroidJavaEnv.h"
-
-enum class ESentryJavaClassType : uint8
-{
-	System = 0,
-	External
-};
-
-struct FSentryJavaClass
-{
-	FName Name;
-	ESentryJavaClassType Type;
-};
-
-struct FSentryJavaMethod
-{
-	FName Name;
-	FName Signature;
-	jmethodID Method;
-	bool IsStatic;
-};
 
 class FSentryJavaObjectWrapper
 {
@@ -56,6 +37,8 @@ public:
 	static FScopedJavaObject<ReturnType> CallStaticObjectMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...);
 
 	jobject GetJObject() const;
+
+	static FScopedJavaObject<jstring> GetJString(const FString& String);
 
 private:
 	void VerifyMethodCall(FSentryJavaMethod Method) const;

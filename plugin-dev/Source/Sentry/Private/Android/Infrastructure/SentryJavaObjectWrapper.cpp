@@ -95,6 +95,12 @@ jobject FSentryJavaObjectWrapper::GetJObject() const
 	return Object;
 }
 
+FScopedJavaObject<jstring> FSentryJavaObjectWrapper::GetJString(const FString& String)
+{
+	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	return FJavaHelper::ToJavaString(JEnv, String);
+}
+
 void FSentryJavaObjectWrapper::VerifyMethodCall(FSentryJavaMethod Method) const
 {
 	if(Method.IsStatic && Object)

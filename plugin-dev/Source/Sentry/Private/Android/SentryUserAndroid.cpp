@@ -3,15 +3,16 @@
 #include "SentryUserAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryJavaClasses.h"
 
 SentryUserAndroid::SentryUserAndroid()
-	: FSentryJavaObjectWrapper(GetClassName(), "()V")
+	: FSentryJavaObjectWrapper(SentryJavaClasses::User, "()V")
 {
 	SetupClassMethods();
 }
 
 SentryUserAndroid::SentryUserAndroid(jobject user)
-	: FSentryJavaObjectWrapper(GetClassName(), user)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::User, user)
 {
 	SetupClassMethods();
 }
@@ -30,14 +31,9 @@ void SentryUserAndroid::SetupClassMethods()
 	GetDataMethod = GetMethod("getOthers", "()Ljava/util/Map;");
 }
 
-FSentryJavaClass SentryUserAndroid::GetClassName()
-{
-	return FSentryJavaClass{ "io/sentry/protocol/User", ESentryJavaClassType::External };
-}
-
 void SentryUserAndroid::SetEmail(const FString& email)
 {
-	CallMethod<void>(SetEmailMethod, *FJavaClassObject::GetJString(email));
+	CallMethod<void>(SetEmailMethod, *GetJString(email));
 }
 
 FString SentryUserAndroid::GetEmail() const
@@ -47,7 +43,7 @@ FString SentryUserAndroid::GetEmail() const
 
 void SentryUserAndroid::SetId(const FString& id)
 {
-	CallMethod<void>(SetIdMethod, *FJavaClassObject::GetJString(id));
+	CallMethod<void>(SetIdMethod, *GetJString(id));
 }
 
 FString SentryUserAndroid::GetId() const
@@ -57,7 +53,7 @@ FString SentryUserAndroid::GetId() const
 
 void SentryUserAndroid::SetUsername(const FString& username)
 {
-	CallMethod<void>(SetUsernameMethod, *FJavaClassObject::GetJString(username));
+	CallMethod<void>(SetUsernameMethod, *GetJString(username));
 }
 
 FString SentryUserAndroid::GetUsername() const
@@ -67,7 +63,7 @@ FString SentryUserAndroid::GetUsername() const
 
 void SentryUserAndroid::SetIpAddress(const FString& ipAddress)
 {
-	CallMethod<void>(SetIpAddressMethod, *FJavaClassObject::GetJString(ipAddress));
+	CallMethod<void>(SetIpAddressMethod, *GetJString(ipAddress));
 }
 
 FString SentryUserAndroid::GetIpAddress() const
