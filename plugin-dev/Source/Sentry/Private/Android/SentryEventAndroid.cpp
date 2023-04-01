@@ -2,6 +2,8 @@
 
 #include "SentryEventAndroid.h"
 
+#include "SentryMessageAndroid.h"
+
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
@@ -27,13 +29,13 @@ void SentryEventAndroid::SetupClassMethods()
 
 void SentryEventAndroid::SetMessage(const FString& message)
 {
-	CallMethod<void>(SetMessageMethod, SentryConvertorsAndroid::SentryMessageToNative(message)->GetJObject());
+	CallMethod<void>(SetMessageMethod, SentryMessageAndroid(message).GetJObject());
 }
 
 FString SentryEventAndroid::GetMessage() const
 {
 	auto message = CallObjectMethod<jobject>(GetMessageMethod);
-	return SentryConvertorsAndroid::SentryMessageToUnreal(*message);
+	return SentryMessageAndroid(*message).ToString();
 }
 
 void SentryEventAndroid::SetLevel(ESentryLevel level)

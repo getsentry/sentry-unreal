@@ -52,16 +52,6 @@ TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::SentryLevelToNativ
 	return nativeLevel;
 }
 
-TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::SentryMessageToNative(const FString& message)
-{
-	TSharedPtr<FSentryJavaObjectWrapper> NativeMessage = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::Message, "()V"));
-	FSentryJavaMethod SetMessageMethod = NativeMessage->GetMethod("setMessage", "(Ljava/lang/String;)V");
-
-	NativeMessage->CallMethod<void>(SetMessageMethod, *FSentryJavaObjectWrapper::GetJString(message));
-
-	return NativeMessage;
-}
-
 TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringArrayToNative(const TArray<FString>& stringArray)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> NativeArrayList = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::ArrayList, "()V"));
@@ -139,14 +129,6 @@ ESentryLevel SentryConvertorsAndroid::SentryLevelToUnreal(jobject level)
 	}
 
 	return unrealLevel;
-}
-
-FString SentryConvertorsAndroid::SentryMessageToUnreal(jobject message)
-{
-	FSentryJavaObjectWrapper NativeMessage(SentryJavaClasses::Message, message);
-	FSentryJavaMethod GetMessageMethod = NativeMessage.GetMethod("getMessage", "()Ljava/lang/String;");
-
-	return NativeMessage.CallMethod<FString>(GetMessageMethod);
 }
 
 USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
