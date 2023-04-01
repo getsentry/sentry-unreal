@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update Android layer implementation ([#246](https://github.com/getsentry/sentry-unreal/pull/246))
+
 ## 0.4.0
 
 ### Features
