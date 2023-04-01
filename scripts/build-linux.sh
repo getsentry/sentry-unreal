@@ -5,13 +5,9 @@ export sentryNativeRoot=$1
 export sentryArtifactsDestination=$2
 
 rm -rf "${sentryArtifactsDestination}/"*
-rm -rf "${sentryNativeRoot}/build"
 
-# Build for an older GLIBC so that it can run with the old GLIBC included in EpicGames' Unreal docker images.
-# See discussion in https://github.com/getsentry/sentry-unreal/pull/173
-docker run --rm dockcross/manylinux_2_28-x64 >./dockcross
-chmod +x ./dockcross
-./dockcross bash -c "yum install -y openssl-devel && cmake -S '${sentryNativeRoot}' -B '${sentryNativeRoot}/build' -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D CMAKE_BUILD_TYPE=RelWithDebInfo && cmake --build '${sentryNativeRoot}/build' --target sentry --parallel"
+cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D CMAKE_BUILD_TYPE=RelWithDebInfo
+cmake --build "${sentryNativeRoot}/build" --target sentry --parallel
 
 mkdir "${sentryArtifactsDestination}/bin"
 mkdir "${sentryArtifactsDestination}/include"
