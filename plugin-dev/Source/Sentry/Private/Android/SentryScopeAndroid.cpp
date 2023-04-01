@@ -11,11 +11,9 @@
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
-const static FSentryJavaClass SentryBridgeJavaClass = FSentryJavaClass { "io/sentry/unreal/SentryBridgeJava", ESentryJavaClassType::External };
-
 SentryScopeAndroid::SentryScopeAndroid()
 	: FSentryJavaObjectWrapper(SentryJavaClasses::Scope, "(Lio/sentry/SentryOptions;)V",
-		*FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryBridgeJavaClass, "getOptions", "()Lio/sentry/SentryOptions;"))
+		*FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getOptions", "()Lio/sentry/SentryOptions;"))
 {
 	SetupClassMethods();
 }
