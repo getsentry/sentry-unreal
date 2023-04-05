@@ -82,123 +82,32 @@ public class Sentry : ModuleRules
 		}
 
 		// Additional routine for Desktop platforms
+		string PlatformThirdPartyDir = Path.Combine(ModuleDirectory, "..", "ThirdParty", Target.Platform.ToString());
 		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString(), "include"));
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyDir, "include"));
+			RuntimeDependencies.Add("$(TargetOutputDir)/...", Path.Combine(PlatformThirdPartyDir, "bin/..."));
 		}
 
-		// Additional routine for Windows
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyDir, "lib", "sentry.lib"));
+			PublicDelayLoadDLLs.Add("sentry.dll");
+
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
-
-			LoadThirdPartyLibrary("sentry", Target);
-			LoadCrashpadHandler("crashpad_handler.exe", Target);
-
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
-
-		// Additional routine for Linux
-		if (Target.Platform == UnrealTargetPlatform.Linux)
+		else if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyDir, "bin", "libsentry.so"));
+
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
-
-			LoadThirdPartyLibrary("libsentry", Target);
-			LoadCrashpadHandler("crashpad_handler", Target);
-
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
-		
-		// Additional routine for Mac
-		if (Target.Platform == UnrealTargetPlatform.Mac)
+		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Apple"));
-
-			LoadThirdPartyLibrary("sentry", Target);
-
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
-		}
-	}
-
-	public void LoadThirdPartyLibrary(string libname, ReadOnlyTargetRules Target)
-	{
-		string StaticLibExtension = string.Empty;
-		string DynamicLibExtension = string.Empty;
-		string DebugSymbolsExtension = string.Empty;
-
-		if (Target.Platform == UnrealTargetPlatform.Win64)
-		{
-			StaticLibExtension = ".lib";
-			DynamicLibExtension = ".dll";
-			DebugSymbolsExtension = ".pdb";
-		}
-		if (Target.Platform == UnrealTargetPlatform.Mac)
-		{
-			StaticLibExtension = ".a";
-			DynamicLibExtension = ".dylib";
-			DebugSymbolsExtension = ".dylib.dSYM";
-		}
-		if (Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			StaticLibExtension = ".a";
-			DynamicLibExtension = ".so";
-			DebugSymbolsExtension = ".dbg.so";
-		}
-
-		// Link libraries
-		string ThirdPartyPath = Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString());
-
-		string BinariesPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries", Target.Platform.ToString()));
-
-		string SourceStaticLibPath = Path.Combine(ThirdPartyPath, "lib", libname + StaticLibExtension);
-		string SourceDynamicLibPath = Path.Combine(ThirdPartyPath, "bin", libname + DynamicLibExtension);
-		string SourceSymbolsPath = Path.Combine(ThirdPartyPath, "bin", libname + DebugSymbolsExtension);
-		string BinariesDynamicLibPath = Path.Combine(BinariesPath, libname + DynamicLibExtension);
-		string BinariesSymbolsPath = Path.Combine(BinariesPath, libname + DebugSymbolsExtension);
-
-		CopyPluginBinary(SourceDynamicLibPath, BinariesDynamicLibPath, BinariesPath);
-		RuntimeDependencies.Add(BinariesDynamicLibPath, SourceDynamicLibPath);
-
-		if (Target.Platform == UnrealTargetPlatform.Win64)
-		{
-			PublicAdditionalLibraries.Add(SourceStaticLibPath);
-			PublicDelayLoadDLLs.Add(libname + DynamicLibExtension);
-
-			CopyPluginBinary(SourceSymbolsPath, BinariesSymbolsPath, BinariesPath);
-			RuntimeDependencies.Add(BinariesSymbolsPath, SourceSymbolsPath);
-		}
-		if (Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			PublicAdditionalLibraries.Add(BinariesDynamicLibPath);
-		}
-	}
-
-	public void LoadCrashpadHandler(string HandlerName, ReadOnlyTargetRules Target)
-	{
-		string ThirdPartyPath = Path.Combine(ModuleDirectory, "../ThirdParty", Target.Platform.ToString());
-
-		string BinariesPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries", Target.Platform.ToString()));
-
-		string SourceHandlerPath = Path.Combine(ThirdPartyPath, "bin", HandlerName);
-		string BinariesHandlerPath = Path.Combine(BinariesPath, HandlerName);
-
-		CopyPluginBinary(SourceHandlerPath, BinariesHandlerPath, BinariesPath);
-		RuntimeDependencies.Add(BinariesHandlerPath, SourceHandlerPath);
-	}
-
-	public void CopyPluginBinary(string SourceFile, string DestFile, string DestFolder)
-	{
-		if (!Directory.Exists(DestFolder))
-		{
-			Directory.CreateDirectory(DestFolder);
-		}
-
-		if (!File.Exists(DestFile))
-		{
-			File.Copy(SourceFile, DestFile, true);
-
-			// Make binary writeable to avoid issues with UGS Binary Zips during sync (Perforce is usually read-only by default)
-			File.SetAttributes(DestFile, File.GetAttributes(DestFile) & ~FileAttributes.ReadOnly);
 		}
 	}
 }
