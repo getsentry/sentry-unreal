@@ -1,7 +1,23 @@
+# Builds plugin dependencies locally and replaces corresponding binaries in `plugin-dev/Sources/ThirdParty/...`
+# Depending on a platform this script is running on some dependencies may or may not be built.
+
+# Plugin dependencies are represented by the following submodules:
+# * sentry-native - for Windows support (can be built only on Windows)
+# * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
+# * sentry-java - for Android support (can be built both on Windows and MacOS)
+
+# Running this scrip without parameters will build all plugin dependencies it can on the current platform.
+
+# To build only a certain plugin dependency run `pwsh ./build-deps.ps1 <platfrom_name>`.
+# Supported platforms names are: `win`, `mac`, `ios`, `android`.
+
 Set-StrictMode -Version latest
 
 $modulesDir = Resolve-Path "$PSScriptRoot/../modules"
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
+
+$macPlatfromDeps = @("mac", "ios", "android")
+$winPlatfromDeps = @("win", "android")
 
 function buildSentryCocoaIos()
 {
@@ -118,14 +134,42 @@ function buildSentryNative()
     Copy-Item "$modulesDir/sentry-native/include/sentry.h" -Destination "$nativeOutDirIncludes/sentry.h"
 }
 
-if ($IsMacOS)
+function buildPlatformDependency([string] $platform)
 {
-    buildSentryCocoaMac
-    buildSentryCocoaIos
-    buildSentryJava
+    if ($platform -eq "win")
+    {
+        buildSentryNative
+    }
+    elseif ($platform -eq "mac")
+    {
+        buildSentryCocoaMac
+    }
+    elseif ($platform -eq "ios")
+    {
+        buildSentryCocoaIos
+    }
+    elseif ($platform -eq "android")
+    {
+        buildSentryJava
+    }
+    else
+    {
+        Write-Warning "Platform '$platform' is not supported"
+    }
 }
-elseif ($IsWindows)
+
+if ($args.Count -eq 0)
 {
-    buildSentryNative
-    buildSentryJava
+    $platforms = if ($IsMacOS) { $macPlatfromDeps } else { $winPlatfromDeps }
+    foreach ($platform in $platforms)
+    {
+        buildPlatformDependency($platform)
+    }
+}
+else
+{
+    foreach ($platform in $args)
+    {
+        buildPlatformDependency($platform)
+    }
 }
