@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix snapshot update script ([#253](https://github.com/getsentry/sentry-unreal/pull/253))
+
 ## 0.4.0
 
 ### Features
