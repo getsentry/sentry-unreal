@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add script for building plugin dependencies locally ([#252](https://github.com/getsentry/sentry-unreal/pull/252))
+
 ## 0.4.0
 
 ### Features
