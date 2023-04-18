@@ -165,6 +165,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryError.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryEvent.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryException.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryFrame.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryGeo.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryHub.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryId.h
@@ -262,6 +263,7 @@ Source/ThirdParty/Mac/include/Headers/SentryError.h
 Source/ThirdParty/Mac/include/Headers/SentryEvent.h
 Source/ThirdParty/Mac/include/Headers/SentryException.h
 Source/ThirdParty/Mac/include/Headers/SentryFrame.h
+Source/ThirdParty/Mac/include/Headers/SentryGeo.h
 Source/ThirdParty/Mac/include/Headers/SentryHttpStatusCodeRange.h
 Source/ThirdParty/Mac/include/Headers/SentryHub.h
 Source/ThirdParty/Mac/include/Headers/SentryId.h
