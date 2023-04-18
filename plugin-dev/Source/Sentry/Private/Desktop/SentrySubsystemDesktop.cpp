@@ -191,4 +191,14 @@ void SentrySubsystemDesktop::SetLevel(ESentryLevel level)
 	sentry_set_level(SentryConvertorsDesktop::SentryLevelToNative(level));
 }
 
+void SentrySubsystemDesktop::StartSession()
+{
+	sentry_start_session();
+}
+
+void SentrySubsystemDesktop::EndSession()
+{
+	sentry_end_session();
+}
+
 #endif

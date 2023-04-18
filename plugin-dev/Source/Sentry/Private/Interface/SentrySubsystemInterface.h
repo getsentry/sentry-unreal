@@ -35,4 +35,6 @@ public:
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual void RemoveTag(const FString& key) = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;
+	virtual void StartSession() = 0;
+	virtual void EndSession() = 0;
 };

@@ -154,3 +154,13 @@ void SentrySubsystemApple::SetLevel(ESentryLevel level)
 		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
 	}];
 }
+
+void SentrySubsystemApple::StartSession()
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) startSession];
+}
+
+void SentrySubsystemApple::EndSession()
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) endSession];
+}

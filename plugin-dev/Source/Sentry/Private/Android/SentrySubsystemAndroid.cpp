@@ -156,3 +156,13 @@ void SentrySubsystemAndroid::SetLevel(ESentryLevel level)
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "setLevel", "(Lio/sentry/SentryLevel;)V",
 		SentryConvertorsAndroid::SentryLevelToNative(level));
 }
+
+void SentrySubsystemAndroid::StartSession()
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "startSession", "()V", nullptr);
+}
+
+void SentrySubsystemAndroid::EndSession()
+{
+	SentryMethodCallAndroid::CallStaticVoidMethod(SentryJavaClassName, "endSession", "()V", nullptr);
+}
