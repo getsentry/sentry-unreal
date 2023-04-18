@@ -6,6 +6,18 @@
 
 - Fix snapshot update script ([#253](https://github.com/getsentry/sentry-unreal/pull/253))
 
+### Dependencies
+
+- Bump CLI from v2.16.1 to v2.17.2 ([#250](https://github.com/getsentry/sentry-unreal/pull/250), [#251](https://github.com/getsentry/sentry-unreal/pull/251), [#254](https://github.com/getsentry/sentry-unreal/pull/254))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2172)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.16.1...2.17.2)
+- Bump Cocoa SDK (iOS) from v8.3.3 to v8.4.0 ([#247](https://github.com/getsentry/sentry-unreal/pull/247))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#840)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.3.3...8.4.0)
+- Bump Cocoa SDK (iOS) from v8.4.0 to v8.5.0 ([#257](https://github.com/getsentry/sentry-unreal/pull/257))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#850)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.4.0...8.5.0)
+
 ## 0.4.0
 
 ### Features

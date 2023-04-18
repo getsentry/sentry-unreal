@@ -68,6 +68,8 @@ public class Sentry : ModuleRules
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
+
+			PublicDefinitions.Add("COCOAPODS=0");
 		}
 
 		// Additional routine for Android
@@ -117,6 +119,7 @@ public class Sentry : ModuleRules
 			LoadThirdPartyLibrary("sentry", Target);
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
+			PublicDefinitions.Add("COCOAPODS=0");
 		}
 	}
 
