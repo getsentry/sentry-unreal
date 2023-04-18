@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix snapshot update script ([#253](https://github.com/getsentry/sentry-unreal/pull/253))
+
 ### Dependencies
 
 - Bump CLI from v2.16.1 to v2.17.2 ([#250](https://github.com/getsentry/sentry-unreal/pull/250), [#251](https://github.com/getsentry/sentry-unreal/pull/251), [#254](https://github.com/getsentry/sentry-unreal/pull/254))
