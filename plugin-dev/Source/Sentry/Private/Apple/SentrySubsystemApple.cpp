@@ -31,6 +31,8 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 		options.dsn = settings->DsnUrl.GetNSString();
 		options.releaseName = settings->Release.GetNSString();
 		options.environment = settings->Environment.GetNSString();
+		options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
+		options.sessionTrackingIntervalMillis = settings->SessionTimeout;
 	}];
 
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {

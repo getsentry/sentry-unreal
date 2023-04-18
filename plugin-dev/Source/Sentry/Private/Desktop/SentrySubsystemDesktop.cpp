@@ -77,6 +77,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
+	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
 
 	int initResult = sentry_init(options);
 

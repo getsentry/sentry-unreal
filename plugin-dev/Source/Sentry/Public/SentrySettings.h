@@ -108,6 +108,14 @@ public:
 		Meta = (DisplayName = "Attach game log to captured events", ToolTip = "Flag indicating whether to attach game log automatically to captured events. Not available in shipping builds."))
 	bool EnableAutoLogAttachment;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
+	bool EnableAutoSessionTracking;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+		Meta = (DisplayName = "Session timeout, milliseconds (for Android/Apple only)", ToolTip = "Time interval after which session will be terminated if application is in background mode."))
+	int32 SessionTimeout;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
 	bool UploadSymbolsAutomatically;
