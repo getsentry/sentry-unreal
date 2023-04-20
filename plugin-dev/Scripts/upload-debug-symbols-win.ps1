@@ -94,8 +94,8 @@ $PropertiesFile = "$ProjectPath/sentry.properties"
 
 If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
 {
-    Write-Error "Sentry: Properties file is missing: '$PropertiesFile'"
-    Exit 1
+    Write-Warning "Sentry: Properties file is missing: '$PropertiesFile'"
+    Exit
 }
 
 Write-Host "Sentry: Upload started using PropertiesFile '$PropertiesFile'"
