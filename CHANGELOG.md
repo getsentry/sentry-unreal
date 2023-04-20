@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix snapshot update script ([#253](https://github.com/getsentry/sentry-unreal/pull/253))
+- Fix debug symbol uploading scripts ([#261](https://github.com/getsentry/sentry-unreal/pull/261))
 
 ### Dependencies
 
