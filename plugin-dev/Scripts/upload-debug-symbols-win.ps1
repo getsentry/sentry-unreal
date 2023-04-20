@@ -90,7 +90,7 @@ If ("$IncludeSourceFiles".ToLower() -eq "true")
     $CliArgs += "--include-sources"
 }
 
-$PropertiesFile = "$ProjectPath/sentry.properties"
+$PropertiesFile = "$ProjectPath\sentry.properties"
 
 If (-not (Test-Path -Path $PropertiesFile -PathType Leaf))
 {
