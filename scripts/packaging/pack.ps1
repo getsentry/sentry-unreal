@@ -1,7 +1,13 @@
 Remove-Item "package-release" -Force -Recurse -ErrorAction SilentlyContinue
 New-Item "package-release" -ItemType Directory
 
-$exclude = @('Sentry.uplugin', '.gitkeep')
+$exclude = @(
+    'Sentry.uplugin',
+    '.gitkeep',
+    '.DS_Store',
+    'Binaries',
+    'Intermediate'
+)
 
 Copy-Item "plugin-dev/*" "package-release/" -Exclude $exclude -Recurse
 Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"

@@ -68,6 +68,8 @@ public class Sentry : ModuleRules
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
+
+			PublicDefinitions.Add("COCOAPODS=0");
 		}
 
 		// Additional routine for Android
@@ -94,29 +96,33 @@ public class Sentry : ModuleRules
 			PublicDelayLoadDLLs.Add("sentry.dll");
 
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 
 			RuntimeDependencies.Add("$(TargetOutputDir)/crashpad_handler.exe", Path.Combine(PlatformThirdPartyDir, "bin/crashpad_handler.exe"));
 			RuntimeDependencies.Add("$(TargetOutputDir)/sentry.dll", Path.Combine(PlatformThirdPartyDir, "bin/sentry.dll"));
 			RuntimeDependencies.Add("$(TargetOutputDir)/sentry.pdb", Path.Combine(PlatformThirdPartyDir, "bin/sentry.pdb"), StagedFileType.DebugNonUFS);
+
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyDir, "bin", "libsentry.so"));
 
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 
 			RuntimeDependencies.Add("$(TargetOutputDir)/crashpad_handler", Path.Combine(PlatformThirdPartyDir, "bin/crashpad_handler"));
 			RuntimeDependencies.Add("$(TargetOutputDir)/libsentry.so", Path.Combine(PlatformThirdPartyDir, "bin/libsentry.so"));
 			RuntimeDependencies.Add("$(TargetOutputDir)/libsentry.dbg.so", Path.Combine(PlatformThirdPartyDir, "bin/libsentry.dbg.so"), StagedFileType.DebugNonUFS);
+
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Apple"));
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 
 			RuntimeDependencies.Add("$(TargetOutputDir)/sentry.dylib", Path.Combine(PlatformThirdPartyDir, "bin/sentry.dylib"));
+
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
+			PublicDefinitions.Add("COCOAPODS=0");
 		}
 	}
 }
