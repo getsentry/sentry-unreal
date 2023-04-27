@@ -48,8 +48,8 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	const FString HandlerExecutableName = TEXT("crashpad_handler");
 #endif
 
-	const FString HandlerPath = FPaths::ConvertRelativePathToFull(HandlerExecutableName);
-	const FString DatabasePath = FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native"));
+	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
+	const FString DatabasePath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT(".sentry-native"));
 
 	const FString LogFilePath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
 

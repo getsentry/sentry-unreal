@@ -10,6 +10,7 @@
 #include "Modules/ModuleManager.h"
 #include "Developer/Settings/Public/ISettingsModule.h"
 #include "Misc/Paths.h"
+#include "HAL/PlatformProcess.h"
 
 #define LOCTEXT_NAMESPACE "FSentryModule"
 
@@ -29,6 +30,9 @@ void FSentryModule::StartupModule()
 			SentrySettings);
 	}
 
+	const FString PluginBinariesPath = GetBinariesPath();
+	FPlatformProcess::PushDllDirectory(*PluginBinariesPath);
+
 #if PLATFORM_WINDOWS
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(TEXT("sentry.dll"));
 #elif PLATFORM_MAC
@@ -36,6 +40,8 @@ void FSentryModule::StartupModule()
 #elif PLATFORM_LINUX
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(TEXT("libsentry.so"));
 #endif
+
+	FPlatformProcess::PopDllDirectory(*PluginBinariesPath);
 }
 
 void FSentryModule::ShutdownModule()
@@ -85,6 +91,12 @@ void* FSentryModule::GetSentryLibHandle() const
 USentrySettings* FSentryModule::GetSettings() const
 {
 	return SentrySettings;
+}
+
+FString FSentryModule::GetBinariesPath()
+{
+	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
+	return FPaths::Combine(PluginDir, TEXT("Binaries"), FPlatformProcess::GetBinariesSubdirectory());
 }
 
 FString FSentryModule::GetPluginVersion()

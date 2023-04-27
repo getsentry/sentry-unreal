@@ -97,9 +97,9 @@ public class Sentry : ModuleRules
 
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
 
-			RuntimeDependencies.Add("$(TargetOutputDir)/crashpad_handler.exe", Path.Combine(PlatformThirdPartyDir, "bin/crashpad_handler.exe"));
-			RuntimeDependencies.Add("$(TargetOutputDir)/sentry.dll", Path.Combine(PlatformThirdPartyDir, "bin/sentry.dll"));
-			RuntimeDependencies.Add("$(TargetOutputDir)/sentry.pdb", Path.Combine(PlatformThirdPartyDir, "bin/sentry.pdb"), StagedFileType.DebugNonUFS);
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Win64/crashpad_handler.exe", Path.Combine(PlatformThirdPartyDir, "bin/crashpad_handler.exe"));
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Win64/sentry.dll", Path.Combine(PlatformThirdPartyDir, "bin/sentry.dll"));
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Win64/sentry.pdb", Path.Combine(PlatformThirdPartyDir, "bin/sentry.pdb"), StagedFileType.DebugNonUFS);
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
@@ -109,9 +109,9 @@ public class Sentry : ModuleRules
 
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Desktop"));
 
-			RuntimeDependencies.Add("$(TargetOutputDir)/crashpad_handler", Path.Combine(PlatformThirdPartyDir, "bin/crashpad_handler"));
-			RuntimeDependencies.Add("$(TargetOutputDir)/libsentry.so", Path.Combine(PlatformThirdPartyDir, "bin/libsentry.so"));
-			RuntimeDependencies.Add("$(TargetOutputDir)/libsentry.dbg.so", Path.Combine(PlatformThirdPartyDir, "bin/libsentry.dbg.so"), StagedFileType.DebugNonUFS);
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Linux/crashpad_handler", Path.Combine(PlatformThirdPartyDir, "bin/crashpad_handler"));
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Linux/libsentry.so", Path.Combine(PlatformThirdPartyDir, "bin/libsentry.so"));
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Linux/libsentry.dbg.so", Path.Combine(PlatformThirdPartyDir, "bin/libsentry.dbg.so"), StagedFileType.DebugNonUFS);
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
@@ -119,7 +119,7 @@ public class Sentry : ModuleRules
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/Apple"));
 
-			RuntimeDependencies.Add("$(TargetOutputDir)/sentry.dylib", Path.Combine(PlatformThirdPartyDir, "bin/sentry.dylib"));
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Mac/sentry.dylib", Path.Combine(PlatformThirdPartyDir, "bin/sentry.dylib"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");
