@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add script for building plugin dependencies locally ([#252](https://github.com/getsentry/sentry-unreal/pull/252))
+
 ### Fixes
 
 - Fix snapshot update script ([#253](https://github.com/getsentry/sentry-unreal/pull/253))
