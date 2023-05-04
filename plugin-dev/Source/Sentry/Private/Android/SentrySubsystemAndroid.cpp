@@ -33,10 +33,20 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 		? IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename())
 		: FString();
 
+	FString ReleaseName;
+	if(settings->OverrideReleaseName)
+	{
+		ReleaseName = settings->Release;
+	}
+	else
+	{
+		ReleaseName = SentryMethodCallAndroid::CallStaticStringMethod(SentryBridgeJavaClassName, "getFormattedReleaseName", "(Landroid/app/Activity;)Ljava/lang/String;", FJavaWrapper::GameActivityThis);
+	}
+
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJ)V",
 		FJavaWrapper::GameActivityThis,
 		*FJavaClassObject::GetJString(settings->DsnUrl),
-		*FJavaClassObject::GetJString(settings->Release),
+		*FJavaClassObject::GetJString(ReleaseName),
 		*FJavaClassObject::GetJString(settings->Environment),
 		*FJavaClassObject::GetJString(LogFilePath),
 		settings->EnableAutoSessionTracking,

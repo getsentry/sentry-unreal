@@ -29,10 +29,23 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 
 	[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
 		options.dsn = settings->DsnUrl.GetNSString();
-		options.releaseName = settings->Release.GetNSString();
 		options.environment = settings->Environment.GetNSString();
 		options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 		options.sessionTrackingIntervalMillis = settings->SessionTimeout;
+
+		if(settings->OverrideReleaseName)
+		{
+			options.releaseName = settings->Release.GetNSString();
+		}
+		else
+		{
+			NSDictionary* infoDictionary = [[NSBundle mainBundle] infoDictionary];
+			options.releaseName = [NSString stringWithFormat:@"%@@%@+%@",
+				infoDictionary[@"CFBundleIdentifier"],
+				infoDictionary[@"CFBundleShortVersionString"],
+				infoDictionary[@"CFBundleVersion"]
+			];
+		}
 	}];
 
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {

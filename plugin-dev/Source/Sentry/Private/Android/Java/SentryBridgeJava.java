@@ -3,6 +3,8 @@
 package io.sentry.unreal;
 
 import android.app.Activity;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 
@@ -22,6 +24,17 @@ import io.sentry.protocol.SentryId;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
+
+	public static String getFormattedReleaseName(Activity activity) {
+		PackageManager packageManager = activity.getPackageManager();
+		PackageInfo packageInfo;
+		try {
+			packageInfo = packageManager.getPackageInfo(activity.getPackageName(), 0);
+		} catch (PackageManager.NameNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		return String.format("%s@%s+%s;", activity.getPackageName(), packageInfo.versionName, packageInfo.versionCode);
+	}
 
 	public static void init(
 			Activity activity,
