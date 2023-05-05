@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add release health monitoring feature ([#270](https://github.com/getsentry/sentry-unreal/pull/270))
+
 ## 0.5.0
 
 ### Features
