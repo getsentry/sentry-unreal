@@ -1,22 +1,27 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
+
+### Features
+
+- Add script for building plugin dependencies locally ([#252](https://github.com/getsentry/sentry-unreal/pull/252))
 
 ### Fixes
 
 - Fix snapshot update script ([#253](https://github.com/getsentry/sentry-unreal/pull/253))
+- Fix debug symbol uploading scripts ([#261](https://github.com/getsentry/sentry-unreal/pull/261))
 
 ### Dependencies
 
-- Bump CLI from v2.16.1 to v2.17.2 ([#250](https://github.com/getsentry/sentry-unreal/pull/250), [#251](https://github.com/getsentry/sentry-unreal/pull/251), [#254](https://github.com/getsentry/sentry-unreal/pull/254))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2172)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.16.1...2.17.2)
-- Bump Cocoa SDK (iOS) from v8.3.3 to v8.4.0 ([#247](https://github.com/getsentry/sentry-unreal/pull/247))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#840)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.3.3...8.4.0)
-- Bump Cocoa SDK (iOS) from v8.4.0 to v8.5.0 ([#257](https://github.com/getsentry/sentry-unreal/pull/257))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#850)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.4.0...8.5.0)
+- Bump CLI from v2.16.1 to v2.17.5 ([#250](https://github.com/getsentry/sentry-unreal/pull/250), [#251](https://github.com/getsentry/sentry-unreal/pull/251), [#254](https://github.com/getsentry/sentry-unreal/pull/254), [#260](https://github.com/getsentry/sentry-unreal/pull/260), [#263](https://github.com/getsentry/sentry-unreal/pull/263), [#266](https://github.com/getsentry/sentry-unreal/pull/266))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2175)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.16.1...2.17.5)
+- Bump Cocoa SDK (iOS) from v8.3.3 to v8.6.0 ([#247](https://github.com/getsentry/sentry-unreal/pull/247), [#257](https://github.com/getsentry/sentry-unreal/pull/257), [#267](https://github.com/getsentry/sentry-unreal/pull/267))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#860)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.3.3...8.6.0)
+- Bump Java SDK (Android) from v6.17.0 to v6.18.1 ([#264](https://github.com/getsentry/sentry-unreal/pull/264), [#265](https://github.com/getsentry/sentry-unreal/pull/265))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6181)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.17.0...6.18.1)
 
 ## 0.4.0
 
@@ -35,12 +40,9 @@
 - Bump Cocoa SDK (iOS) from v8.2.0 to v8.3.1 ([#226](https://github.com/getsentry/sentry-unreal/pull/226), [#228](https://github.com/getsentry/sentry-unreal/pull/228))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#831)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.2.0...8.3.1)
-- Bump Java SDK (Android) from v6.15.0 to v6.16.0 ([#233](https://github.com/getsentry/sentry-unreal/pull/233))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6160)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.15.0...6.16.0)
-- Bump Java SDK (Android) from v6.16.0 to v6.17.0 ([#245](https://github.com/getsentry/sentry-unreal/pull/245))
+- Bump Java SDK (Android) from v6.15.0 to v6.17.0 ([#233](https://github.com/getsentry/sentry-unreal/pull/233), [#245](https://github.com/getsentry/sentry-unreal/pull/245))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6170)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.16.0...6.17.0)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.15.0...6.17.0)
 
 ## 0.3.0
 

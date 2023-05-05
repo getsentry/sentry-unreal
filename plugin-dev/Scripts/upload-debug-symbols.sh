@@ -51,7 +51,7 @@ fi
 export SENTRY_PROPERTIES="$projectPath/sentry.properties"
 if [ ! -f "$SENTRY_PROPERTIES" ]; then
     echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'"
-    exit 1
+    exit
 fi
 
 echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
