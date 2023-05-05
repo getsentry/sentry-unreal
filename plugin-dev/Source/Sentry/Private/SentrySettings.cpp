@@ -19,8 +19,6 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, IncludeSources(false)
 	, CrashReporterUrl()
 {
-	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Release, GGameIni);
-
 #if WITH_EDITOR
 	Environment = TEXT("Editor");
 #elif UE_BUILD_SHIPPING

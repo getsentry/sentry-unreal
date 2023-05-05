@@ -33,15 +33,9 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 		? IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename())
 		: FString();
 
-	FString ReleaseName;
-	if(settings->OverrideReleaseName)
-	{
-		ReleaseName = settings->Release;
-	}
-	else
-	{
-		ReleaseName = SentryMethodCallAndroid::CallStaticStringMethod(SentryBridgeJavaClassName, "getFormattedReleaseName", "(Landroid/app/Activity;)Ljava/lang/String;", FJavaWrapper::GameActivityThis);
-	}
+	const FString ReleaseName = settings->OverrideReleaseName
+		? settings->Release
+		: SentryMethodCallAndroid::CallStaticStringMethod(SentryBridgeJavaClassName, "getFormattedReleaseName", "(Landroid/app/Activity;)Ljava/lang/String;", FJavaWrapper::GameActivityThis);
 
 	SentryMethodCallAndroid::CallStaticVoidMethod(SentryBridgeJavaClassName, "init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJ)V",
 		FJavaWrapper::GameActivityThis,

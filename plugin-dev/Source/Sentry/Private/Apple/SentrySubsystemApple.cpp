@@ -22,6 +22,7 @@
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
+#include "Misc/App.h"
 
 void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 {
@@ -32,25 +33,9 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 		options.environment = settings->Environment.GetNSString();
 		options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 		options.sessionTrackingIntervalMillis = settings->SessionTimeout;
-
-		if(settings->OverrideReleaseName)
-		{
-			options.releaseName = settings->Release.GetNSString();
-		}
-		else
-		{
-			#if PLATFORM_MAC
-				FString Version;
-				GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
-				options.releaseName = Version.GetNSString();
-			#elif PLATFORM_IOS
-				NSDictionary* infoDictionary = [[NSBundle mainBundle] infoDictionary];
-				options.releaseName = [NSString stringWithFormat:@"%@@%@",
-					infoDictionary[@"CFBundleIdentifier"],
-					infoDictionary[@"CFBundleShortVersionString"]
-				];
-			#endif
-		}
+		options.releaseName = settings->OverrideReleaseName
+			? settings->Release.GetNSString()
+			: GetFormattedReleaseName().GetNSString();
 	}];
 
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
@@ -181,4 +166,26 @@ void SentrySubsystemApple::StartSession()
 void SentrySubsystemApple::EndSession()
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) endSession];
+}
+
+FString SentrySubsystemApple::GetFormattedReleaseName()
+{
+	FString FormattedReleaseName;
+
+#if PLATFORM_MAC
+	FString Version;
+	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
+	if(!Version.IsEmpty())
+	{
+		FormattedReleaseName = FString::Printf(TEXT("%s@%s"), FApp::GetProjectName(), *Version);
+	}
+#elif PLATFORM_IOS
+	NSDictionary* infoDictionary = [[NSBundle mainBundle] infoDictionary];
+	FormattedReleaseName = FString([NSString stringWithFormat:@"%@@%@",
+		infoDictionary[@"CFBundleIdentifier"],
+		infoDictionary[@"CFBundleShortVersionString"]
+	]);
+#endif
+
+	return FormattedReleaseName;
 }
