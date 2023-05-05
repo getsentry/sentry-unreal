@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJNI.h"
-
 #include "Interface/SentryBreadcrumbInterface.h"
 
-class SentryBreadcrumbAndroid : public ISentryBreadcrumb
+#include "Infrastructure/SentryJavaObjectWrapper.h"
+
+class SentryBreadcrumbAndroid : public ISentryBreadcrumb, public FSentryJavaObjectWrapper
 {
 public:
 	SentryBreadcrumbAndroid();
 	SentryBreadcrumbAndroid(jobject breadcrumb);
-	virtual ~SentryBreadcrumbAndroid() override;
 
-	jobject GetNativeObject();
+	void SetupClassMethods();
 
 	virtual void SetMessage(const FString& message) override;
 	virtual FString GetMessage() const override;
@@ -27,5 +26,14 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	jobject BreadcrumbAndroid;
+	FSentryJavaMethod SetMessageMethod;
+	FSentryJavaMethod GetMessageMethod;
+	FSentryJavaMethod SetTypeMethod;
+	FSentryJavaMethod GetTypeMethod;
+	FSentryJavaMethod SetCategoryMethod;
+	FSentryJavaMethod GetCategoryMethod;
+	FSentryJavaMethod SetDataMethod;
+	FSentryJavaMethod GetDataMethod;
+	FSentryJavaMethod SetLevelMethod;
+	FSentryJavaMethod GetLevelMethod;
 };

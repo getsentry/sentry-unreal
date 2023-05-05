@@ -2,37 +2,26 @@
 
 #include "SentryIdAndroid.h"
 
-#include "Infrastructure/SentryMethodCallAndroid.h"
-
-#include "Android/AndroidApplication.h"
+#include "Infrastructure/SentryJavaClasses.h"
 
 SentryIdAndroid::SentryIdAndroid()
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryId, "()V")
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	jclass idClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/protocol/SentryId");
-	jmethodID idCtor = Env->GetMethodID(idClass, "<init>", "()V");
-	jobject idObject= Env->NewObject(idClass, idCtor);
-	IdAndroid = Env->NewGlobalRef(idObject);
+	SetupClassMethods();
 }
 
 SentryIdAndroid::SentryIdAndroid(jobject id)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryId, id)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	IdAndroid = Env->NewGlobalRef(id);
+	SetupClassMethods();
 }
 
-SentryIdAndroid::~SentryIdAndroid()
+void SentryIdAndroid::SetupClassMethods()
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	Env->DeleteGlobalRef(IdAndroid);
-}
-
-jobject SentryIdAndroid::GetNativeObject()
-{
-	return IdAndroid;
+	ToStringMethod = GetMethod("toString", "()Ljava/lang/String;");
 }
 
 FString SentryIdAndroid::ToString() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(IdAndroid, "toString", "()Ljava/lang/String;");
+	return CallMethod<FString>(ToStringMethod);
 }

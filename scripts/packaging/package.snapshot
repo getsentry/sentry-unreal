@@ -18,8 +18,11 @@ Source/Sentry/Private/Android/Callbacks/SentryScopeCallbackAndroid.h
 Source/Sentry/Private/Android/Infrastructure/
 Source/Sentry/Private/Android/Infrastructure/SentryConvertorsAndroid.cpp
 Source/Sentry/Private/Android/Infrastructure/SentryConvertorsAndroid.h
-Source/Sentry/Private/Android/Infrastructure/SentryMethodCallAndroid.cpp
-Source/Sentry/Private/Android/Infrastructure/SentryMethodCallAndroid.h
+Source/Sentry/Private/Android/Infrastructure/SentryDataTypesAndroid.h
+Source/Sentry/Private/Android/Infrastructure/SentryJavaClasses.cpp
+Source/Sentry/Private/Android/Infrastructure/SentryJavaClasses.h
+Source/Sentry/Private/Android/Infrastructure/SentryJavaObjectWrapper.cpp
+Source/Sentry/Private/Android/Infrastructure/SentryJavaObjectWrapper.h
 Source/Sentry/Private/Android/Java/
 Source/Sentry/Private/Android/Java/SentryBridgeJava.java
 Source/Sentry/Private/Android/Jni/
@@ -32,6 +35,8 @@ Source/Sentry/Private/Android/SentryEventAndroid.cpp
 Source/Sentry/Private/Android/SentryEventAndroid.h
 Source/Sentry/Private/Android/SentryIdAndroid.cpp
 Source/Sentry/Private/Android/SentryIdAndroid.h
+Source/Sentry/Private/Android/SentryMessageAndroid.cpp
+Source/Sentry/Private/Android/SentryMessageAndroid.h
 Source/Sentry/Private/Android/SentryScopeAndroid.cpp
 Source/Sentry/Private/Android/SentryScopeAndroid.h
 Source/Sentry/Private/Android/SentrySubsystemAndroid.cpp
