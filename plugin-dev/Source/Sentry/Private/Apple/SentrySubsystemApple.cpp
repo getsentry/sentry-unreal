@@ -39,11 +39,17 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 		}
 		else
 		{
-			NSDictionary* infoDictionary = [[NSBundle mainBundle] infoDictionary];
-			options.releaseName = [NSString stringWithFormat:@"%@@%@",
-				infoDictionary[@"CFBundleIdentifier"],
-				infoDictionary[@"CFBundleShortVersionString"]
-			];
+			#if PLATFORM_MAC
+				FString Version;
+				GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
+				options.releaseName = Version.GetNSString();
+			#elif PLATFORM_IOS
+				NSDictionary* infoDictionary = [[NSBundle mainBundle] infoDictionary];
+				options.releaseName = [NSString stringWithFormat:@"%@@%@",
+					infoDictionary[@"CFBundleIdentifier"],
+					infoDictionary[@"CFBundleShortVersionString"]
+				];
+			#endif
 		}
 	}];
 
