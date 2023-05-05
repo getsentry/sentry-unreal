@@ -74,16 +74,10 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(DatabasePath)));
 #endif
 
-	if(settings->OverrideReleaseName)
-	{
-		sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
-	}
-	else
-	{
-		FString Version;
-		GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
-		sentry_options_set_release(options, TCHAR_TO_ANSI(*Version));
-	}
+
+	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
+		? *settings->Release
+		: *GetFormattedReleaseName()));
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
@@ -211,6 +205,20 @@ void SentrySubsystemDesktop::StartSession()
 void SentrySubsystemDesktop::EndSession()
 {
 	sentry_end_session();
+}
+
+FString SentrySubsystemDesktop::GetFormattedReleaseName()
+{
+	FString FormattedReleaseName;
+
+	FString Version;
+	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
+	if(!Version.IsEmpty())
+	{
+		FormattedReleaseName = FString::Printf(TEXT("%s@%s"), FApp::GetProjectName(), *Version);
+	}
+
+	return FormattedReleaseName;
 }
 
 #endif

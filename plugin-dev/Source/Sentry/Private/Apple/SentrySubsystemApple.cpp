@@ -23,6 +23,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "Misc/App.h"
+#include "Misc/ConfigCacheIni.h"
 
 void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 {

@@ -33,6 +33,8 @@ public:
 	virtual void EndSession() override;
 
 private:
+	FString GetFormattedReleaseName();
+
 	TSharedPtr<SentryCrashReporter> crashReporter;
 };
 
