@@ -40,10 +40,9 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 		else
 		{
 			NSDictionary* infoDictionary = [[NSBundle mainBundle] infoDictionary];
-			options.releaseName = [NSString stringWithFormat:@"%@@%@+%@",
+			options.releaseName = [NSString stringWithFormat:@"%@@%@",
 				infoDictionary[@"CFBundleIdentifier"],
-				infoDictionary[@"CFBundleShortVersionString"],
-				infoDictionary[@"CFBundleVersion"]
+				infoDictionary[@"CFBundleShortVersionString"]
 			];
 		}
 	}];

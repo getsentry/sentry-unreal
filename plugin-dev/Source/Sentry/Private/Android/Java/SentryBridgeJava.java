@@ -33,7 +33,7 @@ public class SentryBridgeJava {
 		} catch (PackageManager.NameNotFoundException e) {
 			throw new RuntimeException(e);
 		}
-		return String.format("%s@%s+%s;", activity.getPackageName(), packageInfo.versionName, packageInfo.versionCode);
+		return String.format("%s@%s", activity.getPackageName(), packageInfo.versionName);
 	}
 
 	public static void init(
