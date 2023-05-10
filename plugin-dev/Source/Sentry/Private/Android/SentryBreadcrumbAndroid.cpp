@@ -2,94 +2,86 @@
 
 #include "SentryBreadcrumbAndroid.h"
 
-#include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
-
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJava.h"
+#include "Infrastructure/SentryJavaClasses.h"
 
 SentryBreadcrumbAndroid::SentryBreadcrumbAndroid()
+	: FSentryJavaObjectWrapper(SentryJavaClasses::Breadcrumb, "()V")
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	jclass breadcrumbClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/Breadcrumb");
-	jmethodID breadcrumbCtor = Env->GetMethodID(breadcrumbClass, "<init>", "()V");
-	jobject breadcrumbObject= Env->NewObject(breadcrumbClass, breadcrumbCtor);
-	BreadcrumbAndroid = Env->NewGlobalRef(breadcrumbObject);
+	SetupClassMethods();
 }
 
 SentryBreadcrumbAndroid::SentryBreadcrumbAndroid(jobject breadcrumb)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::Breadcrumb, breadcrumb)
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	BreadcrumbAndroid = Env->NewGlobalRef(breadcrumb);
+	SetupClassMethods();
 }
 
-SentryBreadcrumbAndroid::~SentryBreadcrumbAndroid()
+void SentryBreadcrumbAndroid::SetupClassMethods()
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	Env->DeleteGlobalRef(BreadcrumbAndroid);
-}
-
-jobject SentryBreadcrumbAndroid::GetNativeObject()
-{
-	return BreadcrumbAndroid;
+	SetMessageMethod = GetMethod("setMessage", "(Ljava/lang/String;)V");
+	GetMessageMethod = GetMethod("getMessage", "()Ljava/lang/String;");
+	SetTypeMethod = GetMethod("setType", "(Ljava/lang/String;)V");
+	GetTypeMethod = GetMethod("getType", "()Ljava/lang/String;");
+	SetCategoryMethod = GetMethod("setCategory", "(Ljava/lang/String;)V");
+	GetCategoryMethod = GetMethod("getCategory", "()Ljava/lang/String;");
+	SetDataMethod = GetMethod("setData", "(Ljava/lang/String;Ljava/lang/Object;)V");
+	GetDataMethod = GetMethod("getData", "()Ljava/util/Map;");
+	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
+	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
 }
 
 void SentryBreadcrumbAndroid::SetMessage(const FString& message)
 {
-	SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setMessage", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(message));
+	CallMethod<void>(SetMessageMethod, *GetJString(message));
 }
 
 FString SentryBreadcrumbAndroid::GetMessage() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(BreadcrumbAndroid, "getMessage", "()Ljava/lang/String;");
+	return CallMethod<FString>(GetMessageMethod);
 }
 
 void SentryBreadcrumbAndroid::SetType(const FString& type)
 {
-	SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setType", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(type));
+	CallMethod<void>(SetTypeMethod, *GetJString(type));
 }
 
 FString SentryBreadcrumbAndroid::GetType() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(BreadcrumbAndroid, "getType", "()Ljava/lang/String;");
+	return CallMethod<FString>(GetTypeMethod);
 }
 
 void SentryBreadcrumbAndroid::SetCategory(const FString& category)
 {
-	SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setCategory", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(category));
+	CallMethod<void>(SetCategoryMethod, *GetJString(category));
 }
 
 FString SentryBreadcrumbAndroid::GetCategory() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(BreadcrumbAndroid, "getCategory", "()Ljava/lang/String;");
+	return CallMethod<FString>(GetCategoryMethod);
 }
 
 void SentryBreadcrumbAndroid::SetData(const TMap<FString, FString>& data)
 {
 	for (const auto& dataItem : data)
 	{
-		SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setData", "(Ljava/lang/String;Ljava/lang/Object;)V",
-			*FJavaClassObject::GetJString(dataItem.Key), *FJavaClassObject::GetJString(dataItem.Value));
+		CallMethod<void>(SetDataMethod, *GetJString(dataItem.Key), *GetJString(dataItem.Value));
 	}
 }
 
 TMap<FString, FString> SentryBreadcrumbAndroid::GetData() const
 {
-	jobject data = SentryMethodCallAndroid::CallObjectMethod(BreadcrumbAndroid, "getData", "()Ljava/util/Map;");
-	return SentryConvertorsAndroid::StringMapToUnreal(data);
+	auto data = CallObjectMethod<jobject>(GetDataMethod);
+	return SentryConvertorsAndroid::StringMapToUnreal(*data);
 }
 
 void SentryBreadcrumbAndroid::SetLevel(ESentryLevel level)
 {
-	SentryMethodCallAndroid::CallVoidMethod(BreadcrumbAndroid, "setLevel", "(Lio/sentry/SentryLevel;)V",
-		SentryConvertorsAndroid::SentryLevelToNative(level));
+	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel SentryBreadcrumbAndroid::GetLevel() const
 {
-	jobject level = SentryMethodCallAndroid::CallObjectMethod(BreadcrumbAndroid, "getLevel", "()Lio/sentry/SentryLevel;");
-	return SentryConvertorsAndroid::SentryLevelToUnreal(level);
+	auto level = CallObjectMethod<jobject>(GetLevelMethod);
+	return SentryConvertorsAndroid::SentryLevelToUnreal(*level);
 }

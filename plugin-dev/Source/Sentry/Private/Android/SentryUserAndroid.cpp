@@ -2,89 +2,82 @@
 
 #include "SentryUserAndroid.h"
 
-#include "Infrastructure/SentryMethodCallAndroid.h"
 #include "Infrastructure/SentryConvertorsAndroid.h"
-
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJava.h"
+#include "Infrastructure/SentryJavaClasses.h"
 
 SentryUserAndroid::SentryUserAndroid()
+	: FSentryJavaObjectWrapper(SentryJavaClasses::User, "()V")
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	jclass userClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/protocol/User");
-	jmethodID userCtor = Env->GetMethodID(userClass, "<init>", "()V");
-	jobject eventObject= Env->NewObject(userClass, userCtor);
-	UserAndroid = Env->NewGlobalRef(eventObject);
+	SetupClassMethods();
 }
 
 SentryUserAndroid::SentryUserAndroid(jobject user)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::User, user)
 {
-	UserAndroid = user;
+	SetupClassMethods();
 }
 
-SentryUserAndroid::~SentryUserAndroid()
+void SentryUserAndroid::SetupClassMethods()
 {
-	JNIEnv* Env = FAndroidApplication::GetJavaEnv();
-	Env->DeleteGlobalRef(UserAndroid);
-}
-
-jobject SentryUserAndroid::GetNativeObject()
-{
-	return UserAndroid;
+	SetEmailMethod = GetMethod("setEmail", "(Ljava/lang/String;)V");
+	GetEmailMethod = GetMethod("getEmail", "()Ljava/lang/String;");
+	SetIdMethod = GetMethod("setId", "(Ljava/lang/String;)V");
+	GetIdMethod = GetMethod("getId", "()Ljava/lang/String;");
+	SetUsernameMethod = GetMethod("setUsername", "(Ljava/lang/String;)V");
+	GetUsernameMethod = GetMethod("getUsername", "()Ljava/lang/String;");
+	SetIpAddressMethod = GetMethod("setIpAddress", "(Ljava/lang/String;)V");
+	GetIpAddressMethod = GetMethod("getIpAddress", "()Ljava/lang/String;");
+	SetDataMethod = GetMethod("setOthers", "(Ljava/util/Map;)V");
+	GetDataMethod = GetMethod("getOthers", "()Ljava/util/Map;");
 }
 
 void SentryUserAndroid::SetEmail(const FString& email)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setEmail", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(email));
+	CallMethod<void>(SetEmailMethod, *GetJString(email));
 }
 
 FString SentryUserAndroid::GetEmail() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserAndroid, "getEmail", "()Ljava/lang/String;");
+	return CallMethod<FString>(GetEmailMethod);
 }
 
 void SentryUserAndroid::SetId(const FString& id)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setId", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(id));
+	CallMethod<void>(SetIdMethod, *GetJString(id));
 }
 
 FString SentryUserAndroid::GetId() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserAndroid, "getId", "()Ljava/lang/String;");
+	return CallMethod<FString>(GetIdMethod);
 }
 
 void SentryUserAndroid::SetUsername(const FString& username)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setUsername", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(username));
+	CallMethod<void>(SetUsernameMethod, *GetJString(username));
 }
 
 FString SentryUserAndroid::GetUsername() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserAndroid, "getUsername", "()Ljava/lang/String;");
+	return CallMethod<FString>(GetUsernameMethod);
 }
 
 void SentryUserAndroid::SetIpAddress(const FString& ipAddress)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setIpAddress", "(Ljava/lang/String;)V",
-		*FJavaClassObject::GetJString(ipAddress));
+	CallMethod<void>(SetIpAddressMethod, *GetJString(ipAddress));
 }
 
 FString SentryUserAndroid::GetIpAddress() const
 {
-	return SentryMethodCallAndroid::CallStringMethod(UserAndroid, "getIpAddress", "()Ljava/lang/String;");
+	return CallMethod<FString>(GetIpAddressMethod);
 }
 
 void SentryUserAndroid::SetData(const TMap<FString, FString>& data)
 {
-	SentryMethodCallAndroid::CallVoidMethod(UserAndroid, "setOthers", "(Ljava/util/Map;)V",
-		SentryConvertorsAndroid::StringMapToNative(data));
+	CallMethod<void>(SetDataMethod, SentryConvertorsAndroid::StringMapToNative(data)->GetJObject());
 }
 
 TMap<FString, FString> SentryUserAndroid::GetData()
 {
-	jobject data = SentryMethodCallAndroid::CallObjectMethod(UserAndroid, "getOthers", "()Ljava/util/Map;");
-	return SentryConvertorsAndroid::StringMapToUnreal(data);
+	auto data = CallObjectMethod<jobject>(GetDataMethod);
+	return SentryConvertorsAndroid::StringMapToUnreal(*data);
 }

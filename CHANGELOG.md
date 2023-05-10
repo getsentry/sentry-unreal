@@ -6,11 +6,24 @@
 
 - Add release health monitoring feature ([#270](https://github.com/getsentry/sentry-unreal/pull/270))
 
+### Dependencies
+
+- Bump Native SDK from v0.6.1 to v0.6.2 ([#269](https://github.com/getsentry/sentry-unreal/pull/269))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#062)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.6.1...0.6.2)
+- Bump Cocoa SDK (iOS) from v8.6.0 to v8.7.0 ([#272](https://github.com/getsentry/sentry-unreal/pull/272))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#870)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.6.0...8.7.0)
+
 ## 0.5.0
 
 ### Features
 
 - Add script for building plugin dependencies locally ([#252](https://github.com/getsentry/sentry-unreal/pull/252))
+
+### Features
+
+- Update Android layer implementation ([#246](https://github.com/getsentry/sentry-unreal/pull/246))
 
 ### Fixes
 

@@ -2,19 +2,18 @@
 
 #pragma once
 
-#include "Android/AndroidJNI.h"
-
 #include "Interface/SentryUserFeedbackInterface.h"
+
+#include "Infrastructure/SentryJavaObjectWrapper.h"
 
 class USentryId;
 
-class SentryUserFeedbackAndroid : public ISentryUserFeedback
+class SentryUserFeedbackAndroid : public ISentryUserFeedback, public FSentryJavaObjectWrapper
 {
 public:
 	SentryUserFeedbackAndroid(USentryId* eventId);
-	virtual ~SentryUserFeedbackAndroid() override;
 
-	jobject GetNativeObject();
+	void SetupClassMethods();
 
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
@@ -24,5 +23,10 @@ public:
 	virtual FString GetComment() const override;
 
 private:
-	jobject UserFeedbackAndroid;
+	FSentryJavaMethod SetNameMethod;
+	FSentryJavaMethod GetNameMethod;
+	FSentryJavaMethod SetEmailMethod;
+	FSentryJavaMethod GetEmailMethod;
+	FSentryJavaMethod SetCommentMethod;
+	FSentryJavaMethod GetCommentMethod;
 };

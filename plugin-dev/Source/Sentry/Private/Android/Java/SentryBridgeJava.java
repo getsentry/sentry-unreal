@@ -13,11 +13,13 @@ import java.util.Map;
 
 import io.sentry.Attachment;
 import io.sentry.Breadcrumb;
+import io.sentry.IHub;
 import io.sentry.Scope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
+import io.sentry.SentryOptions;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
 import io.sentry.protocol.SentryId;
@@ -142,5 +144,10 @@ public class SentryBridgeJava {
 				scope.setLevel(level);
 			}
 		});
+	}
+
+	public static SentryOptions getOptions() {
+		IHub hub = Sentry.getCurrentHub();
+		return hub.getOptions();
 	}
 }

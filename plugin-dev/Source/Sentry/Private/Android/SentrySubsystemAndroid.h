@@ -25,8 +25,4 @@ public:
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual void StartSession() override;
 	virtual void EndSession() override;
-
-private:
-	static const ANSICHAR* SentryJavaClassName;
-	static const ANSICHAR* SentryBridgeJavaClassName;
 };

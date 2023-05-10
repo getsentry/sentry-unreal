@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include "Android/AndroidJNI.h"
-
 #include "Interface/SentryScopeInterface.h"
 
-class SentryScopeAndroid : public ISentryScope
+#include "Infrastructure/SentryJavaObjectWrapper.h"
+
+class SentryScopeAndroid : public ISentryScope, public FSentryJavaObjectWrapper
 {
 public:
 	SentryScopeAndroid();
 	SentryScopeAndroid(jobject scope);
-	virtual ~SentryScopeAndroid() override;
 
-	jobject GetNativeObject();
+	void SetupClassMethods();
 
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
@@ -42,5 +41,22 @@ public:
 	virtual void Clear() override;
 
 private:
-	jobject ScopeAndroid;
+	FSentryJavaMethod AddBreadcrumbMethod;
+	FSentryJavaMethod ClearBreadcrumbsMethod;
+	FSentryJavaMethod AddAttachmentMethod;
+	FSentryJavaMethod ClearAttachmentsMethod;
+	FSentryJavaMethod SetTagValueMethod;
+	FSentryJavaMethod RemoveTagMethod;
+	FSentryJavaMethod GetTagsMethod;
+	FSentryJavaMethod SetFingerprintMethod;
+	FSentryJavaMethod GetFingerprintMethod;
+	FSentryJavaMethod SetLevelMethod;
+	FSentryJavaMethod GetLevelMethod;
+	FSentryJavaMethod SetContextMethod;
+	FSentryJavaMethod RemoveContextMethod;
+	FSentryJavaMethod SetExtraValueMethod;
+	FSentryJavaMethod GetExtraValueMethod;
+	FSentryJavaMethod RemoveExtraMethod;
+	FSentryJavaMethod GetExtrasMethod;
+	FSentryJavaMethod ClearMethod;
 };
