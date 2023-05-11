@@ -221,6 +221,12 @@ private:
 	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
 	void DisableAutomaticBreadcrumbs();
 
+	/** Check whether the event capturing should be disabled for the current build configuration */
+	bool IsCurrentBuildConfigurationDisabled();
+
+	/** Check whether the event capturing should be disabled for the current build configuration */
+	bool IsCurrentBuildTargetDisabled();
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 

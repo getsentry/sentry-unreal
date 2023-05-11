@@ -63,6 +63,58 @@ struct FTagsPromotion
 	bool bPromoteIsUnattended = true;
 };
 
+USTRUCT(BlueprintType)
+struct FDisableBuildConfigurations
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Debug", ToolTip = "Flag indicating whether event capturing should be disabled for the Debug build configuration."))
+	bool bDisableDebug = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "DebugGame", ToolTip = "Flag indicating whether event capturing should be disabled for the DebugGame build configuration."))
+	bool bDisableDebugGame = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Development", ToolTip = "Flag indicating whether event capturing should be disabled for the Development build configuration."))
+	bool bDisableDevelopment = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Test", ToolTip = "Flag indicating whether event capturing should be disabled for the Test build configuration."))
+	bool bDisableTest = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Shipping", ToolTip = "Flag indicating whether event capturing should be disabled for the Shipping build configuration."))
+	bool bDisableShipping = false;
+};
+
+USTRUCT(BlueprintType)
+struct FDisableBuildTargets
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Client", ToolTip = "Flag indicating whether event capturing should be disabled for the Client target type."))
+	bool bDisableClient = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Game", ToolTip = "Flag indicating whether event capturing should be disabled for the Game target type."))
+	bool bDisableGame = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Editor", ToolTip = "Flag indicating whether event capturing should be disabled for the Editor target type."))
+	bool bDisableEditor = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Server", ToolTip = "Flag indicating whether event capturing should be disabled for the Server target type."))
+	bool bDisableServer = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Program", ToolTip = "Flag indicating whether event capturing should be disabled for the Program target type."))
+	bool bDisableProgram = false;
+};
+
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -91,6 +143,14 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging on desktop."))
 	bool EnableVerboseLogging;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Disable for Build Configurations"))
+	FDisableBuildConfigurations DisableBuildConfigurations;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Disable for Build Target Types"))
+	FDisableBuildTargets DisableBuildTargets;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Automatically add breadcrumbs"))
