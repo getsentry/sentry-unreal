@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add plugin settings allowing to disable event capturing for certain build configurations/targets ([#273](https://github.com/getsentry/sentry-unreal/pull/273))
+
 ### Dependencies
 
 - Bump Native SDK from v0.6.1 to v0.6.2 ([#269](https://github.com/getsentry/sentry-unreal/pull/269))
