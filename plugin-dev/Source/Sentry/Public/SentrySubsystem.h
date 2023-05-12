@@ -208,6 +208,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetLevel(ESentryLevel Level);
 
+	/**
+	 * Starts a new session.
+	 * If there's a running session, it ends it before starting the new one.
+	 * This method can be used in combination with @EndSession to manually track sessions.
+	 * The SDK uses sessions to inform Sentry about release and project associated project health.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void StartSession();
+
+	/**
+	 * Ends current session.
+	 * This method can be used in combination with @StartSession to manually track sessions.
+	 * The SDK uses sessions to inform Sentry about release and project associated project health.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void EndSession();
+
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();

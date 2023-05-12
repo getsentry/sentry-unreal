@@ -29,13 +29,21 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 		? IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename())
 		: FString();
 
+
+	const FString ReleaseName = settings->OverrideReleaseName
+		? settings->Release
+		: FSentryJavaObjectWrapper::CallStaticMethod<FString>(SentryJavaClasses::SentryBridgeJava,
+			"getFormattedReleaseName", "(Landroid/app/Activity;)Ljava/lang/String;", FJavaWrapper::GameActivityThis);
+
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, 
-		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJ)V",
 		FJavaWrapper::GameActivityThis,
 		*FSentryJavaObjectWrapper::GetJString(settings->DsnUrl),
 		*FSentryJavaObjectWrapper::GetJString(settings->Release),
 		*FSentryJavaObjectWrapper::GetJString(settings->Environment),
-		*FSentryJavaObjectWrapper::GetJString(LogFilePath));
+		*FSentryJavaObjectWrapper::GetJString(LogFilePath),
+		settings->EnableAutoSessionTracking,
+		(jlong)settings->SessionTimeout);
 }
 
 void SentrySubsystemAndroid::Close()
@@ -150,4 +158,14 @@ void SentrySubsystemAndroid::SetLevel(ESentryLevel level)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setLevel", "(Lio/sentry/SentryLevel;)V",
 		SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
+}
+
+void SentrySubsystemAndroid::StartSession()
+{
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "startSession", "()V", nullptr);
+}
+
+void SentrySubsystemAndroid::EndSession()
+{
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "endSession", "()V", nullptr);
 }

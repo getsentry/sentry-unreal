@@ -3,6 +3,8 @@
 package io.sentry.unreal;
 
 import android.app.Activity;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 
@@ -25,13 +27,33 @@ import io.sentry.protocol.SentryId;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 
-	public static void init(Activity activity, final String dsnUrl, final String releaseName, final String environment, final String gameLogPath) {
+	public static String getFormattedReleaseName(Activity activity) {
+		PackageManager packageManager = activity.getPackageManager();
+		PackageInfo packageInfo;
+		try {
+			packageInfo = packageManager.getPackageInfo(activity.getPackageName(), 0);
+		} catch (PackageManager.NameNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		return String.format("%s@%s", activity.getPackageName(), packageInfo.versionName);
+	}
+
+	public static void init(
+			Activity activity,
+			final String dsnUrl,
+			final String releaseName,
+			final String environment,
+			final String gameLogPath,
+			final boolean enableAutoSessionTracking,
+			final long sessionTimeout) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
 			@Override
 			public void configure(SentryAndroidOptions options) {
 				options.setDsn(dsnUrl);
 				options.setRelease(releaseName);
 				options.setEnvironment(environment);
+				options.setEnableAutoSessionTracking(enableAutoSessionTracking);
+				options.setSessionTrackingIntervalMillis(sessionTimeout);
 			}
 		});
 

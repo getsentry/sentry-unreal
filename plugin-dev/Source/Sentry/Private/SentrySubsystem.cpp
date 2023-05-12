@@ -225,6 +225,22 @@ void USentrySubsystem::SetLevel(ESentryLevel Level)
 	SubsystemNativeImpl->SetLevel(Level);
 }
 
+void USentrySubsystem::StartSession()
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->StartSession();
+}
+
+void USentrySubsystem::EndSession()
+{
+	if (!SubsystemNativeImpl)
+		return;
+
+	SubsystemNativeImpl->EndSession();
+}
+
 void USentrySubsystem::AddDefaultContext()
 {
 	if (!SubsystemNativeImpl)

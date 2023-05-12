@@ -5,6 +5,7 @@
 ### Features
 
 - Add plugin settings allowing to disable event capturing for certain build configurations/targets ([#273](https://github.com/getsentry/sentry-unreal/pull/273))
+- Add release health monitoring feature ([#270](https://github.com/getsentry/sentry-unreal/pull/270))
 
 ### Dependencies
 

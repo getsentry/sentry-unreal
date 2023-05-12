@@ -29,8 +29,12 @@ public:
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetLevel(ESentryLevel level) override;
+	virtual void StartSession() override;
+	virtual void EndSession() override;
 
 private:
+	FString GetFormattedReleaseName();
+
 	TSharedPtr<SentryCrashReporter> crashReporter;
 };
 
