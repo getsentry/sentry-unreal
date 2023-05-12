@@ -222,10 +222,10 @@ private:
 	void DisableAutomaticBreadcrumbs();
 
 	/** Check whether the event capturing should be disabled for the current build configuration */
-	bool IsCurrentBuildConfigurationDisabled();
+	bool IsCurrentBuildConfigurationEnabled();
 
 	/** Check whether the event capturing should be disabled for the current build configuration */
-	bool IsCurrentBuildTargetDisabled();
+	bool IsCurrentBuildTargetEnabled();
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;

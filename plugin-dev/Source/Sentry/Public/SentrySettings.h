@@ -64,55 +64,55 @@ struct FTagsPromotion
 };
 
 USTRUCT(BlueprintType)
-struct FDisableBuildConfigurations
+struct FEnableBuildConfigurations
 {
 	GENERATED_BODY()
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Debug", ToolTip = "Flag indicating whether event capturing should be disabled for the Debug build configuration."))
-	bool bDisableDebug = false;
+		Meta = (DisplayName = "Debug", ToolTip = "Flag indicating whether event capturing should be enabled for the Debug build configuration."))
+	bool bEnableDebug = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "DebugGame", ToolTip = "Flag indicating whether event capturing should be disabled for the DebugGame build configuration."))
-	bool bDisableDebugGame = false;
+		Meta = (DisplayName = "DebugGame", ToolTip = "Flag indicating whether event capturing should be enabled for the DebugGame build configuration."))
+	bool bEnableDebugGame = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Development", ToolTip = "Flag indicating whether event capturing should be disabled for the Development build configuration."))
-	bool bDisableDevelopment = false;
+		Meta = (DisplayName = "Development", ToolTip = "Flag indicating whether event capturing should be enabled for the Development build configuration."))
+	bool bEnableDevelopment = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Test", ToolTip = "Flag indicating whether event capturing should be disabled for the Test build configuration."))
-	bool bDisableTest = false;
+		Meta = (DisplayName = "Test", ToolTip = "Flag indicating whether event capturing should be enabled for the Test build configuration."))
+	bool bEnableTest = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Shipping", ToolTip = "Flag indicating whether event capturing should be disabled for the Shipping build configuration."))
-	bool bDisableShipping = false;
+		Meta = (DisplayName = "Shipping", ToolTip = "Flag indicating whether event capturing should be enabled for the Shipping build configuration."))
+	bool bEnableShipping = true;
 };
 
 USTRUCT(BlueprintType)
-struct FDisableBuildTargets
+struct FEnableBuildTargets
 {
 	GENERATED_BODY()
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Client", ToolTip = "Flag indicating whether event capturing should be disabled for the Client target type."))
-	bool bDisableClient = false;
+		Meta = (DisplayName = "Client", ToolTip = "Flag indicating whether event capturing should be enabled for the Client target type."))
+	bool bEnableClient = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Game", ToolTip = "Flag indicating whether event capturing should be disabled for the Game target type."))
-	bool bDisableGame = false;
+		Meta = (DisplayName = "Game", ToolTip = "Flag indicating whether event capturing should be enabled for the Game target type."))
+	bool bEnableGame = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Editor", ToolTip = "Flag indicating whether event capturing should be disabled for the Editor target type."))
-	bool bDisableEditor = false;
+		Meta = (DisplayName = "Editor", ToolTip = "Flag indicating whether event capturing should be enabled for the Editor target type."))
+	bool bEnableEditor = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Server", ToolTip = "Flag indicating whether event capturing should be disabled for the Server target type."))
-	bool bDisableServer = false;
+		Meta = (DisplayName = "Server", ToolTip = "Flag indicating whether event capturing should be enabled for the Server target type."))
+	bool bEnableServer = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Program", ToolTip = "Flag indicating whether event capturing should be disabled for the Program target type."))
-	bool bDisableProgram = false;
+		Meta = (DisplayName = "Program", ToolTip = "Flag indicating whether event capturing should be enabled for the Program target type."))
+	bool bEnableProgram = true;
 };
 
 /**
@@ -145,12 +145,12 @@ public:
 	bool EnableVerboseLogging;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Disable for Build Configurations"))
-	FDisableBuildConfigurations DisableBuildConfigurations;
+		Meta = (DisplayName = "Enable for Build Configurations"))
+	FEnableBuildConfigurations EnableBuildConfigurations;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Disable for Build Target Types"))
-	FDisableBuildTargets DisableBuildTargets;
+		Meta = (DisplayName = "Enable for Build Target Types"))
+	FEnableBuildTargets EnableBuildTargets;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Automatically add breadcrumbs"))

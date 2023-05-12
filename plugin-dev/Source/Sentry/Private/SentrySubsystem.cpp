@@ -57,15 +57,9 @@ void USentrySubsystem::Initialize()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	if(IsCurrentBuildConfigurationDisabled())
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current build configuration in plugin settings."));
-		return;
-	}
-
-	if(IsCurrentBuildTargetDisabled())
-	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current build target in plugin settings."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current build configuration/target in plugin settings."));
 		return;
 	}
 
@@ -354,62 +348,62 @@ void USentrySubsystem::DisableAutomaticBreadcrumbs()
 	}
 }
 
-bool USentrySubsystem::IsCurrentBuildConfigurationDisabled()
+bool USentrySubsystem::IsCurrentBuildConfigurationEnabled()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	bool IsBuildConfigurationDisabled;
+	bool IsBuildConfigurationEnabled;
 
 	switch (FApp::GetBuildConfiguration())
 	{
 	case EBuildConfiguration::Debug:
-		IsBuildConfigurationDisabled = Settings->DisableBuildConfigurations.bDisableDebug;
+		IsBuildConfigurationEnabled = Settings->EnableBuildConfigurations.bEnableDebug;
 		break;
 	case EBuildConfiguration::DebugGame:
-		IsBuildConfigurationDisabled = Settings->DisableBuildConfigurations.bDisableDebugGame;
+		IsBuildConfigurationEnabled = Settings->EnableBuildConfigurations.bEnableDebugGame;
 		break;
 	case EBuildConfiguration::Development:
-		IsBuildConfigurationDisabled = Settings->DisableBuildConfigurations.bDisableDevelopment;
+		IsBuildConfigurationEnabled = Settings->EnableBuildConfigurations.bEnableDevelopment;
 		break;
 	case EBuildConfiguration::Shipping:
-		IsBuildConfigurationDisabled = Settings->DisableBuildConfigurations.bDisableShipping;
+		IsBuildConfigurationEnabled = Settings->EnableBuildConfigurations.bEnableShipping;
 		break;
 	case EBuildConfiguration::Test:
-		IsBuildConfigurationDisabled = Settings->DisableBuildConfigurations.bDisableTest;
+		IsBuildConfigurationEnabled = Settings->EnableBuildConfigurations.bEnableTest;
 		break;
 	default:
-		IsBuildConfigurationDisabled = false;
+		IsBuildConfigurationEnabled = false;
 	}
 
-	return IsBuildConfigurationDisabled;
+	return IsBuildConfigurationEnabled;
 }
 
-bool USentrySubsystem::IsCurrentBuildTargetDisabled()
+bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	bool IsBuildTargetTypeDisabled;
+	bool IsBuildTargetTypeEnabled;
 
 	switch (FApp::GetBuildTargetType())
 	{
 	case EBuildTargetType::Game:
-		IsBuildTargetTypeDisabled = Settings->DisableBuildTargets.bDisableGame;
+		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableGame;
 		break;
 	case EBuildTargetType::Server:
-		IsBuildTargetTypeDisabled = Settings->DisableBuildTargets.bDisableServer;
+		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableServer;
 		break;
 	case EBuildTargetType::Client:
-		IsBuildTargetTypeDisabled = Settings->DisableBuildTargets.bDisableClient;
+		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableClient;
 		break;
 	case EBuildTargetType::Editor:
-		IsBuildTargetTypeDisabled = Settings->DisableBuildTargets.bDisableEditor;
+		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableEditor;
 		break;
 	case EBuildTargetType::Program:
-		IsBuildTargetTypeDisabled = Settings->DisableBuildTargets.bDisableProgram;
+		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableProgram;
 		break;
 	default:
-		IsBuildTargetTypeDisabled = false;
+		IsBuildTargetTypeEnabled = false;
 	}
 
-	return IsBuildTargetTypeDisabled;
+	return IsBuildTargetTypeEnabled;
 }
