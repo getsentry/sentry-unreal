@@ -77,10 +77,6 @@ public:
 	FString DsnUrl;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
-		Meta = (DisplayName = "Release", ToolTip = "Release name which will be used for enriching events."))
-	FString Release;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
 		Meta = (DisplayName = "Environment", ToolTip = "Environment which will be used for enriching events."))
 	FString Environment;
 
@@ -107,6 +103,22 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Attach game log to captured events", ToolTip = "Flag indicating whether to attach game log automatically to captured events. Not available in shipping builds."))
 	bool EnableAutoLogAttachment;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
+	bool EnableAutoSessionTracking;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+		Meta = (DisplayName = "Session timeout, milliseconds (for Android/Apple only)", ToolTip = "Time interval after which session will be terminated if application is in background mode."))
+	int32 SessionTimeout;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+		Meta = (InlineEditConditionToggle))
+	bool OverrideReleaseName;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Release & Health",
+		Meta = (DisplayName = "Override release name", ToolTip = "Release name which will be used for enriching events.", EditCondition = "OverrideReleaseName"))
+	FString Release;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))

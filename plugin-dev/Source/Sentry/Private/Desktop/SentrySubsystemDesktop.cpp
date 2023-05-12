@@ -16,6 +16,8 @@
 #include "Infrastructure/SentryConvertorsDesktop.h"
 #include "CrashReporter/SentryCrashReporter.h"
 
+#include "Misc/App.h"
+#include "Misc/ConfigCacheIni.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 #include "Launch/Resources/Version.h"
@@ -72,11 +74,16 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(DatabasePath)));
 #endif
 
+
+	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
+		? *settings->Release
+		: *GetFormattedReleaseName()));
+
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
-	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->Release));
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
+	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
 
 	int initResult = sentry_init(options);
 
@@ -188,6 +195,30 @@ void SentrySubsystemDesktop::RemoveTag(const FString& key)
 void SentrySubsystemDesktop::SetLevel(ESentryLevel level)
 {
 	sentry_set_level(SentryConvertorsDesktop::SentryLevelToNative(level));
+}
+
+void SentrySubsystemDesktop::StartSession()
+{
+	sentry_start_session();
+}
+
+void SentrySubsystemDesktop::EndSession()
+{
+	sentry_end_session();
+}
+
+FString SentrySubsystemDesktop::GetFormattedReleaseName()
+{
+	FString FormattedReleaseName;
+
+	FString Version;
+	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
+	if(!Version.IsEmpty())
+	{
+		FormattedReleaseName = FString::Printf(TEXT("%s@%s"), FApp::GetProjectName(), *Version);
+	}
+
+	return FormattedReleaseName;
 }
 
 #endif
