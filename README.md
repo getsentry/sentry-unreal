@@ -24,6 +24,7 @@ The SDK currently supports and is tested on the following platforms:
 
 - Windows
 - macOS
+- Linux 
 - Android
 - iOS
 
