@@ -6,6 +6,10 @@
 
 - Add release health monitoring feature ([#270](https://github.com/getsentry/sentry-unreal/pull/270))
 
+### Fixes
+
+- Fix Android release name inititalization ([#274](https://github.com/getsentry/sentry-unreal/pull/274))
+
 ### Dependencies
 
 - Bump Native SDK from v0.6.1 to v0.6.2 ([#269](https://github.com/getsentry/sentry-unreal/pull/269))
