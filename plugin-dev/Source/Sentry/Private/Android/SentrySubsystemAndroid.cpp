@@ -39,7 +39,7 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJ)V",
 		FJavaWrapper::GameActivityThis,
 		*FSentryJavaObjectWrapper::GetJString(settings->DsnUrl),
-		*FSentryJavaObjectWrapper::GetJString(settings->Release),
+		*FSentryJavaObjectWrapper::GetJString(ReleaseName),
 		*FSentryJavaObjectWrapper::GetJString(settings->Environment),
 		*FSentryJavaObjectWrapper::GetJString(LogFilePath),
 		settings->EnableAutoSessionTracking,
