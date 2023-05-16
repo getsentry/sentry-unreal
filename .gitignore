@@ -37,3 +37,4 @@ plugin-dev/Source/ThirdParty/CLI/*
 
 # Sample
 sample/.sentry-native
+sample/.vsconfig
