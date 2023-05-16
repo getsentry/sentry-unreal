@@ -36,6 +36,7 @@
 		"Android",
 		"IOS",
 		"Linux",
-		"Windows"
+		"Windows",
+		"Mac"
 	]
 }
