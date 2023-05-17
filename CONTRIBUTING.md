@@ -12,7 +12,7 @@ To use the [sample project](./sample), use the UnrealEngine version specified in
 
 #### Android build support
 
-To be able to build for Android, make sure to configure the SDK & NDK according to the [documentation](https://docs.unrealengine.com/4.27/en-US/SharingAndReleasing/Mobile/Android/Setup/AndroidStudio/). You will need to install NDK specifically at version 21.1.6352462 with UnrealEngine 4.27.
+To be able to build for Android, make sure to configure the SDK & NDK according to the [documentation](https://docs.unrealengine.com/4.27/en-US/SharingAndReleasing/Mobile/Android/Setup/AndroidStudio/). You will need to install NDK specifically at version 21.1.6352462 with UnrealEngine 5.0.
 
 ### First setup
 

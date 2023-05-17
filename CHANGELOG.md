@@ -5,6 +5,7 @@
 ### Features
 
 - Add release health monitoring feature ([#270](https://github.com/getsentry/sentry-unreal/pull/270))
+- Add UE 5.2 support for CI ([#280](https://github.com/getsentry/sentry-unreal/pull/280))
 
 ### Fixes
 

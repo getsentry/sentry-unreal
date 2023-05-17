@@ -121,7 +121,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['4.27', '5.0', '5.1']
+        unreal: ['5.0', '5.1', '5.2']
         app: ['sample']
 
     steps:
@@ -171,8 +171,7 @@ jobs:
           # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved "
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
