@@ -23,9 +23,9 @@
 - Bump Java SDK (Android) from v6.18.1 to v6.19.1 ([#279](https://github.com/getsentry/sentry-unreal/pull/279), [#283](https://github.com/getsentry/sentry-unreal/pull/283))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6191)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.18.1...6.19.1)
-- Bump CLI from v2.17.5 to v2.18.0 ([#284](https://github.com/getsentry/sentry-unreal/pull/284))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2180)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.17.5...2.18.0)
+- Bump CLI from v2.17.5 to v2.18.1 ([#284](https://github.com/getsentry/sentry-unreal/pull/284), [#286](https://github.com/getsentry/sentry-unreal/pull/286))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2181)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.17.5...2.18.1)
 
 ## 0.5.0
 
