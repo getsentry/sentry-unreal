@@ -11,6 +11,7 @@
 ### Fixes
 
 - Fix Android release name inititalization ([#274](https://github.com/getsentry/sentry-unreal/pull/274))
+- Update dependencies loading mechanism ([#287](https://github.com/getsentry/sentry-unreal/pull/287))
 
 ### Dependencies
 
