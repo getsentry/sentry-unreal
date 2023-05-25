@@ -7,7 +7,7 @@
 
 class USentrySettings;
 
-class FSentryModule : public IModuleInterface
+class SENTRY_API FSentryModule : public IModuleInterface
 {
 public:
 	/** IModuleInterface implementation */

@@ -96,23 +96,9 @@ USentrySettings* FSentryModule::GetSettings() const
 
 FString FSentryModule::GetBinariesPath()
 {
-	FString PlatformName;
-
-#if PLATFORM_ANDROID
-	PlatformName = TEXT("Android");
-#elif PLATFORM_IOS
-	PlatformName = TEXT("IOS");
-#elif PLATFORM_WINDOWS
-	PlatformName = TEXT("Win64");
-#elif PLATFORM_MAC
-	PlatformName = TEXT("Mac");
-#elif PLATFORM_LINUX
-	PlatformName = TEXT("Linux");
-#endif
-
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
-	return FPaths::Combine(PluginDir, TEXT("Binaries"), PlatformName);
+	return FPaths::Combine(PluginDir, TEXT("Binaries"), FPlatformProcess::GetBinariesSubdirectory());
 }
 
 FString FSentryModule::GetPluginVersion()
