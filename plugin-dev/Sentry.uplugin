@@ -37,7 +37,7 @@
 			"sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		],
 		"Win64": [
-			"powershell -ExecutionPolicy Bypass -File \"$(PluginDir)/Scripts/upload-debug-symbols-win.ps1\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
+			"call \"$(PluginDir)/Scripts/upload-debug-symbols-win.bat\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
 		]
 	}
 }
