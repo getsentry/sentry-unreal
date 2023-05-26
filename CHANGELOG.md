@@ -12,6 +12,7 @@
 
 - Fix Android release name inititalization ([#274](https://github.com/getsentry/sentry-unreal/pull/274))
 - Update dependencies loading mechanism ([#287](https://github.com/getsentry/sentry-unreal/pull/287))
+- Fix issue with script execution policy for debug symbols uploading on Windows ([#274](https://github.com/getsentry/sentry-unreal/pull/290))
 
 ### Dependencies
 
