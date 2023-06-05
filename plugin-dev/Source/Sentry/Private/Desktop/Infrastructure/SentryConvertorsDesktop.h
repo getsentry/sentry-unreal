@@ -24,6 +24,7 @@ public:
 
 	/** Other conversions */
 	static FString SentryLevelToString(ESentryLevel level);
+	static TArray<uint8> SentryEnvelopeToByteArray(sentry_envelope_t* envelope);
 };
 
 #endif
