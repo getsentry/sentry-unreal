@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Unify release name for all supported platforms ([#294](https://github.com/getsentry/sentry-unreal/pull/294))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.19.1 to v6.20.0 ([#291](https://github.com/getsentry/sentry-unreal/pull/291))
