@@ -32,8 +32,7 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 
 	const FString ReleaseName = settings->OverrideReleaseName
 		? settings->Release
-		: FSentryJavaObjectWrapper::CallStaticMethod<FString>(SentryJavaClasses::SentryBridgeJava,
-			"getFormattedReleaseName", "(Landroid/app/Activity;)Ljava/lang/String;", FJavaWrapper::GameActivityThis);
+		: settings->GetFormattedReleaseName();
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, 
 		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJ)V",

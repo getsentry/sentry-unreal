@@ -27,17 +27,6 @@ import io.sentry.protocol.SentryId;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 
-	public static String getFormattedReleaseName(Activity activity) {
-		PackageManager packageManager = activity.getPackageManager();
-		PackageInfo packageInfo;
-		try {
-			packageInfo = packageManager.getPackageInfo(activity.getPackageName(), 0);
-		} catch (PackageManager.NameNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-		return String.format("%s@%s", activity.getPackageName(), packageInfo.versionName);
-	}
-
 	public static void init(
 			Activity activity,
 			final String dsnUrl,
