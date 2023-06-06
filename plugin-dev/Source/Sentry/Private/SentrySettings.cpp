@@ -4,6 +4,7 @@
 
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
+#include "Misc/App.h"
 
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -30,6 +31,20 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 #endif
 
 	LoadDebugSymbolsProperties();
+}
+
+FString USentrySettings::GetFormattedReleaseName() const
+{
+	FString FormattedReleaseName = FApp::GetProjectName();
+
+	FString Version;
+	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
+	if(!Version.IsEmpty())
+	{
+		FormattedReleaseName = FString::Printf(TEXT("%s@%s"), *FormattedReleaseName, *Version);
+	}
+
+	return FormattedReleaseName;
 }
 
 void USentrySettings::LoadDebugSymbolsProperties()

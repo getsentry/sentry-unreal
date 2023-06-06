@@ -123,7 +123,6 @@ class SENTRY_API USentrySettings : public UObject
 {
 	GENERATED_UCLASS_BODY()
 
-public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
 		Meta = (DisplayName = "DSN", ToolTip = "The DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard."))
 	FString DsnUrl;
@@ -203,6 +202,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
+
+public:
+	FString GetFormattedReleaseName() const;
 
 private:
 	void LoadDebugSymbolsProperties();
