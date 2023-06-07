@@ -31,8 +31,6 @@ private:
 	FCriticalSection CriticalSection;
 
 	bool IsRunning = false;
-
-	const static float RequestTickInterval;
 };
 
 #endif

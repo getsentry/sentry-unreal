@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentryTransport.h"
+
 #include "SentryDefines.h"
 #include "SentryModule.h"
 #include "SentryDsnUrl.h"
@@ -9,11 +10,10 @@
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
 #include "HttpModule.h"
+#include "HttpManager.h"
 #include "Misc/ScopeLock.h"
 
 #if USE_SENTRY_NATIVE
-
-const float FSentryTransport::RequestTickInterval = 0.01f;
 
 sentry_transport_t* FSentryTransport::Create()
 {
@@ -95,37 +95,32 @@ int FSentryTransport::Startup(const sentry_options_t* options)
 
 int FSentryTransport::Flush(uint64_t timeout)
 {
-	double EndTime = FPlatformTime::Seconds() + static_cast<double>(timeout) / 1000;
+	const float InTimeOut = static_cast<double>(timeout) / 1000;
+	const float SleepInterval = 0.01f;
 
-	// Manually tick pending requests since relying on game thread for that might be insecure
+	float TimeElapsed = 0.0f;
+
 	while(true)
 	{
-		TArray< TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> > RequestsQueueCopy;
-
+		if(RequestsQueue.IsEmpty())
 		{
-			FScopeLock Lock(&CriticalSection);
-			RequestsQueueCopy = RequestsQueue;
+			break;
 		}
 
-		if (!RequestsQueueCopy.Num())
-		{
-			return 0;
-		}
+		// Manually tick pending requests since relying on game thread for that might be insecure
+		FHttpModule::Get().GetHttpManager().Tick(SleepInterval);
 
-		for (auto& Request : RequestsQueueCopy)
+		if(!RequestsQueue.IsEmpty())
 		{
-			Request->Tick(RequestTickInterval);
-		}
-
-		if (RequestsQueue.Num())
-		{
-			if (FPlatformTime::Seconds() > EndTime)
+			if (TimeElapsed > InTimeOut)
 			{
 				return 1;
 			}
 
-			FPlatformProcess::Sleep(RequestTickInterval);
+			FPlatformProcess::Sleep(SleepInterval);
 		}
+
+		TimeElapsed += SleepInterval;
 	}
 
 	return 0;
