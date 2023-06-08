@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add custom transport for Linux ([#297](https://github.com/getsentry/sentry-unreal/pull/297))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.19.1 to v6.20.0 ([#291](https://github.com/getsentry/sentry-unreal/pull/291))
