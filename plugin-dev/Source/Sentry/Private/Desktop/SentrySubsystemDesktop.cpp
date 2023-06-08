@@ -17,8 +17,6 @@
 #include "CrashReporter/SentryCrashReporter.h"
 #include "Transport/SentryTransport.h"
 
-#include "Misc/App.h"
-#include "Misc/ConfigCacheIni.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 #include "Launch/Resources/Version.h"
@@ -78,7 +76,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
 		? *settings->Release
-		: *GetFormattedReleaseName()));
+		: *settings->GetFormattedReleaseName()));
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
@@ -210,20 +208,6 @@ void SentrySubsystemDesktop::StartSession()
 void SentrySubsystemDesktop::EndSession()
 {
 	sentry_end_session();
-}
-
-FString SentrySubsystemDesktop::GetFormattedReleaseName()
-{
-	FString FormattedReleaseName;
-
-	FString Version;
-	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
-	if(!Version.IsEmpty())
-	{
-		FormattedReleaseName = FString::Printf(TEXT("%s@%s"), FApp::GetProjectName(), *Version);
-	}
-
-	return FormattedReleaseName;
 }
 
 #endif
