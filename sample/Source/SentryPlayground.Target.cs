@@ -13,7 +13,10 @@ public class SentryPlaygroundTarget : TargetRules
 
 		bOverrideBuildEnvironment = true;
 
-		bUsePCHFiles = false;
-		bUseUnityBuild = false;
+		if (Target.Version.MajorVersion == 5 && Target.Version.MinorVersion < 2)
+		{
+			bUsePCHFiles = false;
+			bUseUnityBuild = false;
+		}
 	}
 }
