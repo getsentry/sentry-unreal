@@ -36,8 +36,9 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 }
 
 SentrySubsystemDesktop::SentrySubsystemDesktop()
+	: crashReporter(MakeShareable(new SentryCrashReporter))
+	, isEnabled(false)
 {
-	crashReporter = MakeShareable(new SentryCrashReporter);
 }
 
 void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
@@ -87,6 +88,8 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
 
+	isEnabled = initResult == 0 ? true : false;
+
 #if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
 	if(settings->EnableAutoCrashCapturing)
 	{
@@ -100,7 +103,14 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 
 void SentrySubsystemDesktop::Close()
 {
+	isEnabled = false;
+
 	sentry_close();
+}
+
+bool SentrySubsystemDesktop::IsEnabled()
+{
+	return isEnabled;
 }
 
 void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)

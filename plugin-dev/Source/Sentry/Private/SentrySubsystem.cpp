@@ -57,6 +57,12 @@ void USentrySubsystem::Initialize()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
+	if(Settings->DsnUrl.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry requires minimal configuration for its initialization - please provide the DSN in plugin settings."));
+		return;
+	}
+
 	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled())
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current build configuration/target in plugin settings."));
@@ -67,6 +73,12 @@ void USentrySubsystem::Initialize()
 		return;
 
 	SubsystemNativeImpl->InitWithSettings(Settings);
+
+	if(!SubsystemNativeImpl->IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Sentry initialization failed."));
+		return;
+	}
 
 	AddDefaultContext();
 	PromoteTags();
@@ -88,6 +100,14 @@ void USentrySubsystem::Close()
 		return;
 
 	SubsystemNativeImpl->Close();
+}
+
+bool USentrySubsystem::IsEnabled()
+{
+	if (!SubsystemNativeImpl)
+		return false;
+
+	return SubsystemNativeImpl->IsEnabled();
 }
 
 void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)

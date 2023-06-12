@@ -21,6 +21,7 @@ public:
 
 	virtual void InitWithSettings(const USentrySettings* settings) = 0;
 	virtual void Close() = 0;
+	virtual bool IsEnabled() = 0;
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual USentryId* CaptureMessage(const FString& message, ESentryLevel level) = 0;

@@ -50,6 +50,11 @@ void SentrySubsystemAndroid::Close()
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "close", "()V");
 }
 
+bool SentrySubsystemAndroid::IsEnabled()
+{
+	return FSentryJavaObjectWrapper::CallStaticMethod<bool>(SentryJavaClasses::Sentry, "isEnabled", "()Z");
+}
+
 void SentrySubsystemAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
 	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb->GetNativeImpl());
