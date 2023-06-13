@@ -73,7 +73,6 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(DatabasePath)));
 #endif
 
-
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
 		? *settings->Release
 		: *settings->GetFormattedReleaseName()));
@@ -96,6 +95,8 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 		FPlatformMisc::SetCrashHandlingType(ECrashHandlingType::Disabled);
 	}
 #endif
+
+	isStackTraceEnabled = settings->EnableStackTrace;
 
 	crashReporter->SetRelease(settings->Release);
 	crashReporter->SetEnvironment(settings->Environment);
@@ -128,6 +129,12 @@ void SentrySubsystemDesktop::ClearBreadcrumbs()
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_ANSI(*message));
+
+	if(isStackTraceEnabled)
+	{
+		sentry_value_set_stacktrace(sentryEvent, nullptr, 0);
+	}
+
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
@@ -143,8 +150,13 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event->GetNativeImpl());
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
-	sentry_uuid_t id = sentry_capture_event(nativeEvent);
 
+	if(isStackTraceEnabled)
+	{
+		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
+	}
+
+	sentry_uuid_t id = sentry_capture_event(nativeEvent);
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
