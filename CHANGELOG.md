@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add stack trace attachment for regular events ([#301](https://github.com/getsentry/sentry-unreal/pull/301))
+
 ### Fixes
 
 - Unify release name for all supported platforms ([#294](https://github.com/getsentry/sentry-unreal/pull/294))
