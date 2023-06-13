@@ -15,6 +15,7 @@
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 #include "CrashReporter/SentryCrashReporter.h"
+#include "Transport/SentryTransport.h"
 
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
@@ -83,6 +84,10 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
+
+#if PLATFORM_LINUX
+	sentry_options_set_transport(options, FSentryTransport::Create());
+#endif
 
 	int initResult = sentry_init(options);
 

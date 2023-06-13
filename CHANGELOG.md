@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add custom transport for Linux ([#297](https://github.com/getsentry/sentry-unreal/pull/297))
+
 ### Fixes
 
 - Unify release name for all supported platforms ([#294](https://github.com/getsentry/sentry-unreal/pull/294))
