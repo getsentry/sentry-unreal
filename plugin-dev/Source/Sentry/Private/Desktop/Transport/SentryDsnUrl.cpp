@@ -2,6 +2,8 @@
 
 #include "SentryDsnUrl.h"
 
+#if USE_SENTRY_NATIVE
+
 SentryDsnUrl::SentryDsnUrl(const FString& Dsn)
 {
 	FString UrlRemainder;
@@ -30,3 +32,5 @@ const FString& SentryDsnUrl::GetKey() const
 {
 	return Key;
 }
+
+#endif

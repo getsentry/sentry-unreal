@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#pragma once
+#if USE_SENTRY_NATIVE
 
 class SentryDsnUrl
 {
@@ -22,3 +22,5 @@ private:
 	FString Host;
 	FString ProjectId;
 };
+
+#endif
