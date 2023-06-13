@@ -35,6 +35,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 		options.releaseName = settings->OverrideReleaseName
 			? settings->Release.GetNSString()
 			: settings->GetFormattedReleaseName().GetNSString();
+		options.attachStacktrace = settings->EnableStackTrace;
 	}];
 
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {

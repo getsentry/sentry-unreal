@@ -34,7 +34,8 @@ public class SentryBridgeJava {
 			final String environment,
 			final String gameLogPath,
 			final boolean enableAutoSessionTracking,
-			final long sessionTimeout) {
+			final long sessionTimeout,
+			final boolean enableStackTrace) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
 			@Override
 			public void configure(SentryAndroidOptions options) {
@@ -43,6 +44,7 @@ public class SentryBridgeJava {
 				options.setEnvironment(environment);
 				options.setEnableAutoSessionTracking(enableAutoSessionTracking);
 				options.setSessionTrackingIntervalMillis(sessionTimeout);
+				options.setAttachStacktrace(enableStackTrace);
 			}
 		});
 
