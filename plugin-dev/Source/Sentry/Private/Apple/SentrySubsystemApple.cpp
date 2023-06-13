@@ -51,6 +51,11 @@ void SentrySubsystemApple::Close()
 	[SENTRY_APPLE_CLASS(SentrySDK) close];
 }
 
+bool SentrySubsystemApple::IsEnabled()
+{
+	return [SENTRY_APPLE_CLASS(SentrySDK) isEnabled];
+}
+
 void SentrySubsystemApple::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
 	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbApple>(breadcrumb->GetNativeImpl());

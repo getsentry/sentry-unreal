@@ -46,6 +46,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Close();
 
+	/** Checks whether the Sentry SDK was initialized and event capturing is enabled. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool IsEnabled();
+
 	/**
 	 * Adds a breadcrumb to the current Scope.
 	 *

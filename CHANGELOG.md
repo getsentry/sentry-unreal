@@ -5,6 +5,7 @@
 ### Fixes
 
 - Unify release name for all supported platforms ([#294](https://github.com/getsentry/sentry-unreal/pull/294))
+- Update plugin initialization logic ([#299](https://github.com/getsentry/sentry-unreal/pull/299))
 
 ### Dependencies
 

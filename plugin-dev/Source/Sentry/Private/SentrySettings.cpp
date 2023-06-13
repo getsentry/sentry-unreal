@@ -9,7 +9,7 @@
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, DsnUrl()
-	, InitAutomatically(false)
+	, InitAutomatically(true)
 	, EnableVerboseLogging(true)
 	, EnableAutoCrashCapturing(true)
 	, EnableAutoLogAttachment(false)

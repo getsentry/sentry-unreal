@@ -9,6 +9,7 @@ class SentrySubsystemApple : public ISentrySubsystem
 public:
 	virtual void InitWithSettings(const USentrySettings* settings) override;
 	virtual void Close() override;
+	virtual bool IsEnabled() override;
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual USentryId* CaptureMessage(const FString& message, ESentryLevel level) override;
