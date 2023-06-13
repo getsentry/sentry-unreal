@@ -115,4 +115,16 @@ FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
 	return Result;
 }
 
+TArray<uint8> SentryConvertorsDesktop::SentryEnvelopeToByteArray(sentry_envelope_t* envelope)
+{
+	size_t size;
+	ANSICHAR* serializedEnvelopeStr = sentry_envelope_serialize(envelope, &size);
+
+	TArray<uint8> envelopeData = TArray(reinterpret_cast<uint8*>(serializedEnvelopeStr), size);
+
+	sentry_string_free(serializedEnvelopeStr);
+
+	return envelopeData;
+}
+
 #endif
