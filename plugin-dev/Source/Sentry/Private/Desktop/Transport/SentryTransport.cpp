@@ -7,7 +7,7 @@
 #include "SentryDsnUrl.h"
 #include "SentrySettings.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Desktop/Infrastructure/SentryConvertorsDesktop.h"
 
 #include "HttpModule.h"
 #include "HttpManager.h"
