@@ -10,9 +10,11 @@ import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import android.util.Log;
 
 import io.sentry.Attachment;
 import io.sentry.Breadcrumb;
+import io.sentry.Hint;
 import io.sentry.IHub;
 import io.sentry.Scope;
 import io.sentry.ScopeCallback;
@@ -33,6 +35,7 @@ public class SentryBridgeJava {
 			final String releaseName,
 			final String environment,
 			final String gameLogPath,
+			final String gameBackupLogPath,
 			final boolean enableAutoSessionTracking,
 			final long sessionTimeout,
 			final boolean enableStackTrace) {
@@ -45,15 +48,24 @@ public class SentryBridgeJava {
 				options.setEnableAutoSessionTracking(enableAutoSessionTracking);
 				options.setSessionTrackingIntervalMillis(sessionTimeout);
 				options.setAttachStacktrace(enableStackTrace);
-			}
-		});
-
-		Sentry.configureScope(new ScopeCallback() {
-			@Override
-			public void run(@NonNull Scope scope) {
-				if(!gameLogPath.isEmpty()) {
-					scope.addAttachment(new Attachment(gameLogPath));
-				}
+				options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
+					@Override
+					public SentryEvent execute(SentryEvent event, Hint hint) {
+						if(event.isCrashed() && event.isErrored())
+						{
+							if(!gameBackupLogPath.isEmpty()) {
+								hint.addAttachment(new Attachment(gameBackupLogPath));
+							}
+						}
+						else
+						{
+							if(!gameLogPath.isEmpty()) {
+								hint.addAttachment(new Attachment(gameLogPath));
+							}
+						}
+						return event;
+					}
+				});
 			}
 		});
 	}

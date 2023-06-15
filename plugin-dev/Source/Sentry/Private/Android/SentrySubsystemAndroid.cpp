@@ -20,27 +20,30 @@
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
-#include "GenericPlatform/GenericPlatformOutputDevices.h"
-#include "HAL/FileManager.h"
+#include "Utils/SentryFileUtils.h"
 
 void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 {
 	const FString LogFilePath = settings->EnableAutoLogAttachment
-		? IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename())
-		: FString();
+		? SentryFileUtils::GetGameLogPath()
+		: FString("");
 
+	const FString BackupLogFilePath = settings->EnableAutoLogAttachment
+		? SentryFileUtils::GetLatestGameLogBackupPath()
+		: FString("");
 
 	const FString ReleaseName = settings->OverrideReleaseName
 		? settings->Release
 		: settings->GetFormattedReleaseName();
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, 
-		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJZ)V",
+		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJZ)V",
 		FJavaWrapper::GameActivityThis,
 		*FSentryJavaObjectWrapper::GetJString(settings->DsnUrl),
 		*FSentryJavaObjectWrapper::GetJString(ReleaseName),
 		*FSentryJavaObjectWrapper::GetJString(settings->Environment),
 		*FSentryJavaObjectWrapper::GetJString(LogFilePath),
+		*FSentryJavaObjectWrapper::GetJString(BackupLogFilePath),
 		settings->EnableAutoSessionTracking,
 		(jlong)settings->SessionTimeout,
 		settings->EnableStackTrace);
