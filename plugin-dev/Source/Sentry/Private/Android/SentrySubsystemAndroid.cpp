@@ -35,14 +35,15 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 		: settings->GetFormattedReleaseName();
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, 
-		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJ)V",
+		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZJZ)V",
 		FJavaWrapper::GameActivityThis,
 		*FSentryJavaObjectWrapper::GetJString(settings->DsnUrl),
 		*FSentryJavaObjectWrapper::GetJString(ReleaseName),
 		*FSentryJavaObjectWrapper::GetJString(settings->Environment),
 		*FSentryJavaObjectWrapper::GetJString(LogFilePath),
 		settings->EnableAutoSessionTracking,
-		(jlong)settings->SessionTimeout);
+		(jlong)settings->SessionTimeout,
+		settings->EnableStackTrace);
 }
 
 void SentrySubsystemAndroid::Close()

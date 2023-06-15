@@ -37,6 +37,8 @@ private:
 	TSharedPtr<SentryCrashReporter> crashReporter;
 
 	bool isEnabled;
+
+	bool isStackTraceEnabled;
 };
 
 #endif
