@@ -118,6 +118,9 @@ Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentrySubsystem.spec.cpp
 Source/Sentry/Private/Tests/SentryUser.spec.cpp
+Source/Sentry/Private/Utils/
+Source/Sentry/Private/Utils/SentryFileUtils.cpp
+Source/Sentry/Private/Utils/SentryFileUtils.h
 Source/Sentry/Public/
 Source/Sentry/Public/SentryAttachment.h
 Source/Sentry/Public/SentryBreadcrumb.h
