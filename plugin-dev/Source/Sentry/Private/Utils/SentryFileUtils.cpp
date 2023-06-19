@@ -5,6 +5,7 @@
 
 #include "HAL/FileManager.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "Misc/Paths.h"
 
 struct FSentrySortFileByDatePredicate
 {
