@@ -21,7 +21,7 @@ FString SentryFileUtils::GetGameLogPath()
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
 }
 
-FString SentryFileUtils::GetLatestGameLogBackupPath()
+FString SentryFileUtils::GetGameLogBackupPath()
 {
 	TArray<FString> GameLogBackupFiles;
 	IFileManager::Get().FindFiles(GameLogBackupFiles, *FString::Printf(TEXT("%s*-backup-*.*"), *FPaths::ProjectLogDir()), true, false);
@@ -36,7 +36,6 @@ FString SentryFileUtils::GetLatestGameLogBackupPath()
 	{
 		FString GameLogFullPath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectLogDir() / GameLogBackupFiles[i]));
 		GameLogBackupFiles[i] = GameLogFullPath;
-		UE_LOG(LogSentrySdk, Log, TEXT("SENTRY LOG FILE - %s."), *GameLogBackupFiles[i]);
 	}
 
 	GameLogBackupFiles.Sort(FSentrySortFileByDatePredicate());

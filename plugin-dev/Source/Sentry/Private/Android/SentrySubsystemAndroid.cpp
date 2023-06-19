@@ -29,7 +29,7 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
 		: FString("");
 
 	const FString BackupLogFilePath = settings->EnableAutoLogAttachment
-		? SentryFileUtils::GetLatestGameLogBackupPath()
+		? SentryFileUtils::GetGameLogBackupPath()
 		: FString("");
 
 	const FString ReleaseName = settings->OverrideReleaseName

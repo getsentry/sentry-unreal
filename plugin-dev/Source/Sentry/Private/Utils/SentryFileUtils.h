@@ -6,5 +6,5 @@ class SentryFileUtils
 {
 public:
 	static FString GetGameLogPath();
-	static FString GetLatestGameLogBackupPath();
+	static FString GetGameLogBackupPath();
 };
