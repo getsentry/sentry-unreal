@@ -3,14 +3,11 @@
 package io.sentry.unreal;
 
 import android.app.Activity;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import android.util.Log;
 
 import io.sentry.Attachment;
 import io.sentry.Breadcrumb;
