@@ -197,7 +197,8 @@ jobs:
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
       - name: Run tests
-        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor SentryPlayground.uproject -ExecCmds="Automation RunTests Sentry" -ReportOutputPath=TestReport.txt -nullRHI -nopause -unattended -testexit="Automation Test Queue Empty"
+        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+          -ExecCmds="Automation RunTests Sentry" -ReportOutputPath=TestReport.txt -nullRHI -nopause -unattended -testexit="Automation Test Queue Empty"
 
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
