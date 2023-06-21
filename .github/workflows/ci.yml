@@ -196,9 +196,6 @@ jobs:
         # sentry-native requires write access to sample project directory in order to initialize itself properly
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
-      - name: Run tests
-        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -ExecCmds="Automation RunTests Sentry" -ReportOutputPath=TestReport.txt -game -buildmachine -stdout -fullstdoutlogoutput -forcelogflush -nullrhi -nopause -nosplash -unattended -testexit="Automation Test Queue Empty"
-
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
         if: ${{ matrix.unreal == '4.27'}}
@@ -207,6 +204,9 @@ jobs:
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
 
+      - name: Run tests
+        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -ExecCmds="Automation RunTests Sentry" -ReportOutputPath=TestReport.txt -game -buildmachine -stdout -fullstdoutlogoutput -forcelogflush -nullrhi -nopause -nosplash -unattended -testexit="Automation Test Queue Empty"
+  
       - name: Collect ${{ matrix.app }} build info
         if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
         uses: actions/upload-artifact@v3.1.1
