@@ -207,7 +207,7 @@ jobs:
       - name: Run tests
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build Development Editor
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -ExecCmds="Automation RunTests Sentry" -ReportOutputPath=TestReport.txt -game -buildmachine -stdout -fullstdoutlogoutput -forcelogflush -nullrhi -nopause -nosplash -unattended -testexit="Automation Test Queue Empty"
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -ExecCmds="Automation RunTests Sentry" -ReportOutputPath=/workspace/checkout/${{ matrix.app }}/TestReport -game -buildmachine -stdout -fullstdoutlogoutput -forcelogflush -nullrhi -nopause -nosplash -unattended -testexit="Automation Test Queue Empty"
   
       - name: Collect ${{ matrix.app }} build info
         if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
