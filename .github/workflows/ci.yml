@@ -206,7 +206,6 @@ jobs:
 
       - name: Run tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build Development Editor
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor \
             /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ExecCmds="Automation RunTests Sentry" \
