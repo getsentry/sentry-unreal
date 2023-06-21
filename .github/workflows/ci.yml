@@ -198,7 +198,8 @@ jobs:
 
       - name: Run tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 uat BuildCookRun -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -platform=Linux -nop4 -cook -build
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal mkdir TestReport
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build Development Editor
           docker exec unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ExecCmds="Automation RunTests Sentry" \
             -ReportOutputPath=/workspace/checkout/${{ matrix.app }}/TestReport \
