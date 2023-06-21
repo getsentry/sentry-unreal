@@ -196,17 +196,9 @@ jobs:
         # sentry-native requires write access to sample project directory in order to initialize itself properly
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
-      - name: Build & package ${{ matrix.app }}
-        # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
-        if: ${{ matrix.unreal == '4.27'}}
-        id: package-app
-        run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
-
       - name: Run tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build -notools
+          docker exec unreal ue4 uat BuildCookRun -platform=Linux -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -nop4 -cook -build
           docker exec unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ExecCmds="Automation RunTests Sentry" \
             -ReportOutputPath=/workspace/checkout/${{ matrix.app }}/TestReport \
