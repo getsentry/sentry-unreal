@@ -198,19 +198,15 @@ jobs:
 
       - name: Run tests
         run: |
-          docker exec unreal ue4 uat BuildCookRun -platform=Linux -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -nop4 -cook -build
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 uat BuildCookRun -platform=Linux -nop4 -cook -build
           docker exec unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ExecCmds="Automation RunTests Sentry" \
             -ReportOutputPath=/workspace/checkout/${{ matrix.app }}/TestReport \
-            -game \
-            -buildmachine \
-            -stdout \
-            -fullstdoutlogoutput \
-            -forcelogflush \
             -nullrhi \
             -nopause \
             -nosplash \
-            -unattended
+            -unattended \
+            -testexit="Automation Test Queue Empty"
   
       - name: Collect ${{ matrix.app }} build info
         if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
