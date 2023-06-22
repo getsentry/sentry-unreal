@@ -211,7 +211,7 @@ jobs:
             -NullRHI
 
       - name: Collect ${{ matrix.app }} test info
-        if: ${{ steps.run-tests.outcome == 'failure' }}
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
         uses: actions/upload-artifact@v3.1.1
         with:
           name: UE ${{ matrix.unreal }} ${{ matrix.app }} test report
