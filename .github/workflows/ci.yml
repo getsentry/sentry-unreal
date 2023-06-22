@@ -200,8 +200,8 @@ jobs:
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal mkdir TestReport
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build Development Editor
-          docker exec unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
-            -ExecCmds="Automation RunTests Sentry" \
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+            -ExecCmds="Automation RunTests Sentry;quit" \
             -ReportOutputPath=/workspace/checkout/${{ matrix.app }}/TestReport \
             -nullrhi \
             -nopause \
