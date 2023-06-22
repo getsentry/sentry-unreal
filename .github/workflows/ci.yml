@@ -201,14 +201,9 @@ jobs:
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
-            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \            
+            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -reportoutputpath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
             -execcmds="Automation RunTests Sentry;quit" \
-            -game \
-            -buildmachine \
-            -stdout \
-            -fullstdoutlogoutput \
-            -forcelogflush \
             -unattended \
             -nopause \
             -nosplash \
