@@ -197,17 +197,37 @@ jobs:
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
       - name: Run tests
+        id: run-tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal mkdir TestReport
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build Development Editor
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
-            -ExecCmds="Automation RunTests Sentry;quit" \
-            -ReportOutputPath=/workspace/checkout/${{ matrix.app }}/TestReport \
-            -nullrhi \
-            -nopause \
-            -nosplash \
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
+            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \            
+            -reportoutputpath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
+            -execcmds="Automation RunTests Sentry;quit" \
+            -game \
+            -buildmachine \
+            -stdout \
+            -fullstdoutlogoutput \
+            -forcelogflush \
             -unattended \
-            -testexit="Automation Test Queue Empty"
+            -nopause \
+            -nosplash
+
+      - name: Collect ${{ matrix.app }} test info
+        if: contains(fromJson('["success", "failure"]'), steps.run-tests.outcome)
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: UE ${{ matrix.unreal }} ${{ matrix.app }} test report
+          path: |
+            checkout/${{ matrix.app }}/Saved/Automation
+
+      - name: Build & package ${{ matrix.app }}
+        # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
+        if: ${{ matrix.unreal == '4.27'}}
+        id: package-app
+        run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
   
       - name: Collect ${{ matrix.app }} build info
         if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
