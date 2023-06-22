@@ -26,7 +26,7 @@ void SentryEventSpec::Define()
 			SentryEvent->SetLevel(ESentryLevel::Fatal);
 			SentryEvent->SetMessage(TestMessage);
 
-			TestNotEqual("Event level", SentryEvent->GetLevel(), ESentryLevel::Fatal);
+			TestEqual("Event level", SentryEvent->GetLevel(), ESentryLevel::Fatal);
 			TestEqual("Event message", SentryEvent->GetMessage(), TestMessage);
 		});
 	});
