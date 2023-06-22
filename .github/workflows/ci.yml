@@ -201,7 +201,7 @@ jobs:
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
-            -Project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+            /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
             -ExecCmds="Automation RunTests Sentry;quit" \
             -TestExit="Automation Test Queue Empty" \
@@ -211,7 +211,7 @@ jobs:
             -NullRHI
 
       - name: Collect ${{ matrix.app }} test info
-        if: contains(fromJson('["success", "failure"]'), steps.run-tests.outcome)
+        if: ${{ steps.run-tests.outcome == 'failure' }}
         uses: actions/upload-artifact@v3.1.1
         with:
           name: UE ${{ matrix.unreal }} ${{ matrix.app }} test report
