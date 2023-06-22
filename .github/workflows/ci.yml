@@ -201,13 +201,14 @@ jobs:
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
-            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
-            -reportoutputpath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
-            -execcmds="Automation RunTests Sentry;quit" \
-            -unattended \
-            -nopause \
-            -nosplash \
-            -nullrhi
+            -Project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+            -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
+            -ExecCmds="Automation RunTests Sentry;quit" \
+            -TestExit="Automation Test Queue Empty" \
+            -Unattended \
+            -NoPause \
+            -NoSplash \
+            -NullRHI
 
       - name: Collect ${{ matrix.app }} test info
         if: contains(fromJson('["success", "failure"]'), steps.run-tests.outcome)
