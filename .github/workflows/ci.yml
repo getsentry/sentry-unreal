@@ -211,7 +211,8 @@ jobs:
             -forcelogflush \
             -unattended \
             -nopause \
-            -nosplash
+            -nosplash \
+            -nullrhi
 
       - name: Collect ${{ matrix.app }} test info
         if: contains(fromJson('["success", "failure"]'), steps.run-tests.outcome)
