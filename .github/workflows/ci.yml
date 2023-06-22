@@ -197,7 +197,26 @@ jobs:
         run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
       - name: Run tests
-        run: docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 test --filter Product
+        id: run-tests
+        run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
+            /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+            -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
+            -ExecCmds="Automation RunTests Sentry;quit" \
+            -TestExit="Automation Test Queue Empty" \
+            -Unattended \
+            -NoPause \
+            -NoSplash \
+            -NullRHI
+
+      - name: Collect ${{ matrix.app }} test info
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: UE ${{ matrix.unreal }} ${{ matrix.app }} test report
+          path: |
+            checkout/${{ matrix.app }}/Saved/Automation
 
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
@@ -206,7 +225,7 @@ jobs:
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
-
+  
       - name: Collect ${{ matrix.app }} build info
         if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
         uses: actions/upload-artifact@v3.1.1
