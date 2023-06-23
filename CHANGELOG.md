@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix automatic game log attachment (Android) ([#309](https://github.com/getsentry/sentry-unreal/pull/309))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.23.0 to v6.24.0 ([#312](https://github.com/getsentry/sentry-unreal/pull/312))
