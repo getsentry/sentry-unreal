@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Java SDK (Android) from v6.23.0 to v6.24.0 ([#312](https://github.com/getsentry/sentry-unreal/pull/312))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6240)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.23.0...6.24.0)
+
 ## 0.7.0
 
 ### Features
