@@ -15,4 +15,5 @@ public:
 	virtual FString GetMessage() const = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual ESentryLevel GetLevel() const = 0;
+	virtual bool IsCrash() const = 0;
 };

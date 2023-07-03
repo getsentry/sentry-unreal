@@ -35,6 +35,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	ESentryLevel GetLevel() const;
 
+	/** Gets flag indicating whether the event is a crash. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool IsCrash() const;
+
 	void InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl);
 	TSharedPtr<ISentryEvent> GetNativeImpl();
 

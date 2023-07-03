@@ -25,6 +25,7 @@ void SentryEventAndroid::SetupClassMethods()
 	GetMessageMethod = GetMethod("getMessage", "()Lio/sentry/protocol/Message;");
 	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
 	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
+	IsCrashMethod = GetMethod("isCrashed", "()Z");
 }
 
 void SentryEventAndroid::SetMessage(const FString& message)
@@ -47,4 +48,9 @@ ESentryLevel SentryEventAndroid::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
 	return SentryConvertorsAndroid::SentryLevelToUnreal(*level);
+}
+
+bool SentryEventAndroid::IsCrash() const
+{
+	return CallMethod<bool>(IsCrashMethod);
 }
