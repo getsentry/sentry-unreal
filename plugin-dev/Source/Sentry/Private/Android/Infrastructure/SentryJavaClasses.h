@@ -18,6 +18,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass UserFeedback;
 	const static FSentryJavaClass Message;
 	const static FSentryJavaClass SentryLevel;
+	const static FSentryJavaClass SentryHint;
 
 	// System Java classes
 	const static FSentryJavaClass ArrayList;
