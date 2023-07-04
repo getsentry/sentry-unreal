@@ -22,7 +22,7 @@
 
 #include "Utils/SentryFileUtils.h"
 
-void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings)
+void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
 {
 	const FString LogFilePath = settings->EnableAutoLogAttachment
 		? SentryFileUtils::GetGameLogPath()
