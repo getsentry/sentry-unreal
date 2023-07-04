@@ -12,12 +12,16 @@
 #endif
 
 #include "SentrySettings.h"
+#include "SentryBeforeSendHandler.h"
+
+#include "UObject/UObjectGlobals.h"
 #include "Misc/AutomationTest.h"
 
 #if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentrySubsystemSpec, "Sentry.SentrySubsystem", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 	TSharedPtr<ISentrySubsystem> SentrySubsystemImpl;
+	TSharedPtr<USentryBeforeSendHandler> BeforeSendHandler;
 END_DEFINE_SPEC(SentrySubsystemSpec)
 
 void SentrySubsystemSpec::Define()
@@ -33,7 +37,14 @@ void SentrySubsystemSpec::Define()
 #endif
 
 		USentrySettings* Settings = FSentryModule::Get().GetSettings();
-		SentrySubsystemImpl->InitWithSettings(Settings);
+
+		const UClass* BeforeSendHandlerClass = Settings->BeforeSendHandler != nullptr
+			? Settings->BeforeSendHandler
+			: USentryBeforeSendHandler::StaticClass();
+
+		BeforeSendHandler = MakeShareable(NewObject<USentryBeforeSendHandler>(GetTransientPackage(), BeforeSendHandlerClass));
+
+		SentrySubsystemImpl->InitWithSettings(Settings, BeforeSendHandler.Get());
 	});
 
 	Describe("Capture Message", [this]()

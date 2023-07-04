@@ -13,13 +13,14 @@ class USentryEvent;
 class USentryId;
 class USentryUserFeedback;
 class USentryUser;
+class USentryBeforeSendHandler;
 
 class ISentrySubsystem
 {
 public:
 	virtual ~ISentrySubsystem() = default;
 
-	virtual void InitWithSettings(const USentrySettings* settings) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) = 0;

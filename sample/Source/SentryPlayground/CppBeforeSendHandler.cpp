@@ -1,0 +1,16 @@
+﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+
+#include "CppBeforeSendHandler.h"
+
+#include "SentryEvent.h"
+#include "SentryHint.h"
+
+USentryEvent* UCppBeforeSendHandler::HandleBeforeSend_Implementation(USentryEvent* Event, USentryHint* Hint)
+{
+	Event->SetLevel(ESentryLevel::Error);
+	Event->SetMessage(TEXT("Tweaked message (in CPP beforeSend handler)"));
+
+	UE_LOG(LogTemp, Log, TEXT("Hello from CPP beforeSend handler"));
+
+	return Super::HandleBeforeSend_Implementation(Event, Hint);
+}

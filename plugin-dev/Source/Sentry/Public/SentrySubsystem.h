@@ -17,6 +17,7 @@ class USentryId;
 class USentryUserFeedback;
 class USentryUser;
 class ISentrySubsystem;
+class USentryBeforeSendHandler;
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
@@ -250,6 +251,9 @@ private:
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
+
+	UPROPERTY()
+	USentryBeforeSendHandler* BeforeSendHandler;
 
 	FDelegateHandle PreLoadMapDelegate;
 	FDelegateHandle PostLoadMapDelegate;

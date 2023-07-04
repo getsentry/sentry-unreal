@@ -10,12 +10,12 @@ class USentryEvent;
 class USentryHint;
 
 UCLASS(Blueprintable)
-class USentryBeforeSendHandler : public UObject
+class SENTRY_API USentryBeforeSendHandler : public UObject
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	void HandleBeforeSend(USentryEvent* Event, USentryHint* Hint);
-	virtual void HandleBeforeSend_Implementation(USentryEvent* Event, USentryHint* Hint);
+	USentryEvent* HandleBeforeSend(USentryEvent* Event, USentryHint* Hint);
+	virtual USentryEvent* HandleBeforeSend_Implementation(USentryEvent* Event, USentryHint* Hint);
 };
