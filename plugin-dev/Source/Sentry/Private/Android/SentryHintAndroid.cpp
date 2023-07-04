@@ -13,7 +13,7 @@ SentryHintAndroid::SentryHintAndroid()
 }
 
 SentryHintAndroid::SentryHintAndroid(jobject hint)
-	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryHint, "()V")
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryHint, hint)
 {
 	SetupClassMethods();
 }

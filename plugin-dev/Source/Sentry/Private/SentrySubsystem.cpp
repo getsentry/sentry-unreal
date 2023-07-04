@@ -72,7 +72,7 @@ void USentrySubsystem::Initialize()
 	}
 
 	const UClass* BeforeSendHandlerClass = Settings->BeforeSendHandler != nullptr
-		? Settings->BeforeSendHandler
+		? static_cast<UClass*>(Settings->BeforeSendHandler)
 		: USentryBeforeSendHandler::StaticClass();
 
 	BeforeSendHandler = NewObject<USentryBeforeSendHandler>(this, BeforeSendHandlerClass);

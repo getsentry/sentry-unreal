@@ -7,6 +7,7 @@
 #include "SentryScopeApple.h"
 #include "SentryUserApple.h"
 #include "SentryUserFeedbackApple.h"
+#include "SentryBeforeSendHandler.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"

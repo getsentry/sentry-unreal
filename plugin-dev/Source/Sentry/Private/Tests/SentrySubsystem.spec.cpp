@@ -39,7 +39,7 @@ void SentrySubsystemSpec::Define()
 		USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 		const UClass* BeforeSendHandlerClass = Settings->BeforeSendHandler != nullptr
-			? Settings->BeforeSendHandler
+			? static_cast<UClass*>(Settings->BeforeSendHandler)
 			: USentryBeforeSendHandler::StaticClass();
 
 		BeforeSendHandler = MakeShareable(NewObject<USentryBeforeSendHandler>(GetTransientPackage(), BeforeSendHandlerClass));
