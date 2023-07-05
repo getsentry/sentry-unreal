@@ -27,11 +27,8 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
 	EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventAndroid(event)));
-
 	USentryHint* HintToProcess = NewObject<USentryHint>();
 	HintToProcess->InitWithNativeImpl(MakeShareable(new SentryHintAndroid(hint)));
 
-	USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
-
-	return ProcessedEvent != nullptr ? event : nullptr;
+	return handler->HandleBeforeSend(EventToProcess, HintToProcess) ? event : nullptr;
 }

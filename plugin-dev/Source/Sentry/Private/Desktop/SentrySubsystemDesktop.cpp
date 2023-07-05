@@ -44,9 +44,7 @@ sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
 	EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventDesktop(event)));
 
-	USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, nullptr);
-
-	return ProcessedEvent != nullptr ? event : sentry_value_new_null();
+	return handler->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
 }
 
 SentrySubsystemDesktop::SentrySubsystemDesktop()

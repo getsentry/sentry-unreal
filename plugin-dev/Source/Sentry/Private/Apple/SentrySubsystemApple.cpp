@@ -37,22 +37,19 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			? settings->Release.GetNSString()
 			: settings->GetFormattedReleaseName().GetNSString();
 		options.attachStacktrace = settings->EnableStackTrace;
+		options.initialScope = ^(SentryScope *scope) {
+			if(settings->EnableAutoLogAttachment) {
+				const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+				SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
+				[scope addAttachment:logAttachment];
+			}
+			return scope;
+		};
 		options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 			USentryEvent* EventToProcess = NewObject<USentryEvent>();
 			EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
-
-			USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
-
-			return ProcessedEvent != nullptr ? event : nullptr;
+			return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
 		};
-	}];
-
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
-		if(settings->EnableAutoLogAttachment) {
-			const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
-			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
-			[scope addAttachment:logAttachment];
-		}
 	}];
 }
 
