@@ -7,7 +7,6 @@
 #include "SentryScopeApple.h"
 #include "SentryUserApple.h"
 #include "SentryUserFeedbackApple.h"
-#include "SentryBeforeSendHandler.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -15,6 +14,7 @@
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
+#include "SentryBeforeSendHandler.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -37,6 +37,14 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			? settings->Release.GetNSString()
 			: settings->GetFormattedReleaseName().GetNSString();
 		options.attachStacktrace = settings->EnableStackTrace;
+		options.beforeSend = ^SentryEvent* (SentryEvent* event) {
+			USentryEvent* EventToProcess = NewObject<USentryEvent>();
+			EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
+
+			USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+
+			return ProcessedEvent != nullptr ? event : nullptr;
+		};
 	}];
 
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
