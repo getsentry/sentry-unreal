@@ -10,6 +10,8 @@
 
 #include "Utils/SentryFileUtils.h"
 
+#include "Misc/Paths.h"
+
 USentryEvent* USentryBeforeSendHandler::HandleBeforeSend_Implementation(USentryEvent* Event, USentryHint* Hint)
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
@@ -23,7 +25,7 @@ USentryEvent* USentryBeforeSendHandler::HandleBeforeSend_Implementation(USentryE
 #endif
 
 		USentryAttachment* Attachment = NewObject<USentryAttachment>();
-		Attachment->InitializeWithPath(LogFilePath, TEXT("GameLog.log"), TEXT("application/octet-stream"));
+		Attachment->InitializeWithPath(LogFilePath, FPaths::GetCleanFilename(LogFilePath), TEXT("application/octet-stream"));
 
 		if(Hint != nullptr)
 		{
