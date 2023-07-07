@@ -58,6 +58,14 @@ ESentryLevel USentryEvent::GetLevel() const
 	return EventNativeImpl->GetLevel();
 }
 
+bool USentryEvent::IsCrash() const
+{
+	if(!EventNativeImpl)
+		return false;
+
+	return EventNativeImpl->IsCrash();
+}
+
 void USentryEvent::InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl)
 {
 	if (!EventNativeImpl)

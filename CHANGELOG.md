@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add API allowing to set custom handler for `beforeSend` hook ([#318](https://github.com/getsentry/sentry-unreal/pull/318))
+
 ### Fixes
 
 - Fix automatic game log attachment (Android) ([#309](https://github.com/getsentry/sentry-unreal/pull/309))

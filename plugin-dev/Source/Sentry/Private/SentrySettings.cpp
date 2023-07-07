@@ -2,6 +2,8 @@
 
 #include "SentrySettings.h"
 
+#include "SentryBeforeSendHandler.h"
+
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/App.h"
@@ -20,6 +22,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, UploadSymbolsAutomatically(false)
 	, IncludeSources(false)
 	, CrashReporterUrl()
+	, BeforeSendHandler(USentryBeforeSendHandler::StaticClass())
 {
 #if WITH_EDITOR
 	Environment = TEXT("Editor");

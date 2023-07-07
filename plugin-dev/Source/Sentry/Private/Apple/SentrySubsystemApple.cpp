@@ -14,6 +14,7 @@
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
+#include "SentryBeforeSendHandler.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -23,7 +24,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 
-void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
+void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
 {
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
@@ -36,14 +37,19 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings)
 			? settings->Release.GetNSString()
 			: settings->GetFormattedReleaseName().GetNSString();
 		options.attachStacktrace = settings->EnableStackTrace;
-	}];
-
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
-		if(settings->EnableAutoLogAttachment) {
-			const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
-			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
-			[scope addAttachment:logAttachment];
-		}
+		options.initialScope = ^(SentryScope *scope) {
+			if(settings->EnableAutoLogAttachment) {
+				const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+				SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
+				[scope addAttachment:logAttachment];
+			}
+			return scope;
+		};
+		options.beforeSend = ^SentryEvent* (SentryEvent* event) {
+			USentryEvent* EventToProcess = NewObject<USentryEvent>();
+			EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
+			return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
+		};
 	}];
 }
 

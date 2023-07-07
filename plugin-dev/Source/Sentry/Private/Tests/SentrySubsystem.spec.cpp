@@ -12,12 +12,16 @@
 #endif
 
 #include "SentrySettings.h"
+#include "SentryBeforeSendHandler.h"
+
+#include "UObject/UObjectGlobals.h"
 #include "Misc/AutomationTest.h"
 
 #if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentrySubsystemSpec, "Sentry.SentrySubsystem", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 	TSharedPtr<ISentrySubsystem> SentrySubsystemImpl;
+	USentryBeforeSendHandler* BeforeSendHandler;
 END_DEFINE_SPEC(SentrySubsystemSpec)
 
 void SentrySubsystemSpec::Define()
@@ -33,7 +37,14 @@ void SentrySubsystemSpec::Define()
 #endif
 
 		USentrySettings* Settings = FSentryModule::Get().GetSettings();
-		SentrySubsystemImpl->InitWithSettings(Settings);
+
+		const UClass* BeforeSendHandlerClass = Settings->BeforeSendHandler != nullptr
+			? static_cast<UClass*>(Settings->BeforeSendHandler)
+			: USentryBeforeSendHandler::StaticClass();
+
+		BeforeSendHandler = NewObject<USentryBeforeSendHandler>(GetTransientPackage(), BeforeSendHandlerClass);
+
+		SentrySubsystemImpl->InitWithSettings(Settings, BeforeSendHandler);
 	});
 
 	Describe("Capture Message", [this]()
@@ -48,7 +59,11 @@ void SentrySubsystemSpec::Define()
 		{
 			const FConfigureScopeDelegate testDelegate;
 			const USentryId* eventId = SentrySubsystemImpl->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
+#if PLATFORM_WINDOWS || PLATFORM_LINUX
 			TestNull("Event ID is null", eventId);
+#elif PLATFORM_MAC
+			TestNotNull("Event ID is non-null", eventId);
+#endif
 		});
 	});
 
@@ -71,7 +86,11 @@ void SentrySubsystemSpec::Define()
 			const FConfigureScopeDelegate testDelegate;
 
 			const USentryId* eventId = SentrySubsystemImpl->CaptureEventWithScope(testEvent, testDelegate);
+#if PLATFORM_WINDOWS || PLATFORM_LINUX
 			TestNull("Event ID is null", eventId);
+#elif PLATFORM_MAC
+			TestNotNull("Event ID is non-null", eventId);
+#endif
 		});
 	});
 

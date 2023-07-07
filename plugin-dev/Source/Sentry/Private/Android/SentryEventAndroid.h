@@ -18,10 +18,12 @@ public:
 	virtual FString GetMessage() const override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
+	virtual bool IsCrash() const override;
 
 private:
 	FSentryJavaMethod SetMessageMethod;
 	FSentryJavaMethod GetMessageMethod;
 	FSentryJavaMethod SetLevelMethod;
 	FSentryJavaMethod GetLevelMethod;
+	FSentryJavaMethod IsCrashMethod;
 };

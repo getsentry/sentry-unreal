@@ -51,4 +51,9 @@ ESentryLevel SentryEventDesktop::GetLevel() const
 	return SentryConvertorsDesktop::SentryLevelToUnreal(level);
 }
 
+bool SentryEventDesktop::IsCrash() const
+{
+	return false;
+}
+
 #endif

@@ -49,3 +49,8 @@ ESentryLevel SentryEventApple::GetLevel() const
 {
 	return SentryConvertorsApple::SentryLevelToUnreal(EventApple.level);
 }
+
+bool SentryEventApple::IsCrash() const
+{
+	return EventApple.error != nullptr;
+}

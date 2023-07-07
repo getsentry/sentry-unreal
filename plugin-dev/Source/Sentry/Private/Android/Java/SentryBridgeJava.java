@@ -25,14 +25,14 @@ import io.sentry.protocol.SentryId;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
+	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
 
 	public static void init(
 			Activity activity,
 			final String dsnUrl,
 			final String releaseName,
 			final String environment,
-			final String gameLogPath,
-			final String gameBackupLogPath,
+			final long beforeSendHandler,
 			final boolean enableAutoSessionTracking,
 			final long sessionTimeout,
 			final boolean enableStackTrace) {
@@ -48,19 +48,7 @@ public class SentryBridgeJava {
 				options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
 					@Override
 					public SentryEvent execute(SentryEvent event, Hint hint) {
-						if(event.isCrashed() && event.isErrored())
-						{
-							if(!gameBackupLogPath.isEmpty()) {
-								hint.addAttachment(new Attachment(gameBackupLogPath));
-							}
-						}
-						else
-						{
-							if(!gameLogPath.isEmpty()) {
-								hint.addAttachment(new Attachment(gameLogPath));
-							}
-						}
-						return event;
+						return onBeforeSend(beforeSendHandler, event, hint);
 					}
 				});
 			}

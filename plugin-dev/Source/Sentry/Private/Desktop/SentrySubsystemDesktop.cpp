@@ -12,6 +12,7 @@
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
 #include "SentryModule.h"
+#include "SentryBeforeSendHandler.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 #include "CrashReporter/SentryCrashReporter.h"
@@ -36,13 +37,24 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 	UE_LOG(LogSentrySdk, Log, TEXT("%s"), *FString(buffer));
 }
 
+sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
+{
+	USentryBeforeSendHandler* handler = static_cast<USentryBeforeSendHandler*>(closure);
+
+	USentryEvent* EventToProcess = NewObject<USentryEvent>();
+	EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventDesktop(event)));
+
+	return handler->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
+}
+
 SentrySubsystemDesktop::SentrySubsystemDesktop()
 	: crashReporter(MakeShareable(new SentryCrashReporter))
 	, isEnabled(false)
+	, isStackTraceEnabled(true)
 {
 }
 
-void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
+void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
 {
 #if PLATFORM_WINDOWS
 	const FString HandlerExecutableName = TEXT("crashpad_handler.exe");
@@ -83,6 +95,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings)
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
+	sentry_options_set_before_send(options, HandleBeforeSend, beforeSendHandler);
 
 #if PLATFORM_LINUX
 	sentry_options_set_transport(options, FSentryTransport::Create());

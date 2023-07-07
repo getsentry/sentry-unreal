@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySubsystem.h"
+
 #include "SentryModule.h"
 #include "SentrySettings.h"
 #include "SentryBreadcrumb.h"
@@ -8,6 +9,7 @@
 #include "SentryEvent.h"
 #include "SentryId.h"
 #include "SentryUserFeedback.h"
+#include "SentryBeforeSendHandler.h"
 
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
@@ -69,10 +71,16 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
+	const UClass* BeforeSendHandlerClass = Settings->BeforeSendHandler != nullptr
+		? static_cast<UClass*>(Settings->BeforeSendHandler)
+		: USentryBeforeSendHandler::StaticClass();
+
+	BeforeSendHandler = NewObject<USentryBeforeSendHandler>(this, BeforeSendHandlerClass);
+
 	if (!SubsystemNativeImpl)
 		return;
 
-	SubsystemNativeImpl->InitWithSettings(Settings);
+	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler);
 
 	if(!SubsystemNativeImpl->IsEnabled())
 	{

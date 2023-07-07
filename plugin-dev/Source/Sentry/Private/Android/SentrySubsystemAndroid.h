@@ -7,7 +7,7 @@
 class SentrySubsystemAndroid : public ISentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* settings) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;

@@ -7,6 +7,8 @@
 #include "Engine/EngineTypes.h"
 #include "SentrySettings.generated.h"
 
+class USentryBeforeSendHandler;
+
 USTRUCT(BlueprintType)
 struct FAutomaticBreadcrumbs
 {
@@ -206,6 +208,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Experimental",
+		Meta = (DisplayName = "Custom `beforeSend` event hanler", ToolTip = "Custom hanler for processing events before sending them to Sentry."))
+	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
 
 public:
 	FString GetFormattedReleaseName() const;
