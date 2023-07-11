@@ -78,6 +78,11 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 #endif
 	}
 
+	if(settings->UseProxy)
+	{
+		sentry_options_set_http_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
+	}
+
 #if PLATFORM_WINDOWS
 	sentry_options_set_handler_pathw(options, *FPaths::ConvertRelativePathToFull(HandlerPath));
 	sentry_options_set_database_pathw(options, *FPaths::ConvertRelativePathToFull(DatabasePath));
