@@ -23,22 +23,30 @@
 
 #include "Utils/SentryFileUtils.h"
 
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+
 void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
 {
-	const FString ReleaseName = settings->OverrideReleaseName
+	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
+	SettingsJson->SetStringField(TEXT("dsn"), settings->DsnUrl);
+	SettingsJson->SetStringField(TEXT("release"), settings->OverrideReleaseName
 		? settings->Release
-		: settings->GetFormattedReleaseName();
+		: settings->GetFormattedReleaseName());
+	SettingsJson->SetStringField(TEXT("environment"), settings->Environment);
+	SettingsJson->SetBoolField(TEXT("autoSessionTracking"), settings->EnableAutoSessionTracking);
+	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);
+	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->EnableStackTrace);
+
+	FString SettingsJsonStr;
+	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&SettingsJsonStr);
+	FJsonSerializer::Serialize(SettingsJson.ToSharedRef(), JsonWriter);
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, 
-		"init", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JZJZ)V",
+		"init", "(Landroid/app/Activity;Ljava/lang/String;J)V",
 		FJavaWrapper::GameActivityThis,
-		*FSentryJavaObjectWrapper::GetJString(settings->DsnUrl),
-		*FSentryJavaObjectWrapper::GetJString(ReleaseName),
-		*FSentryJavaObjectWrapper::GetJString(settings->Environment),
-		(jlong)beforeSendHandler,
-		settings->EnableAutoSessionTracking,
-		(jlong)settings->SessionTimeout,
-		settings->EnableStackTrace);
+		*FSentryJavaObjectWrapper::GetJString(SettingsJsonStr),
+		(jlong)beforeSendHandler);
 }
 
 void SentrySubsystemAndroid::Close()

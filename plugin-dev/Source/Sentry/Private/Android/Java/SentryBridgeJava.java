@@ -6,10 +6,12 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import io.sentry.Attachment;
 import io.sentry.Breadcrumb;
 import io.sentry.Hint;
 import io.sentry.IHub;
@@ -27,30 +29,27 @@ public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
 
-	public static void init(
-			Activity activity,
-			final String dsnUrl,
-			final String releaseName,
-			final String environment,
-			final long beforeSendHandler,
-			final boolean enableAutoSessionTracking,
-			final long sessionTimeout,
-			final boolean enableStackTrace) {
+	public static void init(Activity activity, final String settingsJsonStr, final long beforeSendHandler) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
 			@Override
 			public void configure(SentryAndroidOptions options) {
-				options.setDsn(dsnUrl);
-				options.setRelease(releaseName);
-				options.setEnvironment(environment);
-				options.setEnableAutoSessionTracking(enableAutoSessionTracking);
-				options.setSessionTrackingIntervalMillis(sessionTimeout);
-				options.setAttachStacktrace(enableStackTrace);
-				options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
-					@Override
-					public SentryEvent execute(SentryEvent event, Hint hint) {
-						return onBeforeSend(beforeSendHandler, event, hint);
-					}
-				});
+				try {
+					JSONObject settingJson = new JSONObject(settingsJsonStr);
+					options.setDsn(settingJson.getString("dsn"));
+					options.setRelease(settingJson.getString("release"));
+					options.setEnvironment(settingJson.getString("environment"));
+					options.setEnableAutoSessionTracking(settingJson.getBoolean("autoSessionTracking"));
+					options.setSessionTrackingIntervalMillis(settingJson.getLong("sessionTimeout"));
+					options.setAttachStacktrace(settingJson.getBoolean("enableStackTrace"));
+					options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
+						@Override
+						public SentryEvent execute(SentryEvent event, Hint hint) {
+							return onBeforeSend(beforeSendHandler, event, hint);
+						}
+					});
+				} catch (JSONException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
 	}

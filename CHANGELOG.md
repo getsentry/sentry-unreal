@@ -5,6 +5,7 @@
 ### Features
 
 - Add API allowing to set custom handler for `beforeSend` hook ([#318](https://github.com/getsentry/sentry-unreal/pull/318))
+- Refactor initialization logic for Android ([#319](https://github.com/getsentry/sentry-unreal/pull/319))
 
 ### Fixes
 
