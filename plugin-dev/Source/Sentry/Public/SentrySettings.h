@@ -169,6 +169,14 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Attach stack trace to captured events", ToolTip = "Flag indicating whether to attach stack trace automatically to captured events."))
 	bool EnableStackTrace;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (InlineEditConditionToggle))
+	bool UseProxy;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "HTTP proxy (for Windows/Linux only)", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
+	FString ProxyUrl;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
 		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
 	bool EnableAutoSessionTracking;
