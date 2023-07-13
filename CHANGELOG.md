@@ -6,6 +6,12 @@
 
 - Add HTTP proxy for desktop ([#322](https://github.com/getsentry/sentry-unreal/pull/322))
 
+### Dependencies
+
+- Bump Java SDK (Android) from v6.25.0 to v6.25.1 ([#323](https://github.com/getsentry/sentry-unreal/pull/323))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6251)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.25.0...6.25.1)
+
 ## 0.8.0
 
 ### Features
