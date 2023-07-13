@@ -146,7 +146,7 @@ void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 
 void SentrySubsystemDesktop::ClearBreadcrumbs()
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("CaptureMessageWithScope method is not supported for the current platform."));
+	UE_LOG(LogSentrySdk, Log, TEXT("ClearBreadcrumbs method is not supported for the current platform."));
 }
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
