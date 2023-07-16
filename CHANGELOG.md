@@ -6,6 +6,10 @@
 
 - Add HTTP proxy for desktop ([#322](https://github.com/getsentry/sentry-unreal/pull/322))
 
+### Fixes
+
+- Fix Linux Compile/Staging Error ([#327](https://github.com/getsentry/sentry-unreal/pull/327))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.25.0 to v6.25.1 ([#323](https://github.com/getsentry/sentry-unreal/pull/323))
@@ -25,6 +29,7 @@
 ### Fixes
 
 - Fix automatic game log attachment (Android) ([#309](https://github.com/getsentry/sentry-unreal/pull/309))
+  
 
 ### Dependencies
 
