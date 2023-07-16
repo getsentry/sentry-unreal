@@ -119,7 +119,7 @@ public class Sentry : ModuleRules
 
 			PublicRuntimeLibraryPaths.Add(PlatformBinariesPath);
 
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
