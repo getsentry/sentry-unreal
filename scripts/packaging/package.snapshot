@@ -85,6 +85,8 @@ Source/Sentry/Private/Desktop/SentryEventDesktop.cpp
 Source/Sentry/Private/Desktop/SentryEventDesktop.h
 Source/Sentry/Private/Desktop/SentryIdDesktop.cpp
 Source/Sentry/Private/Desktop/SentryIdDesktop.h
+Source/Sentry/Private/Desktop/SentryScopeDesktop.cpp
+Source/Sentry/Private/Desktop/SentryScopeDesktop.h
 Source/Sentry/Private/Desktop/SentrySubsystemDesktop.cpp
 Source/Sentry/Private/Desktop/SentrySubsystemDesktop.h
 Source/Sentry/Private/Desktop/SentryUserDesktop.cpp
