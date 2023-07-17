@@ -23,7 +23,7 @@ SentryScopeDesktop::~SentryScopeDesktop()
 
 void SentryScopeDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
-	BreadcrumbsDesktop.Add(breadcrumb->GetNativeImpl());
+	BreadcrumbsDesktop.Add(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb->GetNativeImpl()));
 }
 
 void SentryScopeDesktop::ClearBreadcrumbs()
@@ -173,12 +173,98 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
 
 	if(!Dist.IsEmpty())
+	{
 		sentry_value_set_by_key(nativeEvent, "dist", sentry_value_new_string(TCHAR_TO_ANSI(*Dist)));
+	}
+
 	if(!Environment.IsEmpty())
+	{
 		sentry_value_set_by_key(nativeEvent, "environment", sentry_value_new_string(TCHAR_TO_ANSI(*Environment)));
+	}
 
 	if(!FingerprintDesktop.IsEmpty())
+	{
 		sentry_value_set_by_key(nativeEvent, "fingerprint", SentryConvertorsDesktop::StringArrayToNative(FingerprintDesktop));
+	}
+
+	if(!TagsDesktop.IsEmpty())
+	{
+		sentry_value_t tagsExtra = sentry_value_get_by_key(nativeEvent, "tags");
+		if(sentry_value_is_null(tagsExtra))
+		{
+			sentry_value_set_by_key(nativeEvent, "tags", SentryConvertorsDesktop::StringMapToNative(TagsDesktop));
+		}
+		else
+		{
+			for (const auto& TagItem : TagsDesktop)
+			{
+				sentry_value_set_by_key(tagsExtra, TCHAR_TO_ANSI(*TagItem.Key), sentry_value_new_string(TCHAR_TO_ANSI(*TagItem.Value)));
+			}
+		}
+	}
+
+	if(!ExtraDesktop.IsEmpty())
+	{
+		sentry_value_t eventExtra = sentry_value_get_by_key(nativeEvent, "extra");
+		if(sentry_value_is_null(eventExtra))
+		{
+			sentry_value_set_by_key(nativeEvent, "extra", SentryConvertorsDesktop::StringMapToNative(ExtraDesktop));
+		}
+		else
+		{
+			for (const auto& ExtraItem : ExtraDesktop)
+			{
+				sentry_value_set_by_key(eventExtra, TCHAR_TO_ANSI(*ExtraItem.Key), sentry_value_new_string(TCHAR_TO_ANSI(*ExtraItem.Value)));
+			}
+		}
+		
+	}
+
+	if(!ContextsDesktop.IsEmpty())
+	{
+		sentry_value_t eventContexts = sentry_value_get_by_key(nativeEvent, "contexts");
+		if(sentry_value_is_null(eventContexts))
+		{
+			eventContexts = sentry_value_new_object();
+
+			for (const auto& ContextsItem : ContextsDesktop)
+			{
+				sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*ContextsItem.Key), SentryConvertorsDesktop::StringMapToNative(ContextsItem.Value));
+			}
+
+			sentry_value_set_by_key(nativeEvent, "contexts", eventContexts);
+		}
+		else
+		{
+			for (const auto& ContextsItem : ContextsDesktop)
+			{
+				sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*ContextsItem.Key), SentryConvertorsDesktop::StringMapToNative(ContextsItem.Value));
+			}
+		}
+	}
+
+	if(!BreadcrumbsDesktop.IsEmpty())
+	{
+		sentry_value_t eventBreadcrumbs = sentry_value_get_by_key(nativeEvent, "breadcrumbs");
+		if(sentry_value_is_null(eventBreadcrumbs))
+		{
+			eventBreadcrumbs = sentry_value_new_list();
+
+			for (const auto& Breadcrumb : BreadcrumbsDesktop)
+			{
+				sentry_value_append(eventBreadcrumbs, Breadcrumb->GetNativeObject());
+			}
+
+			sentry_value_set_by_key(nativeEvent, "breadcrumbs", eventBreadcrumbs);
+		}
+		else
+		{
+			for (const auto& Breadcrumb : BreadcrumbsDesktop)
+			{
+				sentry_value_append(eventBreadcrumbs, Breadcrumb->GetNativeObject());
+			}
+		}
+	}
 }
 
 #endif

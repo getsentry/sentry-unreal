@@ -10,7 +10,7 @@ class USentryEvent;
 class USentryBreadcrumb;
 class USentryAttachment;
 
-class ISentryBreadcrumb;
+class SentryBreadcrumbDesktop;
 
 class SentryScopeDesktop : public ISentryScope
 {
@@ -49,11 +49,16 @@ public:
 private:
 	FString Dist;
 	FString Environment;
+
 	TArray<FString> FingerprintDesktop;
+
 	TMap<FString, FString> TagsDesktop;
 	TMap<FString, FString> ExtraDesktop;
+
 	TMap<FString, TMap<FString, FString>> ContextsDesktop;
-	TArray<TSharedPtr<ISentryBreadcrumb>> BreadcrumbsDesktop;
+
+	TArray<TSharedPtr<SentryBreadcrumbDesktop>> BreadcrumbsDesktop;
+
 	ESentryLevel LevelDesktop;
 };
 
