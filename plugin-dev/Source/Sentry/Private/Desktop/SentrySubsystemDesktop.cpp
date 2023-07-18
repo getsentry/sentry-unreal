@@ -189,10 +189,10 @@ USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& messag
 
 	scopeStack.Push(NewLocalScope);
 
-	USentryScope* scope = NewObject<USentryScope>();
-	scope->InitWithNativeImpl(NewLocalScope);
+	USentryScope* Scope = NewObject<USentryScope>();
+	Scope->InitWithNativeImpl(NewLocalScope);
 
-	onScopeConfigure.ExecuteIfBound(scope);
+	onScopeConfigure.ExecuteIfBound(Scope);
 
 	USentryId* Id = CaptureMessage(message, level);
 
@@ -224,10 +224,10 @@ USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, co
 
 	scopeStack.Push(NewLocalScope);
 
-	USentryScope* scope = NewObject<USentryScope>();
-	scope->InitWithNativeImpl(NewLocalScope);
+	USentryScope* Scope = NewObject<USentryScope>();
+	Scope->InitWithNativeImpl(NewLocalScope);
 
-	onScopeConfigure.ExecuteIfBound(scope);
+	onScopeConfigure.ExecuteIfBound(Scope);
 
 	USentryId* Id = CaptureEvent(event);
 
@@ -258,10 +258,10 @@ void SentrySubsystemDesktop::RemoveUser()
 
 void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
 {
-	USentryScope* scope = NewObject<USentryScope>();
-	scope->InitWithNativeImpl(GetCurrentScope());
+	USentryScope* Scope = NewObject<USentryScope>();
+	Scope->InitWithNativeImpl(GetCurrentScope());
 
-	onConfigureScope.ExecuteIfBound(scope);
+	onConfigureScope.ExecuteIfBound(Scope);
 }
 
 void SentrySubsystemDesktop::SetContext(const FString& key, const TMap<FString, FString>& values)
