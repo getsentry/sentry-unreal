@@ -46,19 +46,9 @@ sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
 	EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventDesktop(event)));
 
-	TSharedPtr<SentryScopeDesktop> Scope = SentrySubsystem->GetCurrentScope();
-	if(Scope)
-	{
-		Scope->Apply(EventToProcess);
-	}
+	SentrySubsystem->GetCurrentScope()->Apply(EventToProcess);
 
-	USentryBeforeSendHandler* Handler = SentrySubsystem->GetBeforeSendHandler();
-	if(!Handler)
-	{
-		return event;
-	}
-
-	return Handler->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
+	return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
 }
 
 SentrySubsystemDesktop::SentrySubsystemDesktop()
@@ -148,9 +138,9 @@ void SentrySubsystemDesktop::Close()
 {
 	isEnabled = false;
 
-	scopeStack.Empty();
-
 	sentry_close();
+
+	scopeStack.Empty();
 }
 
 bool SentrySubsystemDesktop::IsEnabled()
@@ -187,15 +177,13 @@ USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& messag
 
 	TSharedPtr<SentryScopeDesktop> NewLocalScope = MakeShareable(new SentryScopeDesktop(*GetCurrentScope()));
 
-	scopeStack.Push(NewLocalScope);
-
 	USentryScope* Scope = NewObject<USentryScope>();
 	Scope->InitWithNativeImpl(NewLocalScope);
 
 	onScopeConfigure.ExecuteIfBound(Scope);
 
+	scopeStack.Push(NewLocalScope);
 	USentryId* Id = CaptureMessage(message, level);
-
 	scopeStack.Pop();
 
 	return Id;
@@ -222,15 +210,13 @@ USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, co
 
 	TSharedPtr<SentryScopeDesktop> NewLocalScope = MakeShareable(new SentryScopeDesktop(*GetCurrentScope()));
 
-	scopeStack.Push(NewLocalScope);
-
 	USentryScope* Scope = NewObject<USentryScope>();
 	Scope->InitWithNativeImpl(NewLocalScope);
 
 	onScopeConfigure.ExecuteIfBound(Scope);
 
+	scopeStack.Push(NewLocalScope);
 	USentryId* Id = CaptureEvent(event);
-
 	scopeStack.Pop();
 
 	return Id;
