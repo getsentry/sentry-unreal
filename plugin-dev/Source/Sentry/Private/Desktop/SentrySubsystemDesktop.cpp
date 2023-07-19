@@ -253,6 +253,8 @@ void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onCon
 void SentrySubsystemDesktop::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	GetCurrentScope()->SetContext(key, values);
+
+	crashReporter->SetContext(key, values);
 }
 
 void SentrySubsystemDesktop::SetTag(const FString& key, const FString& value)
