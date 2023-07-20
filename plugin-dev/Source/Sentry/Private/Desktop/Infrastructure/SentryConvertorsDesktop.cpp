@@ -54,6 +54,19 @@ sentry_value_t SentryConvertorsDesktop::StringMapToNative(const TMap<FString, FS
 	return sentryObject;
 }
 
+sentry_value_t SentryConvertorsDesktop::StringArrayToNative(const TArray<FString>& array)
+{
+	sentry_value_t sentryArray = sentry_value_new_list();
+
+	for (auto it = array.CreateConstIterator(); it; ++it)
+	{
+		const FString& ArrayItem = *it;
+		sentry_value_append(sentryArray, sentry_value_new_string(TCHAR_TO_ANSI(*ArrayItem)));
+	}
+
+	return sentryArray;
+}
+
 ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
 {
 	FString levelStr = FString(sentry_value_as_string(level));
@@ -65,6 +78,34 @@ ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
 		return ESentryLevel::Debug;
 	}
 	return static_cast<ESentryLevel>(Enum->GetValueByName(FName(*levelStr)));
+}
+
+ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_level_t level)
+{
+	ESentryLevel Level = ESentryLevel::Debug;
+
+	switch (level)
+	{
+	case SENTRY_LEVEL_DEBUG:
+		Level = ESentryLevel::Debug;
+		break;
+	case SENTRY_LEVEL_INFO:
+		Level = ESentryLevel::Info;
+		break;
+	case SENTRY_LEVEL_WARNING:
+		Level = ESentryLevel::Warning;
+		break;
+	case SENTRY_LEVEL_ERROR:
+		Level = ESentryLevel::Error;
+		break;
+	case SENTRY_LEVEL_FATAL:
+		Level = ESentryLevel::Fatal;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));;
+	}
+
+	return Level;
 }
 
 USentryId* SentryConvertorsDesktop::SentryIdToUnreal(sentry_uuid_t id)
@@ -98,6 +139,28 @@ TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t
 	}
 
 	return unrealMap;
+}
+
+TArray<FString> SentryConvertorsDesktop::StringArrayToUnreal(sentry_value_t array)
+{
+	TArray<FString> unrealArray;
+
+	FString arrayJsonString = FString(sentry_value_to_json(array));
+
+	TArray<TSharedPtr<FJsonValue>> jsonArray;
+	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(arrayJsonString);
+	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonArray);
+	if (!bDeserializeSuccess) {
+		UE_LOG(LogSentrySdk, Error, TEXT("StringArrayToUnreal failed to deserialize array Json."));
+		return unrealArray;
+	}
+
+	for (auto it = jsonArray.CreateConstIterator(); it; ++it)
+	{
+		unrealArray.Add(it->Get()->AsString());
+	}
+
+	return unrealArray;
 }
 
 FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)

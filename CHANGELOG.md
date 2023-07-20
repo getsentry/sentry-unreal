@@ -5,6 +5,7 @@
 ### Features
 
 - Add HTTP proxy for desktop ([#322](https://github.com/getsentry/sentry-unreal/pull/322))
+- Add scope support for Windows/Linux ([#328](https://github.com/getsentry/sentry-unreal/pull/328))
 
 ### Dependencies
 

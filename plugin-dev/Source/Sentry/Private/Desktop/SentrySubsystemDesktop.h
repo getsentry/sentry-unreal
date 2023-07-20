@@ -2,8 +2,11 @@
 
 #pragma once
 
+#include "HAL/CriticalSection.h"
+
 #include "Interface/SentrySubsystemInterface.h"
 
+class SentryScopeDesktop;
 class SentryCrashReporter;
 
 #if USE_SENTRY_NATIVE
@@ -33,12 +36,22 @@ public:
 	virtual void StartSession() override;
 	virtual void EndSession() override;
 
+	USentryBeforeSendHandler* GetBeforeSendHandler();
+
+	TSharedPtr<SentryScopeDesktop> GetCurrentScope();
+
 private:
+	USentryBeforeSendHandler* beforeSend;
+
 	TSharedPtr<SentryCrashReporter> crashReporter;
+
+	TArray<TSharedPtr<SentryScopeDesktop, ESPMode::ThreadSafe>> scopeStack;
 
 	bool isEnabled;
 
 	bool isStackTraceEnabled;
+
+	FCriticalSection CriticalSection;
 };
 
 #endif

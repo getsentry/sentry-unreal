@@ -10,6 +10,8 @@
 #include "Android/SentryScopeAndroid.h"
 #elif PLATFORM_IOS || PLATFORM_MAC
 #include "Apple/SentryScopeApple.h"
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#include "Desktop/SentryScopeDesktop.h"
 #endif
 
 USentryScope::USentryScope()
@@ -20,6 +22,8 @@ USentryScope::USentryScope()
 		ScopeNativeImpl = MakeShareable(new SentryScopeAndroid());
 #elif PLATFORM_IOS || PLATFORM_MAC
 		ScopeNativeImpl = MakeShareable(new SentryScopeApple());
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+		ScopeNativeImpl = MakeShareable(new SentryScopeDesktop());
 #endif
 	}
 }

@@ -4,8 +4,9 @@
 #include "SentryEventDesktop.h"
 #include "SentryBreadcrumbDesktop.h"
 #include "SentryUserDesktop.h"
-#include "SentryDefines.h"
+#include "SentryScopeDesktop.h"
 
+#include "SentryDefines.h"
 #include "SentrySettings.h"
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -19,6 +20,7 @@
 #include "Transport/SentryTransport.h"
 
 #include "Misc/Paths.h"
+#include "Misc/ScopeLock.h"
 #include "HAL/FileManager.h"
 #include "Launch/Resources/Version.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
@@ -39,16 +41,19 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 
 sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 {
-	USentryBeforeSendHandler* handler = static_cast<USentryBeforeSendHandler*>(closure);
+	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
 
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
 	EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventDesktop(event)));
 
-	return handler->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
+	SentrySubsystem->GetCurrentScope()->Apply(EventToProcess);
+
+	return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
 }
 
 SentrySubsystemDesktop::SentrySubsystemDesktop()
-	: crashReporter(MakeShareable(new SentryCrashReporter))
+	: beforeSend(nullptr)
+	, crashReporter(MakeShareable(new SentryCrashReporter))
 	, isEnabled(false)
 	, isStackTraceEnabled(true)
 {
@@ -56,6 +61,10 @@ SentrySubsystemDesktop::SentrySubsystemDesktop()
 
 void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
 {
+	beforeSend = beforeSendHandler;
+
+	scopeStack.Push(MakeShareable(new SentryScopeDesktop()));
+
 #if PLATFORM_WINDOWS
 	const FString HandlerExecutableName = TEXT("crashpad_handler.exe");
 #elif PLATFORM_LINUX
@@ -100,7 +109,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
-	sentry_options_set_before_send(options, HandleBeforeSend, beforeSendHandler);
+	sentry_options_set_before_send(options, HandleBeforeSend, this);
 
 #if PLATFORM_LINUX
 	sentry_options_set_transport(options, FSentryTransport::Create());
@@ -130,6 +139,8 @@ void SentrySubsystemDesktop::Close()
 	isEnabled = false;
 
 	sentry_close();
+
+	scopeStack.Empty();
 }
 
 bool SentrySubsystemDesktop::IsEnabled()
@@ -139,14 +150,12 @@ bool SentrySubsystemDesktop::IsEnabled()
 
 void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
-	TSharedPtr<SentryBreadcrumbDesktop> breadcrumbDesktop = StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb->GetNativeImpl());
-
-	sentry_add_breadcrumb(breadcrumbDesktop->GetNativeObject());
+	GetCurrentScope()->AddBreadcrumb(breadcrumb);
 }
 
 void SentrySubsystemDesktop::ClearBreadcrumbs()
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("CaptureMessageWithScope method is not supported for the current platform."));
+	GetCurrentScope()->ClearBreadcrumbs();
 }
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
@@ -164,8 +173,20 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentr
 
 USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("CaptureMessageWithScope method is not supported for the current platform."));
-	return nullptr;
+	FScopeLock Lock(&CriticalSection);
+
+	TSharedPtr<SentryScopeDesktop> NewLocalScope = MakeShareable(new SentryScopeDesktop(*GetCurrentScope()));
+
+	USentryScope* Scope = NewObject<USentryScope>();
+	Scope->InitWithNativeImpl(NewLocalScope);
+
+	onScopeConfigure.ExecuteIfBound(Scope);
+
+	scopeStack.Push(NewLocalScope);
+	USentryId* Id = CaptureMessage(message, level);
+	scopeStack.Pop();
+
+	return Id;
 }
 
 USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
@@ -185,8 +206,20 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 
 USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("CaptureEventWithScope method is not supported for the current platform."));
-	return nullptr;
+	FScopeLock Lock(&CriticalSection);
+
+	TSharedPtr<SentryScopeDesktop> NewLocalScope = MakeShareable(new SentryScopeDesktop(*GetCurrentScope()));
+
+	USentryScope* Scope = NewObject<USentryScope>();
+	Scope->InitWithNativeImpl(NewLocalScope);
+
+	onScopeConfigure.ExecuteIfBound(Scope);
+
+	scopeStack.Push(NewLocalScope);
+	USentryId* Id = CaptureEvent(event);
+	scopeStack.Pop();
+
+	return Id;
 }
 
 void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)
@@ -211,33 +244,36 @@ void SentrySubsystemDesktop::RemoveUser()
 
 void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("CaptureUserFeedback method is not supported for the current platform."));
+	USentryScope* Scope = NewObject<USentryScope>();
+	Scope->InitWithNativeImpl(GetCurrentScope());
+
+	onConfigureScope.ExecuteIfBound(Scope);
 }
 
 void SentrySubsystemDesktop::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
-	sentry_set_context(TCHAR_TO_ANSI(*key), SentryConvertorsDesktop::StringMapToNative(values));
+	GetCurrentScope()->SetContext(key, values);
 
 	crashReporter->SetContext(key, values);
 }
 
 void SentrySubsystemDesktop::SetTag(const FString& key, const FString& value)
 {
-	sentry_set_tag(TCHAR_TO_ANSI(*key), TCHAR_TO_ANSI(*value));
+	GetCurrentScope()->SetTagValue(key, value);
 
 	crashReporter->SetTag(key, value);
 }
 
 void SentrySubsystemDesktop::RemoveTag(const FString& key)
 {
-	sentry_remove_tag(TCHAR_TO_ANSI(*key));
+	GetCurrentScope()->RemoveTag(key);
 
 	crashReporter->RemoveTag(key);
 }
 
 void SentrySubsystemDesktop::SetLevel(ESentryLevel level)
 {
-	sentry_set_level(SentryConvertorsDesktop::SentryLevelToNative(level));
+	GetCurrentScope()->SetLevel(level);
 }
 
 void SentrySubsystemDesktop::StartSession()
@@ -248,6 +284,22 @@ void SentrySubsystemDesktop::StartSession()
 void SentrySubsystemDesktop::EndSession()
 {
 	sentry_end_session();
+}
+
+USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
+{
+	return beforeSend;
+}
+
+TSharedPtr<SentryScopeDesktop> SentrySubsystemDesktop::GetCurrentScope()
+{
+	if(scopeStack.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Scope stack is empty."));
+		return nullptr;
+	}
+
+	return scopeStack.Top();
 }
 
 #endif
