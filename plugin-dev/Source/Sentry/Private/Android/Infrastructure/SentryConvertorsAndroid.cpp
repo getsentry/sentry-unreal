@@ -14,6 +14,8 @@
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJavaEnv.h"
 
+#include "Dom/JsonValue.h"
+
 TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> nativeLevel = nullptr;
@@ -219,4 +221,16 @@ TArray<uint8> SentryConvertorsAndroid::ByteArrayToUnreal(jbyteArray byteArray)
 	}
 
 	return result;
+}
+
+TArray<TSharedPtr<FJsonValue>> SentryConvertorsAndroid::StrinArrayToJsonArray(const TArray<FString>& stringArray)
+{
+	TArray<TSharedPtr<FJsonValue>> jsonArray;
+
+	for (const FString& stringItem : stringArray)
+	{
+		jsonArray.Add(MakeShareable(new FJsonValueString(stringItem)));
+	}
+
+	return jsonArray;
 }
