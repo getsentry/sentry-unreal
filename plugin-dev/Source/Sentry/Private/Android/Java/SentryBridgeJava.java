@@ -3,9 +3,11 @@
 package io.sentry.unreal;
 
 import android.app.Activity;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,12 +43,25 @@ public class SentryBridgeJava {
 					options.setEnableAutoSessionTracking(settingJson.getBoolean("autoSessionTracking"));
 					options.setSessionTrackingIntervalMillis(settingJson.getLong("sessionTimeout"));
 					options.setAttachStacktrace(settingJson.getBoolean("enableStackTrace"));
+					options.setDebug(settingJson.getBoolean("debug"));
+					options.setSampleRate(settingJson.getDouble("sampleRate"));
+					options.setMaxBreadcrumbs(settingJson.getInt("maxBreadcrumbs"));
+					options.setAttachScreenshot(settingJson.getBoolean("attachScreenshot"));
+					options.setSendDefaultPii(settingJson.getBoolean("sendDefaultPii"));
 					options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
 						@Override
 						public SentryEvent execute(SentryEvent event, Hint hint) {
 							return onBeforeSend(beforeSendHandler, event, hint);
 						}
 					});
+					JSONArray Includes = settingJson.getJSONArray("inAppIncludes");
+					for (int i = 0; i < Includes.length(); i++) {
+						options.addInAppInclude(Includes.getString(i));
+					}
+					JSONArray Excludes = settingJson.getJSONArray("inAppExcludes");
+					for (int i = 0; i < Excludes.length(); i++) {
+						options.addInAppExclude(Excludes.getString(i));
+					}
 				} catch (JSONException e) {
 					throw new RuntimeException(e);
 				}

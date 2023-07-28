@@ -9,6 +9,7 @@
 class USentryScope;
 class USentryId;
 class FSentryJavaObjectWrapper;
+class FJsonValue;
 
 class SentryConvertorsAndroid
 {
@@ -26,4 +27,7 @@ public:
 	static TMap<FString, FString> StringMapToUnreal(jobject stringMap);
 	static TArray<FString> StringListToUnreal(jobject stringList);
 	static TArray<uint8> ByteArrayToUnreal(jbyteArray byteArray);
+
+	/** Other conversions */
+	static TArray<TSharedPtr<FJsonValue>> StrinArrayToJsonArray(const TArray<FString>& stringArray);
 };

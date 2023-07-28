@@ -6,6 +6,7 @@
 
 - Add HTTP proxy for desktop ([#322](https://github.com/getsentry/sentry-unreal/pull/322))
 - Add scope support for Windows/Linux ([#328](https://github.com/getsentry/sentry-unreal/pull/328))
+- Add missing plugin settings ([#335](https://github.com/getsentry/sentry-unreal/pull/335))
 
 ### Fixes
 

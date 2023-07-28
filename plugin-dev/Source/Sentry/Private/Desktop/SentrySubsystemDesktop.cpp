@@ -109,6 +109,8 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->EnableVerboseLogging);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
+	sentry_options_set_sample_rate(options, settings->SampleRate);
+	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
 
 #if PLATFORM_LINUX

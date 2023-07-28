@@ -177,6 +177,30 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "HTTP proxy (for Windows/Linux only)", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
 	FString ProxyUrl;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Sample rate", ToolTip = "Configures the sample rate for error events in the range of 0.0 to 1.0. The default is 1.0 which means that 100% of error events are sent. If set to 0.1 only 10% of error events will be sent. Events are picked randomly.", ClampMin = 0.0f, ClampMax = 1.0f))
+	float SampleRate;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
+	int32 MaxBreadcrumbs;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Attach screenshots (for iOS only)", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs."))
+	bool AttachScreenshots;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "In-app includes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that belong to the app."))
+	TArray<FString> InAppIncludes;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "In-app exludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
+	TArray<FString> InAppExcludes;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Attach personally identifiable information (for Android/Apple only)", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
+	bool SendDafaultPii;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
 		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
 	bool EnableAutoSessionTracking;
