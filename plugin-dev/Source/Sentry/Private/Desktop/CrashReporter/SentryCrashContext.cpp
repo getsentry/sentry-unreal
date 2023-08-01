@@ -2,6 +2,8 @@
 
 #include "Desktop/SentryScopeDesktop.h"
 
+#if USE_SENTRY_NATIVE
+
 FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
 	: FGenericCrashContext(Context.CrashType, Context.ErrorMessage)
 	, CrashContext(Context)
@@ -26,7 +28,7 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 	Scope->SetExtraValue("CPU Brand", SessionContext.CPUBrand);
 	Scope->SetExtraValue("CPU Vendor", SessionContext.CPUVendor);
 	Scope->SetExtraValue("Number of Cores", FString::FromInt(SessionContext.NumberOfCores));
-	Scope->SetExtraValue("Number of Cores including Hyperthreads", FString::FromInt(SessionContext.NumberOfCoresIncludingHyperthreads));	
+	Scope->SetExtraValue("Number of Cores including Hyperthreads", FString::FromInt(SessionContext.NumberOfCoresIncludingHyperthreads));
 	Scope->SetExtraValue("Process Id", FString::FromInt(SessionContext.ProcessId));
 	Scope->SetExtraValue("Seconds Since Start", FString::FromInt(SessionContext.SecondsSinceStart));
 	Scope->SetExtraValue("Command Line", SessionContext.CommandLine);
@@ -38,6 +40,9 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 	GpuContext.Add(TEXT("name"), *GetEngineData(TEXT("RHI.AdapterName")));
 	GpuContext.Add(TEXT("vendor_name"), *GetEngineData(TEXT("RHI.GPUVendor")));
 	GpuContext.Add(TEXT("graphics_shader_level"), *GetEngineData(TEXT("RHI.FeatureLevel")));
+	GpuContext.Add(TEXT("driver_version"), *GetEngineData(TEXT("RHI.UserDriverVersion")));
 
 	Scope->SetContext(TEXT("gpu"), GpuContext);
 }
+
+#endif
