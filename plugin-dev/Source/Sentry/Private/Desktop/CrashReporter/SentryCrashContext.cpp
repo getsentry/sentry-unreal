@@ -44,6 +44,7 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 	GpuContext.Add(TEXT("vendor_name"), *GetEngineData(TEXT("RHI.GPUVendor")));
 	GpuContext.Add(TEXT("graphics_shader_level"), *GetEngineData(TEXT("RHI.FeatureLevel")));
 	GpuContext.Add(TEXT("driver_version"), *GetEngineData(TEXT("RHI.UserDriverVersion")));
+	GpuContext.Add(TEXT("id"), *GetEngineData(TEXT("RHI.DeviceId")));
 
 	Scope->SetContext(TEXT("gpu"), GpuContext);
 }
