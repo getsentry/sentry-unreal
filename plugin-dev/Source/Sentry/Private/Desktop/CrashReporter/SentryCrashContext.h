@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "CoreMinimal.h"
+
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 
 #if USE_SENTRY_NATIVE
