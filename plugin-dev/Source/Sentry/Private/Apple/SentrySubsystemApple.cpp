@@ -37,6 +37,13 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			? settings->Release.GetNSString()
 			: settings->GetFormattedReleaseName().GetNSString();
 		options.attachStacktrace = settings->EnableStackTrace;
+		options.debug = settings->EnableVerboseLogging;
+		options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
+		options.maxBreadcrumbs = settings->MaxBreadcrumbs;
+		options.sendDefaultPii = settings->SendDafaultPii;
+#if PLATFORM_IOS
+		options.attachScreenshot = settings->AttachScreenshots;
+#endif
 		options.initialScope = ^(SentryScope *scope) {
 			if(settings->EnableAutoLogAttachment) {
 				const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
@@ -50,6 +57,14 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
 			return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
 		};
+		for (auto it = settings->InAppIncludes.CreateConstIterator(); it; ++it)
+		{
+			[options addInAppInclude:it->GetNSString()];
+		}
+		for (auto it = settings->InAppExcludes.CreateConstIterator(); it; ++it)
+		{
+			[options addInAppExclude:it->GetNSString()];
+		}
 	}];
 }
 

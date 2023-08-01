@@ -37,6 +37,13 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, U
 	SettingsJson->SetBoolField(TEXT("autoSessionTracking"), settings->EnableAutoSessionTracking);
 	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);
 	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->EnableStackTrace);
+	SettingsJson->SetBoolField(TEXT("debug"), settings->EnableVerboseLogging);
+	SettingsJson->SetNumberField(TEXT("sampleRate"), settings->SampleRate);
+	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);
+	SettingsJson->SetBoolField(TEXT("attachScreenshot"), settings->AttachScreenshots);
+	SettingsJson->SetArrayField(TEXT("inAppIncludes"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppIncludes));
+	SettingsJson->SetArrayField(TEXT("inAppExcludes"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppExcludes));
+	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDafaultPii);
 
 	FString SettingsJsonStr;
 	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&SettingsJsonStr);
