@@ -74,6 +74,8 @@ Source/Sentry/Private/Desktop/
 Source/Sentry/Private/Desktop/Convenience/
 Source/Sentry/Private/Desktop/Convenience/SentryInclude.h
 Source/Sentry/Private/Desktop/CrashReporter/
+Source/Sentry/Private/Desktop/CrashReporter/SentryCrashContext.cpp
+Source/Sentry/Private/Desktop/CrashReporter/SentryCrashContext.h
 Source/Sentry/Private/Desktop/CrashReporter/SentryCrashReporter.cpp
 Source/Sentry/Private/Desktop/CrashReporter/SentryCrashReporter.h
 Source/Sentry/Private/Desktop/Infrastructure/

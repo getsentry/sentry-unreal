@@ -14,6 +14,7 @@
 #include "SentryUser.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
+#include "CrashReporter/SentryCrashContext.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 #include "CrashReporter/SentryCrashReporter.h"
@@ -24,6 +25,7 @@
 #include "HAL/FileManager.h"
 #include "Launch/Resources/Version.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "GenericPlatform/GenericPlatformCrashContext.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
@@ -49,6 +51,19 @@ sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 	SentrySubsystem->GetCurrentScope()->Apply(EventToProcess);
 
 	return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
+}
+
+sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure)
+{
+	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
+
+	FSharedCrashContext SharedCrashContext;
+	FGenericCrashContext::CopySharedCrashContext(SharedCrashContext);
+
+	FSentryCrashContext SentryCrashContext = FSentryCrashContext(SharedCrashContext);
+	SentryCrashContext.Apply(SentrySubsystem->GetCurrentScope());
+
+	return HandleBeforeSend(event, nullptr, closure);
 }
 
 SentrySubsystemDesktop::SentrySubsystemDesktop()
@@ -112,6 +127,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
+	sentry_options_set_on_crash(options, HandleBeforeCrash, this);
 
 #if PLATFORM_LINUX
 	sentry_options_set_transport(options, FSentryTransport::Create());
