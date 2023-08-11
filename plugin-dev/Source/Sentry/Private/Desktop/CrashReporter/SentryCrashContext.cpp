@@ -49,7 +49,6 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 	TMap<FString, FString> GpuContext;
 	GpuContext.Add(TEXT("name"), GpuDriverInfo.DeviceDescription);
 	GpuContext.Add(TEXT("vendor_name"), GpuDriverInfo.ProviderName);
-	GpuContext.Add(TEXT("api_type"), GpuDriverInfo.RHIName);
 	GpuContext.Add(TEXT("driver_version"), GpuDriverInfo.UserDriverVersion);
 
 	Scope->SetContext(TEXT("gpu"), GpuContext);
