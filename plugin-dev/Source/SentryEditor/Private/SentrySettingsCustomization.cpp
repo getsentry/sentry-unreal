@@ -10,7 +10,7 @@
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 #include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Layout/SBorder.h"

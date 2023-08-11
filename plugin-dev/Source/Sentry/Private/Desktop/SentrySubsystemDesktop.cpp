@@ -23,7 +23,7 @@
 #include "Misc/Paths.h"
 #include "Misc/ScopeLock.h"
 #include "HAL/FileManager.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 

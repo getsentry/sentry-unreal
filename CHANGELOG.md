@@ -12,6 +12,7 @@
 ### Fixes
 
 - Fix Linux Compile/Staging Error ([#327](https://github.com/getsentry/sentry-unreal/pull/327))
+- Fix UE 5.3 compatibility issues ([#348](https://github.com/getsentry/sentry-unreal/pull/348))
 
 ### Dependencies
 

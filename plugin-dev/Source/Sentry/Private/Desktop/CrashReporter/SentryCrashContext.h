@@ -8,7 +8,7 @@
 
 class SentryScopeDesktop;
 
-class FSentryCrashContext : public FGenericCrashContext
+class FSentryCrashContext
 {
 public:
 	FSentryCrashContext(const FSharedCrashContext& Context);
