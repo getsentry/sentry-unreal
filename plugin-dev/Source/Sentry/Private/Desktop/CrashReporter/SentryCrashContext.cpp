@@ -2,11 +2,16 @@
 
 #include "Desktop/SentryScopeDesktop.h"
 
+#include "GenericPlatform/GenericPlatformDriver.h"
+
+#if PLATFORM_WINDOWS
+#include "Windows/WindowsPlatformMisc.h"
+#endif
+
 #if USE_SENTRY_NATIVE
 
 FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
-	: FGenericCrashContext(Context.CrashType, Context.ErrorMessage)
-	, CrashContext(Context)
+	: CrashContext(Context)
 {
 }
 
@@ -14,7 +19,7 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 {
 	const FSessionContext& SessionContext = CrashContext.SessionContext;
 
-	Scope->SetExtraValue("Crash Type", GetCrashTypeString(CrashContext.CrashType));
+	Scope->SetExtraValue("Crash Type", FGenericCrashContext::GetCrashTypeString(CrashContext.CrashType));
 	Scope->SetExtraValue("IsEnsure", CrashContext.CrashType == ECrashContextType::Ensure ? TEXT("true") : TEXT("false"));
 	Scope->SetExtraValue("IsStall", CrashContext.CrashType == ECrashContextType::Stall ? TEXT("true") : TEXT("false"));
 	Scope->SetExtraValue("IsAssert", CrashContext.CrashType == ECrashContextType::Assert ? TEXT("true") : TEXT("false"));
@@ -39,12 +44,13 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 	Scope->SetExtraValue("Memory Stats Total Physical GB", FString::FromInt(SessionContext.MemoryStats.TotalPhysicalGB));
 	Scope->SetExtraValue("Memory Stats Total Virtual", FString::Printf(TEXT("%lld"), SessionContext.MemoryStats.TotalVirtual));
 
+	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
+
 	TMap<FString, FString> GpuContext;
-	GpuContext.Add(TEXT("name"), *GetEngineData(TEXT("RHI.AdapterName")));
-	GpuContext.Add(TEXT("vendor_name"), *GetEngineData(TEXT("RHI.GPUVendor")));
-	GpuContext.Add(TEXT("graphics_shader_level"), *GetEngineData(TEXT("RHI.FeatureLevel")));
-	GpuContext.Add(TEXT("driver_version"), *GetEngineData(TEXT("RHI.UserDriverVersion")));
-	GpuContext.Add(TEXT("id"), *GetEngineData(TEXT("RHI.DeviceId")));
+	GpuContext.Add(TEXT("name"), GpuDriverInfo.DeviceDescription);
+	GpuContext.Add(TEXT("vendor_name"), GpuDriverInfo.ProviderName);
+	GpuContext.Add(TEXT("api_type"), GpuDriverInfo.RHIName);
+	GpuContext.Add(TEXT("driver_version"), GpuDriverInfo.UserDriverVersion);
 
 	Scope->SetContext(TEXT("gpu"), GpuContext);
 }
