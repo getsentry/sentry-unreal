@@ -58,7 +58,7 @@ void FSentryTransport::Send(sentry_envelope_t* envelope)
 
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	const SentryDsnUrl DsnUrl(Settings->DsnUrl);
+	const SentryDsnUrl DsnUrl(Settings->Dsn);
 
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
 
