@@ -119,10 +119,10 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 		? *settings->Release
 		: *settings->GetFormattedReleaseName()));
 
-	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->DsnUrl));
+	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->Dsn));
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
-	sentry_options_set_debug(options, settings->EnableVerboseLogging);
+	sentry_options_set_debug(options, settings->Debug);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
@@ -146,7 +146,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	}
 #endif
 
-	isStackTraceEnabled = settings->EnableStackTrace;
+	isStackTraceEnabled = settings->AttachStacktrace;
 
 	crashReporter->SetRelease(settings->Release);
 	crashReporter->SetEnvironment(settings->Environment);

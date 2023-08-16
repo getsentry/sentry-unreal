@@ -29,21 +29,21 @@
 void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
-	SettingsJson->SetStringField(TEXT("dsn"), settings->DsnUrl);
+	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
 	SettingsJson->SetStringField(TEXT("release"), settings->OverrideReleaseName
 		? settings->Release
 		: settings->GetFormattedReleaseName());
 	SettingsJson->SetStringField(TEXT("environment"), settings->Environment);
 	SettingsJson->SetBoolField(TEXT("autoSessionTracking"), settings->EnableAutoSessionTracking);
 	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);
-	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->EnableStackTrace);
-	SettingsJson->SetBoolField(TEXT("debug"), settings->EnableVerboseLogging);
+	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->AttachStacktrace);
+	SettingsJson->SetBoolField(TEXT("debug"), settings->Debug);
 	SettingsJson->SetNumberField(TEXT("sampleRate"), settings->SampleRate);
 	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);
-	SettingsJson->SetBoolField(TEXT("attachScreenshot"), settings->AttachScreenshots);
-	SettingsJson->SetArrayField(TEXT("inAppIncludes"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppIncludes));
-	SettingsJson->SetArrayField(TEXT("inAppExcludes"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppExcludes));
-	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDafaultPii);
+	SettingsJson->SetBoolField(TEXT("attachScreenshot"), settings->AttachScreenshot);
+	SettingsJson->SetArrayField(TEXT("inAppInclude"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppInclude));
+	SettingsJson->SetArrayField(TEXT("inAppExclude"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppExclude));
+	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 
 	FString SettingsJsonStr;
 	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&SettingsJsonStr);

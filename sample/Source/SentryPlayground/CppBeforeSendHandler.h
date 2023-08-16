@@ -14,5 +14,5 @@ class SENTRYPLAYGROUND_API UCppBeforeSendHandler : public USentryBeforeSendHandl
 	GENERATED_BODY()
 
 public:
-	virtual USentryEvent* HandleBeforeSend_Implementation(USentryEvent* Event, USentryHint* Hint);
+	virtual USentryEvent* HandleBeforeSend_Implementation(USentryEvent* Event, USentryHint* Hint) override;
 };

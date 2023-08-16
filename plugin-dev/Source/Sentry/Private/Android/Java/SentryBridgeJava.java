@@ -54,11 +54,11 @@ public class SentryBridgeJava {
 							return onBeforeSend(beforeSendHandler, event, hint);
 						}
 					});
-					JSONArray Includes = settingJson.getJSONArray("inAppIncludes");
+					JSONArray Includes = settingJson.getJSONArray("inAppInclude");
 					for (int i = 0; i < Includes.length(); i++) {
 						options.addInAppInclude(Includes.getString(i));
 					}
-					JSONArray Excludes = settingJson.getJSONArray("inAppExcludes");
+					JSONArray Excludes = settingJson.getJSONArray("inAppExclude");
 					for (int i = 0; i < Excludes.length(); i++) {
 						options.addInAppExclude(Excludes.getString(i));
 					}
