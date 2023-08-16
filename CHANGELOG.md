@@ -13,6 +13,7 @@
 
 - Fix Linux Compile/Staging Error ([#327](https://github.com/getsentry/sentry-unreal/pull/327))
 - Fix UE 5.3 compatibility issues ([#348](https://github.com/getsentry/sentry-unreal/pull/348))
+- Fix plugin settings names ([#350](https://github.com/getsentry/sentry-unreal/pull/350))
 
 ### Dependencies
 

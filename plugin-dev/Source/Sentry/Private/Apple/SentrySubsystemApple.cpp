@@ -29,20 +29,20 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
 	[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
-		options.dsn = settings->DsnUrl.GetNSString();
+		options.dsn = settings->Dsn.GetNSString();
 		options.environment = settings->Environment.GetNSString();
 		options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 		options.sessionTrackingIntervalMillis = settings->SessionTimeout;
 		options.releaseName = settings->OverrideReleaseName
 			? settings->Release.GetNSString()
 			: settings->GetFormattedReleaseName().GetNSString();
-		options.attachStacktrace = settings->EnableStackTrace;
-		options.debug = settings->EnableVerboseLogging;
+		options.attachStacktrace = settings->AttachStacktrace;
+		options.debug = settings->Debug;
 		options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 		options.maxBreadcrumbs = settings->MaxBreadcrumbs;
-		options.sendDefaultPii = settings->SendDafaultPii;
+		options.sendDefaultPii = settings->SendDefaultPii;
 #if PLATFORM_IOS
-		options.attachScreenshot = settings->AttachScreenshots;
+		options.attachScreenshot = settings->AttachScreenshot;
 #endif
 		options.initialScope = ^(SentryScope *scope) {
 			if(settings->EnableAutoLogAttachment) {
@@ -57,11 +57,11 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
 			return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
 		};
-		for (auto it = settings->InAppIncludes.CreateConstIterator(); it; ++it)
+		for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 		{
 			[options addInAppInclude:it->GetNSString()];
 		}
-		for (auto it = settings->InAppExcludes.CreateConstIterator(); it; ++it)
+		for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
 		{
 			[options addInAppExclude:it->GetNSString()];
 		}

@@ -127,7 +127,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
 		Meta = (DisplayName = "DSN", ToolTip = "The DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard."))
-	FString DsnUrl;
+	FString Dsn;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
 		Meta = (DisplayName = "Environment", ToolTip = "Environment which will be used for enriching events."))
@@ -139,7 +139,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging on desktop."))
-	bool EnableVerboseLogging;
+	bool Debug;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Enable for Build Configurations"))
@@ -167,7 +167,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Attach stack trace to captured events", ToolTip = "Flag indicating whether to attach stack trace automatically to captured events."))
-	bool EnableStackTrace;
+	bool AttachStacktrace;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (InlineEditConditionToggle))
@@ -187,19 +187,19 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Attach screenshots (for iOS only)", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs."))
-	bool AttachScreenshots;
+	bool AttachScreenshot;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "In-app includes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that belong to the app."))
-	TArray<FString> InAppIncludes;
+	TArray<FString> InAppInclude;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "In-app exludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
-	TArray<FString> InAppExcludes;
+	TArray<FString> InAppExclude;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Attach personally identifiable information (for Android/Apple only)", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
-	bool SendDafaultPii;
+		Meta = (DisplayName = "Attach personally identifiable information", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
+	bool SendDefaultPii;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
 		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
@@ -246,8 +246,9 @@ class SENTRY_API USentrySettings : public UObject
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
 
 public:
-	FString GetFormattedReleaseName() const;
+	static FString GetFormattedReleaseName();
 
 private:
 	void LoadDebugSymbolsProperties();
+	void CheckLegacySettings();
 };
