@@ -234,6 +234,9 @@ private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
 
+	/** Adds GPU context data for all events captured by Sentry SDK. */
+	void AddGpuContext();
+
 	/** Promote specified values to tags for all events captured by Sentry SDK. */
 	void PromoteTags();
 
