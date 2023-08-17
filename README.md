@@ -46,6 +46,8 @@ The SDK complies with three latest engine versions.
 
 - To avoid issues with running certain plugin scripts on Windows using [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?WT.mc_id=THOMASMAURER-blog-thmaure&view=powershell-7.3&viewFallbackFrom=powershell-7) is recommended.
 
+- In UE 5.2 or newer game log attached to crashes captured with `sentry-native` integration instead of [crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/) could be truncated. This is caused by current `crashpad` behavior which sends crashes to Sentry right away while UE is still about to write some bits of information to the log file.
+
 ## Development
 
 Please see the [contribution guide](./CONTRIBUTING.md).
