@@ -30,15 +30,10 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 	Scope->SetExtraValue("Crash GUID", SessionContext.CrashGUIDRoot);
 	Scope->SetExtraValue("Executable Name", SessionContext.ExecutableName);
 	Scope->SetExtraValue("Game Name", SessionContext.GameName);
-	Scope->SetExtraValue("CPU Brand", SessionContext.CPUBrand);
-	Scope->SetExtraValue("CPU Vendor", SessionContext.CPUVendor);
-	Scope->SetExtraValue("Number of Cores", FString::FromInt(SessionContext.NumberOfCores));
-	Scope->SetExtraValue("Number of Cores including Hyperthreads", FString::FromInt(SessionContext.NumberOfCoresIncludingHyperthreads));
 	Scope->SetExtraValue("Process Id", FString::FromInt(SessionContext.ProcessId));
 	Scope->SetExtraValue("Seconds Since Start", FString::FromInt(SessionContext.SecondsSinceStart));
 	Scope->SetExtraValue("Command Line", SessionContext.CommandLine);
 	Scope->SetExtraValue("Memory Stats Page Size", FString::FromInt(SessionContext.MemoryStats.PageSize));
-	Scope->SetExtraValue("Memory Stats Total Physical GB", FString::FromInt(SessionContext.MemoryStats.TotalPhysicalGB));
 	Scope->SetExtraValue("Memory Stats Total Virtual", FString::Printf(TEXT("%lld"), SessionContext.MemoryStats.TotalVirtual));
 
 	if(Settings->SendDefaultPii)

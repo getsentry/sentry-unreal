@@ -93,6 +93,7 @@ void USentrySubsystem::Initialize()
 
 #if PLATFORM_WINDOWS || PLATFORM_LINUX || PLATFORM_MAC
 	AddGpuContext();
+	AddDeviceContext();
 #endif
 
 	PromoteTags();
@@ -304,6 +305,19 @@ void USentrySubsystem::AddGpuContext()
 	GpuContext.Add(TEXT("driver_version"), GpuDriverInfo.UserDriverVersion);
 
 	SubsystemNativeImpl->SetContext(TEXT("gpu"), GpuContext);
+}
+
+void USentrySubsystem::AddDeviceContext()
+{
+	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();
+
+	TMap<FString, FString> DeviceContext;
+	DeviceContext.Add(TEXT("cpu_description"), FPlatformMisc::GetCPUBrand());
+	DeviceContext.Add(TEXT("number_of_cores"), FString::FromInt(FPlatformMisc::NumberOfCores()));
+	DeviceContext.Add(TEXT("number_of_cores_including_hyperthreads"), FString::FromInt(FPlatformMisc::NumberOfCoresIncludingHyperthreads()));
+	DeviceContext.Add(TEXT("physical_memory_size_gb"), FString::FromInt(MemoryConstants.TotalPhysicalGB));
+
+	SubsystemNativeImpl->SetContext(TEXT("device"), DeviceContext);
 }
 
 void USentrySubsystem::PromoteTags()
