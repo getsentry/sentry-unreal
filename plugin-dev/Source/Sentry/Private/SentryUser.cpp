@@ -20,7 +20,7 @@ USentryUser::USentryUser()
 		UserNativeImpl = MakeShareable(new SentryUserAndroid());
 #elif PLATFORM_IOS || PLATFORM_MAC
 		UserNativeImpl = MakeShareable(new SentryUserApple());
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 		UserNativeImpl = MakeShareable(new SentryUserDesktop());
 #endif
 	}

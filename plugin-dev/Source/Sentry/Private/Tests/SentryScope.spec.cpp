@@ -141,7 +141,7 @@ void SentryScopeSpec::Define()
 		});
 	});
 
-#if PLATFORM_WINDOWS || PLATFORM_LINUX
+#if (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 	Describe("Scope params", [this]()
 	{
 		It("should be applied to event", [this]()

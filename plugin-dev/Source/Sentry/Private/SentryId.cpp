@@ -20,7 +20,7 @@ USentryId::USentryId()
 		SentryIdNativeImpl = MakeShareable(new SentryIdAndroid());
 #elif PLATFORM_IOS || PLATFORM_MAC
 		SentryIdNativeImpl = MakeShareable(new SentryIdApple());
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 		SentryIdNativeImpl = MakeShareable(new SentryIdDesktop());
 #endif
 	}

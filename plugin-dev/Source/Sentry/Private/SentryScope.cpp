@@ -22,7 +22,7 @@ USentryScope::USentryScope()
 		ScopeNativeImpl = MakeShareable(new SentryScopeAndroid());
 #elif PLATFORM_IOS || PLATFORM_MAC
 		ScopeNativeImpl = MakeShareable(new SentryScopeApple());
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 		ScopeNativeImpl = MakeShareable(new SentryScopeDesktop());
 #endif
 	}

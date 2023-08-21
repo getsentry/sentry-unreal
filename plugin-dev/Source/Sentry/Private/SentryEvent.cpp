@@ -20,7 +20,7 @@ USentryEvent::USentryEvent()
 		EventNativeImpl = MakeShareable(new SentryEventAndroid());
 #elif PLATFORM_IOS || PLATFORM_MAC
 		EventNativeImpl = MakeShareable(new SentryEventApple());
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 		EventNativeImpl = MakeShareable(new SentryEventDesktop());
 #endif
 	}
