@@ -30,7 +30,7 @@ void SentrySubsystemSpec::Define()
 	{
 		// Subsystem implementation is used in order to avoid unnecessary complications with proper USentrySubsystem instantiation
 
-#if PLATFORM_WINDOWS || PLATFORM_LINUX
+#if (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 		SentrySubsystemImpl = MakeShareable(new SentrySubsystemDesktop());
 #elif PLATFORM_MAC
 		SentrySubsystemImpl = MakeShareable(new SentrySubsystemApple());

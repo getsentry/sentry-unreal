@@ -36,7 +36,7 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	SubsystemNativeImpl = MakeShareable(new SentrySubsystemAndroid());
 #elif PLATFORM_IOS || PLATFORM_MAC
 	SubsystemNativeImpl = MakeShareable(new SentrySubsystemApple());
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 	SubsystemNativeImpl = MakeShareable(new SentrySubsystemDesktop());
 #endif
 
@@ -297,6 +297,9 @@ void USentrySubsystem::AddDefaultContext()
 
 void USentrySubsystem::AddGpuContext()
 {
+	if (!SubsystemNativeImpl)
+		return;
+
 	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
 
 	TMap<FString, FString> GpuContext;
@@ -309,6 +312,9 @@ void USentrySubsystem::AddGpuContext()
 
 void USentrySubsystem::AddDeviceContext()
 {
+	if (!SubsystemNativeImpl)
+		return;
+
 	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();
 
 	TMap<FString, FString> DeviceContext;

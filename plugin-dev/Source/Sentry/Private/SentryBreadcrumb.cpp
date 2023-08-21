@@ -20,7 +20,7 @@ USentryBreadcrumb::USentryBreadcrumb()
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbAndroid());
 #elif PLATFORM_IOS || PLATFORM_MAC
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbApple());
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 		BreadcrumbNativeImpl = MakeShareable(new SentryBreadcrumbDesktop());
 #endif
 	}
