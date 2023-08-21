@@ -94,9 +94,6 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization complete."));
-
-
 	AddDefaultContext();
 
 #if PLATFORM_WINDOWS || PLATFORM_LINUX || PLATFORM_MAC
