@@ -9,7 +9,7 @@
 - Add extra crash context for native integration ([#342](https://github.com/getsentry/sentry-unreal/pull/342))
 - Add missing plugin settings ([#335](https://github.com/getsentry/sentry-unreal/pull/335))
 - Update event context categories for desktop ([#356](https://github.com/getsentry/sentry-unreal/pull/356))
-- Added Options for enabling platforms & Promoted Builds via the GUI
+- Added Options for enabling platforms & Promoted Builds via the GUI ([#360](https://github.com/getsentry/sentry-unreal/pull/360))
 
 ### Fixes
 
