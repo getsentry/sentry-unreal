@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySettings.h"
-
+#include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
 
 #include "Misc/Paths.h"
@@ -13,6 +13,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, Dsn()
 	, InitAutomatically(true)
 	, Debug(true)
+	, EnableForPromotedBuildsOnly(true)
 	, EnableAutoCrashCapturing(true)
 	, EnableAutoLogAttachment(false)
 	, AttachStacktrace(true)
@@ -72,6 +73,10 @@ void USentrySettings::LoadDebugSymbolsProperties()
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.org"), OrgName);
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("auth.token"), AuthToken);
 	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Sentry plugin can't find properties file"));
+	}
 }
 
 void USentrySettings::CheckLegacySettings()
@@ -117,6 +122,7 @@ void USentrySettings::CheckLegacySettings()
 
 	if (IsSettingsDirty)
 	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry settings where marked as dirty"));
 		GConfig->Flush(false, *ConfigFilename);
 	}
 }

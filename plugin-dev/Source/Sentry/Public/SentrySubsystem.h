@@ -255,6 +255,13 @@ private:
 	/** Check whether the event capturing should be disabled for the current build configuration */
 	bool IsCurrentBuildTargetEnabled();
 
+	/** Check whether the event capturing should be disabled for the current build configuration */
+	bool IsCurrentPlatformEnabled();
+
+	/** Check whether the event capturing should be disabled for only promoted builds */
+	bool IsPromotedBuild();
+
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 

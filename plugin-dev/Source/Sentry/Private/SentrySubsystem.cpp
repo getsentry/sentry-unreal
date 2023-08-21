@@ -44,6 +44,11 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (Settings->InitAutomatically)
 	{
 		Initialize();
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin will auto initlaize."));
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin won't auto initlaize."));
 	}
 }
 
@@ -66,9 +71,9 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled())
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled() || !IsPromotedBuild())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current build configuration/target in plugin settings."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current configuration/target/platform/build in plugin settings."));
 		return;
 	}
 
@@ -88,6 +93,9 @@ void USentrySubsystem::Initialize()
 		UE_LOG(LogSentrySdk, Error, TEXT("Sentry initialization failed."));
 		return;
 	}
+
+	UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization complete."));
+
 
 	AddDefaultContext();
 
@@ -488,4 +496,42 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 	}
 
 	return IsBuildTargetTypeEnabled;
+}
+
+bool USentrySubsystem::IsCurrentPlatformEnabled()
+{	
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	bool IsBuildPlatformEnabled = false;
+	
+#if PLATFORM_LINUX
+	IsBuildPlatformEnable = Settings->EnableBuildPlatforms.bEnableLinux;
+#elif PLATFORM_IOS
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableIOS;
+#elif PLATFORM_WINDOWS
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableWindows;
+#elif PLATFORM_ANDROID
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableAndroid;
+#elif PLATFORM_MAC
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableMac;
+#endif
+	return IsBuildPlatformEnabled;
+}
+
+bool USentrySubsystem::IsPromotedBuild()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	if (Settings->EnableForPromotedBuildsOnly)
+	{
+		if (FApp::GetEngineIsPromotedBuild())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return true;
 }
