@@ -505,7 +505,7 @@ bool USentrySubsystem::IsCurrentPlatformEnabled()
 	bool IsBuildPlatformEnabled = false;
 	
 #if PLATFORM_LINUX
-	IsBuildPlatformEnable = Settings->EnableBuildPlatforms.bEnableLinux;
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableLinux;
 #elif PLATFORM_IOS
 	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableIOS;
 #elif PLATFORM_WINDOWS
