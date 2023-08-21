@@ -122,7 +122,7 @@ void USentrySettings::CheckLegacySettings()
 
 	if (IsSettingsDirty)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry settings where marked as dirty"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry settings where marked as dirty - If not checked out in Perforce, you'll need to update these manually"));
 		GConfig->Flush(false, *ConfigFilename);
 	}
 }
