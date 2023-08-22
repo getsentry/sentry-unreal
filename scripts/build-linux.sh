@@ -15,7 +15,7 @@ mkdir "${sentryArtifactsDestination}/lib"
 
 strip -s "${sentryNativeRoot}/build/libsentry.so" -w -K sentry_[^_]* -o "${sentryArtifactsDestination}/bin/libsentry.so"
 cp "${sentryNativeRoot}/build/libsentry.so" "${sentryArtifactsDestination}/bin/libsentry.dbg.so"
-cp "${sentryNativeRoot}/build/libbreakpad_client.a" "${sentryArtifactsDestination}/lib/libbreakpad_client.a"
+cp "${sentryNativeRoot}/build/external/libbreakpad_client.a" "${sentryArtifactsDestination}/lib/libbreakpad_client.a"
 cp "${sentryNativeRoot}/include/sentry.h" "${sentryArtifactsDestination}/include/sentry.h"
 
 pushd ${sentryArtifactsDestination}/bin
