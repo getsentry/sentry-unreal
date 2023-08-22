@@ -245,11 +245,12 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryTraceContext.h
 Source/ThirdParty/IOS/Sentry.framework/Sentry
 Source/ThirdParty/Linux/
 Source/ThirdParty/Linux/bin/
-Source/ThirdParty/Linux/bin/crashpad_handler
 Source/ThirdParty/Linux/bin/libsentry.dbg.so
 Source/ThirdParty/Linux/bin/libsentry.so
 Source/ThirdParty/Linux/include/
 Source/ThirdParty/Linux/include/sentry.h
+Source/ThirdParty/Linux/lib/
+Source/ThirdParty/Linux/lib/libbreakpad_client.a
 Source/ThirdParty/Mac/
 Source/ThirdParty/Mac/bin/
 Source/ThirdParty/Mac/bin/sentry.dylib
@@ -319,10 +320,10 @@ Source/ThirdParty/Mac/include/Headers/SentryUser.h
 Source/ThirdParty/Mac/include/Headers/SentryUserFeedback.h
 Source/ThirdParty/Win64/
 Source/ThirdParty/Win64/bin/
-Source/ThirdParty/Win64/bin/crashpad_handler.exe
 Source/ThirdParty/Win64/bin/sentry.dll
 Source/ThirdParty/Win64/bin/sentry.pdb
 Source/ThirdParty/Win64/include/
 Source/ThirdParty/Win64/include/sentry.h
 Source/ThirdParty/Win64/lib/
+Source/ThirdParty/Win64/lib/breakpad_client.lib
 Source/ThirdParty/Win64/lib/sentry.lib
