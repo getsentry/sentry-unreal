@@ -33,6 +33,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 {
 #if WITH_EDITOR
 	Environment = TEXT("Editor");
+	LoadDebugSymbolsProperties();
 #elif UE_BUILD_SHIPPING
 	Environment = TEXT("Release");
 #elif UE_BUILD_DEVELOPMENT
@@ -40,9 +41,6 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 #elif UE_BUILD_DEBUG
 	Environment = TEXT("Debug");
 #endif
-
-	LoadDebugSymbolsProperties();
-
 	CheckLegacySettings();
 }
 
