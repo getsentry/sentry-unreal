@@ -99,12 +99,12 @@ public class Sentry : ModuleRules
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dll"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dll"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler.exe"));
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.pdb"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.pdb"));
 
 			PublicDelayLoadDLLs.Add("sentry.dll");
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "sentry.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "breakpad_client.lib"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
@@ -115,7 +115,7 @@ public class Sentry : ModuleRules
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"), Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "breakpad"), Path.Combine(PlatformThirdPartyPath, "bin", "breakpad"));
 
 			PublicRuntimeLibraryPaths.Add(PlatformBinariesPath);
 
