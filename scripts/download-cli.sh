@@ -2,7 +2,7 @@
 set -euo pipefail
 
 function getProperty {
-    cat "$(dirname $0)/../modules/sentry-cli.properties" | grep $1 | cut -d'=' -f2 | tr -d '"'
+    cat "$(dirname $0)/../plugin-dev/sentry-cli.properties" | grep $1 | cut -d'=' -f2 | tr -d '"'
 }
 
 baseUrl="$(getProperty 'repo')/releases/download/$(getProperty 'version')/sentry-cli-"
