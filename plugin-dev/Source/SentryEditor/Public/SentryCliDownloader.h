@@ -22,6 +22,7 @@ public:
 
 private:
 	FString GetSentryCliPath() const;
+	FString GetSentryCliVersion() const;
 
 	TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> SentryCliDownloadRequest;
 

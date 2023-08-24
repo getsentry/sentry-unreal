@@ -47,7 +47,7 @@ void FSentryCliDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 		OnCompleted(true);
 	});
 
-	SentryCliDownloadRequest->SetURL(FString::Printf(TEXT("https://github.com/getsentry/sentry-cli/releases/download/%s/%s"), TEXT("2.20.5"), *SentryCliExecName));
+	SentryCliDownloadRequest->SetURL(FString::Printf(TEXT("https://github.com/getsentry/sentry-cli/releases/download/%s/%s"), *GetSentryCliVersion(), *SentryCliExecName));
 	SentryCliDownloadRequest->SetVerb(TEXT("GET"));
 
 	SentryCliDownloadRequest->ProcessRequest();
@@ -55,14 +55,14 @@ void FSentryCliDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 
 ESentryCliStatus FSentryCliDownloader::GetStatus()
 {
-	if(SentryCliDownloadRequest.IsValid() && SentryCliDownloadRequest->GetStatus() == EHttpRequestStatus::Processing)
-	{
-		return ESentryCliStatus::Downloading;
-	}
-
 	if(FPaths::FileExists(GetSentryCliPath()))
 	{
 		return ESentryCliStatus::Configured;
+	}
+
+	if(SentryCliDownloadRequest.IsValid() && SentryCliDownloadRequest->GetStatus() == EHttpRequestStatus::Processing)
+	{
+		return ESentryCliStatus::Downloading;
 	}
 
 	return ESentryCliStatus::Missing;
@@ -73,4 +73,18 @@ FString FSentryCliDownloader::GetSentryCliPath() const
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
 	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), TEXT("CLI"), SentryCliExecName);
+}
+
+FString FSentryCliDownloader::GetSentryCliVersion() const
+{
+	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
+	const FString SentryCliPropertiesPath = FPaths::Combine(PluginDir, TEXT("sentry-cli.properties"));
+
+	TArray<FString> CliPropertiesContents;
+	FFileHelper::LoadFileToStringArray(CliPropertiesContents, *SentryCliPropertiesPath);
+
+	FString SentryCliVersion;
+	FParse::Value(*CliPropertiesContents[0], TEXT("version="), SentryCliVersion);
+
+	return SentryCliVersion;
 }
