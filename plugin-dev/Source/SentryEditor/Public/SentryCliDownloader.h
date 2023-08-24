@@ -16,7 +16,8 @@ enum class ESentryCliStatus : uint8
 class FSentryCliDownloader
 {
 public:
-	void Download();
+	void Download(const TFunction<void(bool)>& OnCompleted);
+
 	ESentryCliStatus GetStatus();
 
 private:

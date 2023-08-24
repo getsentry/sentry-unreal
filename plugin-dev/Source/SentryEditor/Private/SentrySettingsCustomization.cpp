@@ -11,12 +11,14 @@
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
+#include "Framework/Notifications/NotificationManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 #include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Notifications/SNotificationList.h"
 
 #if ENGINE_MAJOR_VERSION >= 5
 #include "Styling/AppStyle.h"
@@ -240,7 +242,17 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 				{
 					if(CliDownloader.IsValid() && CliDownloader->GetStatus() != ESentryCliStatus::Downloading)
 					{
-						CliDownloader->Download();
+						CliDownloader->Download([](bool Result)
+						{
+							FNotificationInfo Info(FText::FromString(Result
+								? TEXT("Sentry CLI was configured successfully.")
+								: TEXT("Sentry CLI configuration failed.")));
+							Info.ExpireDuration = 3.0f;
+							Info.bUseSuccessFailIcons = true;
+
+							TSharedPtr<SNotificationItem> EditorNotification = FSlateNotificationManager::Get().AddNotification(Info);
+							EditorNotification->SetCompletionState(Result ? SNotificationItem::CS_Success : SNotificationItem::CS_Fail);
+						});
 					}
 
 					return FReply::Handled();

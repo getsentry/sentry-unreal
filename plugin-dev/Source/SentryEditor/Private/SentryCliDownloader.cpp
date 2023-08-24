@@ -17,7 +17,7 @@ const FString FSentryCliDownloader::SentryCliExecName = TEXT("sentry-cli-Darwin-
 const FString FSentryCliDownloader::SentryCliExecName = TEXT("sentry-cli-Linux-x86_64");
 #endif
 
-void FSentryCliDownloader::Download()
+void FSentryCliDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 {
 	SentryCliDownloadRequest = FHttpModule::Get().CreateRequest();
 
@@ -25,6 +25,7 @@ void FSentryCliDownloader::Download()
 	{
 		if (!bSuccess || !Response.IsValid())
 		{
+			OnCompleted(false);
 			return;
 		}
 
@@ -36,11 +37,14 @@ void FSentryCliDownloader::Download()
 		{
 			if (!PlatformFile.CreateDirectoryTree(*SentryCliDirPath))
 			{
+				OnCompleted(false);
 				return;
 			}
 		}
 
 		FFileHelper::SaveArrayToFile(Response->GetContent(), *GetSentryCliPath());
+
+		OnCompleted(true);
 	});
 
 	SentryCliDownloadRequest->SetURL(FString::Printf(TEXT("https://github.com/getsentry/sentry-cli/releases/download/%s/%s"), TEXT("2.20.5"), *SentryCliExecName));
