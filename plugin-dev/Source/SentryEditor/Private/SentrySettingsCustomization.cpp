@@ -7,6 +7,12 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 
+#include "HAL/PlatformFilemanager.h"
+#include "GenericPlatform/GenericPlatformFile.h"
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
@@ -14,6 +20,7 @@
 
 #include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Input/SButton.h"
 
 #if ENGINE_MAJOR_VERSION >= 5
@@ -45,11 +52,36 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 
 	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
 
+	TSharedRef<SWidget> CliNotConfiguredWidget = MakeSentryCliDownloadStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Sentry CLI is not configured.")), FText::FromString(TEXT("Configure Now")));
+
+	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliDownloadStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
+	FText::FromString(TEXT("Sentry CLI is configured.")), FText());
+
 #if ENGINE_MAJOR_VERSION >= 5
 	const ISlateStyle& Style = FAppStyle::Get();
 #else
 	const ISlateStyle& Style = FEditorStyle::Get();
 #endif
+
+	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
+		.WholeRowWidget
+		[
+			SNew(SBorder)
+			.Padding(8.0f)
+			[
+				SNew(SWidgetSwitcher)
+				.WidgetIndex(this, &FSentrySettingsCustomization::GetSentryCliDownloadStatusAsInt)
+				+SWidgetSwitcher::Slot()
+				[
+					CliNotConfiguredWidget
+				]
+				+SWidgetSwitcher::Slot()
+				[
+					CliConfiguredWidget
+				]
+			]
+		];
 
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
 		.WholeRowWidget
@@ -167,6 +199,48 @@ void FSentrySettingsCustomization::SetPropertiesUpdateHandler(IDetailLayoutBuild
 	AuthTokenHandle->SetOnPropertyValueChanged(OnUpdateAuthToken);
 }
 
+TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliDownloadStatusRow(FName IconName, FText Message, FText ButtonMessage)
+{
+	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SImage)
+			.Image(FAppStyle::GetBrush(IconName))
+		]
+
+		+SHorizontalBox::Slot()
+		.FillWidth(1.0f)
+		.Padding(16.0f, 0.0f)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.ColorAndOpacity(FLinearColor::White)
+			.ShadowColorAndOpacity(FLinearColor::Black)
+			.ShadowOffset(FVector2D::UnitVector)
+			.Text(Message)
+		];
+
+	if (!ButtonMessage.IsEmpty())
+	{
+		Result->AddSlot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.OnClicked_Lambda([=]() -> FReply
+				{
+					DownloadSentryCli();
+					return FReply::Handled();
+				})
+				.Text(ButtonMessage)
+			];
+	}
+
+	return Result;
+}
+
 void FSentrySettingsCustomization::UpdateProjectName()
 {
 	FString Value;
@@ -231,9 +305,71 @@ void FSentrySettingsCustomization::UpdateCrcConfig(const FString& Url)
 	CrcConfigFile.SetString(*CrcSectionName, *DataRouterUrlKey, *DataRouterUrlValue, CrcConfigFilePath);
 }
 
-FString FSentrySettingsCustomization::GetCrcConfigPath()
+void FSentrySettingsCustomization::DownloadSentryCli()
+{
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> SentryCliDownloadRequest = FHttpModule::Get().CreateRequest();
+
+	SentryCliDownloadRequest->OnProcessRequestComplete().BindLambda([=](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+	{
+		if (!bSuccess || !Response.IsValid())
+		{
+			return;
+		}
+
+		if (Response->GetContentLength() <= 0)
+		{
+			return;
+		}
+
+		FString Path, Filename, Extension;
+		FPaths::Split(GetSentryCliPath(), Path, Filename, Extension);
+
+		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+		if (!PlatformFile.DirectoryExists(*Path))
+		{
+			if (!PlatformFile.CreateDirectoryTree(*Path))
+			{
+				return;
+			}
+		}
+
+		FFileHelper::SaveArrayToFile(Response->GetContent(), *GetSentryCliPath());
+	});
+
+	SentryCliDownloadRequest->SetURL(FString::Printf(TEXT("https://github.com/getsentry/sentry-cli/releases/download/%s/%s"), TEXT("2.20.5"), *GetSentryCliExecName()));
+	SentryCliDownloadRequest->SetVerb(TEXT("GET"));
+
+	SentryCliDownloadRequest->ProcessRequest();
+}
+
+FString FSentrySettingsCustomization::GetCrcConfigPath() const
 {
 	return FPaths::Combine(FPaths::EngineDir(), TEXT("Programs"), TEXT("CrashReportClient"), TEXT("Config"), TEXT("DefaultEngine.ini"));
+}
+
+FString FSentrySettingsCustomization::GetSentryCliPath() const
+{
+	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
+
+	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), TEXT("CLI"), GetSentryCliExecName());
+}
+
+FString FSentrySettingsCustomization::GetSentryCliExecName() const
+{
+#if PLATFORM_WINDOWS
+	const FString SentryCliExecName = TEXT("sentry-cli-Windows-x86_64.exe");
+#elif PLATFORM_MAC
+	const FString SentryCliExecName = TEXT("sentry-cli-Darwin-universal");
+#elif PLATFORM_LINUX
+	const FString SentryCliExecName = TEXT("sentry-cli-Linux-x86_64");
+#endif
+
+	return SentryCliExecName;
+}
+
+int32 FSentrySettingsCustomization::GetSentryCliDownloadStatusAsInt() const
+{
+	return FPaths::FileExists(GetSentryCliPath()) ? 1 : 0;
 }
 
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata)

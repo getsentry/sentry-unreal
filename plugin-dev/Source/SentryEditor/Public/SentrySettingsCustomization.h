@@ -6,6 +6,7 @@
 
 class IPropertyHandle;
 class FSlateHyperlinkRun;
+class SWidget;
 
 class FSentrySettingsCustomization : public IDetailCustomization
 {
@@ -20,6 +21,8 @@ private:
 
 	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);
 
+	TSharedRef<SWidget> MakeSentryCliDownloadStatusRow(FName IconName, FText Message, FText ButtonMessage);
+
 	void UpdateProjectName();
 	void UpdateOrganizationName();
 	void UpdateAuthToken();
@@ -27,8 +30,15 @@ private:
 	void UpdatePropertiesFile(const FString& PropertyName, const FString& PropertyValue);
 	void UpdateCrcConfig(const FString& Url);
 
+	void DownloadSentryCli();
+
 	// Gets path to CRC's DefaultEngine.ini in engine directory
-	FString GetCrcConfigPath();
+	FString GetCrcConfigPath() const;
+	// Gets path to Sentry CLI in plugin's ThirdParty sources directory
+	FString GetSentryCliPath() const;
+
+	FString GetSentryCliExecName() const;
+	int32 GetSentryCliDownloadStatusAsInt() const;
 
 	TSharedPtr<IPropertyHandle> ProjectNameHandle;
 	TSharedPtr<IPropertyHandle> OrganizationNameHandle;
