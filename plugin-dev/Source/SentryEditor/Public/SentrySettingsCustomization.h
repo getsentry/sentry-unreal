@@ -4,6 +4,7 @@
 
 #include "IDetailCustomization.h"
 
+class FSentryCliDownloader;
 class IPropertyHandle;
 class FSlateHyperlinkRun;
 class SWidget;
@@ -11,6 +12,8 @@ class SWidget;
 class FSentrySettingsCustomization : public IDetailCustomization
 {
 public:
+	FSentrySettingsCustomization();
+
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
 	/** IDetailCustomization implementation */
@@ -21,7 +24,7 @@ private:
 
 	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);
 
-	TSharedRef<SWidget> MakeSentryCliDownloadStatusRow(FName IconName, FText Message, FText ButtonMessage);
+	TSharedRef<SWidget> MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage);
 
 	void UpdateProjectName();
 	void UpdateOrganizationName();
@@ -30,19 +33,16 @@ private:
 	void UpdatePropertiesFile(const FString& PropertyName, const FString& PropertyValue);
 	void UpdateCrcConfig(const FString& Url);
 
-	void DownloadSentryCli();
-
 	// Gets path to CRC's DefaultEngine.ini in engine directory
 	FString GetCrcConfigPath() const;
-	// Gets path to Sentry CLI in plugin's ThirdParty sources directory
-	FString GetSentryCliPath() const;
 
-	FString GetSentryCliExecName() const;
-	int32 GetSentryCliDownloadStatusAsInt() const;
+	int32 GetSentryCliStatusAsInt() const;
 
 	TSharedPtr<IPropertyHandle> ProjectNameHandle;
 	TSharedPtr<IPropertyHandle> OrganizationNameHandle;
 	TSharedPtr<IPropertyHandle> AuthTokenHandle;
+
+	TSharedPtr<FSentryCliDownloader> CliDownloader;
 
 	static const FString DefaultCrcEndpoint;
 };
