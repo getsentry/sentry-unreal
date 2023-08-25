@@ -219,9 +219,9 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 		[
 			SNew(SImage)
 #if ENGINE_MAJOR_VERSION >= 5
-			.Image(FAppStyle::GetBrush(IconName))
+			.Image(FAppStyle::Get().GetBrush(IconName))
 #else
-			.Image(FEditorStyle::GetBrush(IconName))
+			.Image(FEditorStyle::Get().GetBrush(IconName))
 #endif
 		]
 
