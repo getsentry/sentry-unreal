@@ -15,10 +15,12 @@
 #include "Runtime/Launch/Resources/Version.h"
 
 #include "Widgets/Text/SRichTextBlock.h"
+#include "Widgets/Text/STextBlock.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Notifications/SNotificationList.h"
+#include "Widgets/Images/SImage.h"
 
 #if ENGINE_MAJOR_VERSION >= 5
 #include "Styling/AppStyle.h"
