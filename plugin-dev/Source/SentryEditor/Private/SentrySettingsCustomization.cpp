@@ -218,7 +218,11 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 		.VAlign(VAlign_Center)
 		[
 			SNew(SImage)
+#if ENGINE_MAJOR_VERSION >= 5
 			.Image(FAppStyle::GetBrush(IconName))
+#else
+			.Image(FEditorStyle::GetBrush(IconName))
+#endif
 		]
 
 		+SHorizontalBox::Slot()
