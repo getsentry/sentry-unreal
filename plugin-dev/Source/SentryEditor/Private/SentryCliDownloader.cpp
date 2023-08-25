@@ -8,6 +8,8 @@
 #include "Interfaces/IPluginManager.h"
 #include "HAL/PlatformFileManager.h"
 #include "GenericPlatform/GenericPlatformFile.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 #if PLATFORM_WINDOWS
 const FString FSentryCliDownloader::SentryCliExecName = TEXT("sentry-cli-Windows-x86_64.exe");
