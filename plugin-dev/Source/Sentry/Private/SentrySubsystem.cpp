@@ -44,11 +44,11 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (Settings->InitAutomatically)
 	{
 		Initialize();
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin will auto initlaize."));
+		UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin will auto initlaize."));
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin won't auto initlaize."));
+		UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin won't auto initlaize."));
 	}
 }
 
@@ -71,9 +71,15 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled() || !IsPromotedBuild())
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled())
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current configuration/target/platform/build in plugin settings."));
+		return;
+	}
+
+	if(Settings->EnableForPromotedBuildsOnly && !FApp::GetEngineIsPromotedBuild())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the non-promoted builds in plugin settings."));
 		return;
 	}
 
@@ -483,6 +489,7 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableClient;
 		break;
 	case EBuildTargetType::Editor:
+		// Note: If this gives false flags (It shouldn't be possible, but check GIsEditor)
 		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableEditor;
 		break;
 	case EBuildTargetType::Program:

@@ -31,16 +31,35 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, CrashReporterUrl()
 	, BeforeSendHandler(USentryBeforeSendHandler::StaticClass())
 {
+	bool SetEnv = false;
+
 #if WITH_EDITOR
-	Environment = TEXT("Editor");
-	LoadDebugSymbolsProperties();
-#elif UE_BUILD_SHIPPING
-	Environment = TEXT("Release");
-#elif UE_BUILD_DEVELOPMENT
-	Environment = TEXT("Development");
-#elif UE_BUILD_DEBUG
-	Environment = TEXT("Debug");
+	// The #if WITH_EDITOR and WITH_EDITORONLY_DATA tags don't sufficiently verify the status of the editor 
+	if (GIsEditor)
+	{
+		SetEnv = true;
+		Environment = TEXT("Editor");
+	}
 #endif
+
+	if (!SetEnv)
+	{
+#if UE_BUILD_TEST
+		Environment = TEXT("Test");
+#elif UE_BUILD_SHIPPING
+		Environment = TEXT("Release");
+#elif UE_BUILD_DEVELOPMENT
+		Environment = TEXT("Development");
+#elif UE_BUILD_DEBUG
+		Environment = TEXT("Debug");
+#endif
+	}
+
+	if (GIsEditor)
+	{
+		LoadDebugSymbolsProperties();
+	}
+
 	CheckLegacySettings();
 }
 
@@ -73,7 +92,7 @@ void USentrySettings::LoadDebugSymbolsProperties()
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Sentry plugin can't find properties file"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin can't find properties file"));
 	}
 }
 
