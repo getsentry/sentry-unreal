@@ -168,7 +168,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool Debug;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-	Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only"))
+		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))
 	bool EnableForPromotedBuildsOnly;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
@@ -283,6 +283,8 @@ public:
 	static FString GetFormattedReleaseName();
 
 private:
+	FString GetDefaultEnvironmentName();
+
 	void LoadDebugSymbolsProperties();
 	void CheckLegacySettings();
 };
