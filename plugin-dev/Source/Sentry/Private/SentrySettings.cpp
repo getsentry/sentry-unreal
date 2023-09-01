@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySettings.h"
-
+#include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
 
 #include "Misc/Paths.h"
@@ -13,6 +13,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, Dsn()
 	, InitAutomatically(true)
 	, Debug(true)
+	, EnableForPromotedBuildsOnly(true)
 	, EnableAutoCrashCapturing(true)
 	, EnableAutoLogAttachment(false)
 	, AttachStacktrace(true)
@@ -30,17 +31,34 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, CrashReporterUrl()
 	, BeforeSendHandler(USentryBeforeSendHandler::StaticClass())
 {
+	bool SetEnv = false;
+
 #if WITH_EDITOR
-	Environment = TEXT("Editor");
-#elif UE_BUILD_SHIPPING
-	Environment = TEXT("Release");
-#elif UE_BUILD_DEVELOPMENT
-	Environment = TEXT("Development");
-#elif UE_BUILD_DEBUG
-	Environment = TEXT("Debug");
+	// The #if WITH_EDITOR and WITH_EDITORONLY_DATA tags don't sufficiently verify the status of the editor 
+	if (GIsEditor)
+	{
+		SetEnv = true;
+		Environment = TEXT("Editor");
+	}
 #endif
 
-	LoadDebugSymbolsProperties();
+	if (!SetEnv)
+	{
+#if UE_BUILD_TEST
+		Environment = TEXT("Test");
+#elif UE_BUILD_SHIPPING
+		Environment = TEXT("Release");
+#elif UE_BUILD_DEVELOPMENT
+		Environment = TEXT("Development");
+#elif UE_BUILD_DEBUG
+		Environment = TEXT("Debug");
+#endif
+	}
+
+	if (GIsEditor)
+	{
+		LoadDebugSymbolsProperties();
+	}
 
 	CheckLegacySettings();
 }
@@ -71,6 +89,10 @@ void USentrySettings::LoadDebugSymbolsProperties()
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.project"), ProjectName);
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.org"), OrgName);
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("auth.token"), AuthToken);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin can't find properties file"));
 	}
 }
 
@@ -117,6 +139,7 @@ void USentrySettings::CheckLegacySettings()
 
 	if (IsSettingsDirty)
 	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry settings where marked as dirty - If not checked out in Perforce, you'll need to update these manually"));
 		GConfig->Flush(false, *ConfigFilename);
 	}
 }
