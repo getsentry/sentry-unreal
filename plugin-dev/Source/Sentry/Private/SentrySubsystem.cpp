@@ -41,14 +41,12 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 #endif
 
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %d"), Settings->InitAutomatically ? TEXT("true") : TEXT("false"));
+
 	if (Settings->InitAutomatically)
 	{
 		Initialize();
-		UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin will auto initlaize."));
-	}
-	else
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin won't auto initlaize."));
 	}
 }
 
@@ -489,7 +487,6 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableClient;
 		break;
 	case EBuildTargetType::Editor:
-		// Note: If this gives false flags (It shouldn't be possible, but check GIsEditor)
 		IsBuildTargetTypeEnabled = Settings->EnableBuildTargets.bEnableEditor;
 		break;
 	case EBuildTargetType::Program:
@@ -503,11 +500,11 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 }
 
 bool USentrySubsystem::IsCurrentPlatformEnabled()
-{	
+{
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 	bool IsBuildPlatformEnabled = false;
-	
+
 #if PLATFORM_LINUX
 	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableLinux;
 #elif PLATFORM_IOS
@@ -519,23 +516,6 @@ bool USentrySubsystem::IsCurrentPlatformEnabled()
 #elif PLATFORM_MAC
 	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableMac;
 #endif
+
 	return IsBuildPlatformEnabled;
-}
-
-bool USentrySubsystem::IsPromotedBuild()
-{
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-
-	if (Settings->EnableForPromotedBuildsOnly)
-	{
-		if (FApp::GetEngineIsPromotedBuild())
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	return true;
 }
