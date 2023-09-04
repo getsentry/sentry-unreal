@@ -41,6 +41,9 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 #endif
 
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %d"), Settings->InitAutomatically ? TEXT("true") : TEXT("false"));
+
 	if (Settings->InitAutomatically)
 	{
 		Initialize();
@@ -66,9 +69,15 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled())
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current build configuration/target in plugin settings."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current configuration/target/platform/build in plugin settings."));
+		return;
+	}
+
+	if(Settings->EnableForPromotedBuildsOnly && !FApp::GetEngineIsPromotedBuild())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the non-promoted builds in plugin settings."));
 		return;
 	}
 
@@ -488,4 +497,25 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 	}
 
 	return IsBuildTargetTypeEnabled;
+}
+
+bool USentrySubsystem::IsCurrentPlatformEnabled()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	bool IsBuildPlatformEnabled = false;
+
+#if PLATFORM_LINUX
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableLinux;
+#elif PLATFORM_IOS
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableIOS;
+#elif PLATFORM_WINDOWS
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableWindows;
+#elif PLATFORM_ANDROID
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableAndroid;
+#elif PLATFORM_MAC
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableMac;
+#endif
+
+	return IsBuildPlatformEnabled;
 }

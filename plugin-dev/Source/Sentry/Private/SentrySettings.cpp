@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySettings.h"
-
+#include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
 
 #include "Misc/Paths.h"
@@ -11,8 +11,10 @@
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, Dsn()
+	, Environment(GetDefaultEnvironmentName())
 	, InitAutomatically(true)
 	, Debug(true)
+	, EnableForPromotedBuildsOnly(false)
 	, EnableAutoCrashCapturing(true)
 	, EnableAutoLogAttachment(false)
 	, AttachStacktrace(true)
@@ -30,17 +32,10 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, CrashReporterUrl()
 	, BeforeSendHandler(USentryBeforeSendHandler::StaticClass())
 {
-#if WITH_EDITOR
-	Environment = TEXT("Editor");
-#elif UE_BUILD_SHIPPING
-	Environment = TEXT("Release");
-#elif UE_BUILD_DEVELOPMENT
-	Environment = TEXT("Development");
-#elif UE_BUILD_DEBUG
-	Environment = TEXT("Debug");
-#endif
-
-	LoadDebugSymbolsProperties();
+	if (GIsEditor)
+	{
+		LoadDebugSymbolsProperties();
+	}
 
 	CheckLegacySettings();
 }
@@ -59,6 +54,22 @@ FString USentrySettings::GetFormattedReleaseName()
 	return FormattedReleaseName;
 }
 
+FString USentrySettings::GetDefaultEnvironmentName()
+{
+	if (GIsEditor)
+	{
+		return TEXT("Editor");
+	}
+
+	// Check Shipping configuration separately for backward compatibility
+	if(FApp::GetBuildConfiguration() == EBuildConfiguration::Shipping)
+	{
+		return TEXT("Release");
+	}
+
+	return LexToString(FApp::GetBuildConfiguration());
+}
+
 void USentrySettings::LoadDebugSymbolsProperties()
 {
 	const FString PropertiesFilePath = FPaths::Combine(FPaths::ProjectDir(), TEXT("sentry.properties"));
@@ -71,6 +82,10 @@ void USentrySettings::LoadDebugSymbolsProperties()
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.project"), ProjectName);
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.org"), OrgName);
 		PropertiesFile.GetString(TEXT("Sentry"), TEXT("auth.token"), AuthToken);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin can't find sentry.properties file"));
 	}
 }
 
@@ -117,6 +132,7 @@ void USentrySettings::CheckLegacySettings()
 
 	if (IsSettingsDirty)
 	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry settings were marked as dirty (if not checked out in Perforce these need to be updated manually)"));
 		GConfig->Flush(false, *ConfigFilename);
 	}
 }
