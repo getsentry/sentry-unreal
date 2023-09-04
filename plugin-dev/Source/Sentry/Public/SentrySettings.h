@@ -117,6 +117,32 @@ struct FEnableBuildTargets
 	bool bEnableProgram = true;
 };
 
+USTRUCT(BlueprintType)
+struct FEnableBuildPlatforms
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Linux", ToolTip = "Flag indicating whether event capturing should be enabled for the Linux platform type."))
+	bool bEnableLinux = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Windows", ToolTip = "Flag indicating whether event capturing should be enabled for the Windows platform type."))
+	bool bEnableWindows = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "IOS", ToolTip = "Flag indicating whether event capturing should be enabled for the IOS platform type."))
+	bool bEnableIOS = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+		Meta = (DisplayName = "Android", ToolTip = "Flag indicating whether event capturing should be enabled for the Android platform type."))
+	bool bEnableAndroid = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	Meta = (DisplayName = "Mac", ToolTip = "Flag indicating whether event capturing should be enabled for the Mac platform type."))
+	bool bEnableMac = true;
+};
+
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -141,6 +167,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging on desktop."))
 	bool Debug;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))
+	bool EnableForPromotedBuildsOnly;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Enable for Build Configurations"))
 	FEnableBuildConfigurations EnableBuildConfigurations;
@@ -148,6 +178,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Enable for Build Target Types"))
 	FEnableBuildTargets EnableBuildTargets;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	Meta = (DisplayName = "Enable for Build Platform Types"))
+	FEnableBuildPlatforms EnableBuildPlatforms;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
 		Meta = (DisplayName = "Automatically add breadcrumbs"))
@@ -249,6 +283,8 @@ public:
 	static FString GetFormattedReleaseName();
 
 private:
+	FString GetDefaultEnvironmentName();
+
 	void LoadDebugSymbolsProperties();
 	void CheckLegacySettings();
 };

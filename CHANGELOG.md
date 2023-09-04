@@ -10,6 +10,8 @@
 - Add missing plugin settings ([#335](https://github.com/getsentry/sentry-unreal/pull/335))
 - Update event context categories for desktop ([#356](https://github.com/getsentry/sentry-unreal/pull/356))
 - Add sentry-cli downloading tool ([#362](https://github.com/getsentry/sentry-unreal/pull/362))
+- Add breakpad support for Windows ([#363](https://github.com/getsentry/sentry-unreal/pull/363))
+- Added Options for enabling platforms & Promoted Builds via the GUI ([#360](https://github.com/getsentry/sentry-unreal/pull/360))
 
 ### Fixes
 
@@ -38,9 +40,9 @@
 - Bump Cocoa SDK (iOS) from v8.9.1 to v8.9.2 ([#331](https://github.com/getsentry/sentry-unreal/pull/331))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#892)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.9.1...8.9.2)
-- Bump CLI from v2.19.4 to v2.20.5 ([#333](https://github.com/getsentry/sentry-unreal/pull/333), [#338](https://github.com/getsentry/sentry-unreal/pull/338), [#341](https://github.com/getsentry/sentry-unreal/pull/341), [#343](https://github.com/getsentry/sentry-unreal/pull/343), [#347](https://github.com/getsentry/sentry-unreal/pull/347))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2205)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.19.4...2.20.5)
+- Bump CLI from v2.19.4 to v2.20.6 ([#333](https://github.com/getsentry/sentry-unreal/pull/333), [#338](https://github.com/getsentry/sentry-unreal/pull/338), [#341](https://github.com/getsentry/sentry-unreal/pull/341), [#343](https://github.com/getsentry/sentry-unreal/pull/343), [#347](https://github.com/getsentry/sentry-unreal/pull/347), [#364](https://github.com/getsentry/sentry-unreal/pull/364))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2206)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.19.4...2.20.6)
 - Bump Cocoa SDK (iOS) from v8.9.2 to v8.9.3 ([#334](https://github.com/getsentry/sentry-unreal/pull/334))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#893)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.9.2...8.9.3)
