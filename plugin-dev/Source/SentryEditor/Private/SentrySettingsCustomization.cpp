@@ -63,7 +63,7 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 		FText::FromString(TEXT("Downloading Sentry CLI...")), FText());
 
 	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
-		FText::FromString(TEXT("Sentry CLI is configured.")), FText());
+		FText::FromString(TEXT("Sentry CLI is configured.")), FText::FromString(TEXT("Reload")));
 
 #if ENGINE_MAJOR_VERSION >= 5
 	const ISlateStyle& Style = FAppStyle::Get();

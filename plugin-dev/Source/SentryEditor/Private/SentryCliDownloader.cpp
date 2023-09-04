@@ -31,10 +31,13 @@ void FSentryCliDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 			return;
 		}
 
+		const FString SentryCliExecPath = GetSentryCliPath();
+
 		FString SentryCliDirPath, SentryCliFilename, SentryCliExtension;
-		FPaths::Split(GetSentryCliPath(), SentryCliDirPath, SentryCliFilename, SentryCliExtension);
+		FPaths::Split(SentryCliExecPath, SentryCliDirPath, SentryCliFilename, SentryCliExtension);
 
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+
 		if (!PlatformFile.DirectoryExists(*SentryCliDirPath))
 		{
 			if (!PlatformFile.CreateDirectoryTree(*SentryCliDirPath))
@@ -44,7 +47,16 @@ void FSentryCliDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 			}
 		}
 
-		FFileHelper::SaveArrayToFile(Response->GetContent(), *GetSentryCliPath());
+		if(PlatformFile.FileExists(*SentryCliExecPath))
+		{
+			if (!PlatformFile.DeleteFile(*SentryCliExecPath))
+			{
+				OnCompleted(false);
+				return;
+			}
+		}
+
+		FFileHelper::SaveArrayToFile(Response->GetContent(), *SentryCliExecPath);
 
 		OnCompleted(true);
 	});
@@ -57,14 +69,14 @@ void FSentryCliDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 
 ESentryCliStatus FSentryCliDownloader::GetStatus()
 {
-	if(FPaths::FileExists(GetSentryCliPath()))
-	{
-		return ESentryCliStatus::Configured;
-	}
-
 	if(SentryCliDownloadRequest.IsValid() && SentryCliDownloadRequest->GetStatus() == EHttpRequestStatus::Processing)
 	{
 		return ESentryCliStatus::Downloading;
+	}
+
+	if(FPaths::FileExists(GetSentryCliPath()))
+	{
+		return ESentryCliStatus::Configured;
 	}
 
 	return ESentryCliStatus::Missing;
