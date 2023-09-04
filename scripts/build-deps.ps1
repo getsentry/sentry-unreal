@@ -106,9 +106,8 @@ function buildSentryNative()
 {
     Push-Location -Path "$modulesDir/sentry-native"
 
-    cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal
+    cmake -B "build" -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unreal
     cmake --build "build" --target sentry --config RelWithDebInfo --parallel
-    cmake --build "build" --target crashpad_handler --config Release --parallel
 
     Pop-Location
 
@@ -130,7 +129,7 @@ function buildSentryNative()
     Copy-Item "$modulesDir/sentry-native/build/RelWithDebInfo/sentry.lib" -Destination "$nativeOutDirLibs/sentry.lib"
     Copy-Item "$modulesDir/sentry-native/build/RelWithDebInfo/sentry.dll" -Destination "$nativeOutDirBinaries/sentry.dll"
     Copy-Item "$modulesDir/sentry-native/build/RelWithDebInfo/sentry.pdb" -Destination "$nativeOutDirBinaries/sentry.pdb"
-    Copy-Item "$modulesDir/sentry-native/build/crashpad_build/handler/Release/crashpad_handler.exe" -Destination "$nativeOutDirBinaries/crashpad_handler.exe"
+    Copy-Item "$modulesDir/sentry-native/build/external/RelWithDebInfo/breakpad_client.lib" -Destination "$nativeOutDirLibs/breakpad_client.lib"
     Copy-Item "$modulesDir/sentry-native/include/sentry.h" -Destination "$nativeOutDirIncludes/sentry.h"
 }
 
