@@ -245,12 +245,11 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryTraceContext.h
 Source/ThirdParty/IOS/Sentry.framework/Sentry
 Source/ThirdParty/Linux/
 Source/ThirdParty/Linux/bin/
+Source/ThirdParty/Linux/bin/crashpad_handler
 Source/ThirdParty/Linux/bin/libsentry.dbg.so
 Source/ThirdParty/Linux/bin/libsentry.so
 Source/ThirdParty/Linux/include/
 Source/ThirdParty/Linux/include/sentry.h
-Source/ThirdParty/Linux/lib/
-Source/ThirdParty/Linux/lib/libbreakpad_client.a
 Source/ThirdParty/Mac/
 Source/ThirdParty/Mac/bin/
 Source/ThirdParty/Mac/bin/sentry.dylib

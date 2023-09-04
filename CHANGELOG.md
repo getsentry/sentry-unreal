@@ -9,7 +9,7 @@
 - Add extra crash context for native integration ([#342](https://github.com/getsentry/sentry-unreal/pull/342))
 - Add missing plugin settings ([#335](https://github.com/getsentry/sentry-unreal/pull/335))
 - Update event context categories for desktop ([#356](https://github.com/getsentry/sentry-unreal/pull/356))
-- Add breakpad support for Windows/Linux ([#363](https://github.com/getsentry/sentry-unreal/pull/363))
+- Add breakpad support for Windows ([#363](https://github.com/getsentry/sentry-unreal/pull/363))
 
 ### Fixes
 

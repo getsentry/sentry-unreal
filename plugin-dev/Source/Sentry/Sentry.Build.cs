@@ -115,11 +115,11 @@ public class Sentry : ModuleRules
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"), Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 
 			PublicRuntimeLibraryPaths.Add(PlatformBinariesPath);
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libbreakpad_client.a"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
