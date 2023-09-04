@@ -11,7 +11,6 @@ cmake --build "${sentryNativeRoot}/build" --target sentry --parallel
 
 mkdir "${sentryArtifactsDestination}/bin"
 mkdir "${sentryArtifactsDestination}/include"
-mkdir "${sentryArtifactsDestination}/lib"
 
 strip -s "${sentryNativeRoot}/build/libsentry.so" -w -K sentry_[^_]* -o "${sentryArtifactsDestination}/bin/libsentry.so"
 cp "${sentryNativeRoot}/build/libsentry.so" "${sentryArtifactsDestination}/bin/libsentry.dbg.so"
