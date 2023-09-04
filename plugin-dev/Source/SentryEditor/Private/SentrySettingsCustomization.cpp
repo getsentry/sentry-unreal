@@ -2,6 +2,7 @@
 
 #include "SentrySettingsCustomization.h"
 #include "SentrySettings.h"
+#include "SentryCliDownloader.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
@@ -10,11 +11,16 @@
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
+#include "Framework/Notifications/NotificationManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 #include "Widgets/Text/SRichTextBlock.h"
+#include "Widgets/Text/STextBlock.h"
 #include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Notifications/SNotificationList.h"
+#include "Widgets/Images/SImage.h"
 
 #if ENGINE_MAJOR_VERSION >= 5
 #include "Styling/AppStyle.h"
@@ -25,6 +31,11 @@
 const FString FSentrySettingsCustomization::DefaultCrcEndpoint = TEXT("https://datarouter.ol.epicgames.com/datarouter/api/v1/public/data");
 
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata);
+
+FSentrySettingsCustomization::FSentrySettingsCustomization()
+	: CliDownloader(MakeShareable(new FSentryCliDownloader()))
+{
+}
 
 TSharedRef<IDetailCustomization> FSentrySettingsCustomization::MakeInstance()
 {
@@ -45,11 +56,43 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 
 	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
 
+	TSharedRef<SWidget> CliMissingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Sentry CLI is not configured.")), FText::FromString(TEXT("Configure Now")));
+
+	TSharedRef<SWidget> CliDownloadingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Downloading Sentry CLI...")), FText());
+
+	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
+		FText::FromString(TEXT("Sentry CLI is configured.")), FText::FromString(TEXT("Reload")));
+
 #if ENGINE_MAJOR_VERSION >= 5
 	const ISlateStyle& Style = FAppStyle::Get();
 #else
 	const ISlateStyle& Style = FEditorStyle::Get();
 #endif
+
+	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
+		.WholeRowWidget
+		[
+			SNew(SBorder)
+			.Padding(8.0f)
+			[
+				SNew(SWidgetSwitcher)
+				.WidgetIndex(this, &FSentrySettingsCustomization::GetSentryCliStatusAsInt)
+				+SWidgetSwitcher::Slot()
+				[
+					CliMissingWidget
+				]
+				+SWidgetSwitcher::Slot()
+				[
+					CliDownloadingWidget
+				]
+				+SWidgetSwitcher::Slot()
+				[
+					CliConfiguredWidget
+				]
+			]
+		];
 
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
 		.WholeRowWidget
@@ -167,6 +210,66 @@ void FSentrySettingsCustomization::SetPropertiesUpdateHandler(IDetailLayoutBuild
 	AuthTokenHandle->SetOnPropertyValueChanged(OnUpdateAuthToken);
 }
 
+TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage)
+{
+	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SImage)
+#if ENGINE_MAJOR_VERSION >= 5
+			.Image(FAppStyle::Get().GetBrush(IconName))
+#else
+			.Image(FEditorStyle::Get().GetBrush(IconName))
+#endif
+		]
+
+		+SHorizontalBox::Slot()
+		.FillWidth(1.0f)
+		.Padding(16.0f, 0.0f)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.ColorAndOpacity(FLinearColor::White)
+			.ShadowColorAndOpacity(FLinearColor::Black)
+			.ShadowOffset(FVector2D::UnitVector)
+			.Text(Message)
+		];
+
+	if (!ButtonMessage.IsEmpty())
+	{
+		Result->AddSlot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.OnClicked_Lambda([=]() -> FReply
+				{
+					if(CliDownloader.IsValid() && CliDownloader->GetStatus() != ESentryCliStatus::Downloading)
+					{
+						CliDownloader->Download([](bool Result)
+						{
+							FNotificationInfo Info(FText::FromString(Result
+								? TEXT("Sentry CLI was configured successfully.")
+								: TEXT("Sentry CLI configuration failed.")));
+							Info.ExpireDuration = 3.0f;
+							Info.bUseSuccessFailIcons = true;
+
+							TSharedPtr<SNotificationItem> EditorNotification = FSlateNotificationManager::Get().AddNotification(Info);
+							EditorNotification->SetCompletionState(Result ? SNotificationItem::CS_Success : SNotificationItem::CS_Fail);
+						});
+					}
+
+					return FReply::Handled();
+				})
+				.Text(ButtonMessage)
+			];
+	}
+
+	return Result;
+}
+
 void FSentrySettingsCustomization::UpdateProjectName()
 {
 	FString Value;
@@ -231,9 +334,19 @@ void FSentrySettingsCustomization::UpdateCrcConfig(const FString& Url)
 	CrcConfigFile.SetString(*CrcSectionName, *DataRouterUrlKey, *DataRouterUrlValue, CrcConfigFilePath);
 }
 
-FString FSentrySettingsCustomization::GetCrcConfigPath()
+FString FSentrySettingsCustomization::GetCrcConfigPath() const
 {
 	return FPaths::Combine(FPaths::EngineDir(), TEXT("Programs"), TEXT("CrashReportClient"), TEXT("Config"), TEXT("DefaultEngine.ini"));
+}
+
+int32 FSentrySettingsCustomization::GetSentryCliStatusAsInt() const
+{
+	if(CliDownloader.IsValid())
+	{
+		return static_cast<int32>(CliDownloader->GetStatus());
+	}
+
+	return 0;
 }
 
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata)

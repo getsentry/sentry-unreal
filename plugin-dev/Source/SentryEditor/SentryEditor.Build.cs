@@ -24,7 +24,9 @@ public class SentryEditor : ModuleRules
                 "SlateCore",
                 "EditorStyle",
                 "Sentry",
-                "PropertyEditor"
+                "PropertyEditor",
+                "Projects",
+                "HTTP"
             }
         );
     }

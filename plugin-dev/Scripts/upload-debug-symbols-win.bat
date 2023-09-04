@@ -53,6 +53,11 @@ if not exist "%PropertiesFile%" (
     exit
 )
 
+if not exist "%CliExec%" (
+    echo Warning: Sentry: Sentry CLI is not configured in plugin settings. Skipping...
+    exit
+)
+
 echo Sentry: Upload started using PropertiesFile '%PropertiesFile%'
 
 set "SENTRY_PROPERTIES=%PropertiesFile%"

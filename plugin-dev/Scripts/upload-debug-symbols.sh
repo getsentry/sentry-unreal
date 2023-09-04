@@ -54,6 +54,11 @@ if [ ! -f "$SENTRY_PROPERTIES" ]; then
     exit
 fi
 
+if [ ! -f "$SENTRY_CLI_EXEC" ]; then
+    echo "Sentry: Sentry CLI is not configured in plugin settings. Skipping..."
+    exit
+fi
+
 echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
 
 chmod +x $SENTRY_CLI_EXEC

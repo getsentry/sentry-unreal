@@ -43,10 +43,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download CLI
-        shell: pwsh
-        run: ./scripts/download-cli.ps1
-
       - uses: actions/download-artifact@v2
         with:
           name: Android-sdk

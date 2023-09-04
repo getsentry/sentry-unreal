@@ -7,6 +7,7 @@ Resources/Icon128.png
 Scripts/
 Scripts/upload-debug-symbols-win.bat
 Scripts/upload-debug-symbols.sh
+sentry-cli.properties
 Sentry.uplugin
 Source/
 Source/Sentry/
@@ -151,9 +152,11 @@ Source/Sentry/Sentry_IOS_UPL.xml
 Source/Sentry/Sentry.Build.cs
 Source/SentryEditor/
 Source/SentryEditor/Private/
+Source/SentryEditor/Private/SentryCliDownloader.cpp
 Source/SentryEditor/Private/SentryEditorModule.cpp
 Source/SentryEditor/Private/SentrySettingsCustomization.cpp
 Source/SentryEditor/Public/
+Source/SentryEditor/Public/SentryCliDownloader.h
 Source/SentryEditor/Public/SentryEditorModule.h
 Source/SentryEditor/Public/SentrySettingsCustomization.h
 Source/SentryEditor/SentryEditor.Build.cs
@@ -163,9 +166,6 @@ Source/ThirdParty/Android/sentry-android-core-release.aar
 Source/ThirdParty/Android/sentry-android-ndk-release.aar
 Source/ThirdParty/Android/sentry.jar
 Source/ThirdParty/CLI/
-Source/ThirdParty/CLI/sentry-cli-Darwin-universal
-Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
-Source/ThirdParty/CLI/sentry-cli-Windows-x86_64.exe
 Source/ThirdParty/IOS/
 Source/ThirdParty/IOS/Sentry.embeddedframework.zip
 Source/ThirdParty/IOS/Sentry.framework/
