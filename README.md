@@ -32,8 +32,9 @@ The SDK complies with three latest engine versions.
 
 ## Known Limitations
 
-- Currently automatic crash capturing works only for mobile platforms. In order to capture crashes on Windows and Mac,
-[Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/)
+- On all platforms captured crashes are uploaded to Sentry only after relaunching the crashed app since the in-process breakpad handler cannot do this within the same session. The only exception is Linux for which the out-of-process crashpad handler is used and crashes are uploaded immediately.
+
+- To automatically capture crashes in Windows game builds that were made using engine versions prior to UE 5.2, the [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/) first.
   
 - Using UGS binaries requires tagging of files to ensure the crashpad_handler.exe and sentry.dll is present. For inclusion in build graph, you'd want something like this: 
 ```
