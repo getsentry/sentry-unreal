@@ -6,7 +6,8 @@ $exclude = @(
     '.gitkeep',
     '.DS_Store',
     'Binaries',
-    'Intermediate'
+    'Intermediate',
+    'sentry-cli-*'
 )
 
 Copy-Item "plugin-dev/*" "package-release/" -Exclude $exclude -Recurse
