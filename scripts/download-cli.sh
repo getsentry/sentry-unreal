@@ -6,7 +6,13 @@ function getProperty {
 }
 
 baseUrl="$(getProperty 'repo')/releases/download/$(getProperty 'version')/sentry-cli-"
-cd "$(dirname $0)/../plugin-dev/Source/ThirdParty/CLI"
+targetDir="$(dirname $0)/../plugin-dev/Source/ThirdParty/CLI"
+
+if ! [ -d "$targetDir" ]; then
+    mkdir $targetDir
+fi
+
+cd $targetDir
 
 # Remove previous contents of the directory (remove all ignored files).
 git clean -fXd .
