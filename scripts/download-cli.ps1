@@ -5,6 +5,11 @@ $platforms = @('Darwin-universal', 'Linux-x86_64', 'Windows-x86_64')
 $targetDir = "$PSScriptRoot/../plugin-dev/Source/ThirdParty/CLI"
 $baseUrl = "$($conf.repo)/releases/download/$($conf.version)/sentry-cli-"
 
+if (-not (Test-Path $targetDir))
+{
+    New-Item $targetDir -ItemType Directory > $null
+}
+
 # Remove previous contents of the directory (remove all ignored files).
 git clean -fXd $targetDir
 
