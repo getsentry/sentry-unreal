@@ -141,9 +141,14 @@ jobs:
           # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
           df -h
 
+      - name: Log in to the Docker container registry
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
       - name: Start Docker container
         run: |
-          echo ${{ secrets.DOCKER_TOKEN }}  >> "$GITHUB_OUTPUT" | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin << "$GITHUB_OUTPUT"
           # We start the container with the user ID of the parent GH action user to avoid permission issues on volume.
           uid=$(id -u) # the GH action user ID
           gid=1000     # the ue4 group in the docker container
