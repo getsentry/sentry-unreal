@@ -43,32 +43,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: Android-sdk
           path: plugin-dev/Source/ThirdParty/Android
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: Android-libraries
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: IOS-sdk
           path: plugin-dev/Source/ThirdParty/IOS
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: Mac-sdk
           path: plugin-dev/Source/ThirdParty/Mac
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: Linux-sdk
           path: plugin-dev/Source/ThirdParty/Linux
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: Win64-sdk
           path: plugin-dev/Source/ThirdParty/Win64
@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ github.sha }}
 
@@ -176,10 +176,9 @@ jobs:
           ue4 setroot /home/ue4/UnrealEngine '
 
       - name: Download package
-        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        uses: actions/download-artifact@v3
         with:
           name: ${{ github.sha }}
-          wait-timeout: 600
 
       - uses: actions/checkout@v3
         with:
