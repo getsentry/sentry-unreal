@@ -141,7 +141,7 @@ jobs:
           # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
           df -h
 
-      - name: Log in to the Docker Container registry
+      - name: Log in to the Docker сontainer registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
