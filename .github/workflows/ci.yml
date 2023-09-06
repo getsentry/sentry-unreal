@@ -182,10 +182,9 @@ jobs:
           ue4 setroot /home/ue4/UnrealEngine '
 
       - name: Download package
-        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        uses: actions/download-artifact@v3
         with:
           name: ${{ github.sha }}
-          wait-timeout: 600
 
       - uses: actions/checkout@v3
         with:
