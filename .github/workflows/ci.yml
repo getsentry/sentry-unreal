@@ -143,7 +143,7 @@ jobs:
 
       - name: Start Docker container
         run: |
-          docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          echo ${{ secrets.DOCKER_TOKEN }}  >> "$GITHUB_OUTPUT" | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           # We start the container with the user ID of the parent GH action user to avoid permission issues on volume.
           uid=$(id -u) # the GH action user ID
           gid=1000     # the ue4 group in the docker container
