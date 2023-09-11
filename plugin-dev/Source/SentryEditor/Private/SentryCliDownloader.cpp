@@ -23,7 +23,7 @@ void FSentryCliDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 {
 	SentryCliDownloadRequest = FHttpModule::Get().CreateRequest();
 
-	SentryCliDownloadRequest->OnProcessRequestComplete().BindLambda([=](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+	SentryCliDownloadRequest->OnProcessRequestComplete().BindLambda([this, OnCompleted](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 	{
 		if (!bSuccess || !Response.IsValid())
 		{

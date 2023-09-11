@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+###
+
+- Fix errors caused by Cpp20 adoption in UE 5.3 ([#377](https://github.com/getsentry/sentry-unreal/pull/377))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.10.0 to v8.11.0 ([#367](https://github.com/getsentry/sentry-unreal/pull/367))

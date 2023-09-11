@@ -359,7 +359,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 
 	if(Settings->AutomaticBreadcrumbs.bOnMapLoadingStarted)
 	{
-		PreLoadMapDelegate = FCoreUObjectDelegates::PreLoadMap.AddLambda([=](const FString& MapName)
+		PreLoadMapDelegate = FCoreUObjectDelegates::PreLoadMap.AddLambda([this](const FString& MapName)
 		{
 			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"),
 				{{TEXT("Map"), MapName}}, ESentryLevel::Info);
@@ -368,7 +368,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 
 	if(Settings->AutomaticBreadcrumbs.bOnMapLoaded)
 	{
-		PostLoadMapDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda([=](UWorld* World)
+		PostLoadMapDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda([this](UWorld* World)
 		{
 			if (World)
 			{

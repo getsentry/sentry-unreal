@@ -165,7 +165,7 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Center)
 					.ContentPadding(FMargin(8, 2))
-					.OnClicked_Lambda([=]() -> FReply
+					.OnClicked_Lambda([this, CrashReporterUrlHandle]() -> FReply
 					{
 						FString CrcEndpoint;
 						CrashReporterUrlHandle->GetValue(CrcEndpoint);
@@ -183,7 +183,7 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Center)
 					.ContentPadding(FMargin(8, 2))
-					.OnClicked_Lambda([=]() -> FReply
+					.OnClicked_Lambda([this]() -> FReply
 					{
 						UpdateCrcConfig(DefaultCrcEndpoint);
 						return FReply::Handled();
@@ -244,7 +244,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 			.VAlign(VAlign_Center)
 			[
 				SNew(SButton)
-				.OnClicked_Lambda([=]() -> FReply
+				.OnClicked_Lambda([this]() -> FReply
 				{
 					if(CliDownloader.IsValid() && CliDownloader->GetStatus() != ESentryCliStatus::Downloading)
 					{
