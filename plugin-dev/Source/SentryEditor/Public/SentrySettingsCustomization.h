@@ -4,7 +4,7 @@
 
 #include "IDetailCustomization.h"
 
-class FSentryCliDownloader;
+class FSentrySymToolsDownloader;
 class IPropertyHandle;
 class FSlateHyperlinkRun;
 class SWidget;
@@ -42,7 +42,7 @@ private:
 	TSharedPtr<IPropertyHandle> OrganizationNameHandle;
 	TSharedPtr<IPropertyHandle> AuthTokenHandle;
 
-	TSharedPtr<FSentryCliDownloader> CliDownloader;
+	TSharedPtr<FSentrySymToolsDownloader> CliDownloader;
 
 	static const FString DefaultCrcEndpoint;
 };

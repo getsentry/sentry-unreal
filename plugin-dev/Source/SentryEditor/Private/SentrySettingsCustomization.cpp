@@ -2,7 +2,7 @@
 
 #include "SentrySettingsCustomization.h"
 #include "SentrySettings.h"
-#include "SentryCliDownloader.h"
+#include "SentrySymToolsDownloader.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
@@ -33,7 +33,7 @@ const FString FSentrySettingsCustomization::DefaultCrcEndpoint = TEXT("https://d
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata);
 
 FSentrySettingsCustomization::FSentrySettingsCustomization()
-	: CliDownloader(MakeShareable(new FSentryCliDownloader()))
+	: CliDownloader(MakeShareable(new FSentrySymToolsDownloader()))
 {
 }
 
@@ -57,13 +57,13 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
 
 	TSharedRef<SWidget> CliMissingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Sentry CLI is not configured.")), FText::FromString(TEXT("Configure Now")));
+		FText::FromString(TEXT("Sentry symbol upload tools are not configured.")), FText::FromString(TEXT("Configure Now")));
 
 	TSharedRef<SWidget> CliDownloadingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Downloading Sentry CLI...")), FText());
+		FText::FromString(TEXT("Downloading Sentry symbol upload tools...")), FText());
 
 	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
-		FText::FromString(TEXT("Sentry CLI is configured.")), FText::FromString(TEXT("Reload")));
+		FText::FromString(TEXT("Sentry symbol upload tools are configured.")), FText::FromString(TEXT("Reload")));
 
 #if ENGINE_MAJOR_VERSION >= 5
 	const ISlateStyle& Style = FAppStyle::Get();
@@ -246,7 +246,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 				SNew(SButton)
 				.OnClicked_Lambda([this]() -> FReply
 				{
-					if(CliDownloader.IsValid() && CliDownloader->GetStatus() != ESentryCliStatus::Downloading)
+					if(CliDownloader.IsValid() && CliDownloader->GetStatus() != ESentrySymToolsStatus::Downloading)
 					{
 						CliDownloader->Download([](bool Result)
 						{
