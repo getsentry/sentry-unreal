@@ -163,7 +163,6 @@ Source/ThirdParty/Android/
 Source/ThirdParty/Android/sentry-android-core-release.aar
 Source/ThirdParty/Android/sentry-android-ndk-release.aar
 Source/ThirdParty/Android/sentry.jar
-Source/ThirdParty/CLI/
 Source/ThirdParty/IOS/
 Source/ThirdParty/IOS/Sentry.embeddedframework.zip
 Source/ThirdParty/IOS/Sentry.framework/
