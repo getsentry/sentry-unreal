@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-###
+### Features
+
+- Add symbol upload scripts downloading tool ([#385](https://github.com/getsentry/sentry-unreal/pull/385))
+
+### Fixes
 
 - Fix errors caused by Cpp20 adoption in UE 5.3 ([#377](https://github.com/getsentry/sentry-unreal/pull/377))
 

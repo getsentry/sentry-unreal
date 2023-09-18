@@ -7,7 +7,9 @@ $exclude = @(
     '.DS_Store',
     'Binaries',
     'Intermediate',
-    'sentry-cli-*'
+    'sentry-cli-*',
+    'upload-debug-symbols-win.bat',
+    'upload-debug-symbols.sh'
 )
 
 Copy-Item "plugin-dev/*" "package-release/" -Exclude $exclude -Recurse

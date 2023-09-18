@@ -31,13 +31,14 @@
 	"PostBuildSteps":
 	{
 		"Mac": [
-			"sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
+			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
 		],
 		"Linux": [
-			"sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
+			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
 		],
 		"Win64": [
-			"call \"$(PluginDir)/Scripts/upload-debug-symbols-win.bat\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\""
+			"set SYM_UPLOAD_SCRIPT=\"$(PluginDir)/Scripts/upload-debug-symbols-win.bat\"",
+			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Warning: Sentry: Symbol upload script is missing. Skipping post build step.\n)"
 		]
 	}
 }
