@@ -152,13 +152,13 @@ Source/Sentry/Sentry_IOS_UPL.xml
 Source/Sentry/Sentry.Build.cs
 Source/SentryEditor/
 Source/SentryEditor/Private/
-Source/SentryEditor/Private/SentryCliDownloader.cpp
 Source/SentryEditor/Private/SentryEditorModule.cpp
 Source/SentryEditor/Private/SentrySettingsCustomization.cpp
+Source/SentryEditor/Private/SentrySymToolsDownloader.cpp
 Source/SentryEditor/Public/
-Source/SentryEditor/Public/SentryCliDownloader.h
 Source/SentryEditor/Public/SentryEditorModule.h
 Source/SentryEditor/Public/SentrySettingsCustomization.h
+Source/SentryEditor/Public/SentrySymToolsDownloader.h
 Source/SentryEditor/SentryEditor.Build.cs
 Source/ThirdParty/
 Source/ThirdParty/Android/
