@@ -251,8 +251,8 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 						CliDownloader->Download([](bool Result)
 						{
 							FNotificationInfo Info(FText::FromString(Result
-								? TEXT("Sentry CLI was configured successfully.")
-								: TEXT("Sentry CLI configuration failed.")));
+								? TEXT("Sentry symbol upload tools was configured successfully.")
+								: TEXT("Sentry symbol upload tools configuration failed.")));
 							Info.ExpireDuration = 3.0f;
 							Info.bUseSuccessFailIcons = true;
 
