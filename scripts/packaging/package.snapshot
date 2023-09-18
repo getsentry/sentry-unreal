@@ -5,8 +5,6 @@ LICENSE
 Resources/
 Resources/Icon128.png
 Scripts/
-Scripts/upload-debug-symbols-win.bat
-Scripts/upload-debug-symbols.sh
 sentry-cli.properties
 Sentry.uplugin
 Source/
@@ -165,6 +163,7 @@ Source/ThirdParty/Android/
 Source/ThirdParty/Android/sentry-android-core-release.aar
 Source/ThirdParty/Android/sentry-android-ndk-release.aar
 Source/ThirdParty/Android/sentry.jar
+Source/ThirdParty/CLI/
 Source/ThirdParty/IOS/
 Source/ThirdParty/IOS/Sentry.embeddedframework.zip
 Source/ThirdParty/IOS/Sentry.framework/
