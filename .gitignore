@@ -21,7 +21,8 @@ plugin-dev/Intermediate/*
 .DS_Store
 
 # Ignore package release
-package-release/
+package-release-github/
+package-release-marketplace/
 sentry-unreal-*.zip
 
 # Prebuilt libraries & artifacts are collected in CI.

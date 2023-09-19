@@ -29,14 +29,20 @@ jobs:
       # See discussion in https://github.com/getsentry/sentry-unreal/pull/173
       runsOn: ubuntu-20.04
 
-  windows-sdk:
+  windows-crashpad-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
-      target: Win64
+      target: Win64-crashpad
+      runsOn: windows-latest
+
+  windows-breakpad-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Win64-breakpad
       runsOn: windows-latest
 
   build:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -70,8 +76,13 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: Win64-sdk
-          path: plugin-dev/Source/ThirdParty/Win64
+          name: Win64-crashpad-sdk
+          path: plugin-dev/Source/ThirdParty/Win64/Crashpad
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: Win64-breakpad-sdk
+          path: plugin-dev/Source/ThirdParty/Win64/Breakpad
 
       - name: Prepare Sentry packages for release
         shell: pwsh
@@ -185,7 +196,7 @@ jobs:
           path: checkout
 
       - name: Extract package to ${{ matrix.app }}/Plugins
-        run: unzip sentry-unreal-*-engine${{ matrix.unreal }}.zip -d checkout/${{ matrix.app }}/Plugins/sentry
+        run: unzip sentry-unreal-*-engine${{ matrix.unreal }}-github.zip -d checkout/${{ matrix.app }}/Plugins/sentry
 
       - name: Set permissions for ${{ matrix.app }}
         # sentry-native requires write access to sample project directory in order to initialize itself properly

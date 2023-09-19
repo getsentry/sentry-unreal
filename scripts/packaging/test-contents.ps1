@@ -1,56 +1,64 @@
-# Verifies the contents of the UPM package against a snapshot file
-# 'dotnet build' and 'pack.ps1' must have already been run
+# Verifies the contents of the plugin package against a snapshot files
+# for two publishing platforms - GitHub and UE Marketplace.
+# 'pack.ps1' must have already been run.
 
-# To accept a new snapshot file, run 'pwsh ./test.ps1 accept'
+# To accept a new snapshot file, run 'pwsh ./test-contents.ps1 accept'
 
 $ErrorActionPreference = "Stop"
 
 $projectRoot = "$PSScriptRoot/../.."
-$snapshotFile = "$PSScriptRoot/package.snapshot"
 
-if (-not(Test-Path -Path $snapshotFile))
+function testFiles([string] $publishingPlatform)
 {
-    Write-Host "Snapshot file '$snapshotFile' not found.
-Can't compare package contents against baseline."
-    exit 2
-}
+    $snapshotFile = "$PSScriptRoot/package-$publishingPlatform.snapshot"
 
-$packages = Get-ChildItem "$projectRoot/sentry-unreal-*.zip"
-$expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
-if ($packages.Length -ne $expectedPackagesCount)
-{
-    throw "Invalid number of packages - expected $expectedPackagesCount, got $packages"
-}
-
-foreach ($packageFile in $packages)
-{
-    Write-Host "Testing $packageFile contents"
-    $zip = [IO.Compression.ZipFile]::OpenRead($packageFile)
-    try
+    if (-not(Test-Path -Path $snapshotFile))
     {
-        $snapshotContent = $zip.Entries.FullName.Replace("\", "/") | Sort-Object
-        if ($args.Count -gt 0 -and $args[0] -eq "accept")
+        Write-Host "Snapshot file '$snapshotFile' not found.
+    Can't compare package contents against baseline."
+        exit 2
+    }
+
+    $packages = Get-ChildItem "$projectRoot/sentry-unreal-*-$publishingPlatform.zip"
+    $expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
+    if ($packages.Length -ne $expectedPackagesCount)
+    {
+        throw "Invalid number of packages - expected $expectedPackagesCount, got $packages"
+    }
+
+    foreach ($packageFile in $packages)
+    {
+        Write-Host "Testing $packageFile contents"
+        $zip = [IO.Compression.ZipFile]::OpenRead($packageFile)
+        try
         {
-            # Override the snapshot file with the current package contents
-            $snapshotContent | Out-File $snapshotFile
+            $snapshotContent = $zip.Entries.FullName.Replace("\", "/") | Sort-Object
+            if ($args.Count -gt 0 -and $args[0] -eq "accept")
+            {
+                # Override the snapshot file with the current package contents
+                $snapshotContent | Out-File $snapshotFile
+            }
+            $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
+            if ($result.count -eq 0)
+            {
+                Write-Host "  PASS - package content matches the snapshot."
+            }
+            else
+            {
+                Write-Host "  FAIL - package content does not match the snapshot."
+                $result | Format-Table -AutoSize
+                exit 3
+            }
         }
-        $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
-        if ($result.count -eq 0)
+        finally
         {
-            Write-Host "  PASS - package content matches the snapshot."
-        }
-        else
-        {
-            Write-Host "  FAIL - package content does not match the snapshot."
-            $result | Format-Table -AutoSize
-            exit 3
+            $zip.Dispose()
         }
     }
-    finally
-    {
-        $zip.Dispose()
-    }
 }
+
+testFiles("github")
+testFiles("marketplace")
 
 # TODO
 # $androidLibsDir = "$projectRoot/modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/"
