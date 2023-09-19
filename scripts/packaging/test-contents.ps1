@@ -8,6 +8,8 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = "$PSScriptRoot/../.."
 
+$accept = $args.Count -gt 0 -and $args[0] -eq "accept"
+
 function testFiles([string] $publishingPlatform)
 {
     $snapshotFile = "$PSScriptRoot/package-$publishingPlatform.snapshot"
@@ -33,7 +35,7 @@ function testFiles([string] $publishingPlatform)
         try
         {
             $snapshotContent = $zip.Entries.FullName.Replace("\", "/") | Sort-Object
-            if ($args.Count -gt 0 -and $args[0] -eq "accept")
+            if ($accept)
             {
                 # Override the snapshot file with the current package contents
                 $snapshotContent | Out-File $snapshotFile
