@@ -81,12 +81,12 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: Win64-crashpad-sdk
-          path: plugin-dev/Source/ThirdParty/Win64/Crashpad
+          path: plugin-dev/Source/ThirdParty/Win64-Crashpad
 
       - uses: actions/download-artifact@v3
         with:
           name: Win64-breakpad-sdk
-          path: plugin-dev/Source/ThirdParty/Win64/Breakpad
+          path: plugin-dev/Source/ThirdParty/Win64-Breakpad
 
       - name: Prepare Sentry packages for release
         shell: pwsh
