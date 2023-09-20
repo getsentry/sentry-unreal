@@ -96,15 +96,29 @@ public class Sentry : ModuleRules
 		// Additional routine for Windows
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			bool CrashpadExists = File.Exists(Path.Combine(PlatformThirdPartyPath, "Crashpad", "bin", "crashpad_handler.exe"));
+
+			string CrashCapturingBackend = CrashpadExists ? "Crashpad" : "Breakpad";
+
+			string WindowsThirdPartyPath = $"{PlatformThirdPartyPath}-{CrashCapturingBackend}";
+
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dll"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dll"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.pdb"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.pdb"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dll"), Path.Combine(WindowsThirdPartyPath, "bin", "sentry.dll"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.pdb"), Path.Combine(WindowsThirdPartyPath, "bin", "sentry.pdb"));
 
 			PublicDelayLoadDLLs.Add("sentry.dll");
 
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "sentry.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "breakpad_client.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
+
+			if (CrashpadExists)
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(WindowsThirdPartyPath, "bin", "crashpad_handler.exe"));
+			}
+			else
+			{
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "breakpad_client.lib"));
+			}
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}

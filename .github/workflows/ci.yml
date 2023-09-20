@@ -32,13 +32,13 @@ jobs:
   windows-crashpad-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
-      target: Win64-crashpad
+      target: Win64-Crashpad
       runsOn: windows-latest
 
   windows-breakpad-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
-      target: Win64-breakpad
+      target: Win64-Breakpad
       runsOn: windows-latest
 
   build:

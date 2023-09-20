@@ -34,7 +34,7 @@ if (-not (Test-Path $outDir))
     New-Item $outDir -ItemType Directory > $null
 }
 
-$sdks = @("Android", "IOS", "Linux", "Mac", "Win64")
+$sdks = @("Android", "IOS", "Linux", "Mac", "Win64-Crashpad", "Win64-Breakpad")
 foreach ($sdk in $sdks)
 {
     $sdkDir = "$outDir/$sdk"

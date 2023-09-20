@@ -23,7 +23,7 @@ if [[ "$runId" == "" ]]; then
     exit 1
 fi
 
-declare -a sdks=("Android" "IOS" "Linux" "Mac" "Win64")
+declare -a sdks=("Android" "IOS" "Linux" "Mac" "Win64-Crashpad" "Win64-Breakpad")
 for sdk in "${sdks[@]}"; do
     echo "Downloading $sdk SDK to $PWD/$sdk ..."
     rm -rf "./$sdk"
