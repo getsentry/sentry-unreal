@@ -32,8 +32,8 @@ done
 
 declare -a winSdks=("Crashpad" "Breakpad")
 for winSdk in "${winSdks[@]}"; do
-    echo "Downloading $winSdk SDK to $PWD/Win64/$winSdk ..."
-    rm -rf "./$sdk"
-    gh run download $runId -n "Win64-$winSdk-sdk" -D $sdk
-    find $sdk -name "crashpad_handler" -exec chmod +x {} \;
+    echo "Downloading Win64-$winSdk SDK to $PWD/Win64/$winSdk ..."
+    rm -rf "./$winSdks"
+    gh run download $runId -n "Win64-$winSdk-sdk" -D Win64-$winSdk
+    find Win64-$winSdk -name "crashpad_handler" -exec chmod +x {} \;
 done
