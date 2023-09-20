@@ -23,10 +23,17 @@ if [[ "$runId" == "" ]]; then
     exit 1
 fi
 
-declare -a sdks=("Android" "IOS" "Linux" "Mac" "Win64-Crashpad" "Win64-Breakpad")
+declare -a sdks=("Android" "IOS" "Linux" "Mac")
 for sdk in "${sdks[@]}"; do
     echo "Downloading $sdk SDK to $PWD/$sdk ..."
     rm -rf "./$sdk"
     gh run download $runId -n "$sdk-sdk" -D $sdk
+done
+
+declare -a winSdks=("Crashpad" "Breakpad")
+for winSdk in "${winSdks[@]}"; do
+    echo "Downloading $winSdk SDK to $PWD/Win64/$winSdk ..."
+    rm -rf "./$sdk"
+    gh run download $runId -n "Win64-$winSdk-sdk" -D $sdk
     find $sdk -name "crashpad_handler" -exec chmod +x {} \;
 done

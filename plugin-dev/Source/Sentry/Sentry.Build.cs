@@ -98,9 +98,7 @@ public class Sentry : ModuleRules
 		{
 			bool CrashpadExists = File.Exists(Path.Combine(PlatformThirdPartyPath, "Crashpad", "bin", "crashpad_handler.exe"));
 
-			string CrashCapturingBackend = CrashpadExists ? "Crashpad" : "Breakpad";
-
-			string WindowsThirdPartyPath = $"{PlatformThirdPartyPath}-{CrashCapturingBackend}";
+			string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
 
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
