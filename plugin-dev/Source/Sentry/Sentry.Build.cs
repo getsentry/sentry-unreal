@@ -87,12 +87,6 @@ public class Sentry : ModuleRules
 			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Sentry_Android_UPL.xml"));
 		}
 
-		// Additional routine for Desktop platforms
-		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-		}
-
 		// Additional routine for Windows
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
@@ -100,6 +94,7 @@ public class Sentry : ModuleRules
 
 			string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
 
+			PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dll"), Path.Combine(WindowsThirdPartyPath, "bin", "sentry.dll"));
@@ -124,6 +119,7 @@ public class Sentry : ModuleRules
 		// Additional routine for Linux
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"), Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
@@ -139,6 +135,7 @@ public class Sentry : ModuleRules
 		// Additional routine for Mac
 		if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
