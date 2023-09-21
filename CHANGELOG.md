@@ -5,6 +5,7 @@
 ### Features
 
 - Add symbol upload scripts downloading tool ([#385](https://github.com/getsentry/sentry-unreal/pull/385))
+- Add support of two plugin versions for GitHub/Marketplace([#387](https://github.com/getsentry/sentry-unreal/pull/387))
 
 ### Fixes
 

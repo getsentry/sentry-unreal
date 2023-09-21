@@ -87,24 +87,31 @@ public class Sentry : ModuleRules
 			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Sentry_Android_UPL.xml"));
 		}
 
-		// Additional routine for Desktop platforms
-		if (Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-		}
-
 		// Additional routine for Windows
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			bool CrashpadExists = File.Exists(Path.Combine(PlatformThirdPartyPath, "Crashpad", "bin", "crashpad_handler.exe"));
+
+			string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
+
+			PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dll"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dll"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.pdb"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.pdb"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dll"), Path.Combine(WindowsThirdPartyPath, "bin", "sentry.dll"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.pdb"), Path.Combine(WindowsThirdPartyPath, "bin", "sentry.pdb"));
 
 			PublicDelayLoadDLLs.Add("sentry.dll");
 
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "sentry.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "breakpad_client.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
+
+			if (CrashpadExists)
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(WindowsThirdPartyPath, "bin", "crashpad_handler.exe"));
+			}
+			else
+			{
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "breakpad_client.lib"));
+			}
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
@@ -112,6 +119,7 @@ public class Sentry : ModuleRules
 		// Additional routine for Linux
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"), Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
@@ -127,6 +135,7 @@ public class Sentry : ModuleRules
 		// Additional routine for Mac
 		if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
