@@ -18,6 +18,8 @@ changelog of every version.
 
 [releases]: https://github.com/getsentry/sentry-unreal/releases
 
+If manual download from the [Releases] page is a preferred way for plugin integration using the package with the `github` suffix in its name is recommended.
+
 ## Supported Platforms and Unreal Engine version
 
 The SDK currently supports and is tested on the following platforms:
@@ -32,7 +34,7 @@ The SDK complies with three latest engine versions.
 
 ## Known Limitations
 
-- On all platforms captured crashes are uploaded to Sentry only after relaunching the crashed app since the in-process breakpad handler cannot do this within the same session. The only exception is Linux for which the out-of-process crashpad handler is used and crashes are uploaded immediately.
+- On all platforms captured crashes are uploaded to Sentry only after relaunching the crashed app since the in-process handler cannot do this within the same session. The only exceptions are Windows (if using the GitHub package) and Linux for which the out-of-process crashpad handler is used and crashes are uploaded immediately.
 
 - To automatically capture crashes in Windows game builds that were made using engine versions prior to UE 5.2, the [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/) first.
   
