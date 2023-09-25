@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix issue with missing Sentry.framework in iOS app bundle UE 5.3 ([#390](https://github.com/getsentry/sentry-unreal/pull/390))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.11.0 to v8.12.0 ([#386](https://github.com/getsentry/sentry-unreal/pull/386))
