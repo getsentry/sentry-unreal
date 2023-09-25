@@ -14,6 +14,9 @@
 - Bump CLI from v2.20.7 to v2.21.1 ([#389](https://github.com/getsentry/sentry-unreal/pull/389), [#391](https://github.com/getsentry/sentry-unreal/pull/391))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2211)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.20.7...2.21.1)
+- Bump Cocoa SDK (iOS) from v8.12.0 to v8.13.0 ([#392](https://github.com/getsentry/sentry-unreal/pull/392))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8130)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.12.0...8.13.0)
 
 ## 0.10.0
 
