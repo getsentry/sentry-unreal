@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix issue with missing Sentry.framework in iOS app bundle UE 5.3 ([#390](https://github.com/getsentry/sentry-unreal/pull/390))
+- Fix dependencies loading for desktop ([#393](https://github.com/getsentry/sentry-unreal/pull/393))
 
 ### Dependencies
 

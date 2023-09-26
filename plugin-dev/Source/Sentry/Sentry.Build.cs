@@ -58,8 +58,8 @@ public class Sentry : ModuleRules
 			}
 		);
 
-		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "ThirdParty", Target.Platform.ToString()));
-		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "Binaries", Target.Platform.ToString()));
+		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
+		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
 
 		// Additional routine for iOS
 		if (Target.Platform == UnrealTargetPlatform.IOS)
@@ -127,7 +127,7 @@ public class Sentry : ModuleRules
 
 			PublicRuntimeLibraryPaths.Add(PlatformBinariesPath);
 
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
