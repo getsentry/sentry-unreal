@@ -42,7 +42,7 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %d"), Settings->InitAutomatically ? TEXT("true") : TEXT("false"));
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %s"), Settings->InitAutomatically ? TEXT("true") : TEXT("false"));
 
 	if (Settings->InitAutomatically)
 	{
