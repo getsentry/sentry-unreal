@@ -39,3 +39,4 @@ plugin-dev/Source/ThirdParty/CLI/*
 # Sample
 sample/.sentry-native
 sample/.vsconfig
+sample/SentryPlayground.uproject.DotSettings.user
