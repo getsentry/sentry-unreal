@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystems/EngineSubsystem.h"
 
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
@@ -25,7 +25,7 @@ DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, 
  * Sentry main API entry point.
  */
 UCLASS()
-class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
+class SENTRY_API USentrySubsystem : public UEngineSubsystem
 {
 	GENERATED_BODY()
 public:
