@@ -121,6 +121,10 @@ TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t
 	TMap<FString, FString> unrealMap;
 
 	FString mapJsonString = FString(sentry_value_to_json(map));
+	if(mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
+	{
+		return unrealMap;
+	}
 
 	TSharedPtr<FJsonObject> jsonObject;
 	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
@@ -146,6 +150,10 @@ TArray<FString> SentryConvertorsDesktop::StringArrayToUnreal(sentry_value_t arra
 	TArray<FString> unrealArray;
 
 	FString arrayJsonString = FString(sentry_value_to_json(array));
+	if(arrayJsonString.IsEmpty() || arrayJsonString.Equals(TEXT("null")))
+	{
+		return unrealArray;
+	}
 
 	TArray<TSharedPtr<FJsonValue>> jsonArray;
 	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(arrayJsonString);
