@@ -45,7 +45,7 @@ private:
 
 	TSharedPtr<SentryCrashReporter> crashReporter;
 
-	TArray<TSharedPtr<SentryScopeDesktop, ESPMode::ThreadSafe>> scopeStack;
+	TArray<TSharedPtr<SentryScopeDesktop>> scopeStack;
 
 	bool isEnabled;
 

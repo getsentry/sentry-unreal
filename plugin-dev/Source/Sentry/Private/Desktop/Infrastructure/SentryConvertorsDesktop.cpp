@@ -191,7 +191,7 @@ TArray<uint8> SentryConvertorsDesktop::SentryEnvelopeToByteArray(sentry_envelope
 	size_t size;
 	ANSICHAR* serializedEnvelopeStr = sentry_envelope_serialize(envelope, &size);
 
-	TArray<uint8> envelopeData = TArray(reinterpret_cast<uint8*>(serializedEnvelopeStr), size);
+	TArray<uint8> envelopeData = TArray<uint8>(reinterpret_cast<uint8*>(serializedEnvelopeStr), size);
 
 	sentry_string_free(serializedEnvelopeStr);
 
