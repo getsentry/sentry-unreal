@@ -135,9 +135,9 @@ void SentryScopeSpec::Define()
 
 			TestTrue("Scope dist", SentryScope->GetDist().IsEmpty());
 			TestTrue("Scope environment", SentryScope->GetEnvironment().IsEmpty());
-			TestTrue("Scope fingerprint", SentryScope->GetFingerprint().IsEmpty());
-			TestTrue("Scope tags", SentryScope->GetTags().IsEmpty());
-			TestTrue("Scope extras", SentryScope->GetExtras().IsEmpty());
+			TestTrue("Scope fingerprint", SentryScope->GetFingerprint().Num() == 0);
+			TestTrue("Scope tags", SentryScope->GetTags().Num() == 0);
+			TestTrue("Scope extras", SentryScope->GetExtras().Num() == 0);
 		});
 	});
 

@@ -311,7 +311,7 @@ USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
 
 TSharedPtr<SentryScopeDesktop> SentrySubsystemDesktop::GetCurrentScope()
 {
-	if(scopeStack.IsEmpty())
+	if(scopeStack.Num() == 0)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Scope stack is empty."));
 		return nullptr;
