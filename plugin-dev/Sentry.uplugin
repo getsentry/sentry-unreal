@@ -38,7 +38,7 @@
 		],
 		"Win64": [
 			"set SYM_UPLOAD_SCRIPT=\"$(PluginDir)/Scripts/upload-debug-symbols-win.bat\"",
-			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Warning: Sentry: Symbol upload script is missing. Skipping post build step.\n)"
+			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Warning: Sentry: Symbol upload script is missing. Skipping post build step.\n)"
 		]
 	}
 }
