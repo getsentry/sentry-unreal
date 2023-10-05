@@ -21,7 +21,6 @@ if "%TargetType%"=="Editor" (
 )
 
 if "%TargetPlatform%"=="Win64" (
-    set "TargetPlatform=Windows"
     set CliExec=%PluginPath%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
 ) else if "%TargetPlatform%"=="Linux" (
     set CliExec=%PluginPath%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
@@ -50,7 +49,12 @@ if /i "%IncludeSourceFiles%"=="True" (
 
 call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings EnableBuildPlatforms EnabledPlatforms
 if not "%EnabledPlatforms%"=="" (
-  set PlatformToCheck="bEnable%TargetPlatform%=False"
+  set PlatformToCheck=
+  if "%TargetPlatform%"=="Win64" (
+    set "PlatformToCheck=bEnableWindows=False"
+  ) else (
+    set "PlatformToCheck=bEnable%TargetPlatform%=False"
+  )
   call :FindString EnabledPlatforms PlatformToCheck IsPlatformDisabled
   if "!IsPlatformDisabled!"=="true" (
       echo "Sentry: Automatic symbols upload is disabled for build platform %TargetPlatform%. Skipping..."
