@@ -3,8 +3,26 @@
     <init>
         <log text="Sentry SDK Android UPL initialization"/>
 
-        <setBoolFromProperty result="bUploadSymbols" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="false" />
+        <setBoolFromProperty result="bUploadSymbolsAutomatically" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="false" />
         <setBoolFromProperty result="bIncludeSources" ini="Engine" section="/Script/Sentry.SentrySettings" property="IncludeSources" default="false" />
+
+        <setStringFromProperty result="enabledBuildPlatforms" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildPlatforms" default=""/>
+        <setStringFromProperty result="enabledBuildConfigurations" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildConfigurations" default=""/>
+        <setStringFromProperty result="enabledBuildTargetTypes" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildTargets" default=""/>
+        
+        <setBoolContains result="bCurrentPlatformDisabled" source="$S(enabledBuildPlatforms)" find="bEnableAndroid=False"/>
+        <setBoolContains result="bCurrentConfigurationDisabled" source="$S(enabledBuildConfigurations)" find="bEnable$S(Configuration)=False"/>
+
+        <setBoolOr result="bSkipUpload" arg1="$B(bCurrentPlatformDisabled)" arg2="$B(bCurrentConfigurationDisabled)"/>
+
+        <if condition="bSkipUpload">
+            <true>
+                <setBool result="bUploadSymbols" value="false"/>
+            </true>
+            <false>
+                <setBool result="bUploadSymbols" value="$B(bUploadSymbolsAutomatically)"/>
+            </false>
+        </if>
     </init>
 
     <prebuildCopies>

@@ -3,8 +3,9 @@
 targetPlatform=$1
 targetName=$2
 targetType=$3
-projectPath=$4
-pluginPath=$5
+targetConfig=$4
+projectPath=$5
+pluginPath=$6
 
 PROJECT_BINARIES_PATH=$projectPath/Binaries/$targetPlatform
 PLUGIN_BINARIES_PATH=$pluginPath/Source/ThirdParty/$targetPlatform
@@ -46,6 +47,33 @@ INCLUDE_SOURCES=$(awk -F "=" '/IncludeSources/ {print $2}' ${CONFIG_PATH}/Defaul
 CLI_ARGS=()
 if [ -z $INCLUDE_SOURCES -a $UPLOAD_SYMBOLS == "True" ]; then
     CLI_ARGS+=(--include-sources)
+fi
+
+ENABLED_PLATFORMS=$(grep "EnableBuildPlatforms" ${CONFIG_PATH}/DefaultEngine.ini | sed -n 's/^EnableBuildPlatforms=//p' | sed -e 's/^(\(.*\))$/\1/')
+if [ ! -z $ENABLED_PLATFORMS ]; then
+    PLATFORMS_ARRAY=$(echo "$ENABLED_PLATFORMS" | sed -e 's/,/ /g')
+    if [[ "${PLATFORMS_ARRAY[@]}" =~ "bEnable$targetPlatform=False" ]]; then
+        echo "Sentry: Automatic symbols upload is disabled for build platform $targetPlatform. Skipping..."
+        exit
+    fi
+fi
+
+ENABLED_TARGETS=$(grep "EnableBuildTargets" ${CONFIG_PATH}/DefaultEngine.ini | sed -n 's/^EnableBuildTargets=//p' | sed -e 's/^(\(.*\))$/\1/')
+if [ ! -z $ENABLED_TARGETS ]; then
+    TARGETS_ARRAY=$(echo "$ENABLED_TARGETS" | sed -e 's/,/ /g')
+    if [[ "${TARGETS_ARRAY[@]}" =~ "bEnable$targetType=False" ]]; then
+        echo "Sentry: Automatic symbols upload is disabled for target type $targetType. Skipping..."
+        exit
+    fi
+fi
+
+ENABLED_CONFIGS=$(grep "EnableBuildConfigurations" ${CONFIG_PATH}/DefaultEngine.ini | sed -n 's/^EnableBuildConfigurations=//p' | sed -e 's/^(\(.*\))$/\1/')
+if [ ! -z $ENABLED_CONFIGS ]; then
+    CONFIGS_ARRAY=$(echo "$ENABLED_CONFIGS" | sed -e 's/,/ /g')
+    if [[ "${CONFIGS_ARRAY[@]}" =~ "bEnable$targetConfig=False" ]]; then
+        echo "Sentry: Automatic symbols upload is disabled for build configuration $targetConfig. Skipping..."
+        exit
+    fi
 fi
 
 export SENTRY_PROPERTIES="$projectPath/sentry.properties"
