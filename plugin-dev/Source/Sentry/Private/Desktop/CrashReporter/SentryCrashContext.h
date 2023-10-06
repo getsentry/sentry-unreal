@@ -12,13 +12,11 @@
 class SentryScopeDesktop;
 
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
-class FSentryCrashContext
+struct FSentryCrashContext
 #else
-class FSentryCrashContext : public FGenericCrashContext
+struct FSentryCrashContext : public FGenericCrashContext
 #endif
 {
-	FSentryCrashContext();
-
 public:
 	static FSentryCrashContext Get();
 

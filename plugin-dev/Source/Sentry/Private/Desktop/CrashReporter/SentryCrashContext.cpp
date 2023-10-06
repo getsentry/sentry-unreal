@@ -9,11 +9,6 @@
 
 #if USE_SENTRY_NATIVE
 
-FSentryCrashContext::FSentryCrashContext()
-	: CrashContext()
-{
-}
-
 FSentryCrashContext FSentryCrashContext::Get()
 {
 	FSharedCrashContext SharedCrashContext;
