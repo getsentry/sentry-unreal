@@ -1,8 +1,11 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryCrashReporter.h"
+#include "SentryCrashContext.h"
 
 #include "SentryUser.h"
+#include "SentryDefines.h"
+
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -13,6 +16,16 @@
 SentryCrashReporter::SentryCrashReporter()
 {
 	crashReporterConfig = MakeShareable(new FJsonObject);
+
+	const FString sentryData = FSentryCrashContext::Get().GetGameData(TEXT("__sentry"));
+	if(!sentryData.IsEmpty())
+	{
+		const TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(*sentryData);
+		if (FJsonSerializer::Deserialize(jsonReader, crashReporterConfig) && crashReporterConfig.IsValid())
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("Faield to deserialize `__sentry` data stored in crash context object: %s"), *FString(sentryData));
+		}
+	}
 }
 
 void SentryCrashReporter::SetRelease(const FString& release)

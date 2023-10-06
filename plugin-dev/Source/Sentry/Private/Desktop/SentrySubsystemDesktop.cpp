@@ -57,8 +57,7 @@ sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t e
 {
 	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
 
-	FSentryCrashContext SentryCrashContext = FSentryCrashContext::Get();
-	SentryCrashContext.Apply(SentrySubsystem->GetCurrentScope());
+	FSentryCrashContext::Get().Apply(SentrySubsystem->GetCurrentScope());
 
 	return HandleBeforeSend(event, nullptr, closure);
 }
