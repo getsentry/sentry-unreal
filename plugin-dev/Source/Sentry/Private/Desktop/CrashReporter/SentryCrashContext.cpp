@@ -1,17 +1,28 @@
-﻿#include "SentryCrashContext.h"
+﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+
+#include "SentryCrashContext.h"
 
 #include "SentrySettings.h"
 #include "SentryModule.h"
 
 #include "Desktop/SentryScopeDesktop.h"
 
-#include "Runtime/Launch/Resources/Version.h"
-
 #if USE_SENTRY_NATIVE
 
-FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
-	: CrashContext(Context)
+FSentryCrashContext::FSentryCrashContext()
+	: CrashContext()
 {
+}
+
+FSentryCrashContext FSentryCrashContext::Get()
+{
+	FSharedCrashContext SharedCrashContext;
+	FGenericCrashContext::CopySharedCrashContext(SharedCrashContext);
+
+	FSentryCrashContext SentryCrashContext;
+	SentryCrashContext.CrashContext = SharedCrashContext;
+
+	return SentryCrashContext;
 }
 
 void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
@@ -45,6 +56,16 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 		Scope->SetExtraValue("Epic Account Id", SessionContext.EpicAccountId);
 		Scope->SetExtraValue("Login Id", SessionContext.LoginIdStr);
 	}
+}
+
+FString FSentryCrashContext::GetGameData(const FString& Key)
+{
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+	const FString* GameDataItem = FGenericCrashContext::GetGameData().Find(Key);
+	return GameDataItem != nullptr ? *GameDataItem : FString();
+#else
+	return CrashContext.GetGameData(Key);
+#endif
 }
 
 #endif
