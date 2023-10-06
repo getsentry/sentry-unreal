@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix issue with overwriting `__sentry` attribute in crash context object ([#401](https://github.com/getsentry/sentry-unreal/pull/401))
+
 ## 0.11.0
 
 ### Fixes
@@ -12,15 +16,12 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK (iOS) from v8.11.0 to v8.12.0 ([#386](https://github.com/getsentry/sentry-unreal/pull/386))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8120)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.11.0...8.12.0)
+- Bump Cocoa SDK (iOS) from v8.11.0 to v8.13.0 ([#386](https://github.com/getsentry/sentry-unreal/pull/386), [#392](https://github.com/getsentry/sentry-unreal/pull/392))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8130)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.11.0...8.13.0)
 - Bump CLI from v2.20.7 to v2.21.2 ([#389](https://github.com/getsentry/sentry-unreal/pull/389), [#391](https://github.com/getsentry/sentry-unreal/pull/391), [#400](https://github.com/getsentry/sentry-unreal/pull/400))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2212)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.20.7...2.21.2)
-- Bump Cocoa SDK (iOS) from v8.12.0 to v8.13.0 ([#392](https://github.com/getsentry/sentry-unreal/pull/392))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8130)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.12.0...8.13.0)
 - Bump Java SDK (Android) from v6.29.0 to v6.30.0 ([#396](https://github.com/getsentry/sentry-unreal/pull/396))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6300)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.29.0...6.30.0)
