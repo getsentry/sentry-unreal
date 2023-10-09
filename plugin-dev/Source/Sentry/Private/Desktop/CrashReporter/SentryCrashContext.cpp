@@ -9,15 +9,18 @@
 
 #if USE_SENTRY_NATIVE
 
+FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
+	: FGenericCrashContext(Context.CrashType, Context.ErrorMessage)
+	, CrashContext(Context)
+{
+}
+
 FSentryCrashContext FSentryCrashContext::Get()
 {
 	FSharedCrashContext SharedCrashContext;
-	FGenericCrashContext::CopySharedCrashContext(SharedCrashContext);
+	CopySharedCrashContext(SharedCrashContext);
 
-	FSentryCrashContext SentryCrashContext;
-	SentryCrashContext.CrashContext = SharedCrashContext;
-
-	return SentryCrashContext;
+	return FSentryCrashContext(SharedCrashContext);
 }
 
 void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
@@ -55,12 +58,15 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 
 FString FSentryCrashContext::GetGameData(const FString& Key)
 {
+	const FString* GameDataItem = nullptr;
+
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
-	const FString* GameDataItem = FGenericCrashContext::GetGameData().Find(Key);
-	return GameDataItem != nullptr ? *GameDataItem : FString();
+	GameDataItem = FGenericCrashContext::GetGameData().Find(Key);
 #else
-	return CrashContext.GetGameData(Key);
+	GameDataItem = FGenericCrashContext::GetGameData(Key);
 #endif
+
+	return GameDataItem != nullptr ? *GameDataItem : FString();
 }
 
 #endif

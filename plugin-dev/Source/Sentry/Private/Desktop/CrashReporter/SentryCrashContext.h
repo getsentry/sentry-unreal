@@ -17,6 +17,8 @@ struct FSentryCrashContext
 struct FSentryCrashContext : public FGenericCrashContext
 #endif
 {
+	FSentryCrashContext(const FSharedCrashContext& Context);
+
 public:
 	static FSentryCrashContext Get();
 
