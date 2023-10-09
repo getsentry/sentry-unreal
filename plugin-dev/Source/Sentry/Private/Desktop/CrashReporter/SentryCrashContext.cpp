@@ -10,8 +10,12 @@
 #if USE_SENTRY_NATIVE
 
 FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+	: CrashContext(Context)
+#else
 	: FGenericCrashContext(Context.CrashType, Context.ErrorMessage)
 	, CrashContext(Context)
+#endif
 {
 }
 
