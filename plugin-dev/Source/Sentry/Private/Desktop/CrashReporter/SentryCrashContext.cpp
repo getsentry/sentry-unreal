@@ -22,7 +22,7 @@ FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
 FSentryCrashContext FSentryCrashContext::Get()
 {
 	FSharedCrashContext SharedCrashContext;
-	CopySharedCrashContext(SharedCrashContext);
+	FGenericCrashContext::CopySharedCrashContext(SharedCrashContext);
 
 	return FSentryCrashContext(SharedCrashContext);
 }
