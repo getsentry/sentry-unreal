@@ -80,8 +80,19 @@ void SentryCrashReporter::SetContext(const FString& key, const TMap<FString, FSt
 		valuesConfig->SetStringField(it.Key(), it.Value());
 	}
 
-	TSharedPtr<FJsonObject> contextConfig = MakeShareable(new FJsonObject);
-	contextConfig->SetObjectField(key, valuesConfig);
+	TSharedPtr<FJsonObject> contextConfig;
+
+	if(crashReporterConfig->HasField(TEXT("contexts")))
+	{
+		contextConfig = crashReporterConfig->GetObjectField(TEXT("contexts"));
+		contextConfig->SetObjectField(key, valuesConfig);
+	}
+	else
+	{
+		contextConfig = MakeShareable(new FJsonObject);
+		contextConfig->SetObjectField(key, valuesConfig);
+		crashReporterConfig->SetObjectField(TEXT("contexts"), contextConfig);
+	}
 
 	crashReporterConfig->SetObjectField(TEXT("contexts"), contextConfig);
 
