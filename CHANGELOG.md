@@ -4,6 +4,12 @@
 
 - Fix issue with overwriting `__sentry` attribute in crash context object ([#401](https://github.com/getsentry/sentry-unreal/pull/401))
 
+### Dependencies
+
+- Bump Native SDK from v0.6.5 to v0.6.6 ([#405](https://github.com/getsentry/sentry-unreal/pull/405))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#066)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.6.5...0.6.6)
+
 ## 0.11.0
 
 ### Fixes
