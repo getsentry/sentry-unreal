@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix issue with overwriting `__sentry` attribute in crash context object ([#401](https://github.com/getsentry/sentry-unreal/pull/401))
+- Fix crash capturing issue on Linux ([#410](https://github.com/getsentry/sentry-unreal/pull/410))
 
 ### Dependencies
 
