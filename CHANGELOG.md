@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix issue with overwriting `__sentry` attribute in crash context object ([#401](https://github.com/getsentry/sentry-unreal/pull/401))
+- Fix stack corruption during crash capturing within `on_crash` hook handler on Linux ([#410](https://github.com/getsentry/sentry-unreal/pull/410))
 
 ### Dependencies
 
@@ -97,7 +98,7 @@
 ### Fixes
 
 - Fix automatic game log attachment (Android) ([#309](https://github.com/getsentry/sentry-unreal/pull/309))
-  
+
 
 ### Dependencies
 
