@@ -9,7 +9,7 @@
 
 #if USE_SENTRY_NATIVE
 
-FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
+FSentryCrashContext::FSentryCrashContext(TSharedPtr<FSharedCrashContext> Context)
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
 	: CrashContext(Context)
 #else
@@ -21,8 +21,8 @@ FSentryCrashContext::FSentryCrashContext(const FSharedCrashContext& Context)
 
 FSentryCrashContext FSentryCrashContext::Get()
 {
-	FSharedCrashContext SharedCrashContext;
-	FGenericCrashContext::CopySharedCrashContext(SharedCrashContext);
+	TSharedPtr<FSharedCrashContext> SharedCrashContext = MakeShareable(new FSharedCrashContext);
+	FGenericCrashContext::CopySharedCrashContext(*SharedCrashContext);
 
 	return FSentryCrashContext(SharedCrashContext);
 }
@@ -31,15 +31,15 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	const FSessionContext& SessionContext = CrashContext.SessionContext;
+	const FSessionContext& SessionContext = CrashContext->SessionContext;
 
-	Scope->SetExtraValue("Crash Type", FGenericCrashContext::GetCrashTypeString(CrashContext.CrashType));
-	Scope->SetExtraValue("IsEnsure", CrashContext.CrashType == ECrashContextType::Ensure ? TEXT("true") : TEXT("false"));
+	Scope->SetExtraValue("Crash Type", FGenericCrashContext::GetCrashTypeString(CrashContext->CrashType));
+	Scope->SetExtraValue("IsEnsure", CrashContext->CrashType == ECrashContextType::Ensure ? TEXT("true") : TEXT("false"));
 #if ENGINE_MAJOR_VERSION >= 5
-	Scope->SetExtraValue("IsStall", CrashContext.CrashType == ECrashContextType::Stall ? TEXT("true") : TEXT("false"));
+	Scope->SetExtraValue("IsStall", CrashContext->CrashType == ECrashContextType::Stall ? TEXT("true") : TEXT("false"));
 #endif
-	Scope->SetExtraValue("IsAssert", CrashContext.CrashType == ECrashContextType::Assert ? TEXT("true") : TEXT("false"));
-	Scope->SetExtraValue("Crashing Thread Id", FString::FromInt(CrashContext.CrashingThreadId));
+	Scope->SetExtraValue("IsAssert", CrashContext->CrashType == ECrashContextType::Assert ? TEXT("true") : TEXT("false"));
+	Scope->SetExtraValue("Crashing Thread Id", FString::FromInt(CrashContext->CrashingThreadId));
 	Scope->SetExtraValue("App Default Locale", SessionContext.DefaultLocale);
 	Scope->SetExtraValue("Language LCID", FString::FromInt(SessionContext.LanguageLCID));
 	Scope->SetExtraValue("Base Dir", SessionContext.BaseDir);

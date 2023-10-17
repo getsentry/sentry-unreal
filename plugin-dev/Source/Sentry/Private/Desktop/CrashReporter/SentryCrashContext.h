@@ -17,7 +17,7 @@ struct FSentryCrashContext
 struct FSentryCrashContext : public FGenericCrashContext
 #endif
 {
-	FSentryCrashContext(const FSharedCrashContext& Context);
+	FSentryCrashContext(TSharedPtr<FSharedCrashContext> Context);
 
 public:
 	static FSentryCrashContext Get();
@@ -27,7 +27,7 @@ public:
 	FString GetGameData(const FString& Key);
 
 private:
-	FSharedCrashContext CrashContext;
+	TSharedPtr<FSharedCrashContext> CrashContext;
 };
 
 #endif
