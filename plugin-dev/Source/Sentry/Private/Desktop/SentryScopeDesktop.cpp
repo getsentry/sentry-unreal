@@ -172,10 +172,12 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
 
-	FString levelStr = SentryConvertorsDesktop::SentryLevelToString(LevelDesktop).ToLower();
-	if (!levelStr.IsEmpty())
+	sentry_value_t eventLevel = sentry_value_get_by_key(nativeEvent, "level");
+
+	FString scopeLevelStr = SentryConvertorsDesktop::SentryLevelToString(LevelDesktop).ToLower();
+	if (!scopeLevelStr.IsEmpty() && sentry_value_is_null(eventLevel))
 	{
-		sentry_value_set_by_key(nativeEvent, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
+		sentry_value_set_by_key(nativeEvent, "level", sentry_value_new_string(TCHAR_TO_ANSI(*scopeLevelStr)));
 	}
 
 	if(!Dist.IsEmpty())
