@@ -13,7 +13,7 @@ FSentryCrashContext::FSentryCrashContext(TSharedPtr<FSharedCrashContext> Context
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
 	: CrashContext(Context)
 #else
-	: FGenericCrashContext(Context.CrashType, Context.ErrorMessage)
+	: FGenericCrashContext(Context->CrashType, Context->ErrorMessage)
 	, CrashContext(Context)
 #endif
 {
