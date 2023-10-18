@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix issue with overwriting `__sentry` attribute in crash context object ([#401](https://github.com/getsentry/sentry-unreal/pull/401))
+- Fix event level being always overwritten by the current scope's level on Win/Linux ([#412](https://github.com/getsentry/sentry-unreal/pull/412))
 
 ### Dependencies
 
