@@ -33,31 +33,35 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 
 	const FSessionContext& SessionContext = CrashContext->SessionContext;
 
-	Scope->SetExtraValue("Crash Type", FGenericCrashContext::GetCrashTypeString(CrashContext->CrashType));
-	Scope->SetExtraValue("IsEnsure", CrashContext->CrashType == ECrashContextType::Ensure ? TEXT("true") : TEXT("false"));
+	TMap<FString, FString> ContextValues;
+
+	ContextValues.Add("Crash Type", FGenericCrashContext::GetCrashTypeString(CrashContext->CrashType));
+	ContextValues.Add("IsEnsure", CrashContext->CrashType == ECrashContextType::Ensure ? TEXT("true") : TEXT("false"));
 #if ENGINE_MAJOR_VERSION >= 5
-	Scope->SetExtraValue("IsStall", CrashContext->CrashType == ECrashContextType::Stall ? TEXT("true") : TEXT("false"));
+	ContextValues.Add("IsStall", CrashContext->CrashType == ECrashContextType::Stall ? TEXT("true") : TEXT("false"));
 #endif
-	Scope->SetExtraValue("IsAssert", CrashContext->CrashType == ECrashContextType::Assert ? TEXT("true") : TEXT("false"));
-	Scope->SetExtraValue("Crashing Thread Id", FString::FromInt(CrashContext->CrashingThreadId));
-	Scope->SetExtraValue("App Default Locale", SessionContext.DefaultLocale);
-	Scope->SetExtraValue("Language LCID", FString::FromInt(SessionContext.LanguageLCID));
-	Scope->SetExtraValue("Base Dir", SessionContext.BaseDir);
-	Scope->SetExtraValue("Is Source Distribution", SessionContext.bIsSourceDistribution ? TEXT("true") : TEXT("false"));
-	Scope->SetExtraValue("Crash GUID", SessionContext.CrashGUIDRoot);
-	Scope->SetExtraValue("Executable Name", SessionContext.ExecutableName);
-	Scope->SetExtraValue("Game Name", SessionContext.GameName);
-	Scope->SetExtraValue("Process Id", FString::FromInt(SessionContext.ProcessId));
-	Scope->SetExtraValue("Seconds Since Start", FString::FromInt(SessionContext.SecondsSinceStart));
-	Scope->SetExtraValue("Command Line", SessionContext.CommandLine);
-	Scope->SetExtraValue("Memory Stats Page Size", FString::FromInt(SessionContext.MemoryStats.PageSize));
-	Scope->SetExtraValue("Memory Stats Total Virtual", FString::Printf(TEXT("%lld"), SessionContext.MemoryStats.TotalVirtual));
+	ContextValues.Add("IsAssert", CrashContext->CrashType == ECrashContextType::Assert ? TEXT("true") : TEXT("false"));
+	ContextValues.Add("Crashing Thread Id", FString::FromInt(CrashContext->CrashingThreadId));
+	ContextValues.Add("App Default Locale", SessionContext.DefaultLocale);
+	ContextValues.Add("Language LCID", FString::FromInt(SessionContext.LanguageLCID));
+	ContextValues.Add("Base Dir", SessionContext.BaseDir);
+	ContextValues.Add("Is Source Distribution", SessionContext.bIsSourceDistribution ? TEXT("true") : TEXT("false"));
+	ContextValues.Add("Crash GUID", SessionContext.CrashGUIDRoot);
+	ContextValues.Add("Executable Name", SessionContext.ExecutableName);
+	ContextValues.Add("Game Name", SessionContext.GameName);
+	ContextValues.Add("Process Id", FString::FromInt(SessionContext.ProcessId));
+	ContextValues.Add("Seconds Since Start", FString::FromInt(SessionContext.SecondsSinceStart));
+	ContextValues.Add("Command Line", FString(SessionContext.CommandLine).TrimStart());
+	ContextValues.Add("Memory Stats Page Size", FString::FromInt(SessionContext.MemoryStats.PageSize));
+	ContextValues.Add("Memory Stats Total Virtual", FString::Printf(TEXT("%lld"), SessionContext.MemoryStats.TotalVirtual));
 
 	if(Settings->SendDefaultPii)
 	{
-		Scope->SetExtraValue("Epic Account Id", SessionContext.EpicAccountId);
-		Scope->SetExtraValue("Login Id", SessionContext.LoginIdStr);
+		ContextValues.Add("Epic Account Id", SessionContext.EpicAccountId);
+		ContextValues.Add("Login Id", SessionContext.LoginIdStr);
 	}
+
+	Scope->SetContext(TEXT("Crash Info"), ContextValues);
 }
 
 FString FSentryCrashContext::GetGameData(const FString& Key)
