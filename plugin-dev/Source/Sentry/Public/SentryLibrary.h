@@ -30,7 +30,8 @@ public:
 	 * @param Message Message to sent.
 	 * @param Level Level of the event.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	UFUNCTION(BlueprintCallable, Category = "Sentry",
+		Meta = (DeprecatedFunction, DeprecationMessage="Function has been deprecated. Use SentryEvent CreateEventWithMessageAndLevel instead"))
 	static USentryEvent* CreateSentryEvent(const FString& Message, ESentryLevel Level);
 
 	/**
@@ -42,7 +43,7 @@ public:
 	 * @param IpAddress IP address of the user.
 	 * @param Data Additional arbitrary fields related to the user.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
+	UFUNCTION(BlueprintCallable, Category = "Sentry", Meta = (AutoCreateRefTerm = "Data"))
 	static USentryUser* CreateSentryUser(const FString& Email, const FString& Id, const FString& Username, const FString& IpAddress,
 		const TMap<FString, FString>& Data);
 
@@ -66,7 +67,7 @@ public:
 	 * @param Data Data associated with the breadcrumb.
 	 * @param Level Level of the breadcrumb.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
+	UFUNCTION(BlueprintCallable, Category = "Sentry", Meta = (AutoCreateRefTerm = "Data"))
 	static USentryBreadcrumb* CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
 		const TMap<FString, FString>& Data, ESentryLevel Level = ESentryLevel::Info);
 

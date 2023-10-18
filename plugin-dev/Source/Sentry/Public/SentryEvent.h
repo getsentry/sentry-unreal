@@ -19,6 +19,15 @@ class SENTRY_API USentryEvent : public UObject
 public:
 	USentryEvent();
 
+	/**
+	 * Creates the event with specified message and level.
+	 *
+	 * @param Message Message to sent.
+	 * @param Level Level of the event.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static USentryEvent* CreateEventWithMessageAndLevel(const FString& Message, ESentryLevel Level);
+
 	/** Sets message of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetMessage(const FString& Message);
