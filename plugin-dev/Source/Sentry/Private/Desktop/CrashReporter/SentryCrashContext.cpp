@@ -61,7 +61,7 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 		ContextValues.Add("Login Id", SessionContext.LoginIdStr);
 	}
 
-	Scope->SetContext(TEXT("Additional Crash Info"), ContextValues);
+	Scope->SetContext(TEXT("Crash Info"), ContextValues);
 }
 
 FString FSentryCrashContext::GetGameData(const FString& Key)
