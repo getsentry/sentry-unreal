@@ -36,7 +36,9 @@ USentryEvent* USentryEvent::CreateEventWithMessageAndLevel(const FString& Messag
 	USentryEvent* Event = NewObject<USentryEvent>();
 
 	if(!Message.IsEmpty())
+	{
 		Event->SetMessage(Message);
+	}
 
 	Event->SetLevel(Level);
 
