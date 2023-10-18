@@ -51,7 +51,7 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 	ContextValues.Add("Game Name", SessionContext.GameName);
 	ContextValues.Add("Process Id", FString::FromInt(SessionContext.ProcessId));
 	ContextValues.Add("Seconds Since Start", FString::FromInt(SessionContext.SecondsSinceStart));
-	ContextValues.Add("Command Line", SessionContext.CommandLine);
+	ContextValues.Add("Command Line", FString(SessionContext.CommandLine).TrimStart());
 	ContextValues.Add("Memory Stats Page Size", FString::FromInt(SessionContext.MemoryStats.PageSize));
 	ContextValues.Add("Memory Stats Total Virtual", FString::Printf(TEXT("%lld"), SessionContext.MemoryStats.TotalVirtual));
 
