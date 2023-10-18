@@ -26,11 +26,6 @@ USentryEvent::USentryEvent()
 	}
 }
 
-USentryEvent* USentryEvent::CreateEmptyEvent()
-{
-	return NewObject<USentryEvent>();
-}
-
 USentryEvent* USentryEvent::CreateEventWithMessageAndLevel(const FString& Message, ESentryLevel Level)
 {
 	USentryEvent* Event = NewObject<USentryEvent>();

@@ -19,10 +19,6 @@ class SENTRY_API USentryEvent : public UObject
 public:
 	USentryEvent();
 
-	/** Creates the empty event. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static USentryEvent* CreateEmptyEvent();
-
 	/**
 	 * Creates the event with specified message and level.
 	 *
