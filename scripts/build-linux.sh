@@ -14,8 +14,6 @@ mkdir "${sentryArtifactsDestination}/bin"
 mkdir "${sentryArtifactsDestination}/include"
 mkdir "${sentryArtifactsDestination}/lib"
 
-ls "${sentryNativeRoot}"
-
-cp -r "${sentryNativeRoot}/install/lib/*.a" "${sentryArtifactsDestination}/lib"
+cp -r "${sentryNativeRoot}/install/lib/"*.a "${sentryArtifactsDestination}/lib"
 strip -x "${sentryNativeRoot}/install/bin/crashpad_handler" -o "${sentryArtifactsDestination}/bin/crashpad_handler"
 cp "${sentryNativeRoot}/install/include/sentry.h" "${sentryArtifactsDestination}/include/sentry.h"
