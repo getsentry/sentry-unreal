@@ -33,11 +33,9 @@ void FSentryModule::StartupModule()
 	const FString SentryLibName = TEXT("sentry.dll");
 #elif PLATFORM_MAC
 	const FString SentryLibName = TEXT("sentry.dylib");
-#elif PLATFORM_LINUX
-	const FString SentryLibName = TEXT("libsentry.so");
 #endif
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#if PLATFORM_WINDOWS || PLATFORM_MAC
 	const FString BinariesDirPath = GetBinariesPath();
 	FPlatformProcess::PushDllDirectory(*BinariesDirPath);
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(*FPaths::Combine(BinariesDirPath, SentryLibName));
