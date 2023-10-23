@@ -6,7 +6,7 @@ export sentryArtifactsDestination=$2
 
 rm -rf "${sentryArtifactsDestination}/"*
 
-cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_TRANSPORT=none -D SENTRY_SDK_NAME=sentry.native.unreal -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi" -D SENTRY_BUILD_SHARED_LIBS=OFF
+cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_TRANSPORT=none -D SENTRY_SDK_NAME=sentry.native.unreal -D CMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++" -D SENTRY_BUILD_SHARED_LIBS=OFF
 cmake --build "${sentryNativeRoot}/build" --target sentry --parallel
 cmake --install "${sentryNativeRoot}/build" --prefix "${sentryNativeRoot}/install"
 
