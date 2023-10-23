@@ -124,15 +124,15 @@ public class Sentry : ModuleRules
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_client.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_compat.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_handler_lib.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_minidump.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_snapshot.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_tools.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_util.so"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libmini_chromium.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libsentry.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_client.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_compat.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_handler_lib.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_minidump.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_snapshot.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_tools.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_util.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libmini_chromium.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
