@@ -122,14 +122,20 @@ public class Sentry : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"), Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 
-			PublicRuntimeLibraryPaths.Add(PlatformBinariesPath);
-
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_client.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_compat.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_handler_lib.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_minidump.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_snapshot.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_tools.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libcrashpad_util.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libmini_chromium.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libsentry.a"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
 
 		// Additional routine for Mac
