@@ -6,17 +6,18 @@
 
 - Switch to using static libs on Linux ([#424](https://github.com/getsentry/sentry-unreal/pull/424))
 
+### Fixes
+
+- Fix missing plugin binaries in the UE Marketplace package ([#423](https://github.com/getsentry/sentry-unreal/pull/423))
+
 ### Dependencies
 
-- Bump Cocoa SDK (iOS) from v8.13.1 to v8.14.1 ([#417](https://github.com/getsentry/sentry-unreal/pull/417))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8141)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.13.1...8.14.1)
+- Bump Cocoa SDK (iOS) from v8.13.1 to v8.14.2 ([#417](https://github.com/getsentry/sentry-unreal/pull/417), [#422](https://github.com/getsentry/sentry-unreal/pull/422))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8142)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.13.1...8.14.2)
 - Bump Java SDK (Android) from v6.31.0 to v6.32.0 ([#416](https://github.com/getsentry/sentry-unreal/pull/416))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6320)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.31.0...6.32.0)
-- Bump Cocoa SDK (iOS) from v8.14.1 to v8.14.2 ([#422](https://github.com/getsentry/sentry-unreal/pull/422))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8142)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.14.1...8.14.2)
 
 ## 0.12.0
 
