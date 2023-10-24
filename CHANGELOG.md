@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Switch to using static libs on Linux ([#424](https://github.com/getsentry/sentry-unreal/pull/424))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.13.1 to v8.14.1 ([#417](https://github.com/getsentry/sentry-unreal/pull/417))
