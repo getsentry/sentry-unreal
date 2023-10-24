@@ -76,4 +76,6 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 **/sentry.properties
+**/*.uproject.DotSettings.user
+
 dist
