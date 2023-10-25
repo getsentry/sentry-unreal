@@ -181,7 +181,7 @@ FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
 	}
 
 	FString ValueStr = EnumPtr->GetNameByValue(static_cast<int64>(level)).ToString();
-	FString Result = ValueStr.Replace(*FString::Printf(TEXT("%s::"), TEXT("ESentryLevel")), TEXT(""));
+	FString Result = ValueStr.Replace(*FString::Printf(TEXT("%s::"), TEXT("ESentryLevel")), TEXT("")).ToLower();
 
 	return Result;
 }
