@@ -20,7 +20,7 @@ struct FSentryCrashContext : public FGenericCrashContext
 	FSentryCrashContext(TSharedPtr<FSharedCrashContext> Context);
 
 public:
-	static FSentryCrashContext Get();
+	static TSharedPtr<FSentryCrashContext> Get();
 
 	void Apply(TSharedPtr<SentryScopeDesktop> Scope);
 

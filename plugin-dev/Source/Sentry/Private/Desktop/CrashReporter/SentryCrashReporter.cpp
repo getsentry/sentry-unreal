@@ -17,7 +17,7 @@ SentryCrashReporter::SentryCrashReporter()
 {
 	crashReporterConfig = MakeShareable(new FJsonObject);
 
-	const FString sentryData = FSentryCrashContext::Get().GetGameData(TEXT("__sentry"));
+	const FString sentryData = FSentryCrashContext::Get()->GetGameData(TEXT("__sentry"));
 	if(!sentryData.IsEmpty())
 	{
 		const TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(*sentryData);
