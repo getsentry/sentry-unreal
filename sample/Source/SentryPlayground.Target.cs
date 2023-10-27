@@ -9,7 +9,11 @@ public class SentryPlaygroundTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
+
+#if UE_5_1_OR_LATER
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+#endif
+
 		ExtraModuleNames.AddRange( new string[] { "SentryPlayground" } );
 	}
 }
