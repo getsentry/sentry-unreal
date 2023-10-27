@@ -5,7 +5,7 @@
 ### Fixes
 
 - Fix invalid breadcrumbs level for Win/Linux ([#426](https://github.com/getsentry/sentry-unreal/pull/426))
-- Fix build errors in older engine versions ([#428](https://github.com/getsentry/sentry-unreal/pull/428))
+- Fix build errors in UE4 ([#428](https://github.com/getsentry/sentry-unreal/pull/428))
 
 ## 0.12.1
 
