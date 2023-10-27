@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Switch to using static libs on Linux ([#424](https://github.com/getsentry/sentry-unreal/pull/424))
+
 ### Fixes
 
 - Fix invalid breadcrumbs level for Win/Linux ([#426](https://github.com/getsentry/sentry-unreal/pull/426))
