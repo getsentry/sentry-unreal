@@ -74,6 +74,7 @@ public class Sentry : ModuleRules
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
 			PublicDefinitions.Add("COCOAPODS=0");
+			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 		}
 
 		// Additional routine for Android
@@ -122,14 +123,20 @@ public class Sentry : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"), Path.Combine(PlatformThirdPartyPath, "bin", "libsentry.so"));
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 
-			PublicRuntimeLibraryPaths.Add(PlatformBinariesPath);
-
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformBinariesPath, "libsentry.so"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_client.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_compat.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_handler_lib.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_minidump.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_snapshot.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_tools.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_util.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libmini_chromium.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
 
 		// Additional routine for Mac

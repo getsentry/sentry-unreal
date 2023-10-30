@@ -27,7 +27,7 @@ FString SentryFileUtils::GetGameLogBackupPath()
 	TArray<FString> GameLogBackupFiles;
 	IFileManager::Get().FindFiles(GameLogBackupFiles, *FString::Printf(TEXT("%s*-backup-*.*"), *FPaths::ProjectLogDir()), true, false);
 
-	if(GameLogBackupFiles.IsEmpty())
+	if(GameLogBackupFiles.Num() == 0)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("There are no game log backups available."));
 		return FString("");

@@ -121,6 +121,10 @@ TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t
 	TMap<FString, FString> unrealMap;
 
 	FString mapJsonString = FString(sentry_value_to_json(map));
+	if(mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
+	{
+		return unrealMap;
+	}
 
 	TSharedPtr<FJsonObject> jsonObject;
 	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
@@ -146,6 +150,10 @@ TArray<FString> SentryConvertorsDesktop::StringArrayToUnreal(sentry_value_t arra
 	TArray<FString> unrealArray;
 
 	FString arrayJsonString = FString(sentry_value_to_json(array));
+	if(arrayJsonString.IsEmpty() || arrayJsonString.Equals(TEXT("null")))
+	{
+		return unrealArray;
+	}
 
 	TArray<TSharedPtr<FJsonValue>> jsonArray;
 	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(arrayJsonString);
@@ -173,7 +181,7 @@ FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
 	}
 
 	FString ValueStr = EnumPtr->GetNameByValue(static_cast<int64>(level)).ToString();
-	FString Result = ValueStr.Replace(*FString::Printf(TEXT("%s::"), TEXT("ESentryLevel")), TEXT(""));
+	FString Result = ValueStr.Replace(*FString::Printf(TEXT("%s::"), TEXT("ESentryLevel")), TEXT("")).ToLower();
 
 	return Result;
 }
@@ -183,7 +191,7 @@ TArray<uint8> SentryConvertorsDesktop::SentryEnvelopeToByteArray(sentry_envelope
 	size_t size;
 	ANSICHAR* serializedEnvelopeStr = sentry_envelope_serialize(envelope, &size);
 
-	TArray<uint8> envelopeData = TArray(reinterpret_cast<uint8*>(serializedEnvelopeStr), size);
+	TArray<uint8> envelopeData = TArray<uint8>(reinterpret_cast<uint8*>(serializedEnvelopeStr), size);
 
 	sentry_string_free(serializedEnvelopeStr);
 

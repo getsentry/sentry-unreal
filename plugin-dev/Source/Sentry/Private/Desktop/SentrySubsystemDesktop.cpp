@@ -57,11 +57,7 @@ sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t e
 {
 	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
 
-	FSharedCrashContext SharedCrashContext;
-	FGenericCrashContext::CopySharedCrashContext(SharedCrashContext);
-
-	FSentryCrashContext SentryCrashContext = FSentryCrashContext(SharedCrashContext);
-	SentryCrashContext.Apply(SentrySubsystem->GetCurrentScope());
+	FSentryCrashContext::Get()->Apply(SentrySubsystem->GetCurrentScope());
 
 	return HandleBeforeSend(event, nullptr, closure);
 }
@@ -311,7 +307,7 @@ USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
 
 TSharedPtr<SentryScopeDesktop> SentrySubsystemDesktop::GetCurrentScope()
 {
-	if(scopeStack.IsEmpty())
+	if(scopeStack.Num() == 0)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Scope stack is empty."));
 		return nullptr;

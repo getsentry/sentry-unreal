@@ -172,10 +172,12 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
 
-	FString levelStr = SentryConvertorsDesktop::SentryLevelToString(LevelDesktop).ToLower();
-	if (!levelStr.IsEmpty())
+	sentry_value_t eventLevel = sentry_value_get_by_key(nativeEvent, "level");
+
+	FString scopeLevelStr = SentryConvertorsDesktop::SentryLevelToString(LevelDesktop).ToLower();
+	if (!scopeLevelStr.IsEmpty() && sentry_value_is_null(eventLevel))
 	{
-		sentry_value_set_by_key(nativeEvent, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
+		sentry_value_set_by_key(nativeEvent, "level", sentry_value_new_string(TCHAR_TO_ANSI(*scopeLevelStr)));
 	}
 
 	if(!Dist.IsEmpty())
@@ -188,12 +190,12 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 		sentry_value_set_by_key(nativeEvent, "environment", sentry_value_new_string(TCHAR_TO_ANSI(*Environment)));
 	}
 
-	if(!FingerprintDesktop.IsEmpty())
+	if(FingerprintDesktop.Num() > 0)
 	{
 		sentry_value_set_by_key(nativeEvent, "fingerprint", SentryConvertorsDesktop::StringArrayToNative(FingerprintDesktop));
 	}
 
-	if(!TagsDesktop.IsEmpty())
+	if(TagsDesktop.Num() > 0)
 	{
 		sentry_value_t tagsExtra = sentry_value_get_by_key(nativeEvent, "tags");
 		if(sentry_value_is_null(tagsExtra))
@@ -209,7 +211,7 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 		}
 	}
 
-	if(!ExtraDesktop.IsEmpty())
+	if(ExtraDesktop.Num() > 0)
 	{
 		sentry_value_t eventExtra = sentry_value_get_by_key(nativeEvent, "extra");
 		if(sentry_value_is_null(eventExtra))
@@ -226,7 +228,7 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 		
 	}
 
-	if(!ContextsDesktop.IsEmpty())
+	if(ContextsDesktop.Num() > 0)
 	{
 		sentry_value_t eventContexts = sentry_value_get_by_key(nativeEvent, "contexts");
 		if(sentry_value_is_null(eventContexts))
@@ -249,7 +251,7 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 		}
 	}
 
-	if(!BreadcrumbsDesktop.IsEmpty())
+	if(BreadcrumbsDesktop.Num() > 0)
 	{
 		sentry_value_t eventBreadcrumbs = sentry_value_get_by_key(nativeEvent, "breadcrumbs");
 		if(sentry_value_is_null(eventBreadcrumbs))

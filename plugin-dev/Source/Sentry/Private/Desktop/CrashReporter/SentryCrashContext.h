@@ -1,22 +1,33 @@
-﻿#pragma once
+﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+
+#pragma once
 
 #include "CoreMinimal.h"
 
+#include "Runtime/Launch/Resources/Version.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 
 #if USE_SENTRY_NATIVE
 
 class SentryScopeDesktop;
 
-class FSentryCrashContext
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+struct FSentryCrashContext
+#else
+struct FSentryCrashContext : public FGenericCrashContext
+#endif
 {
+	FSentryCrashContext(TSharedPtr<FSharedCrashContext> Context);
+
 public:
-	FSentryCrashContext(const FSharedCrashContext& Context);
+	static TSharedPtr<FSentryCrashContext> Get();
 
 	void Apply(TSharedPtr<SentryScopeDesktop> Scope);
 
+	FString GetGameData(const FString& Key);
+
 private:
-	FSharedCrashContext CrashContext;
+	TSharedPtr<FSharedCrashContext> CrashContext;
 };
 
 #endif

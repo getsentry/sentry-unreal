@@ -26,6 +26,20 @@ USentryEvent::USentryEvent()
 	}
 }
 
+USentryEvent* USentryEvent::CreateEventWithMessageAndLevel(const FString& Message, ESentryLevel Level)
+{
+	USentryEvent* Event = NewObject<USentryEvent>();
+
+	if(!Message.IsEmpty())
+	{
+		Event->SetMessage(Message);
+	}
+
+	Event->SetLevel(Level);
+
+	return Event;
+}
+
 void USentryEvent::SetMessage(const FString& Message)
 {
 	if (!EventNativeImpl)

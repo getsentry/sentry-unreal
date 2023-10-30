@@ -102,7 +102,7 @@ int FSentryTransport::Flush(uint64_t timeout)
 
 	while(true)
 	{
-		if(RequestsQueue.IsEmpty())
+		if(RequestsQueue.Num() == 0)
 		{
 			break;
 		}
@@ -110,7 +110,7 @@ int FSentryTransport::Flush(uint64_t timeout)
 		// Manually tick pending requests since relying on game thread for that might be insecure
 		FHttpModule::Get().GetHttpManager().Tick(SleepInterval);
 
-		if(!RequestsQueue.IsEmpty())
+		if(RequestsQueue.Num() > 0)
 		{
 			if (TimeElapsed > InTimeOut)
 			{
