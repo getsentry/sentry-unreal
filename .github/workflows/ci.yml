@@ -25,9 +25,9 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: Linux
-      # Using ubuntu-20.04 allows building for an older GLIBC so that it can run with the old GLIBC included in EpicGames' Unreal docker images.
+      # Build for an older GLIBC so that it can run with the old GLIBC included in EpicGames' Unreal docker images.
       # See discussion in https://github.com/getsentry/sentry-unreal/pull/173
-      runsOn: ubuntu-latest
+      runsOn: ubuntu-20.04
 
   windows-crashpad-sdk:
     uses: ./.github/workflows/sdk.yml
