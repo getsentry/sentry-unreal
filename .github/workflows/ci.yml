@@ -191,7 +191,7 @@ jobs:
           ue4 setroot /home/ue4/UnrealEngine '
 
       - name: Setup C++ runtime
-        run: docker exec unreal bash -c '
+        run: docker exec --user root unreal bash -c '
           apt install libc++-dev '
 
       - name: Download package
