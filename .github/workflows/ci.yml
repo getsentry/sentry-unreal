@@ -192,6 +192,7 @@ jobs:
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
+          apt-get update ;
           apt-get install libc++-dev '
 
       - name: Download package
