@@ -190,6 +190,10 @@ jobs:
           pip3 install -Iv ue4cli==0.0.54 ;
           ue4 setroot /home/ue4/UnrealEngine '
 
+      - name: Setup C++ runtime
+        run: docker exec unreal bash -c '
+          apt install libc++-dev '
+
       - name: Download package
         uses: actions/download-artifact@v3
         with:
