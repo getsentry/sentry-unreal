@@ -6,6 +6,8 @@
 
 #include "SentryDataTypes.generated.h"
 
+class USentrySettings;
+
 UENUM(BlueprintType)
 enum class ESentryLevel : uint8
 {
@@ -15,3 +17,5 @@ enum class ESentryLevel : uint8
 	Error,
 	Fatal
 };
+
+DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
