@@ -8,8 +8,8 @@ rm -rf "${sentryArtifactsDestination}/"*
 
 cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
 cmake --build "${sentryNativeRoot}/build" --target sentry --config RelWithDebInfo --parallel
-cmake --build "${sentryNativeRoot}/build" --target crashpad_handler --config Release --parallel
-cmake --install "${sentryNativeRoot}/build" --prefix "${sentryNativeRoot}/install"
+cmake --build "${sentryNativeRoot}/build" --target crashpad_handler --config RelWithDebInfo --parallel
+cmake --install "${sentryNativeRoot}/build" --prefix "${sentryNativeRoot}/install" --config RelWithDebInfo
 
 mkdir "${sentryArtifactsDestination}/bin"
 mkdir "${sentryArtifactsDestination}/include"

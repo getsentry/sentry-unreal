@@ -8,7 +8,7 @@ rm -rf "${sentryArtifactsDestination}/"*
 
 cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
 cmake --build "${sentryNativeRoot}/build" --target sentry --config RelWithDebInfo --parallel
-cmake --install "${sentryNativeRoot}/build" --prefix "${sentryNativeRoot}/install"
+cmake --install "${sentryNativeRoot}/build" --prefix "${sentryNativeRoot}/install" --config RelWithDebInfo
 
 mkdir "${sentryArtifactsDestination}/bin"
 mkdir "${sentryArtifactsDestination}/include"
