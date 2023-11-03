@@ -120,7 +120,11 @@ public class Sentry : ModuleRules
 				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "breakpad_client.lib"));
 			}
 
+			PublicSystemLibraries.Add("winhttp.lib");
+			PublicSystemLibraries.Add("version.lib");
+
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
 
 		// Additional routine for Linux
