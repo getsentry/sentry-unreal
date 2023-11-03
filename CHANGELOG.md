@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Switch to using static libs on Windows ([#433](https://github.com/getsentry/sentry-unreal/pull/433))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.32.0 to v6.33.0 ([#432](https://github.com/getsentry/sentry-unreal/pull/432))
