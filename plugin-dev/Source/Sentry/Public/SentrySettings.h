@@ -9,6 +9,13 @@
 
 class USentryBeforeSendHandler;
 
+UENUM(BlueprintType)
+enum class ESentryCrashCapturingMode : uint8
+{
+	GameOnly		UMETA(DisplayName = "Game/PIE only", ToolTip = "Capture game/PIE crashes only"),
+	GameAndEditor	UMETA(DisplayName = "Game/PIE + Editor", ToolTip = "Capture both game/PIE and editor-related crashes")
+};
+
 USTRUCT(BlueprintType)
 struct FAutomaticBreadcrumbs
 {
@@ -162,6 +169,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Initialize SDK automatically", ToolTip = "Flag indicating whether to automatically initialize the SDK when the app starts."))
 	bool InitAutomatically;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+		Meta = (DisplayName = "Crash capturing mode", ToolTip = "Value indicating current crash capturing mode of the SDK.", ConfigRestartRequired = true))
+	ESentryCrashCapturingMode CrashCapturingMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Misc",
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging on desktop."))
