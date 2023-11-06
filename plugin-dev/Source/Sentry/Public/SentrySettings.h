@@ -12,8 +12,11 @@ class USentryBeforeSendHandler;
 UENUM(BlueprintType)
 enum class ESentryCrashCapturingMode : uint8
 {
+	// Capture game/PIE crashes only.
 	GameOnly		UMETA(DisplayName = "Game/PIE only", ToolTip = "Capture game/PIE crashes only"),
-	GameAndEditor	UMETA(DisplayName = "Game/PIE + Editor", ToolTip = "Capture both game/PIE and editor-related crashes")
+
+	// Capture both game/PIE and editor crashes. Useful for monitoring editor tools performance.
+	GameAndEditor	UMETA(DisplayName = "Game/PIE + Editor", ToolTip = "Capture both game/PIE and editor crashes")
 };
 
 USTRUCT(BlueprintType)

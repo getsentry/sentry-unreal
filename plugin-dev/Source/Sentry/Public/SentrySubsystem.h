@@ -20,11 +20,8 @@ class USentryUser;
 class ISentrySubsystem;
 class USentryBeforeSendHandler;
 
-class SENTRY_DEPRECATED("SentrySubsystem was deprecated. Please use SentryEngineSubsystem instead.") USentrySubsystem;
+class [[deprecated("`USentrySubsystem` was deprecated and proxying calls to `USentryEngineSubsystem` which should be now used instead.")]] USentrySubsystem;
 
-/**
- * `USentrySubsystem` was deprecated in 0.14.0 and currently proxying calls to `USentryEngineSubsystem` which should be used instead.
- */
 UCLASS()
 class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
 {
