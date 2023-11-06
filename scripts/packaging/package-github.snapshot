@@ -113,6 +113,7 @@ Source/Sentry/Private/SentryAttachment.cpp
 Source/Sentry/Private/SentryBeforeSendHandler.cpp
 Source/Sentry/Private/SentryBreadcrumb.cpp
 Source/Sentry/Private/SentryDefines.h
+Source/Sentry/Private/SentryEngineSubsystem.cpp
 Source/Sentry/Private/SentryEvent.cpp
 Source/Sentry/Private/SentryHint.cpp
 Source/Sentry/Private/SentryId.cpp
@@ -137,6 +138,7 @@ Source/Sentry/Public/SentryAttachment.h
 Source/Sentry/Public/SentryBeforeSendHandler.h
 Source/Sentry/Public/SentryBreadcrumb.h
 Source/Sentry/Public/SentryDataTypes.h
+Source/Sentry/Public/SentryEngineSubsystem.h
 Source/Sentry/Public/SentryEvent.h
 Source/Sentry/Public/SentryHint.h
 Source/Sentry/Public/SentryId.h
