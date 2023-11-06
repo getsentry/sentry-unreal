@@ -11,6 +11,8 @@
 
 #include "SentrySubsystem.generated.h"
 
+#define SENTRY_DEPRECATED(Message) [[deprecated(Message " Update your code to the new API otherwise it will no longer compile in future plugin releases.")]]
+
 class USentrySettings;
 class USentryBreadcrumb;
 class USentryEvent;
@@ -20,7 +22,7 @@ class USentryUser;
 class ISentrySubsystem;
 class USentryBeforeSendHandler;
 
-class [[deprecated("`USentrySubsystem` was deprecated and proxying calls to `USentryEngineSubsystem` which should be now used instead.")]] USentrySubsystem;
+class SENTRY_DEPRECATED("`USentrySubsystem` was deprecated and proxying calls to `USentryEngineSubsystem` which should be now used instead.") USentrySubsystem;
 
 UCLASS()
 class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
