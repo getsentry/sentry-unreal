@@ -6,7 +6,6 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 
 #include "SentryDataTypes.h"
-#include "SentryDefines.h"
 #include "SentryScope.h"
 
 #include "SentrySubsystem.generated.h"
