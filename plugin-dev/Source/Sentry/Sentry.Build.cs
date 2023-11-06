@@ -98,23 +98,33 @@ public class Sentry : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dll"), Path.Combine(WindowsThirdPartyPath, "bin", "sentry.dll"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.pdb"), Path.Combine(WindowsThirdPartyPath, "bin", "sentry.pdb"));
-
-			PublicDelayLoadDLLs.Add("sentry.dll");
-
 			PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
 
 			if (CrashpadExists)
 			{
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(WindowsThirdPartyPath, "bin", "crashpad_handler.exe"));
+
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_compat.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_compat.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_snapshot.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_util.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "mini_chromium.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_client.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_zlib.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_getopt.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_tools.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_handler_lib.lib"));
 			}
 			else
 			{
 				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "breakpad_client.lib"));
 			}
 
+			PublicSystemLibraries.Add("winhttp.lib");
+			PublicSystemLibraries.Add("version.lib");
+
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
 
 		// Additional routine for Linux

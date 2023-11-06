@@ -33,13 +33,13 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: Win64-Crashpad
-      runsOn: windows-latest
+      runsOn: windows-2019
 
   windows-breakpad-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
       target: Win64-Breakpad
-      runsOn: windows-latest
+      runsOn: windows-2019
 
   build:
     needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
@@ -189,6 +189,11 @@ jobs:
           pip3 install --upgrade pip ;
           pip3 install -Iv ue4cli==0.0.54 ;
           ue4 setroot /home/ue4/UnrealEngine '
+
+      - name: Setup C++ runtime
+        run: docker exec --user root unreal bash -c '
+          apt-get update ;
+          apt-get install -y libc++-dev '
 
       - name: Download package
         uses: actions/download-artifact@v3

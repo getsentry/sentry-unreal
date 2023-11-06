@@ -35,8 +35,11 @@ public:
 	/** Gets internal settings object to support runtime configuration changes. */
 	USentrySettings* GetSettings() const;
 
-	/** Gets path to plugin's binaries folder. */
+	/** Gets path to plugin's binaries folder for current platform. */
 	FString GetBinariesPath();
+
+	/** Gets path to plugin's third-party resources folder for current platform. */
+	FString GetThirdPartyPath();
 
 	/** Gets plugin's version. */
 	static FString GetPluginVersion();

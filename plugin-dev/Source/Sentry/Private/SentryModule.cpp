@@ -29,14 +29,10 @@ void FSentryModule::StartupModule()
 			SentrySettings);
 	}
 
-#if PLATFORM_WINDOWS
-	const FString SentryLibName = TEXT("sentry.dll");
-#elif PLATFORM_MAC
+#if PLATFORM_MAC
 	const FString SentryLibName = TEXT("sentry.dylib");
-#endif
+	const FString BinariesDirPath = GIsEditor ? FPaths::Combine(GetThirdPartyPath(), TEXT("bin")) : GetBinariesPath();
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC
-	const FString BinariesDirPath = GetBinariesPath();
 	FPlatformProcess::PushDllDirectory(*BinariesDirPath);
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(*FPaths::Combine(BinariesDirPath, SentryLibName));
 	FPlatformProcess::PopDllDirectory(*BinariesDirPath);
@@ -97,6 +93,13 @@ FString FSentryModule::GetBinariesPath()
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
 	return FPaths::Combine(PluginDir, TEXT("Binaries"), FPlatformProcess::GetBinariesSubdirectory());
+}
+
+FString FSentryModule::GetThirdPartyPath()
+{
+	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
+
+	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), FPlatformProcess::GetBinariesSubdirectory());
 }
 
 FString FSentryModule::GetPluginVersion()

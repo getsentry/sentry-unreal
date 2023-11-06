@@ -38,7 +38,7 @@ The SDK complies with three latest engine versions.
 
 - To automatically capture crashes in Windows game builds that were made using engine versions prior to UE 5.2, the [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/) first.
   
-- Using UGS binaries requires tagging of files to ensure the crashpad_handler.exe and sentry.dll is present. For inclusion in build graph, you'd want something like this: 
+- Using UGS binaries requires tagging of files to ensure the crashpad_handler.exe is present. For inclusion in build graph, you'd want something like this: 
 ```
 <Tag Files="#EditorBinaries$(EditorPlatform)" Filter="*.target" With="#TargetReceipts"/>
 <TagReceipt Files="#TargetReceipts" RuntimeDependencies="true" With="#RuntimeDependencies"/>
@@ -52,6 +52,8 @@ The SDK complies with three latest engine versions.
 - In UE 5.2 or newer game log attached to crashes captured with `sentry-native` integration instead of [crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/) could be truncated. This is caused by current `crashpad` behavior which sends crashes to Sentry right away while UE is still about to write some bits of information to the log file.
 
 - Only crash events captured on Android contain the full callstack. Events that were captured manually won't have the native C++ part there.
+
+- On Linux `sudo apt-get install libc++-dev` is required to install the required `Crashpad` dependencies.
 
 ## Development
 
