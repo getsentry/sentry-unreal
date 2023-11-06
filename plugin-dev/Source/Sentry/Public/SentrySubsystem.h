@@ -44,79 +44,79 @@ public:
 	void Close();
 
 	UFUNCTION(BlueprintPure, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	bool IsEnabled();
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void AddBreadcrumb(USentryBreadcrumb* Breadcrumb);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (AutoCreateRefTerm = "Data", DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (AutoCreateRefTerm = "Data", DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
 		ESentryLevel Level = ESentryLevel::Info);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void ClearBreadcrumbs();
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	USentryId* CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (AutoCreateRefTerm = "OnCofigureScope", DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (AutoCreateRefTerm = "OnCofigureScope", DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	USentryId* CaptureEvent(USentryEvent* Event);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void SetUser(USentryUser* User);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void RemoveUser();
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (AutoCreateRefTerm = "OnCofigureScope", DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (AutoCreateRefTerm = "OnCofigureScope", DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void SetTag(const FString& Key, const FString& Value);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void RemoveTag(const FString& Key);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void SetLevel(ESentryLevel Level);
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void StartSession();
 
 	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Please use USentryEngineSubsystem"))
+		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
 	void EndSession();
 };
