@@ -55,8 +55,6 @@ void USentryEngineSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void USentryEngineSubsystem::Deinitialize()
 {
-	DisableAutomaticBreadcrumbs();
-
 	Close();
 
 	Super::Deinitialize();
@@ -123,8 +121,13 @@ void USentryEngineSubsystem::InitializeWithSettings(const FConfigureSettingsDele
 
 void USentryEngineSubsystem::Close()
 {
-	if (!SubsystemNativeImpl)
+	DisableAutomaticBreadcrumbs();
+
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->Close();
 }
@@ -139,8 +142,11 @@ bool USentryEngineSubsystem::IsEnabled()
 
 void USentryEngineSubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb);
 }
@@ -159,48 +165,66 @@ void USentryEngineSubsystem::AddBreadcrumbWithParams(const FString& Message, con
 
 void USentryEngineSubsystem::ClearBreadcrumbs()
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->ClearBreadcrumbs();
 }
 
 USentryId* USentryEngineSubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return nullptr;
+	}
 
 	return SubsystemNativeImpl->CaptureMessage(Message, Level);
 }
 
 USentryId* USentryEngineSubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return nullptr;
+	}
 
 	return SubsystemNativeImpl->CaptureMessageWithScope(Message, OnConfigureScope, Level);
 }
 
 USentryId* USentryEngineSubsystem::CaptureEvent(USentryEvent* Event)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return nullptr;
+	}
 
 	return SubsystemNativeImpl->CaptureEvent(Event);
 }
 
 USentryId* USentryEngineSubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return nullptr;
+	}
 
 	return SubsystemNativeImpl->CaptureEventWithScope(Event, OnConfigureScope);
 }
 
 void USentryEngineSubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback);
 }
@@ -218,80 +242,110 @@ void USentryEngineSubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, c
 
 void USentryEngineSubsystem::SetUser(USentryUser* User)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->SetUser(User);
 }
 
 void USentryEngineSubsystem::RemoveUser()
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->RemoveUser();
 }
 
 void USentryEngineSubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->ConfigureScope(OnConfigureScope);
 }
 
 void USentryEngineSubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->SetContext(Key, Values);
 }
 
 void USentryEngineSubsystem::SetTag(const FString& Key, const FString& Value)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->SetTag(Key, Value);
 }
 
 void USentryEngineSubsystem::RemoveTag(const FString& Key)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->RemoveTag(Key);
 }
 
 void USentryEngineSubsystem::SetLevel(ESentryLevel Level)
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->SetLevel(Level);
 }
 
 void USentryEngineSubsystem::StartSession()
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->StartSession();
 }
 
 void USentryEngineSubsystem::EndSession()
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	SubsystemNativeImpl->EndSession();
 }
 
 void USentryEngineSubsystem::AddDefaultContext()
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	TMap<FString, FString> DefaultContext;
 	DefaultContext.Add(TEXT("Engine version"), FEngineVersion::Current().ToString(EVersionComponent::Changelist));
@@ -309,8 +363,11 @@ void USentryEngineSubsystem::AddDefaultContext()
 
 void USentryEngineSubsystem::AddGpuContext()
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
 
@@ -324,8 +381,11 @@ void USentryEngineSubsystem::AddGpuContext()
 
 void USentryEngineSubsystem::AddDeviceContext()
 {
-	if (!SubsystemNativeImpl)
+	if (!IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is not initialized."));
 		return;
+	}
 
 	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();
 
