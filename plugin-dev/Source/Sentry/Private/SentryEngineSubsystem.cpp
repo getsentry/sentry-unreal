@@ -44,9 +44,12 @@ void USentryEngineSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %s"), Settings->InitAutomatically ? TEXT("true") : TEXT("false"));
 
-	if (Settings->InitAutomatically && Settings->CrashCapturingMode == ESentryCrashCapturingMode::GameAndEditor)
+	if (Settings->InitAutomatically)
 	{
-		Initialize();
+		if(!GIsEditor || Settings->CrashCapturingMode == ESentryCrashCapturingMode::GameAndEditor)
+		{
+			Initialize();
+		}
 	}
 }
 
