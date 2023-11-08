@@ -23,7 +23,7 @@ class USentryBeforeSendHandler;
 
 class SENTRY_DEPRECATED("SentrySubsystem was deprecated. Please use SentryEngineSubsystem instead.") USentrySubsystem;
 
-UCLASS()
+UCLASS(NotBlueprintType)
 class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
