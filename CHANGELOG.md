@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add capturing of editor's crashes (non-PIE) ([#436](https://github.com/getsentry/sentry-unreal/pull/436))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.33.0 to v6.33.1 ([#435](https://github.com/getsentry/sentry-unreal/pull/435))
