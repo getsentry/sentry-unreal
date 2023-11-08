@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Java SDK (Android) from v6.33.0 to v6.33.1 ([#435](https://github.com/getsentry/sentry-unreal/pull/435))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6331)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.33.0...6.33.1)
+
+## 0.14.0
+
 ### Features
 
 - Switch to using static libs on Windows ([#433](https://github.com/getsentry/sentry-unreal/pull/433))
@@ -11,6 +19,9 @@
 - Bump Java SDK (Android) from v6.32.0 to v6.33.0 ([#432](https://github.com/getsentry/sentry-unreal/pull/432))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6330)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.32.0...6.33.0)
+- Bump Cocoa SDK (iOS) from v8.14.2 to v8.15.0 ([#434](https://github.com/getsentry/sentry-unreal/pull/434))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8150)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.14.2...8.15.0)
 
 ## 0.13.0
 
