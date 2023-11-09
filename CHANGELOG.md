@@ -13,6 +13,9 @@
 - Bump Cocoa SDK (iOS) from v8.15.0 to v8.15.1 ([#438](https://github.com/getsentry/sentry-unreal/pull/438))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8151)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.15.0...8.15.1)
+- Bump Cocoa SDK (iOS) from v8.15.1 to v8.15.2 ([#439](https://github.com/getsentry/sentry-unreal/pull/439))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8152)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.15.1...8.15.2)
 
 ## 0.14.0
 
