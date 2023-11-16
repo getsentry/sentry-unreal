@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix issue with invalidating breadcrumbs during event capturing on Win/Linux ([#445](https://github.com/getsentry/sentry-unreal/pull/445))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.33.0 to v6.33.1 ([#435](https://github.com/getsentry/sentry-unreal/pull/435))
