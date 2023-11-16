@@ -260,16 +260,20 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 
 			for (const auto& Breadcrumb : BreadcrumbsDesktop)
 			{
-				sentry_value_append(eventBreadcrumbs, Breadcrumb->GetNativeObject());
+				sentry_value_t nativeBreadcrumb = Breadcrumb->GetNativeObject();
+				sentry_value_incref(nativeBreadcrumb);
+				sentry_value_append(eventBreadcrumbs, nativeBreadcrumb);
 			}
-
+	
 			sentry_value_set_by_key(nativeEvent, "breadcrumbs", eventBreadcrumbs);
 		}
 		else
 		{
 			for (const auto& Breadcrumb : BreadcrumbsDesktop)
 			{
-				sentry_value_append(eventBreadcrumbs, Breadcrumb->GetNativeObject());
+				sentry_value_t nativeBreadcrumb = Breadcrumb->GetNativeObject();
+				sentry_value_incref(nativeBreadcrumb);
+				sentry_value_append(eventBreadcrumbs, nativeBreadcrumb);
 			}
 		}
 	}
