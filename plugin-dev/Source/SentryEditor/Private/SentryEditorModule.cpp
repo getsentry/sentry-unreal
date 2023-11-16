@@ -26,7 +26,7 @@ void FSentryEditorModule::StartupModule()
 
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
-	if(Settings->InitAutomatically && Settings->CrashCapturingMode == ESentryCrashCapturingMode::GameOnly)
+	if(Settings->CrashCapturingMode == ESentryCrashCapturingMode::GameOnly)
 	{
 		PieSessionStartedDelegate = FEditorDelegates::BeginPIE.AddRaw(this, &FSentryEditorModule::OnBeginPIE);
 		PieSessionEndedDelegate = FEditorDelegates::EndPIE.AddRaw(this, &FSentryEditorModule::OnEndPIE);
@@ -58,7 +58,12 @@ FSentryEditorModule& FSentryEditorModule::Get()
 
 void FSentryEditorModule::OnBeginPIE(bool bIsSimulating)
 {
-	GEngine->GetEngineSubsystem<USentryEngineSubsystem>()->Initialize();
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	if(Settings->InitAutomatically)
+	{
+		GEngine->GetEngineSubsystem<USentryEngineSubsystem>()->Initialize();
+	}
 }
 
 void FSentryEditorModule::OnEndPIE(bool bIsSimulating)
