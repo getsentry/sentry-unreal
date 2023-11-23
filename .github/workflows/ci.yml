@@ -233,6 +233,17 @@ jobs:
           path: |
             checkout/${{ matrix.app }}/Saved/Automation
 
+      - name: Pre-compile Linux intermediates
+        id: pre-compile-linux
+        run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }}/Plugins/sentry unreal ue4 package -TargetPlatforms=Linux -NoHostPlatform
+
+      - name: Upload Linux intermediates
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: Linux-intermediates-engine${{ matrix.unreal }}
+          path: /workspace/checkout/${{ matrix.app }}/Plugins/sentry/dist/Intermediate/Build/Linux          
+
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
         if: ${{ matrix.unreal == '4.27'}}
