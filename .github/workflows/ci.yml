@@ -290,7 +290,7 @@ jobs:
           name: Linux-intermediates-engine${{ matrix.unreal }}
 
       - name: Extract Linux intermediates
-        run: unzip sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip -d sentry-unreal-*-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate
+        run: unzip Linux-intermediates-engine${{ matrix.unreal }}.zip -d sentry-unreal-*-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate
 
       - name: Prepare Sentry packages for release
         shell: pwsh
