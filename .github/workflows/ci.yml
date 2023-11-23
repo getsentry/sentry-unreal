@@ -237,6 +237,9 @@ jobs:
         id: pre-compile-linux
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }}/Plugins/sentry unreal ue4 package -TargetPlatforms=Linux
+          docker exec -w /workspace/checkout/${{ matrix.app }}/Plugins/sentry unreal ls -al
+          docker exec -w /workspace/checkout/${{ matrix.app }}/Plugins/sentry unreal ls -al /Intermediate
+          docker exec -w /workspace/checkout/${{ matrix.app }}/Plugins/sentry unreal ls -al /Intermediate/Build
 
       - name: Upload Linux intermediates
         uses: actions/upload-artifact@v3.1.1
