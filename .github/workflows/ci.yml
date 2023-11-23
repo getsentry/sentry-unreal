@@ -242,7 +242,7 @@ jobs:
         uses: actions/upload-artifact@v3.1.1
         with:
           name: Linux-intermediates-engine${{ matrix.unreal }}
-          path: /workspace/checkout/${{ matrix.app }}/Plugins/sentry/Intermediate/Build/Linux          
+          path: /workspace/checkout/${{ matrix.app }}/Plugins/sentry/Intermediate/Build/Linux/*
 
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
