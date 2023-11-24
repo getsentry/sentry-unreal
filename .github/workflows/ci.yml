@@ -281,10 +281,6 @@ jobs:
         with:
           name: ${{ github.sha }}
 
-      - name: Extract package
-        run:
-          unzip sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip -d sentry-unreal-engine${{ matrix.unreal }}-marketplace
-
       - name: Download Linux intermediates
         uses: actions/download-artifact@v3
         with:
@@ -302,4 +298,4 @@ jobs:
           name: ${{ github.sha }}
           if-no-files-found: error
           path: |
-            sentry-unreal-engine${{ matrix.unreal }}-marketplace.zip
+            sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip
