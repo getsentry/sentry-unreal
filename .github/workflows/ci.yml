@@ -288,9 +288,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: Linux-intermediates-engine${{ matrix.unreal }}
-
-      - name: Extract Linux intermediates
-        run: unzip Linux-intermediates-engine${{ matrix.unreal }}.zip -d sentry-unreal-*-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate
+          path: sentry-unreal-*-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate
 
       - name: Prepare Sentry packages for release
         shell: pwsh
