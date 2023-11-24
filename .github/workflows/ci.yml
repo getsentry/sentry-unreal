@@ -243,6 +243,7 @@ jobs:
         uses: actions/upload-artifact@v3.1.1
         with:
           name: Linux-intermediates-engine${{ matrix.unreal }}
+          if-no-files-found: error
           path: checkout/${{ matrix.app }}/Plugins/sentry/dist/Intermediate/Build/Linux
 
       - name: Build & package ${{ matrix.app }}
@@ -266,7 +267,7 @@ jobs:
 
   marketplace-repack:
     needs: [test]
-    name: Re-pack for UE Marketplace
+    name: Re-pack for marketplace UE ${{ matrix.unreal }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -294,7 +295,6 @@ jobs:
       - name: Re-upload package
         uses: actions/upload-artifact@v3.1.1
         with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
           if-no-files-found: error
           path: |
