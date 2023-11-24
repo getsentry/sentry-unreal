@@ -289,11 +289,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: Linux-intermediates-engine${{ matrix.unreal }}
-          path: sentry-unreal-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate
+          path: LinuxIntermediate
 
       - name: Prepare Sentry packages for release
         shell: pwsh
-        run: zip -r -1 -v sentry-unreal-engine${{ matrix.unreal }}-marketplace.zip ./sentry-unreal-engine${{ matrix.unreal }}-marketplace/*
+        run: zip -ur sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip LinuxIntermediate
 
       - name: Re-upload package
         uses: actions/upload-artifact@v3.1.1
