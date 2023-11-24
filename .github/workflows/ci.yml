@@ -281,18 +281,19 @@ jobs:
         with:
           name: ${{ github.sha }}
 
-      - name: Extract packages
-        run: unzip sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip -d sentry-unreal-*-engine${{ matrix.unreal }}-marketplace
+      - name: Extract package
+        run:
+          unzip sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip -d sentry-unreal-engine${{ matrix.unreal }}-marketplace
 
       - name: Download Linux intermediates
         uses: actions/download-artifact@v3
         with:
           name: Linux-intermediates-engine${{ matrix.unreal }}
-          path: sentry-unreal-*-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate
+          path: sentry-unreal-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate
 
       - name: Prepare Sentry packages for release
         shell: pwsh
-        run: zip -r -1 -v sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip ./*
+        run: zip -r -1 -v sentry-unreal-engine${{ matrix.unreal }}-marketplace.zip ./sentry-unreal-engine${{ matrix.unreal }}-marketplace/LinuxIntermediate/*
 
       - name: Re-upload package
         uses: actions/upload-artifact@v3.1.1
@@ -301,4 +302,4 @@ jobs:
           name: ${{ github.sha }}
           if-no-files-found: error
           path: |
-            sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip
+            sentry-unreal-engine${{ matrix.unreal }}-marketplace.zip
