@@ -3,7 +3,6 @@
 #include "SentryEditorModule.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
-#include "SentryEngineSubsystem.h"
 #include "SentrySettingsCustomization.h"
 
 #include "Modules/ModuleManager.h"
@@ -23,14 +22,6 @@ void FSentryEditorModule::StartupModule()
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	PropertyModule.RegisterCustomClassLayout("SentrySettings", FOnGetDetailCustomizationInstance::CreateStatic(&FSentrySettingsCustomization::MakeInstance));
 	PropertyModule.NotifyCustomizationModuleChanged();
-
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-
-	if(Settings->CrashCapturingMode == ESentryCrashCapturingMode::GameOnly)
-	{
-		PieSessionStartedDelegate = FEditorDelegates::BeginPIE.AddRaw(this, &FSentryEditorModule::OnBeginPIE);
-		PieSessionEndedDelegate = FEditorDelegates::EndPIE.AddRaw(this, &FSentryEditorModule::OnEndPIE);
-	}
 }
 
 void FSentryEditorModule::ShutdownModule()
@@ -54,21 +45,6 @@ void FSentryEditorModule::ShutdownModule()
 FSentryEditorModule& FSentryEditorModule::Get()
 {
 	return FModuleManager::LoadModuleChecked<FSentryEditorModule>(ModuleName);
-}
-
-void FSentryEditorModule::OnBeginPIE(bool bIsSimulating)
-{
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-
-	if(Settings->InitAutomatically)
-	{
-		GEngine->GetEngineSubsystem<USentryEngineSubsystem>()->Initialize();
-	}
-}
-
-void FSentryEditorModule::OnEndPIE(bool bIsSimulating)
-{
-	GEngine->GetEngineSubsystem<USentryEngineSubsystem>()->Close();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -17,5 +17,3 @@ enum class ESentryLevel : uint8
 	Error,
 	Fatal
 };
-
-DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);

@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryEngineSubsystem.h"
+#include "SentrySubsystem.h"
 #include "SentryEvent.h"
 
 #include "UObject/UObjectGlobals.h"
@@ -10,14 +10,14 @@
 #if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentrySubsystemSpec, "Sentry.SentrySubsystem", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
-	USentryEngineSubsystem* SentrySubsystem;
+	USentrySubsystem* SentrySubsystem;
 END_DEFINE_SPEC(SentrySubsystemSpec)
 
 void SentrySubsystemSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentrySubsystem = GEngine->GetEngineSubsystem<USentryEngineSubsystem>();
+		SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
 		if(SentrySubsystem && !SentrySubsystem->IsEnabled())
 		{

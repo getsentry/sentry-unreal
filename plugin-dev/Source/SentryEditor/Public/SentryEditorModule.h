@@ -23,9 +23,6 @@ public:
 	static const FName ModuleName;
 
 private:
-	void OnBeginPIE(bool bIsSimulating);
-	void OnEndPIE(bool bIsSimulating);
-	
 	FDelegateHandle PieSessionStartedDelegate;
 	FDelegateHandle PieSessionEndedDelegate;
 };

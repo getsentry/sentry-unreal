@@ -3,14 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystems/EngineSubsystem.h"
 
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
 
 #include "SentrySubsystem.generated.h"
-
-#define SENTRY_DEPRECATED(Message) [[deprecated(Message " Update your code to the new API otherwise it will no longer compile in future plugin releases.")]]
 
 class USentrySettings;
 class USentryBreadcrumb;
@@ -21,103 +19,254 @@ class USentryUser;
 class ISentrySubsystem;
 class USentryBeforeSendHandler;
 
-class SENTRY_DEPRECATED("SentrySubsystem was deprecated. Please use SentryEngineSubsystem instead.") USentrySubsystem;
+DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
-UCLASS(NotBlueprintType)
-class SENTRY_API USentrySubsystem : public UGameInstanceSubsystem
+/**
+ * Sentry main API entry point.
+ */
+UCLASS()
+class SENTRY_API USentrySubsystem : public UEngineSubsystem
 {
 	GENERATED_BODY()
 public:
-
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use SentryEngineSubsystem instead."))
+	/** Initializes Sentry SDK with values specified in ProjectSettings > Plugins > SentrySDK. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Initialize();
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use SentryEngineSubsystem instead."))
+	/** Initializes Sentry SDK with values that override certain parameters specified in ProjectSettings > Plugins > SentrySDK.
+	 *
+	 * @param OnConfigureSettings The callback to configure the settings.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use SentryEngineSubsystem instead."))
+	/** Closes the Sentry SDK. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Close();
 
-	UFUNCTION(BlueprintPure, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/** Checks whether the Sentry SDK was initialized and event capturing is enabled. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
 	bool IsEnabled();
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Adds a breadcrumb to the current Scope.
+	 *
+	 * @param Breadcrumb The breadcrumb to send to Sentry.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void AddBreadcrumb(USentryBreadcrumb* Breadcrumb);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (AutoCreateRefTerm = "Data", DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Adds a breadcrumb to the current Scope.
+	 *
+	 * @param Message If a message is provided it’s rendered as text and the whitespace is preserved.
+	 * Very long text might be abbreviated in the UI.
+	 * 
+	 * @param Category Categories are dotted strings that indicate what the crumb is or where it comes from.
+	 * Typically it’s a module name or a descriptive string. For instance ui.click could be used to indicate that a click
+	 * happened in the UI or flask could be used to indicate that the event originated in the Flask framework.
+	 * 
+	 * @param Type The type of breadcrumb.
+	 * The default type is default which indicates no specific handling.
+	 * Other types are currently http for HTTP requests and navigation for navigation events.
+	 * 
+	 * @param Data Data associated with this breadcrumb.
+	 * Contains a sub-object whose contents depend on the breadcrumb type.
+	 * Additional parameters that are unsupported by the type are rendered as a key/value table.
+	 * 
+	 * @param Level Breadcrumb level.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
 	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
 		ESentryLevel Level = ESentryLevel::Info);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Clear all breadcrumbs of the current Scope.
+	 *
+	 * @note: Not supported for Windows/Linux.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void ClearBreadcrumbs();
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Captures the message.
+	 *
+	 * @param Message The message to send.
+	 * @param Level The message level.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryId* CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (AutoCreateRefTerm = "OnCofigureScope", DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Captures the message with a configurable scope.
+	 * This allows modifying a scope without affecting other events.
+	 * Changing message level during scope configuration will override Level parameter value.
+	 *
+	 * @param Message The message to send.
+	 * @param OnConfigureScope The callback to configure the scope.
+	 * @param Level The message level.
+	 *
+	 * @note: Not supported for Windows/Linux.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Captures a manually created event and sends it to Sentry.
+	 *
+	 * @param Event The event to send to Sentry.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryId* CaptureEvent(USentryEvent* Event);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Captures a manually created event and sends it to Sentry.
+	 *
+	 * @param Event The event to send to Sentry.
+	 * @param OnConfigureScope The callback to configure the scope.
+	 *
+	 * @note: Not supported for Windows/Linux.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Captures a user feedback.
+	 *
+	 * @param UserFeedback The user feedback to send to Sentry.
+	 *
+	 * @note: Not supported for Windows/Linux.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Captures a user feedback.
+	 *
+	 * @param EventId The event Id.
+	 * @param Email The user email.
+	 * @param Comments The user comments.
+	 * @param Name The optional username.
+	 *
+	 * @note: Not supported for Windows/Linux.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Sets a user for the current scope.
+	 *
+	 * @param User The user.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetUser(USentryUser* User);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/** Removes a user for the current scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveUser();
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (AutoCreateRefTerm = "OnCofigureScope", DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Configures the scope through the callback.
+	 * Sentry SDK uses the Scope to attach contextual data to events.
+	 *
+	 * @param OnConfigureScope The callback to configure the scope.
+	 *
+	 * @note: Not supported for Windows/Linux.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
 	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Sets context values which will be used for enriching events. 
+	 *
+	 * @param Key Context key.
+	 * @param Values Context values.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Sets global tag - key/value string pair which will be attached to every event.
+	 *
+	 * @param Key Tag key.
+	 * @param Value Tag value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetTag(const FString& Key, const FString& Value);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Removes global tag.
+	 *
+	 * @param Key Tag key.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveTag(const FString& Key);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Sets the level of all events sent.
+	 *
+	 * @param Level Event level.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetLevel(ESentryLevel Level);
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Starts a new session.
+	 * If there's a running session, it ends it before starting the new one.
+	 * This method can be used in combination with @EndSession to manually track sessions.
+	 * The SDK uses sessions to inform Sentry about release and project associated project health.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void StartSession();
 
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="SentrySubsystem was deprecated. Please use USentryEngineSubsystem"))
+	/**
+	 * Ends current session.
+	 * This method can be used in combination with @StartSession to manually track sessions.
+	 * The SDK uses sessions to inform Sentry about release and project associated project health.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void EndSession();
+
+private:
+	/** Adds default context data for all events captured by Sentry SDK. */
+	void AddDefaultContext();
+
+	/** Adds GPU context data for all events captured by Sentry SDK. */
+	void AddGpuContext();
+
+	/** Adds GPU context data for all events captured by Sentry SDK. */
+	void AddDeviceContext();
+
+	/** Promote specified values to tags for all events captured by Sentry SDK. */
+	void PromoteTags();
+
+	/** Subscribe to specified game events in order to add corresponding breadcrumbs automatically. */
+	void ConfigureBreadcrumbs();
+
+	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
+	void DisableAutomaticBreadcrumbs();
+
+	/** Check whether the event capturing should be disabled for the current build configuration */
+	bool IsCurrentBuildConfigurationEnabled();
+
+	/** Check whether the event capturing should be disabled for the current build configuration */
+	bool IsCurrentBuildTargetEnabled();
+
+	/** Check whether the event capturing should be disabled for the current build configuration */
+	bool IsCurrentPlatformEnabled();
+
+private:
+	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
+
+	UPROPERTY()
+	USentryBeforeSendHandler* BeforeSendHandler;
+
+	FDelegateHandle PreLoadMapDelegate;
+	FDelegateHandle PostLoadMapDelegate;
+	FDelegateHandle GameStateChangedDelegate;
+	FDelegateHandle UserActivityChangedDelegate;
+	FDelegateHandle GameSessionIDChangedDelegate;
 };
