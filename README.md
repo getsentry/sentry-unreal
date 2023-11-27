@@ -54,7 +54,7 @@ The SDK complies with three latest engine versions.
 
 - Only crash events captured on Android contain the full callstack. Events that were captured manually won't have the native C++ part there.
 
-- On Linux `sudo apt-get install libc++-dev` is required to install the required `Crashpad` dependencies.
+- On Linux `sudo apt-get install libc++-dev libcurl-dev` is required to install the `Crashpad` dependencies. This list may vary depending on your Linux distro. See the [Crashpad documentation](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/doc/developing.md#prerequisites) for more details.
 
 ## Development
 
