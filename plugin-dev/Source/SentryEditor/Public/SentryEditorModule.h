@@ -21,8 +21,4 @@ public:
 	static FSentryEditorModule& Get();
 
 	static const FName ModuleName;
-
-private:
-	FDelegateHandle PieSessionStartedDelegate;
-	FDelegateHandle PieSessionEndedDelegate;
 };
