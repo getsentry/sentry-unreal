@@ -1,15 +1,11 @@
 ﻿// Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryEditorModule.h"
-#include "SentryModule.h"
 #include "SentrySettings.h"
 #include "SentrySettingsCustomization.h"
 
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
-#include "Editor.h"
-
-#include "Engine/Engine.h"
 
 #define LOCTEXT_NAMESPACE "FSentryEditorModule"
 
@@ -28,18 +24,6 @@ void FSentryEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
-
-	if(PieSessionEndedDelegate.IsValid())
-	{
-		FEditorDelegates::BeginPIE.Remove(PieSessionStartedDelegate);
-		PieSessionStartedDelegate.Reset();
-	}
-
-	if(PieSessionEndedDelegate.IsValid())
-	{
-		FEditorDelegates::EndPIE.Remove(PieSessionEndedDelegate);
-		PieSessionEndedDelegate.Reset();
-	}
 }
 
 FSentryEditorModule& FSentryEditorModule::Get()

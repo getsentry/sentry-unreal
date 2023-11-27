@@ -26,8 +26,7 @@ public class SentryEditor : ModuleRules
                 "Sentry",
                 "PropertyEditor",
                 "Projects",
-                "HTTP",
-                "UnrealEd"
+                "HTTP"
             }
         );
     }
