@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix issue with invalidating breadcrumbs during event capturing on Win/Linux ([#445](https://github.com/getsentry/sentry-unreal/pull/445))
+- Fix build errors when cross-compiling for Linux on Windows with UE Marketplace plugin version ([#453](https://github.com/getsentry/sentry-unreal/pull/453))
 
 ### Dependencies
 
