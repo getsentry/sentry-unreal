@@ -14,9 +14,10 @@ This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for 
 ## Downloads
 
 The SDK can be downloaded from the [Releases] page, which also lists the
-changelog of every version.
+changelog of every version, or from the [UE Marketplace] page via Epic Games launcher.
 
 [releases]: https://github.com/getsentry/sentry-unreal/releases
+[UE Marketplace]: https://www.unrealengine.com/marketplace/en-US/product/sentry-01
 
 If manual download from the [Releases] page is a preferred way for plugin integration using the package with the `github` suffix in its name is recommended.
 
