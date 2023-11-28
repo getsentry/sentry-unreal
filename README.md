@@ -14,9 +14,10 @@ This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for 
 ## Downloads
 
 The SDK can be downloaded from the [Releases] page, which also lists the
-changelog of every version.
+changelog of every version, or from the [UE Marketplace] page via Epic Games launcher.
 
 [releases]: https://github.com/getsentry/sentry-unreal/releases
+[UE Marketplace]: https://www.unrealengine.com/marketplace/en-US/product/sentry-01
 
 If manual download from the [Releases] page is a preferred way for plugin integration using the package with the `github` suffix in its name is recommended.
 
@@ -47,13 +48,11 @@ The SDK complies with three latest engine versions.
 
 - In order to fix errors during the Android debug symbols upload in UE 5.0 or newer (Windows) the default `Android File Server` plugin has to be disabled first.
 
-- To avoid issues with running certain plugin scripts on Windows using [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?WT.mc_id=THOMASMAURER-blog-thmaure&view=powershell-7.3&viewFallbackFrom=powershell-7) is recommended.
-
 - In UE 5.2 or newer game log attached to crashes captured with `sentry-native` integration instead of [crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/) could be truncated. This is caused by current `crashpad` behavior which sends crashes to Sentry right away while UE is still about to write some bits of information to the log file.
 
 - Only crash events captured on Android contain the full callstack. Events that were captured manually won't have the native C++ part there.
 
-- On Linux `sudo apt-get install libc++-dev` is required to install the required `Crashpad` dependencies.
+- On Linux `sudo apt-get install libc++-dev libcurl-dev` is required to install the `Crashpad` dependencies. This list may vary depending on your Linux distro. See the [Crashpad documentation](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/doc/developing.md#prerequisites) for more details.
 
 ## Development
 
