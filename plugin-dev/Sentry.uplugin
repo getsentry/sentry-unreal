@@ -28,6 +28,12 @@
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
 		}
 	],
+	"PreBuildSteps":
+	{
+		"Win64": [
+			"if \"$(TargetPlatform)\"==\"Linux\" (\n if exist \"$(PluginDir)/LinuxIntermediate\" (\n if not exist \"$(PluginDir)/Intermediate/Build/Linux\" (echo | xcopy \"$(PluginDir)/LinuxIntermediate\" \"$(PluginDir)/Intermediate/Build/Linux\" /E /H /C /I) \n) \n)",
+		]
+	},
 	"PostBuildSteps":
 	{
 		"Mac": [
@@ -38,6 +44,8 @@
 			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
 		],
 		"Win64": [
+			"set CRASHPAD_HANDLER=\"$(PluginDir)/Binaries/Linux/crashpad_handler\"",
+			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%CRASHPAD_HANDLER%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Linux/bin/*\" \"$(PluginDir)/Binaries/Linux/\" /F /R /Y /I)\n)",
 			"set SYM_UPLOAD_SCRIPT=\"$(PluginDir)/Scripts/upload-debug-symbols-win.bat\"",
 			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Warning: Sentry: Symbol upload script is missing. Skipping post build step.\n)"
 		]
