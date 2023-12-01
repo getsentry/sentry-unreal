@@ -2,9 +2,11 @@
 
 ## Unreleased
 
-### Features
+### Breaking Changes
 
-- Add capturing of editor's crashes (non-PIE) by deriving Sentry subsystem from `UEngineSubsystem` ([#436](https://github.com/getsentry/sentry-unreal/pull/436))
+- Change `USentrySubsystem` base class to `UEngineSubsystem` in order to capture editor crashes ([#436](https://github.com/getsentry/sentry-unreal/pull/436))\
+    If you make use of plugin's blueprint API, you will need to recreate `Get Sentry Subsystem` nodes\
+    If you make use of plugin's C++ API, you will need to update your implementation by accessing `USentrySubsystem` via `GEngine` pointer
 
 ### Fixes
 
