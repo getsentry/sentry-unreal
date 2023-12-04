@@ -233,6 +233,19 @@ jobs:
           path: |
             checkout/${{ matrix.app }}/Saved/Automation
 
+      - name: Pre-compile Linux intermediates
+        id: pre-compile-linux
+        run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }}/Plugins/sentry unreal ue4 package -TargetPlatforms=Linux
+          docker exec -w /workspace/checkout/${{ matrix.app }}/Plugins/sentry unreal ls -al dist/Intermediate/Build/Linux
+
+      - name: Upload Linux intermediates
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: Linux-intermediates-engine${{ matrix.unreal }}
+          if-no-files-found: error
+          path: checkout/${{ matrix.app }}/Plugins/sentry/dist/Intermediate/Build/Linux
+
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
         if: ${{ matrix.unreal == '4.27'}}
@@ -251,3 +264,38 @@ jobs:
             checkout/${{ matrix.app }}/Saved/Stats
             checkout/${{ matrix.app }}/Saved/MaterialStats
             checkout/${{ matrix.app }}/Saved/MaterialStatsDebug
+
+  marketplace-repack:
+    needs: [test]
+    name: Re-pack for marketplace UE ${{ matrix.unreal }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Note: these versions must match scripts/packaging/engine-versions.txt
+        unreal: ['5.1', '5.2', '5.3']
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}
+
+      - name: Download Linux intermediates
+        uses: actions/download-artifact@v3
+        with:
+          name: Linux-intermediates-engine${{ matrix.unreal }}
+          path: LinuxIntermediate
+
+      - name: Prepare Sentry packages for release
+        shell: pwsh
+        run: zip -ur sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip LinuxIntermediate
+
+      - name: Re-upload package
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: ${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            sentry-unreal-*-engine${{ matrix.unreal }}-marketplace.zip
