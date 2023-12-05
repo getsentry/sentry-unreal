@@ -279,12 +279,20 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
 
-public:
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 	static FString GetFormattedReleaseName();
+
+	bool IsDirty() const;
+	void ClearDirtyFlag();
 
 private:
 	FString GetDefaultEnvironmentName();
 
 	void LoadDebugSymbolsProperties();
 	void CheckLegacySettings();
+
+	bool bIsDirty;
 };
