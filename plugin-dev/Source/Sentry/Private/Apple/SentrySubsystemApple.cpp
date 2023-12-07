@@ -15,6 +15,7 @@
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryDefines.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -64,6 +65,21 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
 		{
 			[options addInAppExclude:it->GetNSString()];
+		}
+		if (settings->EnableTracing)
+		{
+			options.enableTracing = true;
+			switch (settings->SamplingType)
+			{
+			case ESentryTracesSamplingType::UniformSampleRate:
+				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
+				break;
+			case ESentryTracesSamplingType::TracesSampler:
+				options.tracesSampler = nil;
+				break;
+			default:
+				UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sampling type value used."));
+			}
 		}
 	}];
 }
