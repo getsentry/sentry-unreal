@@ -9,10 +9,18 @@ class IPropertyHandle;
 class FSlateHyperlinkRun;
 class SWidget;
 
+enum class ESentrySettingsStatus : uint8
+{
+	DsnMissing = 0,
+	Modified,
+	Configured
+};
+
 class FSentrySettingsCustomization : public IDetailCustomization
 {
 public:
 	FSentrySettingsCustomization();
+	virtual ~FSentrySettingsCustomization();
 
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
@@ -20,10 +28,13 @@ public:
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 
 private:
+	void DrawGeneralNotice(IDetailLayoutBuilder& DetailBuilder);
+	void DrawCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder);
 	void DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder);
 
 	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);
 
+	TSharedRef<SWidget> MakeGeneralSettingsStatusRow(FName IconName, FText Message, FText ButtonMessage);
 	TSharedRef<SWidget> MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage);
 
 	void UpdateProjectName();
@@ -36,6 +47,7 @@ private:
 	// Gets path to CRC's DefaultEngine.ini in engine directory
 	FString GetCrcConfigPath() const;
 
+	int32 GetGeneralSettingsStatusAsInt() const;
 	int32 GetSentryCliStatusAsInt() const;
 
 	TSharedPtr<IPropertyHandle> ProjectNameHandle;

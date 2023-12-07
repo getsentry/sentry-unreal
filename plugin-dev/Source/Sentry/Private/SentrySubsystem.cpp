@@ -120,7 +120,7 @@ void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& 
 
 void USentrySubsystem::Close()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->Close();
@@ -136,7 +136,7 @@ bool USentrySubsystem::IsEnabled()
 
 void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb);
@@ -156,7 +156,7 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 
 void USentrySubsystem::ClearBreadcrumbs()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->ClearBreadcrumbs();
@@ -164,7 +164,7 @@ void USentrySubsystem::ClearBreadcrumbs()
 
 USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
 	return SubsystemNativeImpl->CaptureMessage(Message, Level);
@@ -172,7 +172,7 @@ USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel
 
 USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
 	return SubsystemNativeImpl->CaptureMessageWithScope(Message, OnConfigureScope, Level);
@@ -180,7 +180,7 @@ USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, con
 
 USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
 	return SubsystemNativeImpl->CaptureEvent(Event);
@@ -188,7 +188,7 @@ USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 
 USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
 	return SubsystemNativeImpl->CaptureEventWithScope(Event, OnConfigureScope);
@@ -196,7 +196,7 @@ USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FC
 
 void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback);
@@ -215,7 +215,7 @@ void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const F
 
 void USentrySubsystem::SetUser(USentryUser* User)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->SetUser(User);
@@ -223,7 +223,7 @@ void USentrySubsystem::SetUser(USentryUser* User)
 
 void USentrySubsystem::RemoveUser()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->RemoveUser();
@@ -231,7 +231,7 @@ void USentrySubsystem::RemoveUser()
 
 void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->ConfigureScope(OnConfigureScope);
@@ -239,7 +239,7 @@ void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigure
 
 void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->SetContext(Key, Values);
@@ -247,7 +247,7 @@ void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FStrin
 
 void USentrySubsystem::SetTag(const FString& Key, const FString& Value)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->SetTag(Key, Value);
@@ -255,7 +255,7 @@ void USentrySubsystem::SetTag(const FString& Key, const FString& Value)
 
 void USentrySubsystem::RemoveTag(const FString& Key)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->RemoveTag(Key);
@@ -263,7 +263,7 @@ void USentrySubsystem::RemoveTag(const FString& Key)
 
 void USentrySubsystem::SetLevel(ESentryLevel Level)
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->SetLevel(Level);
@@ -271,7 +271,7 @@ void USentrySubsystem::SetLevel(ESentryLevel Level)
 
 void USentrySubsystem::StartSession()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->StartSession();
@@ -279,7 +279,7 @@ void USentrySubsystem::StartSession()
 
 void USentrySubsystem::EndSession()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	SubsystemNativeImpl->EndSession();
@@ -287,7 +287,7 @@ void USentrySubsystem::EndSession()
 
 void USentrySubsystem::AddDefaultContext()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	TMap<FString, FString> DefaultContext;
@@ -306,7 +306,7 @@ void USentrySubsystem::AddDefaultContext()
 
 void USentrySubsystem::AddGpuContext()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
@@ -321,7 +321,7 @@ void USentrySubsystem::AddGpuContext()
 
 void USentrySubsystem::AddDeviceContext()
 {
-	if (!SubsystemNativeImpl)
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
 	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();

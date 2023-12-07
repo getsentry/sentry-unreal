@@ -2,12 +2,15 @@
 
 #include "SentrySettingsCustomization.h"
 #include "SentrySettings.h"
+#include "SentryModule.h"
+#include "SentrySubsystem.h"
 #include "SentrySymToolsDownloader.h"
 
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 
+#include "Engine/Engine.h"
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
@@ -37,6 +40,10 @@ FSentrySettingsCustomization::FSentrySettingsCustomization()
 {
 }
 
+FSentrySettingsCustomization::~FSentrySettingsCustomization()
+{
+}
+
 TSharedRef<IDetailCustomization> FSentrySettingsCustomization::MakeInstance()
 {
 	return MakeShareable(new FSentrySettingsCustomization);
@@ -44,26 +51,25 @@ TSharedRef<IDetailCustomization> FSentrySettingsCustomization::MakeInstance()
 
 void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
+	DrawGeneralNotice(DetailBuilder);
 	DrawDebugSymbolsNotice(DetailBuilder);
+	DrawCrashReporterNotice(DetailBuilder);
 
 	SetPropertiesUpdateHandler(DetailBuilder);
 }
 
-void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder)
+void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& DetailBuilder)
 {
-	IDetailCategoryBuilder& DebugSymbolsCategory = DetailBuilder.EditCategory(TEXT("Debug Symbols"));
-	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Crash Reporter"));
+	IDetailCategoryBuilder& GeneralCategory = DetailBuilder.EditCategory(TEXT("General"));
 
-	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
+	TSharedRef<SWidget> GeneralMissingDsnWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+	FText::FromString(TEXT("Sentry DSN is not configured.")), FText());
 
-	TSharedRef<SWidget> CliMissingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Sentry symbol upload tools are not configured.")), FText::FromString(TEXT("Configure Now")));
+	TSharedRef<SWidget> GeneralModifiedWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Sentry settings were modified.")), FText::FromString(TEXT("Apply")));
 
-	TSharedRef<SWidget> CliDownloadingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Downloading Sentry symbol upload tools...")), FText());
-
-	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
-		FText::FromString(TEXT("Sentry symbol upload tools are configured.")), FText::FromString(TEXT("Reload")));
+	TSharedRef<SWidget> GeneralConfiguredWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
+		FText::FromString(TEXT("Sentry is configured.")), FText());
 
 #if ENGINE_MAJOR_VERSION >= 5
 	const ISlateStyle& Style = FAppStyle::Get();
@@ -71,49 +77,41 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 	const ISlateStyle& Style = FEditorStyle::Get();
 #endif
 
-	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
+	GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
 		.WholeRowWidget
 		[
 			SNew(SBorder)
 			.Padding(8.0f)
 			[
 				SNew(SWidgetSwitcher)
-				.WidgetIndex(this, &FSentrySettingsCustomization::GetSentryCliStatusAsInt)
+				.WidgetIndex(this, &FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt)
 				+SWidgetSwitcher::Slot()
 				[
-					CliMissingWidget
+					GeneralMissingDsnWidget
 				]
 				+SWidgetSwitcher::Slot()
 				[
-					CliDownloadingWidget
+					GeneralModifiedWidget
 				]
 				+SWidgetSwitcher::Slot()
 				[
-					CliConfiguredWidget
+					GeneralConfiguredWidget
 				]
 			]
 		];
+}
 
-	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
-		.WholeRowWidget
-		[
-			SNew(SBorder)
-			.Padding(1)
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.Padding(FMargin(10, 10, 10, 10))
-				.FillWidth(1.0f)
-				[
-					SNew(SRichTextBlock)
-						.Text(FText::FromString(TEXT("Note that the Sentry SDK creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, "
-							"that should <RichTextBlock.TextHighlight>NOT</> be made publicly available.")))
-						.TextStyle(Style, "MessageLog")
-						.DecoratorStyleSet(&Style)
-						.AutoWrapText(true)
-				]
-			]
-		];
+void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder)
+{
+	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Crash Reporter"));
+
+	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
+
+#if ENGINE_MAJOR_VERSION >= 5
+	const ISlateStyle& Style = FAppStyle::Get();
+#else
+	const ISlateStyle& Style = FEditorStyle::Get();
+#endif
 
 	CrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporter")), false)
 		.WholeRowWidget
@@ -195,6 +193,70 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 		];
 }
 
+void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder)
+{
+	IDetailCategoryBuilder& DebugSymbolsCategory = DetailBuilder.EditCategory(TEXT("Debug Symbols"));
+
+	TSharedRef<SWidget> CliMissingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Sentry symbol upload tools are not configured.")), FText::FromString(TEXT("Configure Now")));
+
+	TSharedRef<SWidget> CliDownloadingWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Downloading Sentry symbol upload tools...")), FText());
+
+	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
+		FText::FromString(TEXT("Sentry symbol upload tools are configured.")), FText::FromString(TEXT("Reload")));
+
+#if ENGINE_MAJOR_VERSION >= 5
+	const ISlateStyle& Style = FAppStyle::Get();
+#else
+	const ISlateStyle& Style = FEditorStyle::Get();
+#endif
+
+	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
+		.WholeRowWidget
+		[
+			SNew(SBorder)
+			.Padding(8.0f)
+			[
+				SNew(SWidgetSwitcher)
+				.WidgetIndex(this, &FSentrySettingsCustomization::GetSentryCliStatusAsInt)
+				+SWidgetSwitcher::Slot()
+				[
+					CliMissingWidget
+				]
+				+SWidgetSwitcher::Slot()
+				[
+					CliDownloadingWidget
+				]
+				+SWidgetSwitcher::Slot()
+				[
+					CliConfiguredWidget
+				]
+			]
+		];
+
+	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
+		.WholeRowWidget
+		[
+			SNew(SBorder)
+			.Padding(1)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.Padding(FMargin(10, 10, 10, 10))
+				.FillWidth(1.0f)
+				[
+					SNew(SRichTextBlock)
+						.Text(FText::FromString(TEXT("Note that the Sentry SDK creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, "
+							"that should <RichTextBlock.TextHighlight>NOT</> be made publicly available.")))
+						.TextStyle(Style, "MessageLog")
+						.DecoratorStyleSet(&Style)
+						.AutoWrapText(true)
+				]
+			]
+		];
+}
+
 void FSentrySettingsCustomization::SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder)
 {
 	const FSimpleDelegate OnUpdateProjectName = FSimpleDelegate::CreateSP(this, &FSentrySettingsCustomization::UpdateProjectName);
@@ -208,6 +270,58 @@ void FSentrySettingsCustomization::SetPropertiesUpdateHandler(IDetailLayoutBuild
 	const FSimpleDelegate OnUpdateAuthToken = FSimpleDelegate::CreateSP(this, &FSentrySettingsCustomization::UpdateAuthToken);
 	AuthTokenHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, AuthToken));
 	AuthTokenHandle->SetOnPropertyValueChanged(OnUpdateAuthToken);
+}
+
+TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(FName IconName, FText Message, FText ButtonMessage)
+{
+	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SImage)
+	#if ENGINE_MAJOR_VERSION >= 5
+			.Image(FAppStyle::Get().GetBrush(IconName))
+	#else
+			.Image(FEditorStyle::Get().GetBrush(IconName))
+	#endif
+		]
+
+		+SHorizontalBox::Slot()
+		.FillWidth(1.0f)
+		.Padding(16.0f, 0.0f)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.ColorAndOpacity(FLinearColor::White)
+			.ShadowColorAndOpacity(FLinearColor::Black)
+			.ShadowOffset(FVector2D::UnitVector)
+			.Text(Message)
+		];
+
+	if (!ButtonMessage.IsEmpty())
+	{
+		Result->AddSlot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.OnClicked_Lambda([this]() -> FReply
+				{
+					USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+					SentrySubsystem->Close();
+					SentrySubsystem->Initialize();
+
+					USentrySettings* Settings = FSentryModule::Get().GetSettings();
+					Settings->ClearDirtyFlag();
+
+					return FReply::Handled();
+				})
+				.Text(ButtonMessage)
+			];
+	}
+
+	return Result;
 }
 
 TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage)
@@ -339,9 +453,28 @@ FString FSentrySettingsCustomization::GetCrcConfigPath() const
 	return FPaths::Combine(FPaths::EngineDir(), TEXT("Programs"), TEXT("CrashReportClient"), TEXT("Config"), TEXT("DefaultEngine.ini"));
 }
 
+int32 FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt() const
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	if (Settings->Dsn.IsEmpty())
+	{
+		return static_cast<int32>(ESentrySettingsStatus::DsnMissing);
+	}
+
+	if (Settings->IsDirty() && SentrySubsystem->IsEnabled())
+	{
+		return static_cast<int32>(ESentrySettingsStatus::Modified);
+	}
+
+	return static_cast<int32>(ESentrySettingsStatus::Configured);
+}
+
 int32 FSentrySettingsCustomization::GetSentryCliStatusAsInt() const
 {
-	if(CliDownloader.IsValid())
+	if (CliDownloader.IsValid())
 	{
 		return static_cast<int32>(CliDownloader->GetStatus());
 	}

@@ -10,27 +10,28 @@
 
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-	, Dsn()
-	, Environment(GetDefaultEnvironmentName())
 	, InitAutomatically(true)
+	, Dsn()
 	, Debug(true)
-	, EnableForPromotedBuildsOnly(false)
 	, EnableAutoCrashCapturing(true)
+	, Environment(GetDefaultEnvironmentName())
+	, SampleRate(1.0f)
 	, EnableAutoLogAttachment(false)
 	, AttachStacktrace(true)
-	, UseProxy(false) 
-	, ProxyUrl()
-	, SampleRate(1.0f)
-	, MaxBreadcrumbs(100)
+	, SendDefaultPii(false) 
 	, AttachScreenshot(false)
-	, SendDefaultPii(false)
+	, MaxBreadcrumbs(100)
 	, EnableAutoSessionTracking(true)
 	, SessionTimeout(30000)
 	, OverrideReleaseName(false)
+	, UseProxy(false)
+	, ProxyUrl()
+	, BeforeSendHandler(USentryBeforeSendHandler::StaticClass())
+	, EnableForPromotedBuildsOnly(false)
 	, UploadSymbolsAutomatically(false)
 	, IncludeSources(false)
 	, CrashReporterUrl()
-	, BeforeSendHandler(USentryBeforeSendHandler::StaticClass())
+	, bIsDirty(false)
 {
 	if (GIsEditor)
 	{
@@ -39,6 +40,33 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 
 	CheckLegacySettings();
 }
+
+#if WITH_EDITOR
+
+void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (!PropertyChangedEvent.Property)
+	{
+		return;
+	}
+
+	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, InitAutomatically) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadSymbolsAutomatically) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, ProjectName) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, OrgName) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AuthToken) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, IncludeSources) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl))
+	{
+		return;
+	}
+
+	bIsDirty = true;
+}
+
+#endif
 
 FString USentrySettings::GetFormattedReleaseName()
 {
@@ -52,6 +80,16 @@ FString USentrySettings::GetFormattedReleaseName()
 	}
 
 	return FormattedReleaseName;
+}
+
+bool USentrySettings::IsDirty() const
+{
+	return bIsDirty;
+}
+
+void USentrySettings::ClearDirtyFlag()
+{
+	bIsDirty = false;
 }
 
 FString USentrySettings::GetDefaultEnvironmentName()

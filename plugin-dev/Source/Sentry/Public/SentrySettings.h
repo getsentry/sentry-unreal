@@ -14,23 +14,23 @@ struct FAutomaticBreadcrumbs
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Map loading started", ToolTip = "Flag indicating whether to automatically add breadcrumb when map loading starts."))
 	bool bOnMapLoadingStarted = false;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Map loaded", ToolTip = "Flag indicating whether to automatically add breadcrumb after map was loaded."))
 	bool bOnMapLoaded = false;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Game state class changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes game state."))
 	bool bOnGameStateClassChanged = false;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Game session ID changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes the currently active game session."))
 	bool bOnGameSessionIDChanged = false;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "User activity string changed", ToolTip = "Flag indicating whether to automatically add breadcrumb when application code changes the user activity hint string for analytics, crash reports, etc."))
 	bool bOnUserActivityStringChanged = false;
 };
@@ -40,27 +40,27 @@ struct FTagsPromotion
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Build configuration", ToolTip = "Flag indicating whether the build configuration should be promoted to a captured event's tag."))
 	bool bPromoteBuildConfiguration = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Target type", ToolTip = "Flag indicating whether the target type should be promoted to a captured event's tag."))
 	bool bPromoteTargetType = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Engine mode", ToolTip = "Flag indicating whether the engine mode should be promoted to a captured event's tag."))
 	bool bPromoteEngineMode = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Is game", ToolTip = "Flag indicating whether the `IsGame` parameter should be promoted to a captured event's tag."))
 	bool bPromoteIsGame = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Is standalone", ToolTip = "Flag indicating whether the `IsStandalone` parameter should be promoted to a captured event's tag."))
 	bool bPromoteIsStandalone = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Is unattended", ToolTip = "Flag indicating whether the `IsUnattended` parameter should be promoted to a captured event's tag."))
 	bool bPromoteIsUnattended = true;
 };
@@ -70,23 +70,23 @@ struct FEnableBuildConfigurations
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Debug", ToolTip = "Flag indicating whether event capturing should be enabled for the Debug build configuration."))
 	bool bEnableDebug = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "DebugGame", ToolTip = "Flag indicating whether event capturing should be enabled for the DebugGame build configuration."))
 	bool bEnableDebugGame = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Development", ToolTip = "Flag indicating whether event capturing should be enabled for the Development build configuration."))
 	bool bEnableDevelopment = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Test", ToolTip = "Flag indicating whether event capturing should be enabled for the Test build configuration."))
 	bool bEnableTest = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Shipping", ToolTip = "Flag indicating whether event capturing should be enabled for the Shipping build configuration."))
 	bool bEnableShipping = true;
 };
@@ -96,23 +96,23 @@ struct FEnableBuildTargets
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Client", ToolTip = "Flag indicating whether event capturing should be enabled for the Client target type."))
 	bool bEnableClient = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Game", ToolTip = "Flag indicating whether event capturing should be enabled for the Game target type."))
 	bool bEnableGame = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Editor", ToolTip = "Flag indicating whether event capturing should be enabled for the Editor target type."))
 	bool bEnableEditor = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Server", ToolTip = "Flag indicating whether event capturing should be enabled for the Server target type."))
 	bool bEnableServer = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Program", ToolTip = "Flag indicating whether event capturing should be enabled for the Program target type."))
 	bool bEnableProgram = true;
 };
@@ -122,24 +122,24 @@ struct FEnableBuildPlatforms
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Linux", ToolTip = "Flag indicating whether event capturing should be enabled for the Linux platform type."))
 	bool bEnableLinux = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Windows", ToolTip = "Flag indicating whether event capturing should be enabled for the Windows platform type."))
 	bool bEnableWindows = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "IOS", ToolTip = "Flag indicating whether event capturing should be enabled for the IOS platform type."))
 	bool bEnableIOS = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Android", ToolTip = "Flag indicating whether event capturing should be enabled for the Android platform type."))
 	bool bEnableAndroid = true;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-	Meta = (DisplayName = "Mac", ToolTip = "Flag indicating whether event capturing should be enabled for the Mac platform type."))
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Mac", ToolTip = "Flag indicating whether event capturing should be enabled for the Mac platform type."))
 	bool bEnableMac = true;
 };
 
@@ -151,105 +151,109 @@ class SENTRY_API USentrySettings : public UObject
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Initialize SDK automatically", ToolTip = "Flag indicating whether to automatically initialize the SDK when the app starts.", ConfigRestartRequired = true))
+	bool InitAutomatically;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "DSN", ToolTip = "The DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard."))
 	FString Dsn;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
-		Meta = (DisplayName = "Environment", ToolTip = "Environment which will be used for enriching events."))
-	FString Environment;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Initialize SDK automatically", ToolTip = "Flag indicating whether to automatically initialize the SDK when the app starts."))
-	bool InitAutomatically;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, Category = "General",
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging on desktop."))
 	bool Debug;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))
-	bool EnableForPromotedBuildsOnly;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Enable for Build Configurations"))
-	FEnableBuildConfigurations EnableBuildConfigurations;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Enable for Build Target Types"))
-	FEnableBuildTargets EnableBuildTargets;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-	Meta = (DisplayName = "Enable for Build Platform Types"))
-	FEnableBuildPlatforms EnableBuildPlatforms;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Automatically add breadcrumbs"))
-	FAutomaticBreadcrumbs AutomaticBreadcrumbs;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Promote values to tags"))
-	FTagsPromotion TagsPromotion;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Enable automatic crash capturing (Windows editor, UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
 	bool EnableAutoCrashCapturing;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Attach game log to captured events", ToolTip = "Flag indicating whether to attach game log automatically to captured events. Not available in shipping builds."))
-	bool EnableAutoLogAttachment;
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Environment", ToolTip = "Environment which will be used for enriching events."))
+	FString Environment;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Attach stack trace to captured events", ToolTip = "Flag indicating whether to attach stack trace automatically to captured events."))
-	bool AttachStacktrace;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (InlineEditConditionToggle))
-	bool UseProxy;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "HTTP proxy (for Windows/Linux only)", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
-	FString ProxyUrl;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, Category = "General",
 		Meta = (DisplayName = "Sample rate", ToolTip = "Configures the sample rate for error events in the range of 0.0 to 1.0. The default is 1.0 which means that 100% of error events are sent. If set to 0.1 only 10% of error events will be sent. Events are picked randomly.", ClampMin = 0.0f, ClampMax = 1.0f))
 	float SampleRate;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
-	int32 MaxBreadcrumbs;
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Attach game log to captured events", ToolTip = "Flag indicating whether to attach game log automatically to captured events. Not available in shipping builds."))
+	bool EnableAutoLogAttachment;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
-		Meta = (DisplayName = "Attach screenshots (for iOS only)", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs."))
-	bool AttachScreenshot;
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Attach stack trace to captured events", ToolTip = "Flag indicating whether to attach stack trace automatically to captured events."))
+	bool AttachStacktrace;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "In-app includes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that belong to the app."))
-	TArray<FString> InAppInclude;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Misc",
-		Meta = (DisplayName = "In-app exludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
-	TArray<FString> InAppExclude;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Misc",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach personally identifiable information", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
 	bool SendDefaultPii;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Attach screenshots (for iOS only)", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs."))
+	bool AttachScreenshot;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
+		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
+	int32 MaxBreadcrumbs;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
+		Meta = (DisplayName = "Automatically add breadcrumbs"))
+	FAutomaticBreadcrumbs AutomaticBreadcrumbs;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Release & Health",
 		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
 	bool EnableAutoSessionTracking;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Release & Health",
 		Meta = (DisplayName = "Session timeout, milliseconds (for Android/Apple only)", ToolTip = "Time interval after which session will be terminated if application is in background mode."))
 	int32 SessionTimeout;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Release & Health",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Release & Health",
 		Meta = (InlineEditConditionToggle))
 	bool OverrideReleaseName;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Release & Health",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Release & Health",
 		Meta = (DisplayName = "Override release name", ToolTip = "Release name which will be used for enriching events.", EditCondition = "OverrideReleaseName"))
 	FString Release;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Transport",
+		Meta = (InlineEditConditionToggle))
+	bool UseProxy;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Transport",
+		Meta = (DisplayName = "HTTP proxy (for Windows/Linux only)", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
+	FString ProxyUrl;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
+		Meta = (DisplayName = "Custom `beforeSend` event hanler", ToolTip = "Custom hanler for processing events before sending them to Sentry."))
+	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
+		Meta = (DisplayName = "In-app includes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that belong to the app."))
+	TArray<FString> InAppInclude;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
+		Meta = (DisplayName = "In-app exludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
+	TArray<FString> InAppExclude;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
+		Meta = (DisplayName = "Promote values to tags"))
+	FTagsPromotion TagsPromotion;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
+		Meta = (DisplayName = "Enable for Build Configurations"))
+	FEnableBuildConfigurations EnableBuildConfigurations;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
+		Meta = (DisplayName = "Enable for Build Target Types"))
+	FEnableBuildTargets EnableBuildTargets;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
+		Meta = (DisplayName = "Enable for Build Platform Types"))
+	FEnableBuildPlatforms EnableBuildPlatforms;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Misc",
+		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))
+	bool EnableForPromotedBuildsOnly;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
@@ -275,16 +279,20 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Experimental",
-		Meta = (DisplayName = "Custom `beforeSend` event hanler", ToolTip = "Custom hanler for processing events before sending them to Sentry."))
-	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
-public:
 	static FString GetFormattedReleaseName();
+
+	bool IsDirty() const;
+	void ClearDirtyFlag();
 
 private:
 	FString GetDefaultEnvironmentName();
 
 	void LoadDebugSymbolsProperties();
 	void CheckLegacySettings();
+
+	bool bIsDirty;
 };

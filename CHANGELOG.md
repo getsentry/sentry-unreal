@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Change `USentrySubsystem` base class to `UEngineSubsystem` in order to capture editor crashes ([#436](https://github.com/getsentry/sentry-unreal/pull/436))\
+    If you make use of plugin's blueprint API, you will need to recreate `Get Sentry Subsystem` nodes\
+    If you make use of plugin's C++ API, you will need to update your implementation by accessing `USentrySubsystem` via `GEngine` pointer
+
 ### Fixes
 
 - Fix issue with invalidating breadcrumbs during event capturing on Win/Linux ([#445](https://github.com/getsentry/sentry-unreal/pull/445))
