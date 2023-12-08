@@ -66,20 +66,14 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		{
 			[options addInAppExclude:it->GetNSString()];
 		}
-		if (settings->EnableTracing)
+		options.enableTracing = settings->EnableTracing;
+		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 		{
-			options.enableTracing = true;
-			switch (settings->SamplingType)
-			{
-			case ESentryTracesSamplingType::UniformSampleRate:
-				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
-				break;
-			case ESentryTracesSamplingType::TracesSampler:
-				options.tracesSampler = nil;
-				break;
-			default:
-				UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sampling type value used."));
-			}
+			options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
+		}
+		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+		{
+			options.tracesSampler = nil;
 		}
 	}];
 }
