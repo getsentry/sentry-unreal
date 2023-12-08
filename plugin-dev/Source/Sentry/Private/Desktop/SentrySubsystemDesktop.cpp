@@ -103,6 +103,15 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 		sentry_options_set_http_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
 	}
 
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+	{
+		sentry_options_set_traces_sample_rate(options, settings->TracesSampleRate);
+	}
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("The Native SDK doesn't currently support sampling functions"));
+	}
+
 #if PLATFORM_WINDOWS
 	sentry_options_set_handler_pathw(options, *FPaths::ConvertRelativePathToFull(HandlerPath));
 	sentry_options_set_database_pathw(options, *FPaths::ConvertRelativePathToFull(DatabasePath));
