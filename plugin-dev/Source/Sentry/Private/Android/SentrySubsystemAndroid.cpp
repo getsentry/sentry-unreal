@@ -44,6 +44,15 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, U
 	SettingsJson->SetArrayField(TEXT("inAppInclude"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppInclude));
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), SentryConvertorsAndroid::StrinArrayToJsonArray(settings->InAppExclude));
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
+	SettingsJson->SetBoolField(TEXT("enableTracing"), settings->EnableTracing);
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+	{
+		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);
+	}
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+	{
+		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)0);
+	}
 
 	FString SettingsJsonStr;
 	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&SettingsJsonStr);

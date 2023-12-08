@@ -17,6 +17,7 @@ import java.util.Map;
 import io.sentry.Breadcrumb;
 import io.sentry.Hint;
 import io.sentry.IHub;
+import io.sentry.SamplingContext;
 import io.sentry.Scope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
@@ -30,6 +31,7 @@ import io.sentry.protocol.SentryId;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, Scope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
+	public static native Double onTracesSampler(long samplerAddr, SamplingContext samplingContext);
 
 	public static void init(Activity activity, final String settingsJsonStr, final long beforeSendHandler) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
@@ -61,6 +63,19 @@ public class SentryBridgeJava {
 					JSONArray Excludes = settingJson.getJSONArray("inAppExclude");
 					for (int i = 0; i < Excludes.length(); i++) {
 						options.addInAppExclude(Excludes.getString(i));
+					}
+					options.setEnableTracing(settingJson.getBoolean("enableTracing"));
+					if(settingJson.has("tracesSampleRate")) {
+						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
+					}
+					if(settingJson.has("tracesSampler")) {
+						final long samplerAddr = settingJson.getLong("tracesSampler");
+						options.setTracesSampler(new SentryOptions.TracesSamplerCallback() {
+							@Override
+							public Double sample(SamplingContext samplingContext) {
+								return onTracesSampler(samplerAddr, samplingContext);
+							}
+						});
 					}
 				} catch (JSONException e) {
 					throw new RuntimeException(e);
