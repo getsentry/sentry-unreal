@@ -8,4 +8,6 @@ class ISentryTransaction
 {
 public:
 	virtual ~ISentryTransaction() = default;
+
+	virtual void Finish() = 0;
 };

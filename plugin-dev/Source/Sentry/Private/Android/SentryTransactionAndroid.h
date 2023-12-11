@@ -10,4 +10,11 @@ class SentryTransactionAndroid : public ISentryTransaction, public FSentryJavaOb
 {
 public:
 	SentryTransactionAndroid(jobject transaction);
+
+	void SetupClassMethods();
+
+	virtual void Finish() override;
+
+private:
+	FSentryJavaMethod FinishMethod;
 };

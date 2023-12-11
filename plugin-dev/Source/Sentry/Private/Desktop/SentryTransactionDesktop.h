@@ -11,7 +11,15 @@
 class SentryTransactionDesktop : public ISentryTransaction
 {
 public:
-	
+	SentryTransactionDesktop(sentry_transaction_t* transaction);
+	virtual ~SentryTransactionDesktop() override;
+
+	sentry_transaction_t* GetNativeObject();
+
+	virtual void Finish() override;
+
+private:
+	sentry_transaction_t* TransactionDesktop;
 };
 
 #endif

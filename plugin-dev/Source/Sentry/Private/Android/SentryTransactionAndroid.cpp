@@ -9,3 +9,13 @@ SentryTransactionAndroid::SentryTransactionAndroid(jobject transaction)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::Transaction, transaction)
 {
 }
+
+void SentryTransactionAndroid::SetupClassMethods()
+{
+	FinishMethod = GetMethod("finish", "()V");
+}
+
+void SentryTransactionAndroid::Finish()
+{
+	CallMethod<void>(FinishMethod);
+}

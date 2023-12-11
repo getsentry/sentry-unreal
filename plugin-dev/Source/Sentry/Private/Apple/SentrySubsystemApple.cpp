@@ -7,6 +7,7 @@
 #include "SentryScopeApple.h"
 #include "SentryUserApple.h"
 #include "SentryUserFeedbackApple.h"
+#include "SentryTransactionApple.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -14,6 +15,7 @@
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
+#include "SentryTransaction.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
 
@@ -202,4 +204,11 @@ void SentrySubsystemApple::StartSession()
 void SentrySubsystemApple::EndSession()
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) endSession];
+}
+
+USentryTransaction* SentrySubsystemApple::StartTransaction(const FString& name, const FString& operation)
+{
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
+
+	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
 }

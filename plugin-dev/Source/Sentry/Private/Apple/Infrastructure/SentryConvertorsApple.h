@@ -8,6 +8,7 @@
 
 class USentryScope;
 class USentryId;
+class USentryTransaction;
 
 class SentryConvertorsApple
 {
@@ -25,6 +26,7 @@ public:
 	static TArray<uint8> ByteDataToUnreal(NSData* data);
 	static USentryScope* SentryScopeToUnreal(SentryScope* scope);
 	static USentryId* SentryIdToUnreal(SentryId* id);
+	static USentryTransaction* SentryTransactionToUnreal(id<SentrySpan> transaction);
 
 	/** Other conversions */
 	static SentryLevel StringToSentryLevel(NSString* string);

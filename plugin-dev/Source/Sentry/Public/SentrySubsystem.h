@@ -16,8 +16,10 @@ class USentryEvent;
 class USentryId;
 class USentryUserFeedback;
 class USentryUser;
-class ISentrySubsystem;
 class USentryBeforeSendHandler;
+class USentryTransaction;
+
+class ISentrySubsystem;
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
@@ -229,6 +231,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void EndSession();
+
+	/**
+	 * Starts a new transaction based on the provided context.
+	 *
+	 * @param Name Transaction name.
+	 * @param Operation Short code identifying the type of operation the span is measuring.
+	 */
+	USentryTransaction* StartTransaction(const FString& Name, const FString& Operation);
 
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
