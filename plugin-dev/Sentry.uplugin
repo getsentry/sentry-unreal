@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "0.15.0",
+	"VersionName": "0.15.1",
 	"FriendlyName": "Sentry",
 	"Description": "Sentry catches all your errors and performance issues, and shows you how to fix them before they bring down the player experience.",
 	"Category": "Code Plugins",
