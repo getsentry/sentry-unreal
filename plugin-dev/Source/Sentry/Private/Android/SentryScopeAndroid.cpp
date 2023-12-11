@@ -12,14 +12,14 @@
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryScopeAndroid::SentryScopeAndroid()
-	: FSentryJavaObjectWrapper(SentryJavaClasses::Scope, "(Lio/sentry/SentryOptions;)V",
+	: FSentryJavaObjectWrapper(SentryJavaClasses::IScope, "(Lio/sentry/SentryOptions;)V",
 		*FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getOptions", "()Lio/sentry/SentryOptions;"))
 {
 	SetupClassMethods();
 }
 
 SentryScopeAndroid::SentryScopeAndroid(jobject scope)
-	: FSentryJavaObjectWrapper(SentryJavaClasses::Scope, scope)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::IScope, scope)
 {
 	SetupClassMethods();
 }

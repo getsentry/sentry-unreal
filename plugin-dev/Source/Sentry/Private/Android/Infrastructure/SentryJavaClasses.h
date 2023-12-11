@@ -13,7 +13,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass Breadcrumb;
 	const static FSentryJavaClass SentryEvent;
 	const static FSentryJavaClass SentryId;
-	const static FSentryJavaClass Scope;
+	const static FSentryJavaClass IScope;
 	const static FSentryJavaClass User;
 	const static FSentryJavaClass UserFeedback;
 	const static FSentryJavaClass Message;
