@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix Android build errors after upgrading to `sentry-java` version `0.7.0` ([#464](https://github.com/getsentry/sentry-unreal/pull/464))
+
 ## 0.15.0
 
 ### Breaking Changes
