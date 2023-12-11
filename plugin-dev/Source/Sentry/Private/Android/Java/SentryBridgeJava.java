@@ -17,7 +17,7 @@ import java.util.Map;
 import io.sentry.Breadcrumb;
 import io.sentry.Hint;
 import io.sentry.IHub;
-import io.sentry.Scope;
+import io.sentry.IScope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
 import io.sentry.SentryEvent;
@@ -28,7 +28,7 @@ import io.sentry.android.core.SentryAndroidOptions;
 import io.sentry.protocol.SentryId;
 
 public class SentryBridgeJava {
-	public static native void onConfigureScope(long callbackAddr, Scope scope);
+	public static native void onConfigureScope(long callbackAddr, IScope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
 
 	public static void init(Activity activity, final String settingsJsonStr, final long beforeSendHandler) {
@@ -85,7 +85,7 @@ public class SentryBridgeJava {
 	public static SentryId captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
 		SentryId messageId = Sentry.captureMessage(message, new ScopeCallback() {
 			@Override
-			public void run(@NonNull Scope scope) {
+			public void run(@NonNull IScope scope) {
 				scope.setLevel(level);
 				onConfigureScope(callback, scope);
 			}
@@ -96,7 +96,7 @@ public class SentryBridgeJava {
 	public static SentryId captureEventWithScope(final SentryEvent event, final long callback) throws InterruptedException {
 		SentryId eventId = Sentry.captureEvent(event, new ScopeCallback() {
 			@Override
-			public void run(@NonNull Scope scope) {
+			public void run(@NonNull IScope scope) {
 				onConfigureScope(callback, scope);
 			}
 		});
@@ -106,7 +106,7 @@ public class SentryBridgeJava {
 	public static void configureScope(final long callback) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override
-			public void run(@NonNull Scope scope) {
+			public void run(@NonNull IScope scope) {
 				onConfigureScope(callback, scope);
 			}
 		});
@@ -115,7 +115,7 @@ public class SentryBridgeJava {
 	public static void setContext(final String key, final HashMap<String, String> values) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override
-			public void run(@NonNull Scope scope) {
+			public void run(@NonNull IScope scope) {
 				scope.setContexts(key, values);
 			}
 		});
@@ -124,7 +124,7 @@ public class SentryBridgeJava {
 	public static void setTag(final String key, final String value) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override
-			public void run(@NonNull Scope scope) {
+			public void run(@NonNull IScope scope) {
 				scope.setTag(key, value);
 			}
 		});
@@ -133,7 +133,7 @@ public class SentryBridgeJava {
 	public static void removeTag(final String key) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override
-			public void run(@NonNull Scope scope) {
+			public void run(@NonNull IScope scope) {
 				scope.removeTag(key);
 			}
 		});
@@ -142,7 +142,7 @@ public class SentryBridgeJava {
 	public static void setLevel(final SentryLevel level) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override
-			public void run(@NonNull Scope scope) {
+			public void run(@NonNull IScope scope) {
 				scope.setLevel(level);
 			}
 		});
