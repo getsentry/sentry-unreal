@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix Android build errors regarding `IScope` in `SentryBridgeJava` ([#464](https://github.com/getsentry/sentry-unreal/pull/464))
+
 ## 0.15.0
 
 ### Breaking Changes
