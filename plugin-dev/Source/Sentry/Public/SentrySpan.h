@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "SentrySpan.generated.h"
 
+class ISentrySpan;
+
 /**
  * Unit of work within a transaction.
  */
@@ -16,4 +18,10 @@ class SENTRY_API USentrySpan : public UObject
 
 public:
 	USentrySpan();
+
+	void InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl);
+	TSharedPtr<ISentrySpan> GetNativeImpl();
+
+private:
+	TSharedPtr<ISentrySpan> SentrySpanNativeImpl;
 };

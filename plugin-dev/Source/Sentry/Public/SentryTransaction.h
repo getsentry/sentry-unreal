@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "SentryTransaction.generated.h"
 
+class ISentryTransaction;
+
 /**
  * Representation of an activity to measure or track.
  */
@@ -16,4 +18,10 @@ class SENTRY_API USentryTransaction : public UObject
 
 public:
 	USentryTransaction();
+
+	void InitWithNativeImpl(TSharedPtr<ISentryTransaction> transactionImpl);
+	TSharedPtr<ISentryTransaction> GetNativeImpl();
+
+private:
+	TSharedPtr<ISentryTransaction> SentryTransactionNativeImpl;
 };
