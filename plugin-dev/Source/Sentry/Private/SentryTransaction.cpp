@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentryTransaction.h"
+#include "SentrySpan.h"
 
 #include "Interface/SentryTransactionInterface.h"
 
@@ -14,6 +15,22 @@
 
 USentryTransaction::USentryTransaction()
 {
+}
+
+USentrySpan* USentryTransaction::StartChild(const FString& Operation, const FString& Description)
+{
+	if (!SentryTransactionNativeImpl)
+		return nullptr;
+
+	return SentryTransactionNativeImpl->StartChild(Operation, Description);
+}
+
+void USentryTransaction::Finish()
+{
+	if (!SentryTransactionNativeImpl)
+		return;
+
+	SentryTransactionNativeImpl->Finish();
 }
 
 void USentryTransaction::InitWithNativeImpl(TSharedPtr<ISentryTransaction> transactionImpl)

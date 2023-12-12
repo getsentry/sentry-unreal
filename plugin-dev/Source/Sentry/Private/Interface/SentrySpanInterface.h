@@ -8,4 +8,6 @@ class ISentrySpan
 {
 public:
 	virtual ~ISentrySpan() = default;
+
+	virtual void Finish() = 0;
 };

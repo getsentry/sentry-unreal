@@ -14,6 +14,7 @@ public:
 
 	id<SentrySpan> GetNativeObject();
 
+	virtual USentrySpan* StartChild(const FString& operation, const FString& desctiption) override;
 	virtual void Finish() override;
 
 private:

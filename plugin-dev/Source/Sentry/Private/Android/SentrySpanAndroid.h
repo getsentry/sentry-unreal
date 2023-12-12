@@ -10,4 +10,11 @@ class SentrySpanAndroid : public ISentrySpan, public FSentryJavaObjectWrapper
 {
 public:
 	SentrySpanAndroid(jobject span);
+
+	void SetupClassMethods();
+
+	virtual void Finish() override;
+
+private:
+	FSentryJavaMethod FinishMethod;
 };

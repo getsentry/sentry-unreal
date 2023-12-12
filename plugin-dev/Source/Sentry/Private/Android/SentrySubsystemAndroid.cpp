@@ -199,5 +199,5 @@ USentryTransaction* SentrySubsystemAndroid::StartTransaction(const FString& name
 	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/ITransaction;",
 		*FSentryJavaObjectWrapper::GetJString(name), *FSentryJavaObjectWrapper::GetJString(operation));
 
-	return SentryConvertorsAndroid::SentryTransactionToUnreal(transaction);
+	return SentryConvertorsAndroid::SentryTransactionToUnreal(*transaction);
 }

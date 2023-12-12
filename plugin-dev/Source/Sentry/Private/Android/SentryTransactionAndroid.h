@@ -13,8 +13,10 @@ public:
 
 	void SetupClassMethods();
 
+	virtual USentrySpan* StartChild(const FString& operation, const FString& desctiption) override;
 	virtual void Finish() override;
 
 private:
+	FSentryJavaMethod StartChildMethod;
 	FSentryJavaMethod FinishMethod;
 };

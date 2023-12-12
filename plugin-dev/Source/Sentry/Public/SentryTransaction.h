@@ -7,6 +7,7 @@
 #include "SentryTransaction.generated.h"
 
 class ISentryTransaction;
+class USentrySpan;
 
 /**
  * Representation of an activity to measure or track.
@@ -18,6 +19,14 @@ class SENTRY_API USentryTransaction : public UObject
 
 public:
 	USentryTransaction();
+
+	/** . */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	USentrySpan* StartChild(const FString& Operation, const FString& Description);
+
+	/** Finishes and sends a transaction to Sentry. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Finish();
 
 	void InitWithNativeImpl(TSharedPtr<ISentryTransaction> transactionImpl);
 	TSharedPtr<ISentryTransaction> GetNativeImpl();

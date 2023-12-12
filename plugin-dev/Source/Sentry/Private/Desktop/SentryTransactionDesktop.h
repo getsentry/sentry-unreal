@@ -16,6 +16,7 @@ public:
 
 	sentry_transaction_t* GetNativeObject();
 
+	virtual USentrySpan* StartChild(const FString& operation, const FString& desctiption) override;
 	virtual void Finish() override;
 
 private:

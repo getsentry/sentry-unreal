@@ -11,7 +11,15 @@
 class SentrySpanDesktop : public ISentrySpan
 {
 public:
-	
+	SentrySpanDesktop(sentry_span_t* span);
+	virtual ~SentrySpanDesktop() override;
+
+	sentry_span_t* GetNativeObject();
+
+	virtual void Finish() override;
+
+private:
+	sentry_span_t* SpanDesktop;
 };
 
 #endif

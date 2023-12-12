@@ -22,6 +22,12 @@ id<SentrySpan> SentryTransactionApple::GetNativeObject()
 	return TransactionApple;
 }
 
+USentrySpan* SentryTransactionApple::StartChild(const FString& operation, const FString& desctiption)
+{
+	id<SentrySpan> span = [TransactionApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
+	return SentryConvertorsApple::SentrySpanToUnreal(span);
+}
+
 void SentryTransactionApple::Finish()
 {
 	[TransactionApple finish];

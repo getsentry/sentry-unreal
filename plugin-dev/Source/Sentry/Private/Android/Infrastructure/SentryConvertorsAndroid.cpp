@@ -7,11 +7,13 @@
 #include "SentryScope.h"
 #include "SentryId.h"
 #include "SentryTransaction.h"
+#include "SentrySpan.h"
 #include "SentryDefines.h"
 
 #include "Android/SentryScopeAndroid.h"
 #include "Android/SentryIdAndroid.h"
 #include "Android/SentryTransactionAndroid.h"
+#include "Android/SentrySpanAndroid.h"
 
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJavaEnv.h"
@@ -157,6 +159,14 @@ USentryTransaction* SentryConvertorsAndroid::SentryTransactionToUnreal(jobject t
 	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
 	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
 	return unrealTransaction;
+}
+
+USentrySpan* SentryConvertorsAndroid::SentrySpanToUnreal(jobject span)
+{
+	TSharedPtr<SentrySpanAndroid> spanNativeImpl = MakeShareable(new SentrySpanAndroid(span));
+	USentrySpan* unrealSpan = NewObject<USentrySpan>();
+	unrealSpan->InitWithNativeImpl(spanNativeImpl);
+	return unrealSpan;
 }
 
 TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)

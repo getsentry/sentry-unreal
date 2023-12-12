@@ -4,11 +4,13 @@
 #include "SentryScope.h"
 #include "SentryId.h"
 #include "SentryTransaction.h"
+#include "SentrySpan.h"
 #include "SentryDefines.h"
 
 #include "Apple/SentryScopeApple.h"
 #include "Apple/SentryIdApple.h"
 #include "Apple/SentryTransactionApple.h"
+#include "Apple/SentrySpanApple.h"
 
 SentryLevel SentryConvertorsApple::SentryLevelToNative(ESentryLevel level)
 {
@@ -155,6 +157,14 @@ USentryTransaction* SentryConvertorsApple::SentryTransactionToUnreal(id<SentrySp
 	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
 	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
 	return unrealTransaction;
+}
+
+USentrySpan* SentryConvertorsApple::SentrySpanToUnreal(id<SentrySpan> span)
+{
+	TSharedPtr<SentrySpanApple> spanNativeImpl = MakeShareable(new SentrySpanApple(span));
+	USentrySpan* unrealSpan = NewObject<USentrySpan>();
+	unrealSpan->InitWithNativeImpl(spanNativeImpl);
+	return unrealSpan;
 }
 
 SentryLevel SentryConvertorsApple::StringToSentryLevel(NSString* string)
