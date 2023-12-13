@@ -21,7 +21,7 @@ sentry_span_t* SentrySpanDesktop::GetNativeObject()
 
 void SentrySpanDesktop::Finish()
 {
-	
+	sentry_span_finish(SpanDesktop);
 }
 
 #endif

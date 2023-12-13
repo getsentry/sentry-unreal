@@ -16,6 +16,14 @@ USentrySpan::USentrySpan()
 {
 }
 
+void USentrySpan::Finish()
+{
+	if (!SentrySpanNativeImpl)
+		return;
+
+	SentrySpanNativeImpl->Finish();
+}
+
 void USentrySpan::InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl)
 {
 	SentrySpanNativeImpl = spanImpl;

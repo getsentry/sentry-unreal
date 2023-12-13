@@ -19,6 +19,10 @@ class SENTRY_API USentrySpan : public UObject
 public:
 	USentrySpan();
 
+	/** Finishes and sends a span to Sentry. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Finish();
+
 	void InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl);
 	TSharedPtr<ISentrySpan> GetNativeImpl();
 
