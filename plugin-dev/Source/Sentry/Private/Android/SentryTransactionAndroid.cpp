@@ -13,7 +13,7 @@ SentryTransactionAndroid::SentryTransactionAndroid(jobject transaction)
 
 void SentryTransactionAndroid::SetupClassMethods()
 {
-	StartChildMethod = GetMethod("startChild", "(Ljava/lang/String;Ljava/lang/String;)Lsentry/io/ISpan;");
+	StartChildMethod = GetMethod("startChild", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/ISpan;");
 	FinishMethod = GetMethod("finish", "()V");
 }
 
