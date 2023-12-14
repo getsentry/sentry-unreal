@@ -33,8 +33,12 @@ void FSentryModule::StartupModule()
 
 #if PLATFORM_MAC
 	const FString SentryLibName = TEXT("sentry.dylib");
-	const FString BinariesDirPath = GIsEditor ? FPaths::Combine(GetThirdPartyPath(), TEXT("bin")) : GetBinariesPath();
+#elif PLATFORM_LINUX
+	const FString SentryLibName = TEXT("libsentry.so");
+#endif
 
+#if PLATFORM_MAC || PLATFORM_LINUX
+	const FString BinariesDirPath = GetBinariesPath();
 	FPlatformProcess::PushDllDirectory(*BinariesDirPath);
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(*FPaths::Combine(BinariesDirPath, SentryLibName));
 	FPlatformProcess::PopDllDirectory(*BinariesDirPath);
