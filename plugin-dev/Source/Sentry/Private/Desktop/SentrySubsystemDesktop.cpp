@@ -319,12 +319,7 @@ USentryTransaction* SentrySubsystemDesktop::StartTransaction(const FString& name
 
 	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContext, sentry_value_new_null());
 
-	TSharedPtr<SentryTransactionDesktop> TransactionDesktop = MakeShareable(new SentryTransactionDesktop(nativeTransaction));
-
-	USentryTransaction* Transaction = NewObject<USentryTransaction>();
-	Transaction->InitWithNativeImpl(TransactionDesktop);
-
-	return Transaction;
+	return SentryConvertorsDesktop::SentryTransactionToUnreal(nativeTransaction);
 }
 
 USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()

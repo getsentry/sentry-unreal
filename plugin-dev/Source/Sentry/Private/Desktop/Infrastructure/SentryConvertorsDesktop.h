@@ -9,6 +9,8 @@
 #if USE_SENTRY_NATIVE
 
 class USentryId;
+class USentryTransaction;
+class USentrySpan;
 
 class SentryConvertorsDesktop
 {
@@ -22,6 +24,8 @@ public:
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);
 	static ESentryLevel SentryLevelToUnreal(sentry_level_t level);
 	static USentryId* SentryIdToUnreal(sentry_uuid_t id);
+	static USentryTransaction* SentryTransactionToUnreal(sentry_transaction_t* transaction);
+	static USentrySpan* SentrySpanToUnreal(sentry_span_t* span);
 	static TMap<FString, FString> StringMapToUnreal(sentry_value_t map);
 	static TArray<FString> StringArrayToUnreal(sentry_value_t array);
 
