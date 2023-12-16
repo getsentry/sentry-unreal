@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Cocoa SDK (iOS) from v8.17.1 to v8.17.2 ([#467](https://github.com/getsentry/sentry-unreal/pull/467))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8172)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.17.1...8.17.2)
+
 ## 0.15.1
 
 ### Fixes
