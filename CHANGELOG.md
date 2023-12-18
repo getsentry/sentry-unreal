@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix Linux intermediates paths in `FilterPlugin.ini` ([#468](https://github.com/getsentry/sentry-unreal/pull/468))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.17.1 to v8.17.2 ([#467](https://github.com/getsentry/sentry-unreal/pull/467))
