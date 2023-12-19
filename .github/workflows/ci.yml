@@ -245,6 +245,7 @@ jobs:
           name: Linux-intermediates-engine${{ matrix.unreal }}
           if-no-files-found: error
           path: checkout/${{ matrix.app }}/Plugins/sentry/dist/Intermediate/Build/Linux
+          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
 
       - name: Build & package ${{ matrix.app }}
         # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
