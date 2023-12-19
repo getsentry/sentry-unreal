@@ -11,6 +11,7 @@
 
 SentryTransactionDesktop::SentryTransactionDesktop(sentry_transaction_t* transaction)
 	: TransactionDesktop(transaction)
+	, isFinished(false)
 {
 }
 
@@ -32,6 +33,48 @@ USentrySpan* SentryTransactionDesktop::StartChild(const FString& operation, cons
 void SentryTransactionDesktop::Finish()
 {
 	sentry_transaction_finish(TransactionDesktop);
+
+	isFinished = true;
+}
+
+bool SentryTransactionDesktop::IsFinished()
+{
+	return isFinished;
+}
+
+void SentryTransactionDesktop::SetName(const FString& name)
+{
+	FScopeLock Lock(&CriticalSection);
+
+	sentry_transaction_set_name(TransactionDesktop, TCHAR_TO_ANSI(*name));
+}
+
+void SentryTransactionDesktop::SetTag(const FString& key, const FString& value)
+{
+	FScopeLock Lock(&CriticalSection);
+
+	sentry_transaction_set_tag(TransactionDesktop, TCHAR_TO_ANSI(*key), TCHAR_TO_ANSI(*value));
+}
+
+void SentryTransactionDesktop::RemoveTag(const FString& key)
+{
+	FScopeLock Lock(&CriticalSection);
+
+	sentry_transaction_remove_tag(TransactionDesktop, TCHAR_TO_ANSI(*key));
+}
+
+void SentryTransactionDesktop::SetData(const FString& key, const TMap<FString, FString>& values)
+{
+	FScopeLock Lock(&CriticalSection);
+
+	sentry_transaction_set_data(TransactionDesktop, TCHAR_TO_ANSI(*key), SentryConvertorsDesktop::StringMapToNative(values));
+}
+
+void SentryTransactionDesktop::RemoveData(const FString& key)
+{
+	FScopeLock Lock(&CriticalSection);
+
+	sentry_transaction_remove_data(TransactionDesktop, TCHAR_TO_ANSI(*key));
 }
 
 #endif

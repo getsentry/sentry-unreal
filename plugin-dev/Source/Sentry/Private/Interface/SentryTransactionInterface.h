@@ -13,4 +13,10 @@ public:
 
 	virtual USentrySpan* StartChild(const FString& operation, const FString& desctiption) = 0;
 	virtual void Finish() = 0;
+	virtual bool IsFinished() = 0;
+	virtual void SetName(const FString& name) = 0;
+	virtual void SetTag(const FString& key, const FString& value) = 0;
+	virtual void RemoveTag(const FString& key) = 0;
+	virtual void SetData(const FString& key, const TMap<FString, FString>& values) = 0;
+	virtual void RemoveData(const FString& key) = 0;
 };

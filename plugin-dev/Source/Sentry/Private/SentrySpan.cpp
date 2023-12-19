@@ -24,6 +24,46 @@ void USentrySpan::Finish()
 	SentrySpanNativeImpl->Finish();
 }
 
+bool USentrySpan::IsFinished()
+{
+	if (!SentrySpanNativeImpl)
+		return false;
+
+	return SentrySpanNativeImpl->IsFinished();
+}
+
+void USentrySpan::SetTag(const FString& key, const FString& value)
+{
+	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+		return;
+
+	SentrySpanNativeImpl->SetTag(key, value);
+}
+
+void USentrySpan::RemoveTag(const FString& key)
+{
+	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+		return;
+
+	SentrySpanNativeImpl->RemoveTag(key);
+}
+
+void USentrySpan::SetData(const FString& key, const TMap<FString, FString>& values)
+{
+	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+		return;
+
+	SentrySpanNativeImpl->SetData(key, values);
+}
+
+void USentrySpan::RemoveData(const FString& key)
+{
+	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+		return;
+
+	SentrySpanNativeImpl->RemoveData(key);
+}
+
 void USentrySpan::InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl)
 {
 	SentrySpanNativeImpl = spanImpl;

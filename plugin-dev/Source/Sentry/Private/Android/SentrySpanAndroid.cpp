@@ -20,3 +20,24 @@ void SentrySpanAndroid::Finish()
 {
 	CallMethod<void>(FinishMethod);
 }
+
+bool SentrySpanAndroid::IsFinished()
+{
+	return false;
+}
+
+void SentrySpanAndroid::SetTag(const FString& key, const FString& value)
+{
+}
+
+void SentrySpanAndroid::RemoveTag(const FString& key)
+{
+}
+
+void SentrySpanAndroid::SetData(const FString& key, const TMap<FString, FString>& values)
+{
+}
+
+void SentrySpanAndroid::RemoveData(const FString& key)
+{
+}
