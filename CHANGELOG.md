@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add performance monitoring API ([#470](https://github.com/getsentry/sentry-unreal/pull/470))
+
 ### Fixes
 
 - Fix Linux intermediates paths in `FilterPlugin.ini` ([#468](https://github.com/getsentry/sentry-unreal/pull/468))
