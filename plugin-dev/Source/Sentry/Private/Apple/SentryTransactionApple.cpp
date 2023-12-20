@@ -40,7 +40,7 @@ bool SentryTransactionApple::IsFinished()
 
 void SentryTransactionApple::SetName(const FString& name)
 {
-	[TransactionApple setDataValue:name.GetNSString() forKey:@"name"];
+	// no corresponding implementation in sentry-cocoa
 }
 
 void SentryTransactionApple::SetTag(const FString& key, const FString& value)
