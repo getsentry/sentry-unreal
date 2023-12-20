@@ -14,7 +14,7 @@ enum class ESentryTracesSamplingType : uint8
 {
 	// Use uniform sample rate for all transactions
 	UniformSampleRate,
-	// Control the sample rate based on the transaction itself and the context in which it's captured
+	// Control the sample rate based on the transaction itself and the context in which it's captured (not implemented)
 	TracesSampler
 };
 
