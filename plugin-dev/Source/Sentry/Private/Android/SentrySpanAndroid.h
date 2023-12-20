@@ -23,4 +23,7 @@ public:
 
 private:
 	FSentryJavaMethod FinishMethod;
+	FSentryJavaMethod IsFinishedMethod;
+	FSentryJavaMethod SetTagMethod;
+	FSentryJavaMethod SetDataMethod;
 };
