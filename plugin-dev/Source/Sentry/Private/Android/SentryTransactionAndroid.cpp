@@ -54,7 +54,7 @@ void SentryTransactionAndroid::RemoveTag(const FString& key)
 
 void SentryTransactionAndroid::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	CallMethod<void>(SetTagMethod, *GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetDataMethod, *GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentryTransactionAndroid::RemoveData(const FString& key)
