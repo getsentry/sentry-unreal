@@ -22,7 +22,7 @@ void SentrySpanApple::Finish()
 	[SpanApple finish];
 }
 
-bool SentrySpanApple::IsFinished()
+bool SentrySpanApple::IsFinished() const
 {
 	return SpanApple.isFinished;
 }

@@ -37,7 +37,7 @@ void SentryTransactionDesktop::Finish()
 	isFinished = true;
 }
 
-bool SentryTransactionDesktop::IsFinished()
+bool SentryTransactionDesktop::IsFinished() const
 {
 	return isFinished;
 }

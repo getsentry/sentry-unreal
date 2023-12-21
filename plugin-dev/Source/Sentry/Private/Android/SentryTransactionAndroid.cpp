@@ -32,7 +32,7 @@ void SentryTransactionAndroid::Finish()
 	CallMethod<void>(FinishMethod);
 }
 
-bool SentryTransactionAndroid::IsFinished()
+bool SentryTransactionAndroid::IsFinished() const
 {
 	return CallMethod<bool>(IsFinishedMethod);;
 }

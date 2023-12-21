@@ -24,7 +24,7 @@ void SentrySpanAndroid::Finish()
 	CallMethod<void>(FinishMethod);
 }
 
-bool SentrySpanAndroid::IsFinished()
+bool SentrySpanAndroid::IsFinished() const
 {
 	return false;
 }

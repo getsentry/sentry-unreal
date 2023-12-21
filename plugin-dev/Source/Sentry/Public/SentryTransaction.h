@@ -30,7 +30,7 @@ public:
 
 	/** Checks whether the transaction finished. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	bool IsFinished();
+	bool IsFinished() const;
 
 	/** Sets transactions name. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

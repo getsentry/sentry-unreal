@@ -15,7 +15,7 @@ public:
 	id<SentrySpan> GetNativeObject();
 
 	virtual void Finish() override;
-	virtual bool IsFinished() override;
+	virtual bool IsFinished() const override;
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetData(const FString& key, const TMap<FString, FString>& values) override;

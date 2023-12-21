@@ -33,7 +33,7 @@ void USentryTransaction::Finish()
 	SentryTransactionNativeImpl->Finish();
 }
 
-bool USentryTransaction::IsFinished()
+bool USentryTransaction::IsFinished() const
 {
 	if (!SentryTransactionNativeImpl)
 		return false;

@@ -15,7 +15,7 @@ public:
 
 	virtual USentrySpan* StartChild(const FString& operation, const FString& desctiption) override;
 	virtual void Finish() override;
-	virtual bool IsFinished() override;
+	virtual bool IsFinished() const override;
 	virtual void SetName(const FString& name) override;
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;

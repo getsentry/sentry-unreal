@@ -25,7 +25,7 @@ public:
 
 	/** Checks whether the span finished. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	bool IsFinished();
+	bool IsFinished() const;
 
 	/** Sets tag associated with the span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

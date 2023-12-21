@@ -24,7 +24,7 @@ void USentrySpan::Finish()
 	SentrySpanNativeImpl->Finish();
 }
 
-bool USentrySpan::IsFinished()
+bool USentrySpan::IsFinished() const
 {
 	if (!SentrySpanNativeImpl)
 		return false;

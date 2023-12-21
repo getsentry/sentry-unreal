@@ -29,7 +29,7 @@ void SentrySpanDesktop::Finish()
 	isFinished = true;
 }
 
-bool SentrySpanDesktop::IsFinished()
+bool SentrySpanDesktop::IsFinished() const
 {
 	return isFinished;
 }

@@ -33,7 +33,7 @@ void SentryTransactionApple::Finish()
 	[TransactionApple finish];
 }
 
-bool SentryTransactionApple::IsFinished()
+bool SentryTransactionApple::IsFinished() const
 {
 	return TransactionApple.isFinished;
 }
