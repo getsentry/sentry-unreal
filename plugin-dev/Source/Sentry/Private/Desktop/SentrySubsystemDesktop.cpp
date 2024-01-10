@@ -136,10 +136,9 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	isEnabled = initResult == 0 ? true : false;
 
 #if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
-	if(settings->EnableAutoCrashCapturing)
-	{
-		FPlatformMisc::SetCrashHandlingType(ECrashHandlingType::Disabled);
-	}
+	FPlatformMisc::SetCrashHandlingType(settings->EnableAutoCrashCapturing
+		? ECrashHandlingType::Disabled
+		: ECrashHandlingType::Default);
 #endif
 
 	isStackTraceEnabled = settings->AttachStacktrace;
