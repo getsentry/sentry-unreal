@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add flag indicating which package version is used (GitHub or Marketplace) ([#479](https://github.com/getsentry/sentry-unreal/pull/479))
+
 ### Fixes
 
 - Fix Linux intermediates paths in `FilterPlugin.ini` ([#468](https://github.com/getsentry/sentry-unreal/pull/468))
