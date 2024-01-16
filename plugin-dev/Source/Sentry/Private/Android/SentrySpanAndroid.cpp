@@ -26,7 +26,7 @@ void SentrySpanAndroid::Finish()
 
 bool SentrySpanAndroid::IsFinished() const
 {
-	return false;
+	return CallMethod<bool>(IsFinishedMethod);;
 }
 
 void SentrySpanAndroid::SetTag(const FString& key, const FString& value)
