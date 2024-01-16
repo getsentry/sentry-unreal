@@ -7,6 +7,8 @@
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
 
+#include "SentryDefines.h"
+
 SentryTransactionApple::SentryTransactionApple(id<SentrySpan> transaction)
 {
 	TransactionApple = transaction;
@@ -41,6 +43,7 @@ bool SentryTransactionApple::IsFinished() const
 void SentryTransactionApple::SetName(const FString& name)
 {
 	// no corresponding implementation in sentry-cocoa
+	UE_LOG(LogSentrySdk, Warning, TEXT("The Cocoa SDK doesn't currently support SetName function"));
 }
 
 void SentryTransactionApple::SetTag(const FString& key, const FString& value)
