@@ -51,6 +51,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	bool IsEnabled();
 
+	/** Checks whether the app crashed during the last run. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	ESentryCrashedLastRun IsCrashedLastRun();
+
 	/**
 	 * Adds a breadcrumb to the current Scope.
 	 *

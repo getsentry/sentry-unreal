@@ -66,6 +66,28 @@ bool SentrySubsystemAndroid::IsEnabled()
 	return FSentryJavaObjectWrapper::CallStaticMethod<bool>(SentryJavaClasses::Sentry, "isEnabled", "()Z");
 }
 
+ESentryCrashedLastRun SentrySubsystemAndroid::IsCrashedLastRun()
+{
+	ESentryCrashedLastRun unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
+
+	switch (FSentryJavaObjectWrapper::CallStaticMethod<int>(SentryJavaClasses::SentryBridgeJava, "isCrashedLastRun", "()I"))
+	{
+	case -1:
+		unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
+		break;
+	case 0:
+		unrealIsCrashed = ESentryCrashedLastRun::NotCrashed;
+		break;
+	case 1:
+		unrealIsCrashed = ESentryCrashedLastRun::Crashed;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown IsCrashedLastRun result. NotEvaluated will be returned."));
+	}
+
+	return unrealIsCrashed;
+}
+
 void SentrySubsystemAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
 	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb->GetNativeImpl());

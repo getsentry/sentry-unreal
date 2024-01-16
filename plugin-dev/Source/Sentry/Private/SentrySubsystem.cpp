@@ -134,6 +134,14 @@ bool USentrySubsystem::IsEnabled()
 	return SubsystemNativeImpl->IsEnabled();
 }
 
+ESentryCrashedLastRun USentrySubsystem::IsCrashedLastRun()
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return ESentryCrashedLastRun::NotEvaluated;
+
+	return SubsystemNativeImpl->IsCrashedLastRun();
+}
+
 void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())

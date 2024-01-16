@@ -135,6 +135,8 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 
 	isEnabled = initResult == 0 ? true : false;
 
+	sentry_clear_crashed_last_run()
+
 #if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
 	if(settings->EnableAutoCrashCapturing)
 	{
@@ -160,6 +162,28 @@ void SentrySubsystemDesktop::Close()
 bool SentrySubsystemDesktop::IsEnabled()
 {
 	return isEnabled;
+}
+
+ESentryCrashedLastRun SentrySubsystemApple::IsCrashedLastRun()
+{
+	ESentryCrashedLastRun unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
+
+	switch (sentry_get_crashed_last_run())
+	{
+	case -1:
+		unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
+		break;
+	case 0:
+		unrealIsCrashed = ESentryCrashedLastRun::NotCrashed;
+		break;
+	case 1:
+		unrealIsCrashed = ESentryCrashedLastRun::Crashed;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown IsCrashedLastRun result. NotEvaluated will be returned."));
+	}
+
+	return unrealIsCrashed;
 }
 
 void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
