@@ -97,13 +97,15 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 #if PLATFORM_WINDOWS
 	if(!FSentryModule::Get().IsMarketplaceVersion())
 	{
-		if(!FPaths::FileExists(GetHandlerPath()))
+		const FString HandlerPath = GetHandlerPath();
+
+		if(!FPaths::FileExists(HandlerPath))
 		{
 			UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. "
 				"Please make sure that the plugin was rebuilt to avoid initialization failure."));
 		}
 
-		sentry_options_set_handler_pathw(options, *GetHandlerPath());
+		sentry_options_set_handler_pathw(options, *HandlerPath);
 	}
 #elif PLATFORM_LINUX
 	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*GetHandlerPath()));
