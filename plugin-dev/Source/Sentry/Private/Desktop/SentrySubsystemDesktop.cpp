@@ -164,7 +164,7 @@ bool SentrySubsystemDesktop::IsEnabled()
 	return isEnabled;
 }
 
-ESentryCrashedLastRun SentrySubsystemApple::IsCrashedLastRun()
+ESentryCrashedLastRun SentrySubsystemDesktop::IsCrashedLastRun()
 {
 	ESentryCrashedLastRun unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
 
