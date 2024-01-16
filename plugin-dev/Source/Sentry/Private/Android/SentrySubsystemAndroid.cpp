@@ -51,6 +51,7 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, U
 	}
 	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Currently sampling functions are not supported"));
 		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)0);
 	}
 

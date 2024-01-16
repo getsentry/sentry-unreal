@@ -75,6 +75,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		}
 		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Currently sampling functions are not supported"));
 			options.tracesSampler = nil;
 		}
 	}];
