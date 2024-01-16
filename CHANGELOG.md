@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add method allowing to check whether the app crashed during its last run ([#483](https://github.com/getsentry/sentry-unreal/pull/483))
+- Add `IsCrashedLastRun` allowing to check whether the app crashed during its last run ([#483](https://github.com/getsentry/sentry-unreal/pull/483))
 
 ### Fixes
 
