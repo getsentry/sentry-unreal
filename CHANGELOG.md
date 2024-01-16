@@ -5,6 +5,7 @@
 ### Features
 
 - Add performance monitoring API ([#470](https://github.com/getsentry/sentry-unreal/pull/470))
+- Add `IsCrashedLastRun` allowing to check whether the app crashed during its last run ([#483](https://github.com/getsentry/sentry-unreal/pull/483))
 
 ### Fixes
 
@@ -18,6 +19,18 @@
 - Bump Java SDK (Android) from v7.0.0 to v7.1.0 ([#469](https://github.com/getsentry/sentry-unreal/pull/469))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#710)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.0.0...7.1.0)
+- Bump CLI from v2.23.0 to v2.25.0 ([#471](https://github.com/getsentry/sentry-unreal/pull/471), [#472](https://github.com/getsentry/sentry-unreal/pull/472), [#475](https://github.com/getsentry/sentry-unreal/pull/475), [#477](https://github.com/getsentry/sentry-unreal/pull/477))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2250)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.23.0...2.25.0)
+- Bump Cocoa SDK (iOS) from v8.17.2 to v8.18.0 ([#474](https://github.com/getsentry/sentry-unreal/pull/474))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8180)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.17.2...8.18.0)
+- Bump Native SDK from v0.6.7 to v0.7.0 ([#478](https://github.com/getsentry/sentry-unreal/pull/478))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#070)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.6.7...0.7.0)
+- Bump Java SDK (Android) from v7.1.0 to v7.2.0 ([#481](https://github.com/getsentry/sentry-unreal/pull/481))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#720)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.1.0...7.2.0)
 
 ## 0.15.1
 
