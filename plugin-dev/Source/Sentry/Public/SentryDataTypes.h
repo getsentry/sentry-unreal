@@ -15,3 +15,11 @@ enum class ESentryLevel : uint8
 	Error,
 	Fatal
 };
+
+UENUM(BlueprintType)
+enum class ESentryCrashedLastRun : uint8
+{
+	NotEvaluated,
+	NotCrashed,
+	Crashed
+};

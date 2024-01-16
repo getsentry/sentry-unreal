@@ -19,6 +19,7 @@ public:
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
+	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual USentryId* CaptureMessage(const FString& message, ESentryLevel level) override;

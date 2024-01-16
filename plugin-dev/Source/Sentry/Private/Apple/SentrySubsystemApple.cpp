@@ -44,7 +44,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 #if PLATFORM_IOS
 		options.attachScreenshot = settings->AttachScreenshot;
 #endif
-		options.initialScope = ^(SentryScope *scope) {
+		options.initialScope = ^(SentryScope* scope) {
 			if(settings->EnableAutoLogAttachment) {
 				const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
 				SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
@@ -76,6 +76,11 @@ void SentrySubsystemApple::Close()
 bool SentrySubsystemApple::IsEnabled()
 {
 	return [SENTRY_APPLE_CLASS(SentrySDK) isEnabled];
+}
+
+ESentryCrashedLastRun SentrySubsystemApple::IsCrashedLastRun()
+{
+	return [SENTRY_APPLE_CLASS(SentrySDK) crashedLastRun] ? ESentryCrashedLastRun::Crashed : ESentryCrashedLastRun::NotCrashed;
 }
 
 void SentrySubsystemApple::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
