@@ -152,4 +152,12 @@ public class SentryBridgeJava {
 		IHub hub = Sentry.getCurrentHub();
 		return hub.getOptions();
 	}
+
+	public static int isCrashedLastRun() {
+		Boolean isCrashed = Sentry.isCrashedLastRun();
+		if(isCrashed == null) {
+			return -1;
+		}
+		return isCrashed ? 1 : 0;
+	}
 }
