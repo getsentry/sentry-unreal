@@ -135,7 +135,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 
 	isEnabled = initResult == 0 ? true : false;
 
-	sentry_clear_crashed_last_run()
+	sentry_clear_crashed_last_run();
 
 #if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
 	if(settings->EnableAutoCrashCapturing)
