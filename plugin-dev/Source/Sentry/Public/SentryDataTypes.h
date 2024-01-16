@@ -20,6 +20,6 @@ UENUM(BlueprintType)
 enum class ESentryCrashedLastRun : uint8
 {
 	NotEvaluated,
-	Crashed,
 	NotCrashed,
+	Crashed
 };
