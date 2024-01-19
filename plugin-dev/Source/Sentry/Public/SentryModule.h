@@ -44,7 +44,12 @@ public:
 	/** Gets plugin's version. */
 	static FString GetPluginVersion();
 
+	/** Gets flag indicating whether plugin was downloaded from UE Marketplace. */
+	static bool IsMarketplaceVersion();
+
 	static const FName ModuleName;
+
+	static const bool IsMarketplace;
 
 private:
 	USentrySettings* SentrySettings = nullptr;

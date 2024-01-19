@@ -27,6 +27,13 @@ function packFiles([string] $publishingPlatform)
         )
     }
 
+    $sentryModuleScriptPath = "plugin-dev/Source/Sentry/Private/SentryModule.cpp"
+    $sentryModuleScript = Get-Content $sentryModuleScriptPath
+    if ($publishingPlatform -eq "marketplace")
+    {
+        $sentryModuleScript -replace 'FSentryModule::IsMarketplace = false', 'FSentryModule::IsMarketplace = true' | Out-File $sentryModuleScriptPath
+    }
+
     Copy-Item "plugin-dev/*" "package-release-$publishingPlatform/" -Exclude $exclude -Recurse
     Copy-Item "CHANGELOG.md" -Destination "package-release-$publishingPlatform/CHANGELOG.md"
     Copy-Item "LICENSE" -Destination "package-release-$publishingPlatform/LICENSE"

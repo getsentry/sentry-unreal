@@ -43,6 +43,9 @@ public:
 	TSharedPtr<SentryScopeDesktop> GetCurrentScope();
 
 private:
+	FString GetHandlerPath() const;
+	FString GetDatabasePath() const;
+
 	USentryBeforeSendHandler* beforeSend;
 
 	TSharedPtr<SentryCrashReporter> crashReporter;
