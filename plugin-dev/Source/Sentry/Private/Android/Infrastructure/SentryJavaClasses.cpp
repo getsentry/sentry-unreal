@@ -15,6 +15,8 @@ const FSentryJavaClass SentryJavaClasses::UserFeedback		= FSentryJavaClass { "io
 const FSentryJavaClass SentryJavaClasses::Message			= FSentryJavaClass { "io/sentry/protocol/Message", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::SentryLevel		= FSentryJavaClass { "io/sentry/SentryLevel", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::SentryHint		= FSentryJavaClass { "io/sentry/Hint", ESentryJavaClassType::External };
+const FSentryJavaClass SentryJavaClasses::Transaction		= FSentryJavaClass { "io/sentry/ITransaction", ESentryJavaClassType::External };
+const FSentryJavaClass SentryJavaClasses::Span				= FSentryJavaClass { "io/sentry/ISpan", ESentryJavaClassType::External };
 
 // System Java classes definitions
 const FSentryJavaClass SentryJavaClasses::ArrayList			= FSentryJavaClass { "java/util/ArrayList", ESentryJavaClassType::System };
