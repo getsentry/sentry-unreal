@@ -14,6 +14,7 @@ class USentryId;
 class USentryUserFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
+class USentryTransaction;
 
 class ISentrySubsystem
 {
@@ -40,4 +41,5 @@ public:
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual void StartSession() = 0;
 	virtual void EndSession() = 0;
+	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) = 0;
 };

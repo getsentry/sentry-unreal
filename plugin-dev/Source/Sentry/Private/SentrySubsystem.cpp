@@ -293,6 +293,14 @@ void USentrySubsystem::EndSession()
 	SubsystemNativeImpl->EndSession();
 }
 
+USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->StartTransaction(Name, Operation);
+}
+
 void USentrySubsystem::AddDefaultContext()
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())

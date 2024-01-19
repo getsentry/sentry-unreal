@@ -32,3 +32,8 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 	return handler->HandleBeforeSend(EventToProcess, HintToProcess) ? event : nullptr;
 }
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
+{
+	return nullptr;
+}

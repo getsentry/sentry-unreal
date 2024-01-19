@@ -5,6 +5,7 @@
 #include "SentryBreadcrumbDesktop.h"
 #include "SentryUserDesktop.h"
 #include "SentryScopeDesktop.h"
+#include "SentryTransactionDesktop.h"
 
 #include "SentryDefines.h"
 #include "SentrySettings.h"
@@ -12,12 +13,15 @@
 #include "SentryBreadcrumb.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
+#include "SentryTransaction.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
-#include "CrashReporter/SentryCrashContext.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
+
 #include "CrashReporter/SentryCrashReporter.h"
+#include "CrashReporter/SentryCrashContext.h"
+
 #include "Transport/SentryTransport.h"
 
 #include "Misc/Paths.h"
@@ -101,6 +105,15 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	if(settings->UseProxy)
 	{
 		sentry_options_set_http_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
+	}
+
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+	{
+		sentry_options_set_traces_sample_rate(options, settings->TracesSampleRate);
+	}
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("The Native SDK doesn't currently support sampling functions"));
 	}
 
 #if PLATFORM_WINDOWS
@@ -322,6 +335,15 @@ void SentrySubsystemDesktop::StartSession()
 void SentrySubsystemDesktop::EndSession()
 {
 	sentry_end_session();
+}
+
+USentryTransaction* SentrySubsystemDesktop::StartTransaction(const FString& name, const FString& operation)
+{
+	sentry_transaction_context_t* transactionContext = sentry_transaction_context_new(TCHAR_TO_ANSI(*name), TCHAR_TO_ANSI(*operation));
+
+	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContext, sentry_value_new_null());
+
+	return SentryConvertorsDesktop::SentryTransactionToUnreal(nativeTransaction);
 }
 
 USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
