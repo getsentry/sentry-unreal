@@ -2,9 +2,13 @@
 
 #include "SentryConvertorsDesktop.h"
 #include "SentryId.h"
+#include "SentryTransaction.h"
+#include "SentrySpan.h"
 #include "SentryDefines.h"
 
 #include "Desktop/SentryIdDesktop.h"
+#include "Desktop/SentryTransactionDesktop.h"
+#include "Desktop/SentrySpanDesktop.h"
 
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
@@ -114,6 +118,22 @@ USentryId* SentryConvertorsDesktop::SentryIdToUnreal(sentry_uuid_t id)
 	USentryId* unrealId = NewObject<USentryId>();
 	unrealId->InitWithNativeImpl(idNativeImpl);
 	return unrealId;
+}
+
+USentryTransaction* SentryConvertorsDesktop::SentryTransactionToUnreal(sentry_transaction_t* transaction)
+{
+	TSharedPtr<SentryTransactionDesktop> transactionNativeImpl = MakeShareable(new SentryTransactionDesktop(transaction));
+	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
+	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
+	return unrealTransaction;
+}
+
+USentrySpan* SentryConvertorsDesktop::SentrySpanToUnreal(sentry_span_t* span)
+{
+	TSharedPtr<SentrySpanDesktop> spanNativeImpl = MakeShareable(new SentrySpanDesktop(span));
+	USentrySpan* unrealSpan = NewObject<USentrySpan>();
+	unrealSpan->InitWithNativeImpl(spanNativeImpl);
+	return unrealSpan;
 }
 
 TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t map)

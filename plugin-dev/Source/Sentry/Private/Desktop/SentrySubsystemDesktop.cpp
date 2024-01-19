@@ -5,6 +5,7 @@
 #include "SentryBreadcrumbDesktop.h"
 #include "SentryUserDesktop.h"
 #include "SentryScopeDesktop.h"
+#include "SentryTransactionDesktop.h"
 
 #include "SentryDefines.h"
 #include "SentrySettings.h"
@@ -12,12 +13,15 @@
 #include "SentryBreadcrumb.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
+#include "SentryTransaction.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
-#include "CrashReporter/SentryCrashContext.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
+
 #include "CrashReporter/SentryCrashReporter.h"
+#include "CrashReporter/SentryCrashContext.h"
+
 #include "Transport/SentryTransport.h"
 
 #include "Misc/Paths.h"
@@ -76,21 +80,12 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 
 	scopeStack.Push(MakeShareable(new SentryScopeDesktop()));
 
-#if PLATFORM_WINDOWS
-	const FString HandlerExecutableName = TEXT("crashpad_handler.exe");
-#elif PLATFORM_LINUX
-	const FString HandlerExecutableName = TEXT("crashpad_handler");
-#endif
-
-	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
-	const FString DatabasePath = FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native"));
-
-	const FString LogFilePath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
-
 	sentry_options_t* options = sentry_options_new();
 
 	if(settings->EnableAutoLogAttachment)
 	{
+		const FString LogFilePath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
+
 #if PLATFORM_WINDOWS
 		sentry_options_add_attachmentw(options, *FPaths::ConvertRelativePathToFull(LogFilePath));
 #elif PLATFORM_LINUX
@@ -103,12 +98,36 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 		sentry_options_set_http_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
 	}
 
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+	{
+		sentry_options_set_traces_sample_rate(options, settings->TracesSampleRate);
+	}
+	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("The Native SDK doesn't currently support sampling functions"));
+	}
+
 #if PLATFORM_WINDOWS
-	sentry_options_set_handler_pathw(options, *FPaths::ConvertRelativePathToFull(HandlerPath));
-	sentry_options_set_database_pathw(options, *FPaths::ConvertRelativePathToFull(DatabasePath));
+	if(!FSentryModule::Get().IsMarketplaceVersion())
+	{
+		const FString HandlerPath = GetHandlerPath();
+
+		if(!FPaths::FileExists(HandlerPath))
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. "
+				"Please make sure that the plugin was rebuilt to avoid initialization failure."));
+		}
+
+		sentry_options_set_handler_pathw(options, *HandlerPath);
+	}
 #elif PLATFORM_LINUX
-	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(HandlerPath)));
-	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*FPaths::ConvertRelativePathToFull(DatabasePath)));
+	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*GetHandlerPath()));
+#endif
+
+#if PLATFORM_WINDOWS
+	sentry_options_set_database_pathw(options, *GetDatabasePath());
+#elif PLATFORM_LINUX
+	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*GetDatabasePath()));
 #endif
 
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
@@ -138,10 +157,9 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	sentry_clear_crashed_last_run();
 
 #if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
-	if(settings->EnableAutoCrashCapturing)
-	{
-		FPlatformMisc::SetCrashHandlingType(ECrashHandlingType::Disabled);
-	}
+	FPlatformMisc::SetCrashHandlingType(settings->EnableAutoCrashCapturing
+		? ECrashHandlingType::Disabled
+		: ECrashHandlingType::Default);
 #endif
 
 	isStackTraceEnabled = settings->AttachStacktrace;
@@ -324,6 +342,15 @@ void SentrySubsystemDesktop::EndSession()
 	sentry_end_session();
 }
 
+USentryTransaction* SentrySubsystemDesktop::StartTransaction(const FString& name, const FString& operation)
+{
+	sentry_transaction_context_t* transactionContext = sentry_transaction_context_new(TCHAR_TO_ANSI(*name), TCHAR_TO_ANSI(*operation));
+
+	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContext, sentry_value_new_null());
+
+	return SentryConvertorsDesktop::SentryTransactionToUnreal(nativeTransaction);
+}
+
 USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
 {
 	return beforeSend;
@@ -338,6 +365,28 @@ TSharedPtr<SentryScopeDesktop> SentrySubsystemDesktop::GetCurrentScope()
 	}
 
 	return scopeStack.Top();
+}
+
+FString SentrySubsystemDesktop::GetHandlerPath() const
+{
+#if PLATFORM_WINDOWS
+	const FString HandlerExecutableName = TEXT("crashpad_handler.exe");
+#elif PLATFORM_LINUX
+	const FString HandlerExecutableName = TEXT("crashpad_handler");
+#endif
+
+	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), HandlerExecutableName);
+	const FString HandlerFullPath = FPaths::ConvertRelativePathToFull(HandlerPath);
+
+	return HandlerFullPath;
+}
+
+FString SentrySubsystemDesktop::GetDatabasePath() const
+{
+	const FString DatabasePath = FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native"));
+	const FString DatabaseFullPath = FPaths::ConvertRelativePathToFull(DatabasePath);
+
+	return DatabaseFullPath;
 }
 
 #endif

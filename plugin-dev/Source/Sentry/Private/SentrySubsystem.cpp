@@ -293,6 +293,14 @@ void USentrySubsystem::EndSession()
 	SubsystemNativeImpl->EndSession();
 }
 
+USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->StartTransaction(Name, Operation);
+}
+
 void USentrySubsystem::AddDefaultContext()
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -301,6 +309,7 @@ void USentrySubsystem::AddDefaultContext()
 	TMap<FString, FString> DefaultContext;
 	DefaultContext.Add(TEXT("Engine version"), FEngineVersion::Current().ToString(EVersionComponent::Changelist));
 	DefaultContext.Add(TEXT("Plugin version"), FSentryModule::Get().GetPluginVersion());
+	DefaultContext.Add(TEXT("Is Marketplace version"), FSentryModule::Get().IsMarketplaceVersion() ? TEXT("True") : TEXT("False"));
 	DefaultContext.Add(TEXT("Configuration"), LexToString(FApp::GetBuildConfiguration()));
 	DefaultContext.Add(TEXT("Target Type"), LexToString(FApp::GetBuildTargetType()));
 	DefaultContext.Add(TEXT("Engine mode"), FGenericPlatformMisc::GetEngineMode());

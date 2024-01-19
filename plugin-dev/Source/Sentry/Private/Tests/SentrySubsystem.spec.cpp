@@ -2,6 +2,8 @@
 
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
+#include "SentryTransaction.h"
+#include "SentrySpan.h"
 
 #include "UObject/UObjectGlobals.h"
 #include "Misc/AutomationTest.h"
@@ -61,6 +63,26 @@ void SentrySubsystemSpec::Define()
 
 			const USentryId* eventId = SentrySubsystem->CaptureEventWithScope(testEvent, testDelegate);
 			TestNotNull("Event ID is non-null", eventId);
+		});
+	});
+
+	Describe("Transaction", [this]()
+	{
+		It("should be started and finished", [this]()
+		{
+			USentryTransaction* transaction = SentrySubsystem->StartTransaction(TEXT("Automation transaction"), TEXT("Automation operation"));
+			TestNotNull("Transaction is non-null", transaction);
+			TestFalse("Transaction is not finished", transaction->IsFinished());
+
+			USentrySpan* span = transaction->StartChild(TEXT("Automation span"), TEXT("Description text"));
+			TestNotNull("Span is non-null", span);
+			TestFalse("Span is not finished", span->IsFinished());
+
+			span->Finish();
+			TestTrue("Span is finished", span->IsFinished());
+
+			transaction->Finish();
+			TestTrue("Transaction is finished", transaction->IsFinished());
 		});
 	});
 

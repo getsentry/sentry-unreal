@@ -9,6 +9,15 @@
 
 class USentryBeforeSendHandler;
 
+UENUM(BlueprintType)
+enum class ESentryTracesSamplingType : uint8
+{
+	// Use uniform sample rate for all transactions
+	UniformSampleRate,
+	// Control the sample rate based on the transaction itself and the context in which it's captured (not implemented)
+	TracesSampler
+};
+
 USTRUCT(BlueprintType)
 struct FAutomaticBreadcrumbs
 {
@@ -234,6 +243,24 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
 		Meta = (DisplayName = "In-app exludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
 	TArray<FString> InAppExclude;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
+		Meta = (DisplayName = "Enable tracing", ToolTip = "Flag indicating whether to enable tracing for performance monitoring."))
+	bool EnableTracing;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
+		Meta = (DisplayName = "Sampling type", ToolTip = "Method of controlling the sample rate for transactions.", EditCondition = "EnableTracing"))
+	ESentryTracesSamplingType SamplingType;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
+		Meta = (DisplayName = "Traces sample rate", ToolTip = "Setting a uniform sample rate for all transactions to a number between 0.0 and 1.0. (For example, to send 20% of transactions, set TracesSampleRate to 0.2).",
+			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::UniformSampleRate", EditConditionHides))
+	float TracesSampleRate;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
+		Meta = (DisplayName = "Traces sampler", ToolTip = "Custom hanler for determining traces sample rate based on the sampling context.",
+			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
+	TSubclassOf<UObject> TracesSampler;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
 		Meta = (DisplayName = "Promote values to tags"))

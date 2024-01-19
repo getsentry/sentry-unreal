@@ -15,6 +15,8 @@
 
 const FName FSentryModule::ModuleName = "Sentry";
 
+const bool FSentryModule::IsMarketplace = false;
+
 void FSentryModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
@@ -112,6 +114,11 @@ FString FSentryModule::GetPluginVersion()
 	}
 
 	return plugin->GetDescriptor().VersionName;
+}
+
+bool FSentryModule::IsMarketplaceVersion()
+{
+	return IsMarketplace;
 }
 
 #undef LOCTEXT_NAMESPACE

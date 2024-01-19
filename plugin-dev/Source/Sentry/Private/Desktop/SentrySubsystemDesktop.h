@@ -36,12 +36,16 @@ public:
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual void StartSession() override;
 	virtual void EndSession() override;
+	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) override;
 
 	USentryBeforeSendHandler* GetBeforeSendHandler();
 
 	TSharedPtr<SentryScopeDesktop> GetCurrentScope();
 
 private:
+	FString GetHandlerPath() const;
+	FString GetDatabasePath() const;
+
 	USentryBeforeSendHandler* beforeSend;
 
 	TSharedPtr<SentryCrashReporter> crashReporter;

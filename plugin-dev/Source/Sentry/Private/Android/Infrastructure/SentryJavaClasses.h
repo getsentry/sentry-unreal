@@ -19,6 +19,8 @@ struct SentryJavaClasses
 	const static FSentryJavaClass Message;
 	const static FSentryJavaClass SentryLevel;
 	const static FSentryJavaClass SentryHint;
+	const static FSentryJavaClass Transaction;
+	const static FSentryJavaClass Span;
 
 	// System Java classes
 	const static FSentryJavaClass ArrayList;

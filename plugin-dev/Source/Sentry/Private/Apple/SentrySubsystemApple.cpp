@@ -7,6 +7,7 @@
 #include "SentryScopeApple.h"
 #include "SentryUserApple.h"
 #include "SentryUserFeedbackApple.h"
+#include "SentryTransactionApple.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -14,7 +15,9 @@
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
+#include "SentryTransaction.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryDefines.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -64,6 +67,16 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
 		{
 			[options addInAppExclude:it->GetNSString()];
+		}
+		options.enableTracing = settings->EnableTracing;
+		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+		{
+			options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
+		}
+		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Currently sampling functions are not supported"));
+			options.tracesSampler = nil;
 		}
 	}];
 }
@@ -197,4 +210,11 @@ void SentrySubsystemApple::StartSession()
 void SentrySubsystemApple::EndSession()
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) endSession];
+}
+
+USentryTransaction* SentrySubsystemApple::StartTransaction(const FString& name, const FString& operation)
+{
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
+
+	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
 }
