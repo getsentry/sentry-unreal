@@ -14,6 +14,14 @@ USentrySamplingContext::USentrySamplingContext()
 {
 }
 
+TMap<FString, FString> USentrySamplingContext::GetCustomSamplingContext() const
+{
+	if (!SentrySamplingContextNativeImpl)
+		return TMap<FString, FString>();
+
+	return SentrySamplingContextNativeImpl->GetCustomSamplingContext();
+}
+
 void USentrySamplingContext::InitWithNativeImpl(TSharedPtr<ISentrySamplingContext> samplingContextImpl)
 {
 	SentrySamplingContextNativeImpl = samplingContextImpl;

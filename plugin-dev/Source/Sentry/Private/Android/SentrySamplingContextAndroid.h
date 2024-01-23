@@ -13,6 +13,8 @@ public:
 
 	void SetupClassMethods();
 
+	virtual TMap<FString, FString> GetCustomSamplingContext() const override;
+
 private:
 	FSentryJavaMethod GetCustomSamplingContextMethod;
 };

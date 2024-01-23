@@ -8,4 +8,6 @@ class ISentrySamplingContext
 {
 public:
 	virtual ~ISentrySamplingContext() = default;
+
+	virtual TMap<FString, FString> GetCustomSamplingContext() const = 0;
 };

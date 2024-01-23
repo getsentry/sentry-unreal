@@ -8,6 +8,7 @@
 #include "SentryUserApple.h"
 #include "SentryUserFeedbackApple.h"
 #include "SentryTransactionApple.h"
+#include "SentrySamplingContextApple.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -18,6 +19,8 @@
 #include "SentryTransaction.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
+#include "SentrySamplingContext.h"
+#include "SentryTraceSampler.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -75,8 +78,12 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		}
 		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Currently sampling functions are not supported"));
-			options.tracesSampler = nil;
+			options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
+				USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
+				Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextApple(samplingContext)));
+				float samplingValue;
+				return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
+			};
 		}
 	}];
 }

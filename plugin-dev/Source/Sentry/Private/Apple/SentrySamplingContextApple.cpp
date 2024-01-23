@@ -17,6 +17,11 @@ SentrySamplingContextApple::~SentrySamplingContextApple()
 	// Put custom destructor logic here if needed
 }
 
+TMap<FString, FString> SentrySamplingContextApple::GetCustomSamplingContext() const
+{
+	return SentryConvertorsApple::StringMapToUnreal(SamplingContext.customSamplingContext);
+}
+
 SentrySamplingContext* SentrySamplingContextApple::GetNativeObject()
 {
 	return SamplingContext;

@@ -16,6 +16,10 @@ class SENTRY_API USentrySamplingContext : public UObject
 public:
 	USentrySamplingContext();
 
+	/** Gets custom data used for sampling. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	TMap<FString, FString> GetCustomSamplingContext() const;
+
 	void InitWithNativeImpl(TSharedPtr<ISentrySamplingContext> samplingContextImpl);
 	TSharedPtr<ISentrySamplingContext> GetNativeImpl();
 

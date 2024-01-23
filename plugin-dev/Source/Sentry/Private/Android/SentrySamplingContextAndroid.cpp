@@ -14,3 +14,8 @@ SentrySamplingContextAndroid::SentrySamplingContextAndroid(jobject samplingConte
 void SentrySamplingContextAndroid::SetupClassMethods()
 {
 }
+
+TMap<FString, FString> SentrySamplingContextAndroid::GetCustomSamplingContext() const
+{
+	return TMap<FString, FString>();
+}
