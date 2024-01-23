@@ -15,13 +15,14 @@ class USentryUserFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
 class USentryTransaction;
+class USentryTraceSampler;
 
 class ISentrySubsystem
 {
 public:
 	virtual ~ISentrySubsystem() = default;
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;

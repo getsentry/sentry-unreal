@@ -8,6 +8,7 @@
 #include "SentryUserAndroid.h"
 #include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryTraceSampler.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -26,7 +27,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 
-void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
+void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
@@ -51,8 +52,7 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, U
 	}
 	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Currently sampling functions are not supported"));
-		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)0);
+		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)traceSampler);
 	}
 
 	FString SettingsJsonStr;

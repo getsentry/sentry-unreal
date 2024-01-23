@@ -21,6 +21,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass SentryHint;
 	const static FSentryJavaClass Transaction;
 	const static FSentryJavaClass Span;
+	const static FSentryJavaClass SamplingContext;
 
 	// System Java classes
 	const static FSentryJavaClass ArrayList;
@@ -30,4 +31,5 @@ struct SentryJavaClasses
 	const static FSentryJavaClass Iterator;
 	const static FSentryJavaClass MapEntry;
 	const static FSentryJavaClass List;
+	const static FSentryJavaClass Double;
 };

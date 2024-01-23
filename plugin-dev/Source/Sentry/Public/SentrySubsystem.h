@@ -18,6 +18,7 @@ class USentryUserFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
 class USentryTransaction;
+class USentryTraceSampler;
 
 class ISentrySubsystem;
 
@@ -278,6 +279,9 @@ private:
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;
+
+	UPROPERTY()
+	USentryTraceSampler* TraceSampler;
 
 	FDelegateHandle PreLoadMapDelegate;
 	FDelegateHandle PostLoadMapDelegate;

@@ -16,6 +16,7 @@
 #include "SentryTransaction.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryTraceSampler.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
@@ -74,7 +75,7 @@ SentrySubsystemDesktop::SentrySubsystemDesktop()
 {
 }
 
-void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
+void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
 	beforeSend = beforeSendHandler;
 

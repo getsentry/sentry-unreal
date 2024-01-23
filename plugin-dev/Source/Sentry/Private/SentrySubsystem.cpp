@@ -10,6 +10,7 @@
 #include "SentryId.h"
 #include "SentryUserFeedback.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryTraceSampler.h"
 
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
@@ -87,10 +88,16 @@ void USentrySubsystem::Initialize()
 
 	BeforeSendHandler = NewObject<USentryBeforeSendHandler>(this, BeforeSendHandlerClass);
 
+	const UClass* TraceSamplerClass = Settings->TracesSampler != nullptr
+		? static_cast<UClass*>(Settings->TracesSampler)
+		: USentryTraceSampler::StaticClass();
+
+	TraceSampler = NewObject<USentryTraceSampler>(this, TraceSamplerClass);
+
 	if (!SubsystemNativeImpl)
 		return;
 
-	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler);
+	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
 
 	if(!SubsystemNativeImpl->IsEnabled())
 	{
