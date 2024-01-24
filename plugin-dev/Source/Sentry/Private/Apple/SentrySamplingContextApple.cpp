@@ -2,6 +2,8 @@
 
 #include "SentrySamplingContextApple.h"
 
+#include "SentryTransactionContext.h"
+
 #include "Infrastructure/SentryConvertorsApple.h"
 
 #include "Convenience/SentryInclude.h"
@@ -15,6 +17,11 @@ SentrySamplingContextApple::SentrySamplingContextApple(SentrySamplingContext* co
 SentrySamplingContextApple::~SentrySamplingContextApple()
 {
 	// Put custom destructor logic here if needed
+}
+
+USentryTransactionContext* SentrySamplingContextApple::GetTransactionContext() const
+{
+	return nullptr;
 }
 
 TMap<FString, FString> SentrySamplingContextApple::GetCustomSamplingContext() const

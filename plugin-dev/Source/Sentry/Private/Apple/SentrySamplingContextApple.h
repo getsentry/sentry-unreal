@@ -12,6 +12,7 @@ public:
 	SentrySamplingContextApple(SentrySamplingContext* context);
 	virtual ~SentrySamplingContextApple() override;
 
+	virtual USentryTransactionContext* GetTransactionContext() const override;
 	virtual TMap<FString, FString> GetCustomSamplingContext() const override;
 
 	SentrySamplingContext* GetNativeObject();

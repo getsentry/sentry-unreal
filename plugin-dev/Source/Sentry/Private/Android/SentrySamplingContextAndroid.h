@@ -13,8 +13,10 @@ public:
 
 	void SetupClassMethods();
 
+	virtual USentryTransactionContext* GetTransactionContext() const override;
 	virtual TMap<FString, FString> GetCustomSamplingContext() const override;
 
 private:
+	FSentryJavaMethod GetTransactionContextMethod;
 	FSentryJavaMethod GetCustomSamplingContextMethod;
 };

@@ -14,6 +14,14 @@ USentrySamplingContext::USentrySamplingContext()
 {
 }
 
+USentryTransactionContext* USentrySamplingContext::GetTransactionContext() const
+{
+	if (!SentrySamplingContextNativeImpl)
+		return nullptr;
+
+	return SentrySamplingContextNativeImpl->GetTransactionContext();
+}
+
 TMap<FString, FString> USentrySamplingContext::GetCustomSamplingContext() const
 {
 	if (!SentrySamplingContextNativeImpl)

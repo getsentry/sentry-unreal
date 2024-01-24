@@ -2,6 +2,8 @@
 
 #include "SentrySamplingContextAndroid.h"
 
+#include "SentryTransactionContext.h"
+
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
@@ -13,7 +15,13 @@ SentrySamplingContextAndroid::SentrySamplingContextAndroid(jobject samplingConte
 
 void SentrySamplingContextAndroid::SetupClassMethods()
 {
+	GetTransactionContextMethod = GetMethod("getTransactionContext", "()Lio/sentry/TransactionContext;");
 	GetCustomSamplingContextMethod = GetMethod("getCustomSamplingContext", "()Lio/sentry/CustomSamplingContext;");
+}
+
+USentryTransactionContext* SentrySamplingContextAndroid::GetTransactionContext() const
+{
+	return nullptr;
 }
 
 TMap<FString, FString> SentrySamplingContextAndroid::GetCustomSamplingContext() const
@@ -22,9 +30,9 @@ TMap<FString, FString> SentrySamplingContextAndroid::GetCustomSamplingContext() 
 	if(!customSamplingContext)
 		return TMap<FString, FString>();
 
-	FSentryJavaObjectWrapper NativeCustomSamplingContext(SentryJavaClasses::CustomSamplingContext, customSamplingContext);
+	FSentryJavaObjectWrapper NativeCustomSamplingContext(SentryJavaClasses::CustomSamplingContext, *customSamplingContext);
 	FSentryJavaMethod GetDataMethod = NativeCustomSamplingContext.GetMethod("getData", "()Ljava/util/Map;");
 
-	auto data = NativeCustomSamplingContext.CallMethod<jobject>(GetDataMethod);
+	auto data = NativeCustomSamplingContext.CallObjectMethod<jobject>(GetDataMethod);
 	return SentryConvertorsAndroid::StringMapToUnreal(*data);
 }
