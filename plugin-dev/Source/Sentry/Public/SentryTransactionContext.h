@@ -16,9 +16,21 @@ class SENTRY_API USentryTransactionContext : public UObject
 public:
 	USentryTransactionContext();
 
+	/** Gets transaction name. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetName() const;
+
+	/** Gets transaction origin. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetOrigin() const;
+
+	/** Gets operation name. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetOperation() const;
+
 	void InitWithNativeImpl(TSharedPtr<ISentryTransactionContext> transactionContextImpl);
 	TSharedPtr<ISentryTransactionContext> GetNativeImpl();
 
 private:
-	TSharedPtr<ISentryTransactionContext> SentryTransactionNativeImpl;
+	TSharedPtr<ISentryTransactionContext> SentryTransactionContextNativeImpl;
 };

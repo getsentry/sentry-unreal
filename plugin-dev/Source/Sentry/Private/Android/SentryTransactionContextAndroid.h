@@ -13,6 +13,12 @@ public:
 
 	void SetupClassMethods();
 
+	virtual FString GetName() const override;
+	virtual FString GetOrigin() const override;
+	virtual FString GetOperation() const override;
+
 private:
-	FSentryJavaMethod SomeMethod;
+	FSentryJavaMethod GetNameMethod;
+	FSentryJavaMethod GetOriginMethod;
+	FSentryJavaMethod GetOperationMethod;
 };

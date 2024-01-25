@@ -10,3 +10,25 @@ SentryTransactionContextAndroid::SentryTransactionContextAndroid(jobject transac
 {
 	SetupClassMethods();
 }
+
+void SentryTransactionContextAndroid::SetupClassMethods()
+{
+	GetNameMethod = GetMethod("getName", "()Ljava/lang/String;");
+	GetOriginMethod = GetMethod("getOrigin", "()Ljava/lang/String;");
+	GetOperationMethod = GetMethod("getOperation", "()Ljava/lang/String;");
+}
+
+FString SentryTransactionContextAndroid::GetName() const
+{
+	return CallMethod<FString>(GetNameMethod);
+}
+
+FString SentryTransactionContextAndroid::GetOrigin() const
+{
+	return CallMethod<FString>(GetOriginMethod);
+}
+
+FString SentryTransactionContextAndroid::GetOperation() const
+{
+	return CallMethod<FString>(GetOperationMethod);
+}

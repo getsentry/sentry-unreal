@@ -12,6 +12,10 @@ public:
 	SentryTransactionContextApple(SentryTransactionContext* context);
 	virtual ~SentryTransactionContextApple() override;
 
+	virtual FString GetName() const override;
+	virtual FString GetOrigin() const override;
+	virtual FString GetOperation() const override;
+
 	SentryTransactionContext* GetNativeObject();
 
 private:

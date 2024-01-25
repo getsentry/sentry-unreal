@@ -14,12 +14,36 @@ USentryTransactionContext::USentryTransactionContext()
 {
 }
 
+FString USentryTransactionContext::GetName() const
+{
+	if (!SentryTransactionContextNativeImpl)
+		return FString();
+
+	return SentryTransactionContextNativeImpl->GetName();
+}
+
+FString USentryTransactionContext::GetOrigin() const
+{
+	if (!SentryTransactionContextNativeImpl)
+		return FString();
+
+	return SentryTransactionContextNativeImpl->GetOrigin();
+}
+
+FString USentryTransactionContext::GetOperation() const
+{
+	if (!SentryTransactionContextNativeImpl)
+		return FString();
+
+	return SentryTransactionContextNativeImpl->GetOperation();
+}
+
 void USentryTransactionContext::InitWithNativeImpl(TSharedPtr<ISentryTransactionContext> transactionContextImpl)
 {
-	SentryTransactionNativeImpl = transactionContextImpl;
+	SentryTransactionContextNativeImpl = transactionContextImpl;
 }
 
 TSharedPtr<ISentryTransactionContext> USentryTransactionContext::GetNativeImpl()
 {
-	return SentryTransactionNativeImpl;
+	return SentryTransactionContextNativeImpl;
 }
