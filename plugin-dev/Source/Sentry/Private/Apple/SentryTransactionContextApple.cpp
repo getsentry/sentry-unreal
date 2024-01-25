@@ -12,14 +12,29 @@ SentryTransactionContextApple::~SentryTransactionContextApple()
 	// Put custom destructor logic here if needed
 }
 
+void SentryTransactionContextApple::SetName(const FString& Name)
+{
+	TransactionContext.name = Name.GetNSString();
+}
+
 FString SentryTransactionContextApple::GetName() const
 {
 	return FString(TransactionContext.name);
 }
 
+void SentryTransactionContextApple::SetOrigin(const FString& Origin)
+{
+	TransactionContext.origin = Origin.GetNSString();
+}
+
 FString SentryTransactionContextApple::GetOrigin() const
 {
 	return FString(TransactionContext.origin);
+}
+
+void SentryTransactionContextApple::SetOperation(const FString& Operation)
+{
+	TransactionContext.operation = Operation.GetNSString();
 }
 
 FString SentryTransactionContextApple::GetOperation() const
