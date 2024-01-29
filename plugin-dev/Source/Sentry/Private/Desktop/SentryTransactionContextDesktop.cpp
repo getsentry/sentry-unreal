@@ -4,6 +4,8 @@
 
 #include "SentryDefines.h"
 
+#if USE_SENTRY_NATIVE
+
 SentryTransactionContextDesktop::SentryTransactionContextDesktop(const FString& name, const FString& operation)
 	: TransactionContextDesktop(sentry_transaction_context_new(TCHAR_TO_ANSI(*name), TCHAR_TO_ANSI(*operation)))
 {
@@ -37,3 +39,5 @@ sentry_transaction_context_t* SentryTransactionContextDesktop::GetNativeObject()
 {
 	return TransactionContextDesktop;
 }
+
+#endif
