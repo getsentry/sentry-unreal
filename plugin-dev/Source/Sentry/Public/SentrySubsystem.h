@@ -19,6 +19,7 @@ class USentryUser;
 class USentryBeforeSendHandler;
 class USentryTransaction;
 class USentryTraceSampler;
+class USentryTransactionContext;
 
 class ISentrySubsystem;
 
@@ -245,6 +246,23 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryTransaction* StartTransaction(const FString& Name, const FString& Operation);
+
+	/**
+	 * Starts a new transaction with given context.
+	 *
+	 * @param Context Transaction context.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	USentryTransaction* StartTransactionWithContext(USentryTransactionContext* Context);
+
+	/**
+	 * Starts a new transaction with given context and options.
+	 *
+	 * @param Context Transaction context.
+	 * @param Options Transaction options.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options);
 
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */

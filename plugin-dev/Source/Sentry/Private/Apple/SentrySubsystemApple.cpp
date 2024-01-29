@@ -9,6 +9,7 @@
 #include "SentryUserFeedbackApple.h"
 #include "SentryTransactionApple.h"
 #include "SentrySamplingContextApple.h"
+#include "SentryTransactionContextApple.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -21,6 +22,7 @@
 #include "SentryDefines.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
+#include "SentryTransactionContext.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -222,6 +224,25 @@ void SentrySubsystemApple::EndSession()
 USentryTransaction* SentrySubsystemApple::StartTransaction(const FString& name, const FString& operation)
 {
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
+
+	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+}
+
+USentryTransaction* SentrySubsystemApple::StartTransactionWithContext(USentryTransactionContext* context)
+{
+	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context->GetNativeImpl());
+
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()];
+
+	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+}
+
+USentryTransaction* SentrySubsystemApple::StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options)
+{
+	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context->GetNativeImpl());
+
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
+		customSamplingContext:SentryConvertorsApple::StringMapToNative(options)];
 
 	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
 }

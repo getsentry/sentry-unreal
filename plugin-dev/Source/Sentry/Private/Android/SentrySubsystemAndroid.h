@@ -28,4 +28,6 @@ public:
 	virtual void StartSession() override;
 	virtual void EndSession() override;
 	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) override;
+	virtual USentryTransaction* StartTransactionWithContext(USentryTransactionContext* context) override;
+	virtual USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options) override;
 };

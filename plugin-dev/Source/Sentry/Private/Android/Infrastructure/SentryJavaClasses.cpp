@@ -20,6 +20,7 @@ const FSentryJavaClass SentryJavaClasses::Span					= FSentryJavaClass { "io/sent
 const FSentryJavaClass SentryJavaClasses::SamplingContext		= FSentryJavaClass { "io/sentry/SamplingContext", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::CustomSamplingContext	= FSentryJavaClass { "io/sentry/CustomSamplingContext", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::TransactionContext	= FSentryJavaClass { "io/sentry/TransactionContext", ESentryJavaClassType::External };
+const FSentryJavaClass SentryJavaClasses::TransactionOptions	= FSentryJavaClass { "io/sentry/TransactionOptions", ESentryJavaClassType::External };
 
 // System Java classes definitions
 const FSentryJavaClass SentryJavaClasses::ArrayList				= FSentryJavaClass { "java/util/ArrayList", ESentryJavaClassType::System };

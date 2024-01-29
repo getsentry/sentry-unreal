@@ -16,6 +16,7 @@ class USentryUser;
 class USentryBeforeSendHandler;
 class USentryTransaction;
 class USentryTraceSampler;
+class USentryTransactionContext;
 
 class ISentrySubsystem
 {
@@ -43,4 +44,6 @@ public:
 	virtual void StartSession() = 0;
 	virtual void EndSession() = 0;
 	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) = 0;
+	virtual USentryTransaction* StartTransactionWithContext(USentryTransactionContext* context) = 0;
+	virtual USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options) = 0;
 };

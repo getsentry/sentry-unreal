@@ -24,6 +24,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass SamplingContext;
 	const static FSentryJavaClass CustomSamplingContext;
 	const static FSentryJavaClass TransactionContext;
+	const static FSentryJavaClass TransactionOptions;
 
 	// System Java classes
 	const static FSentryJavaClass ArrayList;

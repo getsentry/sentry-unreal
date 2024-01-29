@@ -11,6 +11,7 @@
 #include "SentryUserFeedback.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryTraceSampler.h"
+#include "SentryTransactionContext.h"
 
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
@@ -306,6 +307,22 @@ USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, cons
 		return nullptr;
 
 	return SubsystemNativeImpl->StartTransaction(Name, Operation);
+}
+
+USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransactionContext* Context)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->StartTransactionWithContext(Context);
+}
+
+USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context, Options);
 }
 
 void USentrySubsystem::AddDefaultContext()
