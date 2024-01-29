@@ -33,14 +33,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetOperation() const;
 
-	/** Sets transaction origin. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetOrigin(const FString& Origin);
-
-	/** Gets transaction origin. */
-	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetOrigin() const;
-
 	void InitWithNativeImpl(TSharedPtr<ISentryTransactionContext> transactionContextImpl);
 	TSharedPtr<ISentryTransactionContext> GetNativeImpl();
 

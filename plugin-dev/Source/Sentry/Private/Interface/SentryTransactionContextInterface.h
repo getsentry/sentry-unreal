@@ -8,9 +8,7 @@ class ISentryTransactionContext
 {
 public:
 	virtual ~ISentryTransactionContext() = default;
-	
+
 	virtual FString GetName() const = 0;
 	virtual FString GetOperation() const = 0;
-	virtual void SetOrigin(const FString& Name) = 0;
-	virtual FString GetOrigin() const = 0;
 };

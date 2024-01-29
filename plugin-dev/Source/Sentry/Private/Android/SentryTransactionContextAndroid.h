@@ -16,14 +16,9 @@ public:
 
 	virtual FString GetName() const override;
 	virtual FString GetOperation() const override;
-	virtual void SetOrigin(const FString& Origin) override;
-	virtual FString GetOrigin() const override;
 
 private:
 
 	FSentryJavaMethod GetNameMethod;
 	FSentryJavaMethod GetOperationMethod;
-	FSentryJavaMethod SetOriginMethod;
-	FSentryJavaMethod GetOriginMethod;
-
 };

@@ -27,16 +27,6 @@ FString SentryTransactionContextApple::GetOperation() const
 	return FString(TransactionContext.operation);
 }
 
-void SentryTransactionContextApple::SetOrigin(const FString& Origin)
-{
-	TransactionContext.origin = Origin.GetNSString();
-}
-
-FString SentryTransactionContextApple::GetOrigin() const
-{
-	return FString(TransactionContext.origin);
-}
-
 SentryTransactionContext* SentryTransactionContextApple::GetNativeObject()
 {
 	return TransactionContext;

@@ -8,6 +8,8 @@
 #include "Android/SentryTransactionContextAndroid.h"
 #elif PLATFORM_IOS || PLATFORM_MAC
 #include "Apple/SentryTransactionContextApple.h"
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#include "Desktop/SentryTransactionContextDesktop.h"
 #endif
 
 USentryTransactionContext::USentryTransactionContext()
@@ -20,6 +22,8 @@ void USentryTransactionContext::Initialize(const FString& Name, const FString& O
 	SentryTransactionContextNativeImpl = MakeShareable(new SentryTransactionContextAndroid(Name, Operation));
 #elif PLATFORM_IOS || PLATFORM_MAC
 	SentryTransactionContextNativeImpl = MakeShareable(new SentryTransactionContextApple(Name, Operation));
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+	SentryTransactionContextNativeImpl = MakeShareable(new SentryTransactionContextDesktop(Name, Operation));
 #endif
 }
 
@@ -37,22 +41,6 @@ FString USentryTransactionContext::GetOperation() const
 		return FString();
 
 	return SentryTransactionContextNativeImpl->GetOperation();
-}
-
-void USentryTransactionContext::SetOrigin(const FString& Origin)
-{
-	if (!SentryTransactionContextNativeImpl)
-		return;
-
-	SentryTransactionContextNativeImpl->SetOrigin(Origin);
-}
-
-FString USentryTransactionContext::GetOrigin() const
-{
-	if (!SentryTransactionContextNativeImpl)
-		return FString();
-
-	return SentryTransactionContextNativeImpl->GetOrigin();
 }
 
 void USentryTransactionContext::InitWithNativeImpl(TSharedPtr<ISentryTransactionContext> transactionContextImpl)

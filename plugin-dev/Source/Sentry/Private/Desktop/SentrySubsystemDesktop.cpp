@@ -6,6 +6,7 @@
 #include "SentryUserDesktop.h"
 #include "SentryScopeDesktop.h"
 #include "SentryTransactionDesktop.h"
+#include "SentryTransactionContextDesktop.h"
 
 #include "SentryDefines.h"
 #include "SentrySettings.h"
@@ -17,6 +18,7 @@
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryTraceSampler.h"
+#include "SentryTransactionContext.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
@@ -350,6 +352,21 @@ USentryTransaction* SentrySubsystemDesktop::StartTransaction(const FString& name
 	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContext, sentry_value_new_null());
 
 	return SentryConvertorsDesktop::SentryTransactionToUnreal(nativeTransaction);
+}
+
+USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContext(USentryTransactionContext* context)
+{
+	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = StaticCastSharedPtr<SentryTransactionContextDesktop>(context->GetNativeImpl());
+
+	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContextDesktop->GetNativeObject(), sentry_value_new_null());
+
+	return SentryConvertorsDesktop::SentryTransactionToUnreal(nativeTransaction);
+}
+
+USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not support on desktop."));
+	return StartTransactionWithContext(context);
 }
 
 USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
