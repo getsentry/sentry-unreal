@@ -2,7 +2,7 @@
 
 #include "SentryTransactionContext.h"
 
-#include "Interface/SentryTransactionInterface.h"
+#include "Interface/SentryTransactionContextInterface.h"
 
 #if PLATFORM_ANDROID
 #include "Android/SentryTransactionContextAndroid.h"
