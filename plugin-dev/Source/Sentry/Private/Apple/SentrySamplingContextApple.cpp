@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
 
 #include "SentrySamplingContextApple.h"
+#include "SentryTransactionContextApple.h"
 
 #include "SentryTransactionContext.h"
 
@@ -21,7 +22,7 @@ SentrySamplingContextApple::~SentrySamplingContextApple()
 
 USentryTransactionContext* SentrySamplingContextApple::GetTransactionContext() const
 {
-	return nullptr;
+	return SentryConvertorsApple::SentryTransactionContextToUnreal(SamplingContext.transactionContext);
 }
 
 TMap<FString, FString> SentrySamplingContextApple::GetCustomSamplingContext() const

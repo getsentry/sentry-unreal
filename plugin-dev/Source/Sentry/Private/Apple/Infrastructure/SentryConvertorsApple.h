@@ -6,9 +6,11 @@
 
 #include "Convenience/SentryInclude.h"
 
+class USentryTransactionContext;
 class USentryScope;
 class USentryId;
 class USentryTransaction;
+class USentrySpan;
 
 class SentryConvertorsApple
 {
@@ -28,6 +30,7 @@ public:
 	static USentryId* SentryIdToUnreal(SentryId* id);
 	static USentryTransaction* SentryTransactionToUnreal(id<SentrySpan> transaction);
 	static USentrySpan* SentrySpanToUnreal(id<SentrySpan> span);
+	static USentryTransactionContext* SentryTransactionContextToUnreal(SentryTransactionContext* transactionContext);
 
 	/** Other conversions */
 	static SentryLevel StringToSentryLevel(NSString* string);

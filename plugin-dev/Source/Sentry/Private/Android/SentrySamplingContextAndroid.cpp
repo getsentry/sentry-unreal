@@ -21,7 +21,8 @@ void SentrySamplingContextAndroid::SetupClassMethods()
 
 USentryTransactionContext* SentrySamplingContextAndroid::GetTransactionContext() const
 {
-	return nullptr;
+	auto transactionContext = CallObjectMethod<jobject>(GetTransactionContextMethod);
+	return SentryConvertorsAndroid::SentryTransactionContextToUnreal(*transactionContext);
 }
 
 TMap<FString, FString> SentrySamplingContextAndroid::GetCustomSamplingContext() const
