@@ -14,12 +14,13 @@ USentryTransactionContext::USentryTransactionContext()
 {
 }
 
-void USentryTransactionContext::SetName(const FString& Name)
+void USentryTransactionContext::Initialize(const FString& Name, const FString& Operation)
 {
-	if (!SentryTransactionContextNativeImpl)
-		return;
-
-	SentryTransactionContextNativeImpl->SetName(Name);
+#if PLATFORM_ANDROID
+	SentryTransactionContextNativeImpl = MakeShareable(new SentryTransactionContextAndroid(Name, Operation));
+#elif PLATFORM_IOS || PLATFORM_MAC
+	SentryTransactionContextNativeImpl = MakeShareable(new SentryTransactionContextApple(Name, Operation));
+#endif
 }
 
 FString USentryTransactionContext::GetName() const
@@ -28,6 +29,14 @@ FString USentryTransactionContext::GetName() const
 		return FString();
 
 	return SentryTransactionContextNativeImpl->GetName();
+}
+
+FString USentryTransactionContext::GetOperation() const
+{
+	if (!SentryTransactionContextNativeImpl)
+		return FString();
+
+	return SentryTransactionContextNativeImpl->GetOperation();
 }
 
 void USentryTransactionContext::SetOrigin(const FString& Origin)
@@ -44,22 +53,6 @@ FString USentryTransactionContext::GetOrigin() const
 		return FString();
 
 	return SentryTransactionContextNativeImpl->GetOrigin();
-}
-
-void USentryTransactionContext::SetOperation(const FString& Operation)
-{
-	if (!SentryTransactionContextNativeImpl)
-		return;
-
-	SentryTransactionContextNativeImpl->SetOperation(Operation);
-}
-
-FString USentryTransactionContext::GetOperation() const
-{
-	if (!SentryTransactionContextNativeImpl)
-		return FString();
-
-	return SentryTransactionContextNativeImpl->GetOperation();
 }
 
 void USentryTransactionContext::InitWithNativeImpl(TSharedPtr<ISentryTransactionContext> transactionContextImpl)

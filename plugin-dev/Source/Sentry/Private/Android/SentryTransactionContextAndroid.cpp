@@ -5,6 +5,13 @@
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
+SentryTransactionContextAndroid::SentryTransactionContextAndroid(const FString& name, const FString& operation)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::TransactionContext, "(Ljava/lang/String;Ljava/lang/String;)V",
+		*GetJString(name), *GetJString(operation))
+{
+	SetupClassMethods();
+}
+
 SentryTransactionContextAndroid::SentryTransactionContextAndroid(jobject transactionContext)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::TransactionContext, transactionContext)
 {
@@ -13,22 +20,20 @@ SentryTransactionContextAndroid::SentryTransactionContextAndroid(jobject transac
 
 void SentryTransactionContextAndroid::SetupClassMethods()
 {
-	SetNameMethod = GetMethod("setName", "(Ljava/lang/String;)V");
 	GetNameMethod = GetMethod("getName", "()Ljava/lang/String;");
+	GetOperationMethod = GetMethod("getOperation", "()Ljava/lang/String;");
 	SetOriginMethod = GetMethod("setOrigin", "(Ljava/lang/String;)V");
 	GetOriginMethod = GetMethod("getOrigin", "()Ljava/lang/String;");
-	SetOperationMethod = GetMethod("setOperation", "(Ljava/lang/String;)V");
-	GetOperationMethod = GetMethod("getOperation", "()Ljava/lang/String;");
-}
-
-void SentryTransactionContextAndroid::SetName(const FString& Name)
-{
-	CallMethod<void>(SetNameMethod, *GetJString(Name));
 }
 
 FString SentryTransactionContextAndroid::GetName() const
 {
 	return CallMethod<FString>(GetNameMethod);
+}
+
+FString SentryTransactionContextAndroid::GetOperation() const
+{
+	return CallMethod<FString>(GetOperationMethod);
 }
 
 void SentryTransactionContextAndroid::SetOrigin(const FString& Origin)
@@ -39,14 +44,4 @@ void SentryTransactionContextAndroid::SetOrigin(const FString& Origin)
 FString SentryTransactionContextAndroid::GetOrigin() const
 {
 	return CallMethod<FString>(GetOriginMethod);
-}
-
-void SentryTransactionContextAndroid::SetOperation(const FString& Operation)
-{
-	CallMethod<void>(SetOperationMethod, *GetJString(Operation));
-}
-
-FString SentryTransactionContextAndroid::GetOperation() const
-{
-	return CallMethod<FString>(GetOperationMethod);
 }
