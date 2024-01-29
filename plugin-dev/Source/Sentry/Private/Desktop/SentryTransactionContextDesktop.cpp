@@ -22,14 +22,14 @@ SentryTransactionContextDesktop::~SentryTransactionContextDesktop()
 FString SentryTransactionContextDesktop::GetName() const
 {
 	// no corresponding implementation in sentry-native
-	UE_LOG(LogSentrySdk, Warning, TEXT("The native SDK doesn't currently support SetName function"));
+	UE_LOG(LogSentrySdk, Warning, TEXT("The native SDK doesn't currently support transaction's context GetName function"));
 	return FString();
 }
 
 FString SentryTransactionContextDesktop::GetOperation() const
 {
 	// no corresponding implementation in sentry-native
-	UE_LOG(LogSentrySdk, Warning, TEXT("The native SDK doesn't currently support SetName function"));
+	UE_LOG(LogSentrySdk, Warning, TEXT("The native SDK doesn't currently support transaction's context GetOperation function"));
 	return FString();
 }
 

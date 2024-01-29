@@ -365,7 +365,7 @@ USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContext(USentryT
 
 USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not support on desktop."));
+	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not supported on desktop."));
 	return StartTransactionWithContext(context);
 }
 

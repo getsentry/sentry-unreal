@@ -3,6 +3,7 @@
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
 #include "SentryTransaction.h"
+#include "SentryTransactionContext.h"
 #include "SentrySpan.h"
 
 #include "UObject/UObjectGlobals.h"
@@ -80,6 +81,19 @@ void SentrySubsystemSpec::Define()
 
 			span->Finish();
 			TestTrue("Span is finished", span->IsFinished());
+
+			transaction->Finish();
+			TestTrue("Transaction is finished", transaction->IsFinished());
+		});
+
+		It("should be started and finished with specific context", [this]()
+		{
+			USentryTransactionContext* transactionContext = NewObject<USentryTransactionContext>();
+			transactionContext->Initialize(TEXT("Automation transaction"), TEXT("Automation operation"));
+
+			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContext(transactionContext);
+			TestNotNull("Transaction is non-null", transaction);
+			TestFalse("Transaction is not finished", transaction->IsFinished());
 
 			transaction->Finish();
 			TestTrue("Transaction is finished", transaction->IsFinished());
