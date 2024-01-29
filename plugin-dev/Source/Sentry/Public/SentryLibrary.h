@@ -8,6 +8,7 @@
 
 #include "SentryLibrary.generated.h"
 
+class USentryTransactionContext;
 class USentryEvent;
 class USentryBreadcrumb;
 class USentryUser;
@@ -85,13 +86,22 @@ public:
 	/**
 	 * Creates attachment with a path and a filename.
 	 *
-	 * @param Path The path string of the file to upload as an attachment.	
+	 * @param Path The path string of the file to upload as an attachment.
 	 * @param Filename The name of the attachment to display in Sentry.
 	 * @param ContentType The content type of the attachment. Default is "application/octet-stream".
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static USentryAttachment* CreateSentryAttachmentWithPath(const FString& Path, const FString& Filename,
 		const FString& ContentType = FString(TEXT("application/octet-stream")));
+
+	/**
+	 * Creates transaction context.
+	 *
+	 * @param Name Transaction name.
+	 * @param Operation Transaction operation.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static USentryTransactionContext* CreateSentryTransactionContext(const FString& Name, const FString& Operation);
 
 	/** Converts string to byte array. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
