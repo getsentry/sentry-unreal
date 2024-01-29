@@ -19,7 +19,7 @@ void SentryTransactionOptionsAndroid::SetupClassMethods()
 void SentryTransactionOptionsAndroid::SetCustomSamplingContext(const TMap<FString, FString>& data)
 {
 	FSentryJavaObjectWrapper NativeCustomSamplingContext(SentryJavaClasses::CustomSamplingContext, "()V");
-	FSentryJavaMethod SetMethod = NativeCustomSamplingContext.GetMethod("set", "(Ljava/Lang/String;Ljava/Lang/String;)V");
+	FSentryJavaMethod SetMethod = NativeCustomSamplingContext.GetMethod("set", "(Ljava/lang/String;Ljava/lang/Object;)V");
 
 	for (const auto& dataItem : data)
 	{
