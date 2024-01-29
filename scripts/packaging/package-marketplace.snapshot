@@ -110,6 +110,8 @@ Source/Sentry/Private/Desktop/SentrySpanDesktop.cpp
 Source/Sentry/Private/Desktop/SentrySpanDesktop.h
 Source/Sentry/Private/Desktop/SentrySubsystemDesktop.cpp
 Source/Sentry/Private/Desktop/SentrySubsystemDesktop.h
+Source/Sentry/Private/Desktop/SentryTransactionContextDesktop.cpp
+Source/Sentry/Private/Desktop/SentryTransactionContextDesktop.h
 Source/Sentry/Private/Desktop/SentryTransactionDesktop.cpp
 Source/Sentry/Private/Desktop/SentryTransactionDesktop.h
 Source/Sentry/Private/Desktop/SentryUserDesktop.cpp
