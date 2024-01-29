@@ -50,6 +50,8 @@ Source/Sentry/Private/Android/SentryTransactionAndroid.cpp
 Source/Sentry/Private/Android/SentryTransactionAndroid.h
 Source/Sentry/Private/Android/SentryTransactionContextAndroid.cpp
 Source/Sentry/Private/Android/SentryTransactionContextAndroid.h
+Source/Sentry/Private/Android/SentryTransactionOptionsAndroid.cpp
+Source/Sentry/Private/Android/SentryTransactionOptionsAndroid.h
 Source/Sentry/Private/Android/SentryUserAndroid.cpp
 Source/Sentry/Private/Android/SentryUserAndroid.h
 Source/Sentry/Private/Android/SentryUserFeedbackAndroid.cpp
