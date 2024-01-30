@@ -25,4 +25,6 @@ void SentryTransactionOptionsAndroid::SetCustomSamplingContext(const TMap<FStrin
 	{
 		NativeCustomSamplingContext.CallMethod<void>(SetMethod, *GetJString(dataItem.Key), *GetJString(dataItem.Value));
 	}
+
+	CallMethod<void>(SetCustomSamplingContextMethod, NativeCustomSamplingContext.GetJObject());
 }

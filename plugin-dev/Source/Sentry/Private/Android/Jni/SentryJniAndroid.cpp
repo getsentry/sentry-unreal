@@ -37,7 +37,7 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 	return handler->HandleBeforeSend(EventToProcess, HintToProcess) ? event : nullptr;
 }
 
-JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
+JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
 {
 	USentryTraceSampler* sampler = reinterpret_cast<USentryTraceSampler*>(objAddr);
 
@@ -47,9 +47,10 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv
 	float samplingValue;
 	if(sampler->Sample(Context, samplingValue))
 	{
-		TSharedPtr<FSentryJavaObjectWrapper> NativeDouble = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::Double, "(D)V", samplingValue));
-		return NativeDouble->GetJObject();
+		return (jfloat)samplingValue;
 	}
 
-	return nullptr;
+	// to avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
+	// which should be interpreted as `null` in Java code to fallback to fixed sample rate value
+	return -1.0f;
 }
