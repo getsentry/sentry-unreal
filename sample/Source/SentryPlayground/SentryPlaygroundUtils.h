@@ -4,6 +4,16 @@
 
 #include "SentryPlaygroundUtils.generated.h"
 
+UENUM(BlueprintType)
+enum class ESentryAppTerminationType : uint8
+{
+	NullPointer,
+	ArrayOutOfBounds,
+	BadFunctionPtr,
+	InvalidMemoryAccess,
+	Assert
+};
+
 UCLASS()
 class USentryPlaygroundUtils : public UBlueprintFunctionLibrary
 {
@@ -12,9 +22,5 @@ class USentryPlaygroundUtils : public UBlueprintFunctionLibrary
 public:
 	/** Crashes the application. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static void Crash();
-
-	/** Generates assert. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static void Assert();
+	static void Terminate(ESentryAppTerminationType Type);
 };
