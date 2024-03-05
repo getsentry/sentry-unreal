@@ -15,13 +15,15 @@ class USentryUserFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
 class USentryTransaction;
+class USentryTraceSampler;
+class USentryTransactionContext;
 
 class ISentrySubsystem
 {
 public:
 	virtual ~ISentrySubsystem() = default;
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;
@@ -42,4 +44,6 @@ public:
 	virtual void StartSession() = 0;
 	virtual void EndSession() = 0;
 	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) = 0;
+	virtual USentryTransaction* StartTransactionWithContext(USentryTransactionContext* context) = 0;
+	virtual USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options) = 0;
 };

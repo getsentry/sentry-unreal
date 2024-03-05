@@ -3,6 +3,7 @@
 #include "SentrySettings.h"
 #include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryTraceSampler.h"
 
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
@@ -30,6 +31,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, EnableTracing(false)
 	, SamplingType(ESentryTracesSamplingType::UniformSampleRate)
 	, TracesSampleRate(0.0f)
+	, TracesSampler(USentryTraceSampler::StaticClass())
 	, EnableForPromotedBuildsOnly(false)
 	, UploadSymbolsAutomatically(false)
 	, IncludeSources(false)

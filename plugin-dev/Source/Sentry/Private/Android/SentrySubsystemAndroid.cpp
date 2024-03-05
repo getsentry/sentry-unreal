@@ -6,15 +6,19 @@
 #include "SentryBreadcrumbAndroid.h"
 #include "SentryUserFeedbackAndroid.h"
 #include "SentryUserAndroid.h"
+#include "SentryTransactionContextAndroid.h"
+#include "SentryTransactionOptionsAndroid.h"
+
 #include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
-
+#include "SentryTraceSampler.h"
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
 #include "SentryId.h"
 #include "SentrySettings.h"
 #include "SentryUserFeedback.h"
 #include "SentryUser.h"
+#include "SentryTransactionContext.h"
 
 #include "Callbacks/SentryScopeCallbackAndroid.h"
 
@@ -26,7 +30,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 
-void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
+void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
@@ -51,8 +55,7 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, U
 	}
 	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Currently sampling functions are not supported"));
-		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)0);
+		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)traceSampler);
 	}
 
 	FString SettingsJsonStr;
@@ -221,6 +224,29 @@ USentryTransaction* SentrySubsystemAndroid::StartTransaction(const FString& name
 {
 	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/ITransaction;",
 		*FSentryJavaObjectWrapper::GetJString(name), *FSentryJavaObjectWrapper::GetJString(operation));
+
+	return SentryConvertorsAndroid::SentryTransactionToUnreal(*transaction);
+}
+
+USentryTransaction* SentrySubsystemAndroid::StartTransactionWithContext(USentryTransactionContext* context)
+{
+	TSharedPtr<SentryTransactionContextAndroid> transactionContextAndroid = StaticCastSharedPtr<SentryTransactionContextAndroid>(context->GetNativeImpl());
+
+	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Lio/sentry/TransactionContext;)Lio/sentry/ITransaction;",
+		transactionContextAndroid->GetJObject());
+
+	return SentryConvertorsAndroid::SentryTransactionToUnreal(*transaction);
+}
+
+USentryTransaction* SentrySubsystemAndroid::StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options)
+{
+	TSharedPtr<SentryTransactionContextAndroid> transactionContextAndroid = StaticCastSharedPtr<SentryTransactionContextAndroid>(context->GetNativeImpl());
+
+	TSharedPtr<SentryTransactionOptionsAndroid> transactionOptionsAndroid = MakeShareable(new SentryTransactionOptionsAndroid());
+	transactionOptionsAndroid->SetCustomSamplingContext(options);
+
+	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Lio/sentry/TransactionContext;Lio/sentry/TransactionOptions;)Lio/sentry/ITransaction;",
+		transactionContextAndroid->GetJObject(), transactionOptionsAndroid->GetJObject());
 
 	return SentryConvertorsAndroid::SentryTransactionToUnreal(*transaction);
 }

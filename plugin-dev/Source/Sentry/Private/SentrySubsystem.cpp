@@ -10,6 +10,8 @@
 #include "SentryId.h"
 #include "SentryUserFeedback.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryTraceSampler.h"
+#include "SentryTransactionContext.h"
 
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
@@ -87,10 +89,16 @@ void USentrySubsystem::Initialize()
 
 	BeforeSendHandler = NewObject<USentryBeforeSendHandler>(this, BeforeSendHandlerClass);
 
+	const UClass* TraceSamplerClass = Settings->TracesSampler != nullptr
+		? static_cast<UClass*>(Settings->TracesSampler)
+		: USentryTraceSampler::StaticClass();
+
+	TraceSampler = NewObject<USentryTraceSampler>(this, TraceSamplerClass);
+
 	if (!SubsystemNativeImpl)
 		return;
 
-	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler);
+	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
 
 	if(!SubsystemNativeImpl->IsEnabled())
 	{
@@ -299,6 +307,22 @@ USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, cons
 		return nullptr;
 
 	return SubsystemNativeImpl->StartTransaction(Name, Operation);
+}
+
+USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransactionContext* Context)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->StartTransactionWithContext(Context);
+}
+
+USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context, Options);
 }
 
 void USentrySubsystem::AddDefaultContext()

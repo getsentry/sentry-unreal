@@ -19,7 +19,7 @@ public:
 	virtual void SetCategory(const FString& category) = 0;
 	virtual FString GetCategory() const = 0;
 	virtual void SetData(const TMap<FString, FString>& data) = 0;
-	virtual TMap<FString, FString> GetData() const = 0;	
+	virtual TMap<FString, FString> GetData() const = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual ESentryLevel GetLevel() const = 0;
 };

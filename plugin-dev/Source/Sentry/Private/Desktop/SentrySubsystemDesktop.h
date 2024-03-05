@@ -16,7 +16,7 @@ class SentrySubsystemDesktop : public ISentrySubsystem
 public:
 	SentrySubsystemDesktop();
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
@@ -37,6 +37,8 @@ public:
 	virtual void StartSession() override;
 	virtual void EndSession() override;
 	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) override;
+	virtual USentryTransaction* StartTransactionWithContext(USentryTransactionContext* context) override;
+	virtual USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options) override;
 
 	USentryBeforeSendHandler* GetBeforeSendHandler();
 

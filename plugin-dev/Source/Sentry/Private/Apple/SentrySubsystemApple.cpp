@@ -8,6 +8,8 @@
 #include "SentryUserApple.h"
 #include "SentryUserFeedbackApple.h"
 #include "SentryTransactionApple.h"
+#include "SentrySamplingContextApple.h"
+#include "SentryTransactionContextApple.h"
 
 #include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
@@ -18,6 +20,9 @@
 #include "SentryTransaction.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
+#include "SentrySamplingContext.h"
+#include "SentryTraceSampler.h"
+#include "SentryTransactionContext.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -27,7 +32,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 
-void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler)
+void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
@@ -75,8 +80,12 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		}
 		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Currently sampling functions are not supported"));
-			options.tracesSampler = nil;
+			options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
+				USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
+				Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextApple(samplingContext)));
+				float samplingValue;
+				return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
+			};
 		}
 	}];
 }
@@ -215,6 +224,25 @@ void SentrySubsystemApple::EndSession()
 USentryTransaction* SentrySubsystemApple::StartTransaction(const FString& name, const FString& operation)
 {
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
+
+	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+}
+
+USentryTransaction* SentrySubsystemApple::StartTransactionWithContext(USentryTransactionContext* context)
+{
+	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context->GetNativeImpl());
+
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()];
+
+	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+}
+
+USentryTransaction* SentrySubsystemApple::StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options)
+{
+	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context->GetNativeImpl());
+
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
+		customSamplingContext:SentryConvertorsApple::StringMapToNative(options)];
 
 	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
 }

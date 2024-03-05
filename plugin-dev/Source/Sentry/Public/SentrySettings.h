@@ -8,6 +8,7 @@
 #include "SentrySettings.generated.h"
 
 class USentryBeforeSendHandler;
+class USentryTraceSampler;
 
 UENUM(BlueprintType)
 enum class ESentryTracesSamplingType : uint8
@@ -260,7 +261,7 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
 		Meta = (DisplayName = "Traces sampler", ToolTip = "Custom hanler for determining traces sample rate based on the sampling context.",
 			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
-	TSubclassOf<UObject> TracesSampler;
+	TSubclassOf<USentryTraceSampler> TracesSampler;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
 		Meta = (DisplayName = "Promote values to tags"))

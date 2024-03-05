@@ -4,7 +4,7 @@
 
 #include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class SentryMessageAndroid: public FSentryJavaObjectWrapper
+class SentryMessageAndroid : public FSentryJavaObjectWrapper
 {
 public:
 	SentryMessageAndroid(const FString& message);

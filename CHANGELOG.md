@@ -5,6 +5,7 @@
 ### Features
 
 - Add performance monitoring API ([#470](https://github.com/getsentry/sentry-unreal/pull/470))
+- Add traces sampler function config for Android/Apple ([#488](https://github.com/getsentry/sentry-unreal/pull/488))
 - Add `IsCrashedLastRun` allowing to check whether the app crashed during its last run ([#483](https://github.com/getsentry/sentry-unreal/pull/483))
 - Improved crash capture backend handling based on package version (GitHub or Marketplace) ([#479](https://github.com/getsentry/sentry-unreal/pull/479))
 

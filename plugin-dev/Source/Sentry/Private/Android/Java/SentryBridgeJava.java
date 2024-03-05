@@ -31,7 +31,7 @@ import io.sentry.protocol.SentryId;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
-	public static native Double onTracesSampler(long samplerAddr, SamplingContext samplingContext);
+	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
 
 	public static void init(Activity activity, final String settingsJsonStr, final long beforeSendHandler) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
@@ -73,7 +73,12 @@ public class SentryBridgeJava {
 						options.setTracesSampler(new SentryOptions.TracesSamplerCallback() {
 							@Override
 							public Double sample(SamplingContext samplingContext) {
-								return onTracesSampler(samplerAddr, samplingContext);
+								float sampleRate = onTracesSampler(samplerAddr, samplingContext);
+								if(sampleRate >= 0.0f) {
+									return (double) sampleRate;
+								} else {
+									return null;
+								}
 							}
 						});
 					}

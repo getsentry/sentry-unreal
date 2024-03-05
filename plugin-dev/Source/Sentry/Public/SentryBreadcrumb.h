@@ -49,7 +49,7 @@ public:
 
 	/** Gets data associated with the breadcrumb. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	TMap<FString, FString> GetData() const;	
+	TMap<FString, FString> GetData() const;
 
 	/** Sets the level of the breadcrumb. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

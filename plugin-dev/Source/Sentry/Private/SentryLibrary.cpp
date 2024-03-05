@@ -7,6 +7,7 @@
 #include "SentryUserFeedback.h"
 #include "SentryId.h"
 #include "SentryAttachment.h"
+#include "SentryTransactionContext.h"
 
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -85,6 +86,13 @@ USentryAttachment* USentryLibrary::CreateSentryAttachmentWithPath(const FString&
 	USentryAttachment* Attachment = NewObject<USentryAttachment>();
 	Attachment->InitializeWithPath(Path, Filename, ContentType);
 	return Attachment;
+}
+
+USentryTransactionContext* USentryLibrary::CreateSentryTransactionContext(const FString& Name, const FString& Operation)
+{
+	USentryTransactionContext* TransactionContext = NewObject<USentryTransactionContext>();
+	TransactionContext->Initialize(Name, Operation);
+	return TransactionContext;
 }
 
 TArray<uint8> USentryLibrary::StringToBytesArray(const FString& InString)

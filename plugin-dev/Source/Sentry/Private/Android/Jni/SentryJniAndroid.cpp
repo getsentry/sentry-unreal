@@ -2,14 +2,18 @@
 
 #include "Android/Callbacks/SentryScopeCallbackAndroid.h"
 #include "Android/Infrastructure/SentryConvertorsAndroid.h"
+#include "Android/Infrastructure/SentryJavaClasses.h"
 #include "Android/SentryEventAndroid.h"
 #include "Android/SentryHintAndroid.h"
+#include "Android/SentrySamplingContextAndroid.h"
 
 #include "Android/AndroidJNI.h"
 
 #include "SentryEvent.h"
 #include "SentryHint.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryTraceSampler.h"
+#include "SentrySamplingContext.h"
 
 JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong objAddr, jobject scope)
 {
@@ -33,7 +37,20 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 	return handler->HandleBeforeSend(EventToProcess, HintToProcess) ? event : nullptr;
 }
 
-JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
+JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
 {
-	return nullptr;
+	USentryTraceSampler* sampler = reinterpret_cast<USentryTraceSampler*>(objAddr);
+
+	USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
+	Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextAndroid(samplingContext)));
+
+	float samplingValue;
+	if(sampler->Sample(Context, samplingValue))
+	{
+		return (jfloat)samplingValue;
+	}
+
+	// to avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
+	// which should be interpreted as `null` in Java code to fallback to fixed sample rate value
+	return -1.0f;
 }
