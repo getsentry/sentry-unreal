@@ -29,12 +29,15 @@ sentry_value_t SentryEventDesktop::GetNativeObject()
 
 void SentryEventDesktop::SetMessage(const FString& message)
 {
-	sentry_value_set_by_key(EventDesktop, "message", sentry_value_new_string(TCHAR_TO_ANSI(*message)));
+	sentry_value_t messageСontainer = sentry_value_new_object();
+	sentry_value_set_by_key(messageСontainer, "formatted", sentry_value_new_string(TCHAR_TO_ANSI(*message)));
+	sentry_value_set_by_key(EventDesktop, "message", messageСontainer);
 }
 
 FString SentryEventDesktop::GetMessage() const
 {
-	sentry_value_t message = sentry_value_get_by_key(EventDesktop, "message");
+	sentry_value_t messageСontainer = sentry_value_get_by_key(EventDesktop, "message");
+	sentry_value_t message = sentry_value_get_by_key(messageСontainer, "formatted");
 	return FString(sentry_value_as_string(message));
 }
 
