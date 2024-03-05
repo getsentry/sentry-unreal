@@ -13,14 +13,15 @@
 
 - Fix Linux intermediates paths in `FilterPlugin.ini` ([#468](https://github.com/getsentry/sentry-unreal/pull/468))
 - Fix casing for include of HAL/PlatformFileManager for Linux compilation ([#468](https://github.com/getsentry/sentry-unreal/pull/499))
+- The message in events in the `SentryBeforeSendHandler` are no longer missing their message  ([#510](https://github.com/getsentry/sentry-unreal/pull/510))
 
 ### Dependencies
 
-- Bump Cocoa SDK (iOS) from v8.17.1 to v8.18.0 ([#467](https://github.com/getsentry/sentry-unreal/pull/467), [#474](https://github.com/getsentry/sentry-unreal/pull/474))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8180)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.17.1...8.18.0)
-- Bump Java SDK (Android) from v7.0.0 to v7.2.0 ([#469](https://github.com/getsentry/sentry-unreal/pull/469), [#481](https://github.com/getsentry/sentry-unreal/pull/481))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#720)
+- Bump Cocoa SDK (iOS) from v8.17.1 to v8.20.0 ([#467](https://github.com/getsentry/sentry-unreal/pull/467), [#474](https://github.com/getsentry/sentry-unreal/pull/474), [#487](https://github.com/getsentry/sentry-unreal/pull/487), [#492](https://github.com/getsentry/sentry-unreal/pull/492))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8200)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.17.1...8.20.0)
+- Bump Java SDK (Android) from v7.0.0 to v7.4.0 ([#469](https://github.com/getsentry/sentry-unreal/pull/469), [#481](https://github.com/getsentry/sentry-unreal/pull/481), [#491](https://github.com/getsentry/sentry-unreal/pull/491), [#501](https://github.com/getsentry/sentry-unreal/pull/501))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#740)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.0.0...7.2.0)
 - Bump CLI from v2.23.0 to v2.29.1 ([#471](https://github.com/getsentry/sentry-unreal/pull/471), [#472](https://github.com/getsentry/sentry-unreal/pull/472), [#475](https://github.com/getsentry/sentry-unreal/pull/475), [#477](https://github.com/getsentry/sentry-unreal/pull/477), [#484](https://github.com/getsentry/sentry-unreal/pull/484), [#485](https://github.com/getsentry/sentry-unreal/pull/485), [#486](https://github.com/getsentry/sentry-unreal/pull/486), [#490](https://github.com/getsentry/sentry-unreal/pull/490), [#493](https://github.com/getsentry/sentry-unreal/pull/493), [#494](https://github.com/getsentry/sentry-unreal/pull/494), [#495](https://github.com/getsentry/sentry-unreal/pull/495), [#507](https://github.com/getsentry/sentry-unreal/pull/507))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2291)
@@ -28,18 +29,6 @@
 - Bump Native SDK from v0.6.7 to v0.7.0 ([#478](https://github.com/getsentry/sentry-unreal/pull/478))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#070)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.6.7...0.7.0)
-- Bump Cocoa SDK (iOS) from v8.18.0 to v8.19.0 ([#487](https://github.com/getsentry/sentry-unreal/pull/487))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8190)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.18.0...8.19.0)
-- Bump Java SDK (Android) from v7.2.0 to v7.3.0 ([#491](https://github.com/getsentry/sentry-unreal/pull/491))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#730)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.2.0...7.3.0)
-- Bump Cocoa SDK (iOS) from v8.19.0 to v8.20.0 ([#492](https://github.com/getsentry/sentry-unreal/pull/492))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8200)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.19.0...8.20.0)
-- Bump Java SDK (Android) from v7.3.0 to v7.4.0 ([#501](https://github.com/getsentry/sentry-unreal/pull/501))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#740)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.3.0...7.4.0)
 
 ## 0.15.1
 
