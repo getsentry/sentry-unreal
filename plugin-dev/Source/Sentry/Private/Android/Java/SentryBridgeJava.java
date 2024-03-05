@@ -74,7 +74,7 @@ public class SentryBridgeJava {
 							@Override
 							public Double sample(SamplingContext samplingContext) {
 								float sampleRate = onTracesSampler(samplerAddr, samplingContext);
-								if(sampleRate > 0.0f) {
+								if(sampleRate >= 0.0f) {
 									return (double) sampleRate;
 								} else {
 									return null;
