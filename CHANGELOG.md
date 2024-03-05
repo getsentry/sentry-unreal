@@ -13,7 +13,7 @@
 
 - Fix Linux intermediates paths in `FilterPlugin.ini` ([#468](https://github.com/getsentry/sentry-unreal/pull/468))
 - Fix casing for include of HAL/PlatformFileManager for Linux compilation ([#468](https://github.com/getsentry/sentry-unreal/pull/499))
-- Fix event's message get/set methods for desktop ([#510](https://github.com/getsentry/sentry-unreal/pull/510))
+- The message in events in the `SentryBeforeSendHandler` are no longer missing their message  ([#510](https://github.com/getsentry/sentry-unreal/pull/510))
 
 ### Dependencies
 
