@@ -128,4 +128,5 @@ private:
 	TSharedPtr<ISentryScope> ScopeNativeImpl;
 };
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureScopeDelegate, USentryScope*, Scope);
+DECLARE_DELEGATE_OneParam(FConfigureScopeDelegate, USentryScope*);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureScopeDynDelegate, USentryScope*, Scope);
