@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add user feedback capturing support for desktop ([#521](https://github.com/getsentry/sentry-unreal/pull/521))
+
 ### Dependencies
 
 - Bump CLI from v2.29.1 to v2.30.2 ([#512](https://github.com/getsentry/sentry-unreal/pull/512), [#515](https://github.com/getsentry/sentry-unreal/pull/515), [#517](https://github.com/getsentry/sentry-unreal/pull/517))
