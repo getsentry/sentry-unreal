@@ -17,7 +17,7 @@ $modulesDir = Resolve-Path "$PSScriptRoot/../modules"
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 
 $macPlatfromDeps = @("mac", "ios", "android")
-$winPlatfromDeps = @("win")
+$winPlatfromDeps = @("win", "android")
 
 function buildSentryCocoaIos()
 {
