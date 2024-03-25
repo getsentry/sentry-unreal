@@ -7,6 +7,8 @@
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
 
+#include "Engine/Engine.h"
+
 void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
