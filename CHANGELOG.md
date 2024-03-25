@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add breadcrumbs automatically when printing to logs ([#522](https://github.com/getsentry/sentry-unreal/pull/522))
+
 ### Dependencies
 
 - Bump CLI from v2.29.1 to v2.30.2 ([#512](https://github.com/getsentry/sentry-unreal/pull/512), [#515](https://github.com/getsentry/sentry-unreal/pull/515), [#517](https://github.com/getsentry/sentry-unreal/pull/517))
