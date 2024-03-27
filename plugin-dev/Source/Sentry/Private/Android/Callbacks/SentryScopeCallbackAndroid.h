@@ -20,6 +20,5 @@ public:
 	void ExecuteDelegate(USentryScope* Scope);
 
 private:
-	UPROPERTY()
 	FConfigureScopeDelegate OnConfigureDelegate;
 };
