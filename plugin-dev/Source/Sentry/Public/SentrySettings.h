@@ -46,6 +46,32 @@ struct FAutomaticBreadcrumbs
 };
 
 USTRUCT(BlueprintType)
+struct FAutomaticBreadcrumbsForLogs
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Fatal", ToolTip = "Flag indicating whether to automatically add breadcrumb when printing log message with Fatal verbosity level."))
+	bool bOnFatalLog = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Error", ToolTip = "Flag indicating whether to automatically add breadcrumb when printing log message with Error verbosity level."))
+	bool bOnErrorLog = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Warning", ToolTip = "Flag indicating whether to automatically add breadcrumb when printing log message with Warning verbosity level."))
+	bool bOnWarningLog = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Display/Log", ToolTip = "Flag indicating whether to automatically add breadcrumb when printing log message with Display/Log verbosity level."))
+	bool bOnInfoLog = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Verbose/VeryVerbose", ToolTip = "Flag indicating whether to automatically add breadcrumb when printing log message with Verbose/VeryVerbose verbosity level."))
+	bool bOnDebugLog = false;
+};
+
+USTRUCT(BlueprintType)
 struct FTagsPromotion
 {
 	GENERATED_BODY()
@@ -206,8 +232,12 @@ class SENTRY_API USentrySettings : public UObject
 	int32 MaxBreadcrumbs;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
-		Meta = (DisplayName = "Automatically add breadcrumbs"))
+		Meta = (DisplayName = "Automatically add breadcrumbs for events"))
 	FAutomaticBreadcrumbs AutomaticBreadcrumbs;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
+		Meta = (DisplayName = "Automatically add breadcrumbs for log messages with verbosity level"))
+	FAutomaticBreadcrumbsForLogs AutomaticBreadcrumbsForLogs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Release & Health",
 		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))

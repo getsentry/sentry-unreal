@@ -12,7 +12,9 @@
 #include "SentryBeforeSendHandler.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransactionContext.h"
+#include "SentryOutputDevice.h"
 
+#include "CoreGlobals.h"
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/CoreDelegates.h"
@@ -115,6 +117,13 @@ void USentrySubsystem::Initialize()
 
 	PromoteTags();
 	ConfigureBreadcrumbs();
+
+	OutputDevice = MakeShareable(new FSentryOutputDevice());
+	if(OutputDevice)
+	{
+		GLog->AddOutputDevice(OutputDevice.Get());
+		GLog->SerializeBacklog(OutputDevice.Get());
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -128,6 +137,11 @@ void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& 
 
 void USentrySubsystem::Close()
 {
+	if(GLog && OutputDevice)
+	{
+		GLog->RemoveOutputDevice(OutputDevice.Get());
+	}
+
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
