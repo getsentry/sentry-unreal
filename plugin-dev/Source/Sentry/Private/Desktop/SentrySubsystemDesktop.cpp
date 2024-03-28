@@ -19,6 +19,7 @@
 #include "SentryBeforeSendHandler.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransactionContext.h"
+#include "SentryUserFeedbackDesktop.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
@@ -283,7 +284,8 @@ USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, co
 
 void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("CaptureUserFeedback method is not supported for the current platform."));
+	TSharedPtr<SentryUserFeedbackDesktop> userFeedbackDesktop = StaticCastSharedPtr<SentryUserFeedbackDesktop>(userFeedback->GetNativeImpl());
+	sentry_capture_user_feedback(userFeedbackDesktop->GetNativeObject());
 }
 
 void SentrySubsystemDesktop::SetUser(USentryUser* user)
