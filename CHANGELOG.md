@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Add extra check whether symbol uploading is enabled to avoid unnecessary warnings ([#528](https://github.com/getsentry/sentry-unreal/pull/528))
+
 ### Dependencies
 
 - Bump CLI from v2.29.1 to v2.31.0 ([#512](https://github.com/getsentry/sentry-unreal/pull/512), [#515](https://github.com/getsentry/sentry-unreal/pull/515), [#517](https://github.com/getsentry/sentry-unreal/pull/517), [#524](https://github.com/getsentry/sentry-unreal/pull/524), [#525](https://github.com/getsentry/sentry-unreal/pull/525))
