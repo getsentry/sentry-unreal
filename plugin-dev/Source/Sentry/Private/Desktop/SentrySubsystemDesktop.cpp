@@ -217,37 +217,14 @@ void SentrySubsystemDesktop::ClearBreadcrumbs()
 	GetCurrentScope()->ClearBreadcrumbs();
 }
 
-sentry_value_t
-sentry__value_new_addr(uint64_t addr)
-{
-	char buf[32];
-	size_t written = (size_t)snprintf(
-		buf, sizeof(buf), "0x%llx", (unsigned long long)addr);
-	if (written >= sizeof(buf)) {
-		return sentry_value_new_null();
-	}
-	buf[written] = '\0';
-	return sentry_value_new_string(buf);
-}
-
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_ANSI(*message));
 
 	if(isStackTraceEnabled)
 	{
-		sentry_value_t frames = sentry_value_new_list();
-		auto StackFrames = FGenericPlatformStackWalk::GetStack(0);
-		for (int i = 0; i < StackFrames.Num(); ++i)
-		{
-			sentry_value_t frame = sentry_value_new_object();
-			sentry_value_set_by_key(frame, "instruction_addr", sentry__value_new_addr(StackFrames[StackFrames.Num() - i - 1].ProgramCounter));
-			sentry_value_append(frames, frame);
-		}
-
-		sentry_value_t stacktrace = sentry_value_new_object();
-		sentry_value_set_by_key(stacktrace, "frames", frames);
-		sentry_value_set_by_key(sentryEvent, "stacktrace", stacktrace);
+		auto StackFrames = FGenericPlatformStackWalk::GetStack(1);
+		sentry_value_set_by_key(sentryEvent, "stacktrace", SentryConvertorsDesktop::CallstackToNative(StackFrames));
 	}
 
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
