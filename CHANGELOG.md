@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add breadcrumbs automatically when printing to logs ([#522](https://github.com/getsentry/sentry-unreal/pull/522))
+
 ### Fixes
 
 - Add extra check whether symbol uploading is enabled to avoid unnecessary warnings ([#528](https://github.com/getsentry/sentry-unreal/pull/528))
