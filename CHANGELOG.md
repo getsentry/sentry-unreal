@@ -8,7 +8,7 @@
 
 ### Fixes
 
-- Add extra check whether symbol uploading is enabled to avoid unnecessary warnings ([#528](https://github.com/getsentry/sentry-unreal/pull/528))
+- The SDK no longer prints symbol uploading related warnings when disabled ([#528](https://github.com/getsentry/sentry-unreal/pull/528))
 
 ### Dependencies
 
