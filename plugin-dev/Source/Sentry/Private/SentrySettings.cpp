@@ -128,7 +128,12 @@ void USentrySettings::LoadDebugSymbolsProperties()
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin can't find sentry.properties file"));
+		bool UploadSymbols = false;
+		GConfig->GetBool(TEXT("/Script/Sentry.SentrySettings"), TEXT("UploadSymbolsAutomatically"), UploadSymbols, *GetDefaultConfigFilename());
+		if (UploadSymbols)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin can't find sentry.properties file"));
+		}
 	}
 }
 
