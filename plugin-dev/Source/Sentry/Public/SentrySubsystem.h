@@ -23,6 +23,7 @@ class USentryTransactionContext;
 
 class ISentrySubsystem;
 class FSentryOutputDevice;
+class FSentryOutputDeviceError;
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
@@ -297,6 +298,7 @@ private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 
 	TSharedPtr<FSentryOutputDevice> OutputDevice;
+	TSharedPtr<FSentryOutputDeviceError> OutputDeviceError;
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;

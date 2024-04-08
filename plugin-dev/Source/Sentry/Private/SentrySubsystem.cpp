@@ -15,6 +15,7 @@
 #include "SentryOutputDevice.h"
 
 #include "CoreGlobals.h"
+#include "SentryOutputDeviceError.h"
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/CoreDelegates.h"
@@ -124,6 +125,12 @@ void USentrySubsystem::Initialize()
 		GLog->AddOutputDevice(OutputDevice.Get());
 		GLog->SerializeBacklog(OutputDevice.Get());
 	}
+
+	if (!OutputDeviceError || OutputDeviceError->GetParentDevice() != GError)
+	{
+		OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
+		GError = OutputDeviceError.Get();
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -140,6 +147,11 @@ void USentrySubsystem::Close()
 	if(GLog && OutputDevice)
 	{
 		GLog->RemoveOutputDevice(OutputDevice.Get());
+	}
+
+	if(GError && OutputDeviceError)
+	{
+		GError = OutputDeviceError->GetParentDevice();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
