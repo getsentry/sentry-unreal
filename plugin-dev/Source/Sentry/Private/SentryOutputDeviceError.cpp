@@ -2,6 +2,8 @@
 
 #include "SentryOutputDeviceError.h"
 
+extern CORE_API bool GIsGPUCrashed;
+
 FSentryOutputDeviceError::FSentryOutputDeviceError(FOutputDeviceError* Parent)
 	: ParentDevice(Parent)
 {
@@ -9,6 +11,11 @@ FSentryOutputDeviceError::FSentryOutputDeviceError(FOutputDeviceError* Parent)
 
 void FSentryOutputDeviceError::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
+	if (GIsGuarded && !GIsGPUCrashed)
+	{
+		OnError.Broadcast(V);
+	}
+
 	if (ParentDevice)
 	{
 		ParentDevice->Serialize(V, Verbosity, Category);

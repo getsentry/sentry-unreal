@@ -129,6 +129,15 @@ void USentrySubsystem::Initialize()
 	if (!OutputDeviceError || OutputDeviceError->GetParentDevice() != GError)
 	{
 		OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
+		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
+		{
+			SubsystemNativeImpl->CaptureException(TEXT("Assertion"), Message);
+
+			Close();
+
+			FPlatformMisc::RequestExit( true, TEXT("SentryOutputDeviceError::Serialize"));
+		});
+
 		GError = OutputDeviceError.Get();
 	}
 }

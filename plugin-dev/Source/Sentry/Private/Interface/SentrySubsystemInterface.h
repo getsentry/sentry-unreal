@@ -33,6 +33,7 @@ public:
 	virtual USentryId* CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onConfigureScope, ESentryLevel level) = 0;
 	virtual USentryId* CaptureEvent(USentryEvent* event) = 0;
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onConfigureScope) = 0;
+	virtual USentryId* CaptureException(const FString& type, const FString& message) = 0;
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) = 0;
 	virtual void SetUser(USentryUser* user) = 0;
 	virtual void RemoveUser() = 0;
