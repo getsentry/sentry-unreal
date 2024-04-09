@@ -200,14 +200,14 @@ USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel
 	return SubsystemNativeImpl->CaptureMessage(Message, Level);
 }
 
-USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDynDelegate& OnConfigureScope, ESentryLevel Level)
+USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
     return CaptureMessageWithScope(Message,
-        FConfigureScopeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()),
+        FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()),
         Level);
 }
 
-USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
+USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
@@ -223,13 +223,13 @@ USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 	return SubsystemNativeImpl->CaptureEvent(Event);
 }
 
-USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDynDelegate& OnConfigureScope)
+USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
     return CaptureEventWithScope(Event,
-        FConfigureScopeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
+        FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
 }
 
-USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
+USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
@@ -272,12 +272,12 @@ void USentrySubsystem::RemoveUser()
 	SubsystemNativeImpl->RemoveUser();
 }
 
-void USentrySubsystem::ConfigureScope(const FConfigureScopeDynDelegate& OnConfigureScope)
+void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope)
 {
-    ConfigureScope(FConfigureScopeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
+    ConfigureScope(FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
 }
 
-void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope)
+void USentrySubsystem::ConfigureScope(const FConfigureScopeNativeDelegate& OnConfigureScope)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;

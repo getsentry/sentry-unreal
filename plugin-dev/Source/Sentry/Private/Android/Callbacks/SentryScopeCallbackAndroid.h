@@ -16,9 +16,9 @@ class USentryScopeCallbackAndroid : public UObject
 public:
 	USentryScopeCallbackAndroid();
 
-	void BindDelegate(const FConfigureScopeDelegate& OnConfigure);
+	void BindDelegate(const FConfigureScopeNativeDelegate& OnConfigure);
 	void ExecuteDelegate(USentryScope* Scope);
 
 private:
-	FConfigureScopeDelegate OnConfigureDelegate;
+	FConfigureScopeNativeDelegate OnConfigureDelegate;
 };

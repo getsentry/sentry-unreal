@@ -10,7 +10,7 @@ USentryScopeCallbackAndroid::USentryScopeCallbackAndroid()
 	}
 }
 
-void USentryScopeCallbackAndroid::BindDelegate(const FConfigureScopeDelegate& OnConfigure)
+void USentryScopeCallbackAndroid::BindDelegate(const FConfigureScopeNativeDelegate& OnConfigure)
 {
 	OnConfigureDelegate = OnConfigure;
 }

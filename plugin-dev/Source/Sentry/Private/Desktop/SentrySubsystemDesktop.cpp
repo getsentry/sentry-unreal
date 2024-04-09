@@ -231,7 +231,7 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentr
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	FScopeLock Lock(&CriticalSection);
 
@@ -264,7 +264,7 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onScopeConfigure)
 {
 	FScopeLock Lock(&CriticalSection);
 
@@ -303,7 +303,7 @@ void SentrySubsystemDesktop::RemoveUser()
 	crashReporter->RemoveUser();
 }
 
-void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
+void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
 {
 	USentryScope* Scope = NewObject<USentryScope>();
 	Scope->InitWithNativeImpl(GetCurrentScope());

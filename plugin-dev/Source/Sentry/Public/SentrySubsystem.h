@@ -121,8 +121,8 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
     UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnConfigureScope"))
-    USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDynDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
     USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+    USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
 
     /**
      * Captures a manually created event and sends it to Sentry.
@@ -141,8 +141,8 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-    USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDynDelegate& OnConfigureScope);
     USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
+    USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope);
 
     /**
      * Captures a user feedback.
@@ -188,8 +188,8 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
-    void ConfigureScope(const FConfigureScopeDynDelegate& OnConfigureScope);
     void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
+    void ConfigureScope(const FConfigureScopeNativeDelegate& OnConfigureScope);
 
     /**
      * Sets context values which will be used for enriching events.

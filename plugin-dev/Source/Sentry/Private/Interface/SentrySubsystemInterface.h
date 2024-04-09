@@ -30,13 +30,13 @@ public:
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual USentryId* CaptureMessage(const FString& message, ESentryLevel level) = 0;
-	virtual USentryId* CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onConfigureScope, ESentryLevel level) = 0;
+	virtual USentryId* CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level) = 0;
 	virtual USentryId* CaptureEvent(USentryEvent* event) = 0;
-	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onConfigureScope) = 0;
+	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onConfigureScope) = 0;
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) = 0;
 	virtual void SetUser(USentryUser* user) = 0;
 	virtual void RemoveUser() = 0;
-	virtual void ConfigureScope(const FConfigureScopeDelegate& onConfigureScope) = 0;
+	virtual void ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope) = 0;
 	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual void RemoveTag(const FString& key) = 0;
