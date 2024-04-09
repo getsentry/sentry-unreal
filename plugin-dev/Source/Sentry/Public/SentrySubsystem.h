@@ -22,6 +22,7 @@ class USentryTraceSampler;
 class USentryTransactionContext;
 
 class ISentrySubsystem;
+class FSentryOutputDevice;
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
@@ -297,6 +298,8 @@ private:
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
+
+	TSharedPtr<FSentryOutputDevice> OutputDevice;
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;

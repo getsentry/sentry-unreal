@@ -106,12 +106,14 @@ function buildSentryNative()
 {
     Push-Location -Path "$modulesDir/sentry-native"
 
-    cmake -B "build" -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unreal
+    cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
     cmake --build "build" --target sentry --config RelWithDebInfo --parallel
+    cmake --build "build" --target crashpad_handler --config RelWithDebInfo --parallel
+    cmake --install "build" --prefix "install" --config RelWithDebInfo
 
     Pop-Location
 
-    $nativeOutDir = "$outDir/Win64"
+    $nativeOutDir = "$outDir/Win64/Crashpad"
     $nativeOutDirLibs = "$nativeOutDir/lib"
     $nativeOutDirBinaries = "$nativeOutDir/bin"
     $nativeOutDirIncludes = "$nativeOutDir/include"
@@ -126,11 +128,9 @@ function buildSentryNative()
     New-Item $nativeOutDirBinaries -ItemType Directory > $null
     New-Item $nativeOutDirIncludes -ItemType Directory > $null
 
-    Copy-Item "$modulesDir/sentry-native/build/RelWithDebInfo/sentry.lib" -Destination "$nativeOutDirLibs/sentry.lib"
-    Copy-Item "$modulesDir/sentry-native/build/RelWithDebInfo/sentry.dll" -Destination "$nativeOutDirBinaries/sentry.dll"
-    Copy-Item "$modulesDir/sentry-native/build/RelWithDebInfo/sentry.pdb" -Destination "$nativeOutDirBinaries/sentry.pdb"
-    Copy-Item "$modulesDir/sentry-native/build/external/RelWithDebInfo/breakpad_client.lib" -Destination "$nativeOutDirLibs/breakpad_client.lib"
-    Copy-Item "$modulesDir/sentry-native/include/sentry.h" -Destination "$nativeOutDirIncludes/sentry.h"
+    Get-ChildItem -Path "$modulesDir/sentry-native/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination $nativeOutDirLibs
+    Copy-Item "$modulesDir/sentry-native/install/bin/crashpad_handler.exe" -Destination $nativeOutDirBinaries
+    Copy-Item "$modulesDir/sentry-native/install/include/sentry.h" -Destination $nativeOutDirIncludes
 }
 
 function buildPlatformDependency([string] $platform)
