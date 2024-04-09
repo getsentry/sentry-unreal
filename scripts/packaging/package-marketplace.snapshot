@@ -145,6 +145,7 @@ Source/Sentry/Private/SentryId.cpp
 Source/Sentry/Private/SentryLibrary.cpp
 Source/Sentry/Private/SentryModule.cpp
 Source/Sentry/Private/SentryOutputDevice.cpp
+Source/Sentry/Private/SentryOutputDeviceError.cpp
 Source/Sentry/Private/SentrySamplingContext.cpp
 Source/Sentry/Private/SentryScope.cpp
 Source/Sentry/Private/SentrySettings.cpp
@@ -175,6 +176,7 @@ Source/Sentry/Public/SentryId.h
 Source/Sentry/Public/SentryLibrary.h
 Source/Sentry/Public/SentryModule.h
 Source/Sentry/Public/SentryOutputDevice.h
+Source/Sentry/Public/SentryOutputDeviceError.h
 Source/Sentry/Public/SentrySamplingContext.h
 Source/Sentry/Public/SentryScope.h
 Source/Sentry/Public/SentrySettings.h
