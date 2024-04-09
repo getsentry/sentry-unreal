@@ -116,6 +116,8 @@ Source/Sentry/Private/Desktop/SentryTransactionDesktop.cpp
 Source/Sentry/Private/Desktop/SentryTransactionDesktop.h
 Source/Sentry/Private/Desktop/SentryUserDesktop.cpp
 Source/Sentry/Private/Desktop/SentryUserDesktop.h
+Source/Sentry/Private/Desktop/SentryUserFeedbackDesktop.cpp
+Source/Sentry/Private/Desktop/SentryUserFeedbackDesktop.h
 Source/Sentry/Private/Desktop/Transport/
 Source/Sentry/Private/Desktop/Transport/SentryDsnUrl.cpp
 Source/Sentry/Private/Desktop/Transport/SentryDsnUrl.h

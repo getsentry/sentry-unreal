@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add user feedback capturing support for desktop ([#521](https://github.com/getsentry/sentry-unreal/pull/521))
 - Add breadcrumbs automatically when printing to logs ([#522](https://github.com/getsentry/sentry-unreal/pull/522))
 
 ### Fixes
