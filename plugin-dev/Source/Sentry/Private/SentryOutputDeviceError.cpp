@@ -17,7 +17,7 @@ void FSentryOutputDeviceError::Serialize(const TCHAR* V, ELogVerbosity::Type Ver
 	{
 		GIsCriticalError = 1;
 
-		UE_LOG(LogWindows, Error, TEXT("Error called: %s"), V);
+		UE_LOG(LogSentrySdk, Error, TEXT("Error called: %s"), V);
 	}
 	else
 	{

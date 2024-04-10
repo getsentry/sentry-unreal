@@ -156,6 +156,12 @@ USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, co
 	return SentryConvertorsAndroid::SentryIdToUnreal(*id);
 }
 
+USentryId* SentrySubsystemAndroid::CaptureException(const FString& type, const FString& message)
+{
+	// TODO
+	return nullptr;
+}
+
 void SentrySubsystemAndroid::CaptureUserFeedback(USentryUserFeedback* userFeedback)
 {
 	TSharedPtr<SentryUserFeedbackAndroid> userFeedbackAndroid = StaticCastSharedPtr<SentryUserFeedbackAndroid>(userFeedback->GetNativeImpl());

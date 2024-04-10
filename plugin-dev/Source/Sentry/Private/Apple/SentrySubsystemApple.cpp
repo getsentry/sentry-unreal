@@ -157,6 +157,12 @@ USentryId* SentrySubsystemApple::CaptureEventWithScope(USentryEvent* event, cons
 	return SentryConvertorsApple::SentryIdToUnreal(id);
 }
 
+USentryId* SentrySubsystemApple::CaptureException(const FString& type, const FString& message)
+{
+	// TODO
+	return nullptr;
+}
+
 void SentrySubsystemApple::CaptureUserFeedback(USentryUserFeedback* userFeedback)
 {
 	TSharedPtr<SentryUserFeedbackApple> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackApple>(userFeedback->GetNativeImpl());
