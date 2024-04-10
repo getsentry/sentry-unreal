@@ -9,6 +9,7 @@
 ### Fixes
 
 - The SDK no longer prints symbol uploading related warnings when disabled ([#528](https://github.com/getsentry/sentry-unreal/pull/528))
+- Fix invalid assertion issues grouping ([#537](https://github.com/getsentry/sentry-unreal/pull/537))
 
 ### Dependencies
 
