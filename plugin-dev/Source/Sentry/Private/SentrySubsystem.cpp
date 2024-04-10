@@ -119,28 +119,8 @@ void USentrySubsystem::Initialize()
 	PromoteTags();
 	ConfigureBreadcrumbs();
 
-	OutputDevice = MakeShareable(new FSentryOutputDevice());
-	if(OutputDevice)
-	{
-		GLog->AddOutputDevice(OutputDevice.Get());
-		GLog->SerializeBacklog(OutputDevice.Get());
-	}
-
-	if (!OutputDeviceError || OutputDeviceError->GetParentDevice() != GError)
-	{
-		OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
-		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
-		{
-			SubsystemNativeImpl->CaptureException(TEXT("Assertion failed"), Message);
-
-			// Shut things down before exiting to ensure all the outgoing events are sent to Sentry
-			Close();
-
-			FPlatformMisc::RequestExit( true);
-		});
-
-		GError = OutputDeviceError.Get();
-	}
+	ConfigureOutputDevice();
+	ConfigureOutputDeviceError();
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -595,4 +575,33 @@ bool USentrySubsystem::IsCurrentPlatformEnabled()
 #endif
 
 	return IsBuildPlatformEnabled;
+}
+
+void USentrySubsystem::ConfigureOutputDevice()
+{
+	OutputDevice = MakeShareable(new FSentryOutputDevice());
+	if (OutputDevice)
+	{
+		GLog->AddOutputDevice(OutputDevice.Get());
+		GLog->SerializeBacklog(OutputDevice.Get());
+	}
+}
+
+void USentrySubsystem::ConfigureOutputDeviceError()
+{
+	OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
+	if (OutputDeviceError)
+	{
+		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
+		{
+			SubsystemNativeImpl->CaptureException(TEXT("Assertion failed"), Message);
+
+			// Shut things down before exiting to ensure all the outgoing events are sent to Sentry
+			Close();
+
+			FPlatformMisc::RequestExit( true);
+		});
+
+		GError = OutputDeviceError.Get();
+	}
 }

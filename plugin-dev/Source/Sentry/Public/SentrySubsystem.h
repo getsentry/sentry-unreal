@@ -294,6 +294,12 @@ private:
 	/** Check whether the event capturing should be disabled for the current build configuration */
 	bool IsCurrentPlatformEnabled();
 
+	/** Add custom Sentry output device to intercept logs */
+	void ConfigureOutputDevice();
+
+	/** Add custom Sentry output device to intercept errors */
+	void ConfigureOutputDeviceError();
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 
