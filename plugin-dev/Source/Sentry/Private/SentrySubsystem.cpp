@@ -131,11 +131,12 @@ void USentrySubsystem::Initialize()
 		OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
 		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
 		{
-			SubsystemNativeImpl->CaptureException(TEXT("Assertion"), Message);
+			SubsystemNativeImpl->CaptureException(TEXT("Assertion failed"), Message);
 
+			// Shut things down before exiting to ensure all the outgoing events are sent to Sentry
 			Close();
 
-			FPlatformMisc::RequestExit( true, TEXT("SentryOutputDeviceError::Serialize"));
+			FPlatformMisc::RequestExit( true);
 		});
 
 		GError = OutputDeviceError.Get();

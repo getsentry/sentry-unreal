@@ -224,8 +224,7 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentr
 
 	if(isStackTraceEnabled)
 	{
-		auto StackFrames = FGenericPlatformStackWalk::GetStack(1);
-		sentry_value_set_by_key(sentryEvent, "stacktrace", SentryConvertorsDesktop::CallstackToNative(StackFrames));
+		sentry_value_set_stacktrace(sentryEvent, nullptr, 0);
 	}
 
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);

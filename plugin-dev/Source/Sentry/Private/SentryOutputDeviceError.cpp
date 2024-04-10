@@ -2,7 +2,7 @@
 
 #include "SentryOutputDeviceError.h"
 
-extern CORE_API bool GIsGPUCrashed;
+#include "SentryDefines.h"
 
 FSentryOutputDeviceError::FSentryOutputDeviceError(FOutputDeviceError* Parent)
 	: ParentDevice(Parent)
@@ -11,23 +11,36 @@ FSentryOutputDeviceError::FSentryOutputDeviceError(FOutputDeviceError* Parent)
 
 void FSentryOutputDeviceError::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
-	if (GIsGuarded && !GIsGPUCrashed)
+	static int32 CallCount = 0;
+	int32 NewCallCount = FPlatformAtomics::InterlockedIncrement(&CallCount);
+	if(GIsCriticalError == 0 && NewCallCount == 1)
+	{
+		GIsCriticalError = 1;
+
+		UE_LOG(LogWindows, Error, TEXT("Error called: %s"), V);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Error reentered: %s"), V);
+	}
+
+	if (GIsGuarded)
 	{
 		OnError.Broadcast(V);
 	}
-
-	if (ParentDevice)
+	else
 	{
-		ParentDevice->Serialize(V, Verbosity, Category);
+		HandleError();
+		FPlatformMisc::RequestExit( true);
 	}
 }
 
 void FSentryOutputDeviceError::HandleError()
 {
-	if (ParentDevice)
-	{
-		ParentDevice->HandleError();
-	}
+	if (!ParentDevice)
+		return;
+
+	ParentDevice->HandleError();
 }
 
 FOutputDeviceError* FSentryOutputDeviceError::GetParentDevice()
