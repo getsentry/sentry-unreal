@@ -38,7 +38,7 @@ void SentrySubsystemSpec::Define()
 
 		It("should always return non-null Event ID if scoped version used", [this]()
 		{
-			const FConfigureScopeDelegate testDelegate;
+			const FConfigureScopeNativeDelegate testDelegate;
 			const USentryId* eventId = SentrySubsystem->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
 			TestNotNull("Event ID is non-null", eventId);
 		});
@@ -60,7 +60,7 @@ void SentrySubsystemSpec::Define()
 			USentryEvent* testEvent = NewObject<USentryEvent>();
 			testEvent->SetMessage(TEXT("Automation: Sentry test event message"));
 
-			const FConfigureScopeDelegate testDelegate;
+			const FConfigureScopeNativeDelegate testDelegate;
 
 			const USentryId* eventId = SentrySubsystem->CaptureEventWithScope(testEvent, testDelegate);
 			TestNotNull("Event ID is non-null", eventId);
