@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Map sentry_level_t to ELogVerbosity::Type in PrintVerboseLog ([#536](https://github.com/getsentry/sentry-unreal/pull/536))
+
+
 ### Features
 
 - Add user feedback capturing support for desktop ([#521](https://github.com/getsentry/sentry-unreal/pull/521))

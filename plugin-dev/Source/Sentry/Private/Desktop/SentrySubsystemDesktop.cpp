@@ -46,7 +46,27 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("%s"), *FString(buffer));
+	switch (level)
+	{
+	case SENTRY_LEVEL_DEBUG:
+		UE_LOG(LogSentrySdk, Verbose, TEXT("%s"), *FString(buffer));
+		break;
+	case SENTRY_LEVEL_INFO:
+		UE_LOG(LogSentrySdk, Log, TEXT("%s"), *FString(buffer));
+		break;
+	case SENTRY_LEVEL_WARNING:
+		UE_LOG(LogSentrySdk, Warning, TEXT("%s"), *FString(buffer));
+		break;
+	case SENTRY_LEVEL_ERROR:
+		UE_LOG(LogSentrySdk, Error, TEXT("%s"), *FString(buffer));
+		break;
+	case SENTRY_LEVEL_FATAL:
+		UE_LOG(LogSentrySdk, Fatal, TEXT("%s"), *FString(buffer));
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Error, TEXT("Unknown sentry_level: %d"), level);
+		UE_LOG(LogSentrySdk, Error, TEXT("%s"), *FString(buffer));
+	}
 }
 
 sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
