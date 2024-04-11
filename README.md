@@ -31,7 +31,7 @@ The SDK currently supports and is tested on the following platforms:
 - Android
 - iOS
 
-The SDK complies with three latest engine versions.
+The SDK compiles with three latest engine versions.
 
 ## Known Limitations
 
