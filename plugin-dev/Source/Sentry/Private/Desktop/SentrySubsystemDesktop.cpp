@@ -46,7 +46,13 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
 
-	GLog->CategorizedLogf(LogSentrySdk.GetCategoryName(), SentryConvertorsDesktop::SentryLevelToLogVerbosity(level), TEXT("%s"), *FString(buffer));
+#if !NO_LOGGING
+	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
+#else
+	const FName SentryCategoryName(TEXT("LogSentrySdk"));
+#endif
+
+	GLog->CategorizedLogf(SentryCategoryName, SentryConvertorsDesktop::SentryLevelToLogVerbosity(level), TEXT("%s"), *FString(buffer));
 }
 
 sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
