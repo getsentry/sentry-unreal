@@ -141,7 +141,10 @@ exit
           set insection=1
         ) else (
           endlocal
-          if defined insection goto :eof
+          if defined insection (
+            set insection=
+            goto :eof
+          )
         )
       )
     )
