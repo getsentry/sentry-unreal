@@ -11,6 +11,12 @@
 
 void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
+	const FString Message = FString(V).TrimStartAndEnd();
+	if (Message.IsEmpty())
+	{
+		return;
+	}
+
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 	bool bAddBreadcrumb;
@@ -56,7 +62,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 		return;
 	}
 
-	SentrySubsystem->AddBreadcrumbWithParams(V, Category.ToString(), FString(), TMap<FString, FString>(), BreadcrumbLevel);
+	SentrySubsystem->AddBreadcrumbWithParams(Message, Category.ToString(), FString(), TMap<FString, FString>(), BreadcrumbLevel);
 }
 
 bool FSentryOutputDevice::CanBeUsedOnAnyThread() const
