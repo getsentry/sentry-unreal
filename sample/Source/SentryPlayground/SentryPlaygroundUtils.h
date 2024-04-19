@@ -11,7 +11,8 @@ enum class ESentryAppTerminationType : uint8
 	ArrayOutOfBounds,
 	BadFunctionPtr,
 	InvalidMemoryAccess,
-	Assert
+	Assert,
+	Ensure
 };
 
 UCLASS()

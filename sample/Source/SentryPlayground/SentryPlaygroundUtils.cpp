@@ -34,6 +34,12 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 				check(assertPtr != nullptr);
 			}
 			break;
+		case ESentryAppTerminationType::Ensure:
+			{
+				char *ensurePtr = nullptr;
+				ensure(ensurePtr != nullptr);
+			}
+		break;
 		default:
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Uknown app termination type!"));
