@@ -121,6 +121,12 @@ void USentrySubsystem::Initialize()
 
 	ConfigureOutputDevice();
 	ConfigureOutputDeviceError();
+
+	FCoreDelegates::OnHandleSystemEnsure.AddLambda([this]()
+	{
+		FString EnsureMessage = GErrorHist;
+		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
+	});
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -594,7 +600,7 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 	{
 		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
 		{
-			SubsystemNativeImpl->CaptureException(TEXT("Assertion failed"), Message);
+			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
 
 			// Shut things down before exiting to ensure all the outgoing events are sent to Sentry
 			Close();
