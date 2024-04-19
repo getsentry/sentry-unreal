@@ -157,10 +157,20 @@ USentryId* SentrySubsystemApple::CaptureEventWithScope(USentryEvent* event, cons
 	return SentryConvertorsApple::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemApple::CaptureException(const FString& type, const FString& message)
+USentryId* SentrySubsystemApple::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
 	// TODO
 	return nullptr;
+}
+
+USentryId* SentrySubsystemApple::CaptureAssertion(const FString& type, const FString& message)
+{
+	return CaptureException(type, message, 0);
+}
+
+USentryId* SentrySubsystemApple::CaptureEnsure(const FString& type, const FString& message)
+{
+	return CaptureException(type, message, 0);
 }
 
 void SentrySubsystemApple::CaptureUserFeedback(USentryUserFeedback* userFeedback)

@@ -156,10 +156,20 @@ USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, co
 	return SentryConvertorsAndroid::SentryIdToUnreal(*id);
 }
 
-USentryId* SentrySubsystemAndroid::CaptureException(const FString& type, const FString& message)
+USentryId* SentrySubsystemAndroid::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
 	// TODO
 	return nullptr;
+}
+
+USentryId* SentrySubsystemAndroid::CaptureAssertion(const FString& type, const FString& message)
+{
+	return CaptureException(type, message, 0);
+}
+
+USentryId* SentrySubsystemAndroid::CaptureEnsure(const FString& type, const FString& message)
+{
+	return CaptureException(type, message, 0);
 }
 
 void SentrySubsystemAndroid::CaptureUserFeedback(USentryUserFeedback* userFeedback)
