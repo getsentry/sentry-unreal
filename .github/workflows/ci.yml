@@ -12,13 +12,13 @@ jobs:
   ios-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
-      target: iOS
+      target: IOS
       runsOn: macos-13
 
   macos-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
-      target: macOS
+      target: Mac
       runsOn: macos-13
 
   linux-sdk:
