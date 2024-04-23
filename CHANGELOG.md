@@ -11,6 +11,7 @@
 ### Fixes
 
 - The SDK no longer prints symbol uploading related warnings when disabled ([#528](https://github.com/getsentry/sentry-unreal/pull/528))
+- Fixed an issue when parsing the config file during symbol upload ([#541](https://github.com/getsentry/sentry-unreal/pull/541))
 
 ### Dependencies
 
