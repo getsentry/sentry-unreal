@@ -270,7 +270,7 @@ public:
 
 	bool IsSupportedForCurrentSettings()
 	{
-		return IsCurrentBuildConfigurationEnabled() && IsCurrentBuildTargetEnabled() && IsCurrentPlatformEnabled();
+		return IsCurrentBuildConfigurationEnabled() && IsCurrentBuildTargetEnabled() && IsCurrentPlatformEnabled() && EnableForPromotedBuildsOnly();
 	}
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
