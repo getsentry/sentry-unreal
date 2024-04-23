@@ -49,7 +49,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 		options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 		options.sendDefaultPii = settings->SendDefaultPii;
-#if PLATFORM_IOS
+#if SENTRY_UIKIT_AVAILABLE
 		options.attachScreenshot = settings->AttachScreenshot;
 #endif
 		options.initialScope = ^(SentryScope* scope) {
