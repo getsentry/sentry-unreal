@@ -10,5 +10,6 @@
 #elif PLATFORM_IOS
 #import <Foundation/Foundation.h>
 #import <Sentry/Sentry.h>
+#import <Sentry/SentrySwift.h>
 #import <Sentry/PrivateSentrySDKOnly.h>
 #endif
