@@ -7,6 +7,7 @@
 - Add user feedback capturing support for desktop ([#521](https://github.com/getsentry/sentry-unreal/pull/521))
 - Add breadcrumbs automatically when printing to logs ([#522](https://github.com/getsentry/sentry-unreal/pull/522))
 - Add proper log verbosity type for internal `sentry-native` messages ([#536](https://github.com/getsentry/sentry-unreal/pull/536))
+- Add ability to check if sentry should be initialised to prevent unnecessary warnings ([#544](https://github.com/getsentry/sentry-unreal/pull/544))
 
 ### Fixes
 
