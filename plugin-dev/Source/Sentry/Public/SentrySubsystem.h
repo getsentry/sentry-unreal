@@ -268,6 +268,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options);
 
+	bool IsSupportedForCurrentSettings()
+	{
+		return IsCurrentBuildConfigurationEnabled() && IsCurrentBuildTargetEnabled() && IsCurrentPlatformEnabled() && EnableForPromotedBuildsOnly();
+	}
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
