@@ -268,10 +268,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options);
 
-	bool IsSupportedForCurrentSettings()
-	{
-		return IsCurrentBuildConfigurationEnabled() && IsCurrentBuildTargetEnabled() && IsCurrentPlatformEnabled() && EnableForPromotedBuildsOnly();
-	}
+	/** Checks if Sentry event capturing is supported for current settings. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	bool IsSupportedForCurrentSettings();
+
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
@@ -291,14 +291,17 @@ private:
 	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
 	void DisableAutomaticBreadcrumbs();
 
-	/** Check whether the event capturing should be disabled for the current build configuration */
+	/** Check whether the event capturing should be enabled for the current build configuration */
 	bool IsCurrentBuildConfigurationEnabled();
 
-	/** Check whether the event capturing should be disabled for the current build configuration */
+	/** Check whether the event capturing should be enabled for the current build target */
 	bool IsCurrentBuildTargetEnabled();
 
-	/** Check whether the event capturing should be disabled for the current build configuration */
+	/** Check whether the event capturing should be enabled for the current platform */
 	bool IsCurrentPlatformEnabled();
+
+	/** Check whether the event capturing should be enabled for promoted builds only */
+	bool IsPromotedBuildsOnlyEnabled();
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;

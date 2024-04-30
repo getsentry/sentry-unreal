@@ -79,7 +79,7 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	if(Settings->EnableForPromotedBuildsOnly && !FApp::GetEngineIsPromotedBuild())
+	if(IsPromotedBuildsOnlyEnabled() && !FApp::GetEngineIsPromotedBuild())
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the non-promoted builds in plugin settings."));
 		return;
@@ -357,6 +357,21 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 	return SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context, Options);
 }
 
+bool USentrySubsystem::IsSupportedForCurrentSettings()
+{
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled())
+	{
+		return false;
+	}
+
+	if(IsPromotedBuildsOnlyEnabled() && !FApp::GetEngineIsPromotedBuild())
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void USentrySubsystem::AddDefaultContext()
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -591,4 +606,11 @@ bool USentrySubsystem::IsCurrentPlatformEnabled()
 #endif
 
 	return IsBuildPlatformEnabled;
+}
+
+bool USentrySubsystem::IsPromotedBuildsOnlyEnabled()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	return Settings->EnableForPromotedBuildsOnly;
 }
