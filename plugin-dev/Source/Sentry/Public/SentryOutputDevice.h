@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Misc/OutputDevice.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 class FSentryOutputDevice : public FOutputDevice
 {
