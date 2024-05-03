@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix misssing include in non-unity builds ([#554](https://github.com/getsentry/sentry-unreal/pull/554))
+
 ### Dependencies
 
 - Bump CLI from v2.31.0 to v2.31.2 ([#551](https://github.com/getsentry/sentry-unreal/pull/551), [#553](https://github.com/getsentry/sentry-unreal/pull/553))
