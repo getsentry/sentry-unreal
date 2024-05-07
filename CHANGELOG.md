@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add diagnostic level setting for symbol upload ([#555](https://github.com/getsentry/sentry-unreal/pull/555))
+
 ## 0.17.1
 
 ### Fixes
