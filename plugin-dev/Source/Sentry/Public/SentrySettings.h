@@ -19,6 +19,16 @@ enum class ESentryTracesSamplingType : uint8
 	TracesSampler
 };
 
+UENUM(BlueprintType)
+enum class ESentryCliLogLevel : uint8
+{
+	Trace,
+	Debug,
+	Info,
+	Warn,
+	Error
+};
+
 USTRUCT(BlueprintType)
 struct FAutomaticBreadcrumbs
 {
@@ -332,6 +342,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Upload sources", ToolTip = "Flag indicating whether to automatically scan the debug files for references to source code files and upload them if any.", EditCondition = "UploadSymbolsAutomatically"))
 	bool IncludeSources;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Diagnostic Level", ToolTip = "Logs verbosity level during symbol uploading.", EditCondition = "UploadSymbolsAutomatically"))
+	ESentryCliLogLevel DiagnosticLevel;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
