@@ -49,6 +49,12 @@ if [ -z $INCLUDE_SOURCES -a $UPLOAD_SYMBOLS == "True" ]; then
     CLI_ARGS+=(--include-sources)
 fi
 
+CLI_LOG_LEVEL=$(awk -F "=" '/DiagnosticLevel/ {print $2}' ${CONFIG_PATH}/DefaultEngine.ini)
+
+if [ -z $CLI_LOG_LEVEL ]; then
+    CLI_LOG_LEVEL="info"
+fi
+
 ENABLED_PLATFORMS=$(grep "EnableBuildPlatforms" ${CONFIG_PATH}/DefaultEngine.ini | sed -n 's/^EnableBuildPlatforms=//p' | sed -e 's/^(\(.*\))$/\1/')
 if [ ! -z $ENABLED_PLATFORMS ]; then
     PLATFORMS_ARRAY=$(echo "$ENABLED_PLATFORMS" | sed -e 's/,/ /g')
@@ -91,6 +97,6 @@ echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
 
 chmod +x $SENTRY_CLI_EXEC
 
-$SENTRY_CLI_EXEC upload-dif $CLI_ARGS[@] $PROJECT_BINARIES_PATH $PLUGIN_BINARIES_PATH
+$SENTRY_CLI_EXEC upload-dif $CLI_ARGS[@] --log-level $CLI_LOG_LEVEL $PROJECT_BINARIES_PATH $PLUGIN_BINARIES_PATH
 
 echo "Sentry: Upload finished"
