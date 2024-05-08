@@ -33,8 +33,9 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, TracesSampleRate(0.0f)
 	, TracesSampler(USentryTraceSampler::StaticClass())
 	, EnableForPromotedBuildsOnly(false)
-	, UploadSymbolsAutomatically(false)
+	, UploadSymbolsAutomatically(false)	
 	, IncludeSources(false)
+	, DiagnosticLevel(ESentryCliLogLevel::Info)
 	, CrashReporterUrl()
 	, bIsDirty(false)
 {
@@ -63,6 +64,7 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, OrgName) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AuthToken) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, IncludeSources) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, DiagnosticLevel) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl))
 	{
 		return;
