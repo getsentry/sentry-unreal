@@ -6,6 +6,10 @@
 
 - Sentry-CLI now shares the diagnostic level set in the UE Editor settings ([#555](https://github.com/getsentry/sentry-unreal/pull/555))
 
+### Fixes
+
+- Fix invalid assertion issues grouping ([#537](https://github.com/getsentry/sentry-unreal/pull/537))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.25.0 to v8.25.2 ([#556](https://github.com/getsentry/sentry-unreal/pull/556))
@@ -42,7 +46,6 @@
 ### Fixes
 
 - The SDK no longer prints symbol uploading related warnings when disabled ([#528](https://github.com/getsentry/sentry-unreal/pull/528))
-- Fix invalid assertion issues grouping ([#537](https://github.com/getsentry/sentry-unreal/pull/537))
 - Fixed an issue when parsing the config file during symbol upload ([#541](https://github.com/getsentry/sentry-unreal/pull/541))
 
 ### Dependencies
