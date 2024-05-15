@@ -121,18 +121,19 @@ public:
 	 *
 	 * @note: Not supported for Windows/Linux.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
-	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+    UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnConfigureScope"))
+    USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+    USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
 
-	/**
-	 * Captures a manually created event and sends it to Sentry.
-	 *
-	 * @param Event The event to send to Sentry.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryId* CaptureEvent(USentryEvent* Event);
+    /**
+     * Captures a manually created event and sends it to Sentry.
+     *
+     * @param Event The event to send to Sentry.
+     */
+    UFUNCTION(BlueprintCallable, Category = "Sentry")
+    USentryId* CaptureEvent(USentryEvent* Event);
 
-	/**
+    /**
 	 * Captures a manually created event and sends it to Sentry.
 	 *
 	 * @param Event The event to send to Sentry.
@@ -141,19 +142,20 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
+    USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
+    USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope);
 
-	/**
-	 * Captures a user feedback.
-	 *
-	 * @param UserFeedback The user feedback to send to Sentry.
-	 *
-	 * @note: Not supported for Windows/Linux.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
+    /**
+     * Captures a user feedback.
+     *
+     * @param UserFeedback The user feedback to send to Sentry.
+     *
+     * @note: Not supported for Windows/Linux.
+     */
+    UFUNCTION(BlueprintCallable, Category = "Sentry")
+    void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
 
-	/**
+    /**
 	 * Captures a user feedback.
 	 *
 	 * @param EventId The event Id.
@@ -187,16 +189,17 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
-	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
+    void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
+    void ConfigureScope(const FConfigureScopeNativeDelegate& OnConfigureScope);
 
-	/**
-	 * Sets context values which will be used for enriching events. 
-	 *
-	 * @param Key Context key.
-	 * @param Values Context values.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+    /**
+     * Sets context values which will be used for enriching events.
+     *
+     * @param Key Context key.
+     * @param Values Context values.
+     */
+    UFUNCTION(BlueprintCallable, Category = "Sentry")
+    void SetContext(const FString& Key, const TMap<FString, FString>& Values);
 
 	/**
 	 * Sets global tag - key/value string pair which will be attached to every event.
@@ -266,6 +269,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options);
 
+	/** Checks if Sentry event capturing is supported for current settings. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	bool IsSupportedForCurrentSettings();
+
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
@@ -285,14 +292,17 @@ private:
 	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
 	void DisableAutomaticBreadcrumbs();
 
-	/** Check whether the event capturing should be disabled for the current build configuration */
+	/** Check whether the event capturing should be enabled for the current build configuration */
 	bool IsCurrentBuildConfigurationEnabled();
 
-	/** Check whether the event capturing should be disabled for the current build configuration */
+	/** Check whether the event capturing should be enabled for the current build target */
 	bool IsCurrentBuildTargetEnabled();
 
-	/** Check whether the event capturing should be disabled for the current build configuration */
+	/** Check whether the event capturing should be enabled for the current platform */
 	bool IsCurrentPlatformEnabled();
+
+	/** Check whether the event capturing should be enabled for promoted builds only */
+	bool IsPromotedBuildsOnlyEnabled();
 
 	/** Add custom Sentry output device to intercept logs */
 	void ConfigureOutputDevice();

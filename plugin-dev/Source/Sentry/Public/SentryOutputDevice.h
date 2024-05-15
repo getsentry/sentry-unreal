@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Misc/OutputDevice.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 class FSentryOutputDevice : public FOutputDevice
 {
@@ -11,5 +12,8 @@ public:
 
 	virtual bool CanBeUsedOnAnyThread() const override;
 	virtual bool CanBeUsedOnMultipleThreads() const override;
+
+#if ENGINE_MAJOR_VERSION >= 5
 	virtual bool CanBeUsedOnPanicThread() const override;
+#endif
 };

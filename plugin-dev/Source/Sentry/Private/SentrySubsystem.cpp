@@ -80,7 +80,7 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	if(Settings->EnableForPromotedBuildsOnly && !FApp::GetEngineIsPromotedBuild())
+	if(IsPromotedBuildsOnlyEnabled() && !FApp::GetEngineIsPromotedBuild())
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the non-promoted builds in plugin settings."));
 		return;
@@ -210,10 +210,15 @@ USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel
 
 USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
+    return CaptureMessageWithScope(Message, FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()), Level);
+}
+
+USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level)
+{
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	return SubsystemNativeImpl->CaptureMessageWithScope(Message, OnConfigureScope, Level);
+    return SubsystemNativeImpl->CaptureMessageWithScope(Message, OnConfigureScope, Level);
 }
 
 USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
@@ -226,10 +231,15 @@ USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 
 USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
+    return CaptureEventWithScope(Event, FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
+}
+
+USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope)
+{
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	return SubsystemNativeImpl->CaptureEventWithScope(Event, OnConfigureScope);
+    return SubsystemNativeImpl->CaptureEventWithScope(Event, OnConfigureScope);
 }
 
 void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
@@ -269,10 +279,15 @@ void USentrySubsystem::RemoveUser()
 
 void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope)
 {
+    ConfigureScope(FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
+}
+
+void USentrySubsystem::ConfigureScope(const FConfigureScopeNativeDelegate& OnConfigureScope)
+{
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
-	SubsystemNativeImpl->ConfigureScope(OnConfigureScope);
+    SubsystemNativeImpl->ConfigureScope(OnConfigureScope);
 }
 
 void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)
@@ -345,6 +360,21 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 		return nullptr;
 
 	return SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context, Options);
+}
+
+bool USentrySubsystem::IsSupportedForCurrentSettings()
+{
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled())
+	{
+		return false;
+	}
+
+	if(IsPromotedBuildsOnlyEnabled() && !FApp::GetEngineIsPromotedBuild())
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void USentrySubsystem::AddDefaultContext()
@@ -581,6 +611,13 @@ bool USentrySubsystem::IsCurrentPlatformEnabled()
 #endif
 
 	return IsBuildPlatformEnabled;
+}
+
+bool USentrySubsystem::IsPromotedBuildsOnlyEnabled()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	return Settings->EnableForPromotedBuildsOnly;
 }
 
 void USentrySubsystem::ConfigureOutputDevice()

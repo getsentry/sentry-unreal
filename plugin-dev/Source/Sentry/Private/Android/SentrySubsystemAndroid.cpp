@@ -122,7 +122,7 @@ USentryId* SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentr
 	return SentryConvertorsAndroid::SentryIdToUnreal(*id);
 }
 
-USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onConfigureScope, ESentryLevel level)
+USentryId* SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level)
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onConfigureScope);
@@ -143,7 +143,7 @@ USentryId* SentrySubsystemAndroid::CaptureEvent(USentryEvent* event)
 	return SentryConvertorsAndroid::SentryIdToUnreal(*id);
 }
 
-USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onConfigureScope)
+USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onConfigureScope)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event->GetNativeImpl());
 
@@ -193,7 +193,7 @@ void SentrySubsystemAndroid::RemoveUser()
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
 }
 
-void SentrySubsystemAndroid::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
+void SentrySubsystemAndroid::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
 {
 	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
 	scopeCallback->BindDelegate(onConfigureScope);

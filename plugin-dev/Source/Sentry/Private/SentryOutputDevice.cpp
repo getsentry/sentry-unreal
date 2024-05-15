@@ -75,7 +75,9 @@ bool FSentryOutputDevice::CanBeUsedOnMultipleThreads() const
 	return true;
 }
 
+#if ENGINE_MAJOR_VERSION >= 5
 bool FSentryOutputDevice::CanBeUsedOnPanicThread() const
 {
 	return true;
 }
+#endif

@@ -47,6 +47,13 @@ if /i "%IncludeSourceFiles%"=="True" (
     set "CliArgs=--include-sources"
 )
 
+set CliLogLevel=
+
+call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings DiagnosticLevel CliLogLevel
+if "%CliLogLevel%"=="" (
+    set "CliLogLevel=info"
+)
+
 call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings EnableBuildPlatforms EnabledPlatforms
 if not "%EnabledPlatforms%"=="" (
   set PlatformToCheck=
@@ -99,7 +106,7 @@ echo Sentry: Upload started using PropertiesFile '%PropertiesFile%'
 set "SENTRY_PROPERTIES=%PropertiesFile%"
 echo %ProjectBinariesPath%
 echo %PluginBinariesPath%
-call "%CliExec%" upload-dif %CliArgs% --log-level info "%ProjectBinariesPath%" "%PluginBinariesPath%"
+call "%CliExec%" upload-dif %CliArgs% --log-level %CliLogLevel% "%ProjectBinariesPath%" "%PluginBinariesPath%"
 
 echo Sentry: Upload finished
 
@@ -141,7 +148,10 @@ exit
           set insection=1
         ) else (
           endlocal
-          if defined insection goto :eof
+          if defined insection (
+            set insection=
+            goto :eof
+          )
         )
       )
     )

@@ -49,7 +49,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 		options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 		options.sendDefaultPii = settings->SendDefaultPii;
-#if PLATFORM_IOS
+#if SENTRY_UIKIT_AVAILABLE
 		options.attachScreenshot = settings->AttachScreenshot;
 #endif
 		options.initialScope = ^(SentryScope* scope) {
@@ -128,7 +128,7 @@ USentryId* SentrySubsystemApple::CaptureMessage(const FString& message, ESentryL
 	return SentryConvertorsApple::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onConfigureScope, ESentryLevel level)
+USentryId* SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level)
 {
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
@@ -146,7 +146,7 @@ USentryId* SentrySubsystemApple::CaptureEvent(USentryEvent* event)
 	return SentryConvertorsApple::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemApple::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onConfigureScope)
+USentryId* SentrySubsystemApple::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onConfigureScope)
 {
 	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event->GetNativeImpl());
 
@@ -192,7 +192,7 @@ void SentrySubsystemApple::RemoveUser()
 	[SENTRY_APPLE_CLASS(SentrySDK) setUser:nil];
 }
 
-void SentrySubsystemApple::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
+void SentrySubsystemApple::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
 		onConfigureScope.ExecuteIfBound(SentryConvertorsApple::SentryScopeToUnreal(scope));

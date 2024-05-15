@@ -2,6 +2,7 @@
 
 #include "SentrySymToolsDownloader.h"
 
+#include "Runtime/Launch/Resources/Version.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"

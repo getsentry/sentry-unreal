@@ -9,6 +9,8 @@
 #include "Android/SentryUserFeedbackAndroid.h"
 #elif PLATFORM_IOS || PLATFORM_MAC
 #include "Apple/SentryUserFeedbackApple.h"
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+#include "Desktop/SentryUserFeedbackDesktop.h"
 #endif
 
 void USentryUserFeedback::Initialize(USentryId* EventId)
@@ -17,6 +19,8 @@ void USentryUserFeedback::Initialize(USentryId* EventId)
 	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackAndroid(EventId));
 #elif PLATFORM_IOS || PLATFORM_MAC
 	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackApple(EventId));
+#elif PLATFORM_WINDOWS || PLATFORM_LINUX
+	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackDesktop(EventId));
 #endif
 }
 

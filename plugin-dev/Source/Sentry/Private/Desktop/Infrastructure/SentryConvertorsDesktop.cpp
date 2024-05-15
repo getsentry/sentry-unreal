@@ -248,4 +248,32 @@ TArray<uint8> SentryConvertorsDesktop::SentryEnvelopeToByteArray(sentry_envelope
 	return envelopeData;
 }
 
+ELogVerbosity::Type SentryConvertorsDesktop::SentryLevelToLogVerbosity(sentry_level_t level)
+{
+	ELogVerbosity::Type LogVerbosity = ELogVerbosity::Error;
+
+	switch (level)
+	{
+	case SENTRY_LEVEL_DEBUG:
+		LogVerbosity = ELogVerbosity::Verbose;
+		break;
+	case SENTRY_LEVEL_INFO:
+		LogVerbosity = ELogVerbosity::Log;
+		break;
+	case SENTRY_LEVEL_WARNING:
+		LogVerbosity = ELogVerbosity::Warning;
+		break;
+	case SENTRY_LEVEL_ERROR:
+		LogVerbosity = ELogVerbosity::Error;
+		break;
+	case SENTRY_LEVEL_FATAL:
+		LogVerbosity = ELogVerbosity::Fatal;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Error will be returned."));
+	}
+
+	return LogVerbosity;
+}
+
 #endif

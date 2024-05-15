@@ -19,6 +19,7 @@
 #include "SentryBeforeSendHandler.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransactionContext.h"
+#include "SentryUserFeedbackDesktop.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
@@ -45,7 +46,13 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("%s"), *FString(buffer));
+#if !NO_LOGGING
+	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
+#else
+	const FName SentryCategoryName(TEXT("LogSentrySdk"));
+#endif
+
+	GLog->CategorizedLogf(SentryCategoryName, SentryConvertorsDesktop::SentryLevelToLogVerbosity(level), TEXT("%s"), *FString(buffer));
 }
 
 sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
@@ -231,7 +238,7 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentr
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeDelegate& onScopeConfigure, ESentryLevel level)
+USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	FScopeLock Lock(&CriticalSection);
 
@@ -264,7 +271,7 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 	return SentryConvertorsDesktop::SentryIdToUnreal(id);
 }
 
-USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeDelegate& onScopeConfigure)
+USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onScopeConfigure)
 {
 	FScopeLock Lock(&CriticalSection);
 
@@ -308,7 +315,8 @@ USentryId* SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FStr
 
 void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("CaptureUserFeedback method is not supported for the current platform."));
+	TSharedPtr<SentryUserFeedbackDesktop> userFeedbackDesktop = StaticCastSharedPtr<SentryUserFeedbackDesktop>(userFeedback->GetNativeImpl());
+	sentry_capture_user_feedback(userFeedbackDesktop->GetNativeObject());
 }
 
 void SentrySubsystemDesktop::SetUser(USentryUser* user)
@@ -326,7 +334,7 @@ void SentrySubsystemDesktop::RemoveUser()
 	crashReporter->RemoveUser();
 }
 
-void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeDelegate& onConfigureScope)
+void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
 {
 	USentryScope* Scope = NewObject<USentryScope>();
 	Scope->InitWithNativeImpl(GetCurrentScope());
