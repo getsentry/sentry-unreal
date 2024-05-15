@@ -5,6 +5,7 @@
 ### Features
 
 - Sentry-CLI now shares the diagnostic level set in the UE Editor settings ([#555](https://github.com/getsentry/sentry-unreal/pull/555))
+- Fix threading issues capturing log messages as breadcrumbs ([#559](https://github.com/getsentry/sentry-unreal/pull/559))
 
 ### Dependencies
 
