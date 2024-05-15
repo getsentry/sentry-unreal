@@ -279,4 +279,9 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 	}
 }
 
+void SentryScopeDesktop::AddBreadcrumb(TSharedPtr<SentryBreadcrumbDesktop> breadcrumb)
+{
+	BreadcrumbsDesktop.Add(breadcrumb);
+}
+
 #endif

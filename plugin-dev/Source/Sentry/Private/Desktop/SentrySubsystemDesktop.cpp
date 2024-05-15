@@ -219,6 +219,18 @@ void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 	GetCurrentScope()->AddBreadcrumb(breadcrumb);
 }
 
+void SentrySubsystemDesktop::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+{
+	TSharedPtr<SentryBreadcrumbDesktop> breadcrumbDesktop = MakeShareable(new SentryBreadcrumbDesktop());
+	breadcrumbDesktop->SetMessage(Message);
+	breadcrumbDesktop->SetCategory(Category);
+	breadcrumbDesktop->SetType(Type);
+	breadcrumbDesktop->SetData(Data);
+	breadcrumbDesktop->SetLevel(Level);
+
+	GetCurrentScope()->AddBreadcrumb(breadcrumbDesktop);
+}
+
 void SentrySubsystemDesktop::ClearBreadcrumbs()
 {
 	GetCurrentScope()->ClearBreadcrumbs();
