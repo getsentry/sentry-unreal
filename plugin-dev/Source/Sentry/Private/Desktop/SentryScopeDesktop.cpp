@@ -17,12 +17,26 @@ SentryScopeDesktop::SentryScopeDesktop()
 {
 }
 
+SentryScopeDesktop::SentryScopeDesktop(const SentryScopeDesktop& Scope)
+{
+	Dist = Scope.Dist;
+	Environment = Scope.Environment;
+	FingerprintDesktop = Scope.FingerprintDesktop;
+	TagsDesktop = Scope.TagsDesktop;
+	ExtraDesktop = Scope.ExtraDesktop;
+	ContextsDesktop = Scope.ContextsDesktop;
+	BreadcrumbsDesktop = Scope.BreadcrumbsDesktop;
+	LevelDesktop = Scope.LevelDesktop;
+}
+
 SentryScopeDesktop::~SentryScopeDesktop()
 {
 }
 
 void SentryScopeDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 {
+	FScopeLock Lock(&CriticalSection);
+
 	BreadcrumbsDesktop.Add(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb->GetNativeImpl()));
 }
 
@@ -264,7 +278,7 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 				sentry_value_incref(nativeBreadcrumb);
 				sentry_value_append(eventBreadcrumbs, nativeBreadcrumb);
 			}
-	
+
 			sentry_value_set_by_key(nativeEvent, "breadcrumbs", eventBreadcrumbs);
 		}
 		else
@@ -281,6 +295,8 @@ void SentryScopeDesktop::Apply(USentryEvent* event)
 
 void SentryScopeDesktop::AddBreadcrumb(TSharedPtr<SentryBreadcrumbDesktop> breadcrumb)
 {
+	FScopeLock Lock(&CriticalSection);
+
 	BreadcrumbsDesktop.Add(breadcrumb);
 }
 
