@@ -158,18 +158,26 @@ USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, co
 
 USentryId* SentrySubsystemAndroid::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
-	// TODO
+	// add marker tags specific for Unreal assertions
+	SetTag(TEXT("sentry_unreal_exception"), TEXT("true"));
+	SetTag(TEXT("sentry_unreal_exception_skip_frames"), FString::Printf(TEXT("%d"), framesToSkip));
+	SetTag(TEXT("sentry_unreal_exception_type"), type);
+	SetTag(TEXT("sentry_unreal_exception_message"), message);
+
+	PLATFORM_BREAK();
+
 	return nullptr;
 }
 
 USentryId* SentrySubsystemAndroid::CaptureAssertion(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 0);
+	return CaptureException(type, message, 8);
 }
 
 USentryId* SentrySubsystemAndroid::CaptureEnsure(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 0);
+	// TODO Need to figure out if there's a way to pass native callstack along with Java events
+	return nullptr;
 }
 
 void SentrySubsystemAndroid::CaptureUserFeedback(USentryUserFeedback* userFeedback)
