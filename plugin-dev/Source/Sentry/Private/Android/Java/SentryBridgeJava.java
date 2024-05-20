@@ -57,8 +57,8 @@ public class SentryBridgeJava {
 					options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
 						@Override
 						public SentryEvent execute(SentryEvent event, Hint hint) {
-							CheckForUnrealException(event);
-							return onBeforeSend(beforeSendHandler, event, hint);
+						CheckForUnrealException(event);
+						return onBeforeSend(beforeSendHandler, event, hint);
 						}
 					});
 					JSONArray Includes = settingJson.getJSONArray("inAppInclude");
@@ -78,12 +78,12 @@ public class SentryBridgeJava {
 						options.setTracesSampler(new SentryOptions.TracesSamplerCallback() {
 							@Override
 							public Double sample(SamplingContext samplingContext) {
-								float sampleRate = onTracesSampler(samplerAddr, samplingContext);
-								if(sampleRate >= 0.0f) {
-									return (double) sampleRate;
-								} else {
-									return null;
-								}
+							float sampleRate = onTracesSampler(samplerAddr, samplingContext);
+							if(sampleRate >= 0.0f) {
+								return (double) sampleRate;
+							} else {
+								return null;
+							}
 							}
 						});
 					}
@@ -133,8 +133,8 @@ public class SentryBridgeJava {
 		SentryId messageId = Sentry.captureMessage(message, new ScopeCallback() {
 			@Override
 			public void run(@NonNull IScope scope) {
-				scope.setLevel(level);
-				onConfigureScope(callback, scope);
+			scope.setLevel(level);
+			onConfigureScope(callback, scope);
 			}
 		});
 		return messageId;
@@ -144,7 +144,7 @@ public class SentryBridgeJava {
 		SentryId eventId = Sentry.captureEvent(event, new ScopeCallback() {
 			@Override
 			public void run(@NonNull IScope scope) {
-				onConfigureScope(callback, scope);
+			onConfigureScope(callback, scope);
 			}
 		});
 		return eventId;
