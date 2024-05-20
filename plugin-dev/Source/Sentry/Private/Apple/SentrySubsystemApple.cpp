@@ -159,18 +159,33 @@ USentryId* SentrySubsystemApple::CaptureEventWithScope(USentryEvent* event, cons
 
 USentryId* SentrySubsystemApple::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
-	// TODO
-	return nullptr;
+	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
+
+	SentryException *nativeException = [[SENTRY_APPLE_CLASS(SentryException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
+	NSMutableArray *nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
+	[nativeExceptionArray addObject:nativeException];
+
+	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
+	exceptionEvent.exceptions = nativeExceptionArray;
+	exceptionEvent.stacktrace = SentryConvertorsApple::CallstackToNative(StackFrames);
+	
+	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
+	return SentryConvertorsApple::SentryIdToUnreal(id);
 }
 
 USentryId* SentrySubsystemApple::CaptureAssertion(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 0);
+#if PLATFORM_MAC
+	int32 framesToSkip = 6;
+#elif PLATFORM_IOS
+	int32 framesToSkip = 5;
+#endif
+	return CaptureException(type, message, framesToSkip);
 }
 
 USentryId* SentrySubsystemApple::CaptureEnsure(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 0);
+	return CaptureException(type, message, 6);
 }
 
 void SentrySubsystemApple::CaptureUserFeedback(USentryUserFeedback* userFeedback)

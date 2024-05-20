@@ -15,6 +15,8 @@
 #include "Apple/SentryTransactionApple.h"
 #include "Apple/SentrySpanApple.h"
 
+#include "Convenience/SentryMacro.h"
+
 SentryLevel SentryConvertorsApple::SentryLevelToNative(ESentryLevel level)
 {
 	SentryLevel nativeLevel = kSentryLevelDebug;
@@ -70,6 +72,24 @@ NSArray* SentryConvertorsApple::StringArrayToNative(const TArray<FString>& array
 NSData* SentryConvertorsApple::ByteDataToNative(const TArray<uint8>& array)
 {
 	return [NSData dataWithBytes:array.GetData() length:array.Num()];
+}
+
+SentryStacktrace* SentryConvertorsApple::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
+{
+	int32 framesCount = callstack.Num();
+
+	NSMutableArray *arr = [NSMutableArray arrayWithCapacity:framesCount];
+
+	for (int i = 0; i < framesCount; ++i)
+	{
+		SentryFrame *frame = [[SENTRY_APPLE_CLASS(SentryFrame) alloc] init];
+		frame.instructionAddress = FString::Printf(TEXT("0x%llx"), callstack[framesCount - i - 1].ProgramCounter).GetNSString();
+		[arr addObject:frame];
+	}
+
+	SentryStacktrace *trace = [[SENTRY_APPLE_CLASS(SentryStacktrace) alloc] initWithFrames:arr registers:@{}];
+
+	return trace;
 }
 
 ESentryLevel SentryConvertorsApple::SentryLevelToUnreal(SentryLevel level)
