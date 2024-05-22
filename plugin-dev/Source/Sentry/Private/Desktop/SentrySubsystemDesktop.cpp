@@ -310,7 +310,12 @@ USentryId* SentrySubsystemDesktop::CaptureAssertion(const FString& type, const F
 
 USentryId* SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 8);
+#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+	int32 framesToSkip = 8;
+#else
+	int32 framesToSkip = 7;
+#endif
+	return CaptureException(type, message, framesToSkip);
 }
 
 void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)
