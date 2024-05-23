@@ -230,7 +230,8 @@ jobs:
             -Unattended \
             -NoPause \
             -NoSplash \
-            -NullRHI
+            -NullRHI \
+            -ddc=NoZenLocalFallback
 
       - name: Collect ${{ matrix.app }} test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
