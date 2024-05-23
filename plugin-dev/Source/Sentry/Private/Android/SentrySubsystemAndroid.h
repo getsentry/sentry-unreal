@@ -12,6 +12,7 @@ public:
 	virtual bool IsEnabled() override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
+	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual USentryId* CaptureMessage(const FString& message, ESentryLevel level) override;
 	virtual USentryId* CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level) override;

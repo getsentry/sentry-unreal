@@ -109,6 +109,19 @@ void SentrySubsystemAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 		breadcrumbAndroid->GetJObject());
 }
 
+void SentrySubsystemAndroid::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+{
+	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = MakeShareable(new SentryBreadcrumbAndroid());
+	breadcrumbAndroid->SetMessage(Message);
+	breadcrumbAndroid->SetCategory(Category);
+	breadcrumbAndroid->SetType(Type);
+	breadcrumbAndroid->SetData(Data);
+	breadcrumbAndroid->SetLevel(Level);
+
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "addBreadcrumb", "(Lio/sentry/Breadcrumb;)V",
+		breadcrumbAndroid->GetJObject());
+}
+
 void SentrySubsystemAndroid::ClearBreadcrumbs()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "clearBreadcrumbs", "()V");
