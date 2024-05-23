@@ -132,7 +132,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['5.1', '5.2', '5.3']
+        unreal: ['5.2', '5.3', '5.4']
         app: ['sample']
 
     steps:
