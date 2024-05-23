@@ -187,6 +187,9 @@ jobs:
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
+          # Remove corrupted engine files that have to be rebuild
+          docker exec --user root unreal bash -c "
+            rm -f /home/ue4/UnrealEngine/Engine/DerivedDataCache/Compressed.ddp "
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
