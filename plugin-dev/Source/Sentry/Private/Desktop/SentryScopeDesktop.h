@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "HAL/CriticalSection.h"
+
 #include "Interface/SentryScopeInterface.h"
 
 #if USE_SENTRY_NATIVE
@@ -16,6 +18,7 @@ class SentryScopeDesktop : public ISentryScope
 {
 public:
 	SentryScopeDesktop();
+	SentryScopeDesktop(const SentryScopeDesktop& Scope);
 	virtual ~SentryScopeDesktop() override;
 
 	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
@@ -45,6 +48,7 @@ public:
 	virtual void Clear() override;
 
 	void Apply(USentryEvent* event);
+	void AddBreadcrumb(TSharedPtr<SentryBreadcrumbDesktop> breadcrumb);
 
 private:
 	FString Dist;
@@ -60,6 +64,8 @@ private:
 	TArray<TSharedPtr<SentryBreadcrumbDesktop>> BreadcrumbsDesktop;
 
 	ESentryLevel LevelDesktop;
+
+	FCriticalSection CriticalSection;
 };
 
 #endif

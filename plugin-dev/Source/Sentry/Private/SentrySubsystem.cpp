@@ -182,14 +182,10 @@ void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 
 void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
 {
-	USentryBreadcrumb* Breadcrumb = NewObject<USentryBreadcrumb>();
-	Breadcrumb->SetMessage(Message);
-	Breadcrumb->SetCategory(Category);
-	Breadcrumb->SetType(Type);
-	Breadcrumb->SetData(Data);
-	Breadcrumb->SetLevel(Level);
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return;
 
-	AddBreadcrumb(Breadcrumb);
+	SubsystemNativeImpl->AddBreadcrumbWithParams(Message, Category, Type, Data, Level);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()

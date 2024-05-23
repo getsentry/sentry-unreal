@@ -112,6 +112,18 @@ void SentrySubsystemApple::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
+void SentrySubsystemApple::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+{
+	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = MakeShareable(new SentryBreadcrumbApple());
+	breadcrumbIOS->SetMessage(Message);
+	breadcrumbIOS->SetCategory(Category);
+	breadcrumbIOS->SetType(Type);
+	breadcrumbIOS->SetData(Data);
+	breadcrumbIOS->SetLevel(Level);
+
+	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
+}
+
 void SentrySubsystemApple::ClearBreadcrumbs()
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
