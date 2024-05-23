@@ -174,7 +174,7 @@ jobs:
             --workdir /workspace \
             --user $uid:$gid \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-            ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}
+            ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
@@ -230,8 +230,7 @@ jobs:
             -Unattended \
             -NoPause \
             -NoSplash \
-            -NullRHI \
-            -ddc=NoZenLocalFallback
+            -NullRHI
 
       - name: Collect ${{ matrix.app }} test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
