@@ -168,12 +168,14 @@ jobs:
           gid=1000     # the ue4 group in the docker container
           user='gh'
           set -x
+          docker network create --ipv6 --subnet 2001:0DB8::/112 ip6net
           docker run -td \
             --name unreal \
             --volume ${{ github.workspace }}:/workspace \
             --workdir /workspace \
             --user $uid:$gid \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+            --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
