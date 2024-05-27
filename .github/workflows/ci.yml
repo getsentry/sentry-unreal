@@ -136,29 +136,15 @@ jobs:
         app: ['sample']
 
     steps:
-      - name: Free disk space
-        if: ${{ steps.exists.outputs.value == 0 }}
-        run: |
-          # time df -h
-          sudo time swapoff -a
-          sudo time rm -f /swapfile
-          sudo time rm -rf /usr/local/lib/android
-          sudo time rm -rf /usr/share/dotnet
-          sudo time rm -rf /usr/share/swift
-          sudo time rm -rf /usr/local/share/powershell
-          sudo time rm -rf /usr/local/.ghcup
-          sudo time rm -rf /usr/local/lib/node_modules
-          sudo time rm -rf /usr/local/share/boost
-          sudo time rm -rf /usr/lib/google-cloud-sdk
-          sudo time rm -rf /usr/lib/jvm
-          sudo time rm -rf /opt/pipx
-          sudo time rm -rf /opt/ghc
-          sudo time rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo time apt-get clean
-          sudo time rm -rf /var/lib/apt/lists/*
-          # time docker rmi $(docker image ls -aq)
-          # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
-          df -h
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8
+        with:
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true 
 
       - name: Start Docker container
         run: |
