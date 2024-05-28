@@ -132,7 +132,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['5.1', '5.2', '5.3']
+        unreal: ['5.2', '5.3', '5.4']
         app: ['sample']
 
     steps:
@@ -145,10 +145,14 @@ jobs:
           sudo time rm -rf /usr/local/lib/android
           sudo time rm -rf /usr/share/dotnet
           sudo time rm -rf /usr/share/swift
+          sudo time rm -rf /usr/local/share/powershell
           sudo time rm -rf /usr/local/.ghcup
           sudo time rm -rf /usr/local/lib/node_modules
+          sudo time rm -rf /usr/local/share/boost
           sudo time rm -rf /usr/lib/google-cloud-sdk
+          sudo time rm -rf /usr/lib/jvm
           sudo time rm -rf /opt/pipx
+          sudo time rm -rf /opt/ghc
           sudo time rm -rf "$AGENT_TOOLSDIRECTORY"
           sudo time apt-get clean
           sudo time rm -rf /var/lib/apt/lists/*
@@ -160,17 +164,20 @@ jobs:
         run: |
           echo ${{ secrets.DOCKER_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           # We start the container with the user ID of the parent GH action user to avoid permission issues on volume.
+          # For UE 5.4 we have to enable ipv6 to fix container startup issues. See https://github.com/adamrehn/ue4-docker/issues/357
           uid=$(id -u) # the GH action user ID
           gid=1000     # the ue4 group in the docker container
           user='gh'
           set -x
+          docker network create --ipv6 --subnet 2001:0DB8::/112 ip6net
           docker run -td \
             --name unreal \
             --volume ${{ github.workspace }}:/workspace \
             --workdir /workspace \
             --user $uid:$gid \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-            ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}
+            --network ip6net -p 80:80 \
+            ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
@@ -275,7 +282,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['5.1', '5.2', '5.3']
+        unreal: ['5.2', '5.3', '5.4']
 
     steps:
       - name: Download packages
