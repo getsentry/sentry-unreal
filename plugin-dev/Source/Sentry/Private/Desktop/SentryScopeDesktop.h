@@ -13,6 +13,7 @@ class USentryBreadcrumb;
 class USentryAttachment;
 
 class SentryBreadcrumbDesktop;
+class SentryEventDesktop;
 
 class SentryScopeDesktop : public ISentryScope
 {
@@ -47,7 +48,7 @@ public:
 	virtual TMap<FString, FString> GetExtras() const override;
 	virtual void Clear() override;
 
-	void Apply(USentryEvent* event);
+	void Apply(TSharedPtr<SentryEventDesktop> event);
 	void AddBreadcrumb(TSharedPtr<SentryBreadcrumbDesktop> breadcrumb);
 
 private:

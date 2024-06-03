@@ -34,6 +34,7 @@
 #include "Runtime/Launch/Resources/Version.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
+#include "UObject/GarbageCollection.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
@@ -59,12 +60,18 @@ sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 {
 	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
 
+	TSharedPtr<SentryEventDesktop> eventDesktop = MakeShareable(new SentryEventDesktop(event));
+
+	SentrySubsystem->GetCurrentScope()->Apply(eventDesktop);
+
+	FGCScopeGuard GCScopeGuard;
+
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
-	EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventDesktop(event)));
+	EventToProcess->InitWithNativeImpl(eventDesktop);
 
-	SentrySubsystem->GetCurrentScope()->Apply(EventToProcess);
-
-	return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr) ? event : sentry_value_new_null();
+	return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr)
+		? event
+		: sentry_value_new_null();
 }
 
 sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure)
@@ -73,7 +80,26 @@ sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t e
 
 	FSentryCrashContext::Get()->Apply(SentrySubsystem->GetCurrentScope());
 
-	return HandleBeforeSend(event, nullptr, closure);
+	TSharedPtr<SentryEventDesktop> eventDesktop = MakeShareable(new SentryEventDesktop(event, true));
+
+	SentrySubsystem->GetCurrentScope()->Apply(eventDesktop);
+
+	if(!IsGarbageCollecting())
+	{
+		USentryEvent* EventToProcess = NewObject<USentryEvent>();
+		EventToProcess->InitWithNativeImpl(eventDesktop);
+
+		return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr)
+			? event
+			: sentry_value_new_null();
+	}
+	else
+	{
+		// If crash occured during garbage collection we can't just obtain a GC lock like with normal events
+		// since there is no guarantee it will be ever freed. In this case crash event will be reported
+		// without calling a `beforeSend` handler.
+		return event;
+	}
 }
 
 SentrySubsystemDesktop::SentrySubsystemDesktop()
