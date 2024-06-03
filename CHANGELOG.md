@@ -10,6 +10,7 @@
 ### Fixes
 
 - Add path strings escaping for debug symbol upload script ([#561](https://github.com/getsentry/sentry-unreal/pull/561))
+- Fix crashes not being reported during garbage collection ([#566](https://github.com/getsentry/sentry-unreal/pull/566))
 
 ### Dependencies
 
