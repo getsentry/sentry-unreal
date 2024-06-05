@@ -10,7 +10,7 @@
 ### Fixes
 
 - Add path strings escaping for debug symbol upload script ([#561](https://github.com/getsentry/sentry-unreal/pull/561))
-- Fix compatibility issue with Android File Server plugin during debug symbols upload ([#568](https://github.com/getsentry/sentry-unreal/pull/568))
+- The SDK now uploads debug symbols properly with the `Android File Server` plugin enabled in UE 5.0 and newer ([#568](https://github.com/getsentry/sentry-unreal/pull/568))
 
 ### Dependencies
 
