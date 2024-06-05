@@ -33,6 +33,7 @@
         <if condition="bUploadSymbols">
             <true>
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
+                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
             </true>
         </if>
     </prebuildCopies>
