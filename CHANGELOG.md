@@ -9,7 +9,7 @@
 
 ### Fixes
 
-- Fix invalid assertion issues grouping ([#537](https://github.com/getsentry/sentry-unreal/pull/537))
+- The SDK now correctly captures and groups Assertions ([#537](https://github.com/getsentry/sentry-unreal/pull/537))
 - Add path strings escaping for debug symbol upload script ([#561](https://github.com/getsentry/sentry-unreal/pull/561))
 
 ### Dependencies
