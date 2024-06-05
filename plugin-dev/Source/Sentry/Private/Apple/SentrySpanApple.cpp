@@ -2,6 +2,11 @@
 
 #include "SentrySpanApple.h"
 
+#include "Infrastructure/SentryConvertorsApple.h"
+
+#include "Convenience/SentryInclude.h"
+#include "Convenience/SentryMacro.h"
+
 SentrySpanApple::SentrySpanApple(id<SentrySpan> span)
 {
 	SpanApple = span;
