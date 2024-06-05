@@ -2,6 +2,9 @@
 
 #include "SentryTransactionContextApple.h"
 
+#include "Convenience/SentryInclude.h"
+#include "Convenience/SentryMacro.h"
+
 SentryTransactionContextApple::SentryTransactionContextApple(const FString& name, const FString& operation)
 {
 	TransactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:name.GetNSString() operation:operation.GetNSString()];
