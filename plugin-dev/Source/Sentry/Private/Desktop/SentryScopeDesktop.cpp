@@ -180,11 +180,9 @@ void SentryScopeDesktop::Clear()
 	LevelDesktop = ESentryLevel::Debug;
 }
 
-void SentryScopeDesktop::Apply(USentryEvent* event)
+void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 {
-	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event->GetNativeImpl());
-
-	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
+	sentry_value_t nativeEvent = event->GetNativeObject();
 
 	sentry_value_t eventLevel = sentry_value_get_by_key(nativeEvent, "level");
 

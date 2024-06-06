@@ -8,6 +8,7 @@
 #include "Android/SentrySamplingContextAndroid.h"
 
 #include "Android/AndroidJNI.h"
+#include "UObject/GarbageCollection.h"
 
 #include "SentryEvent.h"
 #include "SentryHint.h"
@@ -27,6 +28,8 @@ JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* 
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* env, jclass clazz, jlong objAddr, jobject event, jobject hint)
 {
+	FGCScopeGuard GCScopeGuard;
+
 	USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
 
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
@@ -39,6 +42,8 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
 {
+	FGCScopeGuard GCScopeGuard;
+
 	USentryTraceSampler* sampler = reinterpret_cast<USentryTraceSampler*>(objAddr);
 
 	USentrySamplingContext* Context = NewObject<USentrySamplingContext>();

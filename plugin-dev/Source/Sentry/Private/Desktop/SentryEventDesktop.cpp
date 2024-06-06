@@ -12,9 +12,10 @@ SentryEventDesktop::SentryEventDesktop()
 	EventDesktop = sentry_value_new_event();
 }
 
-SentryEventDesktop::SentryEventDesktop(sentry_value_t event)
+SentryEventDesktop::SentryEventDesktop(sentry_value_t event, bool isCrash)
 {
 	EventDesktop = event;
+	IsCrashEvent = isCrash;
 }
 
 SentryEventDesktop::~SentryEventDesktop()
@@ -56,7 +57,7 @@ ESentryLevel SentryEventDesktop::GetLevel() const
 
 bool SentryEventDesktop::IsCrash() const
 {
-	return false;
+	return IsCrashEvent;
 }
 
 #endif

@@ -52,6 +52,8 @@ The SDK compiles with three latest engine versions.
 
 - On Linux `sudo apt-get install libc++-dev libcurl-dev` is required to install the `Crashpad` dependencies. This list may vary depending on your Linux distro. See the [Crashpad documentation](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/doc/developing.md#prerequisites) for more details.
 
+- On Windows/Linux if crash event was captured during the garbage collection the `BeforeSendHandler` will not be invoked.
+
 ## Development
 
 Please see the [contribution guide](./CONTRIBUTING.md).

@@ -31,6 +31,7 @@
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
+#include "UObject/GarbageCollection.h"
 
 void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
@@ -61,6 +62,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			return scope;
 		};
 		options.beforeSend = ^SentryEvent* (SentryEvent* event) {
+			FGCScopeGuard GCScopeGuard;
 			USentryEvent* EventToProcess = NewObject<USentryEvent>();
 			EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
 			return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
@@ -81,6 +83,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 		{
 			options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
+				FGCScopeGuard GCScopeGuard;
 				USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
 				Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextApple(samplingContext)));
 				float samplingValue;

@@ -12,7 +12,7 @@ class SentryEventDesktop : public ISentryEvent
 {
 public:
 	SentryEventDesktop();
-	SentryEventDesktop(sentry_value_t event);
+	SentryEventDesktop(sentry_value_t event, bool isCrash = false);
 	virtual ~SentryEventDesktop() override;
 
 	sentry_value_t GetNativeObject();
@@ -25,6 +25,8 @@ public:
 
 private:
 	sentry_value_t EventDesktop;
+
+	bool IsCrashEvent;
 };
 
 #endif

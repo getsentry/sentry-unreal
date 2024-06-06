@@ -156,9 +156,11 @@ void SentryScopeSpec::Define()
 
 			USentryEvent* SentryEvent = NewObject<USentryEvent>();
 
-			StaticCastSharedPtr<SentryScopeDesktop>(SentryScope->GetNativeImpl())->Apply(SentryEvent);
+			TSharedPtr<SentryEventDesktop> EventDesktop = StaticCastSharedPtr<SentryEventDesktop>(SentryEvent->GetNativeImpl());
 
-			sentry_value_t NativeEvent = StaticCastSharedPtr<SentryEventDesktop>(SentryEvent->GetNativeImpl())->GetNativeObject();
+			StaticCastSharedPtr<SentryScopeDesktop>(SentryScope->GetNativeImpl())->Apply(EventDesktop);
+
+			sentry_value_t NativeEvent = EventDesktop->GetNativeObject();
 
 			sentry_value_t level = sentry_value_get_by_key(NativeEvent, "level");
 			sentry_value_t dist = sentry_value_get_by_key(NativeEvent, "dist");
