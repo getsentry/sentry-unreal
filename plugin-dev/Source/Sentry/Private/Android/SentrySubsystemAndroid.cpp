@@ -171,6 +171,13 @@ USentryId* SentrySubsystemAndroid::CaptureEventWithScope(USentryEvent* event, co
 
 USentryId* SentrySubsystemAndroid::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
+	return nullptr;
+}
+
+USentryId* SentrySubsystemAndroid::CaptureAssertion(const FString& type, const FString& message)
+{
+	const int32 framesToSkip = 8;
+
 	// add marker tags specific for Unreal assertions
 	SetTag(TEXT("sentry_unreal_exception"), TEXT("assert"));
 	SetTag(TEXT("sentry_unreal_exception_skip_frames"), FString::Printf(TEXT("%d"), framesToSkip));
@@ -180,11 +187,6 @@ USentryId* SentrySubsystemAndroid::CaptureException(const FString& type, const F
 	PLATFORM_BREAK();
 
 	return nullptr;
-}
-
-USentryId* SentrySubsystemAndroid::CaptureAssertion(const FString& type, const FString& message)
-{
-	return CaptureException(type, message, 8);
 }
 
 USentryId* SentrySubsystemAndroid::CaptureEnsure(const FString& type, const FString& message)
