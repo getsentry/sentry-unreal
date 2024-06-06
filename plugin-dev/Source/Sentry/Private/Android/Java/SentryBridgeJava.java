@@ -57,8 +57,8 @@ public class SentryBridgeJava {
 					options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
 						@Override
 						public SentryEvent execute(SentryEvent event, Hint hint) {
-						checkForUnrealException(event);
-						return onBeforeSend(beforeSendHandler, event, hint);
+							preProcessEvent(event);
+							return onBeforeSend(beforeSendHandler, event, hint);
 						}
 					});
 					JSONArray Includes = settingJson.getJSONArray("inAppInclude");
@@ -94,7 +94,7 @@ public class SentryBridgeJava {
 		});
 	}
 
-	private static void checkForUnrealException(SentryEvent event) {
+	private static void preProcessEvent(SentryEvent event) {
 		if (event.getTags().containsKey("sentry_unreal_exception")) {
 			SentryException exception = event.getUnhandledException();
 			if (exception != null) {
