@@ -15,6 +15,7 @@
 #include "SentryOutputDevice.h"
 
 #include "CoreGlobals.h"
+#include "SentryOutputDeviceError.h"
 #include "Engine/World.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/CoreDelegates.h"
@@ -118,12 +119,14 @@ void USentrySubsystem::Initialize()
 	PromoteTags();
 	ConfigureBreadcrumbs();
 
-	OutputDevice = MakeShareable(new FSentryOutputDevice());
-	if(OutputDevice)
+	ConfigureOutputDevice();
+	ConfigureOutputDeviceError();
+
+	FCoreDelegates::OnHandleSystemEnsure.AddLambda([this]()
 	{
-		GLog->AddOutputDevice(OutputDevice.Get());
-		GLog->SerializeBacklog(OutputDevice.Get());
-	}
+		FString EnsureMessage = GErrorHist;
+		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
+	});
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -140,6 +143,11 @@ void USentrySubsystem::Close()
 	if(GLog && OutputDevice)
 	{
 		GLog->RemoveOutputDevice(OutputDevice.Get());
+	}
+
+	if(GError && OutputDeviceError)
+	{
+		GError = OutputDeviceError->GetParentDevice();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -198,9 +206,7 @@ USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel
 
 USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
-    return CaptureMessageWithScope(Message,
-        FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()),
-        Level);
+    return CaptureMessageWithScope(Message, FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()), Level);
 }
 
 USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level)
@@ -221,8 +227,7 @@ USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 
 USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
-    return CaptureEventWithScope(Event,
-        FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
+    return CaptureEventWithScope(Event, FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
 }
 
 USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope)
@@ -609,4 +614,33 @@ bool USentrySubsystem::IsPromotedBuildsOnlyEnabled()
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 	return Settings->EnableForPromotedBuildsOnly;
+}
+
+void USentrySubsystem::ConfigureOutputDevice()
+{
+	OutputDevice = MakeShareable(new FSentryOutputDevice());
+	if (OutputDevice)
+	{
+		GLog->AddOutputDevice(OutputDevice.Get());
+		GLog->SerializeBacklog(OutputDevice.Get());
+	}
+}
+
+void USentrySubsystem::ConfigureOutputDeviceError()
+{
+	OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
+	if (OutputDeviceError)
+	{
+		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
+		{
+			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
+
+			// Shut things down before exiting to ensure all the outgoing events are sent to Sentry
+			Close();
+
+			FPlatformMisc::RequestExit( true);
+		});
+
+		GError = OutputDeviceError.Get();
+	}
 }

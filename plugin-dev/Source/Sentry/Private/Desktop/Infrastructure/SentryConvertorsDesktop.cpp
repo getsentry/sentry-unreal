@@ -71,6 +71,36 @@ sentry_value_t SentryConvertorsDesktop::StringArrayToNative(const TArray<FString
 	return sentryArray;
 }
 
+sentry_value_t SentryConvertorsDesktop::AddressToNative(uint64 address)
+{
+	char buffer[32];
+	size_t written = (size_t)snprintf(buffer, sizeof(buffer), "0x%llx", (unsigned long long)address);
+	if (written >= sizeof(buffer))
+	{
+		return sentry_value_new_null();
+	}
+	buffer[written] = '\0';
+	return sentry_value_new_string(buffer);
+}
+
+sentry_value_t SentryConvertorsDesktop::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
+{
+	int32 framesCount = callstack.Num();
+
+	sentry_value_t frames = sentry_value_new_list();
+	for (int i = 0; i < framesCount; ++i)
+	{
+		sentry_value_t frame = sentry_value_new_object();
+		sentry_value_set_by_key(frame, "instruction_addr", AddressToNative(callstack[framesCount - i - 1].ProgramCounter));
+		sentry_value_append(frames, frame);
+	}
+
+	sentry_value_t stacktrace = sentry_value_new_object();
+	sentry_value_set_by_key(stacktrace, "frames", frames);
+
+	return stacktrace;
+}
+
 ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
 {
 	FString levelStr = FString(sentry_value_as_string(level));

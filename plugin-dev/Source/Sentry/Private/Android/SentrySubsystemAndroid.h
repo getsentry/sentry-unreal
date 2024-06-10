@@ -18,6 +18,9 @@ public:
 	virtual USentryId* CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level) override;
 	virtual USentryId* CaptureEvent(USentryEvent* event) override;
 	virtual USentryId* CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onConfigureScope) override;
+	virtual USentryId* CaptureException(const FString& type, const FString& message, int32 framesToSkip) override;
+	virtual USentryId* CaptureAssertion(const FString& type, const FString& message) override;
+	virtual USentryId* CaptureEnsure(const FString& type, const FString& message) override;
 	virtual void CaptureUserFeedback(USentryUserFeedback* userFeedback) override;
 	virtual void SetUser(USentryUser* user) override;
 	virtual void RemoveUser() override;

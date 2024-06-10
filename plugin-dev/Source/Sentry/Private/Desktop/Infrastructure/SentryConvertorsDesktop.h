@@ -6,6 +6,8 @@
 
 #include "Convenience/SentryInclude.h"
 
+#include "GenericPlatform/GenericPlatformStackWalk.h"
+
 #if USE_SENTRY_NATIVE
 
 class USentryId;
@@ -18,7 +20,9 @@ public:
 	/** Conversions to native desktop (Windows/Mac) types */
 	static sentry_level_e SentryLevelToNative(ESentryLevel level);
 	static sentry_value_t StringMapToNative(const TMap<FString, FString>& map);
-	static sentry_value_t StringArrayToNative(const TArray<FString>& array );
+	static sentry_value_t StringArrayToNative(const TArray<FString>& array);
+	static sentry_value_t AddressToNative(uint64 address);
+	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 
 	/** Conversions from native desktop (Windows/Mac) types */
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);

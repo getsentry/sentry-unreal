@@ -9,6 +9,7 @@
 
 ### Fixes
 
+- The SDK now correctly captures and groups Assertions ([#537](https://github.com/getsentry/sentry-unreal/pull/537))
 - Add path strings escaping for debug symbol upload script ([#561](https://github.com/getsentry/sentry-unreal/pull/561))
 - Fix crashes not being reported during garbage collection ([#566](https://github.com/getsentry/sentry-unreal/pull/566))
 - The SDK now uploads debug symbols properly with the `Android File Server` plugin enabled in UE 5.0 and newer ([#568](https://github.com/getsentry/sentry-unreal/pull/568))

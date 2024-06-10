@@ -6,6 +6,8 @@
 
 #include "Convenience/SentryInclude.h"
 
+#include "GenericPlatform/GenericPlatformStackWalk.h"
+
 class USentryTransactionContext;
 class USentryScope;
 class USentryId;
@@ -20,6 +22,7 @@ public:
 	static NSDictionary* StringMapToNative(const TMap<FString, FString>& map);
 	static NSArray* StringArrayToNative(const TArray<FString>& array);
 	static NSData* ByteDataToNative(const TArray<uint8>& array);
+	static SentryStacktrace* CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 
 	/** Conversions from native iOS types */
 	static ESentryLevel SentryLevelToUnreal(SentryLevel level);

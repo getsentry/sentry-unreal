@@ -179,6 +179,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
 	sentry_options_set_on_crash(options, HandleBeforeCrash, this);
+	sentry_options_set_shutdown_timeout(options, 3000);
 
 #if PLATFORM_LINUX
 	sentry_options_set_transport(options, FSentryTransport::Create());
@@ -324,6 +325,35 @@ USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, co
 	scopeStack.Pop();
 
 	return Id;
+}
+
+USentryId* SentrySubsystemDesktop::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+{
+	sentry_value_t exceptionEvent = sentry_value_new_event();
+
+	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
+	sentry_value_set_by_key(exceptionEvent, "stacktrace", SentryConvertorsDesktop::CallstackToNative(StackFrames));
+
+	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
+	sentry_event_add_exception(exceptionEvent, nativeException);
+
+	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
+	return SentryConvertorsDesktop::SentryIdToUnreal(id);
+}
+
+USentryId* SentrySubsystemDesktop::CaptureAssertion(const FString& type, const FString& message)
+{
+	return CaptureException(type, message, 7);
+}
+
+USentryId* SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
+{
+#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+	int32 framesToSkip = 8;
+#else
+	int32 framesToSkip = 7;
+#endif
+	return CaptureException(type, message, framesToSkip);
 }
 
 void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)

@@ -23,6 +23,7 @@ class USentryTransactionContext;
 
 class ISentrySubsystem;
 class FSentryOutputDevice;
+class FSentryOutputDeviceError;
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
@@ -303,10 +304,17 @@ private:
 	/** Check whether the event capturing should be enabled for promoted builds only */
 	bool IsPromotedBuildsOnlyEnabled();
 
+	/** Add custom Sentry output device to intercept logs */
+	void ConfigureOutputDevice();
+
+	/** Add custom Sentry output device to intercept errors */
+	void ConfigureOutputDeviceError();
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 
 	TSharedPtr<FSentryOutputDevice> OutputDevice;
+	TSharedPtr<FSentryOutputDeviceError> OutputDeviceError;
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;
