@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Misc/OutputDeviceError.h"
+#include "Delegates/Delegate.h"
 
 class FSentryOutputDeviceError : public FOutputDeviceError
 {
