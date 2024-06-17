@@ -80,6 +80,14 @@ bool USentryEvent::IsCrash() const
 	return EventNativeImpl->IsCrash();
 }
 
+bool USentryEvent::IsAppNotResponding() const
+{
+	if(!EventNativeImpl)
+		return false;
+
+	return EventNativeImpl->IsAppNotResponding();
+}
+
 void USentryEvent::InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl)
 {
 	if (!EventNativeImpl)

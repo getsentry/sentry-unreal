@@ -54,3 +54,8 @@ bool SentryEventApple::IsCrash() const
 {
 	return EventApple.error != nullptr;
 }
+
+bool SentryEventApple::IsAppNotResponding() const
+{
+	
+}

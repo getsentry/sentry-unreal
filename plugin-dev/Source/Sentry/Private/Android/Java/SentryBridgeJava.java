@@ -25,8 +25,11 @@ import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
+import io.sentry.android.core.AnrIntegration;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
+import io.sentry.exception.ExceptionMechanismException;
+import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
 import io.sentry.protocol.SentryStackFrame;
@@ -212,5 +215,15 @@ public class SentryBridgeJava {
 			return -1;
 		}
 		return isCrashed ? 1 : 0;
+	}
+
+	public static boolean isAnrEvent(final SentryEvent event) {
+		Throwable throwable = event.getThrowableMechanism();
+		if (throwable instanceof ExceptionMechanismException) {
+			Mechanism m = ((ExceptionMechanismException) throwable).getExceptionMechanism();
+			return m.getType().equals("ANR");
+		} else {
+			return false;
+		}
 	}
 }

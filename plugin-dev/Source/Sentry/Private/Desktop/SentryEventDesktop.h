@@ -22,6 +22,7 @@ public:
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
 	virtual bool IsCrash() const override;
+	virtual bool IsAppNotResponding() const override;
 
 private:
 	sentry_value_t EventDesktop;
