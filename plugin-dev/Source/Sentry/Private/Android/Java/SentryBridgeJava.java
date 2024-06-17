@@ -72,6 +72,7 @@ public class SentryBridgeJava {
 					for (int i = 0; i < Excludes.length(); i++) {
 						options.addInAppExclude(Excludes.getString(i));
 					}
+					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
 					options.setEnableTracing(settingJson.getBoolean("enableTracing"));
 					if(settingJson.has("tracesSampleRate")) {
 						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
