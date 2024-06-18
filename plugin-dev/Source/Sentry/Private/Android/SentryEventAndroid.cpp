@@ -57,5 +57,5 @@ bool SentryEventAndroid::IsCrash() const
 
 bool SentryEventAndroid::IsAppNotResponding() const
 {
-	return CallStaticMethod<bool>(SentryJavaClasses::SentryBridgeJava, "isAnrEvent", "(Lio/sentry/SentryEvent;)Z");
+	return CallStaticMethod<bool>(SentryJavaClasses::SentryBridgeJava, "isAnrEvent", "(Lio/sentry/SentryEvent;)Z", GetJObject());
 }
