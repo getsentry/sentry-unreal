@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Cocoa SDK (iOS) from v8.29.0 to v8.29.1 ([#580](https://github.com/getsentry/sentry-unreal/pull/580))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8291)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.0...8.29.1)
+
+## 0.18.0
+
 ### Features
 
 - Sentry-CLI now shares the diagnostic level set in the UE Editor settings ([#555](https://github.com/getsentry/sentry-unreal/pull/555))
