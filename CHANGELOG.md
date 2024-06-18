@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add API allowing to check if captured event is ANR error ([#581](https://github.com/getsentry/sentry-unreal/pull/581))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.29.0 to v8.29.1 ([#580](https://github.com/getsentry/sentry-unreal/pull/580))
@@ -24,9 +28,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK (iOS) from v8.25.0 to v8.28.0 ([#556](https://github.com/getsentry/sentry-unreal/pull/556), [#558](https://github.com/getsentry/sentry-unreal/pull/558), [#569](https://github.com/getsentry/sentry-unreal/pull/569), [#571](https://github.com/getsentry/sentry-unreal/pull/571))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8280)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.25.0...8.28.0)
+- Bump Cocoa SDK (iOS) from v8.25.0 to v8.29.0 ([#556](https://github.com/getsentry/sentry-unreal/pull/556), [#558](https://github.com/getsentry/sentry-unreal/pull/558), [#569](https://github.com/getsentry/sentry-unreal/pull/569), [#571](https://github.com/getsentry/sentry-unreal/pull/571), [#577](https://github.com/getsentry/sentry-unreal/pull/577))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8290)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.25.0...8.29.0)
 - Bump Java SDK (Android) from v7.8.0 to v7.10.0 ([#557](https://github.com/getsentry/sentry-unreal/pull/557), [#572](https://github.com/getsentry/sentry-unreal/pull/572))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7100)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.8.0...7.10.0)
@@ -36,9 +40,6 @@
 - Bump CLI from v2.31.2 to v2.32.1 ([#565](https://github.com/getsentry/sentry-unreal/pull/565))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2321)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.31.2...2.32.1)
-- Bump Cocoa SDK (iOS) from v8.28.0 to v8.29.0 ([#577](https://github.com/getsentry/sentry-unreal/pull/577))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8290)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.28.0...8.29.0)
 
 ## 0.17.1
 
