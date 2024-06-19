@@ -3,6 +3,7 @@
 #include "SentryScreenshotUtils.h"
 #include "SentryDefines.h"
 
+#include "Engine/Engine.h"
 #include "ImageUtils.h"
 #include "UnrealClient.h"
 #include "Misc/FileHelper.h"
