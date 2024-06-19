@@ -4,8 +4,11 @@
 #include "SentryDefines.h"
 
 #include "ImageUtils.h"
+#include "UnrealClient.h"
+#include "Misc/FileHelper.h"
+#include "Engine/GameViewportClient.h"
 
-	bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
+bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 {
 	if (!GEngine || !GEngine->GameViewport)
 	{
