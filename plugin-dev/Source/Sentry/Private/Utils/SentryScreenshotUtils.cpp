@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
 
 #include "SentryScreenshotUtils.h"
+
+#include "HighResScreenshot.h"
 #include "SentryDefines.h"
 
 #include "Engine/Engine.h"
@@ -17,32 +19,40 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
-	FViewport* Viewport = GEngine->GameViewport->Viewport;
-	if (!Viewport)
+	UGameViewportClient* GameViewportClient = GEngine->GameViewport;
+	if (!GameViewportClient)
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Viewport required for screenshot capturing is not valid"));
+		UE_LOG(LogSentrySdk, Error, TEXT("Game Viewport Client required for screenshot capturing is not valid"));
 		return false;
 	}
+
+	FIntVector ViewportSize(GameViewportClient->Viewport->GetSizeXY().X, GameViewportClient->Viewport->GetSizeXY().Y, 0);
 
 	TArray<FColor> Bitmap;
-	if (Viewport->ReadPixels(Bitmap))
-	{
-		for (FColor& Color : Bitmap)
-		{
-			Color.A = 255;
-		}
 
-		TArray64<uint8> CompressedBitmap;
-		FImageUtils::PNGCompressImageArray(Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y, Bitmap, CompressedBitmap);
-		FFileHelper::SaveArrayToFile(CompressedBitmap, *ScreenshotSavePath);
-
-		UE_LOG(LogSentrySdk, Log, TEXT("Screenshot saved to: %s"), *ScreenshotSavePath);
-	}
-	else
+	if (!FSlateApplication::IsInitialized())
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to read pixels from viewport"));
+		UE_LOG(LogSentrySdk, Error, TEXT("Slate application required for screenshot capturing is not initialized"));
 		return false;
 	}
+
+	TSharedPtr<SWindow> WindowPtr = GameViewportClient->GetWindow();
+	TSharedRef<SWidget> WindowRef = WindowPtr.ToSharedRef();
+
+	bool bScreenshotSuccessful = FSlateApplication::Get().TakeScreenshot(WindowRef, Bitmap, ViewportSize);
+	if (!bScreenshotSuccessful)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to capture screenshot"));
+		return false;
+	}
+
+	GetHighResScreenshotConfig().MergeMaskIntoAlpha(Bitmap, FIntRect());
+
+	TArray64<uint8> CompressedBitmap;
+	FImageUtils::PNGCompressImageArray(ViewportSize.X, ViewportSize.Y, Bitmap, CompressedBitmap);
+	FFileHelper::SaveArrayToFile(CompressedBitmap, *ScreenshotSavePath);
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Screenshot saved to: %s"), *ScreenshotSavePath);
 
 	return true;
 }
