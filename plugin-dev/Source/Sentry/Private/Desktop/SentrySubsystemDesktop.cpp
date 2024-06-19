@@ -21,6 +21,8 @@
 #include "SentryTransactionContext.h"
 #include "SentryUserFeedbackDesktop.h"
 
+#include "Utils/SentryScreenshotUtils.h"
+
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
 #include "CrashReporter/SentryCrashReporter.h"
@@ -77,6 +79,7 @@ sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure)
 {
 	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
+	SentrySubsystem->TryCaptureScreenshot();
 
 	FSentryCrashContext::Get()->Apply(SentrySubsystem->GetCurrentScope());
 
@@ -107,6 +110,7 @@ SentrySubsystemDesktop::SentrySubsystemDesktop()
 	, crashReporter(MakeShareable(new SentryCrashReporter))
 	, isEnabled(false)
 	, isStackTraceEnabled(true)
+	, isScreenshotAttachmentEnabled(false)
 {
 }
 
@@ -126,6 +130,19 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 		sentry_options_add_attachmentw(options, *FPaths::ConvertRelativePathToFull(LogFilePath));
 #elif PLATFORM_LINUX
 		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*FPaths::ConvertRelativePathToFull(LogFilePath)));
+#endif
+	}
+
+	if(settings->AttachScreenshot)
+	{
+		isScreenshotAttachmentEnabled = true;
+
+		const FString ScreenshotPath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
+
+#if PLATFORM_WINDOWS
+		sentry_options_add_attachmentw(options, *GetScreenshotPath());
+#elif PLATFORM_LINUX
+		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*GetScreenshotPath()));
 #endif
 	}
 
@@ -450,6 +467,17 @@ USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
 	return beforeSend;
 }
 
+void SentrySubsystemDesktop::TryCaptureScreenshot() const
+{
+	if(!isScreenshotAttachmentEnabled)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Screenshot attachment is disabled in plugin settings."));
+		return;
+	}
+
+	SentryScreenshotUtils::CaptureScreenshot(GetScreenshotPath());
+}
+
 TSharedPtr<SentryScopeDesktop> SentrySubsystemDesktop::GetCurrentScope()
 {
 	if(scopeStack.Num() == 0)
@@ -481,6 +509,14 @@ FString SentrySubsystemDesktop::GetDatabasePath() const
 	const FString DatabaseFullPath = FPaths::ConvertRelativePathToFull(DatabasePath);
 
 	return DatabaseFullPath;
+}
+
+FString SentrySubsystemDesktop::GetScreenshotPath() const
+{
+	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), TEXT("crash_screenshot.png"));
+	const FString ScreenshotFullPath = FPaths::ConvertRelativePathToFull(ScreenshotPath);
+
+	return ScreenshotFullPath;
 }
 
 #endif

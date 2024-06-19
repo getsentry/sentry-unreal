@@ -46,11 +46,14 @@ public:
 
 	USentryBeforeSendHandler* GetBeforeSendHandler();
 
+	void TryCaptureScreenshot() const;
+
 	TSharedPtr<SentryScopeDesktop> GetCurrentScope();
 
 private:
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
+	FString GetScreenshotPath() const;
 
 	USentryBeforeSendHandler* beforeSend;
 
@@ -61,6 +64,7 @@ private:
 	bool isEnabled;
 
 	bool isStackTraceEnabled;
+	bool isScreenshotAttachmentEnabled;
 
 	FCriticalSection CriticalSection;
 };
