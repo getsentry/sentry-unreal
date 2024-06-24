@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add opt-in screenshot attachment for crash events captured on Windows/Linux ([#582](https://github.com/getsentry/sentry-unreal/pull/582))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.29.0 to v8.29.1 ([#580](https://github.com/getsentry/sentry-unreal/pull/580))
