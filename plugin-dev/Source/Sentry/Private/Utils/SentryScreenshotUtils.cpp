@@ -10,6 +10,7 @@
 #include "UnrealClient.h"
 #include "Misc/FileHelper.h"
 #include "Engine/GameViewportClient.h"
+#include "Framework/Application/SlateApplication.h"
 
 bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 {
