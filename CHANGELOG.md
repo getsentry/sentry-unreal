@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Remove warning about missing WER module ([#584](https://github.com/getsentry/sentry-unreal/pull/584))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.29.0 to v8.29.1 ([#580](https://github.com/getsentry/sentry-unreal/pull/580))
