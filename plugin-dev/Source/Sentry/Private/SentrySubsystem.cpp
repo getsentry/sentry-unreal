@@ -120,7 +120,18 @@ void USentrySubsystem::Initialize()
 	ConfigureBreadcrumbs();
 
 	ConfigureOutputDevice();
+
+#if PLATFORM_WINDOWS
+	if (FEngineVersion::Current().GetMajor() == 5 && FEngineVersion::Current().GetMinor() >= 2)
+	{
+		if (Settings->EnableAutoCrashCapturing)
+		{
+			ConfigureOutputDeviceError();
+		}
+	}
+#else
 	ConfigureOutputDeviceError();
+#endif
 
 	FCoreDelegates::OnHandleSystemEnsure.AddLambda([this]()
 	{
