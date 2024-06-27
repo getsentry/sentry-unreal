@@ -147,8 +147,6 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	{
 		isScreenshotAttachmentEnabled = true;
 
-		const FString ScreenshotPath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
-
 #if PLATFORM_WINDOWS
 		sentry_options_add_attachmentw(options, *GetScreenshotPath());
 #elif PLATFORM_LINUX
