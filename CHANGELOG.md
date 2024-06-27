@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add opt-in screenshot attachment for crash events captured on Windows/Linux ([#582](https://github.com/getsentry/sentry-unreal/pull/582))
+- On Windows/Linux, the SDK can now automatically attach a screenshot to events for crash events([#582](https://github.com/getsentry/sentry-unreal/pull/582))
 
 ### Dependencies
 
