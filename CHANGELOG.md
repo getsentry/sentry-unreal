@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix assertions being captured with native integration when using crash reporter ([#586](https://github.com/getsentry/sentry-unreal/pull/586))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.29.0 to v8.29.1 ([#580](https://github.com/getsentry/sentry-unreal/pull/580))
