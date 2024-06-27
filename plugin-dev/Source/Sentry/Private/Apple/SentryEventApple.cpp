@@ -55,7 +55,7 @@ bool SentryEventApple::IsCrash() const
 	return EventApple.error != nullptr;
 }
 
-bool SentryEventApple::IsAppNotResponding() const
+bool SentryEventApple::IsAnr() const
 {
 	bool isErrorLevel = EventApple.level == kSentryLevelError;
 	bool isAppHangException = false;

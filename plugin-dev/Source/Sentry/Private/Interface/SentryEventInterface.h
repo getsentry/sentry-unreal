@@ -16,5 +16,5 @@ public:
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual ESentryLevel GetLevel() const = 0;
 	virtual bool IsCrash() const = 0;
-	virtual bool IsAppNotResponding() const = 0;
+	virtual bool IsAnr() const = 0;
 };
