@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Fix assertions being captured with native integration when using crash reporter ([#586](https://github.com/getsentry/sentry-unreal/pull/586))
+- The SDK no longer intercepts assertions when using crash-reporter ([#586](https://github.com/getsentry/sentry-unreal/pull/586))
 
 ### Dependencies
 
