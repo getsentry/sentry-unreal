@@ -48,6 +48,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	bool IsCrash() const;
 
+	/** Gets flag indicating whether the event is an Application Not Responding (ANR) error. */
+	UFUNCTION(BlueprintPure, Category = "Sentry", meta=(DisplayName="Is App Not Responding"))
+	bool IsAnr() const;
+
 	void InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl);
 	TSharedPtr<ISentryEvent> GetNativeImpl();
 

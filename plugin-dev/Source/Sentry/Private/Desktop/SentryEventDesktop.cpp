@@ -60,4 +60,10 @@ bool SentryEventDesktop::IsCrash() const
 	return IsCrashEvent;
 }
 
+bool SentryEventDesktop::IsAnr() const
+{
+	// ANR error tracking is not available in `sentry-native`
+	return false;
+}
+
 #endif
