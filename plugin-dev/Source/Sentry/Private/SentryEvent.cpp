@@ -80,6 +80,14 @@ bool USentryEvent::IsCrash() const
 	return EventNativeImpl->IsCrash();
 }
 
+bool USentryEvent::IsAnr() const
+{
+	if(!EventNativeImpl)
+		return false;
+
+	return EventNativeImpl->IsAnr();
+}
+
 void USentryEvent::InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl)
 {
 	if (!EventNativeImpl)

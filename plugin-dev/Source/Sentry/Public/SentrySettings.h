@@ -285,6 +285,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "In-app exludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
 	TArray<FString> InAppExclude;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
+		Meta = (DisplayName = "Enable ANR error tracking", Tooltip = "Flag indicating whether to enable tracking of ANR (app not responding) errors."))
+	bool EnableAppNotRespondingTracking;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
 		Meta = (DisplayName = "Enable tracing", ToolTip = "Flag indicating whether to enable tracing for performance monitoring."))
 	bool EnableTracing;
