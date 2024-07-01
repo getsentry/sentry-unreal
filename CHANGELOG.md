@@ -4,6 +4,7 @@
 
 ### Features
 
+- On Windows/Linux the SDK can now automatically attach a screenshot to crash events([#582](https://github.com/getsentry/sentry-unreal/pull/582))
 - Add API allowing to check if captured event is ANR error ([#581](https://github.com/getsentry/sentry-unreal/pull/581))
 
 ### Fixes
@@ -12,12 +13,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK (iOS) from v8.29.0 to v8.29.1 ([#580](https://github.com/getsentry/sentry-unreal/pull/580))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8291)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.0...8.29.1)
-- Bump Cocoa SDK (iOS) from v8.29.1 to v8.30.0 ([#585](https://github.com/getsentry/sentry-unreal/pull/585))
+- Bump Cocoa SDK (iOS) from v8.29.0 to v8.30.0 ([#580](https://github.com/getsentry/sentry-unreal/pull/580), [#585](https://github.com/getsentry/sentry-unreal/pull/585))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8300)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.1...8.30.0)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.0...8.30.0)
 
 ## 0.18.0
 
