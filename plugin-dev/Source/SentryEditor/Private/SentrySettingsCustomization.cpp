@@ -9,6 +9,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "IUATHelperModule.h"
 
 #include "Engine/Engine.h"
 #include "Misc/Paths.h"
@@ -71,6 +72,9 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 	TSharedRef<SWidget> GeneralConfiguredWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
 		FText::FromString(TEXT("Sentry is configured.")), FText());
 
+	TSharedRef<SWidget> GeneralLinuxBinariesWidget = MakeLinuxPreCompiledBinariesStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+	FText::FromString(TEXT("Sentry Linux pre-compiled binaries are missing.")), FText::FromString(TEXT("Compile")));
+
 #if ENGINE_MAJOR_VERSION >= 5
 	const ISlateStyle& Style = FAppStyle::Get();
 #else
@@ -97,6 +101,15 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 				[
 					GeneralConfiguredWidget
 				]
+			]
+		];
+	GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
+		.WholeRowWidget
+		[
+			SNew(SBorder)
+			.Padding(8.0f)
+			[
+				GeneralLinuxBinariesWidget
 			]
 		];
 }
@@ -314,6 +327,71 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(F
 
 					USentrySettings* Settings = FSentryModule::Get().GetSettings();
 					Settings->ClearDirtyFlag();
+
+					return FReply::Handled();
+				})
+				.Text(ButtonMessage)
+			];
+	}
+
+	return Result;
+}
+
+TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxPreCompiledBinariesStatusRow(FName IconName, FText Message, FText ButtonMessage)
+{
+	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SImage)
+	#if ENGINE_MAJOR_VERSION >= 5
+			.Image(FAppStyle::Get().GetBrush(IconName))
+	#else
+			.Image(FEditorStyle::Get().GetBrush(IconName))
+	#endif
+		]
+
+		+SHorizontalBox::Slot()
+		.FillWidth(1.0f)
+		.Padding(16.0f, 0.0f)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.ColorAndOpacity(FLinearColor::White)
+			.ShadowColorAndOpacity(FLinearColor::Black)
+			.ShadowOffset(FVector2D::UnitVector)
+			.Text(Message)
+		];
+
+	if (!ButtonMessage.IsEmpty())
+	{
+		Result->AddSlot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.OnClicked_Lambda([this]() -> FReply
+				{
+					FString PluginName = TEXT("Sentry");
+					FString PluginPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::EngineDir(), TEXT("Plugins"), TEXT("Marketplace"), PluginName));
+
+					if (!IFileManager::Get().DirectoryExists(*PluginPath))
+					{
+						UE_LOG(LogTemp, Error, TEXT("Plugin %s not found in %s"), *PluginName, *PluginPath);
+						return FReply::Handled();
+					}
+
+					FString PluginLinuxBinariesPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT("Intermediate"), TEXT("SentryLinuxBinaries")));
+
+					FString CommandLine = FString::Printf(TEXT("BuildPlugin -Plugin=\"%s/%s.uplugin\" -Package=\"%s\" -CreateSubFolder -TargetPlatforms=Linux"), *PluginPath, *PluginName, *PluginLinuxBinariesPath);
+
+					IUATHelperModule::Get().CreateUatTask(CommandLine, FText::FromString("Windows"),
+						FText::FromString("Compiling Sentry for Linux"), FText::FromString("Compile Sentry Linux"),
+						FAppStyle::GetBrush(TEXT("MainFrame.CookContent")), nullptr, [](FString str, double X)
+						{
+							UE_LOG(LogTemp, Error, TEXT("IVAN %s"), *str);
+						});
 
 					return FReply::Handled();
 				})

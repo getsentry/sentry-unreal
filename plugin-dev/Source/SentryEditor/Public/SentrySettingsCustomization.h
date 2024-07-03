@@ -35,6 +35,7 @@ private:
 	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);
 
 	TSharedRef<SWidget> MakeGeneralSettingsStatusRow(FName IconName, FText Message, FText ButtonMessage);
+	TSharedRef<SWidget> MakeLinuxPreCompiledBinariesStatusRow(FName IconName, FText Message, FText ButtonMessage);
 	TSharedRef<SWidget> MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage);
 
 	void UpdateProjectName();
