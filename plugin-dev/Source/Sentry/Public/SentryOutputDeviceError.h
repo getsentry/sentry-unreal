@@ -15,7 +15,7 @@ public:
 
 	FOutputDeviceError* GetParentDevice();
 
-	TMulticastDelegate<void(const FString&)> OnError;
+	TMulticastDelegate<void(const FString&), FDefaultTSDelegateUserPolicy> OnError;
 
 private:
 	FOutputDeviceError* ParentDevice;
