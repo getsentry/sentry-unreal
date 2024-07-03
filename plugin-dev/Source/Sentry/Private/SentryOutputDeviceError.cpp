@@ -13,7 +13,7 @@ void FSentryOutputDeviceError::Serialize(const TCHAR* V, ELogVerbosity::Type Ver
 {
 	if(FDebug::HasAsserted())
 	{
-		OnError.Broadcast(V);
+		OnAssert.Broadcast(V);
 	}
 
 	if (!ParentDevice)

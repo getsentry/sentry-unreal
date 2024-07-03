@@ -642,7 +642,7 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 	OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
 	if (OutputDeviceError)
 	{
-		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
+		OutputDeviceError->OnAssert.AddLambda([this](const FString& Message)
 		{
 			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
 
