@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Rename public `OnError` delegate field in `FSentryOutputDeviceError` class to `OnAssert`
+
 ### Features
 
 - On Windows/Linux the SDK can now automatically attach a screenshot to crash events([#582](https://github.com/getsentry/sentry-unreal/pull/582))
@@ -10,6 +14,7 @@
 ### Fixes
 
 - The SDK no longer intercepts assertions when using crash-reporter ([#586](https://github.com/getsentry/sentry-unreal/pull/586))
+- Fix error output device threading issue ([#589](https://github.com/getsentry/sentry-unreal/pull/589))
 
 ### Dependencies
 
