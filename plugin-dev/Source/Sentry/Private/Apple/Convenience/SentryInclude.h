@@ -4,13 +4,10 @@
 
 #include "HAL/Platform.h"
 
-#if PLATFORM_MAC
-#include "Headers/Sentry.h"
-#include "Headers/SentrySwift.h"
-#include "Headers/PrivateSentrySDKOnly.h"
-#elif PLATFORM_IOS
+#include <Sentry/Sentry.h>
+#include <Sentry/SentrySwift.h>
+#include <Sentry/PrivateSentrySDKOnly.h>
+
+#if PLATFORM_IOS
 #import <Foundation/Foundation.h>
-#import <Sentry/Sentry.h>
-#import <Sentry/SentrySwift.h>
-#import <Sentry/PrivateSentrySDKOnly.h>
 #endif
