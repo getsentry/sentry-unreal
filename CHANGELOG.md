@@ -10,6 +10,7 @@
 ### Fixes
 
 - The SDK no longer intercepts assertions when using crash-reporter ([#586](https://github.com/getsentry/sentry-unreal/pull/586))
+- Fix build errors on Mac ([#591](https://github.com/getsentry/sentry-unreal/pull/591))
 
 ### Dependencies
 
