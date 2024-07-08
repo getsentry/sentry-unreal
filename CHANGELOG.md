@@ -14,7 +14,7 @@
 ### Fixes
 
 - The SDK no longer intercepts assertions when using crash-reporter ([#586](https://github.com/getsentry/sentry-unreal/pull/586))
-- Fix error output device threading issue ([#589](https://github.com/getsentry/sentry-unreal/pull/589))
+- Fix calling `beforeSend` handler during post-loading ([#589](https://github.com/getsentry/sentry-unreal/pull/589))
 
 ### Dependencies
 
