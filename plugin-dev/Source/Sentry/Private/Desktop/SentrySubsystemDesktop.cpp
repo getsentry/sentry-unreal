@@ -37,6 +37,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 #include "UObject/GarbageCollection.h"
+#include "UObject/UObjectThreadContext.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
@@ -81,9 +82,14 @@ sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
 	EventToProcess->InitWithNativeImpl(eventDesktop);
 
-	return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr)
-		? event
-		: sentry_value_new_null();
+	USentryEvent* ProcessedEvent = EventToProcess;
+	if(!FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		// Executing UFUNCTION is allowed only when not post-loading
+		ProcessedEvent = SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+	}
+
+	return ProcessedEvent ? event : sentry_value_new_null();
 }
 
 sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure)
@@ -102,9 +108,14 @@ sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t e
 		USentryEvent* EventToProcess = NewObject<USentryEvent>();
 		EventToProcess->InitWithNativeImpl(eventDesktop);
 
-		return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr)
-			? event
-			: sentry_value_new_null();
+		USentryEvent* ProcessedEvent = EventToProcess;
+		if(!FUObjectThreadContext::Get().IsRoutingPostLoad)
+		{
+			// Executing UFUNCTION is allowed only when not post-loading
+			ProcessedEvent = SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+		}
+
+		return ProcessedEvent ? event : sentry_value_new_null();
 	}
 	else
 	{
