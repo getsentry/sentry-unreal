@@ -66,6 +66,18 @@ void USentrySubsystem::Deinitialize()
 
 void USentrySubsystem::Initialize()
 {
+	if (!SubsystemNativeImpl)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry subsystem is invalid and can't be initialized."));
+		return;
+	}
+
+	if (SubsystemNativeImpl->IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is already initialized. It will be shut down automatically before re-init."));
+		Close();
+	}
+
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 	if(Settings->Dsn.IsEmpty())
@@ -97,9 +109,6 @@ void USentrySubsystem::Initialize()
 		: USentryTraceSampler::StaticClass();
 
 	TraceSampler = NewObject<USentryTraceSampler>(this, TraceSamplerClass);
-
-	if (!SubsystemNativeImpl)
-		return;
 
 	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
 
