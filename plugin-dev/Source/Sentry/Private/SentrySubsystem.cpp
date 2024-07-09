@@ -142,7 +142,7 @@ void USentrySubsystem::Initialize()
 	ConfigureOutputDeviceError();
 #endif
 
-	FCoreDelegates::OnHandleSystemEnsure.AddLambda([this]()
+	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddLambda([this]()
 	{
 		FString EnsureMessage = GErrorHist;
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
@@ -163,11 +163,25 @@ void USentrySubsystem::Close()
 	if(GLog && OutputDevice)
 	{
 		GLog->RemoveOutputDevice(OutputDevice.Get());
+		OutputDevice = nullptr;
 	}
 
 	if(GError && OutputDeviceError)
 	{
+		if(OnAssertDelegate.IsValid())
+		{
+			OutputDeviceError->OnError.Remove(OnAssertDelegate);
+			OnAssertDelegate.Reset();
+		}
+
 		GError = OutputDeviceError->GetParentDevice();
+		OutputDeviceError = nullptr;
+	}
+
+	if(OnEnsureDelegate.IsValid())
+	{
+		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
+		OnEnsureDelegate.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -651,7 +665,7 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 	OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
 	if (OutputDeviceError)
 	{
-		OutputDeviceError->OnError.AddLambda([this](const FString& Message)
+		OnAssertDelegate = OutputDeviceError->OnError.AddLambda([this](const FString& Message)
 		{
 			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
 
