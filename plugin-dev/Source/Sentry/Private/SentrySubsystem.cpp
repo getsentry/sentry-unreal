@@ -170,7 +170,7 @@ void USentrySubsystem::Close()
 	{
 		if(OnAssertDelegate.IsValid())
 		{
-			OutputDeviceError->OnError.Remove(OnAssertDelegate);
+			OutputDeviceError->OnAssert.Remove(OnAssertDelegate);
 			OnAssertDelegate.Reset();
 		}
 
