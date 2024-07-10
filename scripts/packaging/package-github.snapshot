@@ -260,6 +260,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTraceHeader.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTransactionContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryUser.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryUserFeedback.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryWithoutUIKit.h
 Source/ThirdParty/IOS/Sentry.framework/Info.plist
 Source/ThirdParty/IOS/Sentry.framework/Modules/
 Source/ThirdParty/IOS/Sentry.framework/Modules/module.modulemap
@@ -377,6 +378,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryTraceHeader.h
 Source/ThirdParty/Mac/include/Sentry/SentryTransactionContext.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser.h
 Source/ThirdParty/Mac/include/Sentry/SentryUserFeedback.h
+Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
 Source/ThirdParty/Win64/
 Source/ThirdParty/Win64/Breakpad/
 Source/ThirdParty/Win64/Breakpad/include/
