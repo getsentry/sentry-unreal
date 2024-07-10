@@ -66,6 +66,18 @@ void USentrySubsystem::Deinitialize()
 
 void USentrySubsystem::Initialize()
 {
+	if (!SubsystemNativeImpl)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry subsystem is invalid and can't be initialized."));
+		return;
+	}
+
+	if (SubsystemNativeImpl->IsEnabled())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry is already initialized. It will be shut down automatically before re-init."));
+		Close();
+	}
+
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 	if(Settings->Dsn.IsEmpty())
@@ -97,9 +109,6 @@ void USentrySubsystem::Initialize()
 		: USentryTraceSampler::StaticClass();
 
 	TraceSampler = NewObject<USentryTraceSampler>(this, TraceSamplerClass);
-
-	if (!SubsystemNativeImpl)
-		return;
 
 	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
 
@@ -133,7 +142,7 @@ void USentrySubsystem::Initialize()
 	ConfigureOutputDeviceError();
 #endif
 
-	FCoreDelegates::OnHandleSystemEnsure.AddLambda([this]()
+	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddLambda([this]()
 	{
 		FString EnsureMessage = GErrorHist;
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
@@ -154,11 +163,25 @@ void USentrySubsystem::Close()
 	if(GLog && OutputDevice)
 	{
 		GLog->RemoveOutputDevice(OutputDevice.Get());
+		OutputDevice = nullptr;
 	}
 
 	if(GError && OutputDeviceError)
 	{
+		if(OnAssertDelegate.IsValid())
+		{
+			OutputDeviceError->OnError.Remove(OnAssertDelegate);
+			OnAssertDelegate.Reset();
+		}
+
 		GError = OutputDeviceError->GetParentDevice();
+		OutputDeviceError = nullptr;
+	}
+
+	if(OnEnsureDelegate.IsValid())
+	{
+		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
+		OnEnsureDelegate.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -642,7 +665,8 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 	OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
 	if (OutputDeviceError)
 	{
-		OutputDeviceError->OnAssert.AddLambda([this](const FString& Message)
+		OnAssertDelegate = OutputDeviceError->OnAssert.AddLambda([this](const FString& Message)
+
 		{
 			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
 

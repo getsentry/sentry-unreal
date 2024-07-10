@@ -327,4 +327,7 @@ private:
 	FDelegateHandle GameStateChangedDelegate;
 	FDelegateHandle UserActivityChangedDelegate;
 	FDelegateHandle GameSessionIDChangedDelegate;
+
+	FDelegateHandle OnAssertDelegate;
+	FDelegateHandle OnEnsureDelegate;
 };
