@@ -48,7 +48,7 @@ jobs:
       runsOn: windows-2019
 
   build:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
     name: Package
     runs-on: ubuntu-latest
     steps:
