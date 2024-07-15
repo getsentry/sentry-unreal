@@ -127,7 +127,7 @@ public class Sentry : ModuleRules
 		}
 
 		// Additional routine for Linux
-		if (Target.Platform == UnrealTargetPlatform.Linux)
+		if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
 		{
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));

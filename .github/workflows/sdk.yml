@@ -49,6 +49,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev clang libc++-dev
 
+      - name: Install LinuxArm64 Dependencies
+        if: ${{ inputs.target == 'LinuxArm64' && steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install zlib1g-dev libcurl4-openssl-dev clang libc++-dev gcc-aarch64-linux-gnu
+
       - uses: actions/setup-java@v3
         if: ${{ inputs.target == 'Android' }}
         with:
