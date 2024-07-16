@@ -170,7 +170,7 @@ void USentrySubsystem::Close()
 	{
 		if(OnAssertDelegate.IsValid())
 		{
-			OutputDeviceError->OnError.Remove(OnAssertDelegate);
+			OutputDeviceError->OnAssert.Remove(OnAssertDelegate);
 			OnAssertDelegate.Reset();
 		}
 
@@ -665,7 +665,8 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 	OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
 	if (OutputDeviceError)
 	{
-		OnAssertDelegate = OutputDeviceError->OnError.AddLambda([this](const FString& Message)
+		OnAssertDelegate = OutputDeviceError->OnAssert.AddLambda([this](const FString& Message)
+
 		{
 			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
 
