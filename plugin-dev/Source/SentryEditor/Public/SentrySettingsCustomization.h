@@ -16,6 +16,13 @@ enum class ESentrySettingsStatus : uint8
 	Configured
 };
 
+enum class ESentryLinuxBinariesStatus : uint8
+{
+	Missing = 0,
+	Compiling,
+	Configured
+};
+
 class FSentrySettingsCustomization : public IDetailCustomization
 {
 public:
@@ -35,6 +42,7 @@ private:
 	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);
 
 	TSharedRef<SWidget> MakeGeneralSettingsStatusRow(FName IconName, FText Message, FText ButtonMessage);
+	TSharedRef<SWidget> MakeLinuxBinariesStatusRow(FName IconName, FText Message, FText ButtonMessage);
 	TSharedRef<SWidget> MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage);
 
 	void UpdateProjectName();
@@ -46,8 +54,11 @@ private:
 
 	// Gets path to CRC's DefaultEngine.ini in engine directory
 	FString GetCrcConfigPath() const;
+	// Gets path to plugin's Linux pre-compiled binaries directory
+	FString GetLinuxBinariesDirPath() const;
 
 	int32 GetGeneralSettingsStatusAsInt() const;
+	int32 GetLinuxBinariesStatusAsInt() const;
 	int32 GetSentryCliStatusAsInt() const;
 
 	TSharedPtr<IPropertyHandle> ProjectNameHandle;
@@ -57,4 +68,6 @@ private:
 	TSharedPtr<FSentrySymToolsDownloader> CliDownloader;
 
 	static const FString DefaultCrcEndpoint;
+
+	bool IsCompilingLinuxBinaries;
 };

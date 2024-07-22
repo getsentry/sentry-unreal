@@ -28,12 +28,6 @@
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
 		}
 	],
-	"PreBuildSteps":
-	{
-		"Win64": [
-			"if \"$(TargetPlatform)\"==\"Linux\" (\n if exist \"$(PluginDir)/LinuxIntermediate\" (\n if not exist \"$(PluginDir)/Intermediate/Build/Linux\" (echo | xcopy \"$(PluginDir)/LinuxIntermediate\" \"$(PluginDir)/Intermediate/Build/Linux\" /E /H /C /I) \n) \n)"
-		]
-	},
 	"PostBuildSteps":
 	{
 		"Mac": [

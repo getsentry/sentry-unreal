@@ -9,12 +9,14 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "IUATHelperModule.h"
 
 #include "Engine/Engine.h"
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "Interfaces/IPluginManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 #include "Widgets/Text/SRichTextBlock.h"
@@ -37,6 +39,7 @@ void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata);
 
 FSentrySettingsCustomization::FSentrySettingsCustomization()
 	: CliDownloader(MakeShareable(new FSentrySymToolsDownloader()))
+	, IsCompilingLinuxBinaries(false)
 {
 }
 
@@ -99,6 +102,43 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 				]
 			]
 		];
+
+#if PLATFORM_WINDOWS
+	if (FSentryModule::Get().IsMarketplaceVersion())
+	{
+		TSharedRef<SWidget> LinuxBinariesMissingWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Sentry Linux pre-compiled binaries are missing.")), FText::FromString(TEXT("Compile")));
+
+		TSharedRef<SWidget> LinuxBinariesCompilingWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
+		FText::FromString(TEXT("Compiling Sentry for Linux...")), FText());
+
+		TSharedRef<SWidget> LinuxBinariesConfiguredWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
+		FText::FromString(TEXT("Sentry Linux pre-compiled binaries are ready.")), FText());
+
+		GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
+			.WholeRowWidget
+			[
+				SNew(SBorder)
+				.Padding(8.0f)
+				[
+					SNew(SWidgetSwitcher)
+					.WidgetIndex(this, &FSentrySettingsCustomization::GetLinuxBinariesStatusAsInt)
+					+SWidgetSwitcher::Slot()
+					[
+						LinuxBinariesMissingWidget
+					]
+					+SWidgetSwitcher::Slot()
+					[
+						LinuxBinariesCompilingWidget
+					]
+					+SWidgetSwitcher::Slot()
+					[
+						LinuxBinariesConfiguredWidget
+					]
+				]
+			];
+	}
+#endif
 }
 
 void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder)
@@ -324,6 +364,72 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(F
 	return Result;
 }
 
+TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FName IconName, FText Message, FText ButtonMessage)
+{
+	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SImage)
+	#if ENGINE_MAJOR_VERSION >= 5
+			.Image(FAppStyle::Get().GetBrush(IconName))
+	#else
+			.Image(FEditorStyle::Get().GetBrush(IconName))
+	#endif
+		]
+
+		+SHorizontalBox::Slot()
+		.FillWidth(1.0f)
+		.Padding(16.0f, 0.0f)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.ColorAndOpacity(FLinearColor::White)
+			.ShadowColorAndOpacity(FLinearColor::Black)
+			.ShadowOffset(FVector2D::UnitVector)
+			.Text(Message)
+		];
+
+	if (!ButtonMessage.IsEmpty())
+	{
+		Result->AddSlot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.OnClicked_Lambda([this]() -> FReply
+				{
+					IsCompilingLinuxBinaries = true;
+
+					// In case the plugin installed via Epic Games launcher it's supposed to be <EngineDir>/Plugins/Marketplace/Sentry
+					const FString PluginPath = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
+
+					const FString TempLinuxBinariesPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT("Intermediate"), TEXT("SentryLinuxBinaries")));
+
+					FString CommandLine = FString::Printf(TEXT("BuildPlugin -Plugin=\"%s/Sentry.uplugin\" -Package=\"%s\" -CreateSubFolder -TargetPlatforms=Linux"), *PluginPath, *TempLinuxBinariesPath);
+
+					IUATHelperModule::Get().CreateUatTask(CommandLine, FText::FromString("Windows"), FText::FromString("Compiling Sentry for Linux"), FText::FromString("Compile Sentry Linux"),
+						FAppStyle::GetBrush(TEXT("MainFrame.CookContent")), nullptr, [this, TempLinuxBinariesPath](FString result, double X)
+						{
+							if (result.Equals(TEXT("Completed")))
+							{
+								FPlatformFileManager::Get().GetPlatformFile().CopyDirectoryTree(*GetLinuxBinariesDirPath(),
+									*FPaths::Combine(TempLinuxBinariesPath, TEXT("Intermediate"), TEXT("Build"), TEXT("Linux")), true);
+							}
+
+							IsCompilingLinuxBinaries = false;
+						});
+
+					return FReply::Handled();
+				})
+				.Text(ButtonMessage)
+			];
+	}
+
+	return Result;
+}
+
 TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage)
 {
 	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
@@ -453,6 +559,12 @@ FString FSentrySettingsCustomization::GetCrcConfigPath() const
 	return FPaths::Combine(FPaths::EngineDir(), TEXT("Programs"), TEXT("CrashReportClient"), TEXT("Config"), TEXT("DefaultEngine.ini"));
 }
 
+FString FSentrySettingsCustomization::GetLinuxBinariesDirPath() const
+{
+	const FString PluginPath = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
+	return FPaths::Combine(PluginPath, TEXT("Intermediate"), TEXT("Build"), TEXT("Linux"));
+}
+
 int32 FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt() const
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
@@ -470,6 +582,21 @@ int32 FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt() const
 	}
 
 	return static_cast<int32>(ESentrySettingsStatus::Configured);
+}
+
+int32 FSentrySettingsCustomization::GetLinuxBinariesStatusAsInt() const
+{
+	if (IsCompilingLinuxBinaries)
+	{
+		return static_cast<int32>(ESentryLinuxBinariesStatus::Compiling);
+	}
+
+	if (IFileManager::Get().DirectoryExists(*GetLinuxBinariesDirPath()))
+	{
+		return static_cast<int32>(ESentryLinuxBinariesStatus::Configured);
+	}
+
+	return static_cast<int32>(ESentryLinuxBinariesStatus::Missing);
 }
 
 int32 FSentrySettingsCustomization::GetSentryCliStatusAsInt() const
