@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Missing includes errors should no longer pass over CI checks ([#606](https://github.com/getsentry/sentry-unreal/pull/606))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v7.12.1 to v7.13.0 ([#607](https://github.com/getsentry/sentry-unreal/pull/607))

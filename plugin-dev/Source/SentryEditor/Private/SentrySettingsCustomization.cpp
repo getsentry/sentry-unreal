@@ -16,6 +16,8 @@
 #include "Misc/ConfigCacheIni.h"
 #include "PropertyHandle.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "HAL/FileManager.h"
+#include "HAL/PlatformFileManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
