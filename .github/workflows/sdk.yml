@@ -47,7 +47,9 @@ jobs:
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         run: |
           sudo apt-get update
-          sudo apt-get install zlib1g-dev libcurl4-openssl-dev clang libc++-dev libc++abi-dev
+          sudo apt-get install zlib1g-dev libcurl4-openssl-dev clang build-essential libc++-dev libc++abi-dev
+          clang -v
+          clang -v -E -x c++ - < /dev/null
 
       - uses: actions/setup-java@v3
         if: ${{ inputs.target == 'Android' }}
