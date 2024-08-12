@@ -234,7 +234,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool SendDefaultPii;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Attach screenshots (for iOS only)", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs."))
+		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs. Currently this feature is supported for Windows and Linux only."))
 	bool AttachScreenshot;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
