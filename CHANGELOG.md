@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add setting that allows switching the internal Sentry database location on Windows/Linux ([#616](https://github.com/getsentry/sentry-unreal/pull/616))
+
 ### Dependencies
 
 - Bump CLI from v2.33.0 to v2.33.1 ([#608](https://github.com/getsentry/sentry-unreal/pull/608))
