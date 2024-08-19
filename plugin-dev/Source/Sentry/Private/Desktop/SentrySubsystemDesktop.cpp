@@ -154,6 +154,22 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 #endif
 	}
 
+	switch (settings->DatabaseLocation)
+	{
+	case ESentryDatabaseLocation::ProjectDirectory:
+		databaseParentPath = FPaths::ProjectDir();
+		break;
+	case ESentryDatabaseLocation::ProjectUserDirectory:
+		databaseParentPath = FPaths::ProjectUserDir();
+		break;
+	}
+
+	if(databaseParentPath.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry database location. Falling back to FPaths::ProjectUserDir()."));
+		databaseParentPath = FPaths::ProjectUserDir();
+	}
+
 	if(settings->AttachScreenshot)
 	{
 		isScreenshotAttachmentEnabled = true;
@@ -524,7 +540,7 @@ FString SentrySubsystemDesktop::GetHandlerPath() const
 
 FString SentrySubsystemDesktop::GetDatabasePath() const
 {
-	const FString DatabasePath = FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native"));
+	const FString DatabasePath = FPaths::Combine(databaseParentPath, TEXT(".sentry-native"));
 	const FString DatabaseFullPath = FPaths::ConvertRelativePathToFull(DatabasePath);
 
 	return DatabaseFullPath;
