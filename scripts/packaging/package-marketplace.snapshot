@@ -219,6 +219,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/
 Source/ThirdParty/IOS/Sentry.framework/Headers/Sentry-Swift.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/Sentry.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryAttachment.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryBaggage.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryBreadcrumb.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryClient.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryCrashExceptionApplication.h
@@ -253,6 +254,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySpanProtocol.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySpanStatus.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryStacktrace.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryThread.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTraceContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTraceHeader.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTransactionContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryUser.h
@@ -290,7 +292,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryScreenFrames.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySdkInfo.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryTraceContext.h
 Source/ThirdParty/IOS/Sentry.framework/Sentry
 Source/ThirdParty/Linux/
 Source/ThirdParty/Linux/bin/
@@ -320,6 +321,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryAppStartMeasurement.h
 Source/ThirdParty/Mac/include/Sentry/SentryAsynchronousOperation.h
 Source/ThirdParty/Mac/include/Sentry/SentryAttachment.h
 Source/ThirdParty/Mac/include/Sentry/SentryAutoSessionTrackingIntegration.h
+Source/ThirdParty/Mac/include/Sentry/SentryBaggage.h
 Source/ThirdParty/Mac/include/Sentry/SentryBreadcrumb.h
 Source/ThirdParty/Mac/include/Sentry/SentryClient.h
 Source/ThirdParty/Mac/include/Sentry/SentryCrashExceptionApplication.h
