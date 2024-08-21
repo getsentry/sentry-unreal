@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix intermittent errors during plugin initialization on macOS/iOS ([#618](https://github.com/getsentry/sentry-unreal/pull/618))
+
 ### Dependencies
 
 - Bump CLI from v2.33.0 to v2.33.1 ([#608](https://github.com/getsentry/sentry-unreal/pull/608))
