@@ -37,61 +37,71 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 {
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
-	[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
-		options.dsn = settings->Dsn.GetNSString();
-		options.environment = settings->Environment.GetNSString();
-		options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
-		options.sessionTrackingIntervalMillis = settings->SessionTimeout;
-		options.releaseName = settings->OverrideReleaseName
-			? settings->Release.GetNSString()
-			: settings->GetFormattedReleaseName().GetNSString();
-		options.attachStacktrace = settings->AttachStacktrace;
-		options.debug = settings->Debug;
-		options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
-		options.maxBreadcrumbs = settings->MaxBreadcrumbs;
-		options.sendDefaultPii = settings->SendDefaultPii;
+	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
+	dispatch_group_enter(sentryDispatchGroup);
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
+			options.dsn = settings->Dsn.GetNSString();
+			options.environment = settings->Environment.GetNSString();
+			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
+			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
+			options.releaseName = settings->OverrideReleaseName
+				? settings->Release.GetNSString()
+				: settings->GetFormattedReleaseName().GetNSString();
+			options.attachStacktrace = settings->AttachStacktrace;
+			options.debug = settings->Debug;
+			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
+			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
+			options.sendDefaultPii = settings->SendDefaultPii;
 #if SENTRY_UIKIT_AVAILABLE
-		options.attachScreenshot = settings->AttachScreenshot;
+			options.attachScreenshot = settings->AttachScreenshot;
 #endif
-		options.initialScope = ^(SentryScope* scope) {
-			if(settings->EnableAutoLogAttachment) {
-				const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
-				SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
-				[scope addAttachment:logAttachment];
-			}
-			return scope;
-		};
-		options.beforeSend = ^SentryEvent* (SentryEvent* event) {
-			FGCScopeGuard GCScopeGuard;
-			USentryEvent* EventToProcess = NewObject<USentryEvent>();
-			EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
-			return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
-		};
-		for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
-		{
-			[options addInAppInclude:it->GetNSString()];
-		}
-		for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
-		{
-			[options addInAppExclude:it->GetNSString()];
-		}
-		options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
-		options.enableTracing = settings->EnableTracing;
-		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
-		{
-			options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
-		}
-		if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
-		{
-			options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
-				FGCScopeGuard GCScopeGuard;
-				USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
-				Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextApple(samplingContext)));
-				float samplingValue;
-				return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
+			options.initialScope = ^(SentryScope* scope) {
+				if(settings->EnableAutoLogAttachment) {
+					const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+					SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
+					[scope addAttachment:logAttachment];
+				}
+				return scope;
 			};
-		}
-	}];
+			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
+				FGCScopeGuard GCScopeGuard;
+				USentryEvent* EventToProcess = NewObject<USentryEvent>();
+				EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
+				return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
+			};
+			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
+			{
+				[options addInAppInclude:it->GetNSString()];
+			}
+			for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
+			{
+				[options addInAppExclude:it->GetNSString()];
+			}
+			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
+			options.enableTracing = settings->EnableTracing;
+			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+			{
+				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
+			}
+			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+			{
+				options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
+					FGCScopeGuard GCScopeGuard;
+					USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
+					Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextApple(samplingContext)));
+					float samplingValue;
+					return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
+				};
+			}
+		}];
+
+		dispatch_group_leave(sentryDispatchGroup);
+	});
+
+	// Wait synchronously until sentry-cocoa initialization finished in main thread
+	dispatch_group_wait(sentryDispatchGroup, DISPATCH_TIME_FOREVER);
+	dispatch_release(sentryDispatchGroup);
 }
 
 void SentrySubsystemApple::Close()
