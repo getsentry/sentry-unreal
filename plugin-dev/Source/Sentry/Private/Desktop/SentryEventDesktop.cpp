@@ -31,7 +31,7 @@ sentry_value_t SentryEventDesktop::GetNativeObject()
 void SentryEventDesktop::SetMessage(const FString& message)
 {
 	sentry_value_t messageСontainer = sentry_value_new_object();
-	sentry_value_set_by_key(messageСontainer, "formatted", sentry_value_new_string(TCHAR_TO_ANSI(*message)));
+	sentry_value_set_by_key(messageСontainer, "formatted", sentry_value_new_string(TCHAR_TO_UTF8(*message)));
 	sentry_value_set_by_key(EventDesktop, "message", messageСontainer);
 }
 
