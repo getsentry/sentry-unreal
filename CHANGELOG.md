@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add setting that allows switching the internal Sentry database location on Windows/Linux ([#616](https://github.com/getsentry/sentry-unreal/pull/616))
+- Add setting that allows switching between the project and user directories for the internal Sentry database location on Windows/Linux ([#616](https://github.com/getsentry/sentry-unreal/pull/616))
 
 ### Fixes
 
