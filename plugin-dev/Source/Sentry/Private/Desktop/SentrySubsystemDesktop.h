@@ -67,6 +67,8 @@ private:
 	bool isScreenshotAttachmentEnabled;
 
 	FCriticalSection CriticalSection;
+
+	FString databaseParentPath;
 };
 
 #endif
