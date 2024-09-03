@@ -31,7 +31,7 @@ sentry_value_t SentryUserFeedbackDesktop::GetNativeObject()
 
 void SentryUserFeedbackDesktop::SetName(const FString& name)
 {
-	sentry_value_set_by_key(UserFeedbackDesktop, "name", sentry_value_new_string(TCHAR_TO_ANSI(*name)));
+	sentry_value_set_by_key(UserFeedbackDesktop, "name", sentry_value_new_string(TCHAR_TO_UTF8(*name)));
 }
 
 FString SentryUserFeedbackDesktop::GetName() const
@@ -53,7 +53,7 @@ FString SentryUserFeedbackDesktop::GetEmail() const
 
 void SentryUserFeedbackDesktop::SetComment(const FString& comment)
 {
-	sentry_value_set_by_key(UserFeedbackDesktop, "comments", sentry_value_new_string(TCHAR_TO_ANSI(*comment)));
+	sentry_value_set_by_key(UserFeedbackDesktop, "comments", sentry_value_new_string(TCHAR_TO_UTF8(*comment)));
 }
 
 FString SentryUserFeedbackDesktop::GetComment() const

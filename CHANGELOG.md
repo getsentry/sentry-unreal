@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add non-ASCII characters support for user messages ([#624](https://github.com/getsentry/sentry-unreal/pull/624))
+
 ### Fixes
 
 - Fix intermittent errors during plugin initialization on macOS/iOS ([#618](https://github.com/getsentry/sentry-unreal/pull/618))
