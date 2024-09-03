@@ -209,13 +209,13 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 		sentry_options_set_handler_pathw(options, *HandlerPath);
 	}
 #elif PLATFORM_LINUX
-	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*GetHandlerPath()));
+	sentry_options_set_handler_path(options, TCHAR_TO_UTF8(*GetHandlerPath()));
 #endif
 
 #if PLATFORM_WINDOWS
 	sentry_options_set_database_pathw(options, *GetDatabasePath());
 #elif PLATFORM_LINUX
-	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*GetDatabasePath()));
+	sentry_options_set_database_path(options, TCHAR_TO_UTF8(*GetDatabasePath()));
 #endif
 
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
@@ -317,7 +317,7 @@ void SentrySubsystemDesktop::ClearBreadcrumbs()
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_ANSI(*message));
+	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
 
 	if(isStackTraceEnabled)
 	{
