@@ -200,7 +200,10 @@ jobs:
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
           apt-get update ;
-          apt-get install -y libc++-dev '
+          wget https://apt.llvm.org/llvm.sh ;
+          chmod +x llvm.sh ;
+          ./llvm.sh 16 ;
+          apt install libc++-16-dev libc++abi-16-dev '
 
       - name: Download package
         uses: actions/download-artifact@v4
