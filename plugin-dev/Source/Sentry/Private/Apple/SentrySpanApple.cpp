@@ -56,5 +56,8 @@ void SentrySpanApple::RemoveData(const FString& key)
 
 void SentrySpanApple::GetTrace(FString& name, FString& value)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Manual trace propagation not supported for Apple."));
+	SentryTraceHeader* traceHeader = [SpanApple toTraceHeader];
+
+	name = TEXT("sentry-trace");
+	value = FString([traceHeader value]);
 }

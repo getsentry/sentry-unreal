@@ -68,5 +68,8 @@ void SentryTransactionApple::RemoveData(const FString& key)
 
 void SentryTransactionApple::GetTrace(FString& name, FString& value)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Manual trace propagation not supported for Apple."));
+	SentryTraceHeader* traceHeader = [TransactionApple toTraceHeader];
+
+	name = TEXT("sentry-trace");
+	value = FString([traceHeader value]);
 }
