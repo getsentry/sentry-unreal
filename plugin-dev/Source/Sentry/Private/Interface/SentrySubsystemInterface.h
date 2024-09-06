@@ -50,4 +50,5 @@ public:
 	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) = 0;
 	virtual USentryTransaction* StartTransactionWithContext(USentryTransactionContext* context) = 0;
 	virtual USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options) = 0;
+	virtual USentryTransactionContext* ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) = 0;
 };

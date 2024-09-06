@@ -303,3 +303,9 @@ USentryTransaction* SentrySubsystemApple::StartTransactionWithContextAndOptions(
 
 	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
 }
+
+USentryTransactionContext* SentrySubsystemApple::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Manual trace propagation not supported for Apple."));
+	return nullptr;
+}

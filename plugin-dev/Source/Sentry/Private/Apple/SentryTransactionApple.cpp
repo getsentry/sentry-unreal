@@ -65,3 +65,8 @@ void SentryTransactionApple::RemoveData(const FString& key)
 {
 	[TransactionApple removeDataForKey:key.GetNSString()];
 }
+
+void SentryTransactionApple::GetTrace(FString& name, FString& value)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Manual trace propagation not supported for Apple."));
+}

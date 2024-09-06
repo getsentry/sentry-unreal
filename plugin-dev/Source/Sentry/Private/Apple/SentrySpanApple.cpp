@@ -2,6 +2,8 @@
 
 #include "SentrySpanApple.h"
 
+#include "SentryDefines.h"
+
 #include "Infrastructure/SentryConvertorsApple.h"
 
 #include "Convenience/SentryInclude.h"
@@ -50,4 +52,9 @@ void SentrySpanApple::SetData(const FString& key, const TMap<FString, FString>& 
 void SentrySpanApple::RemoveData(const FString& key)
 {
 	[SpanApple removeDataForKey:key.GetNSString()];
+}
+
+void SentrySpanApple::GetTrace(FString& name, FString& value)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Manual trace propagation not supported for Apple."));
 }
