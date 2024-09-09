@@ -319,9 +319,17 @@ USentryTransactionContext* SentrySubsystemApple::ContinueTrace(const FString& se
 	{
 		sampleDecision = traceParts[2].Equals(TEXT("1")) ? kSentrySampleDecisionYes : kSentrySampleDecisionNo;
 	}
-	
+
+	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
+
+#if PLATFORM_MAC
+	SentryId* traceId = [[SENTRY_APPLE_CLASS(_TtC6Sentry8SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
+#elif PLATFORM_IOS
+	SentryId* traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
+#endif
+
 	SentryTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
-		traceId:[[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()]
+		traceId:traceId
 		spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
 		parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
 		parentSampled:sampleDecision];
