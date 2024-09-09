@@ -79,7 +79,6 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 				[options addInAppExclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
-			options.enableTracing = settings->EnableTracing;
 			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{
 				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
