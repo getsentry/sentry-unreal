@@ -306,6 +306,25 @@ USentryTransaction* SentrySubsystemApple::StartTransactionWithContextAndOptions(
 
 USentryTransactionContext* SentrySubsystemApple::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Manual trace propagation not supported for Apple."));
-	return nullptr;
+	TArray<FString> traceParts;
+	sentryTrace.ParseIntoArray(traceParts, TEXT("-"));
+
+	if (traceParts.Num() < 2)
+	{
+		return nullptr;
+	}
+
+	SentrySampleDecision sampleDecision = kSentrySampleDecisionUndecided;
+	if (traceParts.Num() == 3)
+	{
+		sampleDecision = traceParts[2].Equals(TEXT("1")) ? kSentrySampleDecisionYes : kSentrySampleDecisionNo;
+	}
+	
+	SentryTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
+		traceId:[[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()]
+		spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
+		parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
+		parentSampled:sampleDecision];
+
+	return SentryConvertorsApple::SentryTransactionContextToUnreal(transactionContext);
 }
