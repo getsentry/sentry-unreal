@@ -36,6 +36,7 @@
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
             </true>
         </if>
+        <copyFile src="$S(PluginDir)/../../Gradle/gradle-wrapper.properties" dst="$S(BuildDir)/gradle/gradle/wrapper/gradle-wrapper.properties" />
     </prebuildCopies>
 
     <androidManifestUpdates>
@@ -67,6 +68,9 @@
                     apply plugin: 'io.sentry.android.gradle'
 
                     sentry {
+                        autoInstallation {
+                            enabled = false
+                        }                    
                         uploadNativeSymbols = true
                     }
                 </insert>
@@ -137,7 +141,7 @@
     <buildscriptGradleAdditions>
         <insert>
             dependencies {
-                classpath 'com.android.tools.build:gradle:3.5.4'
+                classpath 'com.android.tools.build:gradle:7.4.2'
             }
         </insert>
     </buildscriptGradleAdditions>
@@ -147,7 +151,7 @@
             <true>
                 <insert>
                     dependencies {
-                        classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5'
+                        classpath 'io.sentry:sentry-android-gradle-plugin:4.11.0'
                     }
                 </insert>
             </true>
