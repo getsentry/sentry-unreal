@@ -333,5 +333,7 @@ USentryTransactionContext* SentrySubsystemApple::ContinueTrace(const FString& se
 		parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
 		parentSampled:sampleDecision];
 
+	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
+
 	return SentryConvertorsApple::SentryTransactionContextToUnreal(transactionContext);
 }
