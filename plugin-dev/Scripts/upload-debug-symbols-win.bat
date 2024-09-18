@@ -32,12 +32,12 @@ if "%TargetPlatform%"=="Win64" (
     exit /B 0
 )
 
+call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings UploadSymbolsAutomatically UploadSymbols
+echo Sentry: Automatic symbols upload is '%UploadSymbols%' from plugin settings
+
 if /i "%SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY%" NEQ "" (
   set UploadSymbols=%SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY%
   echo Sentry: Automatic symbols upload is overridden as '%SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY%' from environment variable SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY
-) else (
-  call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings UploadSymbolsAutomatically UploadSymbols
-  echo Sentry: Automatic symbols upload is '%UploadSymbols%' from plugin settings
 )
 
 if /i "%UploadSymbols%" NEQ "True" (
