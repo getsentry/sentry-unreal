@@ -21,6 +21,7 @@
 #include "SentryTransactionContext.h"
 #include "SentryUserFeedbackDesktop.h"
 
+#include "Utils/SentryLogUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
@@ -395,7 +396,11 @@ USentryId* SentrySubsystemDesktop::CaptureException(const FString& type, const F
 
 USentryId* SentrySubsystemDesktop::CaptureAssertion(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 7);
+	int32 framesToSkip = 7;
+
+	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
+
+	return CaptureException(type, message, framesToSkip);
 }
 
 USentryId* SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
