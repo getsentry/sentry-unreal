@@ -74,12 +74,20 @@
                     apply plugin: 'io.sentry.android.gradle'
 
                     sentry {
-                        autoInstallation {
-                            enabled = false
-                        }                    
                         uploadNativeSymbols = true
                     }
                 </insert>
+                <if condition="bUseLegacyGradlePlugin">
+                    <false>
+                        <insert>
+                            sentry {
+                                autoInstallation {
+                                    enabled = false
+                                }
+                            }
+                        </insert>
+                    </false>
+                </if>
                 <if condition="bIncludeSources">
                     <true>
                         <insert>
@@ -88,7 +96,7 @@
                             }
                         </insert>
                     </true>
-                </if> 
+                </if>
             </true>
         </if>
     </buildGradleAdditions>
