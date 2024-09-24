@@ -365,7 +365,7 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryCliLogLevel DiagnosticLevel;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Use legacy Sentry Gradle plugin (for Android only)", ToolTip = "Flag indicating whether to use legacy Sentry Gradle plugin for debug symbol upload. No engine's Gradle version bump is required if enabled, otherwise Gradle 7.5 will be used which might cause compatibility issue with other third-party plugins.",
+		Meta = (DisplayName = "Use legacy Sentry Gradle plugin (for Android only)", ToolTip = "Flag indicating whether to use legacy Sentry Gradle plugin for debug symbol upload. No engine's Gradle version bump is required if enabled. This can be used as a fallback if the newer Gradle 7.5 causing compatibility issues with other third-party plugins.",
 			EditCondition = "UploadSymbolsAutomatically"))
 	bool UseLegacyGradlePlugin;
 
