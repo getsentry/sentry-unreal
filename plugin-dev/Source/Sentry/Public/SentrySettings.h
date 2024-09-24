@@ -364,6 +364,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Diagnostic Level", ToolTip = "Logs verbosity level during symbol uploading.", EditCondition = "UploadSymbolsAutomatically"))
 	ESentryCliLogLevel DiagnosticLevel;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Use legacy Sentry Gradle plugin (for Android only)", ToolTip = "Flag indicating whether to use legacy Sentry Gradle plugin for debug symbol upload. No engine's Gradle version bump is required if enabled, otherwise Gradle 7.5 will be used which might cause compatibility issue with other third-party plugins.",
+			EditCondition = "UploadSymbolsAutomatically"))
+	bool UseLegacyGradlePlugin;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;

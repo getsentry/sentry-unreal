@@ -38,6 +38,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, UploadSymbolsAutomatically(false)	
 	, IncludeSources(false)
 	, DiagnosticLevel(ESentryCliLogLevel::Info)
+	, UseLegacyGradlePlugin(false)
 	, CrashReporterUrl()
 	, bIsDirty(false)
 {
