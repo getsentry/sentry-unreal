@@ -15,7 +15,7 @@ void SentryLogUtils::LogStackTrace(const TCHAR* Heading, const ELogVerbosity::Ty
 
 	{
 		StackTrace[0] = 0;
-		FGenericPlatformStackWalk::StackWalkAndDumpEx(StackTrace, StackTraceSize, FramesToSkip + 1, FGenericPlatformStackWalk::EStackWalkFlags::FlagsUsedWhenHandlingEnsure);
+		FGenericPlatformStackWalk::StackWalkAndDumpEx(StackTrace, StackTraceSize, FramesToSkip + 1, FGenericPlatformStackWalk::EStackWalkFlags::AccurateStackWalk);
 	}
 
 	FDebug::LogFormattedMessageWithCallstack(LogOutputDevice.GetCategoryName(), __FILE__, __LINE__, Heading, ANSI_TO_TCHAR(StackTrace), LogVerbosity);
