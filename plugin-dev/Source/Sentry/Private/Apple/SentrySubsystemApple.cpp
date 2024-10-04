@@ -215,7 +215,11 @@ USentryId* SentrySubsystemApple::CaptureAssertion(const FString& type, const FSt
 
 USentryId* SentrySubsystemApple::CaptureEnsure(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 6);
+	int32 framesToSkip = 6;
+
+	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
+
+	return CaptureException(type, message, framesToSkip);
 }
 
 void SentrySubsystemApple::CaptureUserFeedback(USentryUserFeedback* userFeedback)
