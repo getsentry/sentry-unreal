@@ -37,6 +37,8 @@ public:
 	static FString SentryLevelToString(ESentryLevel level);
 	static TArray<uint8> SentryEnvelopeToByteArray(sentry_envelope_t* envelope);
 	static ELogVerbosity::Type SentryLevelToLogVerbosity(sentry_level_t level);
+
+	static void SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize);
 };
 
 #endif
