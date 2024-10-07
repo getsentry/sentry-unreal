@@ -31,6 +31,12 @@ else
 fi
 
 UPLOAD_SYMBOLS=$(awk -F "=" '/UploadSymbolsAutomatically/ {print $2}' "${CONFIG_PATH}/DefaultEngine.ini")
+echo "Sentry: Automatic symbols upload is '$UPLOAD_SYMBOLS' from plugin settings"
+
+if [ ! -z $SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY ]; then
+    UPLOAD_SYMBOLS=$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY
+    echo "Sentry: Automatic symbols upload is overridden as '$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY' from environment variable SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY"
+fi
 
 if [ -z $UPLOAD_SYMBOLS ]; then
     echo "Sentry: Automatic symbols upload is disabled in plugin settings. Skipping..."
