@@ -1,8 +1,7 @@
 ﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
 
 #include "SentrySamplingContextAndroid.h"
-
-#include "SentryTransactionContext.h"
+#include "SentryTransactionContextAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
@@ -19,10 +18,10 @@ void SentrySamplingContextAndroid::SetupClassMethods()
 	GetCustomSamplingContextMethod = GetMethod("getCustomSamplingContext", "()Lio/sentry/CustomSamplingContext;");
 }
 
-USentryTransactionContext* SentrySamplingContextAndroid::GetTransactionContext() const
+TSharedPtr<ISentryTransactionContext> SentrySamplingContextAndroid::GetTransactionContext() const
 {
 	auto transactionContext = CallObjectMethod<jobject>(GetTransactionContextMethod);
-	return SentryConvertorsAndroid::SentryTransactionContextToUnreal(*transactionContext);
+	return MakeShareable(new SentryTransactionContextAndroid(*transactionContext));
 }
 
 TMap<FString, FString> SentrySamplingContextAndroid::GetCustomSamplingContext() const

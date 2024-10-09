@@ -8,9 +8,7 @@
 
 class USentryScope;
 class USentryId;
-class USentryTransaction;
 class USentrySpan;
-class USentryTransactionContext;
 class FSentryJavaObjectWrapper;
 class FJsonValue;
 
@@ -26,10 +24,7 @@ public:
 	/** Conversions from native Java types */
 	static ESentryLevel SentryLevelToUnreal(jobject level);
 	static USentryScope* SentryScopeToUnreal(jobject scope);
-	static USentryId* SentryIdToUnreal(jobject id);
-	static USentryTransaction* SentryTransactionToUnreal(jobject transaction);
 	static USentrySpan* SentrySpanToUnreal(jobject span);
-	static USentryTransactionContext* SentryTransactionContextToUnreal(jobject transactionContext);
 	static TMap<FString, FString> StringMapToUnreal(jobject stringMap);
 	static TArray<FString> StringListToUnreal(jobject stringList);
 	static TArray<uint8> ByteArrayToUnreal(jbyteArray byteArray);

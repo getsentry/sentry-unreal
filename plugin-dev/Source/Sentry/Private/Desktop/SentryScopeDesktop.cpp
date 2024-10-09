@@ -4,7 +4,6 @@
 #include "SentryBreadcrumbDesktop.h"
 #include "SentryEventDesktop.h"
 
-#include "SentryBreadcrumb.h"
 #include "SentryAttachment.h"
 #include "SentryEvent.h"
 
@@ -33,11 +32,11 @@ SentryScopeDesktop::~SentryScopeDesktop()
 {
 }
 
-void SentryScopeDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+void SentryScopeDesktop::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	BreadcrumbsDesktop.Add(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb->GetNativeImpl()));
+	BreadcrumbsDesktop.Add(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb));
 }
 
 void SentryScopeDesktop::ClearBreadcrumbs()

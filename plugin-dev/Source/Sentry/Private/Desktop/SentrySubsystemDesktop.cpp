@@ -4,6 +4,7 @@
 #include "SentryEventDesktop.h"
 #include "SentryBreadcrumbDesktop.h"
 #include "SentryUserDesktop.h"
+#include "SentryUserFeedbackDesktop.h"
 #include "SentryScopeDesktop.h"
 #include "SentryTransactionDesktop.h"
 #include "SentryTransactionContextDesktop.h"
@@ -11,15 +12,9 @@
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 #include "SentryEvent.h"
-#include "SentryBreadcrumb.h"
-#include "SentryUserFeedback.h"
-#include "SentryUser.h"
-#include "SentryTransaction.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryTraceSampler.h"
-#include "SentryTransactionContext.h"
-#include "SentryUserFeedbackDesktop.h"
 
 #include "Utils/SentryScreenshotUtils.h"
 
@@ -293,7 +288,7 @@ ESentryCrashedLastRun SentrySubsystemDesktop::IsCrashedLastRun()
 	return unrealIsCrashed;
 }
 
-void SentrySubsystemDesktop::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+void SentrySubsystemDesktop::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
 	GetCurrentScope()->AddBreadcrumb(breadcrumb);
 }
@@ -315,7 +310,7 @@ void SentrySubsystemDesktop::ClearBreadcrumbs()
 	GetCurrentScope()->ClearBreadcrumbs();
 }
 
-USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
 
@@ -325,10 +320,10 @@ USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentr
 	}
 
 	sentry_uuid_t id = sentry_capture_event(sentryEvent);
-	return SentryConvertorsDesktop::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdDesktop(id));
 }
 
-USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onScopeConfigure, ESentryLevel level)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	FScopeLock Lock(&CriticalSection);
 
@@ -340,15 +335,15 @@ USentryId* SentrySubsystemDesktop::CaptureMessageWithScope(const FString& messag
 	onScopeConfigure.ExecuteIfBound(Scope);
 
 	scopeStack.Push(NewLocalScope);
-	USentryId* Id = CaptureMessage(message, level);
+	TSharedPtr<ISentryId> Id = CaptureMessage(message, level);
 	scopeStack.Pop();
 
 	return Id;
 }
 
-USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEvent(TSharedPtr<ISentryEvent> event)
 {
-	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event->GetNativeImpl());
+	TSharedPtr<SentryEventDesktop> eventDesktop = StaticCastSharedPtr<SentryEventDesktop>(event);
 
 	sentry_value_t nativeEvent = eventDesktop->GetNativeObject();
 
@@ -358,10 +353,10 @@ USentryId* SentrySubsystemDesktop::CaptureEvent(USentryEvent* event)
 	}
 
 	sentry_uuid_t id = sentry_capture_event(nativeEvent);
-	return SentryConvertorsDesktop::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdDesktop(id));
 }
 
-USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onScopeConfigure)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FConfigureScopeNativeDelegate& onScopeConfigure)
 {
 	FScopeLock Lock(&CriticalSection);
 
@@ -373,13 +368,13 @@ USentryId* SentrySubsystemDesktop::CaptureEventWithScope(USentryEvent* event, co
 	onScopeConfigure.ExecuteIfBound(Scope);
 
 	scopeStack.Push(NewLocalScope);
-	USentryId* Id = CaptureEvent(event);
+	TSharedPtr<ISentryId> Id = CaptureEvent(event);
 	scopeStack.Pop();
 
 	return Id;
 }
 
-USentryId* SentrySubsystemDesktop::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
 
@@ -390,15 +385,15 @@ USentryId* SentrySubsystemDesktop::CaptureException(const FString& type, const F
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
 	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
-	return SentryConvertorsDesktop::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdDesktop(id));
 }
 
-USentryId* SentrySubsystemDesktop::CaptureAssertion(const FString& type, const FString& message)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureAssertion(const FString& type, const FString& message)
 {
 	return CaptureException(type, message, 7);
 }
 
-USentryId* SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
 {
 #if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
 	int32 framesToSkip = 8;
@@ -408,15 +403,15 @@ USentryId* SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FStr
 	return CaptureException(type, message, framesToSkip);
 }
 
-void SentrySubsystemDesktop::CaptureUserFeedback(USentryUserFeedback* userFeedback)
+void SentrySubsystemDesktop::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
-	TSharedPtr<SentryUserFeedbackDesktop> userFeedbackDesktop = StaticCastSharedPtr<SentryUserFeedbackDesktop>(userFeedback->GetNativeImpl());
+	TSharedPtr<SentryUserFeedbackDesktop> userFeedbackDesktop = StaticCastSharedPtr<SentryUserFeedbackDesktop>(userFeedback);
 	sentry_capture_user_feedback(userFeedbackDesktop->GetNativeObject());
 }
 
-void SentrySubsystemDesktop::SetUser(USentryUser* user)
+void SentrySubsystemDesktop::SetUser(TSharedPtr<ISentryUser> user)
 {
-	TSharedPtr<SentryUserDesktop> userDesktop = StaticCastSharedPtr<SentryUserDesktop>(user->GetNativeImpl());
+	TSharedPtr<SentryUserDesktop> userDesktop = StaticCastSharedPtr<SentryUserDesktop>(user);
 	sentry_set_user(userDesktop->GetNativeObject());
 
 	crashReporter->SetUser(user);
@@ -473,31 +468,31 @@ void SentrySubsystemDesktop::EndSession()
 	sentry_end_session();
 }
 
-USentryTransaction* SentrySubsystemDesktop::StartTransaction(const FString& name, const FString& operation)
+TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransaction(const FString& name, const FString& operation)
 {
 	sentry_transaction_context_t* transactionContext = sentry_transaction_context_new(TCHAR_TO_ANSI(*name), TCHAR_TO_ANSI(*operation));
 
 	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContext, sentry_value_new_null());
 
-	return SentryConvertorsDesktop::SentryTransactionToUnreal(nativeTransaction);
+	return MakeShareable(new SentryTransactionDesktop(nativeTransaction));
 }
 
-USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContext(USentryTransactionContext* context)
+TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
 {
-	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = StaticCastSharedPtr<SentryTransactionContextDesktop>(context->GetNativeImpl());
+	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = StaticCastSharedPtr<SentryTransactionContextDesktop>(context);
 
 	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContextDesktop->GetNativeObject(), sentry_value_new_null());
 
-	return SentryConvertorsDesktop::SentryTransactionToUnreal(nativeTransaction);
+	return MakeShareable(new SentryTransactionDesktop(nativeTransaction));
 }
 
-USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options)
+TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not supported on desktop."));
 	return StartTransactionWithContext(context);
 }
 
-USentryTransactionContext* SentrySubsystemDesktop::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+TSharedPtr<ISentryTransactionContext> SentrySubsystemDesktop::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
 {
 	sentry_transaction_context_t* nativeTransactionContext = sentry_transaction_context_new("<unlabeled transaction>", "default");
 	sentry_transaction_context_update_from_header(nativeTransactionContext, "sentry-trace", TCHAR_TO_ANSI(*sentryTrace));
@@ -506,10 +501,7 @@ USentryTransactionContext* SentrySubsystemDesktop::ContinueTrace(const FString& 
 
 	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = MakeShareable(new SentryTransactionContextDesktop(nativeTransactionContext));
 
-	USentryTransactionContext* TransactionContext = NewObject<USentryTransactionContext>();
-	TransactionContext->InitWithNativeImpl(transactionContextDesktop);
-
-	return TransactionContext;
+	return transactionContextDesktop;
 }
 
 USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()

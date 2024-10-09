@@ -5,17 +5,11 @@
 #include "SentryJavaClasses.h"
 
 #include "SentryScope.h"
-#include "SentryId.h"
-#include "SentryTransaction.h"
 #include "SentrySpan.h"
-#include "SentryTransactionContext.h"
 #include "SentryDefines.h"
 
 #include "Android/SentryScopeAndroid.h"
-#include "Android/SentryIdAndroid.h"
-#include "Android/SentryTransactionAndroid.h"
 #include "Android/SentrySpanAndroid.h"
-#include "Android/SentryTransactionContextAndroid.h"
 
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJavaEnv.h"
@@ -147,36 +141,12 @@ USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
 	return unrealScope;
 }
 
-USentryId* SentryConvertorsAndroid::SentryIdToUnreal(jobject id)
-{
-	TSharedPtr<SentryIdAndroid> idNativeImpl = MakeShareable(new SentryIdAndroid(id));
-	USentryId* unrealId = NewObject<USentryId>();
-	unrealId->InitWithNativeImpl(idNativeImpl);
-	return unrealId;
-}
-
-USentryTransaction* SentryConvertorsAndroid::SentryTransactionToUnreal(jobject transaction)
-{
-	TSharedPtr<SentryTransactionAndroid> transactionNativeImpl = MakeShareable(new SentryTransactionAndroid(transaction));
-	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
-	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
-	return unrealTransaction;
-}
-
 USentrySpan* SentryConvertorsAndroid::SentrySpanToUnreal(jobject span)
 {
 	TSharedPtr<SentrySpanAndroid> spanNativeImpl = MakeShareable(new SentrySpanAndroid(span));
 	USentrySpan* unrealSpan = NewObject<USentrySpan>();
 	unrealSpan->InitWithNativeImpl(spanNativeImpl);
 	return unrealSpan;
-}
-
-USentryTransactionContext* SentryConvertorsAndroid::SentryTransactionContextToUnreal(jobject transactionContext)
-{
-	TSharedPtr<SentryTransactionContextAndroid> transactionContextNativeImpl = MakeShareable(new SentryTransactionContextAndroid(transactionContext));
-	USentryTransactionContext* unrealTransactionContext = NewObject<USentryTransactionContext>();
-	unrealTransactionContext->InitWithNativeImpl(transactionContextNativeImpl);
-	return unrealTransactionContext;
 }
 
 TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)

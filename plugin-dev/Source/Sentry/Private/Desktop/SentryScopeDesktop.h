@@ -22,7 +22,7 @@ public:
 	SentryScopeDesktop(const SentryScopeDesktop& Scope);
 	virtual ~SentryScopeDesktop() override;
 
-	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
+	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual void AddAttachment(USentryAttachment* attachment) override;
 	virtual void ClearAttachments() override;

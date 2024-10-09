@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
 
 #include "SentrySamplingContext.h"
+#include "SentryTransactionContext.h"
 
 #include "Interface/SentrySamplingContextInterface.h"
 
@@ -19,7 +20,12 @@ USentryTransactionContext* USentrySamplingContext::GetTransactionContext() const
 	if (!SentrySamplingContextNativeImpl)
 		return nullptr;
 
-	return SentrySamplingContextNativeImpl->GetTransactionContext();
+	TSharedPtr<ISentryTransactionContext> transactionContextNativeImpl = SentrySamplingContextNativeImpl->GetTransactionContext();
+
+	USentryTransactionContext* unrealTransactionContext = NewObject<USentryTransactionContext>();
+	unrealTransactionContext->InitWithNativeImpl(transactionContextNativeImpl);
+
+	return unrealTransactionContext;
 }
 
 TMap<FString, FString> USentrySamplingContext::GetCustomSamplingContext() const
