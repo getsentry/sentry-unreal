@@ -6,6 +6,7 @@
 
 - Add setting that allows switching between the project and user directories for the internal Sentry database location on Windows/Linux ([#616](https://github.com/getsentry/sentry-unreal/pull/616))
 - Add non-ASCII characters support for user messages ([#624](https://github.com/getsentry/sentry-unreal/pull/624))
+- Upgrade Android gradle plugin from v2.1.5 to v4.11.0 ([#633](https://github.com/getsentry/sentry-unreal/pull/633))
 - Add API to allow users to trace their distributed system and connect in-game with backend errors ([#631](https://github.com/getsentry/sentry-unreal/pull/631))
 - Allow overriding `UploadSymbolsAutomatically` via environment variable `SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY` ([#636](https://github.com/getsentry/sentry-unreal/pull/636))
 

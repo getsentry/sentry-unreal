@@ -1,6 +1,8 @@
 CHANGELOG.md
 Config/
 Config/FilterPlugin.ini
+Gradle/
+Gradle/gradle-wrapper.properties
 LICENSE
 Resources/
 Resources/Icon128.png
