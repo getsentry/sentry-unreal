@@ -65,3 +65,11 @@ void SentryTransactionApple::RemoveData(const FString& key)
 {
 	[TransactionApple removeDataForKey:key.GetNSString()];
 }
+
+void SentryTransactionApple::GetTrace(FString& name, FString& value)
+{
+	SentryTraceHeader* traceHeader = [TransactionApple toTraceHeader];
+
+	name = TEXT("sentry-trace");
+	value = FString([traceHeader value]);
+}

@@ -64,6 +64,14 @@ void USentrySpan::RemoveData(const FString& key)
 	SentrySpanNativeImpl->RemoveData(key);
 }
 
+void USentrySpan::GetTrace(FString& name, FString& value)
+{
+	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+		return;
+
+	SentrySpanNativeImpl->GetTrace(name, value);
+}
+
 void USentrySpan::InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl)
 {
 	SentrySpanNativeImpl = spanImpl;

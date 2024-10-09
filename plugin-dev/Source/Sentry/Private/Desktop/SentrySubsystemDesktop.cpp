@@ -497,6 +497,21 @@ USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContextAndOption
 	return StartTransactionWithContext(context);
 }
 
+USentryTransactionContext* SentrySubsystemDesktop::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+{
+	sentry_transaction_context_t* nativeTransactionContext = sentry_transaction_context_new("<unlabeled transaction>", "default");
+	sentry_transaction_context_update_from_header(nativeTransactionContext, "sentry-trace", TCHAR_TO_ANSI(*sentryTrace));
+
+	// currently `sentry-native` doesn't have API for `sentry_transaction_context_t` to set `baggageHeaders`
+
+	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = MakeShareable(new SentryTransactionContextDesktop(nativeTransactionContext));
+
+	USentryTransactionContext* TransactionContext = NewObject<USentryTransactionContext>();
+	TransactionContext->InitWithNativeImpl(transactionContextDesktop);
+
+	return TransactionContext;
+}
+
 USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
 {
 	return beforeSend;

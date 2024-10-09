@@ -100,6 +100,31 @@ void SentrySubsystemSpec::Define()
 		});
 	});
 
+	Describe("Transaction context", [this]()
+	{
+		It("should be created from trace and used to start a transaction", [this]()
+		{
+			const FString inTrace = FString(TEXT("2674eb52d5874b13b560236d6c79ce8a-a0f9fdf04f1a63df-1"));
+
+			USentryTransactionContext* transactionContext = SentrySubsystem->ContinueTrace(inTrace, TArray<FString>());
+			TestNotNull("Transaction context non-null", transactionContext);
+
+			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContext(transactionContext);
+			TestNotNull("Transaction is non-null", transaction);
+
+			FString outTraceKey;
+			FString outTraceValue;
+			transaction->GetTrace(outTraceKey, outTraceValue);
+
+			TArray<FString> outTraceParts;
+			outTraceValue.ParseIntoArray(outTraceParts, TEXT("-"));
+			TestTrue("Trace has valid amount of parts", outTraceParts.Num() >= 2);
+
+			TestEqual("Trace header", outTraceKey, TEXT("sentry-trace"));
+			TestEqual("Trace ID", outTraceParts[0], TEXT("2674eb52d5874b13b560236d6c79ce8a"));
+		});
+	});
+
 	AfterEach([this]
 	{
 		SentrySubsystem->Close();
