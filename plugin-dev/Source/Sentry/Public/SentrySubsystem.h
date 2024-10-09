@@ -269,6 +269,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options);
 
+	/**
+	 * Creates a transaction context to propagate distributed tracing metadata from upstream
+	 * services and continue a trace based on corresponding HTTP header values.
+	 *
+	 * @param SentryTrace Incoming request 'sentry-trace' header
+	 * @param BaggageHeaders Incoming request 'baggage' headers
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "BaggageHeaders"))
+	USentryTransactionContext* ContinueTrace(const FString& SentryTrace, const TArray<FString>& BaggageHeaders);
+
 	/** Checks if Sentry event capturing is supported for current settings. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	bool IsSupportedForCurrentSettings();

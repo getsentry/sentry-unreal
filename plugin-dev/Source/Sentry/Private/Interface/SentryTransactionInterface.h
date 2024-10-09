@@ -19,4 +19,5 @@ public:
 	virtual void RemoveTag(const FString& key) = 0;
 	virtual void SetData(const FString& key, const TMap<FString, FString>& values) = 0;
 	virtual void RemoveData(const FString& key) = 0;
+	virtual void GetTrace(FString& name, FString& value) = 0;
 };

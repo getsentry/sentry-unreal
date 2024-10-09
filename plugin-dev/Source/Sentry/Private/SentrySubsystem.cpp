@@ -393,6 +393,14 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 	return SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context, Options);
 }
 
+USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& SentryTrace, const TArray<FString>& BaggageHeaders)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->ContinueTrace(SentryTrace, BaggageHeaders);
+}
+
 bool USentrySubsystem::IsSupportedForCurrentSettings()
 {
 	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled())
