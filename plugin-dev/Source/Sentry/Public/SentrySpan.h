@@ -43,6 +43,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveData(const FString& key);
 
+	/** Gets trace information that could be sent as a `sentry-trace` header */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void GetTrace(FString& name, FString& value);
+
 	void InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl);
 	TSharedPtr<ISentrySpan> GetNativeImpl();
 

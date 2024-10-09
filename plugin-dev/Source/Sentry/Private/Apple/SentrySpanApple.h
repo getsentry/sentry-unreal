@@ -20,7 +20,7 @@ public:
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetData(const FString& key, const TMap<FString, FString>& values) override;
 	virtual void RemoveData(const FString& key) override;
-
+	virtual void GetTrace(FString& name, FString& value) override;
 
 private:
 	id<SentrySpan> SpanApple;

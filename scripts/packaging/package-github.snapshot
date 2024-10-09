@@ -247,6 +247,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMessage.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryNSError.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryOptions.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryProfilingConditionals.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryReplayApi.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryRequest.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySampleDecision.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySamplingContext.h
@@ -360,6 +361,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryOptions.h
 Source/ThirdParty/Mac/include/Sentry/SentryOptions+HybridSDKs.h
 Source/ThirdParty/Mac/include/Sentry/SentryOptions+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryProfilingConditionals.h
+Source/ThirdParty/Mac/include/Sentry/SentryReplayApi.h
 Source/ThirdParty/Mac/include/Sentry/SentryRequest.h
 Source/ThirdParty/Mac/include/Sentry/SentryRequestOperation.h
 Source/ThirdParty/Mac/include/Sentry/SentrySampleDecision.h

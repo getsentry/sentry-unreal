@@ -81,6 +81,14 @@ void USentryTransaction::RemoveData(const FString& key)
 	SentryTransactionNativeImpl->RemoveData(key);
 }
 
+void USentryTransaction::GetTrace(FString& name, FString& value)
+{
+	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+		return;
+
+	SentryTransactionNativeImpl->GetTrace(name, value);
+}
+
 void USentryTransaction::InitWithNativeImpl(TSharedPtr<ISentryTransaction> transactionImpl)
 {
 	SentryTransactionNativeImpl = transactionImpl;

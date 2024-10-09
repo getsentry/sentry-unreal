@@ -79,7 +79,6 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 				[options addInAppExclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
-			options.enableTracing = settings->EnableTracing;
 			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{
 				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
@@ -302,4 +301,39 @@ USentryTransaction* SentrySubsystemApple::StartTransactionWithContextAndOptions(
 		customSamplingContext:SentryConvertorsApple::StringMapToNative(options)];
 
 	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+}
+
+USentryTransactionContext* SentrySubsystemApple::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+{
+	TArray<FString> traceParts;
+	sentryTrace.ParseIntoArray(traceParts, TEXT("-"));
+
+	if (traceParts.Num() < 2)
+	{
+		return nullptr;
+	}
+
+	SentrySampleDecision sampleDecision = kSentrySampleDecisionUndecided;
+	if (traceParts.Num() == 3)
+	{
+		sampleDecision = traceParts[2].Equals(TEXT("1")) ? kSentrySampleDecisionYes : kSentrySampleDecisionNo;
+	}
+
+	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
+
+#if PLATFORM_MAC
+	SentryId* traceId = [[SENTRY_APPLE_CLASS(_TtC6Sentry8SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
+#elif PLATFORM_IOS
+	SentryId* traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
+#endif
+
+	SentryTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
+		traceId:traceId
+		spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
+		parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
+		parentSampled:sampleDecision];
+
+	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
+
+	return SentryConvertorsApple::SentryTransactionContextToUnreal(transactionContext);
 }
