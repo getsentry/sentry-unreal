@@ -2,11 +2,10 @@ minVersion: 0.24.0
 changelogPolicy: auto
 preReleaseCommand: pwsh scripts/bump-version.ps1
 targets:
-  # TODO
-  # - name: symbol-collector
-  #   includeNames: /libsentry(-android)?\.so/
-  #   batchType: android
-  #   bundleIdPrefix: sentry-unity-android-ndk-
+  - name: symbol-collector
+    includeNames: /libsentry(-android)?\.so/
+    batchType: android
+    bundleIdPrefix: sentry-unreal-android-ndk-
   - name: github
     includeNames: /^sentry-unreal-.*.zip$/i
   - name: registry
