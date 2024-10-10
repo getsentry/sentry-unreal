@@ -3,7 +3,7 @@
 #include "SentryCrashReporter.h"
 #include "SentryCrashContext.h"
 
-#include "SentryUserDesktop.h"
+#include "Desktop/SentryUserDesktop.h"
 
 #include "SentryDefines.h"
 
