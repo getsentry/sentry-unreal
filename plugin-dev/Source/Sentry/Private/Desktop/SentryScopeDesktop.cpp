@@ -5,7 +5,6 @@
 #include "SentryEventDesktop.h"
 
 #include "SentryAttachment.h"
-#include "SentryEvent.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 

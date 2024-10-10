@@ -6,7 +6,8 @@
 
 #include "SentryDataTypes.h"
 
-class USentryBreadcrumb;
+class ISentryBreadcrumb;
+
 class USentryAttachment;
 
 class ISentryScope
@@ -14,7 +15,7 @@ class ISentryScope
 public:
 	virtual ~ISentryScope() = default;
 
-	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) = 0;
+	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual void AddAttachment(USentryAttachment* attachment) = 0;
 	virtual void ClearAttachments() = 0;

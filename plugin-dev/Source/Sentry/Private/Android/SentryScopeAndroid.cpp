@@ -45,9 +45,9 @@ void SentryScopeAndroid::SetupClassMethods()
 	ClearMethod = GetMethod("clear", "()V");
 }
 
-void SentryScopeAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+void SentryScopeAndroid::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb->GetNativeImpl());
+	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb);
 	CallMethod<void>(AddBreadcrumbMethod, breadcrumbAndroid->GetJObject());
 }
 

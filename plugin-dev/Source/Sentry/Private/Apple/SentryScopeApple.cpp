@@ -33,9 +33,9 @@ SentryScope* SentryScopeApple::GetNativeObject()
 	return ScopeApple;
 }
 
-void SentryScopeApple::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+void SentryScopeApple::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbApple>(breadcrumb->GetNativeImpl());
+	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbApple>(breadcrumb);
 
 	[ScopeApple addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }

@@ -8,12 +8,14 @@
 #include "SentryScopeDesktop.h"
 #include "SentryTransactionDesktop.h"
 #include "SentryTransactionContextDesktop.h"
+#include "SentryIdDesktop.h"
 
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 #include "SentryEvent.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
+
 #include "SentryTraceSampler.h"
 
 #include "Utils/SentryScreenshotUtils.h"
@@ -414,7 +416,7 @@ void SentrySubsystemDesktop::SetUser(TSharedPtr<ISentryUser> user)
 	TSharedPtr<SentryUserDesktop> userDesktop = StaticCastSharedPtr<SentryUserDesktop>(user);
 	sentry_set_user(userDesktop->GetNativeObject());
 
-	crashReporter->SetUser(user);
+	crashReporter->SetUser(userDesktop);
 }
 
 void SentrySubsystemDesktop::RemoveUser()
