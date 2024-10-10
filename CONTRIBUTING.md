@@ -5,6 +5,10 @@ For big feature it's advised to raise an issue to discuss it first.
 
 ## Getting started
 
+### Dependencies
+
+- [GitHub CLI](https://cli.github.com/)
+
 ### Setup Unreal Engine
 
 In order to get the Unreal Engine we recommend using [Epic Games Launcher](https://store.epicgames.com/en-US/download).
