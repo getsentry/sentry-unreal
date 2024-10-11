@@ -15,7 +15,7 @@ cmake --install "${sentryNativeRoot}/build" --prefix "${sentryNativeRoot}/instal
 # Build sentry-native using libstdc++
 cmake -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build_crashpad_handler" -D SENTRY_BACKEND=crashpad -D SENTRY_TRANSPORT=none -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF \
     -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER="clang++" -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libstdc++"
-cmake --build "${sentryNativeRoot}/build_crashpad_handler" --target crashpad_handler --parallel
+cmake --build "${sentryNativeRoot}/build_crashpad_handler" --target sentry --parallel
 cmake --install "${sentryNativeRoot}/build_crashpad_handler" --prefix "${sentryNativeRoot}/install_crashpad_handler"
 
 # Replace crashpad_handler binary 
