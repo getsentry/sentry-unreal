@@ -8,12 +8,12 @@
 
 SentryBreadcrumbDesktop::SentryBreadcrumbDesktop()
 {
-    BreadcrumbDesktop = sentry_value_new_breadcrumb("", "");
+	BreadcrumbDesktop = sentry_value_new_breadcrumb("", "");
 }
 
 SentryBreadcrumbDesktop::SentryBreadcrumbDesktop(sentry_value_t breadcrumb)
 {
-    BreadcrumbDesktop = breadcrumb;
+	BreadcrumbDesktop = breadcrumb;
 }
 
 SentryBreadcrumbDesktop::~SentryBreadcrumbDesktop()
@@ -61,7 +61,7 @@ FString SentryBreadcrumbDesktop::GetCategory() const
 
 void SentryBreadcrumbDesktop::SetData(const TMap<FString, FString>& data)
 {
-    sentry_value_set_by_key(BreadcrumbDesktop, "data", SentryConvertorsDesktop::StringMapToNative(data));
+	sentry_value_set_by_key(BreadcrumbDesktop, "data", SentryConvertorsDesktop::StringMapToNative(data));
 }
 
 TMap<FString, FString> SentryBreadcrumbDesktop::GetData() const

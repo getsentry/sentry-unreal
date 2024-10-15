@@ -5,9 +5,6 @@
 #include "SentryBreadcrumbApple.h"
 #include "SentryAttachmentApple.h"
 
-#include "SentryBreadcrumb.h"
-#include "SentryAttachment.h"
-
 #include "Infrastructure/SentryConvertorsApple.h"
 
 #include "Convenience/SentryInclude.h"

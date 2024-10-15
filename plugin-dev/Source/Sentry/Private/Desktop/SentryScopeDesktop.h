@@ -8,8 +8,6 @@
 
 #if USE_SENTRY_NATIVE
 
-class USentryAttachment;
-
 class SentryBreadcrumbDesktop;
 class SentryEventDesktop;
 

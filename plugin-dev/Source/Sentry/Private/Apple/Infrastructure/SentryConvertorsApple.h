@@ -8,7 +8,6 @@
 
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 
-class USentryTransactionContext;
 class USentryScope;
 
 class SentryConvertorsApple

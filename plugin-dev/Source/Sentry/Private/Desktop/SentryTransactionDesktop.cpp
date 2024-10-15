@@ -3,8 +3,6 @@
 #include "SentryTransactionDesktop.h"
 #include "SentrySpanDesktop.h"
 
-#include "SentrySpan.h"
-
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
 #if USE_SENTRY_NATIVE
