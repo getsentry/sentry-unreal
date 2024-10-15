@@ -180,7 +180,7 @@ jobs:
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
-          docker exec --user root unreal useradd --non-unique -u $uid -g $gid --create-home $user
+          docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
