@@ -10,9 +10,6 @@
 
 #if USE_SENTRY_NATIVE
 
-class USentryTransaction;
-class USentrySpan;
-
 class SentryConvertorsDesktop
 {
 public:
@@ -26,7 +23,6 @@ public:
 	/** Conversions from native desktop (Windows/Mac) types */
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);
 	static ESentryLevel SentryLevelToUnreal(sentry_level_t level);
-	static USentrySpan* SentrySpanToUnreal(sentry_span_t* span);
 	static TMap<FString, FString> StringMapToUnreal(sentry_value_t map);
 	static TArray<FString> StringArrayToUnreal(sentry_value_t array);
 

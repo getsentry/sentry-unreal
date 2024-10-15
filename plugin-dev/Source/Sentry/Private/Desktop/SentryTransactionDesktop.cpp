@@ -30,10 +30,10 @@ sentry_transaction_t* SentryTransactionDesktop::GetNativeObject()
 	return TransactionDesktop;
 }
 
-USentrySpan* SentryTransactionDesktop::StartChild(const FString& operation, const FString& desctiption)
+TSharedPtr<ISentrySpan> SentryTransactionDesktop::StartChild(const FString& operation, const FString& desctiption)
 {
 	sentry_span_t* nativeSpan = sentry_transaction_start_child(TransactionDesktop, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*desctiption));
-	return SentryConvertorsDesktop::SentrySpanToUnreal(nativeSpan);
+	return MakeShareable(new SentrySpanDesktop(nativeSpan));
 }
 
 void SentryTransactionDesktop::Finish()

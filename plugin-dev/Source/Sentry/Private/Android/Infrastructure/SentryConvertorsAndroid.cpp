@@ -5,11 +5,9 @@
 #include "SentryJavaClasses.h"
 
 #include "SentryScope.h"
-#include "SentrySpan.h"
 #include "SentryDefines.h"
 
 #include "Android/SentryScopeAndroid.h"
-#include "Android/SentrySpanAndroid.h"
 
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJavaEnv.h"
@@ -139,14 +137,6 @@ USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
 	USentryScope* unrealScope = NewObject<USentryScope>();
 	unrealScope->InitWithNativeImpl(scopeNativeImpl);
 	return unrealScope;
-}
-
-USentrySpan* SentryConvertorsAndroid::SentrySpanToUnreal(jobject span)
-{
-	TSharedPtr<SentrySpanAndroid> spanNativeImpl = MakeShareable(new SentrySpanAndroid(span));
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-	return unrealSpan;
 }
 
 TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)

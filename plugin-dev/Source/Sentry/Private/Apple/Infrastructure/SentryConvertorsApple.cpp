@@ -3,11 +3,9 @@
 #include "SentryConvertorsApple.h"
 
 #include "SentryScope.h"
-#include "SentrySpan.h"
 #include "SentryDefines.h"
 
 #include "Apple/SentryScopeApple.h"
-#include "Apple/SentrySpanApple.h"
 
 #include "Convenience/SentryMacro.h"
 
@@ -158,14 +156,6 @@ USentryScope* SentryConvertorsApple::SentryScopeToUnreal(SentryScope* scope)
 	USentryScope* unrealScope = NewObject<USentryScope>();
 	unrealScope->InitWithNativeImpl(scopeNativeImpl);
 	return unrealScope;
-}
-
-USentrySpan* SentryConvertorsApple::SentrySpanToUnreal(id<SentrySpan> span)
-{
-	TSharedPtr<SentrySpanApple> spanNativeImpl = MakeShareable(new SentrySpanApple(span));
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-	return unrealSpan;
 }
 
 SentryLevel SentryConvertorsApple::StringToSentryLevel(NSString* string)

@@ -1,11 +1,10 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryConvertorsDesktop.h"
-#include "SentrySpan.h"
+
 #include "SentryDefines.h"
 
-#include "Desktop/SentrySpanDesktop.h"
-
+#include "UObject/Class.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 #include "Dom/JsonObject.h"
@@ -136,14 +135,6 @@ ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_level_t level)
 	}
 
 	return Level;
-}
-
-USentrySpan* SentryConvertorsDesktop::SentrySpanToUnreal(sentry_span_t* span)
-{
-	TSharedPtr<SentrySpanDesktop> spanNativeImpl = MakeShareable(new SentrySpanDesktop(span));
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-	return unrealSpan;
 }
 
 TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t map)
