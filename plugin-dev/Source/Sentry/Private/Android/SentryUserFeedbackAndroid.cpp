@@ -2,14 +2,13 @@
 
 #include "SentryUserFeedbackAndroid.h"
 
-#include "SentryId.h"
 #include "SentryIdAndroid.h"
 
 #include "Infrastructure/SentryJavaClasses.h"
 
-SentryUserFeedbackAndroid::SentryUserFeedbackAndroid(USentryId* eventId)
+SentryUserFeedbackAndroid::SentryUserFeedbackAndroid(TSharedPtr<ISentryId> eventId)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::UserFeedback, "(Lio/sentry/protocol/SentryId;)V",
-		StaticCastSharedPtr<SentryIdAndroid>(eventId->GetNativeImpl())->GetJObject())
+		StaticCastSharedPtr<SentryIdAndroid>(eventId)->GetJObject())
 {
 	SetupClassMethods();
 }
