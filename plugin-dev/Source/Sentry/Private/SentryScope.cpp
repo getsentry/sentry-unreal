@@ -49,7 +49,7 @@ void USentryScope::AddAttachment(USentryAttachment* Attachment)
 	if (!ScopeNativeImpl)
 		return;
 
-	ScopeNativeImpl->AddAttachment(Attachment);
+	ScopeNativeImpl->AddAttachment(Attachment->GetNativeImpl());
 }
 
 void USentryScope::ClearAttachments()

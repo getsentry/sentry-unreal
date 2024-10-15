@@ -45,9 +45,9 @@ void SentryScopeApple::ClearBreadcrumbs()
 	[ScopeApple clearBreadcrumbs];
 }
 
-void SentryScopeApple::AddAttachment(USentryAttachment* attachment)
+void SentryScopeApple::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	TSharedPtr<SentryAttachmentApple> attachmentIOS = StaticCastSharedPtr<SentryAttachmentApple>(attachment->GetNativeImpl());
+	TSharedPtr<SentryAttachmentApple> attachmentIOS = StaticCastSharedPtr<SentryAttachmentApple>(attachment);
 
 	[ScopeApple addAttachment:attachmentIOS->GetNativeObject()];
 }

@@ -4,7 +4,7 @@
 #include "SentryBreadcrumbDesktop.h"
 #include "SentryEventDesktop.h"
 
-#include "SentryAttachment.h"
+#include "Interface/SentryAttachmentInterface.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
@@ -43,7 +43,7 @@ void SentryScopeDesktop::ClearBreadcrumbs()
 	BreadcrumbsDesktop.Empty();
 }
 
-void SentryScopeDesktop::AddAttachment(USentryAttachment* attachment)
+void SentryScopeDesktop::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
 	// Not available for desktop
 }
