@@ -221,8 +221,8 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
+          docker exec --user root -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
+          docker exec --user root -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
             /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
             -ExecCmds="Automation RunTests Sentry;quit" \
@@ -245,7 +245,7 @@ jobs:
         if: ${{ matrix.unreal == '4.27'}}
         id: package-app
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
+          docker exec --user root -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
   
       - name: Collect ${{ matrix.app }} build info
