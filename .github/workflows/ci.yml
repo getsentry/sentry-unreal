@@ -180,7 +180,7 @@ jobs:
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
-          docker exec --user root unreal useradd -u 1001 -g $gid --create-home $user
+          docker exec --user root unreal useradd --non-unique -u $uid -g $gid --create-home $user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
@@ -192,7 +192,7 @@ jobs:
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
 
       - name: Setup UE CLI
-        run: docker exec unreal bash -c '
+        run: docker exec --user root unreal bash -c '
           pip3 install --upgrade pip ;
           pip3 install -Iv ue4cli==0.0.54 ;
           ue4 setroot /home/ue4/UnrealEngine '
