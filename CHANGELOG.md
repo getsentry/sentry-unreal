@@ -1,10 +1,16 @@
 # Changelog
 
-### Unreleased
+## Unreleased
 
 ### Features
 
 - Add printing callstack to a log file for assertions ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
+
+### Dependencies
+
+- Bump Cocoa SDK (iOS) from v8.37.0 to v8.38.0 ([#659](https://github.com/getsentry/sentry-unreal/pull/659))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8380)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.37.0...8.38.0)
 
 ## 0.20.0
 
