@@ -160,17 +160,6 @@ jobs:
           # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
           df -h
 
-      - name: Modify current user UID
-        run: |
-          echo "Current user and UID:"
-          id          
-          echo "Modifying UID..."
-          sudo usermod -u 1001 $USER      
-          echo "Updated user and UID:"
-          id
-          echo "Fixing ownership of user's files..."
-          sudo find /home/$USER -user $(id -u) -exec chown -h $USER:$USER {} \;
-
       - name: Start Docker container
         run: |
           echo ${{ secrets.DOCKER_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
