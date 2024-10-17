@@ -8,7 +8,7 @@ rm -rf "${sentryArtifactsDestination}/"*
 
 carthage build --project-directory "${sentryIosRoot}" --use-xcframeworks --no-skip-current --platform iOS
 
-cp -R "${sentryIosRoot}/Carthage/Build/Sentry.xcframework/ios-arm64/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
+cp -R "${sentryIosRoot}/Carthage/Build/Sentry.xcframework/ios-arm64_arm64e/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
 
 mkdir "Sentry.embeddedframework"
 

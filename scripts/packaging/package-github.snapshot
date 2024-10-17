@@ -275,6 +275,11 @@ Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-io
 Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.swiftdoc
 Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.swiftinterface
 Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.swiftmodule
+Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.abi.json
+Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.private.swiftinterface
+Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.swiftdoc
+Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.swiftinterface
+Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.swiftmodule
 Source/ThirdParty/IOS/Sentry.framework/PrivacyInfo.xcprivacy
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/PrivateSentrySDKOnly.h
