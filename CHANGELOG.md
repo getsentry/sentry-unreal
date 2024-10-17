@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix Sentry initialization on Amazon Linux ([#657](https://github.com/getsentry/sentry-unreal/pull/657))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.37.0 to v8.38.0 ([#659](https://github.com/getsentry/sentry-unreal/pull/659))
