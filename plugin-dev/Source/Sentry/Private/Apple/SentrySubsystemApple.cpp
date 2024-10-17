@@ -32,6 +32,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "UObject/GarbageCollection.h"
+#include "Utils/SentryLogUtils.h"
 
 void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
@@ -205,12 +206,19 @@ USentryId* SentrySubsystemApple::CaptureAssertion(const FString& type, const FSt
 #elif PLATFORM_IOS
 	int32 framesToSkip = 5;
 #endif
+
+	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
+
 	return CaptureException(type, message, framesToSkip);
 }
 
 USentryId* SentrySubsystemApple::CaptureEnsure(const FString& type, const FString& message)
 {
-	return CaptureException(type, message, 6);
+	int32 framesToSkip = 6;
+
+	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
+
+	return CaptureException(type, message, framesToSkip);
 }
 
 void SentrySubsystemApple::CaptureUserFeedback(USentryUserFeedback* userFeedback)
