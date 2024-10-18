@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix build errors in UE 4.27 ([#660](https://github.com/getsentry/sentry-unreal/pull/660))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS) from v8.37.0 to v8.38.0 ([#659](https://github.com/getsentry/sentry-unreal/pull/659))
