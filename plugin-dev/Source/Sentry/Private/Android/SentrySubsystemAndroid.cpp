@@ -134,13 +134,12 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureMessage(const FString& mess
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level)
+TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
-	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
-	scopeCallback->BindDelegate(onConfigureScope);
+	int64 scopeCallbackId = SentryScopeCallbackAndroid::SaveDelegate(onConfigureScope);
 
 	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureMessageWithScope", "(Ljava/lang/String;Lio/sentry/SentryLevel;J)Lio/sentry/protocol/SentryId;",
-		*FSentryJavaObjectWrapper::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject(), (jlong)scopeCallback);
+		*FSentryJavaObjectWrapper::GetJString(message), SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject(), scopeCallbackId);
 
 	return MakeShareable(new SentryIdAndroid(*id));
 }
@@ -155,15 +154,14 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEvent(TSharedPtr<ISentryEve
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FConfigureScopeNativeDelegate& onConfigureScope)
+TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event);
 
-	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
-	scopeCallback->BindDelegate(onConfigureScope);
+	int64 scopeCallbackId = SentryScopeCallbackAndroid::SaveDelegate(onConfigureScope);
 
 	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureEventWithScope", "(Lio/sentry/SentryEvent;J)Lio/sentry/protocol/SentryId;",
-		eventAndroid->GetJObject(), (jlong)scopeCallback);
+		eventAndroid->GetJObject(), scopeCallbackId);
 
 	return MakeShareable(new SentryIdAndroid(*id));
 }
@@ -217,13 +215,11 @@ void SentrySubsystemAndroid::RemoveUser()
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
 }
 
-void SentrySubsystemAndroid::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
+void SentrySubsystemAndroid::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
 {
-	USentryScopeCallbackAndroid* scopeCallback = NewObject<USentryScopeCallbackAndroid>();
-	scopeCallback->BindDelegate(onConfigureScope);
+	int64 scopeCallbackId = SentryScopeCallbackAndroid::SaveDelegate(onConfigureScope);
 
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "configureScope", "(J)V",
-		(jlong)scopeCallback);
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "configureScope", "(J)V", scopeCallbackId);
 }
 
 void SentrySubsystemAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)

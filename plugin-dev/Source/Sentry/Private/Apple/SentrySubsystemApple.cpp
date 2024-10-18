@@ -148,11 +148,11 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessage(const FString& messag
 	return MakeShareable(new SentryIdApple(id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
-		onConfigureScope.ExecuteIfBound(SentryConvertorsApple::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
 	return MakeShareable(new SentryIdApple(id));
@@ -166,12 +166,12 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEvent(TSharedPtr<ISentryEvent
 	return MakeShareable(new SentryIdApple(id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FConfigureScopeNativeDelegate& onConfigureScope)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
 {
 	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
 
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
-		onConfigureScope.ExecuteIfBound(SentryConvertorsApple::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
 	return MakeShareable(new SentryIdApple(id));
@@ -227,10 +227,10 @@ void SentrySubsystemApple::RemoveUser()
 	[SENTRY_APPLE_CLASS(SentrySDK) setUser:nil];
 }
 
-void SentrySubsystemApple::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
+void SentrySubsystemApple::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
-		onConfigureScope.ExecuteIfBound(SentryConvertorsApple::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 }
 

@@ -255,7 +255,12 @@ USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, con
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureMessageWithScope(Message, OnConfigureScope, Level);
+	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureMessageWithScope(Message, FSentryScopeDelegate::CreateLambda([&](TSharedPtr<ISentryScope> nativeScope)
+	{
+		USentryScope* unrealScope = NewObject<USentryScope>();
+		unrealScope->InitWithNativeImpl(nativeScope);
+		OnConfigureScope.ExecuteIfBound(unrealScope);
+	}), Level);
 
 	USentryId* unrealId = NewObject<USentryId>();
 	unrealId->InitWithNativeImpl(idNativeImpl);
@@ -286,7 +291,12 @@ USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FC
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeImpl(), OnConfigureScope);
+	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeImpl(), FSentryScopeDelegate::CreateLambda([&](TSharedPtr<ISentryScope> nativeScope)
+	{
+		USentryScope* unrealScope = NewObject<USentryScope>();
+		unrealScope->InitWithNativeImpl(nativeScope);
+		OnConfigureScope.ExecuteIfBound(unrealScope);
+	}));
 
 	USentryId* unrealId = NewObject<USentryId>();
 	unrealId->InitWithNativeImpl(idNativeImpl);
@@ -339,7 +349,12 @@ void USentrySubsystem::ConfigureScope(const FConfigureScopeNativeDelegate& OnCon
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
-	SubsystemNativeImpl->ConfigureScope(OnConfigureScope);
+	SubsystemNativeImpl->ConfigureScope(FSentryScopeDelegate::CreateLambda([&](TSharedPtr<ISentryScope> nativeScope)
+	{
+		USentryScope* unrealScope = NewObject<USentryScope>();
+		unrealScope->InitWithNativeImpl(nativeScope);
+		OnConfigureScope.ExecuteIfBound(unrealScope);
+	}));
 }
 
 void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)

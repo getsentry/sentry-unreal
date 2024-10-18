@@ -6,7 +6,6 @@
 
 #include "Android/AndroidJNI.h"
 
-class USentryScope;
 class FSentryJavaObjectWrapper;
 class FJsonValue;
 
@@ -21,7 +20,6 @@ public:
 
 	/** Conversions from native Java types */
 	static ESentryLevel SentryLevelToUnreal(jobject level);
-	static USentryScope* SentryScopeToUnreal(jobject scope);
 	static TMap<FString, FString> StringMapToUnreal(jobject stringMap);
 	static TArray<FString> StringListToUnreal(jobject stringList);
 	static TArray<uint8> ByteArrayToUnreal(jbyteArray byteArray);

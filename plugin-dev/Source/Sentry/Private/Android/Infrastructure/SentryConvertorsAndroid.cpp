@@ -4,10 +4,7 @@
 #include "SentryJavaObjectWrapper.h"
 #include "SentryJavaClasses.h"
 
-#include "SentryScope.h"
 #include "SentryDefines.h"
-
-#include "Android/SentryScopeAndroid.h"
 
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJavaEnv.h"
@@ -129,14 +126,6 @@ ESentryLevel SentryConvertorsAndroid::SentryLevelToUnreal(jobject level)
 	}
 
 	return unrealLevel;
-}
-
-USentryScope* SentryConvertorsAndroid::SentryScopeToUnreal(jobject scope)
-{
-	TSharedPtr<SentryScopeAndroid> scopeNativeImpl = MakeShareable(new SentryScopeAndroid(scope));
-	USentryScope* unrealScope = NewObject<USentryScope>();
-	unrealScope->InitWithNativeImpl(scopeNativeImpl);
-	return unrealScope;
 }
 
 TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)

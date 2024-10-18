@@ -325,16 +325,13 @@ TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureMessage(const FString& mess
 	return MakeShareable(new SentryIdDesktop(id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onScopeConfigure, ESentryLevel level)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onScopeConfigure, ESentryLevel level)
 {
 	FScopeLock Lock(&CriticalSection);
 
 	TSharedPtr<SentryScopeDesktop> NewLocalScope = MakeShareable(new SentryScopeDesktop(*GetCurrentScope()));
 
-	USentryScope* Scope = NewObject<USentryScope>();
-	Scope->InitWithNativeImpl(NewLocalScope);
-
-	onScopeConfigure.ExecuteIfBound(Scope);
+	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 
 	scopeStack.Push(NewLocalScope);
 	TSharedPtr<ISentryId> Id = CaptureMessage(message, level);
@@ -358,16 +355,13 @@ TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEvent(TSharedPtr<ISentryEve
 	return MakeShareable(new SentryIdDesktop(id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FConfigureScopeNativeDelegate& onScopeConfigure)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure)
 {
 	FScopeLock Lock(&CriticalSection);
 
 	TSharedPtr<SentryScopeDesktop> NewLocalScope = MakeShareable(new SentryScopeDesktop(*GetCurrentScope()));
 
-	USentryScope* Scope = NewObject<USentryScope>();
-	Scope->InitWithNativeImpl(NewLocalScope);
-
-	onScopeConfigure.ExecuteIfBound(Scope);
+	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 
 	scopeStack.Push(NewLocalScope);
 	TSharedPtr<ISentryId> Id = CaptureEvent(event);
@@ -426,12 +420,9 @@ void SentrySubsystemDesktop::RemoveUser()
 	crashReporter->RemoveUser();
 }
 
-void SentrySubsystemDesktop::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
+void SentrySubsystemDesktop::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
 {
-	USentryScope* Scope = NewObject<USentryScope>();
-	Scope->InitWithNativeImpl(GetCurrentScope());
-
-	onConfigureScope.ExecuteIfBound(Scope);
+	onConfigureScope.ExecuteIfBound(GetCurrentScope());
 }
 
 void SentrySubsystemDesktop::SetContext(const FString& key, const TMap<FString, FString>& values)

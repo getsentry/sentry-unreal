@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 
 #include "SentryDataTypes.h"
-#include "SentryScope.h"
 
 class ISentryBreadcrumb;
 class ISentryEvent;
@@ -14,10 +13,13 @@ class ISentryUser;
 class ISentryTransaction;
 class ISentryTransactionContext;
 class ISentryId;
+class ISentryScope;
 
 class USentrySettings;
 class USentryBeforeSendHandler;
 class USentryTraceSampler;
+
+DECLARE_DELEGATE_OneParam(FSentryScopeDelegate, TSharedPtr<ISentryScope>);
 
 class ISentrySubsystem
 {
@@ -32,16 +34,16 @@ public:
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) = 0;
-	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level) = 0;
+	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) = 0;
-	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FConfigureScopeNativeDelegate& onConfigureScope) = 0;
+	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) = 0;
 	virtual TSharedPtr<ISentryId> CaptureException(const FString& type, const FString& message, int32 framesToSkip = 0) = 0;
 	virtual TSharedPtr<ISentryId> CaptureAssertion(const FString& type, const FString& message) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) = 0;
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) = 0;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) = 0;
 	virtual void RemoveUser() = 0;
-	virtual void ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope) = 0;
+	virtual void ConfigureScope(const FSentryScopeDelegate& onConfigureScope) = 0;
 	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual void RemoveTag(const FString& key) = 0;

@@ -2,7 +2,6 @@
 
 #include "SentryConvertorsApple.h"
 
-#include "SentryScope.h"
 #include "SentryDefines.h"
 
 #include "Apple/SentryScopeApple.h"
@@ -148,14 +147,6 @@ TArray<uint8> SentryConvertorsApple::ByteDataToUnreal(NSData* data)
 	}
 
 	return ByteData;
-}
-
-USentryScope* SentryConvertorsApple::SentryScopeToUnreal(SentryScope* scope)
-{
-	TSharedPtr<SentryScopeApple> scopeNativeImpl = MakeShareable(new SentryScopeApple(scope));
-	USentryScope* unrealScope = NewObject<USentryScope>();
-	unrealScope->InitWithNativeImpl(scopeNativeImpl);
-	return unrealScope;
 }
 
 SentryLevel SentryConvertorsApple::StringToSentryLevel(NSString* string)

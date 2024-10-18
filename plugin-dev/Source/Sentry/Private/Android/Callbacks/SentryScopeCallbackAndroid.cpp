@@ -2,21 +2,33 @@
 
 #include "SentryScopeCallbackAndroid.h"
 
-USentryScopeCallbackAndroid::USentryScopeCallbackAndroid()
+#include "HAL/CriticalSection.h"
+
+int64 SentryScopeCallbackAndroid::NextDelegateID;
+TMap<int64, FSentryScopeDelegate> SentryScopeCallbackAndroid::ScopeDelegates;
+
+FCriticalSection CriticalSection;
+
+int64 SentryScopeCallbackAndroid::SaveDelegate(const FSentryScopeDelegate& onConfigure)
 {
-	if (USentryScope::StaticClass()->GetDefaultObject() != this)
-	{
-		AddToRoot();
-	}
+	FScopeLock Lock(&CriticalSection);
+
+	int64 delegateId = NextDelegateID++;
+	ScopeDelegates.Add(delegateId, onConfigure);
+
+	return delegateId;
 }
 
-void USentryScopeCallbackAndroid::BindDelegate(const FConfigureScopeNativeDelegate& OnConfigure)
+void SentryScopeCallbackAndroid::RemoveDelegate(int64 delegateId)
 {
-	OnConfigureDelegate = OnConfigure;
+	FScopeLock Lock(&CriticalSection);
+
+	ScopeDelegates.Remove(delegateId);
 }
 
-void USentryScopeCallbackAndroid::ExecuteDelegate(USentryScope* Scope)
+FSentryScopeDelegate* SentryScopeCallbackAndroid::GetDelegateById(int64 delegateId)
 {
-	OnConfigureDelegate.ExecuteIfBound(Scope);
-	RemoveFromRoot();
+	FScopeLock Lock(&CriticalSection);
+
+	return ScopeDelegates.Find(delegateId);
 }
