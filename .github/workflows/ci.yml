@@ -179,18 +179,22 @@ jobs:
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
+          docker ps
           docker logout ghcr.io
           # Add the user so it has a home directory (needed for the pip cache later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
           # Ensure CA certs are in the right directory (needed for running tests)
+          docker ps
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
             cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt "
           # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
           # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
+          docker ps
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
+          docker ps
 
       - name: Setup UE CLI
         run: docker exec unreal bash -c '
