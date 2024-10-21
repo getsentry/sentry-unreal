@@ -411,8 +411,16 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FNa
 
 					FString CommandLine = FString::Printf(TEXT("BuildPlugin -Plugin=\"%s/Sentry.uplugin\" -Package=\"%s\" -CreateSubFolder -TargetPlatforms=Linux"), *PluginPath, *TempLinuxBinariesPath);
 
-					IUATHelperModule::Get().CreateUatTask(CommandLine, FText::FromString("Windows"), FText::FromString("Compiling Sentry for Linux"), FText::FromString("Compile Sentry Linux"),
-						FAppStyle::GetBrush(TEXT("MainFrame.CookContent")), nullptr, [this, TempLinuxBinariesPath](FString result, double X)
+					IUATHelperModule::Get().CreateUatTask(CommandLine, FText::FromString("Windows"),
+						FText::FromString("Compiling Sentry for Linux"),
+						FText::FromString("Compile Sentry Linux"),
+					#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+						FAppStyle::GetBrush(TEXT("MainFrame.CookContent")),
+						nullptr,
+					#else
+						FEditorStyle::GetBrush(TEXT("MainFrame.CookContent")),
+					#endif
+						[this, TempLinuxBinariesPath](FString result, double X)
 						{
 							if (result.Equals(TEXT("Completed")))
 							{

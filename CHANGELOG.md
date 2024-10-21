@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix Sentry initialization on Amazon Linux ([#657](https://github.com/getsentry/sentry-unreal/pull/657))
+- Fix build errors in UE 4.27 ([#660](https://github.com/getsentry/sentry-unreal/pull/660))
 
 ### Dependencies
 
