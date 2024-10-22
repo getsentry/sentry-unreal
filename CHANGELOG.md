@@ -2,6 +2,10 @@
 
 ## 0.20.1
 
+### Features
+
+- Add printing callstack to a log file for assertions ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
+
 ### Fixes
 
 - Fix Sentry initialization on Amazon Linux ([#657](https://github.com/getsentry/sentry-unreal/pull/657))

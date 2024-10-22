@@ -169,6 +169,8 @@ Source/Sentry/Private/Tests/SentryUser.spec.cpp
 Source/Sentry/Private/Utils/
 Source/Sentry/Private/Utils/SentryFileUtils.cpp
 Source/Sentry/Private/Utils/SentryFileUtils.h
+Source/Sentry/Private/Utils/SentryLogUtils.cpp
+Source/Sentry/Private/Utils/SentryLogUtils.h
 Source/Sentry/Private/Utils/SentryScreenshotUtils.cpp
 Source/Sentry/Private/Utils/SentryScreenshotUtils.h
 Source/Sentry/Public/
