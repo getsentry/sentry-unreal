@@ -47,7 +47,11 @@ jobs:
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         run: |
           sudo apt-get update
-          sudo apt-get install zlib1g-dev libcurl4-openssl-dev clang-13 libc++-13-dev libc++abi-13-dev
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          ./llvm.sh 16
+          sudo apt-get install libc++-16-dev libc++abi-16-dev 
+          sudo apt-get install zlib1g-dev libcurl4-openssl-dev
 
       - uses: actions/setup-java@v3
         if: ${{ inputs.target == 'Android' }}
