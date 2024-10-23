@@ -218,17 +218,26 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh \
-            BuildCookRun -platform=Linux -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds -nop4 -cook -build -stage -prereqss -package -archive
-        # docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
-        #   /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
-        #   -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
-        #   -ExecCmds="Automation RunTests Sentry;quit" \
-        #   -TestExit="Automation Test Queue Empty" \
-        #   -Unattended \
-        #   -NoPause \
-        #   -NoSplash \
-        #   -NullRHI
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+            -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds \
+            -platform=Linux \
+            -nop4 \
+            -cook \
+            -build \
+            -stage \
+            -prereqss \
+            -package \
+            -archive
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor \
+            /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+            -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
+            -ExecCmds="Automation RunTests Sentry;quit" \
+            -TestExit="Automation Test Queue Empty" \
+            -Unattended \
+            -NoPause \
+            -NoSplash \
+            -NullRHI
 
       - name: Collect ${{ matrix.app }} test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
