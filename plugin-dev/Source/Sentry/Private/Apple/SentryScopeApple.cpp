@@ -5,9 +5,6 @@
 #include "SentryBreadcrumbApple.h"
 #include "SentryAttachmentApple.h"
 
-#include "SentryBreadcrumb.h"
-#include "SentryAttachment.h"
-
 #include "Infrastructure/SentryConvertorsApple.h"
 
 #include "Convenience/SentryInclude.h"
@@ -33,9 +30,9 @@ SentryScope* SentryScopeApple::GetNativeObject()
 	return ScopeApple;
 }
 
-void SentryScopeApple::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+void SentryScopeApple::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbApple>(breadcrumb->GetNativeImpl());
+	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbApple>(breadcrumb);
 
 	[ScopeApple addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
@@ -45,9 +42,9 @@ void SentryScopeApple::ClearBreadcrumbs()
 	[ScopeApple clearBreadcrumbs];
 }
 
-void SentryScopeApple::AddAttachment(USentryAttachment* attachment)
+void SentryScopeApple::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	TSharedPtr<SentryAttachmentApple> attachmentIOS = StaticCastSharedPtr<SentryAttachmentApple>(attachment->GetNativeImpl());
+	TSharedPtr<SentryAttachmentApple> attachmentIOS = StaticCastSharedPtr<SentryAttachmentApple>(attachment);
 
 	[ScopeApple addAttachment:attachmentIOS->GetNativeObject()];
 }

@@ -22,7 +22,12 @@ USentrySpan* USentryTransaction::StartChild(const FString& Operation, const FStr
 	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
 		return nullptr;
 
-	return SentryTransactionNativeImpl->StartChild(Operation, Description);
+	TSharedPtr<ISentrySpan> spanNativeImpl = SentryTransactionNativeImpl->StartChild(Operation, Description);
+
+	USentrySpan* unrealSpan = NewObject<USentrySpan>();
+	unrealSpan->InitWithNativeImpl(spanNativeImpl);
+
+	return unrealSpan;
 }
 
 void USentryTransaction::Finish()

@@ -3,8 +3,6 @@
 #include "SentrySamplingContextApple.h"
 #include "SentryTransactionContextApple.h"
 
-#include "SentryTransactionContext.h"
-
 #include "Infrastructure/SentryConvertorsApple.h"
 
 #include "Convenience/SentryInclude.h"
@@ -20,9 +18,9 @@ SentrySamplingContextApple::~SentrySamplingContextApple()
 	// Put custom destructor logic here if needed
 }
 
-USentryTransactionContext* SentrySamplingContextApple::GetTransactionContext() const
+TSharedPtr<ISentryTransactionContext> SentrySamplingContextApple::GetTransactionContext() const
 {
-	return SentryConvertorsApple::SentryTransactionContextToUnreal(SamplingContext.transactionContext);
+	return MakeShareable(new SentryTransactionContextApple(SamplingContext.transactionContext));
 }
 
 TMap<FString, FString> SentrySamplingContextApple::GetCustomSamplingContext() const

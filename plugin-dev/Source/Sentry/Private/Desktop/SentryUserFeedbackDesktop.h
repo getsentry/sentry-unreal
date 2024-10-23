@@ -8,13 +8,13 @@
 
 #if USE_SENTRY_NATIVE
 
-class USentryId;
+class ISentryId;
 
 class SentryUserFeedbackDesktop : public ISentryUserFeedback
 {
 public:
 	SentryUserFeedbackDesktop();
-	SentryUserFeedbackDesktop(USentryId* eventId);
+	SentryUserFeedbackDesktop(TSharedPtr<ISentryId> eventId);
 	virtual ~SentryUserFeedbackDesktop() override;
 
 	sentry_value_t GetNativeObject();

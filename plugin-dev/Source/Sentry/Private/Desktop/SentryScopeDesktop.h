@@ -8,10 +8,6 @@
 
 #if USE_SENTRY_NATIVE
 
-class USentryEvent;
-class USentryBreadcrumb;
-class USentryAttachment;
-
 class SentryBreadcrumbDesktop;
 class SentryEventDesktop;
 
@@ -22,9 +18,9 @@ public:
 	SentryScopeDesktop(const SentryScopeDesktop& Scope);
 	virtual ~SentryScopeDesktop() override;
 
-	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) override;
+	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
-	virtual void AddAttachment(USentryAttachment* attachment) override;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void ClearAttachments() override;
 	virtual void SetTagValue(const FString& key, const FString& value) override;
 	virtual FString GetTagValue(const FString& key) const override;

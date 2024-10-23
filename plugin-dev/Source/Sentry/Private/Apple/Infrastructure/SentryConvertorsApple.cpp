@@ -2,18 +2,9 @@
 
 #include "SentryConvertorsApple.h"
 
-#include "SentryScope.h"
-#include "SentryId.h"
-#include "SentryTransaction.h"
-#include "SentrySpan.h"
 #include "SentryDefines.h"
-#include "SentryTransactionContext.h"
 
-#include "Apple/SentryTransactionContextApple.h"
 #include "Apple/SentryScopeApple.h"
-#include "Apple/SentryIdApple.h"
-#include "Apple/SentryTransactionApple.h"
-#include "Apple/SentrySpanApple.h"
 
 #include "Convenience/SentryMacro.h"
 
@@ -156,46 +147,6 @@ TArray<uint8> SentryConvertorsApple::ByteDataToUnreal(NSData* data)
 	}
 
 	return ByteData;
-}
-
-USentryScope* SentryConvertorsApple::SentryScopeToUnreal(SentryScope* scope)
-{
-	TSharedPtr<SentryScopeApple> scopeNativeImpl = MakeShareable(new SentryScopeApple(scope));
-	USentryScope* unrealScope = NewObject<USentryScope>();
-	unrealScope->InitWithNativeImpl(scopeNativeImpl);
-	return unrealScope;
-}
-
-USentryId* SentryConvertorsApple::SentryIdToUnreal(SentryId* id)
-{
-	TSharedPtr<SentryIdApple> idNativeImpl = MakeShareable(new SentryIdApple(id));
-	USentryId* unrealId = NewObject<USentryId>();
-	unrealId->InitWithNativeImpl(idNativeImpl);
-	return unrealId;
-}
-
-USentryTransaction* SentryConvertorsApple::SentryTransactionToUnreal(id<SentrySpan> transaction)
-{
-	TSharedPtr<SentryTransactionApple> transactionNativeImpl = MakeShareable(new SentryTransactionApple(transaction));
-	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
-	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
-	return unrealTransaction;
-}
-
-USentrySpan* SentryConvertorsApple::SentrySpanToUnreal(id<SentrySpan> span)
-{
-	TSharedPtr<SentrySpanApple> spanNativeImpl = MakeShareable(new SentrySpanApple(span));
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-	return unrealSpan;
-}
-
-USentryTransactionContext* SentryConvertorsApple::SentryTransactionContextToUnreal(SentryTransactionContext* transactionContext)
-{
-	TSharedPtr<SentryTransactionContextApple> transactionContextNativeImpl = MakeShareable(new SentryTransactionContextApple(transactionContext));
-	USentryTransactionContext* unrealTransactionContext = NewObject<USentryTransactionContext>();
-	unrealTransactionContext->InitWithNativeImpl(transactionContextNativeImpl);
-	return unrealTransactionContext;
 }
 
 SentryLevel SentryConvertorsApple::StringToSentryLevel(NSString* string)

@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 
-class USentryAttachment;
+class ISentryAttachment;
 
 class ISentryHint
 {
 public:
 	virtual ~ISentryHint() = default;
 
-	virtual void AddAttachment(USentryAttachment* attachment) = 0;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
 };

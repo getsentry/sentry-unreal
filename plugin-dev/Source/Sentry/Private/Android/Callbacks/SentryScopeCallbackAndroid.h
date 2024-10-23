@@ -4,21 +4,16 @@
 
 #include "CoreMinimal.h"
 
-#include "SentryScope.h"
+#include "Android/SentrySubsystemAndroid.h"
 
-#include "SentryScopeCallbackAndroid.generated.h"
-
-UCLASS()
-class USentryScopeCallbackAndroid : public UObject
+class SentryScopeCallbackAndroid
 {
-	GENERATED_BODY()
-
 public:
-	USentryScopeCallbackAndroid();
-
-	void BindDelegate(const FConfigureScopeNativeDelegate& OnConfigure);
-	void ExecuteDelegate(USentryScope* Scope);
+	static int64 SaveDelegate(const FSentryScopeDelegate& onConfigure);
+	static void RemoveDelegate(int64 delegateId);
+	static FSentryScopeDelegate* GetDelegateById(int64 delegateId);
 
 private:
-	FConfigureScopeNativeDelegate OnConfigureDelegate;
+	static int64 NextDelegateID;
+	static TMap<int64, FSentryScopeDelegate> ScopeDelegates;
 };

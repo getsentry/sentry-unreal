@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentryTransactionApple.h"
+#include "SentrySpanApple.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -24,10 +25,10 @@ id<SentrySpan> SentryTransactionApple::GetNativeObject()
 	return TransactionApple;
 }
 
-USentrySpan* SentryTransactionApple::StartChild(const FString& operation, const FString& desctiption)
+TSharedPtr<ISentrySpan> SentryTransactionApple::StartChild(const FString& operation, const FString& desctiption)
 {
 	id<SentrySpan> span = [TransactionApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
-	return SentryConvertorsApple::SentrySpanToUnreal(span);
+	return MakeShareable(new SentrySpanApple(span));
 }
 
 void SentryTransactionApple::Finish()

@@ -2,7 +2,6 @@
 
 #include "SentryOutputDevice.h"
 
-#include "SentryBreadcrumb.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"

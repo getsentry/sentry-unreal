@@ -6,12 +6,12 @@
 
 #include "Infrastructure/SentryJavaObjectWrapper.h"
 
-class USentryId;
+class ISentryId;
 
 class SentryUserFeedbackAndroid : public ISentryUserFeedback, public FSentryJavaObjectWrapper
 {
 public:
-	SentryUserFeedbackAndroid(USentryId* eventId);
+	SentryUserFeedbackAndroid(TSharedPtr<ISentryId> eventId);
 
 	void SetupClassMethods();
 

@@ -6,7 +6,8 @@
 
 #if USE_SENTRY_NATIVE
 
-class USentryUser;
+class SentryUserDesktop;
+
 class FJsonObject;
 
 class SentryCrashReporter
@@ -16,7 +17,7 @@ public:
 
 	void SetRelease(const FString& release);
 	void SetEnvironment(const FString& environment);
-	void SetUser(USentryUser* user);
+	void SetUser(TSharedPtr<SentryUserDesktop> user);
 	void RemoveUser();
 	void SetContext(const FString& key, const TMap<FString, FString>& values);
 	void SetTag(const FString& key, const FString& value);

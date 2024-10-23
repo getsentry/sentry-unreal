@@ -8,12 +8,6 @@
 
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 
-class USentryTransactionContext;
-class USentryScope;
-class USentryId;
-class USentryTransaction;
-class USentrySpan;
-
 class SentryConvertorsApple
 {
 public:
@@ -29,11 +23,6 @@ public:
 	static TMap<FString, FString> StringMapToUnreal(NSDictionary* dict);
 	static TArray<FString> StringArrayToUnreal(NSArray* array);
 	static TArray<uint8> ByteDataToUnreal(NSData* data);
-	static USentryScope* SentryScopeToUnreal(SentryScope* scope);
-	static USentryId* SentryIdToUnreal(SentryId* id);
-	static USentryTransaction* SentryTransactionToUnreal(id<SentrySpan> transaction);
-	static USentrySpan* SentrySpanToUnreal(id<SentrySpan> span);
-	static USentryTransactionContext* SentryTransactionContextToUnreal(SentryTransactionContext* transactionContext);
 
 	/** Other conversions */
 	static SentryLevel StringToSentryLevel(NSString* string);

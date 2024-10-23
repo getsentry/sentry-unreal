@@ -33,7 +33,7 @@ void USentryScope::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 	if (!ScopeNativeImpl)
 		return;
 
-	ScopeNativeImpl->AddBreadcrumb(Breadcrumb);
+	ScopeNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeImpl());
 }
 
 void USentryScope::ClearBreadcrumbs()
@@ -49,7 +49,7 @@ void USentryScope::AddAttachment(USentryAttachment* Attachment)
 	if (!ScopeNativeImpl)
 		return;
 
-	ScopeNativeImpl->AddAttachment(Attachment);
+	ScopeNativeImpl->AddAttachment(Attachment->GetNativeImpl());
 }
 
 void USentryScope::ClearAttachments()

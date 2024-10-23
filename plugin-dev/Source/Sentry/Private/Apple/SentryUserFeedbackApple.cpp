@@ -2,15 +2,14 @@
 
 #include "SentryUserFeedbackApple.h"
 
-#include "SentryId.h"
 #include "SentryIdApple.h"
 
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
 
-SentryUserFeedbackApple::SentryUserFeedbackApple(USentryId* eventId)
+SentryUserFeedbackApple::SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId)
 {
-	TSharedPtr<SentryIdApple> idIOS = StaticCastSharedPtr<SentryIdApple>(eventId->GetNativeImpl());
+	TSharedPtr<SentryIdApple> idIOS = StaticCastSharedPtr<SentryIdApple>(eventId);
 	SentryId* id = idIOS->GetNativeObject();
 	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryUserFeedback) alloc] initWithEventId:id];
 }

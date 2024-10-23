@@ -3,7 +3,8 @@
 #include "SentryCrashReporter.h"
 #include "SentryCrashContext.h"
 
-#include "SentryUser.h"
+#include "Desktop/SentryUserDesktop.h"
+
 #include "SentryDefines.h"
 
 #include "Dom/JsonObject.h"
@@ -44,7 +45,7 @@ void SentryCrashReporter::SetEnvironment(const FString& environment)
 	UpdateCrashReporterConfig();
 }
 
-void SentryCrashReporter::SetUser(USentryUser* user)
+void SentryCrashReporter::SetUser(TSharedPtr<SentryUserDesktop> user)
 {
 	TSharedPtr<FJsonObject> userConfig = MakeShareable(new FJsonObject);
 	userConfig->SetStringField(TEXT("email"), user->GetEmail());

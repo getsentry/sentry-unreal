@@ -2,6 +2,7 @@
 
 #include "SentryHint.h"
 
+#include "SentryAttachment.h"
 #include "Interface/SentryHintInterface.h"
 
 #if PLATFORM_ANDROID
@@ -23,7 +24,7 @@ void USentryHint::AddAttachment(USentryAttachment* Attachment)
 	if(!SentryHintNativeImpl)
 		return;
 
-	SentryHintNativeImpl->AddAttachment(Attachment);
+	SentryHintNativeImpl->AddAttachment(Attachment->GetNativeImpl());
 }
 
 void USentryHint::InitWithNativeImpl(TSharedPtr<ISentryHint> hintImpl)

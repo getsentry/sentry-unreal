@@ -4,13 +4,14 @@
 
 #include "Interface/SentryUserFeedbackInterface.h"
 
-class USentryId;
+class ISentryId;
+
 @class SentryUserFeedback;
 
 class SentryUserFeedbackApple : public ISentryUserFeedback
 {
 public:
-	SentryUserFeedbackApple(USentryId* eventId);
+	SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId);
 	virtual ~SentryUserFeedbackApple() override;
 
 	SentryUserFeedback* GetNativeObject();

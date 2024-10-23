@@ -5,9 +5,6 @@
 #include "SentryBreadcrumbAndroid.h"
 #include "SentryAttachmentAndroid.h"
 
-#include "SentryBreadcrumb.h"
-#include "SentryAttachment.h"
-
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
@@ -45,9 +42,9 @@ void SentryScopeAndroid::SetupClassMethods()
 	ClearMethod = GetMethod("clear", "()V");
 }
 
-void SentryScopeAndroid::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+void SentryScopeAndroid::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb->GetNativeImpl());
+	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb);
 	CallMethod<void>(AddBreadcrumbMethod, breadcrumbAndroid->GetJObject());
 }
 
@@ -56,9 +53,9 @@ void SentryScopeAndroid::ClearBreadcrumbs()
 	CallMethod<void>(ClearBreadcrumbsMethod);
 }
 
-void SentryScopeAndroid::AddAttachment(USentryAttachment* attachment)
+void SentryScopeAndroid::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	TSharedPtr<SentryAttachmentAndroid> attachmentAndroid = StaticCastSharedPtr<SentryAttachmentAndroid>(attachment->GetNativeImpl());
+	TSharedPtr<SentryAttachmentAndroid> attachmentAndroid = StaticCastSharedPtr<SentryAttachmentAndroid>(attachment);
 	CallMethod<void>(AddAttachmentMethod, attachmentAndroid->GetJObject());
 }
 
