@@ -7,7 +7,7 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: Android
-      runsOn: ubuntu-latest-4-cores-arm64
+      runsOn: ubuntu-latest-4-cores
 
   ios-sdk:
     uses: ./.github/workflows/sdk.yml
@@ -44,7 +44,7 @@ jobs:
   build:
     needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
     name: Package
-    runs-on: ubuntu-latest-4-cores-arm64
+    runs-on: ubuntu-latest-4-cores
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -126,7 +126,7 @@ jobs:
 
   test:
     name: Test UE ${{ matrix.unreal }}
-    runs-on: ubuntu-latest-4-cores-arm64
+    runs-on: ubuntu-latest-4-cores
 
     strategy:
       fail-fast: false
@@ -181,8 +181,6 @@ jobs:
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker ps
           docker logout ghcr.io
-          # Add the user so it has a home directory (needed for the pip cache later on)
-          docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker ps
           docker exec --user root unreal bash -c "
@@ -195,12 +193,6 @@ jobs:
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
           docker ps
-
-      - name: Setup UE CLI
-        run: docker exec unreal bash -c '
-          pip3 install --upgrade pip ;
-          pip3 install -Iv ue4cli==0.0.54 ;
-          ue4 setroot /home/ue4/UnrealEngine '
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
@@ -226,16 +218,20 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
-            /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
-            -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
-            -ExecCmds="Automation RunTests Sentry;quit" \
-            -TestExit="Automation Test Queue Empty" \
-            -Unattended \
-            -NoPause \
-            -NoSplash \
-            -NullRHI
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal dotnet /home/ue4/UnrealEngine/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll \
+            SentryPlaygroundEditor \
+            Linux \
+            Development \
+            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject
+        # docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
+        #   /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+        #   -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
+        #   -ExecCmds="Automation RunTests Sentry;quit" \
+        #   -TestExit="Automation Test Queue Empty" \
+        #   -Unattended \
+        #   -NoPause \
+        #   -NoSplash \
+        #   -NullRHI
 
       - name: Collect ${{ matrix.app }} test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
