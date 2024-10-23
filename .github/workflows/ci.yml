@@ -7,7 +7,7 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: Android
-      runsOn: ubuntu-latest-4-cores
+      runsOn: ubuntu-latest
 
   ios-sdk:
     uses: ./.github/workflows/sdk.yml
@@ -44,7 +44,7 @@ jobs:
   build:
     needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
     name: Package
-    runs-on: ubuntu-latest-4-cores
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -169,7 +169,6 @@ jobs:
           gid=1000     # the ue4 group in the docker container
           user='gh'
           set -x
-          cat /etc/passwd
           docker network create --ipv6 --subnet 2001:0DB8::/112 ip6net
           docker run -td \
             --name unreal \
@@ -179,20 +178,16 @@ jobs:
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
-          docker ps
           docker logout ghcr.io
           # Ensure CA certs are in the right directory (needed for running tests)
-          docker ps
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
             cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt "
           # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
           # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
-          docker ps
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
-          docker ps
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
