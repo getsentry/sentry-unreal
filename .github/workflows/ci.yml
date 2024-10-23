@@ -218,11 +218,8 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal dotnet /home/ue4/UnrealEngine/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll \
-            SentryPlaygroundEditor \
-            Linux \
-            Development \
-            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh \
+            BuildCookRun -platform=Linux -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds -nop4 -cook -build -stage -prereqss -package -archive
         # docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
         #   /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
         #   -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
