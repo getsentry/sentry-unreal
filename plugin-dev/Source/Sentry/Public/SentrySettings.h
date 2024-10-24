@@ -29,6 +29,15 @@ enum class ESentryCliLogLevel : uint8
 	Error
 };
 
+UENUM(BlueprintType)
+enum class ESentryDatabaseLocation : uint8
+{
+	// Root directory of the current project - `FPaths::ProjectDir()`
+	ProjectDirectory,
+	// Root directory for user-specific game files - `FPaths::ProjectUserDir()`
+	ProjectUserDirectory
+};
+
 USTRUCT(BlueprintType)
 struct FAutomaticBreadcrumbs
 {
@@ -209,10 +218,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging on desktop."))
 	bool Debug;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
-	bool EnableAutoCrashCapturing;
-
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Environment", ToolTip = "Environment which will be used for enriching events."))
 	FString Environment;
@@ -234,7 +239,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool SendDefaultPii;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Attach screenshots (for iOS only)", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs."))
+		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs. Currently this feature is supported for Windows and Linux only."))
 	bool AttachScreenshot;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
@@ -276,6 +281,14 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
 		Meta = (DisplayName = "Custom `beforeSend` event hanler", ToolTip = "Custom hanler for processing events before sending them to Sentry."))
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Desktop",
+		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
+	bool EnableAutoCrashCapturing;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Desktop",
+		Meta = (DisplayName = "Sentry database location (for Windows/Linux only)", ToolTip = "Location where Sentry stores its internal/temporary files."))
+	ESentryDatabaseLocation DatabaseLocation;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
 		Meta = (DisplayName = "In-app includes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that belong to the app."))
@@ -350,6 +363,11 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Diagnostic Level", ToolTip = "Logs verbosity level during symbol uploading.", EditCondition = "UploadSymbolsAutomatically"))
 	ESentryCliLogLevel DiagnosticLevel;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Use legacy Sentry Gradle plugin (for Android only)", ToolTip = "Flag indicating whether to use legacy Sentry Gradle plugin for debug symbol upload. No engine's Gradle version bump is required if enabled. This can be used as a fallback if the newer Gradle 7.5 causing compatibility issues with other third-party plugins.",
+			EditCondition = "UploadSymbolsAutomatically"))
+	bool UseLegacyGradlePlugin;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))

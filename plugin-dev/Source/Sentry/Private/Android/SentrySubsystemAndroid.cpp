@@ -292,3 +292,11 @@ USentryTransaction* SentrySubsystemAndroid::StartTransactionWithContextAndOption
 
 	return SentryConvertorsAndroid::SentryTransactionToUnreal(*transaction);
 }
+
+USentryTransactionContext* SentrySubsystemAndroid::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+{
+	auto transactionContext = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "continueTrace", "(Ljava/lang/String;Ljava/util/List;)Lio/sentry/TransactionContext;",
+		*FSentryJavaObjectWrapper::GetJString(sentryTrace), SentryConvertorsAndroid::StringArrayToNative(baggageHeaders)->GetJObject());
+
+	return SentryConvertorsAndroid::SentryTransactionContextToUnreal(*transactionContext);
+}

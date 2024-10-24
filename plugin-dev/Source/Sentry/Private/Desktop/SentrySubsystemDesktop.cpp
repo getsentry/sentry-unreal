@@ -37,6 +37,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 #include "UObject/GarbageCollection.h"
+#include "UObject/UObjectThreadContext.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
@@ -81,9 +82,14 @@ sentry_value_t HandleBeforeSend(sentry_value_t event, void *hint, void *closure)
 	USentryEvent* EventToProcess = NewObject<USentryEvent>();
 	EventToProcess->InitWithNativeImpl(eventDesktop);
 
-	return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr)
-		? event
-		: sentry_value_new_null();
+	USentryEvent* ProcessedEvent = EventToProcess;
+	if(!FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		// Executing UFUNCTION is allowed only when not post-loading
+		ProcessedEvent = SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+	}
+
+	return ProcessedEvent ? event : sentry_value_new_null();
 }
 
 sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure)
@@ -102,9 +108,14 @@ sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t e
 		USentryEvent* EventToProcess = NewObject<USentryEvent>();
 		EventToProcess->InitWithNativeImpl(eventDesktop);
 
-		return SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr)
-			? event
-			: sentry_value_new_null();
+		USentryEvent* ProcessedEvent = EventToProcess;
+		if(!FUObjectThreadContext::Get().IsRoutingPostLoad)
+		{
+			// Executing UFUNCTION is allowed only when not post-loading
+			ProcessedEvent = SentrySubsystem->GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+		}
+
+		return ProcessedEvent ? event : sentry_value_new_null();
 	}
 	else
 	{
@@ -141,6 +152,22 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 #elif PLATFORM_LINUX
 		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*FPaths::ConvertRelativePathToFull(LogFilePath)));
 #endif
+	}
+
+	switch (settings->DatabaseLocation)
+	{
+	case ESentryDatabaseLocation::ProjectDirectory:
+		databaseParentPath = FPaths::ProjectDir();
+		break;
+	case ESentryDatabaseLocation::ProjectUserDirectory:
+		databaseParentPath = FPaths::ProjectUserDir();
+		break;
+	}
+
+	if(databaseParentPath.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry database location. Falling back to FPaths::ProjectUserDir()."));
+		databaseParentPath = FPaths::ProjectUserDir();
 	}
 
 	if(settings->AttachScreenshot)
@@ -182,13 +209,13 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 		sentry_options_set_handler_pathw(options, *HandlerPath);
 	}
 #elif PLATFORM_LINUX
-	sentry_options_set_handler_path(options, TCHAR_TO_ANSI(*GetHandlerPath()));
+	sentry_options_set_handler_path(options, TCHAR_TO_UTF8(*GetHandlerPath()));
 #endif
 
 #if PLATFORM_WINDOWS
 	sentry_options_set_database_pathw(options, *GetDatabasePath());
 #elif PLATFORM_LINUX
-	sentry_options_set_database_path(options, TCHAR_TO_ANSI(*GetDatabasePath()));
+	sentry_options_set_database_path(options, TCHAR_TO_UTF8(*GetDatabasePath()));
 #endif
 
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
@@ -290,7 +317,7 @@ void SentrySubsystemDesktop::ClearBreadcrumbs()
 
 USentryId* SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_ANSI(*message));
+	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
 
 	if(isStackTraceEnabled)
 	{
@@ -470,6 +497,21 @@ USentryTransaction* SentrySubsystemDesktop::StartTransactionWithContextAndOption
 	return StartTransactionWithContext(context);
 }
 
+USentryTransactionContext* SentrySubsystemDesktop::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+{
+	sentry_transaction_context_t* nativeTransactionContext = sentry_transaction_context_new("<unlabeled transaction>", "default");
+	sentry_transaction_context_update_from_header(nativeTransactionContext, "sentry-trace", TCHAR_TO_ANSI(*sentryTrace));
+
+	// currently `sentry-native` doesn't have API for `sentry_transaction_context_t` to set `baggageHeaders`
+
+	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = MakeShareable(new SentryTransactionContextDesktop(nativeTransactionContext));
+
+	USentryTransactionContext* TransactionContext = NewObject<USentryTransactionContext>();
+	TransactionContext->InitWithNativeImpl(transactionContextDesktop);
+
+	return TransactionContext;
+}
+
 USentryBeforeSendHandler* SentrySubsystemDesktop::GetBeforeSendHandler()
 {
 	return beforeSend;
@@ -513,7 +555,7 @@ FString SentrySubsystemDesktop::GetHandlerPath() const
 
 FString SentrySubsystemDesktop::GetDatabasePath() const
 {
-	const FString DatabasePath = FPaths::Combine(FPaths::ProjectDir(), TEXT(".sentry-native"));
+	const FString DatabasePath = FPaths::Combine(databaseParentPath, TEXT(".sentry-native"));
 	const FString DatabaseFullPath = FPaths::ConvertRelativePathToFull(DatabasePath);
 
 	return DatabaseFullPath;

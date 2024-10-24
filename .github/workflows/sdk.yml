@@ -68,13 +68,13 @@ jobs:
           mkdir -p '${{ steps.env.outputs.path }}'
           ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
 
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.target }}-sdk
           path: ${{ steps.env.outputs.path }}
           retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
 
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v4
         if: ${{ inputs.target == 'Android' }}
         with:
           name: ${{ inputs.target }}-libraries

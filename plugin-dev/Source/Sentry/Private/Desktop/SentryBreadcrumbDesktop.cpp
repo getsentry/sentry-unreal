@@ -28,7 +28,7 @@ sentry_value_t SentryBreadcrumbDesktop::GetNativeObject()
 
 void SentryBreadcrumbDesktop::SetMessage(const FString& message)
 {
-	sentry_value_set_by_key(BreadcrumbDesktop, "message", sentry_value_new_string(TCHAR_TO_ANSI(*message)));
+	sentry_value_set_by_key(BreadcrumbDesktop, "message", sentry_value_new_string(TCHAR_TO_UTF8(*message)));
 }
 
 FString SentryBreadcrumbDesktop::GetMessage() const

@@ -19,6 +19,7 @@ void SentryTransactionAndroid::SetupClassMethods()
 	SetNameMethod = GetMethod("setName", "(Ljava/lang/String;)V");
 	SetTagMethod = GetMethod("setTag", "(Ljava/lang/String;Ljava/lang/String;)V");
 	SetDataMethod = GetMethod("setData", "(Ljava/lang/String;Ljava/lang/Object;)V");
+	ToSentryTraceMethod = GetMethod("toSentryTrace", "()Lio/sentry/SentryTraceHeader;");
 }
 
 USentrySpan* SentryTransactionAndroid::StartChild(const FString& operation, const FString& desctiption)
@@ -60,4 +61,13 @@ void SentryTransactionAndroid::SetData(const FString& key, const TMap<FString, F
 void SentryTransactionAndroid::RemoveData(const FString& key)
 {
 	SetData(key, TMap<FString, FString>());
+}
+
+void SentryTransactionAndroid::GetTrace(FString& name, FString& value)
+{
+	FSentryJavaObjectWrapper NativeTraceHeader(SentryJavaClasses::SentryTraceHeader, *CallObjectMethod<jobject>(ToSentryTraceMethod));
+	FSentryJavaMethod GetValueMethod = NativeTraceHeader.GetMethod("getValue", "()Ljava/lang/String;");
+
+	name = TEXT("sentry-trace");
+	value = NativeTraceHeader.CallMethod<FString>(GetValueMethod);
 }

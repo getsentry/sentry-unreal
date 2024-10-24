@@ -14,20 +14,21 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, InitAutomatically(true)
 	, Dsn()
 	, Debug(true)
-	, EnableAutoCrashCapturing(true)
 	, Environment(GetDefaultEnvironmentName())
 	, SampleRate(1.0f)
 	, EnableAutoLogAttachment(false)
 	, AttachStacktrace(true)
-	, SendDefaultPii(false) 
+	, SendDefaultPii(false)
 	, AttachScreenshot(false)
-	, MaxBreadcrumbs(100)
+	, MaxBreadcrumbs(100) 
 	, EnableAutoSessionTracking(true)
 	, SessionTimeout(30000)
 	, OverrideReleaseName(false)
 	, UseProxy(false)
 	, ProxyUrl()
 	, BeforeSendHandler(USentryBeforeSendHandler::StaticClass())
+	, EnableAutoCrashCapturing(true)
+	, DatabaseLocation(ESentryDatabaseLocation::ProjectUserDirectory)
 	, EnableAppNotRespondingTracking(false)
 	, EnableTracing(false)
 	, SamplingType(ESentryTracesSamplingType::UniformSampleRate)
@@ -37,6 +38,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, UploadSymbolsAutomatically(false)	
 	, IncludeSources(false)
 	, DiagnosticLevel(ESentryCliLogLevel::Info)
+	, UseLegacyGradlePlugin(false)
 	, CrashReporterUrl()
 	, bIsDirty(false)
 {
@@ -65,6 +67,7 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, OrgName) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AuthToken) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, IncludeSources) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseLegacyGradlePlugin) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, DiagnosticLevel) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl))
 	{

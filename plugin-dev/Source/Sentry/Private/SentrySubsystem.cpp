@@ -170,7 +170,7 @@ void USentrySubsystem::Close()
 	{
 		if(OnAssertDelegate.IsValid())
 		{
-			OutputDeviceError->OnError.Remove(OnAssertDelegate);
+			OutputDeviceError->OnAssert.Remove(OnAssertDelegate);
 			OnAssertDelegate.Reset();
 		}
 
@@ -390,6 +390,14 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 		return nullptr;
 
 	return SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context, Options);
+}
+
+USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& SentryTrace, const TArray<FString>& BaggageHeaders)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	return SubsystemNativeImpl->ContinueTrace(SentryTrace, BaggageHeaders);
 }
 
 bool USentrySubsystem::IsSupportedForCurrentSettings()
@@ -665,7 +673,8 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 	OutputDeviceError = MakeShareable(new FSentryOutputDeviceError(GError));
 	if (OutputDeviceError)
 	{
-		OnAssertDelegate = OutputDeviceError->OnError.AddLambda([this](const FString& Message)
+		OnAssertDelegate = OutputDeviceError->OnAssert.AddLambda([this](const FString& Message)
+
 		{
 			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
 

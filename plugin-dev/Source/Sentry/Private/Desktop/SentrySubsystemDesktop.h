@@ -43,6 +43,7 @@ public:
 	virtual USentryTransaction* StartTransaction(const FString& name, const FString& operation) override;
 	virtual USentryTransaction* StartTransactionWithContext(USentryTransactionContext* context) override;
 	virtual USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options) override;
+	virtual USentryTransactionContext* ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	USentryBeforeSendHandler* GetBeforeSendHandler();
 
@@ -67,6 +68,8 @@ private:
 	bool isScreenshotAttachmentEnabled;
 
 	FCriticalSection CriticalSection;
+
+	FString databaseParentPath;
 };
 
 #endif

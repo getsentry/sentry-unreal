@@ -26,7 +26,8 @@ public class SentryEditor : ModuleRules
                 "Sentry",
                 "PropertyEditor",
                 "Projects",
-                "HTTP"
+                "HTTP",
+                "UATHelper"
             }
         );
     }
