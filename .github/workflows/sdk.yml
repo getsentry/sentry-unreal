@@ -53,6 +53,8 @@ jobs:
           sudo ./llvm.sh 16
           sudo apt-get install libc++-16-dev libc++abi-16-dev libstdc++-10-dev
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt-get install gcc-11 g++-11
 
       - uses: actions/setup-java@v3
         if: ${{ inputs.target == 'Android' }}
