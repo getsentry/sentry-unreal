@@ -197,16 +197,10 @@ jobs:
           pip3 install -Iv ue4cli==0.0.54 ;
           ue4 setroot /home/ue4/UnrealEngine '
 
-      - name: Setup C++ runtime (legacy)
-        if: ${{ matrix.unreal == '5.2'}}
-        run: docker exec --user root unreal bash -c '
-          apt-get update ;
-          apt-get install -y libstdc++-8-dev'
-
       - name: Setup C++ runtime
-        if: ${{ matrix.unreal == '5.3' || matrix.unreal == '5.4'}}
         run: docker exec --user root unreal bash -c '
           apt-get update ;
+          add-apt-repository ppa:ubuntu-toolchain-r/test
           apt-get install -y libstdc++-10-dev'
 
       - name: Download package
