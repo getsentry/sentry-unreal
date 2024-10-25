@@ -201,13 +201,13 @@ jobs:
         if: ${{ matrix.unreal == '5.2'}}
         run: docker exec --user root unreal bash -c '
           apt-get update ;
-          apt-get install -y libstdc++8-dev'
+          apt-get install -y libstdc++-8-dev'
 
       - name: Setup C++ runtime
         if: ${{ matrix.unreal == '5.3' || matrix.unreal == '5.4'}}
         run: docker exec --user root unreal bash -c '
           apt-get update ;
-          apt-get install -y libstdc++10-dev'
+          apt-get install -y libstdc++-10-dev'
 
       - name: Download package
         uses: actions/download-artifact@v4
