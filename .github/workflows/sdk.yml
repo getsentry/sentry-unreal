@@ -50,9 +50,8 @@ jobs:
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 13
           sudo ./llvm.sh 16
-          sudo apt-get install libc++-16-dev libc++abi-16-dev libstdc++-10-dev zlib1g-dev libcurl4-openssl-dev gcc-11 g++-11
+          sudo apt-get install libc++-16-dev libc++abi-16-dev libstdc++-10-dev zlib1g-dev libcurl4-openssl-dev gcc-11 g++-11 clang-13
 
       - uses: actions/setup-java@v3
         if: ${{ inputs.target == 'Android' }}
