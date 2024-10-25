@@ -51,7 +51,7 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 13
           sudo ./llvm.sh 16
-          sudo apt-get install clang libc++-16-dev libc++abi-16-dev libstdc++-10-dev
+          sudo apt-get install libc++-16-dev libc++abi-16-dev libstdc++-10-dev
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev
 
       - uses: actions/setup-java@v3
