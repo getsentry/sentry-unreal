@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add printing callstack to a log file for assertions ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
+- Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
 
 ### Dependencies
 
