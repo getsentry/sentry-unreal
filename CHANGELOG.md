@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
+
 ### Dependencies
 
 - Bump CLI from v2.37.0 to v2.38.0 ([#663](https://github.com/getsentry/sentry-unreal/pull/663))
