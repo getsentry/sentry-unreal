@@ -20,8 +20,7 @@ SentrySamplingContextApple::~SentrySamplingContextApple()
 
 TSharedPtr<ISentryTransactionContext> SentrySamplingContextApple::GetTransactionContext() const
 {
-	TSharedPtr<ISentryTransactionContext> transactionContextNativeImpl = MakeShareable(new SentryTransactionContextApple(SamplingContext.transactionContext));
-	return transactionContextNativeImpl;
+	return MakeShareable(new SentryTransactionContextApple(SamplingContext.transactionContext));
 }
 
 TMap<FString, FString> SentrySamplingContextApple::GetCustomSamplingContext() const
