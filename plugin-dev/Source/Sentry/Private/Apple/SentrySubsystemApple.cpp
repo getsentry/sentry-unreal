@@ -145,7 +145,8 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessage(const FString& messag
 		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
 	}];
 
-	return MakeShareable(new SentryIdApple(id));
+	TSharedPtr<ISentryId> idNativeImpl = MakeShareable(new SentryIdApple(id));
+	return idNativeImpl;
 }
 
 TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
@@ -155,7 +156,8 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessageWithScope(const FStrin
 		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
-	return MakeShareable(new SentryIdApple(id));
+	TSharedPtr<ISentryId> idNativeImpl = MakeShareable(new SentryIdApple(id));
+	return idNativeImpl;
 }
 
 TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEvent(TSharedPtr<ISentryEvent> event)
@@ -163,7 +165,8 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEvent(TSharedPtr<ISentryEvent
 	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
 
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject()];
-	return MakeShareable(new SentryIdApple(id));
+	TSharedPtr<ISentryId> idNativeImpl = MakeShareable(new SentryIdApple(id));
+	return idNativeImpl;
 }
 
 TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
@@ -174,7 +177,8 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEventWithScope(TSharedPtr<ISe
 		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
-	return MakeShareable(new SentryIdApple(id));
+	TSharedPtr<ISentryId> idNativeImpl = MakeShareable(new SentryIdApple(id));
+	return idNativeImpl;
 }
 
 TSharedPtr<ISentryId> SentrySubsystemApple::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
@@ -188,9 +192,10 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureException(const FString& type
 	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
 	exceptionEvent.stacktrace = SentryConvertorsApple::CallstackToNative(StackFrames);
-	
+
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
-	return MakeShareable(new SentryIdApple(id));
+	TSharedPtr<ISentryId> idNativeImpl = MakeShareable(new SentryIdApple(id));
+	return idNativeImpl;
 }
 
 TSharedPtr<ISentryId> SentrySubsystemApple::CaptureAssertion(const FString& type, const FString& message)
@@ -276,7 +281,9 @@ TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransaction(const FStr
 {
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
 
-	return MakeShareable(new SentryTransactionApple(transaction));
+	TSharedPtr<ISentryTransaction> transactionNativeImpl = MakeShareable(new SentryTransactionApple(transaction));
+
+	return transactionNativeImpl;
 }
 
 TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
@@ -285,7 +292,9 @@ TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContext
 
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()];
 
-	return MakeShareable(new SentryTransactionApple(transaction));
+	TSharedPtr<ISentryTransaction> transactionNativeImpl = MakeShareable(new SentryTransactionApple(transaction));
+
+	return transactionNativeImpl;
 }
 
 TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
@@ -295,7 +304,9 @@ TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContext
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
 		customSamplingContext:SentryConvertorsApple::StringMapToNative(options)];
 
-	return MakeShareable(new SentryTransactionApple(transaction));
+	TSharedPtr<ISentryTransaction> transactionNativeImpl = MakeShareable(new SentryTransactionApple(transaction));
+
+	return transactionNativeImpl;
 }
 
 TSharedPtr<ISentryTransactionContext> SentrySubsystemApple::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
@@ -330,5 +341,7 @@ TSharedPtr<ISentryTransactionContext> SentrySubsystemApple::ContinueTrace(const 
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
-	return MakeShareable(new SentryTransactionContextApple(transactionContext));
+	TSharedPtr<ISentryTransactionContext> transactionContextNativeImpl = MakeShareable(new SentryTransactionContextApple(transactionContext));
+
+	return transactionContextNativeImpl;
 }

@@ -28,7 +28,8 @@ id<SentrySpan> SentryTransactionApple::GetNativeObject()
 TSharedPtr<ISentrySpan> SentryTransactionApple::StartChild(const FString& operation, const FString& desctiption)
 {
 	id<SentrySpan> span = [TransactionApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
-	return MakeShareable(new SentrySpanApple(span));
+	TSharedPtr<SentrySpanApple> spanNativeImpl = MakeShareable(new SentrySpanApple(span));
+	return spanNativeImpl;
 }
 
 void SentryTransactionApple::Finish()
