@@ -13,11 +13,12 @@
 SentryTransactionApple::SentryTransactionApple(id<SentrySpan> transaction)
 {
 	TransactionApple = transaction;
+	[TransactionApple retain];
 }
 
 SentryTransactionApple::~SentryTransactionApple()
 {
-	// Put custom destructor logic here if needed
+	[TransactionApple release];
 }
 
 id<SentrySpan> SentryTransactionApple::GetNativeObject()
