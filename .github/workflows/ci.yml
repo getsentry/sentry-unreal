@@ -200,7 +200,8 @@ jobs:
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
           apt-get update ;
-          apt-get install -y libc++-dev '
+          add-apt-repository ppa:ubuntu-toolchain-r/test ;
+          apt-get install -y libstdc++-10-dev'
 
       - name: Download package
         uses: actions/download-artifact@v4
