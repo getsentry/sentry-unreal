@@ -6,7 +6,9 @@ export sentryArtifactsDestination=$2
 
 rm -rf "${sentryArtifactsDestination}/"*
 
-"${sentryIosRoot}/scripts//build-xcframework.sh" gameOnly
+pushd "${sentryCocoaRoot}"
+./scripts/build-xcframework.sh gameOnly
+popd
 
 mkdir "${sentryArtifactsDestination}/bin"
 mkdir "${sentryArtifactsDestination}/include"
