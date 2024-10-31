@@ -10,7 +10,7 @@ pushd "${sentryIosRoot}"
 ./scripts/build-xcframework.sh iOSOnly
 popd
 
-cp -R "${sentryIosRoot}/Carthage/Build/Sentry-Dynamic.xcframework/ios-arm64_arm64e/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
+cp -R "${sentryIosRoot}/Carthage/Sentry-Dynamic.xcframework/ios-arm64_arm64e/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
 
 mkdir "Sentry.embeddedframework"
 
