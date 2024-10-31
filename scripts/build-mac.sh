@@ -23,7 +23,7 @@ xcodebuild archive \
     GCC_GENERATE_DEBUGGING_SYMBOLS="YES" \
     OTHER_LDFLAGS="-Wl,-make_mergeable"
 
-xcodebuild -create-xcframework -framework Carthage/archive/Sentry/macosx.xcarchive/Products/Library/Frameworks/Sentry.framework 
+xcodebuild -create-xcframework -framework Carthage/archive/Sentry/macosx.xcarchive/Products/Library/Frameworks/Sentry.framework -output Carthage/Sentry.xcframework
 
 popd
 
