@@ -6,9 +6,9 @@ export sentryArtifactsDestination=$2
 
 rm -rf "${sentryArtifactsDestination}/"*
 
-carthage build --project-directory "${sentryIosRoot}" --use-xcframeworks --no-skip-current --platform iOS
+"${sentryIosRoot}/scripts//build-xcframework.sh" iOSOnly
 
-cp -R "${sentryIosRoot}/Carthage/Build/Sentry.xcframework/ios-arm64_arm64e/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
+cp -R "${sentryIosRoot}/Carthage/Build/Sentry-Dynamic.xcframework/ios-arm64_arm64e/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
 
 mkdir "Sentry.embeddedframework"
 
