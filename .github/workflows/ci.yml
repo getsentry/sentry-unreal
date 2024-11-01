@@ -132,7 +132,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['5.2', '5.3', '5.4']
+        unreal: ['4.27' '5.0', '5.1', '5.2', '5.3', '5.4']
         app: ['sample']
 
     steps:
@@ -185,9 +185,14 @@ jobs:
             cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt "
           # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
           # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
-          docker exec --user root unreal bash -c "
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
+          if [[ "${{  matrix.unreal }}" == "4.27" ]]; then
+            docker exec --user root unreal bash -c "
+              chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
+              chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved "
+          else
+            docker exec --user root unreal bash -c "
+              chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
+              chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
