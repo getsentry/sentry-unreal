@@ -186,20 +186,12 @@ jobs:
 
       # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
       # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
-      - name: Chown Docker container paths (UE4)
-        if: ${{ matrix.unreal == '4.27'}}
+      - name: Chown Docker container paths
         run: |
           uid=$(id -u) # the GH action user ID
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/UnrealPak/Saved "
-      - name: Chown Docker container paths (UE5)
-        if: ${{ matrix.unreal != '4.27'}}
-        run: |
-          uid=$(id -u) # the GH action user ID
-          docker exec --user root unreal bash -c "
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
+            chown -R $uid /home/ue4/UnrealEngine/Engine/${{ matrix.unreal == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} "
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
@@ -238,7 +230,7 @@ jobs:
             -archive
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
             cp -r '/home/ue4/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor \
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/${{ matrix.unreal == '4.27' && 'UE4Editor' || 'UnrealEditor' }} \
             /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
             -ExecCmds="Automation RunTests Sentry;quit" \
