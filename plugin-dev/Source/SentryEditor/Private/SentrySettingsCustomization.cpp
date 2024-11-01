@@ -17,7 +17,13 @@
 #include "PropertyHandle.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "HAL/FileManager.h"
+
+#if ENGINE_MAJOR_VERSION >= 5
 #include "HAL/PlatformFileManager.h"
+#else
+#include "HAL/PlatformFilemanager.h"
+#endif
+
 #include "Interfaces/IPluginManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
