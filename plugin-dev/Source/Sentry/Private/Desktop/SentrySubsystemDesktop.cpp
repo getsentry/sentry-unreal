@@ -74,7 +74,7 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 
 void PrintCrashLog(const sentry_ucontext_t *uctx)
 {
-#if PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5
 
 	SentryConvertorsDesktop::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
 
