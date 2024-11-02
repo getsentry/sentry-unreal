@@ -17,7 +17,7 @@
 #include "PropertyHandle.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "HAL/FileManager.h"
-#include "HAL/PlatformFileManager.h"
+
 #include "Interfaces/IPluginManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
@@ -33,6 +33,12 @@
 #include "Styling/AppStyle.h"
 #else
 #include "EditorStyleSet.h"
+#endif
+
+#if ENGINE_MAJOR_VERSION >= 5
+#include "HAL/PlatformFileManager.h"
+#else
+#include "HAL/PlatformFilemanager.h"
 #endif
 
 const FString FSentrySettingsCustomization::DefaultCrcEndpoint = TEXT("https://datarouter.ol.epicgames.com/datarouter/api/v1/public/data");

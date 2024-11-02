@@ -48,7 +48,7 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+#if ENGINE_MAJOR_VERSION == 5
 	GetHighResScreenshotConfig().MergeMaskIntoAlpha(Bitmap, FIntRect());
 	TArray64<uint8> CompressedBitmap;
 	FImageUtils::PNGCompressImageArray(ViewportSize.X, ViewportSize.Y, Bitmap, CompressedBitmap);
