@@ -6,6 +6,7 @@
 
 - Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
 - Add LinuxArm64 support for UE plugin ([#672](https://github.com/getsentry/sentry-unreal/pull/672))
+- Add UE 4.27, 5.0 and 5.1 to CI pipeline ([#675](https://github.com/getsentry/sentry-unreal/pull/675))
 
 ### Dependencies
 
