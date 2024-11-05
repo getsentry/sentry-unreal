@@ -52,6 +52,13 @@ The SDK compiles with three latest engine versions.
 
 - On Windows/Linux if crash event was captured during the garbage collection the `BeforeSendHandler` will not be invoked.
 
+- It may be required to upgrade the C++ standard library (`libstdc++`) on older Linux distributions (such as Ubuntu 18.04 and 20.04) to ensure crashpad handler proper functionality within the deployment environment. This can be achieved with something like this:
+```
+sudo apt-get update
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get install -y libstdc++6
+```
+
 ## Development
 
 Please see the [contribution guide](./CONTRIBUTING.md).
