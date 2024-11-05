@@ -9,9 +9,9 @@
 
 ### Dependencies
 
-- Bump CLI from v2.37.0 to v2.38.1 ([#663](https://github.com/getsentry/sentry-unreal/pull/663), [#670](https://github.com/getsentry/sentry-unreal/pull/670))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2381)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.37.0...2.38.1)
+- Bump CLI from v2.37.0 to v2.38.2 ([#663](https://github.com/getsentry/sentry-unreal/pull/663), [#670](https://github.com/getsentry/sentry-unreal/pull/670), [#677](https://github.com/getsentry/sentry-unreal/pull/677))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2382)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.37.0...2.38.2)
 - Bump Java SDK (Android) from v7.15.0 to v7.16.0 ([#665](https://github.com/getsentry/sentry-unreal/pull/665))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7160)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.15.0...7.16.0)
