@@ -302,6 +302,7 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryScreenFrames.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySdkInfo.h
+Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
 Source/ThirdParty/IOS/Sentry.framework/Sentry
 Source/ThirdParty/Linux/
@@ -377,6 +378,7 @@ Source/ThirdParty/Mac/include/Sentry/SentrySDK.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentrySdkInfo.h
 Source/ThirdParty/Mac/include/Sentry/SentrySerializable.h
+Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/Mac/include/Sentry/SentrySpanContext.h
 Source/ThirdParty/Mac/include/Sentry/SentrySpanId.h
 Source/ThirdParty/Mac/include/Sentry/SentrySpanProtocol.h
