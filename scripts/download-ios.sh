@@ -15,6 +15,10 @@ cocoaVersion=$(getProperty 'version')
 
 cocoaFrameworkUrl="${cocoaRepo}/releases/download/${cocoaVersion}/Sentry-Dynamic.xcframework.zip"
 
+if ! [ -d "$sentryCocoaCache" ]; then
+    mkdir $sentryCocoaCache
+fi
+
 curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework.zip"
 
 unzip -o "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework.zip" -d "${sentryCocoaCache}/"

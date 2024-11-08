@@ -22,8 +22,8 @@ jobs:
         id: env
         run: |
           if [[ "${{ inputs.target }}" == "IOS" || "${{ inputs.target }}" == "Mac" ]]; then
-            cacheLocation="modules/sentry-cocoa"
-            propertiesFile="modules/sentry-cocoa.properties"            
+            echo "cacheLocation="modules/sentry-cocoa" >> $GITHUB_OUTPUT
+            echo "propertiesFile="modules/sentry-cocoa.properties"  >> $GITHUB_OUTPUT
           fi
           echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
           echo "downloadScript=scripts/download-$(echo '${{ inputs.target }}' | tr '[:upper:]' '[:lower:]').sh" >> $GITHUB_OUTPUT
