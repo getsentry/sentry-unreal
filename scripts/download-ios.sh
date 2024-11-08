@@ -8,16 +8,16 @@ function getProperty {
 export sentryCocoaCache=$1
 export sentryArtifactsDestination=$2
 
+if ! [ -d "$sentryCocoaCache" ]; then
+    mkdir $sentryCocoaCache
+fi
+
 rm -rf "${sentryArtifactsDestination}/"*
 
 cocoaRepo=$(getProperty 'repo')
 cocoaVersion=$(getProperty 'version')
 
 cocoaFrameworkUrl="${cocoaRepo}/releases/download/${cocoaVersion}/Sentry-Dynamic.xcframework.zip"
-
-if ! [ -d "$sentryCocoaCache" ]; then
-    mkdir $sentryCocoaCache
-fi
 
 curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip"
 
