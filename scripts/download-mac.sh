@@ -19,14 +19,14 @@ if ! [ -d "$sentryCocoaCache" ]; then
     mkdir $sentryCocoaCache
 fi
 
-curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework.zip"
+curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip"
 
-unzip -o "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework.zip" -d "${sentryCocoaCache}/"
+unzip -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip" -d "${sentryCocoaCache}/"
 
 mkdir "${sentryArtifactsDestination}/bin"
 mkdir "${sentryArtifactsDestination}/include"
 
-cp "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" "${sentryArtifactsDestination}/bin/sentry.dylib"
+cp "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" "${sentryArtifactsDestination}/bin/sentry.dylib"
 
-cp -rL "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Headers" "${sentryArtifactsDestination}/include/Sentry"
-cp -rL "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/PrivateHeaders/." "${sentryArtifactsDestination}/include/Sentry"
+cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Headers" "${sentryArtifactsDestination}/include/Sentry"
+cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/PrivateHeaders/." "${sentryArtifactsDestination}/include/Sentry"

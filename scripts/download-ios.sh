@@ -19,11 +19,11 @@ if ! [ -d "$sentryCocoaCache" ]; then
     mkdir $sentryCocoaCache
 fi
 
-curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework.zip"
+curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip"
 
-unzip -o "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework.zip" -d "${sentryCocoaCache}/"
+unzip -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip" -d "${sentryCocoaCache}/"
 
-cp -R "${sentryCocoaCache}/Sentry-Dynamic-${cocoaVersion}.xcframework/ios-arm64_arm64e/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
+cp -R "${sentryCocoaCache}/Sentry-Dynamic.xcframework/ios-arm64_arm64e/Sentry.framework" "${sentryArtifactsDestination}/Sentry.framework"
 
 mkdir "Sentry.embeddedframework"
 
