@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  build:
+  download:
     runs-on: ${{ inputs.runsOn }}
     timeout-minutes: 30
     defaults:
