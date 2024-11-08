@@ -6,6 +6,7 @@
 
 - Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
 - Add UE 4.27, 5.0 and 5.1 to CI pipeline ([#675](https://github.com/getsentry/sentry-unreal/pull/675))
+- Download the `Cocoa SDK` instead of building it ([#681](https://github.com/getsentry/sentry-unreal/pull/681))
 
 ### Dependencies
 
@@ -18,15 +19,9 @@
 - Bump Native SDK from v0.7.6 to v0.7.12 ([#667](https://github.com/getsentry/sentry-unreal/pull/667), [#678](https://github.com/getsentry/sentry-unreal/pull/678))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0712)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.6...0.7.12)
-- Bump Cocoa SDK (iOS) from v8.38.0 to v8.39.0 ([#668](https://github.com/getsentry/sentry-unreal/pull/668))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8390)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.38.0...8.39.0)
-- Bump Cocoa SDK (iOS) from v8.40.0-5-gf31a3eff to v8.40.0 ([#679](https://github.com/getsentry/sentry-unreal/pull/679))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8400)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.40.0-5-gf31a3eff...8.40.0)
-- Bump Cocoa SDK (iOS) from v8.40.0 to v8.40.1 ([#680](https://github.com/getsentry/sentry-unreal/pull/680))
+- Bump Cocoa SDK (iOS) from v8.38.0 to v8.40.1 ([#668](https://github.com/getsentry/sentry-unreal/pull/668), [#679](https://github.com/getsentry/sentry-unreal/pull/679), [#680](https://github.com/getsentry/sentry-unreal/pull/680))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8401)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.40.0...8.40.1)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.38.0...8.40.1)
 
 ## 0.20.1
 
