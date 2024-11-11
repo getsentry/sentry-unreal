@@ -25,7 +25,11 @@ jobs:
         if: ${{ inputs.target == 'LinuxArm64' }}
         run: |
           apt-get update
-          apt-get -y install sudo wget cmake software-properties-common git
+          apt-get -y install sudo
+          apt-get -y install wget
+          apt-get -y install cmake
+          apt-get -y install software-properties-common
+          apt-get -y install git
           git config --global --add safe.directory $(pwd)
 
       - uses: actions/checkout@v4
