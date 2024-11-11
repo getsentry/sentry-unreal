@@ -7,9 +7,6 @@ on:
       target:
         required: true
         type: string
-      container:
-        required: false
-        type: string
 
 jobs:
   build:
@@ -21,17 +18,6 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: Configure env for Linux arm64 runner
-        if: ${{ inputs.target == 'LinuxArm64' }}
-        run: |
-          apt-get update
-          apt-get -y install sudo
-          apt-get -y install wget
-          apt-get -y install cmake
-          apt-get -y install software-properties-common
-          apt-get -y install git
-          git config --global --add safe.directory $(pwd)
-
       - uses: actions/checkout@v3
 
       - name: Select submodule
