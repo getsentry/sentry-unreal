@@ -16,12 +16,18 @@
 - Bump Java SDK (Android) from v7.15.0 to v7.16.0 ([#665](https://github.com/getsentry/sentry-unreal/pull/665))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7160)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.15.0...7.16.0)
-- Bump Native SDK from v0.7.6 to v0.7.11 ([#667](https://github.com/getsentry/sentry-unreal/pull/667))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0711)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.6...0.7.11)
+- Bump Native SDK from v0.7.6 to v0.7.12 ([#667](https://github.com/getsentry/sentry-unreal/pull/667), [#678](https://github.com/getsentry/sentry-unreal/pull/678))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0712)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.6...0.7.12)
 - Bump Cocoa SDK (iOS) from v8.38.0 to v8.39.0 ([#668](https://github.com/getsentry/sentry-unreal/pull/668))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8390)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.38.0...8.39.0)
+- Bump Cocoa SDK (iOS) from v8.40.0-5-gf31a3eff to v8.40.0 ([#679](https://github.com/getsentry/sentry-unreal/pull/679))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8400)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.40.0-5-gf31a3eff...8.40.0)
+- Bump Cocoa SDK (iOS) from v8.40.0 to v8.40.1 ([#680](https://github.com/getsentry/sentry-unreal/pull/680))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8401)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.40.0...8.40.1)
 
 ## 0.20.1
 

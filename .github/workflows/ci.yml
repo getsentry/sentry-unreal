@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download CLI
         shell: pwsh
@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download packages
         uses: actions/download-artifact@v4
@@ -216,7 +216,7 @@ jobs:
         with:
           name: ${{ github.sha }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: checkout
 
