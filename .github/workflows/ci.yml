@@ -34,6 +34,7 @@ jobs:
     with:
       target: LinuxArm64
       runsOn: ubuntu-latest-4-cores-arm64
+      container: arm64v8/ubuntu:20.04
 
   windows-crashpad-sdk:
     uses: ./.github/workflows/sdk.yml
