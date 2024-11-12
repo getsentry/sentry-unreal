@@ -22,7 +22,9 @@ if "%TargetType%"=="Editor" (
 
 if "%TargetPlatform%"=="Win64" (
     set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="Linux" OR "%TargetPlatform%"=="LinuxArm64" (
+) else if "%TargetPlatform%"=="Linux" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else if "%TargetPlatform%"=="LinuxArm64" (
     set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
 ) else if "%TargetPlatform%"=="Android" (
     echo Warning: Sentry: Debug symbols upload for Android is handled by Sentry's gradle plugin if enabled
