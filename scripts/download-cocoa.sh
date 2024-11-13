@@ -22,7 +22,12 @@ curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic.xcframewor
 unzip -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip" -d "${sentryCocoaCache}/"
 
 # Prepare iOS artifacts
-rm -rf "$(dirname $sentryArtifactsDestination)/IOS/"*
+
+if ! [ -d "$(dirname $sentryArtifactsDestination)/IOS" ]; then
+    mkdir "$(dirname $sentryArtifactsDestination)/IOS"
+else
+    rm -rf "$(dirname $sentryArtifactsDestination)/IOS/"*
+fi
 
 cp -R "${sentryCocoaCache}/Sentry-Dynamic.xcframework/ios-arm64_arm64e/Sentry.framework" "$(dirname $sentryArtifactsDestination)/IOS/Sentry.framework"
 
@@ -36,7 +41,12 @@ rm -rf "Sentry.embeddedframework"
 rm "Sentry.embeddedframework.zip"
 
 # Prepare Mac artifacts
-rm -rf "$(dirname $sentryArtifactsDestination)/Mac/"*
+
+if ! [ -d "$(dirname $sentryArtifactsDestination)/Mac" ]; then
+    mkdir "$(dirname $sentryArtifactsDestination)/Mac"
+else
+    rm -rf "$(dirname $sentryArtifactsDestination)/Mac/"*
+fi
 
 mkdir "$(dirname $sentryArtifactsDestination)/Mac/bin"
 mkdir "$(dirname $sentryArtifactsDestination)/Mac/include"
