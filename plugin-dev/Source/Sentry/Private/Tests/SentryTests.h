@@ -7,7 +7,7 @@
 
 #if WITH_AUTOMATION_TESTS
 
-#if UE_VERSION_OLDER_THAN(5, 4, 0)
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 static constexpr EAutomationTestFlags::Type SentryApplicationContextMask = EAutomationTestFlags::ApplicationContextMask;
 #else
 static constexpr EAutomationTestFlags SentryApplicationContextMask = EAutomationTestFlags_ApplicationContextMask;
