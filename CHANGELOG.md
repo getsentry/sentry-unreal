@@ -6,7 +6,6 @@
 
 - Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
 - Add UE 4.27, 5.0 and 5.1 to CI pipeline ([#675](https://github.com/getsentry/sentry-unreal/pull/675))
-- Download the `Cocoa SDK` instead of building it ([#681](https://github.com/getsentry/sentry-unreal/pull/681))
 
 ### Dependencies
 
