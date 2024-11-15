@@ -167,6 +167,7 @@ Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentryScope.spec.cpp
 Source/Sentry/Private/Tests/SentrySubsystem.spec.cpp
+Source/Sentry/Private/Tests/SentryTests.h
 Source/Sentry/Private/Tests/SentryUser.spec.cpp
 Source/Sentry/Private/Utils/
 Source/Sentry/Private/Utils/SentryFileUtils.cpp
