@@ -1,12 +1,13 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
+#include "SentryTests.h"
 #include "SentryBreadcrumb.h"
 
 #include "Misc/AutomationTest.h"
 
 #if WITH_AUTOMATION_TESTS
 
-BEGIN_DEFINE_SPEC(SentryBreadcrumbSpec, "Sentry.SentryBreadcrumb", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+BEGIN_DEFINE_SPEC(SentryBreadcrumbSpec, "Sentry.SentryBreadcrumb", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryBreadcrumb* SentryBreadcrumb;
 END_DEFINE_SPEC(SentryBreadcrumbSpec)
 
