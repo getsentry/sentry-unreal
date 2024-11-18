@@ -27,7 +27,7 @@ SentryScopeDesktop::SentryScopeDesktop(const SentryScopeDesktop& Scope)
 	TagsDesktop = Scope.TagsDesktop;
 	ExtraDesktop = Scope.ExtraDesktop;
 	ContextsDesktop = Scope.ContextsDesktop;
-	BreadcrumbsDesktop = TRingBuffer(Scope.BreadcrumbsDesktop);
+	BreadcrumbsDesktop = TRingBuffer<TSharedPtr<SentryBreadcrumbDesktop>>(Scope.BreadcrumbsDesktop);
 	LevelDesktop = Scope.LevelDesktop;
 }
 
