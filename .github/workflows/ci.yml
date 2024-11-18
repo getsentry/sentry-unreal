@@ -4,25 +4,25 @@ on: push
 
 jobs:
   android-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Android
       runsOn: ubuntu-latest
 
   ios-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-download.yml
     with:
       target: IOS
-      runsOn: macos-13
+      runsOn: ubuntu-latest
 
   macos-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-download.yml
     with:
       target: Mac
-      runsOn: macos-13
+      runsOn: ubuntu-latest
 
   linux-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Linux
       # Build for an older GLIBC so that it can run with the old GLIBC included in EpicGames' Unreal docker images.
@@ -30,13 +30,13 @@ jobs:
       runsOn: ubuntu-20.04
 
   windows-crashpad-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Win64-Crashpad
       runsOn: windows-2019
 
   windows-breakpad-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Win64-Breakpad
       runsOn: windows-2019
