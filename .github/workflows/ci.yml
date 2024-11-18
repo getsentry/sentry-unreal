@@ -30,7 +30,7 @@ jobs:
       runsOn: ubuntu-20.04
 
   linux-arm64-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: LinuxArm64
       runsOn: ubuntu-latest-4-cores-arm64
