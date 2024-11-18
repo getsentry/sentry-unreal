@@ -1,0 +1,48 @@
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+
+jobs:
+  download:
+    runs-on: ${{ inputs.runsOn }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select properties file
+        id: env
+        run: |
+          if [[ "${{ inputs.target }}" == "IOS" || "${{ inputs.target }}" == "Mac" ]]; then
+            echo "cacheLocation=modules/sentry-cocoa" >> $GITHUB_OUTPUT
+            echo "propertiesFile=modules/sentry-cocoa.properties"  >> $GITHUB_OUTPUT
+            echo "downloadScript=scripts/download-cocoa.sh" >> $GITHUB_OUTPUT
+          fi
+          echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            ${{ steps.env.outputs.path }}
+          key: sdk=${{ inputs.target }}-${{ hashFiles(steps.env.outputs.propertiesFile, 'scripts/download-*.sh', '.github/workflows/sdk-download.yml') }}
+
+      - name: Download
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p '${{ steps.env.outputs.path }}'
+          ${{ steps.env.outputs.downloadScript }} '${{ steps.env.outputs.cacheLocation }}' '${{ steps.env.outputs.path }}'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.target }}-sdk
+          path: ${{ steps.env.outputs.path }}
+          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
