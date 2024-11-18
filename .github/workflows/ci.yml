@@ -29,6 +29,13 @@ jobs:
       # See discussion in https://github.com/getsentry/sentry-unreal/pull/173
       runsOn: ubuntu-20.04
 
+  linux-arm64-sdk:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: LinuxArm64
+      runsOn: ubuntu-latest-4-cores-arm64
+      container: arm64v8/ubuntu:20.04
+
   windows-crashpad-sdk:
     uses: ./.github/workflows/sdk-build.yml
     with:
@@ -42,7 +49,7 @@ jobs:
       runsOn: windows-2019
 
   build:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -77,6 +84,11 @@ jobs:
         with:
           name: Linux-sdk
           path: plugin-dev/Source/ThirdParty/Linux
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: LinuxArm64-sdk
+          path: plugin-dev/Source/ThirdParty/LinuxArm64
 
       - uses: actions/download-artifact@v4
         with:
@@ -248,7 +260,7 @@ jobs:
           name: UE ${{ matrix.unreal }} ${{ matrix.app }} test report
           path: |
             checkout/${{ matrix.app }}/Saved/Automation
-  
+
       - name: Collect ${{ matrix.app }} build info
         if: contains(fromJson('["success", "failure"]'), steps.run-tests.outcome)
         uses: actions/upload-artifact@v4

@@ -37,6 +37,7 @@
 		"IOS",
 		"Linux",
 		"Windows",
-		"Mac"
+		"Mac",
+		"LinuxArm64"
 	]
 }

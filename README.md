@@ -59,6 +59,8 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt-get install -y libstdc++6
 ```
 
+- Plugin supports Linux arm64 platform for UE 5.0 and newer.
+
 ## Development
 
 Please see the [contribution guide](./CONTRIBUTING.md).

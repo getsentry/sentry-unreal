@@ -47,6 +47,12 @@ function packFiles([string] $publishingPlatform)
         Write-Host "Creating a release package for Unreal $engineVersion as $packageName"
 
         $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '.0",') + @($pluginSpec[1..($pluginSpec.count)])
+
+        # Handle platform name difference for UE 4.27
+        if ($engineVersion -eq "4.27") {
+            $newPluginSpec = $newPluginSpec -replace '"LinuxArm64"', '"LinuxAArch64"'
+        }
+
         $newPluginSpec | Out-File "package-release-$publishingPlatform/Sentry.uplugin"
 
         Remove-Item -ErrorAction SilentlyContinue $packageName
