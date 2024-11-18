@@ -7,6 +7,10 @@
 - Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
 - Add UE 4.27, 5.0 and 5.1 to CI pipeline ([#675](https://github.com/getsentry/sentry-unreal/pull/675))
 
+### Fixes
+
+- Fix compatibility issues with UE 5.5 ([#684](https://github.com/getsentry/sentry-unreal/pull/684))
+
 ### Dependencies
 
 - Bump CLI from v2.37.0 to v2.38.2 ([#663](https://github.com/getsentry/sentry-unreal/pull/663), [#670](https://github.com/getsentry/sentry-unreal/pull/670), [#677](https://github.com/getsentry/sentry-unreal/pull/677))
