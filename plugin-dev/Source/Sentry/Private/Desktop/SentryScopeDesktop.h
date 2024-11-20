@@ -46,7 +46,6 @@ public:
 	virtual void Clear() override;
 
 	void Apply(TSharedPtr<SentryEventDesktop> event);
-	void AddBreadcrumb(TSharedPtr<SentryBreadcrumbDesktop> breadcrumb);
 
 private:
 	FString Dist;

@@ -36,7 +36,14 @@ SentryScopeDesktop::~SentryScopeDesktop()
 
 void SentryScopeDesktop::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	AddBreadcrumb(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb->GetNativeImpl()));
+	FScopeLock Lock(&CriticalSection);
+
+	if(BreadcrumbsDesktop.Num() >= FSentryModule::Get().GetSettings()->MaxBreadcrumbs)
+	{
+		BreadcrumbsDesktop.PopFront();
+	}
+
+	BreadcrumbsDesktop.Add(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb));
 }
 
 void SentryScopeDesktop::ClearBreadcrumbs()
@@ -290,18 +297,6 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 			}
 		}
 	}
-}
-
-void SentryScopeDesktop::AddBreadcrumb(TSharedPtr<SentryBreadcrumbDesktop> breadcrumb)
-{
-	FScopeLock Lock(&CriticalSection);
-
-	if(BreadcrumbsDesktop.Num() >= FSentryModule::Get().GetSettings()->MaxBreadcrumbs)
-	{
-		BreadcrumbsDesktop.PopFront();
-	}
-
-	BreadcrumbsDesktop.Add(breadcrumb);
 }
 
 #endif
