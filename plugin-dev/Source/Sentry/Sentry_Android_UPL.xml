@@ -24,6 +24,14 @@
                 <setBool result="bUploadSymbols" value="$B(bUploadSymbolsAutomatically)"/>
             </false>
         </if>
+
+        <setBoolIsEqual result="bEngineMajorVersionEqual5" arg1="$I(EngineMajorVersion)" arg2="5" />
+        <setBoolIsGreaterEqual result="bEngineMinorVersionGreaterEqual5" arg1="$I(EngineMinorVersion)" arg2="5" />
+
+        <!-- In UE 5.5 and newer there's no need to bump the default Gradle version (8.7+) as it's compatible with Sentry gradle plugin anyway -->
+        <setBoolAnd result="bHasModernGradle" arg1="$B(bEngineMajorVersionEqual5)" arg2="$B(bEngineMinorVersionGreaterEqual5)"/>
+
+        <setBoolOr result="bSkipGradleOverride" arg1="$B(bUseLegacyGradlePlugin)" arg2="$B(bHasModernGradle)"/>
     </init>
 
     <prebuildCopies>
@@ -35,7 +43,7 @@
             <true>
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
-                <if condition="bUseLegacyGradlePlugin">
+                <if condition="bSkipGradleOverride">
                     <false>
                         <log text="Modifying engine's Gradle version used by replacing gradle-wrapper.properties"/>
                         <copyFile src="$S(PluginDir)/../../Gradle/gradle-wrapper.properties" dst="$S(BuildDir)/gradle/gradle/wrapper/gradle-wrapper.properties" />
