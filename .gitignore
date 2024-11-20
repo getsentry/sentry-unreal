@@ -30,6 +30,7 @@ sentry-unreal-*.zip
 plugin-dev/Source/ThirdParty/Android
 plugin-dev/Source/ThirdParty/IOS
 plugin-dev/Source/ThirdParty/Linux
+plugin-dev/Source/ThirdParty/LinuxArm64
 plugin-dev/Source/ThirdParty/Mac
 plugin-dev/Source/ThirdParty/Win64
 plugin-dev/Source/ThirdParty/CLI/*

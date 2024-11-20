@@ -50,9 +50,16 @@ The SDK compiles with three latest engine versions.
 
 - Only crash events captured on Android contain the full callstack. Events that were captured manually won't have the native C++ part there.
 
-- On Linux `sudo apt-get install libc++-dev libcurl-dev` is required to install the `Crashpad` dependencies. This list may vary depending on your Linux distro. See the [Crashpad documentation](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/doc/developing.md#prerequisites) for more details.
-
 - On Windows/Linux if crash event was captured during the garbage collection the `BeforeSendHandler` will not be invoked.
+
+- It may be required to upgrade the C++ standard library (`libstdc++`) on older Linux distributions (such as Ubuntu 18.04 and 20.04) to ensure crashpad handler proper functionality within the deployment environment. This can be achieved with something like this:
+```
+sudo apt-get update
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get install -y libstdc++6
+```
+
+- Plugin supports Linux arm64 platform for UE 5.0 and newer.
 
 ## Development
 

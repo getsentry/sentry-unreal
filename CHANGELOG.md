@@ -1,5 +1,56 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Native SDK from v0.7.12 to v0.7.13 ([#690](https://github.com/getsentry/sentry-unreal/pull/690))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0713)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.12...0.7.13)
+- Bump Java SDK (Android) from v7.17.0 to v7.18.0 ([#689](https://github.com/getsentry/sentry-unreal/pull/689))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7180)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.17.0...7.18.0)
+
+## 0.21.0
+
+### Features
+
+- Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
+- Add LinuxArm64 support for UE plugin ([#672](https://github.com/getsentry/sentry-unreal/pull/672))
+- Add UE 4.27, 5.0 and 5.1 to CI pipeline ([#675](https://github.com/getsentry/sentry-unreal/pull/675))
+
+### Fixes
+
+- Fix issue with `MaxBreadcrumbs` setting is not respected on desktop ([#688](https://github.com/getsentry/sentry-unreal/pull/688))
+
+### Dependencies
+
+- Bump CLI from v2.37.0 to v2.38.2 ([#663](https://github.com/getsentry/sentry-unreal/pull/663), [#670](https://github.com/getsentry/sentry-unreal/pull/670), [#677](https://github.com/getsentry/sentry-unreal/pull/677))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2382)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.37.0...2.38.2)
+- Bump Java SDK (Android) from v7.15.0 to v7.17.0 ([#665](https://github.com/getsentry/sentry-unreal/pull/665), [#682](https://github.com/getsentry/sentry-unreal/pull/682))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7170)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.15.0...7.17.0)
+- Bump Native SDK from v0.7.6 to v0.7.12 ([#667](https://github.com/getsentry/sentry-unreal/pull/667), [#678](https://github.com/getsentry/sentry-unreal/pull/678))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0712)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.6...0.7.12)
+- Bump Cocoa SDK (iOS) from v8.38.0 to v8.40.1 ([#668](https://github.com/getsentry/sentry-unreal/pull/668), [#679](https://github.com/getsentry/sentry-unreal/pull/679), [#680](https://github.com/getsentry/sentry-unreal/pull/680))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8401)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.38.0...8.40.1)
+
+## 0.20.1
+
+### Fixes
+
+- Fix Sentry initialization on Amazon Linux ([#657](https://github.com/getsentry/sentry-unreal/pull/657))
+- Fix build errors in UE 4.27 ([#660](https://github.com/getsentry/sentry-unreal/pull/660))
+
+### Dependencies
+
+- Bump Cocoa SDK (iOS) from v8.37.0 to v8.38.0 ([#659](https://github.com/getsentry/sentry-unreal/pull/659))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8380)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.37.0...8.38.0)
+
 ## 0.20.0
 
 ### Features

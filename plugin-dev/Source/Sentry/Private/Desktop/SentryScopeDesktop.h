@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Containers/RingBuffer.h"
 #include "HAL/CriticalSection.h"
 
 #include "Interface/SentryScopeInterface.h"
@@ -58,7 +59,7 @@ private:
 
 	TMap<FString, TMap<FString, FString>> ContextsDesktop;
 
-	TArray<TSharedPtr<SentryBreadcrumbDesktop>> BreadcrumbsDesktop;
+	TRingBuffer<TSharedPtr<SentryBreadcrumbDesktop>> BreadcrumbsDesktop;
 
 	ESentryLevel LevelDesktop;
 

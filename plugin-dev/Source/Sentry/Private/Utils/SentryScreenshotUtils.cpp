@@ -11,6 +11,7 @@
 #include "Misc/FileHelper.h"
 #include "Engine/GameViewportClient.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 {
@@ -47,10 +48,16 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
+#if ENGINE_MAJOR_VERSION == 5
 	GetHighResScreenshotConfig().MergeMaskIntoAlpha(Bitmap, FIntRect());
-
 	TArray64<uint8> CompressedBitmap;
 	FImageUtils::PNGCompressImageArray(ViewportSize.X, ViewportSize.Y, Bitmap, CompressedBitmap);
+#else
+	GetHighResScreenshotConfig().MergeMaskIntoAlpha(Bitmap);
+	TArray<uint8> CompressedBitmap;
+	FImageUtils::CompressImageArray(ViewportSize.X, ViewportSize.Y, Bitmap, CompressedBitmap);
+#endif
+
 	FFileHelper::SaveArrayToFile(CompressedBitmap, *ScreenshotSavePath);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Screenshot saved to: %s"), *ScreenshotSavePath);

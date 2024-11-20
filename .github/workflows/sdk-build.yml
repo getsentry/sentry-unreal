@@ -7,24 +7,38 @@ on:
       target:
         required: true
         type: string
+      container:
+        required: false
+        type: string
 
 jobs:
   build:
     runs-on: ${{ inputs.runsOn }}
+    container:
+      image: ${{ inputs.container }}
     timeout-minutes: 30
     defaults:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v3
+      - name: Configure env for Linux arm64 runner
+        if: ${{ inputs.target == 'LinuxArm64' }}
+        run: |
+          apt-get update
+          apt-get -y install sudo
+          apt-get -y install wget
+          apt-get -y install cmake
+          apt-get -y install software-properties-common
+          apt-get -y install git
+          git config --global --add safe.directory $(pwd)
+
+      - uses: actions/checkout@v4
 
       - name: Select submodule
         id: env
         run: |
           if [[ "${{ inputs.target }}" == "Android" ]]; then
             submodule="modules/sentry-java"
-          elif [[ "${{ inputs.target }}" == "IOS" || "${{ inputs.target }}" == "Mac" ]]; then
-            submodule="modules/sentry-cocoa"
           else
             submodule="modules/sentry-native"
           fi
@@ -33,9 +47,10 @@ jobs:
           echo "buildScript=scripts/build-$(echo '${{ inputs.target }}' | tr '[:upper:]' '[:lower:]').sh" >> $GITHUB_OUTPUT
 
       - name: Get submodule status
-        run: git submodule status --cached ${{ steps.env.outputs.submodule }} | tee submodule-status
+        run: |          
+          git submodule status --cached ${{ steps.env.outputs.submodule }} | tee submodule-status
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: cache
         with:
           path: |
@@ -43,13 +58,18 @@ jobs:
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk.yml') }}
 
-      - name: Install Linux Dependencies
-        if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+      - name: Install Linux/LinuxArm64 Dependencies
+        if: ${{ (inputs.target == 'Linux' || inputs.target == 'LinuxArm64') && steps.cache.outputs.cache-hit != 'true' }}
         run: |
           sudo apt-get update
-          sudo apt-get install zlib1g-dev libcurl4-openssl-dev clang libc++-dev
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 13
+          sudo ./llvm.sh 16
+          sudo apt-get -y install libc++-16-dev libc++abi-16-dev libstdc++-11-dev zlib1g-dev libcurl4-openssl-dev
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         if: ${{ inputs.target == 'Android' }}
         with:
           distribution: temurin

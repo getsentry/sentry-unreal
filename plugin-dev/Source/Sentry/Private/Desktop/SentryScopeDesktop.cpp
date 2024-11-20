@@ -6,6 +6,9 @@
 
 #include "Interface/SentryAttachmentInterface.h"
 
+#include "SentryModule.h"
+#include "SentrySettings.h"
+
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
 #if USE_SENTRY_NATIVE
@@ -23,7 +26,7 @@ SentryScopeDesktop::SentryScopeDesktop(const SentryScopeDesktop& Scope)
 	TagsDesktop = Scope.TagsDesktop;
 	ExtraDesktop = Scope.ExtraDesktop;
 	ContextsDesktop = Scope.ContextsDesktop;
-	BreadcrumbsDesktop = Scope.BreadcrumbsDesktop;
+	BreadcrumbsDesktop = TRingBuffer<TSharedPtr<SentryBreadcrumbDesktop>>(Scope.BreadcrumbsDesktop);
 	LevelDesktop = Scope.LevelDesktop;
 }
 
@@ -33,13 +36,13 @@ SentryScopeDesktop::~SentryScopeDesktop()
 
 void SentryScopeDesktop::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	FScopeLock Lock(&CriticalSection);
-
-	BreadcrumbsDesktop.Add(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb));
+	AddBreadcrumb(StaticCastSharedPtr<SentryBreadcrumbDesktop>(breadcrumb->GetNativeImpl()));
 }
 
 void SentryScopeDesktop::ClearBreadcrumbs()
 {
+	FScopeLock Lock(&CriticalSection);
+
 	BreadcrumbsDesktop.Empty();
 }
 
@@ -261,7 +264,7 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 		}
 	}
 
-	if(BreadcrumbsDesktop.Num() > 0)
+	if(!BreadcrumbsDesktop.IsEmpty())
 	{
 		sentry_value_t eventBreadcrumbs = sentry_value_get_by_key(nativeEvent, "breadcrumbs");
 		if(sentry_value_is_null(eventBreadcrumbs))
@@ -292,6 +295,11 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 void SentryScopeDesktop::AddBreadcrumb(TSharedPtr<SentryBreadcrumbDesktop> breadcrumb)
 {
 	FScopeLock Lock(&CriticalSection);
+
+	if(BreadcrumbsDesktop.Num() >= FSentryModule::Get().GetSettings()->MaxBreadcrumbs)
+	{
+		BreadcrumbsDesktop.PopFront();
+	}
 
 	BreadcrumbsDesktop.Add(breadcrumb);
 }

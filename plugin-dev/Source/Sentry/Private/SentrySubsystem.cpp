@@ -22,6 +22,7 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/App.h"
+#include "Misc/AssertionMacros.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
 

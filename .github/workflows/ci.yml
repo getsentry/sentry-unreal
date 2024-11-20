@@ -4,50 +4,57 @@ on: push
 
 jobs:
   android-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Android
       runsOn: ubuntu-latest
 
   ios-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-download.yml
     with:
       target: IOS
-      runsOn: macos-13
+      runsOn: ubuntu-latest
 
   macos-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-download.yml
     with:
       target: Mac
-      runsOn: macos-13
+      runsOn: ubuntu-latest
 
   linux-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Linux
       # Build for an older GLIBC so that it can run with the old GLIBC included in EpicGames' Unreal docker images.
       # See discussion in https://github.com/getsentry/sentry-unreal/pull/173
       runsOn: ubuntu-20.04
 
+  linux-arm64-sdk:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: LinuxArm64
+      runsOn: ubuntu-latest-4-cores-arm64
+      container: arm64v8/ubuntu:20.04
+
   windows-crashpad-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Win64-Crashpad
       runsOn: windows-2019
 
   windows-breakpad-sdk:
-    uses: ./.github/workflows/sdk.yml
+    uses: ./.github/workflows/sdk-build.yml
     with:
       target: Win64-Breakpad
       runsOn: windows-2019
 
   build:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
     name: Package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download CLI
         shell: pwsh
@@ -80,6 +87,11 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
+          name: LinuxArm64-sdk
+          path: plugin-dev/Source/ThirdParty/LinuxArm64
+
+      - uses: actions/download-artifact@v4
+        with:
           name: Win64-Crashpad-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Crashpad
 
@@ -109,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download packages
         uses: actions/download-artifact@v4
@@ -126,13 +138,13 @@ jobs:
 
   test:
     name: Test UE ${{ matrix.unreal }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4-cores
 
     strategy:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['5.2', '5.3', '5.4']
+        unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4']
         app: ['sample']
 
     steps:
@@ -179,35 +191,32 @@ jobs:
             --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
-          # Add the user so it has a home directory (needed for the pip cache later on)
-          docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
             cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt "
-          # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
-          # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
+
+      # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
+      # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
+      - name: Chown Docker container paths
+        run: |
+          uid=$(id -u) # the GH action user ID
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/DotNet "
-
-      - name: Setup UE CLI
-        run: docker exec unreal bash -c '
-          pip3 install --upgrade pip ;
-          pip3 install -Iv ue4cli==0.0.54 ;
-          ue4 setroot /home/ue4/UnrealEngine '
+            chown -R $uid /home/ue4/UnrealEngine/Engine/${{ matrix.unreal == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} "
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
           apt-get update ;
-          apt-get install -y libc++-dev '
+          add-apt-repository ppa:ubuntu-toolchain-r/test ;
+          apt-get install -y libstdc++6'
 
       - name: Download package
         uses: actions/download-artifact@v4
         with:
           name: ${{ github.sha }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: checkout
 
@@ -221,8 +230,20 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 build
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 editor \
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+            -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
+            -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds \
+            -platform=Linux \
+            -nop4 \
+            -cook \
+            -build \
+            -stage \
+            -prereqss \
+            -package \
+            -archive
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
+            cp -r '/home/ue4/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/${{ matrix.unreal == '4.27' && 'UE4Editor' || 'UnrealEditor' }} \
             /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
             -ExecCmds="Automation RunTests Sentry;quit" \
@@ -230,7 +251,7 @@ jobs:
             -Unattended \
             -NoPause \
             -NoSplash \
-            -NullRHI
+            -NullRHI          
 
       - name: Collect ${{ matrix.app }} test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
@@ -240,16 +261,8 @@ jobs:
           path: |
             checkout/${{ matrix.app }}/Saved/Automation
 
-      - name: Build & package ${{ matrix.app }}
-        # Unreal 5.0 takes ~1 hour to build+package the app so only do it on v4.27
-        if: ${{ matrix.unreal == '4.27'}}
-        id: package-app
-        run: |
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal ue4 package
-          docker exec -w /workspace/checkout/${{ matrix.app }} unreal cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs
-  
       - name: Collect ${{ matrix.app }} build info
-        if: contains(fromJson('["success", "failure"]'), steps.package-app.outcome)
+        if: contains(fromJson('["success", "failure"]'), steps.run-tests.outcome)
         uses: actions/upload-artifact@v4
         with:
           name: UE ${{ matrix.unreal }} ${{ matrix.app }} build logs
