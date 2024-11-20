@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 
-class USentryTransactionContext;
+class ISentryTransactionContext;
 
 class ISentrySamplingContext
 {
 public:
 	virtual ~ISentrySamplingContext() = default;
 
-	virtual USentryTransactionContext* GetTransactionContext() const = 0;
+	virtual TSharedPtr<ISentryTransactionContext> GetTransactionContext() const = 0;
 	virtual TMap<FString, FString> GetCustomSamplingContext() const = 0;
 };

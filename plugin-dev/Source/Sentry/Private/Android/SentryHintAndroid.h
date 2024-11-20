@@ -14,7 +14,7 @@ public:
 
 	void SetupClassMethods();
 
-	virtual void AddAttachment(USentryAttachment* attachment) override;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 
 private:
 	FSentryJavaMethod AddAttachmentMethod;

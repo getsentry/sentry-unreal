@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentryTransactionAndroid.h"
+#include "SentrySpanAndroid.h"
 
 #include "Infrastructure/SentryConvertorsAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
@@ -22,10 +23,10 @@ void SentryTransactionAndroid::SetupClassMethods()
 	ToSentryTraceMethod = GetMethod("toSentryTrace", "()Lio/sentry/SentryTraceHeader;");
 }
 
-USentrySpan* SentryTransactionAndroid::StartChild(const FString& operation, const FString& desctiption)
+TSharedPtr<ISentrySpan> SentryTransactionAndroid::StartChild(const FString& operation, const FString& desctiption)
 {
 	auto span = CallObjectMethod<jobject>(StartChildMethod, *GetJString(operation), *GetJString(desctiption));
-	return SentryConvertorsAndroid::SentrySpanToUnreal(*span);
+	return MakeShareable(new SentrySpanAndroid(*span));
 }
 
 void SentryTransactionAndroid::Finish()
