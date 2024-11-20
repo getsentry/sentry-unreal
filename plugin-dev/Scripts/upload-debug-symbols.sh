@@ -20,7 +20,7 @@ fi
 
 if [ $targetPlatform = "IOS" ] || [ $targetPlatform = "Mac" ]; then
     SENTRY_CLI_EXEC="$pluginPath/Source/ThirdParty/CLI/sentry-cli-Darwin-universal"
-elif [ $targetPlatform = "Linux" ]; then
+elif [ $targetPlatform = "Linux" ] || [ $targetPlatform = "LinuxArm64" ]; then
     SENTRY_CLI_EXEC="$pluginPath/Source/ThirdParty/CLI/sentry-cli-Linux-x86_64"
 elif [ $targetPlatform = "Android" ]; then
     echo "Sentry: Debug symbols upload for Android is handled by Sentry's gradle plugin if enabled"

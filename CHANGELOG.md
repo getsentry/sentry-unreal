@@ -2,14 +2,30 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix compatibility issues with UE 5.5 ([#684](https://github.com/getsentry/sentry-unreal/pull/684))
+
+### Dependencies
+
+- Bump Native SDK from v0.7.12 to v0.7.13 ([#690](https://github.com/getsentry/sentry-unreal/pull/690))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0713)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.12...0.7.13)
+- Bump Java SDK (Android) from v7.17.0 to v7.18.0 ([#689](https://github.com/getsentry/sentry-unreal/pull/689))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7180)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.17.0...7.18.0)
+
+## 0.21.0
+
 ### Features
 
 - Assertions now print their callstack a log file ([#637](https://github.com/getsentry/sentry-unreal/pull/637))
+- Add LinuxArm64 support for UE plugin ([#672](https://github.com/getsentry/sentry-unreal/pull/672))
 - Add UE 4.27, 5.0 and 5.1 to CI pipeline ([#675](https://github.com/getsentry/sentry-unreal/pull/675))
 
 ### Fixes
 
-- Fix compatibility issues with UE 5.5 ([#684](https://github.com/getsentry/sentry-unreal/pull/684))
+- Fix issue with `MaxBreadcrumbs` setting is not respected on desktop ([#688](https://github.com/getsentry/sentry-unreal/pull/688))
 
 ### Dependencies
 

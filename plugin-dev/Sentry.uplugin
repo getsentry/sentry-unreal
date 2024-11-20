@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "0.20.1",
+	"VersionName": "0.21.0",
 	"FriendlyName": "Sentry",
 	"Description": "Sentry catches all your errors and performance issues, and shows you how to fix them before they bring down the player experience.",
 	"Category": "Code Plugins",
@@ -19,13 +19,13 @@
 			"Name": "Sentry",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
 		},
 		{
 			"Name": "SentryEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
 		}
 	],
 	"PostBuildSteps":
