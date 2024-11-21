@@ -31,6 +31,13 @@
         <!-- In UE 5.5 and newer there's no need to bump the default Gradle version (8.7+) as it's compatible with Sentry gradle plugin anyway -->
         <setBoolAnd result="bHasModernGradle" arg1="$B(bEngineMajorVersionEqual5)" arg2="$B(bEngineMinorVersionGreaterEqual5)"/>
 
+        <if condition="bHasModernGradle">
+            <true>
+                <log text="In UE 5.5 and newer using legacy Sentry gradle plugin in not supported."/>
+                <setBool result="bUseLegacyGradlePlugin" value="false"/>
+            </true>
+        </if>
+
         <setBoolOr result="bSkipGradleOverride" arg1="$B(bUseLegacyGradlePlugin)" arg2="$B(bHasModernGradle)"/>
     </init>
 
@@ -175,7 +182,7 @@
                     </true>
                     <false>
                         <log text="Using Sentry Gradle plugin 4.11.0 for Android debug symbol upload."/>
-                        <log text="Enable legacy Sentry Gradle plugin in project settings in case current version conflicts with other plugins."/>
+                        <log text="Enable legacy Sentry Gradle plugin in project settings in case current version conflicts with other plugins (for UE 5.4 and older)."/>
                         <insert>
                             dependencies {
                                 classpath 'com.android.tools.build:gradle:7.4.2'
