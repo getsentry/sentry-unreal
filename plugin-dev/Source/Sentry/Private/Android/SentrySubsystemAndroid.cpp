@@ -248,12 +248,12 @@ void SentrySubsystemAndroid::SetLevel(ESentryLevel level)
 
 void SentrySubsystemAndroid::StartSession()
 {
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "startSession", "()V", nullptr);
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "startSession", "()V", nullptr);
 }
 
 void SentrySubsystemAndroid::EndSession()
 {
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "endSession", "()V", nullptr);
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "endSession", "()V", nullptr);
 }
 
 TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransaction(const FString& name, const FString& operation)
