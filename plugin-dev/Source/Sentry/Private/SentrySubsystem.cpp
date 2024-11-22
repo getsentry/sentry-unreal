@@ -489,6 +489,7 @@ void USentrySubsystem::AddDefaultContext()
 	DefaultContext.Add(TEXT("Is standalone"), FApp::IsStandalone() ? TEXT("True") : TEXT("False"));
 	DefaultContext.Add(TEXT("Is unattended"), FApp::IsUnattended() ? TEXT("True") : TEXT("False"));
 	DefaultContext.Add(TEXT("Game name"), FApp::GetName());
+	DefaultContext.Add(TEXT("Command Line Arguments"), FCommandLine::GetOriginal());
 
 	SubsystemNativeImpl->SetContext(TEXT("Unreal Engine"), DefaultContext);
 }
