@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix crash on Android when starting/ending session manually ([#696](https://github.com/getsentry/sentry-unreal/pull/696))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.12 to v0.7.15 ([#690](https://github.com/getsentry/sentry-unreal/pull/690), [#693](https://github.com/getsentry/sentry-unreal/pull/693), [#695](https://github.com/getsentry/sentry-unreal/pull/695))
