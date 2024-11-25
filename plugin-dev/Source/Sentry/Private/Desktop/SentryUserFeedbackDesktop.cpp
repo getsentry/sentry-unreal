@@ -2,7 +2,7 @@
 
 #include "SentryUserFeedbackDesktop.h"
 
-#include "SentryId.h"
+#include "SentryIdDesktop.h"
 
 #include "Infrastructure/SentryConvertorsDesktop.h"
 
@@ -13,7 +13,7 @@ SentryUserFeedbackDesktop::SentryUserFeedbackDesktop()
 	UserFeedbackDesktop = sentry_value_new_object();
 }
 
-SentryUserFeedbackDesktop::SentryUserFeedbackDesktop(USentryId* eventId)
+SentryUserFeedbackDesktop::SentryUserFeedbackDesktop(TSharedPtr<ISentryId> eventId)
 {
 	UserFeedbackDesktop = sentry_value_new_object();
 	sentry_value_set_by_key(UserFeedbackDesktop, "event_id", sentry_value_new_string(TCHAR_TO_ANSI(*eventId->ToString())));

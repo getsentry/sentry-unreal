@@ -8,21 +8,16 @@
 #include "SentryUserApple.h"
 #include "SentryUserFeedbackApple.h"
 #include "SentryTransactionApple.h"
-#include "SentrySamplingContextApple.h"
 #include "SentryTransactionContextApple.h"
+#include "SentrySamplingContextApple.h"
+#include "SentryIdApple.h"
 
 #include "SentryEvent.h"
-#include "SentryBreadcrumb.h"
-#include "SentryId.h"
 #include "SentrySettings.h"
-#include "SentryUserFeedback.h"
-#include "SentryUser.h"
-#include "SentryTransaction.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
-#include "SentryTransactionContext.h"
 
 #include "Infrastructure/SentryConvertorsApple.h"
 
@@ -119,9 +114,9 @@ ESentryCrashedLastRun SentrySubsystemApple::IsCrashedLastRun()
 	return [SENTRY_APPLE_CLASS(SentrySDK) crashedLastRun] ? ESentryCrashedLastRun::Crashed : ESentryCrashedLastRun::NotCrashed;
 }
 
-void SentrySubsystemApple::AddBreadcrumb(USentryBreadcrumb* breadcrumb)
+void SentrySubsystemApple::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbApple>(breadcrumb->GetNativeImpl());
+	TSharedPtr<SentryBreadcrumbApple> breadcrumbIOS = StaticCastSharedPtr<SentryBreadcrumbApple>(breadcrumb);
 
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
@@ -145,45 +140,45 @@ void SentrySubsystemApple::ClearBreadcrumbs()
 	}];
 }
 
-USentryId* SentrySubsystemApple::CaptureMessage(const FString& message, ESentryLevel level)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
 	}];
 
-	return SentryConvertorsApple::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdApple(id));
 }
 
-USentryId* SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FConfigureScopeNativeDelegate& onConfigureScope, ESentryLevel level)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
-		onConfigureScope.ExecuteIfBound(SentryConvertorsApple::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
-	return SentryConvertorsApple::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdApple(id));
 }
 
-USentryId* SentrySubsystemApple::CaptureEvent(USentryEvent* event)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEvent(TSharedPtr<ISentryEvent> event)
 {
-	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event->GetNativeImpl());
+	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
 
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject()];
-	return SentryConvertorsApple::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdApple(id));
 }
 
-USentryId* SentrySubsystemApple::CaptureEventWithScope(USentryEvent* event, const FConfigureScopeNativeDelegate& onConfigureScope)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
 {
-	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event->GetNativeImpl());
+	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
 
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
-		onConfigureScope.ExecuteIfBound(SentryConvertorsApple::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
-	return SentryConvertorsApple::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdApple(id));
 }
 
-USentryId* SentrySubsystemApple::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
 	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
 
@@ -196,10 +191,10 @@ USentryId* SentrySubsystemApple::CaptureException(const FString& type, const FSt
 	exceptionEvent.stacktrace = SentryConvertorsApple::CallstackToNative(StackFrames);
 	
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
-	return SentryConvertorsApple::SentryIdToUnreal(id);
+	return MakeShareable(new SentryIdApple(id));
 }
 
-USentryId* SentrySubsystemApple::CaptureAssertion(const FString& type, const FString& message)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureAssertion(const FString& type, const FString& message)
 {
 #if PLATFORM_MAC
 	int32 framesToSkip = 6;
@@ -212,7 +207,7 @@ USentryId* SentrySubsystemApple::CaptureAssertion(const FString& type, const FSt
 	return CaptureException(type, message, framesToSkip);
 }
 
-USentryId* SentrySubsystemApple::CaptureEnsure(const FString& type, const FString& message)
+TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEnsure(const FString& type, const FString& message)
 {
 	int32 framesToSkip = 6;
 
@@ -221,16 +216,16 @@ USentryId* SentrySubsystemApple::CaptureEnsure(const FString& type, const FStrin
 	return CaptureException(type, message, framesToSkip);
 }
 
-void SentrySubsystemApple::CaptureUserFeedback(USentryUserFeedback* userFeedback)
+void SentrySubsystemApple::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
-	TSharedPtr<SentryUserFeedbackApple> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackApple>(userFeedback->GetNativeImpl());
+	TSharedPtr<SentryUserFeedbackApple> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackApple>(userFeedback);
 
 	[SENTRY_APPLE_CLASS(SentrySDK) captureUserFeedback:userFeedbackIOS->GetNativeObject()];
 }
 
-void SentrySubsystemApple::SetUser(USentryUser* user)
+void SentrySubsystemApple::SetUser(TSharedPtr<ISentryUser> user)
 {
-	TSharedPtr<SentryUserApple> userIOS = StaticCastSharedPtr<SentryUserApple>(user->GetNativeImpl());
+	TSharedPtr<SentryUserApple> userIOS = StaticCastSharedPtr<SentryUserApple>(user);
 
 	[SENTRY_APPLE_CLASS(SentrySDK) setUser:userIOS->GetNativeObject()];
 }
@@ -240,10 +235,10 @@ void SentrySubsystemApple::RemoveUser()
 	[SENTRY_APPLE_CLASS(SentrySDK) setUser:nil];
 }
 
-void SentrySubsystemApple::ConfigureScope(const FConfigureScopeNativeDelegate& onConfigureScope)
+void SentrySubsystemApple::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
-		onConfigureScope.ExecuteIfBound(SentryConvertorsApple::SentryScopeToUnreal(scope));
+		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 }
 
@@ -285,33 +280,33 @@ void SentrySubsystemApple::EndSession()
 	[SENTRY_APPLE_CLASS(SentrySDK) endSession];
 }
 
-USentryTransaction* SentrySubsystemApple::StartTransaction(const FString& name, const FString& operation)
+TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransaction(const FString& name, const FString& operation)
 {
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
 
-	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+	return MakeShareable(new SentryTransactionApple(transaction));
 }
 
-USentryTransaction* SentrySubsystemApple::StartTransactionWithContext(USentryTransactionContext* context)
+TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
 {
-	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context->GetNativeImpl());
+	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context);
 
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()];
 
-	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+	return MakeShareable(new SentryTransactionApple(transaction));
 }
 
-USentryTransaction* SentrySubsystemApple::StartTransactionWithContextAndOptions(USentryTransactionContext* context, const TMap<FString, FString>& options)
+TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
 {
-	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context->GetNativeImpl());
+	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context);
 
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
 		customSamplingContext:SentryConvertorsApple::StringMapToNative(options)];
 
-	return SentryConvertorsApple::SentryTransactionToUnreal(transaction);
+	return MakeShareable(new SentryTransactionApple(transaction));
 }
 
-USentryTransactionContext* SentrySubsystemApple::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+TSharedPtr<ISentryTransactionContext> SentrySubsystemApple::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
 {
 	TArray<FString> traceParts;
 	sentryTrace.ParseIntoArray(traceParts, TEXT("-"));
@@ -343,5 +338,5 @@ USentryTransactionContext* SentrySubsystemApple::ContinueTrace(const FString& se
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
-	return SentryConvertorsApple::SentryTransactionContextToUnreal(transactionContext);
+	return MakeShareable(new SentryTransactionContextApple(transactionContext));
 }

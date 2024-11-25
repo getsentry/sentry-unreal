@@ -6,17 +6,17 @@
 
 #include "SentryDataTypes.h"
 
-class USentryBreadcrumb;
-class USentryAttachment;
+class ISentryBreadcrumb;
+class ISentryAttachment;
 
 class ISentryScope
 {
 public:
 	virtual ~ISentryScope() = default;
 
-	virtual void AddBreadcrumb(USentryBreadcrumb* breadcrumb) = 0;
+	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) = 0;
 	virtual void ClearBreadcrumbs() = 0;
-	virtual void AddAttachment(USentryAttachment* attachment) = 0;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
 	virtual void ClearAttachments() = 0;
 	virtual void SetTagValue(const FString& key, const FString& value) = 0;
 	virtual FString GetTagValue(const FString& key) const = 0;

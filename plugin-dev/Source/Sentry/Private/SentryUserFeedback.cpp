@@ -16,11 +16,11 @@
 void USentryUserFeedback::Initialize(USentryId* EventId)
 {
 #if PLATFORM_ANDROID
-	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackAndroid(EventId));
+	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackAndroid(EventId->GetNativeImpl()));
 #elif PLATFORM_IOS || PLATFORM_MAC
-	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackApple(EventId));
+	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackApple(EventId->GetNativeImpl()));
 #elif PLATFORM_WINDOWS || PLATFORM_LINUX
-	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackDesktop(EventId));
+	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackDesktop(EventId->GetNativeImpl()));
 #endif
 }
 

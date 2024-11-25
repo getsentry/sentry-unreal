@@ -12,11 +12,12 @@
 SentrySpanApple::SentrySpanApple(id<SentrySpan> span)
 {
 	SpanApple = span;
+	[SpanApple retain];
 }
 
 SentrySpanApple::~SentrySpanApple()
 {
-	// Put custom destructor logic here if needed
+	[SpanApple release];
 }
 
 id<SentrySpan> SentrySpanApple::GetNativeObject()

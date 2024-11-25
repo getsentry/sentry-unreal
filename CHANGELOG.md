@@ -5,15 +5,22 @@
 ### Fixes
 
 - Fix compatibility issues with UE 5.5 ([#684](https://github.com/getsentry/sentry-unreal/pull/684))
+- Fix crash on Android when starting/ending session manually ([#696](https://github.com/getsentry/sentry-unreal/pull/696))
 
 ### Dependencies
 
-- Bump Native SDK from v0.7.12 to v0.7.13 ([#690](https://github.com/getsentry/sentry-unreal/pull/690))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0713)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.12...0.7.13)
+- Bump Native SDK from v0.7.12 to v0.7.15 ([#690](https://github.com/getsentry/sentry-unreal/pull/690), [#693](https://github.com/getsentry/sentry-unreal/pull/693), [#695](https://github.com/getsentry/sentry-unreal/pull/695))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0715)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.12...0.7.15)
 - Bump Java SDK (Android) from v7.17.0 to v7.18.0 ([#689](https://github.com/getsentry/sentry-unreal/pull/689))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7180)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.17.0...7.18.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.40.1 to v8.41.0 ([#698](https://github.com/getsentry/sentry-unreal/pull/698))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8410)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.40.1...8.41.0)
+- Bump CLI from v2.38.2 to v2.39.0 ([#699](https://github.com/getsentry/sentry-unreal/pull/699))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2390)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.38.2...2.39.0)
 
 ## 0.21.0
 

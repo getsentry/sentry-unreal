@@ -1,3 +1,5 @@
+// Copyright (c) 2023 Sentry. All Rights Reserved.
+
 #include "SentryHintAndroid.h"
 
 #include "SentryAttachmentAndroid.h"
@@ -23,8 +25,8 @@ void SentryHintAndroid::SetupClassMethods()
 	AddAttachmentMethod = GetMethod("addAttachment", "(Lio/sentry/Attachment;)V");
 }
 
-void SentryHintAndroid::AddAttachment(USentryAttachment* attachment)
+void SentryHintAndroid::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	TSharedPtr<SentryAttachmentAndroid> attachmentAndroid = StaticCastSharedPtr<SentryAttachmentAndroid>(attachment->GetNativeImpl());
+	TSharedPtr<SentryAttachmentAndroid> attachmentAndroid = StaticCastSharedPtr<SentryAttachmentAndroid>(attachment);
 	CallMethod<void>(AddAttachmentMethod, attachmentAndroid->GetJObject());
 }

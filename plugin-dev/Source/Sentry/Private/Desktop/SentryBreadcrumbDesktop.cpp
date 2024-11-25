@@ -8,17 +8,17 @@
 
 SentryBreadcrumbDesktop::SentryBreadcrumbDesktop()
 {
-    BreadcrumbDesktop = sentry_value_new_breadcrumb("", "");
+	BreadcrumbDesktop = sentry_value_new_breadcrumb("", "");
 }
 
 SentryBreadcrumbDesktop::SentryBreadcrumbDesktop(sentry_value_t breadcrumb)
 {
-    BreadcrumbDesktop = breadcrumb;
+	BreadcrumbDesktop = breadcrumb;
 }
 
 SentryBreadcrumbDesktop::~SentryBreadcrumbDesktop()
 {
-    // Put custom destructor logic here if needed
+	// Put custom destructor logic here if needed
 }
 
 sentry_value_t SentryBreadcrumbDesktop::GetNativeObject()
@@ -61,12 +61,12 @@ FString SentryBreadcrumbDesktop::GetCategory() const
 
 void SentryBreadcrumbDesktop::SetData(const TMap<FString, FString>& data)
 {
-    sentry_value_set_by_key(BreadcrumbDesktop, "data", SentryConvertorsDesktop::StringMapToNative(data));
+	sentry_value_set_by_key(BreadcrumbDesktop, "data", SentryConvertorsDesktop::StringMapToNative(data));
 }
 
 TMap<FString, FString> SentryBreadcrumbDesktop::GetData() const
 {
-    sentry_value_t data = sentry_value_get_by_key(BreadcrumbDesktop, "data");
+	sentry_value_t data = sentry_value_get_by_key(BreadcrumbDesktop, "data");
 	return SentryConvertorsDesktop::StringMapToUnreal(data);
 }
 
