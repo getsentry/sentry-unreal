@@ -25,7 +25,7 @@ USentryEvent* USentryBeforeSendHandler::HandleBeforeSend_Implementation(USentryE
 #endif
 
 		USentryAttachment* Attachment = NewObject<USentryAttachment>();
-		Attachment->InitializeWithPath(LogFilePath, FPaths::GetCleanFilename(LogFilePath), TEXT("application/octet-stream"));
+		Attachment->InitializeWithPath(LogFilePath, FPaths::GetCleanFilename(LogFilePath), TEXT("text/plain"));
 
 		if(Hint != nullptr)
 		{
