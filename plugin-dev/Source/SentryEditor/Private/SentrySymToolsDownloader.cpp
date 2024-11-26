@@ -7,14 +7,17 @@
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Interfaces/IPluginManager.h"
-#if ENGINE_MAJOR_VERSION >= 5
-#include "HAL/PlatformFileManager.h"
-#else
-#include "HAL/PlatformFilemanager.h"
-#endif
+
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/EngineVersionComparison.h"
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#include "HAL/PlatformFilemanager.h"
+#else
+#include "HAL/PlatformFileManager.h"
+#endif
 
 #if PLATFORM_WINDOWS
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Windows-x86_64.exe");

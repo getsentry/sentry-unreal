@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 
-#include "Runtime/Launch/Resources/Version.h"
+#include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 
 #if USE_SENTRY_NATIVE
 
 class SentryScopeDesktop;
 
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
-struct FSentryCrashContext
-#else
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 struct FSentryCrashContext : public FGenericCrashContext
+#else
+struct FSentryCrashContext
 #endif
 {
 	FSentryCrashContext(TSharedPtr<FSharedCrashContext> Context);

@@ -14,6 +14,7 @@
 #include "Engine/Engine.h"
 #include "Misc/Paths.h"
 #include "Misc/ConfigCacheIni.h"
+#include "Misc/EngineVersionComparison.h"
 #include "PropertyHandle.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "HAL/FileManager.h"
@@ -29,16 +30,16 @@
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Widgets/Images/SImage.h"
 
-#if ENGINE_MAJOR_VERSION >= 5
-#include "Styling/AppStyle.h"
-#else
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "EditorStyleSet.h"
+#else
+#include "Styling/AppStyle.h"
 #endif
 
-#if ENGINE_MAJOR_VERSION >= 5
-#include "HAL/PlatformFileManager.h"
-#else
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "HAL/PlatformFilemanager.h"
+#else
+#include "HAL/PlatformFileManager.h"
 #endif
 
 const FString FSentrySettingsCustomization::DefaultCrcEndpoint = TEXT("https://datarouter.ol.epicgames.com/datarouter/api/v1/public/data");
@@ -74,7 +75,7 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 	IDetailCategoryBuilder& GeneralCategory = DetailBuilder.EditCategory(TEXT("General"));
 
 	TSharedRef<SWidget> GeneralMissingDsnWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-	FText::FromString(TEXT("Sentry DSN is not configured.")), FText());
+		FText::FromString(TEXT("Sentry DSN is not configured.")), FText());
 
 	TSharedRef<SWidget> GeneralModifiedWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
 		FText::FromString(TEXT("Sentry settings were modified.")), FText::FromString(TEXT("Apply")));
@@ -82,10 +83,10 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 	TSharedRef<SWidget> GeneralConfiguredWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
 		FText::FromString(TEXT("Sentry is configured.")), FText());
 
-#if ENGINE_MAJOR_VERSION >= 5
-	const ISlateStyle& Style = FAppStyle::Get();
-#else
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	const ISlateStyle& Style = FEditorStyle::Get();
+#else
+	const ISlateStyle& Style = FAppStyle::Get();
 #endif
 
 	GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
@@ -155,10 +156,10 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 
 	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
 
-#if ENGINE_MAJOR_VERSION >= 5
-	const ISlateStyle& Style = FAppStyle::Get();
-#else
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	const ISlateStyle& Style = FEditorStyle::Get();
+#else
+	const ISlateStyle& Style = FAppStyle::Get();
 #endif
 
 	CrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporter")), false)
@@ -254,10 +255,10 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
 		FText::FromString(TEXT("Sentry symbol upload tools are configured.")), FText::FromString(TEXT("Reload")));
 
-#if ENGINE_MAJOR_VERSION >= 5
-	const ISlateStyle& Style = FAppStyle::Get();
-#else
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	const ISlateStyle& Style = FEditorStyle::Get();
+#else
+	const ISlateStyle& Style = FAppStyle::Get();
 #endif
 
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
@@ -328,10 +329,10 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(F
 		.VAlign(VAlign_Center)
 		[
 			SNew(SImage)
-	#if ENGINE_MAJOR_VERSION >= 5
-			.Image(FAppStyle::Get().GetBrush(IconName))
-	#else
+	#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			.Image(FEditorStyle::Get().GetBrush(IconName))
+	#else
+			.Image(FAppStyle::Get().GetBrush(IconName))
 	#endif
 		]
 
@@ -380,10 +381,10 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FNa
 		.VAlign(VAlign_Center)
 		[
 			SNew(SImage)
-	#if ENGINE_MAJOR_VERSION >= 5
-			.Image(FAppStyle::Get().GetBrush(IconName))
-	#else
+	#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			.Image(FEditorStyle::Get().GetBrush(IconName))
+	#else
+			.Image(FAppStyle::Get().GetBrush(IconName))
 	#endif
 		]
 
@@ -420,11 +421,11 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FNa
 					IUATHelperModule::Get().CreateUatTask(CommandLine, FText::FromString("Windows"),
 						FText::FromString("Compiling Sentry for Linux"),
 						FText::FromString("Compile Sentry Linux"),
-					#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+					#if UE_VERSION_OLDER_THAN(5, 1, 0)
+						FEditorStyle::GetBrush(TEXT("MainFrame.CookContent")),
+					#else
 						FAppStyle::GetBrush(TEXT("MainFrame.CookContent")),
 						nullptr,
-					#else
-						FEditorStyle::GetBrush(TEXT("MainFrame.CookContent")),
 					#endif
 						[this, TempLinuxBinariesPath](FString result, double X)
 						{
@@ -454,10 +455,10 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 		.VAlign(VAlign_Center)
 		[
 			SNew(SImage)
-#if ENGINE_MAJOR_VERSION >= 5
-			.Image(FAppStyle::Get().GetBrush(IconName))
-#else
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 			.Image(FEditorStyle::Get().GetBrush(IconName))
+#else
+			.Image(FAppStyle::Get().GetBrush(IconName))
 #endif
 		]
 
