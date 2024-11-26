@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Runtime/Launch/Resources/Version.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/OutputDeviceError.h"
 #include "Delegates/Delegate.h"
 
@@ -16,10 +16,10 @@ public:
 
 	FOutputDeviceError* GetParentDevice();
 
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
-	TMulticastDelegate<void(const FString&), FDefaultTSDelegateUserPolicy> OnAssert;
-#else
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 	TMulticastDelegate<void(const FString&)> OnAssert;
+#else
+	TMulticastDelegate<void(const FString&), FDefaultTSDelegateUserPolicy> OnAssert;
 #endif
 
 private:

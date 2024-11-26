@@ -32,7 +32,7 @@
 #include "Misc/ScopeLock.h"
 #include "Misc/CoreDelegates.h"
 #include "HAL/FileManager.h"
-#include "Runtime/Launch/Resources/Version.h"
+#include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 #include "HAL/ExceptionHandling.h"
@@ -71,7 +71,7 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 
 void PrintCrashLog(const sentry_ucontext_t *uctx)
 {
-#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5
+#if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 0, 0)
 
 	SentryConvertorsDesktop::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
 
@@ -92,7 +92,9 @@ void PrintCrashLog(const sentry_ucontext_t *uctx)
 	FDebug::LogFormattedMessageWithCallstack(LogSentrySdk.GetCategoryName(), __FILE__, __LINE__, TEXT("=== Critical error: ==="), GErrorHist, ELogVerbosity::Error);
 #endif
 
+#if !UE_VERSION_OLDER_THAN(5, 1, 0)
 	GLog->Panic();
+#endif
 
 	GMalloc->Free(StackTrace);
 
@@ -281,7 +283,7 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 
 	sentry_clear_crashed_last_run();
 
-#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
+#if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 2, 0)
 	FPlatformMisc::SetCrashHandlingType(settings->EnableAutoCrashCapturing
 		? ECrashHandlingType::Disabled
 		: ECrashHandlingType::Default);
@@ -438,7 +440,7 @@ TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureAssertion(const FString& ty
 
 TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
 {
-#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+#if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 3, 0)
 	int32 framesToSkip = 8;
 #else
 	int32 framesToSkip = 7;

@@ -10,11 +10,11 @@
 #if USE_SENTRY_NATIVE
 
 FSentryCrashContext::FSentryCrashContext(TSharedPtr<FSharedCrashContext> Context)
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
-	: CrashContext(Context)
-#else
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 	: FGenericCrashContext(Context->CrashType, Context->ErrorMessage)
 	, CrashContext(Context)
+#else
+	: CrashContext(Context)
 #endif
 {
 }
@@ -37,7 +37,7 @@ void FSentryCrashContext::Apply(TSharedPtr<SentryScopeDesktop> Scope)
 
 	ContextValues.Add("Crash Type", FGenericCrashContext::GetCrashTypeString(CrashContext->CrashType));
 	ContextValues.Add("IsEnsure", CrashContext->CrashType == ECrashContextType::Ensure ? TEXT("true") : TEXT("false"));
-#if ENGINE_MAJOR_VERSION >= 5
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	ContextValues.Add("IsStall", CrashContext->CrashType == ECrashContextType::Stall ? TEXT("true") : TEXT("false"));
 #endif
 	ContextValues.Add("IsAssert", CrashContext->CrashType == ECrashContextType::Assert ? TEXT("true") : TEXT("false"));
@@ -68,12 +68,12 @@ FString FSentryCrashContext::GetGameData(const FString& Key)
 {
 	const FString* GameDataItem;
 
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
-	GameDataItem = FGenericCrashContext::GetGameData().Find(Key);
-#elif ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 3 
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	GameDataItem = nullptr;
+#elif UE_VERSION_OLDER_THAN(5, 3, 0)
 	GameDataItem = FGenericCrashContext::GetGameData(Key);
 #else
-	GameDataItem = nullptr;
+	GameDataItem = FGenericCrashContext::GetGameData().Find(Key);
 #endif
 
 	return GameDataItem != nullptr ? *GameDataItem : FString();
