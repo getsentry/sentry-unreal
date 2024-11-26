@@ -92,7 +92,9 @@ void PrintCrashLog(const sentry_ucontext_t *uctx)
 	FDebug::LogFormattedMessageWithCallstack(LogSentrySdk.GetCategoryName(), __FILE__, __LINE__, TEXT("=== Critical error: ==="), GErrorHist, ELogVerbosity::Error);
 #endif
 
+#if !UE_VERSION_OLDER_THAN(5, 1, 0)
 	GLog->Panic();
+#endif
 
 	GMalloc->Free(StackTrace);
 
