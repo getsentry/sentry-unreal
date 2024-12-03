@@ -1,5 +1,6 @@
 ﻿// Copyright (c) 2022 Sentry. All Rights Reserved.
 
+#include "SentryTests.h"
 #include "SentryScope.h"
 #include "SentryEvent.h"
 
@@ -18,7 +19,7 @@
 
 #if WITH_AUTOMATION_TESTS
 
-BEGIN_DEFINE_SPEC(SentryScopeSpec, "Sentry.SentryScope", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+BEGIN_DEFINE_SPEC(SentryScopeSpec, "Sentry.SentryScope", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryScope* SentryScope;
 	FString TestDist;
 	FString TestEnvironment;

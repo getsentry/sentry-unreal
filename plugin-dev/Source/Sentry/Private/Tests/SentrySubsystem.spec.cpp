@@ -1,5 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
+#include "SentryTests.h"
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
 #include "SentryTransaction.h"
@@ -12,7 +13,7 @@
 
 #if WITH_AUTOMATION_TESTS
 
-BEGIN_DEFINE_SPEC(SentrySubsystemSpec, "Sentry.SentrySubsystem", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+BEGIN_DEFINE_SPEC(SentrySubsystemSpec, "Sentry.SentrySubsystem", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentrySubsystem* SentrySubsystem;
 END_DEFINE_SPEC(SentrySubsystemSpec)
 

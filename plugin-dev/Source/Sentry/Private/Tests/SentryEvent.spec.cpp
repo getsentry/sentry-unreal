@@ -1,12 +1,13 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
+#include "SentryTests.h"
 #include "SentryEvent.h"
 
 #include "Misc/AutomationTest.h"
 
 #if WITH_AUTOMATION_TESTS
 
-BEGIN_DEFINE_SPEC(SentryEventSpec, "Sentry.SentryEvent", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+BEGIN_DEFINE_SPEC(SentryEventSpec, "Sentry.SentryEvent", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryEvent* SentryEvent;
 END_DEFINE_SPEC(SentryEventSpec)
 

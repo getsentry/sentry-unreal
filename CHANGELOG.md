@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fix compatibility issues with UE 5.5 ([#684](https://github.com/getsentry/sentry-unreal/pull/684))
 - Fix crash on Android when starting/ending session manually ([#696](https://github.com/getsentry/sentry-unreal/pull/696))
 - Fix incorrect mime-type for file attachments ([#701](https://github.com/getsentry/sentry-unreal/pull/701))
 
