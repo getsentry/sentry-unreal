@@ -10,21 +10,18 @@
 
 ### Dependencies
 
-- Bump Native SDK from v0.7.12 to v0.7.15 ([#690](https://github.com/getsentry/sentry-unreal/pull/690), [#693](https://github.com/getsentry/sentry-unreal/pull/693), [#695](https://github.com/getsentry/sentry-unreal/pull/695))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0715)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.12...0.7.15)
-- Bump Java SDK (Android) from v7.17.0 to v7.18.0 ([#689](https://github.com/getsentry/sentry-unreal/pull/689))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7180)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.17.0...7.18.0)
+- Bump Native SDK from v0.7.12 to v0.7.16 ([#690](https://github.com/getsentry/sentry-unreal/pull/690), [#693](https://github.com/getsentry/sentry-unreal/pull/693), [#695](https://github.com/getsentry/sentry-unreal/pull/695), [#705](https://github.com/getsentry/sentry-unreal/pull/705))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0716)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.12...0.7.16)
+- Bump Java SDK (Android) from v7.17.0 to v7.18.1 ([#689](https://github.com/getsentry/sentry-unreal/pull/689), [#703](https://github.com/getsentry/sentry-unreal/pull/703))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7181)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.17.0...7.18.1)
 - Bump Cocoa SDK (iOS and Mac) from v8.40.1 to v8.41.0 ([#698](https://github.com/getsentry/sentry-unreal/pull/698))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8410)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.40.1...8.41.0)
 - Bump CLI from v2.38.2 to v2.39.1 ([#699](https://github.com/getsentry/sentry-unreal/pull/699), [#702](https://github.com/getsentry/sentry-unreal/pull/702))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2391)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.38.2...2.39.1)
-- Bump Java SDK (Android) from v7.18.0 to v7.18.1 ([#703](https://github.com/getsentry/sentry-unreal/pull/703))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7181)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.18.0...7.18.1)
 
 ## 0.21.0
 
