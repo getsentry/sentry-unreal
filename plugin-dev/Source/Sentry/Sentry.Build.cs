@@ -1,4 +1,5 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
+
 using UnrealBuildTool;
 using System;
 using System.IO;
@@ -25,6 +26,18 @@ public static class DateTimeExtensions
 }
 public class CMakeTargetInst
 {
+	// Based on UE4CMake with modifications 
+	// MIT License
+	//
+	// Copyright (c) 2020 Krazer
+	//
+	// 	Permission is hereby granted, free of charge, to any person obtaining a copy
+	// 	of this software and associated documentation files (the "Software"), to deal
+	// in the Software without restriction, including without limitation the rights
+	// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	// copies of the Software, and to permit persons to whom the Software is
+	// furnished to do so, subject to the following conditions:
+	
 	private string m_cmakeTargetPath;
 	private string m_modulePath;
 	private string m_targetName;
@@ -85,7 +98,7 @@ public class CMakeTargetInst
 		return buildType;
 	}
 
-	public bool Load(ReadOnlyTargetRules target, ModuleRules rules, bool useSystemCompiler)
+	public bool Load(ReadOnlyTargetRules target, ModuleRules rules)
 	{
 		string buildType = GetBuildType(target);
 
@@ -112,7 +125,7 @@ public class CMakeTargetInst
 		if(!Directory.Exists(m_buildPath))
 			Directory.CreateDirectory(m_buildPath);
 
-		var moduleBuilt = Build(target, rules, buildType, useSystemCompiler);
+		var moduleBuilt = Build(target, rules, buildType);
 
 		if(!moduleBuilt)
 		{
@@ -121,7 +134,7 @@ public class CMakeTargetInst
 		return true;
 	}
 
-	private bool Build(ReadOnlyTargetRules target, ModuleRules rules, string buildType, bool useSystemCompiler)
+	private bool Build(ReadOnlyTargetRules target, ModuleRules rules, string buildType)
 	{
 		string builtFile = Path.Combine(m_generatedTargetPath, buildType+".built");
 		string projectCMakeLists=Path.GetFullPath(Path.Combine(m_targetPath, "CMakeLists.txt"));
@@ -143,7 +156,7 @@ public class CMakeTargetInst
 		{
 			Console.WriteLine("Target "+m_targetName+" CMakeLists.txt out of date, rebuilding");
 
-			var configureCommand = CreateCMakeConfigCommand(target, rules, m_buildPath, buildType, useSystemCompiler);
+			var configureCommand = CreateCMakeConfigCommand(target, rules, m_buildPath, buildType);
 			var configureCode = ExecuteCommandSync(configureCommand);
 
 			if(configureCode!=0)
@@ -278,7 +291,7 @@ public class CMakeTargetInst
 		return program;
 	}
 
-	private string CreateCMakeConfigCommand(ReadOnlyTargetRules target, ModuleRules rules, string buildDirectory, string buildType, bool useSystemCompiler)
+	private string CreateCMakeConfigCommand(ReadOnlyTargetRules target, ModuleRules rules, string buildDirectory, string buildType)
 	{
 		string program = GetCMakeExe();
 		string options = "";
@@ -435,12 +448,14 @@ public class Sentry : ModuleRules
 		var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/sentry-native";
 	
 		CMakeTargetInst cmakeTarget = new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
-		cmakeTarget.Load(Target, this, false);
+		cmakeTarget.Load(Target, this);
 		
 		PublicIncludePaths.Add(targetLocation + "/include");
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
+			
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
@@ -449,12 +464,15 @@ public class Sentry : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Android"));
+			
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Sentry_Android_UPL.xml"));
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
@@ -464,26 +482,18 @@ public class Sentry : ModuleRules
 		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
 #endif
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
+			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 		}
-		// // Additional routine for Mac
-		// if (Target.Platform == UnrealTargetPlatform.Mac)
-		// {
-		// 	PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-		// 	PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
-
-		// 	RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
-
-		// 	PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
-		// 	PublicDefinitions.Add("COCOAPODS=0");
-		// 	PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
-		// }
 	}
 }
