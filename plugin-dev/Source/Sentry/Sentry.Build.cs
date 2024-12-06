@@ -432,12 +432,12 @@ public class Sentry : ModuleRules
 		);
 
 		var cmakeTargetPath=Path.GetFullPath(Target.ProjectFile.FullName);
-		CMakeTargetInst cmakeTarget = new CMakeTargetInst("sentry-native", Target.Platform.ToString(), Directory .GetParent(cmakeTargetPath).FullName+"/Plugins/sentry-native", "");
-		
-		Console.WriteLine("Loading cmake target: "+cmakeTargetPath);
-		
+		var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/sentry-native";
+	
+		CMakeTargetInst cmakeTarget = new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
 		cmakeTarget.Load(Target, this, false);
-		//CMakeTarget.add(Target, this, "sentry", Path.Combine(this.ModuleDirectory, "../../modules/sentry-native"), "", true);
+		
+		PublicIncludePaths.Add(targetLocation + "/include");
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
@@ -454,6 +454,7 @@ public class Sentry : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
