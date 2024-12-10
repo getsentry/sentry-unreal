@@ -504,6 +504,25 @@ public class Sentry : ModuleRules
 				new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
 			cmakeTarget.Load(Target, this);
 
+			string intermediatePath =
+				Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate", "CMakeTarget", "sentry-native");
+			
+			if (Target.Platform == UnrealTargetPlatform.Win64)
+			{
+				string buildPath = Path.Combine(intermediatePath, "Win64", "build");
+				if(Target.Configuration == UnrealTargetConfiguration.Debug)
+				{
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.lib"));
+				}
+				else
+				{
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.lib"));
+				}
+			}
+			else
+			{
+				Console.WriteLine("Platform not currently supported: " + Target.Platform);
+			}
 
 			PublicIncludePaths.Add(targetLocation + "/include");
 		}
