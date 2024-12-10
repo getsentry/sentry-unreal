@@ -106,7 +106,7 @@ public class CMakeTargetInst
 
 		m_cmakeTargetPath=Path.GetFullPath(rules.Target.ProjectFile.FullName);
 		Console.WriteLine("Loading cmake path=: "+Directory .GetParent(m_cmakeTargetPath).FullName);
-		m_cmakeTargetPath=Directory .GetParent(m_cmakeTargetPath).FullName+"/Plugins/sentry-native";
+		m_cmakeTargetPath=Directory .GetParent(m_cmakeTargetPath).FullName+"/Plugins/Sentry/sentry-native";
 
 		m_modulePath=Path.GetFullPath(rules.ModuleDirectory);
 		m_targetPath=Path.Combine(m_modulePath, m_targetLocation);
@@ -305,6 +305,12 @@ public class CMakeTargetInst
 			options=" -T host=x64";
 		}
 
+		string buildStatic = "";
+		if (rules.PublicDefinitions.Contains("SENTRY_BUILD_STATIC=1"))
+		{
+			buildStatic = "-DSENTRY_BUILD_SHARED_LIBS=ON";
+		}
+
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
 
 		var installPath = m_thirdPartyGeneratedPath;
@@ -314,6 +320,7 @@ public class CMakeTargetInst
 		                " -B \""+buildDirectory+"\""+
 		                " -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
 		                " -DCMAKE_INSTALL_PREFIX=\""+installPath+"\""+
+		                buildStatic+
 		                options+
 		                " "+m_cmakeArgs;
 
@@ -443,15 +450,7 @@ public class Sentry : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 		);
-
-		var cmakeTargetPath=Path.GetFullPath(Target.ProjectFile.FullName);
-		var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/sentry-native";
-	
-		CMakeTargetInst cmakeTarget = new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
-		cmakeTarget.Load(Target, this);
 		
-		PublicIncludePaths.Add(targetLocation + "/include");
-
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
@@ -494,6 +493,19 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
+		}
+
+		if (!PublicDefinitions.Contains("USE_SENTRY_NATIVE=0"))
+		{
+			var cmakeTargetPath = Path.GetFullPath(Target.ProjectFile.FullName);
+			var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/Sentry/sentry-native";
+
+			CMakeTargetInst cmakeTarget =
+				new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
+			cmakeTarget.Load(Target, this);
+
+
+			PublicIncludePaths.Add(targetLocation + "/include");
 		}
 	}
 }
