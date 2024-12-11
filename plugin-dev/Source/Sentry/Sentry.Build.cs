@@ -519,6 +519,22 @@ public class Sentry : ModuleRules
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.lib"));
 				}
 			}
+#if UE_5_0_OR_LATER
+			else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
+#else
+			else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
+#endif
+			{
+				string buildPath = Path.Combine(intermediatePath, "Linux", "build");
+				if(Target.Configuration == UnrealTargetConfiguration.Debug)
+				{
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.a"));
+				}
+				else
+				{
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.a"));
+				}
+			}
 			else
 			{
 				Console.WriteLine("Platform not currently supported: " + Target.Platform);
