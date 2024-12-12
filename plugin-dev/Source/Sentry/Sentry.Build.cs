@@ -495,7 +495,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 		}
 
-		if (!PublicDefinitions.Contains("USE_SENTRY_NATIVE=0"))
+		if (PublicDefinitions.Contains("USE_SENTRY_NATIVE=1"))
 		{
 			var cmakeTargetPath = Path.GetFullPath(Target.ProjectFile.FullName);
 			var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/Sentry/sentry-native";
