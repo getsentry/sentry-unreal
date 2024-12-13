@@ -33,6 +33,9 @@ The SDK currently supports and is tested on the following platforms:
 
 The SDK compiles with three latest engine versions.
 
+Blog posts:
+* [Building the Sentry Unreal Engine SDK with GitHub Actions](https://blog.sentry.io/building-the-sentry-unreal-engine-sdk-with-github-actions/)
+
 ## Known Limitations
 
 - On all platforms captured crashes are uploaded to Sentry only after relaunching the crashed app since the in-process handler cannot do this within the same session. The only exceptions are Windows (if using the GitHub package) and Linux for which the out-of-process crashpad handler is used and crashes are uploaded immediately.
