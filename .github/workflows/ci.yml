@@ -242,6 +242,8 @@ jobs:
             -package \
             -archive
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
+            ls -al '/home/ue4/Library/Logs/Unreal Engine/LocalBuildLogs'  "
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
             cp -r '/home/ue4/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/${{ matrix.unreal == '4.27' && 'UE4Editor' || 'UnrealEditor' }} \
             /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
