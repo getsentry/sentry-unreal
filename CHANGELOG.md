@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add GPU crash dump attachments ([#712](https://github.com/getsentry/sentry-unreal/pull/712))
+
 ## 0.21.1
 
 ### Fixes
