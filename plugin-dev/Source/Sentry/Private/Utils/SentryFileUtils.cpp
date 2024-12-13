@@ -62,5 +62,5 @@ FString SentryFileUtils::GetGpuDumpPath()
 		return FString("");
 	}
 
-	return GpuDumpFiles[0];
+	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectLogDir() / GpuDumpFiles[0]));
 }
