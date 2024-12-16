@@ -313,11 +313,18 @@ public class CMakeTargetInst
 
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
 
+		string buildToolchain = "";
+		if (rules.PublicDefinitions.Contains("SENTRY_BUILD_XBOX_TOOLCHAIN=1"))
+		{
+			buildToolchain = "-DCMAKE_TOOLCHAIN_FILE=" + Path.Combine(m_generatedTargetPath,"toolchains/xbox/gxdk_xs_toolchain.cmake");
+		}
+
 		var installPath = m_thirdPartyGeneratedPath;
 
 		var arguments = " -G \""+GetGeneratorName(target)+"\""+
 		                " -S \""+m_targetLocation+"\""+
 		                " -B \""+buildDirectory+"\""+
+		                buildToolchain+
 		                " -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
 		                " -DCMAKE_INSTALL_PREFIX=\""+installPath+"\""+
 		                buildStatic+
@@ -451,6 +458,9 @@ public class Sentry : ModuleRules
 			}
 		);
 		
+		UnrealTargetPlatform XboxPlatform;
+		UnrealTargetPlatform.TryParse("Xbox", out XboxPlatform);
+			
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
@@ -494,6 +504,20 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 		}
+		else if (Target.Platform == XboxPlatform)
+		{
+			// Note: We may need a new xbox platform include
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+			
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
+			PublicDefinitions.Add("SENTRY_BUILD_XBOX_TOOLCHAIN=1");
+		}
+		else
+		{
+			Console.WriteLine("Sentry Unreal SDK does not support platform: " + Target.Platform);
+		}
+	
 
 		if (PublicDefinitions.Contains("USE_SENTRY_NATIVE=1"))
 		{
@@ -533,6 +557,18 @@ public class Sentry : ModuleRules
 				else
 				{
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.a"));
+				}
+			}
+			else if (Target.Platform == XboxPlatform)
+			{
+				string buildPath = Path.Combine(intermediatePath, "Xbox", "build");
+				if(Target.Configuration == UnrealTargetConfiguration.Debug)
+				{
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.lib"));
+				}
+				else
+				{
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.lib"));
 				}
 			}
 			else
