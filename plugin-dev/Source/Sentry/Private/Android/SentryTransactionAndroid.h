@@ -14,7 +14,9 @@ public:
 	void SetupClassMethods();
 
 	virtual TSharedPtr<ISentrySpan> StartChild(const FString& operation, const FString& desctiption) override;
+	virtual TSharedPtr<ISentrySpan> StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) override;
 	virtual void Finish() override;
+	virtual void FinishWithTimestamp(int64 timestamp) override;
 	virtual bool IsFinished() const override;
 	virtual void SetName(const FString& name) override;
 	virtual void SetTag(const FString& key, const FString& value) override;

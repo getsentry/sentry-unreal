@@ -32,9 +32,21 @@ TSharedPtr<ISentrySpan> SentryTransactionApple::StartChild(const FString& operat
 	return MakeShareable(new SentrySpanApple(span));
 }
 
+TSharedPtr<ISentrySpan> SentryTransactionApple::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Mac/iOS."));
+	return StartChild(operation, desctiption);
+}
+
 void SentryTransactionApple::Finish()
 {
 	[TransactionApple finish];
+}
+
+void SentryTransactionApple::FinishWithTimestamp(int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Finishing transaction with explicit timestamp not supported on Mac/iOS."));
+	Finish();
 }
 
 bool SentryTransactionApple::IsFinished() const
