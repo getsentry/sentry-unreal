@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Build sentry from source ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
+
 ## 0.21.1
 
 ### Fixes
