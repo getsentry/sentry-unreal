@@ -40,7 +40,7 @@ jobs:
           if [[ "${{ inputs.target }}" == "Android" ]]; then
             submodule="modules/sentry-java"
           else
-            submodule="modules/sentry-native"
+            submodule="plugin-dev/sentry-native"
           fi
           echo "submodule=$submodule" >> $GITHUB_OUTPUT
           echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
