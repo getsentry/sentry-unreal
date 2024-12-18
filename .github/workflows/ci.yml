@@ -179,16 +179,13 @@ jobs:
           # For UE 5.4 we have to enable ipv6 to fix container startup issues. See https://github.com/adamrehn/ue4-docker/issues/357
           uid=$(id -u) # the GH action user ID
           gid=1000     # the ue4 group in the docker container
-          user='ue4'
+          user='gh'
           set -x
           docker network create --ipv6 --subnet 2001:0DB8::/112 ip6net
           docker run -td \
             --name unreal \
             --volume ${{ github.workspace }}:/workspace \
             --workdir /workspace \
-            --user $uid:$gid \
-            --env HOME="/home/$user" \
-            --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
@@ -226,7 +223,7 @@ jobs:
 
       - name: Set permissions for ${{ matrix.app }}
         # sentry-native requires write access to sample project directory in order to initialize itself properly
-        run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
+        run: docker exec --user root -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
       - name: Run tests
         id: run-tests
