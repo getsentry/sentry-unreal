@@ -179,13 +179,16 @@ jobs:
           # For UE 5.4 we have to enable ipv6 to fix container startup issues. See https://github.com/adamrehn/ue4-docker/issues/357
           uid=$(id -u) # the GH action user ID
           gid=1000     # the ue4 group in the docker container
-          user='gh'
+          user='ue4'
           set -x
           docker network create --ipv6 --subnet 2001:0DB8::/112 ip6net
           docker run -td \
             --name unreal \
             --volume ${{ github.workspace }}:/workspace \
             --workdir /workspace \
+            --user $uid:$gid \
+            --env HOME="/home/$user" \
+            --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
@@ -193,6 +196,15 @@ jobs:
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
             cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt "
+
+      # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
+      # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
+      - name: Chown Docker container paths
+        run: |
+          uid=$(id -u) # the GH action user ID
+          docker exec --user root unreal bash -c "
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/${{ matrix.unreal == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} "
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
