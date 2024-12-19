@@ -186,9 +186,14 @@ jobs:
             --name unreal \
             --volume ${{ github.workspace }}:/workspace \
             --workdir /workspace \
+            --user $uid:$gid \
+            --env HOME="/home/$user" \
+            --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
+          # Add the user so it has a home directory (needed to run tests later on)
+          docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
@@ -223,7 +228,7 @@ jobs:
 
       - name: Set permissions for ${{ matrix.app }}
         # sentry-native requires write access to sample project directory in order to initialize itself properly
-        run: docker exec --user root -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
+        run: docker exec -w /workspace/checkout unreal chmod -R +x ${{ matrix.app }}
 
       - name: Run tests
         id: run-tests
