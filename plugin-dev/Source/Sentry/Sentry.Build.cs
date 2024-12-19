@@ -305,10 +305,14 @@ public class CMakeTargetInst
 			options=" -T host=x64";
 		}
 
-		string buildStatic = "";
+		if (rules.PublicDefinitions.Contains("USE_SENTRY_BREAKPAD=1"))
+		{
+			options += " -DSENTRY_BACKEND=breakpad";
+		}
+
 		if (rules.PublicDefinitions.Contains("SENTRY_BUILD_STATIC=1"))
 		{
-			buildStatic = "-DSENTRY_BUILD_SHARED_LIBS=ON";
+			options += " -DSENTRY_BUILD_SHARED_LIBS=ON";
 		}
 
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
@@ -327,7 +331,6 @@ public class CMakeTargetInst
 		                buildToolchain+
 		                " -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
 		                " -DCMAKE_INSTALL_PREFIX=\""+installPath+"\""+
-		                buildStatic+
 		                options+
 		                " "+m_cmakeArgs;
 
@@ -411,6 +414,9 @@ public class CMakeTargetInst
 
 public class Sentry : ModuleRules
 {
+	[CommandLine("-usebreakpad")]
+	public bool bUseBreakpad = false;
+	
 	public Sentry(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
@@ -458,8 +464,10 @@ public class Sentry : ModuleRules
 			}
 		);
 		
-		UnrealTargetPlatform XboxPlatform;
-		UnrealTargetPlatform.TryParse("Xbox", out XboxPlatform);
+		UnrealTargetPlatform XboxXPlatform;
+		UnrealTargetPlatform.TryParse("XSX", out XboxXPlatform);
+		UnrealTargetPlatform XboxOnePlatform;
+		UnrealTargetPlatform.TryParse("XB1", out XboxOnePlatform);
 			
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
@@ -484,6 +492,11 @@ public class Sentry : ModuleRules
 			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
+
+			if (bUseBreakpad)
+			{
+				PublicDefinitions.Add("USE_SENTRY_BREAKPAD=1");
+			}
 		}
 #if UE_5_0_OR_LATER
 		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
@@ -504,7 +517,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 		}
-		else if (Target.Platform == XboxPlatform)
+		else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
 		{
 			// Note: We may need a new xbox platform include
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
@@ -559,7 +572,7 @@ public class Sentry : ModuleRules
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.a"));
 				}
 			}
-			else if (Target.Platform == XboxPlatform)
+			else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
 			{
 				string buildPath = Path.Combine(intermediatePath, "Xbox", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
