@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Build sentry from source ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.16 to v0.7.17 ([#717](https://github.com/getsentry/sentry-unreal/pull/717))
