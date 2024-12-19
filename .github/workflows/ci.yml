@@ -209,7 +209,8 @@ jobs:
             chown -R $uid /home/ue4/UnrealEngine/Engine/${{ matrix.unreal == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/USD/UsdResources/Linux ;
             mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
-            mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic "
+            mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
+            ${{ matrix.unreal == '5.5' && 'chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun' || '' }} "
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
