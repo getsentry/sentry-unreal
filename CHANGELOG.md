@@ -6,6 +6,15 @@
 
 - Add API allowing to start/finish transactions and spans with explicit timings ([#715](https://github.com/getsentry/sentry-unreal/pull/715))
 
+### Dependencies
+
+- Bump Native SDK from v0.7.16 to v0.7.17 ([#717](https://github.com/getsentry/sentry-unreal/pull/717))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0717)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.16...0.7.17)
+- Bump Java SDK (Android) from v7.18.1 to v7.19.0 ([#709](https://github.com/getsentry/sentry-unreal/pull/709))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7190)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.18.1...7.19.0)
+
 ## 0.21.1
 
 ### Fixes
