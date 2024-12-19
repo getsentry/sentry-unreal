@@ -242,6 +242,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs. Currently this feature is supported for Windows and Linux only."))
 	bool AttachScreenshot;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only."))
+	bool AttachGpuDump;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
 	int32 MaxBreadcrumbs;

@@ -43,3 +43,24 @@ FString SentryFileUtils::GetGameLogBackupPath()
 
 	return GameLogBackupFiles[0];
 }
+
+FString SentryFileUtils::GetGpuDumpPath()
+{
+	TArray<FString> GpuDumpFiles;
+	IFileManager::Get().FindFiles(GpuDumpFiles, *FString::Printf(TEXT("%s*.nv-gpudmp"), *FPaths::ProjectLogDir()), true, false);
+
+	if (GpuDumpFiles.Num() == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("There is no GPU dump file available."));
+		return FString("");
+	}
+
+	if (GpuDumpFiles.Num() > 1)
+	{
+		// By default, engine should handle clean up of GPU dumps  from the previous runs
+		UE_LOG(LogSentrySdk, Log, TEXT("There are multiple GPU dump files, can't determine reliably which one to pick."));
+		return FString("");
+	}
+
+	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectLogDir() / GpuDumpFiles[0]));
+}
