@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add API allowing to start/finish transactions and spans with explicit timings ([#715](https://github.com/getsentry/sentry-unreal/pull/715))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.16 to v0.7.17 ([#717](https://github.com/getsentry/sentry-unreal/pull/717))

@@ -296,6 +296,12 @@ TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContext
 	return MakeShareable(new SentryTransactionApple(transaction));
 }
 
+TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Setting transaction timestamp explicitly not supported on Mac/iOS."));
+	return StartTransactionWithContext(context);
+}
+
 TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
 {
 	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context);

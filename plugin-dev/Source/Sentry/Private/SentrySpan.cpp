@@ -16,12 +16,46 @@ USentrySpan::USentrySpan()
 {
 }
 
+USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
+{
+	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+		return nullptr;
+
+	TSharedPtr<ISentrySpan> spanNativeImpl = SentrySpanNativeImpl->StartChild(Operation, Description);
+
+	USentrySpan* unrealSpan = NewObject<USentrySpan>();
+	unrealSpan->InitWithNativeImpl(spanNativeImpl);
+
+	return unrealSpan;
+}
+
+USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
+{
+	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+		return nullptr;
+
+	TSharedPtr<ISentrySpan> spanNativeImpl = SentrySpanNativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
+
+	USentrySpan* unrealSpan = NewObject<USentrySpan>();
+	unrealSpan->InitWithNativeImpl(spanNativeImpl);
+
+	return unrealSpan;
+}
+
 void USentrySpan::Finish()
 {
 	if (!SentrySpanNativeImpl)
 		return;
 
 	SentrySpanNativeImpl->Finish();
+}
+
+void USentrySpan::FinishWithTimestamp(int64 Timestamp)
+{
+	if (!SentrySpanNativeImpl)
+		return;
+
+	SentrySpanNativeImpl->FinishWithTimestamp(Timestamp);
 }
 
 bool USentrySpan::IsFinished() const

@@ -528,6 +528,15 @@ TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithConte
 	return MakeShareable(new SentryTransactionDesktop(nativeTransaction));
 }
 
+TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
+{
+	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = StaticCastSharedPtr<SentryTransactionContextDesktop>(context);
+
+	sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(transactionContextDesktop->GetNativeObject(), sentry_value_new_null(), timestamp);
+
+	return MakeShareable(new SentryTransactionDesktop(nativeTransaction));
+}
+
 TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not supported on desktop."));
