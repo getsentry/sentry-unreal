@@ -144,7 +144,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4']
+        unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4', '5.5']
         app: ['sample']
 
     steps:
@@ -207,8 +207,10 @@ jobs:
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/${{ matrix.unreal == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/USD/UsdResources/Linux ;
             mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
-            mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic "
+            mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
+            mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun "
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
