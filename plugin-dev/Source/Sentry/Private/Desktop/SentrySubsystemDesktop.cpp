@@ -230,7 +230,11 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 
 	if (settings->AttachGpuDump)
 	{
+#if PLATFORM_WINDOWS
 		sentry_options_add_attachmentw(options, *GetGpuDumpBackupPath());
+#elif PLATFORM_LINUX
+		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*GetGpuDumpBackupPath()));
+#endif
 	}
 
 	if(settings->UseProxy)
