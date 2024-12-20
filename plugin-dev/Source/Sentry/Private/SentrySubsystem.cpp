@@ -432,6 +432,19 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 	return unrealTransaction;
 }
 
+USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		return nullptr;
+
+	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeImpl(), Timestamp);
+
+	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
+	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
+
+	return unrealTransaction;
+}
+
 USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
