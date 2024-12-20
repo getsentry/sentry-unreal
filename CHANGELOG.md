@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add GPU crash dump attachments ([#712](https://github.com/getsentry/sentry-unreal/pull/712))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.16 to v0.7.17 ([#717](https://github.com/getsentry/sentry-unreal/pull/717))

@@ -18,6 +18,7 @@
 
 #include "SentryTraceSampler.h"
 
+#include "Utils/SentryFileUtils.h"
 #include "Utils/SentryLogUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
@@ -41,7 +42,10 @@
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
+#include "Windows/WindowsPlatformCrashContext.h"
 #endif
+
+extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
 
@@ -135,6 +139,11 @@ sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t e
 	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
 	SentrySubsystem->TryCaptureScreenshot();
 
+	if (GIsGPUCrashed)
+	{
+		IFileManager::Get().Copy(*SentrySubsystem->GetGpuDumpBackupPath(), *SentryFileUtils::GetGpuDumpPath());
+	}
+
 	FSentryCrashContext::Get()->Apply(SentrySubsystem->GetCurrentScope());
 
 	TSharedPtr<SentryEventDesktop> eventDesktop = MakeShareable(new SentryEventDesktop(event, true));
@@ -216,6 +225,15 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 		sentry_options_add_attachmentw(options, *GetScreenshotPath());
 #elif PLATFORM_LINUX
 		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*GetScreenshotPath()));
+#endif
+	}
+
+	if (settings->AttachGpuDump)
+	{
+#if PLATFORM_WINDOWS
+		sentry_options_add_attachmentw(options, *GetGpuDumpBackupPath());
+#elif PLATFORM_LINUX
+		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*GetGpuDumpBackupPath()));
 #endif
 	}
 
@@ -560,6 +578,16 @@ void SentrySubsystemDesktop::TryCaptureScreenshot() const
 	}
 
 	SentryScreenshotUtils::CaptureScreenshot(GetScreenshotPath());
+}
+
+FString SentrySubsystemDesktop::GetGpuDumpBackupPath() const
+{
+	static const FString DateTimeString = FDateTime::Now().ToString();
+
+	const FString GpuDumpPath = FPaths::Combine(GetDatabasePath(), TEXT("gpudumps"), *FString::Printf(TEXT("UEAftermath-%s.nv-gpudmp"), *DateTimeString));;
+	const FString GpuDumpFullPath = FPaths::ConvertRelativePathToFull(GpuDumpPath);
+
+	return GpuDumpFullPath;
 }
 
 TSharedPtr<SentryScopeDesktop> SentrySubsystemDesktop::GetCurrentScope()
