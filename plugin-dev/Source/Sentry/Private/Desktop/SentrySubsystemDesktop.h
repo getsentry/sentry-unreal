@@ -50,6 +50,8 @@ public:
 
 	void TryCaptureScreenshot() const;
 
+	FString GetGpuDumpBackupPath() const;
+
 	TSharedPtr<SentryScopeDesktop> GetCurrentScope();
 
 private:
