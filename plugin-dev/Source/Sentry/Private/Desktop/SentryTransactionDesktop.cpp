@@ -34,9 +34,22 @@ TSharedPtr<ISentrySpan> SentryTransactionDesktop::StartChild(const FString& oper
 	return MakeShareable(new SentrySpanDesktop(nativeSpan));
 }
 
+TSharedPtr<ISentrySpan> SentryTransactionDesktop::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+{
+	sentry_span_t* nativeSpan = sentry_transaction_start_child_ts(TransactionDesktop, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*desctiption), timestamp);
+	return MakeShareable(new SentrySpanDesktop(nativeSpan));
+}
+
 void SentryTransactionDesktop::Finish()
 {
 	sentry_transaction_finish(TransactionDesktop);
+
+	isFinished = true;
+}
+
+void SentryTransactionDesktop::FinishWithTimestamp(int64 timestamp)
+{
+	sentry_transaction_finish_ts(TransactionDesktop, timestamp);
 
 	isFinished = true;
 }

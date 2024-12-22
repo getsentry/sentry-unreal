@@ -9,6 +9,7 @@
 
 #include "UObject/UObjectGlobals.h"
 #include "Misc/AutomationTest.h"
+#include "Misc/DateTime.h"
 #include "Engine/Engine.h"
 
 #if WITH_AUTOMATION_TESTS
@@ -80,6 +81,13 @@ void SentrySubsystemSpec::Define()
 			TestNotNull("Span is non-null", span);
 			TestFalse("Span is not finished", span->IsFinished());
 
+			USentrySpan* childSpan = span->StartChildWithTimestamp(TEXT("Automation child span"), TEXT("Description text"), FDateTime::UtcNow().ToUnixTimestamp());
+			TestNotNull("Child span is non-null", childSpan);
+			TestFalse("Child span is not finished", childSpan->IsFinished());
+
+			childSpan->FinishWithTimestamp(FDateTime::UtcNow().ToUnixTimestamp());
+			TestTrue("Child span is finished", childSpan->IsFinished());
+
 			span->Finish();
 			TestTrue("Span is finished", span->IsFinished());
 
@@ -97,6 +105,19 @@ void SentrySubsystemSpec::Define()
 			TestFalse("Transaction is not finished", transaction->IsFinished());
 
 			transaction->Finish();
+			TestTrue("Transaction is finished", transaction->IsFinished());
+		});
+
+		It("should be started and finished with specific context and timings", [this]()
+		{
+			USentryTransactionContext* transactionContext = NewObject<USentryTransactionContext>();
+			transactionContext->Initialize(TEXT("Automation transaction"), TEXT("Automation operation"));
+
+			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContextAndTimestamp(transactionContext, FDateTime::UtcNow().ToUnixTimestamp());
+			TestNotNull("Transaction is non-null", transaction);
+			TestFalse("Transaction is not finished", transaction->IsFinished());
+
+			transaction->FinishWithTimestamp(FDateTime::UtcNow().ToUnixTimestamp());
 			TestTrue("Transaction is finished", transaction->IsFinished());
 		});
 	});

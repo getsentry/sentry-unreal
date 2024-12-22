@@ -261,6 +261,17 @@ public:
 	USentryTransaction* StartTransactionWithContext(USentryTransactionContext* Context);
 
 	/**
+	 * Starts a new transaction with given context and timestamp.
+	 * Currently setting the explicit transaction timings takes effect on Windows and Linux only.
+	 * On other platforms starts transaction like regular `StartTransactionWithContext`.
+	 *
+	 * @param Context Transaction context.
+	 * @param Timestamp Transaction timestamp (microseconds since the Unix epoch).
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	USentryTransaction* StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp);
+
+	/**
 	 * Starts a new transaction with given context and options.
 	 *
 	 * @param Context Transaction context.

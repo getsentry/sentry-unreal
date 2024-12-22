@@ -25,9 +25,27 @@ id<SentrySpan> SentrySpanApple::GetNativeObject()
 	return SpanApple;
 }
 
+TSharedPtr<ISentrySpan> SentrySpanApple::StartChild(const FString& operation, const FString& desctiption)
+{
+	id<SentrySpan> span = [SpanApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
+	return MakeShareable(new SentrySpanApple(span));
+}
+
+TSharedPtr<ISentrySpan> SentrySpanApple::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Mac/iOS."));
+	return StartChild(operation, desctiption);
+}
+
 void SentrySpanApple::Finish()
 {
 	[SpanApple finish];
+}
+
+void SentrySpanApple::FinishWithTimestamp(int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Finishing span with explicit timestamp not supported on Mac/iOS."));
+	Finish();
 }
 
 bool SentrySpanApple::IsFinished() const
