@@ -216,7 +216,7 @@ jobs:
         run: docker exec --user root unreal bash -c '
           apt-get update ;
           add-apt-repository ppa:ubuntu-toolchain-r/test ;
-          apt-get install -y libstdc++6'
+          apt-get install -y libstdc++6 cmake'
 
       - name: Download package
         uses: actions/download-artifact@v4
