@@ -242,13 +242,13 @@ public class CMakeTargetInst
 			else if(architecture == UnrealArch.Arm64)
 				generatorOptions="-A ARM64";
 #elif UE_5_0_OR_LATER // UE 5.0 to 5.1
-            if(architecture == WindowsArchitecture.x64)
+			if(architecture == WindowsArchitecture.x64)
                 generatorOptions="-A x64";
             else if(architecture == WindowsArchitecture.ARM64)
                 generatorOptions="-A ARM64";
 
 #else                 // Everything before UE 5.0
-            else if(architecture == WindowsArchitecture.x86)
+            if(architecture == WindowsArchitecture.x86)
                 generatorOptions="-A Win32";
             else if(architecture == WindowsArchitecture.ARM32)
                 generatorOptions="-A ARM";
