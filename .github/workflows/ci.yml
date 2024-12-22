@@ -55,6 +55,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Download CLI
         shell: pwsh
@@ -187,10 +189,13 @@ jobs:
             --volume ${{ github.workspace }}:/workspace \
             --workdir /workspace \
             --user $uid:$gid \
+            --env HOME="/home/$user" \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
             ghcr.io/epicgames/unreal-engine:dev-slim-${{ matrix.unreal }}.1
           docker logout ghcr.io
+          # Add the user so it has a home directory (needed to run tests later on)
+          docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
@@ -203,7 +208,9 @@ jobs:
           uid=$(id -u) # the GH action user ID
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/${{ matrix.unreal == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} "
+            chown -R $uid /home/ue4/UnrealEngine/Engine/${{ matrix.unreal == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} ;
+            mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
+            mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic "
 
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
@@ -242,7 +249,7 @@ jobs:
             -package \
             -archive
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
-            cp -r '/home/ue4/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
+            cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/${{ matrix.unreal == '4.27' && 'UE4Editor' || 'UnrealEditor' }} \
             /workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -ReportExportPath=/workspace/checkout/${{ matrix.app }}/Saved/Automation \
