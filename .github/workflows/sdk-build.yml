@@ -67,7 +67,7 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 13
           sudo ./llvm.sh 16
-          sudo apt-get -y install libc++-16-dev libc++abi-16-dev libstdc++-11-dev zlib1g-dev libcurl4-openssl-dev
+          sudo apt-get -y install libc++-16-dev libc++abi-16-dev libstdc++-11-dev zlib1g-dev libcurl4-openssl-dev cmake
 
       - uses: actions/setup-java@v4
         if: ${{ inputs.target == 'Android' }}
