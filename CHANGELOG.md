@@ -4,7 +4,7 @@
 
 ### Features
 
-- Build sentry from source ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
+- Build the plugin through the Unreal Engine build system ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
 
 ### Dependencies
 
