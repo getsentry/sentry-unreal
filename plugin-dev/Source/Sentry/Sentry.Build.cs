@@ -335,7 +335,7 @@ public class CMakeTargetInst
 		var installPath = m_thirdPartyGeneratedPath;
 
 		var arguments = " -G \""+GetGeneratorName(target)+"\""+
-		                " -S \""+m_targetLocation+"\""+
+		                " -S \""+m_cmakeTargetPath+"\""+
 		                " -B \""+buildDirectory+"\""+
 		                buildToolchain+
 		                " -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
