@@ -4,6 +4,10 @@
 
 #include "HAL/Platform.h"
 
+#ifndef NS_SWIFT_SENDABLE
+#define NS_SWIFT_SENDABLE
+#endif
+
 #if PLATFORM_MAC
 #include <Sentry/Sentry.h>
 #include <Sentry/PrivateSentrySDKOnly.h>
