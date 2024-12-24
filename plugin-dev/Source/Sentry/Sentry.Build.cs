@@ -4,7 +4,6 @@ using UnrealBuildTool;
 using System;
 using System.IO;
 using System.Reflection;
-using System.IO;
 using System.Diagnostics;
 using System.Text;
 using System.Collections.Generic;
@@ -70,9 +69,6 @@ public class CMakeTargetInst
 
 	private bool m_forceBuild=false;
 	private string m_forceBuildType;
-
-	private bool m_includedToolchain=false;
-	private string m_includedToolchainPath;
 
 	public CMakeTargetInst(string targetName, string targetPlatform, string targetLocation, string args)
 	{
