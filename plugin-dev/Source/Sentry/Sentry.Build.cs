@@ -423,8 +423,8 @@ public class CMakeTargetInst
 
 public class Sentry : ModuleRules
 {
-	[CommandLine("-usebreakpad")]
-	public bool bUseBreakpad = false;
+	[CommandLine("-forceBreakpad")]
+	public bool bForceBreakpad = false;
 	
 	public Sentry(ReadOnlyTargetRules Target) : base(Target)
 	{
@@ -502,7 +502,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 
-			if (bUseBreakpad)
+			if (bForceBreakpad)
 			{
 				PublicDefinitions.Add("USE_SENTRY_BREAKPAD=1");
 			}
