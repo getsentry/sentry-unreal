@@ -146,7 +146,7 @@ public class CMakeTargetInst
 	private bool Build(ReadOnlyTargetRules target, ModuleRules rules, string buildType)
 	{
 		string builtFile = Path.Combine(m_generatedTargetPath, buildType+".built");
-		string projectCMakeLists=Path.GetFullPath(Path.Combine(m_cmakeTargetPath, "CMakeLists.txt"));
+		string projectCMakeLists=Path.GetFullPath(Path.Combine(m_targetPath, "CMakeLists.txt"));
 
 		bool configCMake=true;
 
@@ -335,7 +335,7 @@ public class CMakeTargetInst
 		var installPath = m_thirdPartyGeneratedPath;
 
 		var arguments = " -G \""+GetGeneratorName(target)+"\""+
-		                " -S \""+m_cmakeTargetPath+"\""+
+		                " -S \""+m_targetLocation+"\""+
 		                " -B \""+buildDirectory+"\""+
 		                buildToolchain+
 		                " -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
