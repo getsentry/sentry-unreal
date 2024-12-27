@@ -553,6 +553,9 @@ public class Sentry : ModuleRules
 			string intermediatePath =
 				Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate", "CMakeTarget", "sentry-native");
 			
+			Console.WriteLine("Adding include path: "+targetLocation+"/include");
+			PublicIncludePaths.Add(targetLocation + "/include");
+			
 			if (Target.Platform == UnrealTargetPlatform.Win64)
 			{
 				string buildPath = Path.Combine(intermediatePath, "Win64", "build");
@@ -597,8 +600,6 @@ public class Sentry : ModuleRules
 			{
 				Console.WriteLine("Platform not currently supported: " + Target.Platform);
 			}
-
-			PublicIncludePaths.Add(targetLocation + "/include");
 		}
 	}
 }
