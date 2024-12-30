@@ -239,7 +239,7 @@ jobs:
         id: run-tests
         run: |
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
-            ls -al /workspace/checkout/${{ matrix.app }}/Plugins/Sentry "
+            ls -al /workspace/checkout/${{ matrix.app }}/Plugins/sentry "
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds \
