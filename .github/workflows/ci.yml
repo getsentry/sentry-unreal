@@ -226,6 +226,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: checkout
+          submodules: recursive
 
       - name: Extract package to ${{ matrix.app }}/Plugins
         run: unzip sentry-unreal-*-engine${{ matrix.unreal }}-github.zip -d checkout/${{ matrix.app }}/Plugins/sentry
