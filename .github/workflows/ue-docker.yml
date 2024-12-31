@@ -21,4 +21,5 @@ jobs:
 
       - name: Build Unreal Engine Docker image
         run: |
-           ue4-docker build -basetag ltsc2019 --target minimal --exclude debug --exclude templates 4.27.0
+          ue4-docker setup
+          ue4-docker build -basetag ltsc2019 --visual-studio 2019 --target minimal --exclude debug --exclude templates 4.27.0
