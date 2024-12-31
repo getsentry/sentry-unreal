@@ -6,6 +6,12 @@ jobs:
   build:
     runs-on: windows-2019
     steps:
+      - name: Set up Python 3.7.9
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.7.9'
+            architecture: 'x64'
+
       - name: Install unreal-docker
         run: |
           Invoke-WebRequest -Uri "https://github.com/adamrehn/ue4-docker/archive/refs/heads/master.zip" -OutFile "ue-docker.zip"
