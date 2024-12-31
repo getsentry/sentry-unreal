@@ -9,6 +9,7 @@ jobs:
       - name: Set up Docker Desktop
         run: |
           # Enable Windows containers
+          docker info
           & "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchDaemon
 
       - name: Install unreal-docker
