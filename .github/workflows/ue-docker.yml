@@ -1,0 +1,23 @@
+name: ue-docker
+
+on: push
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - name: Set up Docker Desktop
+        run: |
+          # Enable Windows containers
+          & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
+
+      - name: Install unreal-docker
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/adamrehn/ue4-docker/archive/refs/heads/master.zip" -OutFile "ue-docker.zip"
+          Expand-Archive -Path "ue-docker.zip" -DestinationPath "."
+          cd ue4-docker-master
+          pip install -e .
+
+      - name: Build Unreal Engine Docker image
+        run: |
+           ue4-docker build -basetag ltsc2019 --target minimal --exclude debug --exclude templates 4.27.0
