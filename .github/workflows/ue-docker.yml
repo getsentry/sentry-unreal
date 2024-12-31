@@ -6,10 +6,10 @@ jobs:
   build:
     runs-on: windows-2019
     steps:
-      - name: Set up Python 3.7.9
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.7.9'
+          python-version: '3.12.8'
           architecture: 'x64'
 
       - name: Install unreal-docker
