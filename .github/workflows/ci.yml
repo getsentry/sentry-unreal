@@ -4,7 +4,7 @@ on:
   push:
     paths-ignore:
       - "**.md"
-      - "ue-docker.yml"
+      - "./.github/workflows/ue-docker.yml"
 
 jobs:
   android-sdk:
