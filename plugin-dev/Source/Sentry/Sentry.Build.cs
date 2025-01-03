@@ -115,7 +115,7 @@ public class CMakeTargetInst
 
 		m_cmakeTargetPath=Path.GetFullPath(rules.Target.ProjectFile.FullName);
 		Console.WriteLine("Loading cmake path=: "+Directory .GetParent(m_cmakeTargetPath).FullName);
-		m_cmakeTargetPath=Directory .GetParent(m_cmakeTargetPath).FullName+"/Plugins/Sentry/sentry-native";
+		m_cmakeTargetPath=Directory .GetParent(m_cmakeTargetPath).FullName+"/Plugins/sentry/sentry-native";
 
 		m_modulePath=Path.GetFullPath(rules.ModuleDirectory);
 		m_targetPath=Path.Combine(m_modulePath, m_targetLocation);
@@ -544,7 +544,7 @@ public class Sentry : ModuleRules
 		if (PublicDefinitions.Contains("USE_SENTRY_NATIVE=1"))
 		{
 			var cmakeTargetPath = Path.GetFullPath(Target.ProjectFile.FullName);
-			var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/Sentry/sentry-native";
+			var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/sentry/sentry-native";
 
 			CMakeTargetInst cmakeTarget =
 				new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");

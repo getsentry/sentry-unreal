@@ -226,6 +226,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: checkout
+          submodules: recursive
 
       - name: Extract package to ${{ matrix.app }}/Plugins
         run: unzip sentry-unreal-*-engine${{ matrix.unreal }}-github.zip -d checkout/${{ matrix.app }}/Plugins/sentry
@@ -237,6 +238,8 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
+            ls -al /workspace/checkout/${{ matrix.app }}/Plugins/sentry "
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds \
