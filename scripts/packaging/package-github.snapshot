@@ -299,6 +299,7 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDebugImageProvider+H
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDependencyContainer.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryEnvelope.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryEnvelopeItemType.h
+Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryExtraPackages.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFormatter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFramesTracker.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
@@ -311,6 +312,7 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryScreenFrames.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySdkInfo.h
+Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySdkPackage.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
@@ -383,6 +385,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryEnvelopeItemType.h
 Source/ThirdParty/Mac/include/Sentry/SentryError.h
 Source/ThirdParty/Mac/include/Sentry/SentryEvent.h
 Source/ThirdParty/Mac/include/Sentry/SentryException.h
+Source/ThirdParty/Mac/include/Sentry/SentryExtraPackages.h
 Source/ThirdParty/Mac/include/Sentry/SentryFormatter.h
 Source/ThirdParty/Mac/include/Sentry/SentryFrame.h
 Source/ThirdParty/Mac/include/Sentry/SentryFramesTracker.h
@@ -412,6 +415,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryScreenFrames.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentrySdkInfo.h
+Source/ThirdParty/Mac/include/Sentry/SentrySdkPackage.h
 Source/ThirdParty/Mac/include/Sentry/SentrySerializable.h
 Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration.h
