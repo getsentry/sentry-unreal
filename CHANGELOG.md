@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Build the plugin through the Unreal Engine build system ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
+
 ### Dependencies
 
 - Bump CLI from v2.39.1 to v2.40.0 ([#725](https://github.com/getsentry/sentry-unreal/pull/725))
