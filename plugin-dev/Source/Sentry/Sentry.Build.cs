@@ -500,11 +500,11 @@ public class Sentry : ModuleRules
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
-			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 
 			if (bForceBreakpad)
 			{
 				PublicDefinitions.Add("USE_SENTRY_BREAKPAD=1");
+				PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 			}
 		}
 #if UE_5_0_OR_LATER
@@ -561,11 +561,36 @@ public class Sentry : ModuleRules
 				string buildPath = Path.Combine(intermediatePath, "Win64", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
 				{
+					RuntimeDependencies.Add(Path.Combine(buildPath, "Debug", "sentry.dll"));
+					PublicDelayLoadDLLs.Add("sentry.dll");
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.lib"));
 				}
 				else
-				{
+				{ 
+					RuntimeDependencies.Add(Path.Combine(buildPath, "Release", "sentry.dll"));
+					PublicDelayLoadDLLs.Add("sentry.dll");
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.lib"));
+				}
+
+				if (!PublicDefinitions.Contains("USE_SENTRY_BREAKPAD=1"))
+				{
+					string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build", "handler");
+					if(Target.Configuration == UnrealTargetConfiguration.Debug)
+					{
+						RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_handler.exe"));
+						RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_wer.dll"));
+						PublicDelayLoadDLLs.Add("crashpad_wer.dll");
+						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_handler_lib.lib"));
+						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_wer.lib"));
+					}
+					else
+					{
+						RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_handler.exe"));
+						RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_wer.dll"));
+						PublicDelayLoadDLLs.Add("crashpad_wer.dll");
+						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_handler_lib.lib"));
+						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_wer.lib"));
+					}
 				}
 			}
 #if UE_5_0_OR_LATER
@@ -577,11 +602,29 @@ public class Sentry : ModuleRules
 				string buildPath = Path.Combine(intermediatePath, "Linux", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
 				{
+					RuntimeDependencies.Add(Path.Combine(buildPath, "Debug", "sentry.so"));
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.a"));
 				}
 				else
 				{
+					RuntimeDependencies.Add(Path.Combine(buildPath, "Release", "sentry.so"));
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.a"));
+				}
+				
+				string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build", "handler");
+				if(Target.Configuration == UnrealTargetConfiguration.Debug)
+				{
+					RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_handler"));
+					RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_wer.so"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_handler_lib.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Debug", "crashpad_wer.a"));
+				}
+				else
+				{
+					RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_handler.exe"));
+					RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_wer.so"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_handler_lib.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "Release", "crashpad_wer.a"));
 				}
 			}
 			else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
