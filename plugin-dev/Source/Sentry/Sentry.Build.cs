@@ -75,6 +75,7 @@ public class Sentry : ModuleRules
 
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
+			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
 
 		// Additional routine for Android
@@ -163,6 +164,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
+			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
 	}
 }
