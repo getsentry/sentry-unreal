@@ -321,7 +321,7 @@ public class CMakeTargetInst
 
 		if (rules.PublicDefinitions.Contains("SENTRY_BUILD_STATIC=1"))
 		{
-			options += " -DSENTRY_BUILD_SHARED_LIBS=ON";
+			options += " -DSENTRY_BUILD_SHARED_LIBS=Off";
 		}
 
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
@@ -331,7 +331,7 @@ public class CMakeTargetInst
 		{
 			buildToolchain = "-DCMAKE_TOOLCHAIN_FILE=" + Path.Combine(m_generatedTargetPath,"toolchains/xbox/gxdk_xs_toolchain.cmake");
 		}
-
+ 
 		var installPath = m_thirdPartyGeneratedPath;
 
 		var arguments = " -G \""+GetGeneratorName(target)+"\""+
@@ -500,11 +500,11 @@ public class Sentry : ModuleRules
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 
 			if (bForceBreakpad)
 			{
 				PublicDefinitions.Add("USE_SENTRY_BREAKPAD=1");
-				PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 			}
 		}
 #if UE_5_0_OR_LATER
@@ -561,14 +561,10 @@ public class Sentry : ModuleRules
 				string buildPath = Path.Combine(intermediatePath, "Win64", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
 				{
-					RuntimeDependencies.Add(Path.Combine(buildPath, "Debug", "sentry.dll"));
-					PublicDelayLoadDLLs.Add("sentry.dll");
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.lib"));
 				}
 				else
 				{ 
-					RuntimeDependencies.Add(Path.Combine(buildPath, "Release", "sentry.dll"));
-					PublicDelayLoadDLLs.Add("sentry.dll");
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.lib"));
 				}
 
