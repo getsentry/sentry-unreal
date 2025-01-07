@@ -555,11 +555,12 @@ public class Sentry : ModuleRules
 			
 			Console.WriteLine("Adding include path: "+targetLocation+"/include");
 			PublicIncludePaths.Add(targetLocation + "/include");
-
-			string buildOutputPath = Path.Combine(Target.ProjectFile.Directory.FullName, "Binaries", "Win64");
 			
 			if (Target.Platform == UnrealTargetPlatform.Win64)
 			{
+				
+				string buildOutputPath = Path.Combine(Target.ProjectFile.Directory.FullName, "Binaries", "Win64");
+				
 				string buildPath = Path.Combine(intermediatePath, "Win64", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
 				{
