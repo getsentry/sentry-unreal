@@ -600,6 +600,9 @@ public class Sentry : ModuleRules
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Release", "crashpad_util.lib"));
 					}
 				}
+				
+				PublicSystemLibraries.Add("winhttp.lib");
+				PublicSystemLibraries.Add("version.lib");
 			}
 #if UE_5_0_OR_LATER
 			else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
@@ -610,41 +613,37 @@ public class Sentry : ModuleRules
 				string buildPath = Path.Combine(intermediatePath, "Linux", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
 				{
-					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "libsentry.a"));
 				}
 				else
 				{
-					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "libsentry.a"));
 				}
 				
 				string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build", "handler");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
 				{
 					RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler_lib.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Debug", "crashpad_client.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Debug", "crashpad_compat.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", "Debug", "crashpad_minidump.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", "Debug", "crashpad_snapshot.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "getopt", "Debug", "crashpad_getopt.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium", "Debug", "mini_chromium.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "zlib", "Debug", "crashpad_zlib.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", "Debug", "crashpad_tools.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Debug", "crashpad_util.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Debug", "libcrashpad_handler_lib.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Debug", "libcrashpad_client.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Debug", "libcrashpad_compat.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", "Debug", "libcrashpad_minidump.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", "Debug", "libcrashpad_snapshot.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium", "Debug", "libmini_chromium.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", "Debug", "libcrashpad_tools.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Debug", "libcrashpad_util.a"));
 				}
 				else
 				{
 					RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler_lib.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Release", "crashpad_client.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Release", "crashpad_compat.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", "Release", "crashpad_minidump.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", "Release", "crashpad_snapshot.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "getopt", "Release", "crashpad_getopt.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium", "Release", "mini_chromium.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "zlib", "Release", "crashpad_zlib.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", "Release", "crashpad_tools.a"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Release", "crashpad_util.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Release", "libcrashpad_handler_lib.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Release", "libcrashpad_client.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Release", "libcrashpad_compat.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", "Release", "libcrashpad_minidump.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", "Release", "libcrashpad_snapshot.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium", "Release", "libmini_chromium.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", "Release", "libcrashpad_tools.a"));
+					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Release", "libcrashpad_util.a"));
 				}
 			}
 			else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
