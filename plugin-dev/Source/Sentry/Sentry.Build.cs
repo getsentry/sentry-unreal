@@ -335,13 +335,13 @@ public class CMakeTargetInst
 		var installPath = m_thirdPartyGeneratedPath;
 
 		var arguments = " -G \""+GetGeneratorName(target)+"\""+
-		                " -S \""+m_targetLocation+"\""+
-		                " -B \""+buildDirectory+"\""+
 		                buildToolchain+
 		                " -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
 		                " -DCMAKE_INSTALL_PREFIX=\""+installPath+"\""+
 		                options+
-		                " "+m_cmakeArgs;
+		                " "+m_cmakeArgs+
+		                " -B \""+buildDirectory+"\""+
+		                " -S \""+m_targetLocation+"\"";
 
 		Console.WriteLine("CMakeTarget calling cmake with: "+arguments);
 
