@@ -555,6 +555,8 @@ public class Sentry : ModuleRules
 			
 			Console.WriteLine("Adding include path: "+targetLocation+"/include");
 			PublicIncludePaths.Add(targetLocation + "/include");
+
+			string buildOutputPath = Path.Combine(Target.ProjectFile.Directory.FullName, "Binaries", "Win64");
 			
 			if (Target.Platform == UnrealTargetPlatform.Win64)
 			{
@@ -572,8 +574,14 @@ public class Sentry : ModuleRules
 				{
 					string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build");
 					if(Target.Configuration == UnrealTargetConfiguration.Debug)
-					{ 
-						RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler.exe"));
+					{
+						if (!File.Exists(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler.exe")))
+						{
+							File.Copy(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler.exe"),
+								Path.Combine(buildOutputPath, "crashpad_handler.exe"));
+						}
+
+						RuntimeDependencies.Add(Path.Combine(buildOutputPath, "crashpad_handler.exe"));
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler_lib.lib"));
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Debug", "crashpad_client.lib"));
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Debug", "crashpad_compat.lib"));
@@ -587,7 +595,13 @@ public class Sentry : ModuleRules
 					}
 					else
 					{
-						RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "handler","Release", "crashpad_handler.exe"));
+						if (!File.Exists(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler.exe")))
+						{
+							File.Copy(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler.exe"),
+								Path.Combine(buildOutputPath, "crashpad_handler.exe"));
+						}
+
+						RuntimeDependencies.Add(Path.Combine(buildOutputPath, "crashpad_handler.exe"));
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler_lib.lib"));
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Release", "crashpad_client.lib"));
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Release", "crashpad_compat.lib"));
@@ -614,6 +628,14 @@ public class Sentry : ModuleRules
 				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "libsentry.a"));
 				
 				string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build", "handler");
+				
+				string buildOutputPath = Path.Combine(Target.ProjectFile.Directory.FullName, "Binaries", "Linux");
+				
+				if (!File.Exists(Path.Combine(crashpadBuildPath, "handler", "crashpad_handler.exe")))
+				{
+					File.Copy(Path.Combine(crashpadBuildPath, "handler", "crashpad_handler.exe"),
+						Path.Combine(buildOutputPath, "crashpad_handler.exe"));
+				}
 
 				RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "handler", "crashpad_handler"));
 				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "libcrashpad_handler_lib.a"));
