@@ -576,10 +576,15 @@ public class Sentry : ModuleRules
 					string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build");
 					if(Target.Configuration == UnrealTargetConfiguration.Debug)
 					{
-						if (!File.Exists(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler.exe")))
+						if (!File.Exists(Path.Combine(buildOutputPath, "crashpad_handler.exe")))
 						{
+							Console.WriteLine("Copying crashpad_handler.exe");
 							File.Copy(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler.exe"),
 								Path.Combine(buildOutputPath, "crashpad_handler.exe"));
+						}
+						else
+						{
+							Console.WriteLine("crashpad_handler.exe already exists");
 						}
 
 						RuntimeDependencies.Add(Path.Combine(buildOutputPath, "crashpad_handler.exe"));
@@ -596,10 +601,15 @@ public class Sentry : ModuleRules
 					}
 					else
 					{
-						if (!File.Exists(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler.exe")))
+						if (!File.Exists(Path.Combine(buildOutputPath, "crashpad_handler.exe")))
 						{
+							Console.WriteLine("Copying crashpad_handler.exe");
 							File.Copy(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler.exe"),
 								Path.Combine(buildOutputPath, "crashpad_handler.exe"));
+						}
+						else
+						{
+							Console.WriteLine("crashpad_handler.exe already exists");
 						}
 
 						RuntimeDependencies.Add(Path.Combine(buildOutputPath, "crashpad_handler.exe"));
