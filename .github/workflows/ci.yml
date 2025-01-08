@@ -219,10 +219,10 @@ jobs:
           apt-get install -y wget
           wget https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz
           tar zxvf cmake-3.12.0-Linux-x86_64.tar.gz
-          sudo apt install tree
+          apt install tree 
           tree -L 2 cmake-3.12.0-Linux-x86_64
-          sudo mv cmake-3.12.0-Linux-x86_64 /opt/cmake-3.12.0
-          sudo ln -sf /opt/cmake-3.12.0/bin/* /usr/bin/
+          mv cmake-3.12.0-Linux-x86_64 /opt/cmake-3.12.0
+          ln -sf /opt/cmake-3.12.0/bin/* /usr/bin/
           apt-get install -y libstdc++6 libcurl4-openssl-dev'
 
       - name: Download package
