@@ -218,6 +218,7 @@ jobs:
           add-apt-repository ppa:ubuntu-toolchain-r/test ;
           apt-get install -y wget
           apt-get install -y libstdc++6 libcurl4-openssl-dev'
+          apt-get install -y python-pip
           pip install cmake
 
       - name: Download package
