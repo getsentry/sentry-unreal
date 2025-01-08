@@ -217,7 +217,7 @@ jobs:
           apt-get update ;
           add-apt-repository ppa:ubuntu-toolchain-r/test ;
           apt-get install -y wget
-          sudo apt install -y cmake
+          wget -qO- "https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C /usr/local
           apt-get install -y libstdc++6 libcurl4-openssl-dev'
 
       - name: Download package
