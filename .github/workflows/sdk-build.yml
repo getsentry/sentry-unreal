@@ -28,7 +28,7 @@ jobs:
           apt-get -y install sudo
           apt-get -y install wget
           apt-get -y install tree
-          wget -qO- "https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C /usr/local
+          pip install cmake
           apt-get -y install libcurl4-openssl-dev
           apt-get -y install software-properties-common
           apt-get -y install git
