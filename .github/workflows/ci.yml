@@ -217,9 +217,8 @@ jobs:
           apt-get update ;
           add-apt-repository ppa:ubuntu-toolchain-r/test ;
           apt-get install -y wget
-          apt-get install -y libstdc++6 libcurl4-openssl-dev'
-          apt-get install -y python3-pip
-          pip install cmake
+          apt-get install -y libstdc++6 libcurl4-openssl-dev ython3-pip
+          pip install cmake`
 
       - name: Download package
         uses: actions/download-artifact@v4
