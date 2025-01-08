@@ -27,7 +27,12 @@ jobs:
           apt-get update
           apt-get -y install sudo
           apt-get -y install wget
-          apt-get -y install cmake
+          wget https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz
+          tar zxvf cmake-3.12.0-Linux-x86_64.tar.gz
+          sudo apt install tree
+          tree -L 2 cmake-3.12.0-Linux-x86_64
+          sudo mv cmake-3.12.0-Linux-x86_64 /opt/cmake-3.12.0
+          sudo ln -sf /opt/cmake-3.12.0/bin/* /usr/bin/
           apt-get -y install libcurl4-openssl-dev
           apt-get -y install software-properties-common
           apt-get -y install git
