@@ -28,8 +28,6 @@ jobs:
           apt-get -y install sudo
           apt-get -y install wget
           apt-get -y install tree
-          apt-get -y install python3-pip
-          pip install cmake
           apt-get -y install libcurl4-openssl-dev
           apt-get -y install software-properties-common
           apt-get -y install git
@@ -70,7 +68,7 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 13
           sudo ./llvm.sh 16
-          sudo apt-get -y install libc++-16-dev libc++abi-16-dev libstdc++-11-dev zlib1g-dev libcurl4-openssl-dev cmake
+          sudo apt-get -y install libc++-16-dev libc++abi-16-dev libstdc++-11-dev zlib1g-dev libcurl4-openssl-dev
 
       - uses: actions/setup-java@v4
         if: ${{ inputs.target == 'Android' }}

@@ -217,7 +217,7 @@ jobs:
           apt-get update ;
           add-apt-repository ppa:ubuntu-toolchain-r/test ;
           apt-get install -y wget
-          apt-get install -y libstdc++6 libcurl4-openssl-dev ython3-pip
+          apt-get install -y libstdc++6 libcurl4-openssl-dev python3-pip
           pip install cmake`
 
       - name: Download package
