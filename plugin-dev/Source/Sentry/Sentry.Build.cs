@@ -579,6 +579,11 @@ public class Sentry : ModuleRules
 						if (!File.Exists(Path.Combine(buildOutputPath, "crashpad_handler.exe")))
 						{
 							Console.WriteLine("Copying crashpad_handler.exe");
+							if (!System.IO.Directory.Exists(buildOutputPath))
+							{
+								System.IO.Directory.CreateDirectory(buildOutputPath);
+							}
+
 							File.Copy(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler.exe"),
 								Path.Combine(buildOutputPath, "crashpad_handler.exe"));
 						}
@@ -604,6 +609,10 @@ public class Sentry : ModuleRules
 						if (!File.Exists(Path.Combine(buildOutputPath, "crashpad_handler.exe")))
 						{
 							Console.WriteLine("Copying crashpad_handler.exe");
+							if (!System.IO.Directory.Exists(buildOutputPath))
+							{
+								System.IO.Directory.CreateDirectory(buildOutputPath);
+							}
 							File.Copy(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler.exe"),
 								Path.Combine(buildOutputPath, "crashpad_handler.exe"));
 						}
