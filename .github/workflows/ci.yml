@@ -215,10 +215,8 @@ jobs:
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
           apt-get update ;
-          add-apt-repository ppa:ubuntu-toolchain-r/test ;
-          apt-get install -y wget
-          apt-get install -y python3-pip
-          pip install cmake
+          apt-get install -y python3-pip ;
+          pip install cmake ;
           apt-get install -y libstdc++6 libcurl4-openssl-dev'
 
       - name: Download package
