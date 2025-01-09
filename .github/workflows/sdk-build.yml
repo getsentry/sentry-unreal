@@ -27,7 +27,6 @@ jobs:
           apt-get update
           apt-get -y install sudo
           apt-get -y install wget
-          apt-get -y install cmake
           apt-get -y install software-properties-common
           apt-get -y install git
           git config --global --add safe.directory $(pwd)
@@ -40,7 +39,7 @@ jobs:
           if [[ "${{ inputs.target }}" == "Android" ]]; then
             submodule="modules/sentry-java"
           else
-            submodule="modules/sentry-native"
+            submodule="plugin-dev/sentry-native"
           fi
           echo "submodule=$submodule" >> $GITHUB_OUTPUT
           echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT

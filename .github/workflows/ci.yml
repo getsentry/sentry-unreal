@@ -55,6 +55,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Download CLI
         shell: pwsh
@@ -215,8 +217,10 @@ jobs:
       - name: Setup C++ runtime
         run: docker exec --user root unreal bash -c '
           apt-get update ;
-          add-apt-repository ppa:ubuntu-toolchain-r/test ;
-          apt-get install -y libstdc++6'
+          apt-get install -y libstdc++6 libcurl4-openssl-dev wget ;
+          wget https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz ;
+          tar zxvf cmake-3.12.0-Linux-x86_64.tar.gz ;
+          export PATH=$PATH:/home/ue4/cmake-3.12.0-Linux-x86_64'
 
       - name: Download package
         uses: actions/download-artifact@v4
@@ -226,6 +230,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: checkout
+          submodules: recursive
 
       - name: Extract package to ${{ matrix.app }}/Plugins
         run: unzip sentry-unreal-*-engine${{ matrix.unreal }}-github.zip -d checkout/${{ matrix.app }}/Plugins/sentry
@@ -237,6 +242,8 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
+            ls -al /workspace/checkout/${{ matrix.app }}/Plugins/sentry "
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds \
