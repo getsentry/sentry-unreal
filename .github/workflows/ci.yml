@@ -217,7 +217,7 @@ jobs:
           apt-get update ;
           apt-get install -y python3-pip ;
           pip install cmake ;
-          pip show cmake ;
+          echo pip show cmake ;
           apt-get install -y libstdc++6 libcurl4-openssl-dev bash'
 
       - name: Download package
