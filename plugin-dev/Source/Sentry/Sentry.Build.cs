@@ -559,7 +559,7 @@ public class Sentry : ModuleRules
 			if (Target.Platform == UnrealTargetPlatform.Win64)
 			{
 				
-				string buildOutputPath = Path.Combine(Target.ProjectFile.Directory.FullName, "Binaries", "Win64");
+				string buildOutputPath = Path.Combine(PluginDirectory, "Binaries", "Win64");
 				
 				string buildPath = Path.Combine(intermediatePath, "Win64", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
