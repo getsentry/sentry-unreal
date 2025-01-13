@@ -12,7 +12,6 @@ jobs:
 
       - name: Clean up some space
         run: |
-          del /q /s %TEMP%\*
           docker system prune -a -f
 
       - name: Print disk space 2
