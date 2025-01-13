@@ -3,7 +3,7 @@
 #include "SentryTransactionApple.h"
 #include "SentrySpanApple.h"
 
-#include "Infrastructure/SentryConvertorsApple.h"
+#include "Infrastructure/SentryConvertersApple.h"
 
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
@@ -72,7 +72,7 @@ void SentryTransactionApple::RemoveTag(const FString& key)
 
 void SentryTransactionApple::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	[TransactionApple setDataValue:SentryConvertorsApple::StringMapToNative(values) forKey:key.GetNSString()];
+	[TransactionApple setDataValue:SentryConvertersApple::StringMapToNative(values) forKey:key.GetNSString()];
 }
 
 void SentryTransactionApple::RemoveData(const FString& key)

@@ -8,7 +8,7 @@
 
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 
-class SentryConvertorsApple
+class SentryConvertersApple
 {
 public:
 	/** Conversions to native iOS types */

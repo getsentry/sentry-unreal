@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "Android/Callbacks/SentryScopeCallbackAndroid.h"
-#include "Android/Infrastructure/SentryConvertorsAndroid.h"
+#include "Android/Infrastructure/SentryConvertersAndroid.h"
 #include "Android/Infrastructure/SentryJavaClasses.h"
 #include "Android/SentrySubsystemAndroid.h"
 #include "Android/SentryScopeAndroid.h"

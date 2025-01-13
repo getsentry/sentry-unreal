@@ -22,7 +22,7 @@
 #include "Utils/SentryLogUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #include "CrashReporter/SentryCrashReporter.h"
 #include "CrashReporter/SentryCrashContext.h"
@@ -70,14 +70,14 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 	const FName SentryCategoryName(TEXT("LogSentrySdk"));
 #endif
 
-	GLog->CategorizedLogf(SentryCategoryName, SentryConvertorsDesktop::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
+	GLog->CategorizedLogf(SentryCategoryName, SentryConvertersDesktop::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
 }
 
 void PrintCrashLog(const sentry_ucontext_t *uctx)
 {
 #if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 0, 0)
 
-	SentryConvertorsDesktop::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
+	SentryConvertersDesktop::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
 
 	const SIZE_T StackTraceSize = 65535;
 	ANSICHAR* StackTrace = (ANSICHAR*)GMalloc->Malloc(StackTraceSize);
@@ -373,7 +373,7 @@ void SentrySubsystemDesktop::ClearBreadcrumbs()
 
 TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
+	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertersDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
 
 	if(isStackTraceEnabled)
 	{
@@ -434,7 +434,7 @@ TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureException(const FString& ty
 	sentry_value_t exceptionEvent = sentry_value_new_event();
 
 	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
-	sentry_value_set_by_key(exceptionEvent, "stacktrace", SentryConvertorsDesktop::CallstackToNative(StackFrames));
+	sentry_value_set_by_key(exceptionEvent, "stacktrace", SentryConvertersDesktop::CallstackToNative(StackFrames));
 
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);

@@ -9,7 +9,7 @@
 class FSentryJavaObjectWrapper;
 class FJsonValue;
 
-class SentryConvertorsAndroid
+class SentryConvertersAndroid
 {
 public:
 	/** Conversions to native Java types */

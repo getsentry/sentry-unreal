@@ -10,7 +10,7 @@
 
 #if USE_SENTRY_NATIVE
 
-class SentryConvertorsDesktop
+class SentryConvertersDesktop
 {
 public:
 	/** Conversions to native desktop (Windows/Mac) types */

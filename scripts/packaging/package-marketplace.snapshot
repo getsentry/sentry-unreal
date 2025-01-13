@@ -17,8 +17,8 @@ Source/Sentry/Private/Android/Callbacks/
 Source/Sentry/Private/Android/Callbacks/SentryScopeCallbackAndroid.cpp
 Source/Sentry/Private/Android/Callbacks/SentryScopeCallbackAndroid.h
 Source/Sentry/Private/Android/Infrastructure/
-Source/Sentry/Private/Android/Infrastructure/SentryConvertorsAndroid.cpp
-Source/Sentry/Private/Android/Infrastructure/SentryConvertorsAndroid.h
+Source/Sentry/Private/Android/Infrastructure/SentryConvertersAndroid.cpp
+Source/Sentry/Private/Android/Infrastructure/SentryConvertersAndroid.h
 Source/Sentry/Private/Android/Infrastructure/SentryDataTypesAndroid.h
 Source/Sentry/Private/Android/Infrastructure/SentryJavaClasses.cpp
 Source/Sentry/Private/Android/Infrastructure/SentryJavaClasses.h
@@ -63,8 +63,8 @@ Source/Sentry/Private/Apple/Convenience/
 Source/Sentry/Private/Apple/Convenience/SentryInclude.h
 Source/Sentry/Private/Apple/Convenience/SentryMacro.h
 Source/Sentry/Private/Apple/Infrastructure/
-Source/Sentry/Private/Apple/Infrastructure/SentryConvertorsApple.cpp
-Source/Sentry/Private/Apple/Infrastructure/SentryConvertorsApple.h
+Source/Sentry/Private/Apple/Infrastructure/SentryConvertersApple.cpp
+Source/Sentry/Private/Apple/Infrastructure/SentryConvertersApple.h
 Source/Sentry/Private/Apple/SentryAttachmentApple.cpp
 Source/Sentry/Private/Apple/SentryAttachmentApple.h
 Source/Sentry/Private/Apple/SentryBreadcrumbApple.cpp
@@ -98,8 +98,8 @@ Source/Sentry/Private/Desktop/CrashReporter/SentryCrashContext.h
 Source/Sentry/Private/Desktop/CrashReporter/SentryCrashReporter.cpp
 Source/Sentry/Private/Desktop/CrashReporter/SentryCrashReporter.h
 Source/Sentry/Private/Desktop/Infrastructure/
-Source/Sentry/Private/Desktop/Infrastructure/SentryConvertorsDesktop.cpp
-Source/Sentry/Private/Desktop/Infrastructure/SentryConvertorsDesktop.h
+Source/Sentry/Private/Desktop/Infrastructure/SentryConvertersDesktop.cpp
+Source/Sentry/Private/Desktop/Infrastructure/SentryConvertersDesktop.h
 Source/Sentry/Private/Desktop/SentryBreadcrumbDesktop.cpp
 Source/Sentry/Private/Desktop/SentryBreadcrumbDesktop.h
 Source/Sentry/Private/Desktop/SentryEventDesktop.cpp

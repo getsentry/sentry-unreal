@@ -5,7 +5,7 @@
 
 #include "SentryDefines.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryTransactionAndroid::SentryTransactionAndroid(jobject transaction)
@@ -70,7 +70,7 @@ void SentryTransactionAndroid::RemoveTag(const FString& key)
 
 void SentryTransactionAndroid::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	CallMethod<void>(SetDataMethod, *GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetDataMethod, *GetJString(key), SentryConvertersAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentryTransactionAndroid::RemoveData(const FString& key)
