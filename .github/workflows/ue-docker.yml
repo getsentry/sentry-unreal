@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    runs-on: windows-latest-4-cores
+    runs-on: windows-latest
     steps:
       - name: Print disk space
         run: |
