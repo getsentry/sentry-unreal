@@ -48,6 +48,14 @@ void USentryEvent::SetMessage(const FString& Message)
 	EventNativeImpl->SetMessage(Message);
 }
 
+USentryId* USentryEvent::GetId() const
+{
+	if(!EventNativeImpl)
+		return nullptr;
+
+	return EventNativeImpl->GetId();
+}
+
 FString USentryEvent::GetMessage() const
 {
 	if(!EventNativeImpl)

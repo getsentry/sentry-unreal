@@ -2,6 +2,8 @@
 
 #include "SentryEventDesktop.h"
 #include "SentryDefines.h"
+#include "SentryId.h"
+#include "SentryIdDesktop.h"
 
 #include "Infrastructure/SentryConvertersDesktop.h"
 
@@ -33,6 +35,16 @@ void SentryEventDesktop::SetMessage(const FString& message)
 	sentry_value_t messageСontainer = sentry_value_new_object();
 	sentry_value_set_by_key(messageСontainer, "formatted", sentry_value_new_string(TCHAR_TO_UTF8(*message)));
 	sentry_value_set_by_key(EventDesktop, "message", messageСontainer);
+}
+
+USentryId* SentryEventDesktop::GetId() const
+{
+	sentry_value_t id = sentry_value_get_by_key(EventDesktop, "event_id");
+	sentry_uuid_t uuid = sentry_uuid_from_string(sentry_value_as_string(id));
+	TSharedPtr<ISentryId> idNativeImpl = MakeShareable(new SentryIdDesktop(uuid));
+	USentryId* unrealId = NewObject<USentryId>();
+	unrealId->InitWithNativeImpl(idNativeImpl);
+	return unrealId;
 }
 
 FString SentryEventDesktop::GetMessage() const

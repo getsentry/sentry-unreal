@@ -3,9 +3,11 @@
 #pragma once
 
 #include "SentryDataTypes.h"
+#include <Templates/SharedPointer.h>
 
 #include "SentryEvent.generated.h"
 
+class USentryId;
 class ISentryEvent;
 
 /**
@@ -31,6 +33,10 @@ public:
 	/** Sets message of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetMessage(const FString& Message);
+
+	/** Gets id of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	USentryId* GetId() const;
 
 	/** Gets message of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")

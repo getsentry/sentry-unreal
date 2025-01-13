@@ -18,6 +18,7 @@ public:
 	sentry_value_t GetNativeObject();
 
 	virtual void SetMessage(const FString& message) override;
+	virtual USentryId* GetId() const override;
 	virtual FString GetMessage() const override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
