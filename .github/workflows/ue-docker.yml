@@ -10,9 +10,10 @@ jobs:
         run: |
           Get-PSDrive
 
-      - name: Clean up some space
+      - name: Clean up disk space
         run: |
           docker system prune -a -f
+          rmdir /s /q "C:\Users\runneradmin\AppData\Local\Android\Sdk"
 
       - name: Print disk space 2
         run: |
