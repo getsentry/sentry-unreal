@@ -6,6 +6,10 @@ jobs:
   build:
     runs-on: windows-latest-4-cores
     steps:
+      - name: Print disk space
+        run: |
+          Get-PSDrive
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
