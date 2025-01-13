@@ -13,7 +13,7 @@ jobs:
       - name: Clean up disk space
         run: |
           docker system prune -a -f
-          rmdir /s "C:\Users\runneradmin\AppData\Local\Android\Sdk"
+          Remove-Item -Path "C:\Users\runneradmin\AppData\Local\Android\Sdk" -Force -Recurse
 
       - name: Print disk space 2
         run: |
