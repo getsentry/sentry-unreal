@@ -4,7 +4,7 @@
 
 #include "SentryMessageAndroid.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryEventAndroid::SentryEventAndroid()
@@ -41,13 +41,13 @@ FString SentryEventAndroid::GetMessage() const
 
 void SentryEventAndroid::SetLevel(ESentryLevel level)
 {
-	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
+	CallMethod<void>(SetLevelMethod, SentryConvertersAndroid::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel SentryEventAndroid::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
-	return SentryConvertorsAndroid::SentryLevelToUnreal(*level);
+	return SentryConvertersAndroid::SentryLevelToUnreal(*level);
 }
 
 bool SentryEventAndroid::IsCrash() const

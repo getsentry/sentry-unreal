@@ -4,7 +4,7 @@
 
 #include "SentryDefines.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentrySpanAndroid::SentrySpanAndroid(jobject span)
@@ -63,7 +63,7 @@ void SentrySpanAndroid::RemoveTag(const FString& key)
 
 void SentrySpanAndroid::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	CallMethod<void>(SetDataMethod, *GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetDataMethod, *GetJString(key), SentryConvertersAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentrySpanAndroid::RemoveData(const FString& key)

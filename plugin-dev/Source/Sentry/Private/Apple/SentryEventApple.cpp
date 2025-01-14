@@ -2,7 +2,7 @@
 
 #include "SentryEventApple.h"
 
-#include "Infrastructure/SentryConvertorsApple.h"
+#include "Infrastructure/SentryConvertersApple.h"
 
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
@@ -42,12 +42,12 @@ FString SentryEventApple::GetMessage() const
 
 void SentryEventApple::SetLevel(ESentryLevel level)
 {
-	EventApple.level = SentryConvertorsApple::SentryLevelToNative(level);
+	EventApple.level = SentryConvertersApple::SentryLevelToNative(level);
 }
 
 ESentryLevel SentryEventApple::GetLevel() const
 {
-	return SentryConvertorsApple::SentryLevelToUnreal(EventApple.level);
+	return SentryConvertersApple::SentryLevelToUnreal(EventApple.level);
 }
 
 bool SentryEventApple::IsCrash() const

@@ -2,12 +2,12 @@
 
 #include "SentryAttachmentAndroid.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryAttachmentAndroid::SentryAttachmentAndroid(const TArray<uint8>& data, const FString& filename, const FString& contentType)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::Attachment, "([BLjava/lang/String;Ljava/lang/String;)V",
-		SentryConvertorsAndroid::ByteArrayToNative(data), *GetJString(filename), *GetJString(contentType))
+		SentryConvertersAndroid::ByteArrayToNative(data), *GetJString(filename), *GetJString(contentType))
 {
 	SetupClassMethods();
 }
@@ -30,7 +30,7 @@ void SentryAttachmentAndroid::SetupClassMethods()
 TArray<uint8> SentryAttachmentAndroid::GetData() const
 {
 	auto data = CallObjectMethod<jobject>(GetDataMethod);
-	return SentryConvertorsAndroid::ByteArrayToUnreal(static_cast<jbyteArray>(*data));
+	return SentryConvertersAndroid::ByteArrayToUnreal(static_cast<jbyteArray>(*data));
 }
 
 FString SentryAttachmentAndroid::GetPath() const

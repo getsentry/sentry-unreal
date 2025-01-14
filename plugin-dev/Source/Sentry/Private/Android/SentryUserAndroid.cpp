@@ -2,7 +2,7 @@
 
 #include "SentryUserAndroid.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryUserAndroid::SentryUserAndroid()
@@ -73,11 +73,11 @@ FString SentryUserAndroid::GetIpAddress() const
 
 void SentryUserAndroid::SetData(const TMap<FString, FString>& data)
 {
-	CallMethod<void>(SetDataMethod, SentryConvertorsAndroid::StringMapToNative(data)->GetJObject());
+	CallMethod<void>(SetDataMethod, SentryConvertersAndroid::StringMapToNative(data)->GetJObject());
 }
 
 TMap<FString, FString> SentryUserAndroid::GetData()
 {
 	auto data = CallObjectMethod<jobject>(GetDataMethod);
-	return SentryConvertorsAndroid::StringMapToUnreal(*data);
+	return SentryConvertersAndroid::StringMapToUnreal(*data);
 }

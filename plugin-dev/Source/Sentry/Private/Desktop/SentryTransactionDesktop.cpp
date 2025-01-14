@@ -3,7 +3,7 @@
 #include "SentryTransactionDesktop.h"
 #include "SentrySpanDesktop.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -84,7 +84,7 @@ void SentryTransactionDesktop::SetData(const FString& key, const TMap<FString, F
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_transaction_set_data(TransactionDesktop, TCHAR_TO_ANSI(*key), SentryConvertorsDesktop::StringMapToNative(values));
+	sentry_transaction_set_data(TransactionDesktop, TCHAR_TO_ANSI(*key), SentryConvertersDesktop::StringMapToNative(values));
 }
 
 void SentryTransactionDesktop::RemoveData(const FString& key)

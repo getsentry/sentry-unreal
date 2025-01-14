@@ -2,7 +2,7 @@
 
 #include "SentryUserDesktop.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -82,13 +82,13 @@ FString SentryUserDesktop::GetIpAddress() const
 
 void SentryUserDesktop::SetData(const TMap<FString, FString>& data)
 {
-	sentry_value_set_by_key(UserDesktop, "data", SentryConvertorsDesktop::StringMapToNative(data));
+	sentry_value_set_by_key(UserDesktop, "data", SentryConvertersDesktop::StringMapToNative(data));
 }
 
 TMap<FString, FString> SentryUserDesktop::GetData()
 {
 	sentry_value_t data = sentry_value_get_by_key(UserDesktop, "data");
-	return SentryConvertorsDesktop::StringMapToUnreal(data);
+	return SentryConvertersDesktop::StringMapToUnreal(data);
 }
 
 #endif

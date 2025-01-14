@@ -4,7 +4,7 @@
 
 #include "SentryIdDesktop.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #if USE_SENTRY_NATIVE
 

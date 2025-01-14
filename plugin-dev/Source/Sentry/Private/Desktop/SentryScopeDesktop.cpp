@@ -9,7 +9,7 @@
 #include "SentryModule.h"
 #include "SentrySettings.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -194,7 +194,7 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 
 	sentry_value_t eventLevel = sentry_value_get_by_key(nativeEvent, "level");
 
-	FString scopeLevelStr = SentryConvertorsDesktop::SentryLevelToString(LevelDesktop).ToLower();
+	FString scopeLevelStr = SentryConvertersDesktop::SentryLevelToString(LevelDesktop).ToLower();
 	if (!scopeLevelStr.IsEmpty() && sentry_value_is_null(eventLevel))
 	{
 		sentry_value_set_by_key(nativeEvent, "level", sentry_value_new_string(TCHAR_TO_ANSI(*scopeLevelStr)));
@@ -212,7 +212,7 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 
 	if(FingerprintDesktop.Num() > 0)
 	{
-		sentry_value_set_by_key(nativeEvent, "fingerprint", SentryConvertorsDesktop::StringArrayToNative(FingerprintDesktop));
+		sentry_value_set_by_key(nativeEvent, "fingerprint", SentryConvertersDesktop::StringArrayToNative(FingerprintDesktop));
 	}
 
 	if(TagsDesktop.Num() > 0)
@@ -220,7 +220,7 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 		sentry_value_t tagsExtra = sentry_value_get_by_key(nativeEvent, "tags");
 		if(sentry_value_is_null(tagsExtra))
 		{
-			sentry_value_set_by_key(nativeEvent, "tags", SentryConvertorsDesktop::StringMapToNative(TagsDesktop));
+			sentry_value_set_by_key(nativeEvent, "tags", SentryConvertersDesktop::StringMapToNative(TagsDesktop));
 		}
 		else
 		{
@@ -236,7 +236,7 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 		sentry_value_t eventExtra = sentry_value_get_by_key(nativeEvent, "extra");
 		if(sentry_value_is_null(eventExtra))
 		{
-			sentry_value_set_by_key(nativeEvent, "extra", SentryConvertorsDesktop::StringMapToNative(ExtraDesktop));
+			sentry_value_set_by_key(nativeEvent, "extra", SentryConvertersDesktop::StringMapToNative(ExtraDesktop));
 		}
 		else
 		{
@@ -257,7 +257,7 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 
 			for (const auto& ContextsItem : ContextsDesktop)
 			{
-				sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*ContextsItem.Key), SentryConvertorsDesktop::StringMapToNative(ContextsItem.Value));
+				sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*ContextsItem.Key), SentryConvertersDesktop::StringMapToNative(ContextsItem.Value));
 			}
 
 			sentry_value_set_by_key(nativeEvent, "contexts", eventContexts);
@@ -266,7 +266,7 @@ void SentryScopeDesktop::Apply(TSharedPtr<SentryEventDesktop> event)
 		{
 			for (const auto& ContextsItem : ContextsDesktop)
 			{
-				sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*ContextsItem.Key), SentryConvertorsDesktop::StringMapToNative(ContextsItem.Value));
+				sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*ContextsItem.Key), SentryConvertersDesktop::StringMapToNative(ContextsItem.Value));
 			}
 		}
 	}

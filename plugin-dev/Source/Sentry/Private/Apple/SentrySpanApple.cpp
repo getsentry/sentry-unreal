@@ -4,7 +4,7 @@
 
 #include "SentryDefines.h"
 
-#include "Infrastructure/SentryConvertorsApple.h"
+#include "Infrastructure/SentryConvertersApple.h"
 
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
@@ -65,7 +65,7 @@ void SentrySpanApple::RemoveTag(const FString& key)
 
 void SentrySpanApple::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	[SpanApple setDataValue:SentryConvertorsApple::StringMapToNative(values) forKey:key.GetNSString()];
+	[SpanApple setDataValue:SentryConvertersApple::StringMapToNative(values) forKey:key.GetNSString()];
 }
 
 void SentrySpanApple::RemoveData(const FString& key)

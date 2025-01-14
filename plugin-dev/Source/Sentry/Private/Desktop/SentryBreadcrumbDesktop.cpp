@@ -2,7 +2,7 @@
 
 #include "SentryBreadcrumbDesktop.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -61,18 +61,18 @@ FString SentryBreadcrumbDesktop::GetCategory() const
 
 void SentryBreadcrumbDesktop::SetData(const TMap<FString, FString>& data)
 {
-	sentry_value_set_by_key(BreadcrumbDesktop, "data", SentryConvertorsDesktop::StringMapToNative(data));
+	sentry_value_set_by_key(BreadcrumbDesktop, "data", SentryConvertersDesktop::StringMapToNative(data));
 }
 
 TMap<FString, FString> SentryBreadcrumbDesktop::GetData() const
 {
 	sentry_value_t data = sentry_value_get_by_key(BreadcrumbDesktop, "data");
-	return SentryConvertorsDesktop::StringMapToUnreal(data);
+	return SentryConvertersDesktop::StringMapToUnreal(data);
 }
 
 void SentryBreadcrumbDesktop::SetLevel(ESentryLevel level)
 {
-	FString levelStr = SentryConvertorsDesktop::SentryLevelToString(level);
+	FString levelStr = SentryConvertersDesktop::SentryLevelToString(level);
 	if (!levelStr.IsEmpty())
 		sentry_value_set_by_key(BreadcrumbDesktop, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
 }
@@ -80,7 +80,7 @@ void SentryBreadcrumbDesktop::SetLevel(ESentryLevel level)
 ESentryLevel SentryBreadcrumbDesktop::GetLevel() const
 {
 	sentry_value_t level = sentry_value_get_by_key(BreadcrumbDesktop, "level");
-	return SentryConvertorsDesktop::SentryLevelToUnreal(level);
+	return SentryConvertersDesktop::SentryLevelToUnreal(level);
 }
 
 #endif

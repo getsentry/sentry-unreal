@@ -14,7 +14,7 @@
 #if PLATFORM_WINDOWS || PLATFORM_LINUX
 #include "Desktop/SentryScopeDesktop.h"
 #include "Desktop/SentryEventDesktop.h"
-#include "Desktop/Infrastructure/SentryConvertorsDesktop.h"
+#include "Desktop/Infrastructure/SentryConvertersDesktop.h"
 #endif
 
 #if WITH_AUTOMATION_TESTS
@@ -173,16 +173,16 @@ void SentryScopeSpec::Define()
 			sentry_value_t contexts = sentry_value_get_by_key(NativeEvent, "contexts");
 			sentry_value_t testContext = sentry_value_get_by_key(contexts, "TestContext");
 
-			TestEqual("Event level", SentryConvertorsDesktop::SentryLevelToUnreal(level), ESentryLevel::Fatal);
+			TestEqual("Event level", SentryConvertersDesktop::SentryLevelToUnreal(level), ESentryLevel::Fatal);
 			TestEqual("Event dist", FString(sentry_value_as_string(dist)), TestDist);
 			TestEqual("Event environment", FString(sentry_value_as_string(environment)), TestEnvironment);
-			TestEqual("Event fingerprint", SentryConvertorsDesktop::StringArrayToUnreal(fingerprint), TestFingerprint);
-			TestEqual("Event tags 1", SentryConvertorsDesktop::StringMapToUnreal(tags)[TEXT("TagsKey1")], TestTags[TEXT("TagsKey1")]);
-			TestEqual("Event tags 2", SentryConvertorsDesktop::StringMapToUnreal(tags)[TEXT("TagsKey2")], TestTags[TEXT("TagsKey2")]);
-			TestEqual("Event extra 1", SentryConvertorsDesktop::StringMapToUnreal(extra)[TEXT("ExtrasKey1")], TestExtras[TEXT("ExtrasKey1")]);
-			TestEqual("Event extra 2", SentryConvertorsDesktop::StringMapToUnreal(extra)[TEXT("ExtrasKey2")], TestExtras[TEXT("ExtrasKey2")]);
-			TestEqual("Event context 1", SentryConvertorsDesktop::StringMapToUnreal(testContext)[TEXT("ContextKey1")], TestContext[TEXT("ContextKey1")]);
-			TestEqual("Event context 2", SentryConvertorsDesktop::StringMapToUnreal(testContext)[TEXT("ContextKey2")], TestContext[TEXT("ContextKey2")]);
+			TestEqual("Event fingerprint", SentryConvertersDesktop::StringArrayToUnreal(fingerprint), TestFingerprint);
+			TestEqual("Event tags 1", SentryConvertersDesktop::StringMapToUnreal(tags)[TEXT("TagsKey1")], TestTags[TEXT("TagsKey1")]);
+			TestEqual("Event tags 2", SentryConvertersDesktop::StringMapToUnreal(tags)[TEXT("TagsKey2")], TestTags[TEXT("TagsKey2")]);
+			TestEqual("Event extra 1", SentryConvertersDesktop::StringMapToUnreal(extra)[TEXT("ExtrasKey1")], TestExtras[TEXT("ExtrasKey1")]);
+			TestEqual("Event extra 2", SentryConvertersDesktop::StringMapToUnreal(extra)[TEXT("ExtrasKey2")], TestExtras[TEXT("ExtrasKey2")]);
+			TestEqual("Event context 1", SentryConvertersDesktop::StringMapToUnreal(testContext)[TEXT("ContextKey1")], TestContext[TEXT("ContextKey1")]);
+			TestEqual("Event context 2", SentryConvertersDesktop::StringMapToUnreal(testContext)[TEXT("ContextKey2")], TestContext[TEXT("ContextKey2")]);
 		});
 	});
 #endif

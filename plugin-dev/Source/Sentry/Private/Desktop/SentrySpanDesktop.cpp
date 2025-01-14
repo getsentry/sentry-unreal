@@ -2,7 +2,7 @@
 
 #include "SentrySpanDesktop.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -77,7 +77,7 @@ void SentrySpanDesktop::SetData(const FString& key, const TMap<FString, FString>
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_set_data(SpanDesktop, TCHAR_TO_ANSI(*key), SentryConvertorsDesktop::StringMapToNative(values));
+	sentry_span_set_data(SpanDesktop, TCHAR_TO_ANSI(*key), SentryConvertersDesktop::StringMapToNative(values));
 }
 
 void SentrySpanDesktop::RemoveData(const FString& key)

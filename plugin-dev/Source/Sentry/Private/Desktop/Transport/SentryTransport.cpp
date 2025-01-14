@@ -7,7 +7,7 @@
 #include "SentryDsnUrl.h"
 #include "SentrySettings.h"
 
-#include "Desktop/Infrastructure/SentryConvertorsDesktop.h"
+#include "Desktop/Infrastructure/SentryConvertersDesktop.h"
 
 #include "HttpModule.h"
 #include "HttpManager.h"
@@ -66,7 +66,7 @@ void FSentryTransport::Send(sentry_envelope_t* envelope)
 	HttpRequest->SetVerb(TEXT("POST"));
 	HttpRequest->SetHeader(TEXT("Content-Type"), TEXT("application/x-sentry-envelope"));
 	HttpRequest->SetHeader(TEXT("X-Sentry-Auth"), FString::Printf(TEXT("Sentry sentry_version=7, sentry_client=sentry-unreal, sentry_key=%s"), *DsnUrl.GetKey()));
-	HttpRequest->SetContent(SentryConvertorsDesktop::SentryEnvelopeToByteArray(envelope));
+	HttpRequest->SetContent(SentryConvertersDesktop::SentryEnvelopeToByteArray(envelope));
 
 	HttpRequest->OnProcessRequestComplete().BindThreadSafeSP(this, &FSentryTransport::OnRequestCompleted);
 
