@@ -54,7 +54,8 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 #endif
 			options.initialScope = ^(SentryScope* scope) {
 				if(settings->EnableAutoLogAttachment) {
-					const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+					FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+					logFilePath = logFilePath.Replace(TEXT("/Library/"), TEXT("/Documents/"));
 					SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
 					[scope addAttachment:logAttachment];
 				}

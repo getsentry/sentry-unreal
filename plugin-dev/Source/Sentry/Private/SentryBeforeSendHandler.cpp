@@ -19,7 +19,10 @@ USentryEvent* USentryBeforeSendHandler::HandleBeforeSend_Implementation(USentryE
 	if(Settings->EnableAutoLogAttachment)
 	{
 #if PLATFORM_ANDROID || PLATFORM_APPLE
-		const FString LogFilePath = Event->IsCrash() ? SentryFileUtils::GetGameLogBackupPath() : SentryFileUtils::GetGameLogPath();
+		FString LogFilePath = Event->IsCrash() ? SentryFileUtils::GetGameLogBackupPath() : SentryFileUtils::GetGameLogPath();
+#if PLATFORM_APPLE
+		LogFilePath = LogFilePath.Replace(TEXT("/Library/"), TEXT("/Documents/"));
+#endif
 #else
 		const FString LogFilePath = SentryFileUtils::GetGameLogPath();
 #endif
