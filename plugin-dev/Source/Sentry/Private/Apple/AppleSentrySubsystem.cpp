@@ -24,11 +24,13 @@
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
 
+#include "Utils/SentryFileUtils.h"
+#include "Utils/SentryLogUtils.h"
+
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
-#include "Utils/SentryLogUtils.h"
 
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
@@ -60,7 +62,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 #endif
 			options.initialScope = ^(SentryScope* scope) {
 				if(settings->EnableAutoLogAttachment) {
-					const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+					const FString logFilePath = SentryFileUtils::GetGameLogPath();
 					SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
 					[scope addAttachment:logAttachment];
 				}
