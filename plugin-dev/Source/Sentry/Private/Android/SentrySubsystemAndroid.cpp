@@ -166,26 +166,6 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEventWithScope(TSharedPtr<I
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
-{
-	return nullptr;
-}
-
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureAssertion(const FString& type, const FString& message)
-{
-	const int32 framesToSkip = 8;
-
-	// add marker tags specific for Unreal assertions
-	SetTag(TEXT("sentry_unreal_exception"), TEXT("assert"));
-	SetTag(TEXT("sentry_unreal_exception_skip_frames"), FString::Printf(TEXT("%d"), framesToSkip));
-	SetTag(TEXT("sentry_unreal_exception_type"), type);
-	SetTag(TEXT("sentry_unreal_exception_message"), message);
-
-	PLATFORM_BREAK();
-
-	return nullptr;
-}
-
 TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEnsure(const FString& type, const FString& message)
 {
 	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureException", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/protocol/SentryId;",

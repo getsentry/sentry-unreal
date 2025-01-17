@@ -60,7 +60,6 @@ public class SentryBridgeJava {
 					options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
 						@Override
 						public SentryEvent execute(SentryEvent event, Hint hint) {
-							preProcessEvent(event);
 							return onBeforeSend(beforeSendHandler, event, hint);
 						}
 					});
@@ -96,24 +95,6 @@ public class SentryBridgeJava {
 				}
 			}
 		});
-	}
-
-	private static void preProcessEvent(SentryEvent event) {
-		if (event.getTags().containsKey("sentry_unreal_exception")) {
-			SentryException exception = event.getUnhandledException();
-			if (exception != null) {
-				exception.setType(event.getTag("sentry_unreal_exception_type"));
-				exception.setValue(event.getTag("sentry_unreal_exception_message"));
-				SentryStackTrace trace = exception.getStacktrace();
-				int numFramesToSkip = Integer.parseInt(event.getTag("sentry_unreal_exception_skip_frames"));
-				List<SentryStackFrame> frames = trace.getFrames();
-				trace.setFrames(frames.subList(0, frames.size() - numFramesToSkip));
-			}
-			event.removeTag("sentry_unreal_exception_type");
-			event.removeTag("sentry_unreal_exception_message");
-			event.removeTag("sentry_unreal_exception_skip_frames");
-			event.removeTag("sentry_unreal_exception");
-		}
 	}
 
 	public static void addBreadcrumb(final String message, final String category, final String type, final HashMap<String, String> data, final SentryLevel level) {

@@ -429,41 +429,15 @@ TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEventWithScope(TSharedPtr<I
 	return Id;
 }
 
-TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
-
-	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
-	sentry_value_set_by_key(exceptionEvent, "stacktrace", SentryConvertersDesktop::CallstackToNative(StackFrames));
 
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
 	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
 	return MakeShareable(new SentryIdDesktop(id));
-}
-
-TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureAssertion(const FString& type, const FString& message)
-{
-#if PLATFORM_WINDOWS
-	int32 framesToSkip = 7;
-#else
-	int32 framesToSkip = 5;
-#endif
-
-	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
-
-	return CaptureException(type, message, framesToSkip);
-}
-
-TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEnsure(const FString& type, const FString& message)
-{
-#if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 3, 0)
-	int32 framesToSkip = 8;
-#else
-	int32 framesToSkip = 7;
-#endif
-	return CaptureException(type, message, framesToSkip);
 }
 
 void SentrySubsystemDesktop::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
