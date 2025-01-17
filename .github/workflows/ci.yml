@@ -33,7 +33,7 @@ jobs:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: LinuxArm64
-      runsOn: ubuntu-latest-4-cores-arm64
+      runsOn: ubuntu-22.04-arm
       container: arm64v8/ubuntu:20.04
 
   windows-crashpad-sdk:
