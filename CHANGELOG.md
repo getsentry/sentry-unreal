@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix incorrect game log attachment on Android ([#743](https://github.com/getsentry/sentry-unreal/pull/743))
+
 ### Dependencies
 
 - Bump CLI from v2.39.1 to v2.41.0 ([#725](https://github.com/getsentry/sentry-unreal/pull/725), [#740](https://github.com/getsentry/sentry-unreal/pull/740))
