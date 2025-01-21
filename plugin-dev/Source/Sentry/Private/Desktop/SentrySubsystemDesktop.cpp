@@ -436,6 +436,8 @@ TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureEnsure(const FString& type,
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
+	sentry_value_set_stacktrace(exceptionEvent, nullptr, 0);
+
 	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
 	return MakeShareable(new SentryIdDesktop(id));
 }
