@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "SentryImplWrapper.h"
 #include "SentryUserFeedback.generated.h"
 
 class USentryId;
@@ -11,16 +12,11 @@ class ISentryUserFeedback;
  * Additional information about what happened to an event.
  */
 UCLASS(BlueprintType)
-class SENTRY_API USentryUserFeedback : public UObject
+class SENTRY_API USentryUserFeedback : public UObject, public TSentryImplWrapper<ISentryUserFeedback, USentryUserFeedback>
 {
 	GENERATED_BODY()
 
 public:
-
-	/** Initializes user feedback with Id of the event to which it is associated. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize(USentryId* EventId);
-
 	/** Sets the name of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetName(const FString& Name);
@@ -44,10 +40,4 @@ public:
 	/** Gets comments of the user about what happened. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetComment() const;
-
-	void InitWithNativeImpl(TSharedPtr<ISentryUserFeedback> userFeedbackImpl);
-	TSharedPtr<ISentryUserFeedback> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentryUserFeedback> UserFeedbackNativeImpl;
 };

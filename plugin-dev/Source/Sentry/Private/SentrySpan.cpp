@@ -4,114 +4,86 @@
 
 #include "Interface/SentrySpanInterface.h"
 
-#if PLATFORM_ANDROID
-#include "Android/SentrySpanAndroid.h"
-#elif PLATFORM_IOS || PLATFORM_MAC
-#include "Apple/SentrySpanApple.h"
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
-#include "Desktop/SentrySpanDesktop.h"
-#endif
-
-USentrySpan::USentrySpan()
-{
-}
-
 USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
 {
-	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = SentrySpanNativeImpl->StartChild(Operation, Description);
+	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChild(Operation, Description);
 
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-
-	return unrealSpan;
+	return USentrySpan::Create(spanNativeImpl);
 }
 
 USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
 {
-	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = SentrySpanNativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
+	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
 
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-
-	return unrealSpan;
+	return USentrySpan::Create(spanNativeImpl);
 }
 
 void USentrySpan::Finish()
 {
-	if (!SentrySpanNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	SentrySpanNativeImpl->Finish();
+	NativeImpl->Finish();
 }
 
 void USentrySpan::FinishWithTimestamp(int64 Timestamp)
 {
-	if (!SentrySpanNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	SentrySpanNativeImpl->FinishWithTimestamp(Timestamp);
+	NativeImpl->FinishWithTimestamp(Timestamp);
 }
 
 bool USentrySpan::IsFinished() const
 {
-	if (!SentrySpanNativeImpl)
+	if (!NativeImpl)
 		return false;
 
-	return SentrySpanNativeImpl->IsFinished();
+	return NativeImpl->IsFinished();
 }
 
 void USentrySpan::SetTag(const FString& key, const FString& value)
 {
-	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentrySpanNativeImpl->SetTag(key, value);
+	NativeImpl->SetTag(key, value);
 }
 
 void USentrySpan::RemoveTag(const FString& key)
 {
-	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentrySpanNativeImpl->RemoveTag(key);
+	NativeImpl->RemoveTag(key);
 }
 
 void USentrySpan::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentrySpanNativeImpl->SetData(key, values);
+	NativeImpl->SetData(key, values);
 }
 
 void USentrySpan::RemoveData(const FString& key)
 {
-	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentrySpanNativeImpl->RemoveData(key);
+	NativeImpl->RemoveData(key);
 }
 
 void USentrySpan::GetTrace(FString& name, FString& value)
 {
-	if (!SentrySpanNativeImpl || SentrySpanNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentrySpanNativeImpl->GetTrace(name, value);
-}
-
-void USentrySpan::InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl)
-{
-	SentrySpanNativeImpl = spanImpl;
-}
-
-TSharedPtr<ISentrySpan> USentrySpan::GetNativeImpl()
-{
-	return SentrySpanNativeImpl;
+	NativeImpl->GetTrace(name, value);
 }

@@ -6,6 +6,7 @@
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
 #include "SentrySpan.h"
+#include "GenericPlatform/GenericPlatformSentryTransactionContext.h"
 
 #include "UObject/UObjectGlobals.h"
 #include "Misc/AutomationTest.h"
@@ -97,8 +98,10 @@ void SentrySubsystemSpec::Define()
 
 		It("should be started and finished with specific context", [this]()
 		{
-			USentryTransactionContext* transactionContext = NewObject<USentryTransactionContext>();
-			transactionContext->Initialize(TEXT("Automation transaction"), TEXT("Automation operation"));
+			USentryTransactionContext* transactionContext =
+				USentryTransactionContext::Create(
+					MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")))
+				);
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContext(transactionContext);
 			TestNotNull("Transaction is non-null", transaction);
@@ -110,8 +113,10 @@ void SentrySubsystemSpec::Define()
 
 		It("should be started and finished with specific context and timings", [this]()
 		{
-			USentryTransactionContext* transactionContext = NewObject<USentryTransactionContext>();
-			transactionContext->Initialize(TEXT("Automation transaction"), TEXT("Automation operation"));
+			USentryTransactionContext* transactionContext =
+				USentryTransactionContext::Create(
+					MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")))
+				);
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContextAndTimestamp(transactionContext, FDateTime::UtcNow().ToUnixTimestamp());
 			TestNotNull("Transaction is non-null", transaction);

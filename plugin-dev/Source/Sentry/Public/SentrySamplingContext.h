@@ -4,19 +4,18 @@
 
 #include "CoreMinimal.h"
 
+#include "SentryImplWrapper.h"
 #include "SentrySamplingContext.generated.h"
 
 class ISentrySamplingContext;
 class USentryTransactionContext;
 
 UCLASS(BlueprintType)
-class SENTRY_API USentrySamplingContext : public UObject
+class SENTRY_API USentrySamplingContext : public UObject, public TSentryImplWrapper<ISentrySamplingContext, USentrySamplingContext>
 {
 	GENERATED_BODY()
 
 public:
-	USentrySamplingContext();
-
 	/** Gets transaction context used for sampling. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	USentryTransactionContext* GetTransactionContext() const;
@@ -24,10 +23,4 @@ public:
 	/** Gets custom data used for sampling. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TMap<FString, FString> GetCustomSamplingContext() const;
-
-	void InitWithNativeImpl(TSharedPtr<ISentrySamplingContext> samplingContextImpl);
-	TSharedPtr<ISentrySamplingContext> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentrySamplingContext> SentrySamplingContextNativeImpl;
 };

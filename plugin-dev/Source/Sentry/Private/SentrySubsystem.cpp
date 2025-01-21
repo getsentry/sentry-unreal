@@ -28,25 +28,14 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-#if PLATFORM_ANDROID
-#include "Android/SentrySubsystemAndroid.h"
-#elif PLATFORM_IOS || PLATFORM_MAC
-#include "Apple/SentrySubsystemApple.h"
-#elif PLATFORM_WINDOWS  || PLATFORM_LINUX
-#include "Desktop/SentrySubsystemDesktop.h"
-#endif
+#include "HAL/PlatformSentrySubsystem.h"
+#include "HAL/PlatformSentryUserFeedback.h"
 
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-#if PLATFORM_ANDROID
-	SubsystemNativeImpl = MakeShareable(new SentrySubsystemAndroid());
-#elif PLATFORM_IOS || PLATFORM_MAC
-	SubsystemNativeImpl = MakeShareable(new SentrySubsystemApple());
-#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
-	SubsystemNativeImpl = MakeShareable(new SentrySubsystemDesktop());
-#endif
+	SubsystemNativeImpl = MakeShareable(new FPlatformSentrySubsystem());
 
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
@@ -214,7 +203,7 @@ void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
-	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeImpl());
+	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
 }
 
 void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
@@ -240,10 +229,7 @@ USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel
 
 	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureMessage(Message, Level);
 
-	USentryId* unrealId = NewObject<USentryId>();
-	unrealId->InitWithNativeImpl(idNativeImpl);
-
-	return unrealId;
+	return USentryId::Create(idNativeImpl);
 }
 
 USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
@@ -258,15 +244,11 @@ USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, con
 
 	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureMessageWithScope(Message, FSentryScopeDelegate::CreateLambda([&](TSharedPtr<ISentryScope> nativeScope)
 	{
-		USentryScope* unrealScope = NewObject<USentryScope>();
-		unrealScope->InitWithNativeImpl(nativeScope);
+		USentryScope* unrealScope = USentryScope::Create(nativeScope);
 		OnConfigureScope.ExecuteIfBound(unrealScope);
 	}), Level);
 
-	USentryId* unrealId = NewObject<USentryId>();
-	unrealId->InitWithNativeImpl(idNativeImpl);
-
-	return unrealId;
+	return USentryId::Create(idNativeImpl);
 }
 
 USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
@@ -274,12 +256,9 @@ USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureEvent(Event->GetNativeImpl());
+	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureEvent(Event->GetNativeObject());
 
-	USentryId* unrealId = NewObject<USentryId>();
-	unrealId->InitWithNativeImpl(idNativeImpl);
-
-	return unrealId;
+	return USentryId::Create(idNativeImpl);
 }
 
 USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
@@ -292,17 +271,13 @@ USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FC
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeImpl(), FSentryScopeDelegate::CreateLambda([&](TSharedPtr<ISentryScope> nativeScope)
+	TSharedPtr<ISentryId> idNativeImpl = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), FSentryScopeDelegate::CreateLambda([&](TSharedPtr<ISentryScope> nativeScope)
 	{
-		USentryScope* unrealScope = NewObject<USentryScope>();
-		unrealScope->InitWithNativeImpl(nativeScope);
+		USentryScope* unrealScope = USentryScope::Create(nativeScope);
 		OnConfigureScope.ExecuteIfBound(unrealScope);
 	}));
 
-	USentryId* unrealId = NewObject<USentryId>();
-	unrealId->InitWithNativeImpl(idNativeImpl);
-
-	return unrealId;
+	return USentryId::Create(idNativeImpl);
 }
 
 void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
@@ -310,13 +285,12 @@ void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
-	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback->GetNativeImpl());
+	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback->GetNativeObject());
 }
 
 void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name)
 {
-	USentryUserFeedback* UserFeedback = NewObject<USentryUserFeedback>();
-	UserFeedback->Initialize(EventId);
+	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(MakeShareable(NEW_USER_FEEDBACK(EventId->GetNativeObject())));
 	UserFeedback->SetEmail(Email);
 	UserFeedback->SetComment(Comments);
 	UserFeedback->SetName(Name);
@@ -329,7 +303,7 @@ void USentrySubsystem::SetUser(USentryUser* User)
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return;
 
-	SubsystemNativeImpl->SetUser(User->GetNativeImpl());
+	SubsystemNativeImpl->SetUser(User->GetNativeObject());
 }
 
 void USentrySubsystem::RemoveUser()
@@ -352,8 +326,7 @@ void USentrySubsystem::ConfigureScope(const FConfigureScopeNativeDelegate& OnCon
 
 	SubsystemNativeImpl->ConfigureScope(FSentryScopeDelegate::CreateLambda([&](TSharedPtr<ISentryScope> nativeScope)
 	{
-		USentryScope* unrealScope = NewObject<USentryScope>();
-		unrealScope->InitWithNativeImpl(nativeScope);
+		USentryScope* unrealScope = USentryScope::Create(nativeScope);
 		OnConfigureScope.ExecuteIfBound(unrealScope);
 	}));
 }
@@ -413,10 +386,7 @@ USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, cons
 
 	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransaction(Name, Operation);
 
-	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
-	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
-
-	return unrealTransaction;
+	return USentryTransaction::Create(transactionNativeImpl);
 }
 
 USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransactionContext* Context)
@@ -424,12 +394,9 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeImpl());
+	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject());
 
-	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
-	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
-
-	return unrealTransaction;
+	return USentryTransaction::Create(transactionNativeImpl);
 }
 
 USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp)
@@ -437,12 +404,9 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeImpl(), Timestamp);
+	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp);
 
-	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
-	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
-
-	return unrealTransaction;
+	return USentryTransaction::Create(transactionNativeImpl);
 }
 
 USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options)
@@ -450,12 +414,9 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 		return nullptr;
 
-	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context->GetNativeImpl(), Options);
+	TSharedPtr<ISentryTransaction> transactionNativeImpl = SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context->GetNativeObject(), Options);
 
-	USentryTransaction* unrealTransaction = NewObject<USentryTransaction>();
-	unrealTransaction->InitWithNativeImpl(transactionNativeImpl);
-
-	return unrealTransaction;
+	return USentryTransaction::Create(transactionNativeImpl);
 }
 
 USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& SentryTrace, const TArray<FString>& BaggageHeaders)
@@ -465,10 +426,7 @@ USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& Sentry
 
 	TSharedPtr<ISentryTransactionContext> transactionContextNativeImpl = SubsystemNativeImpl->ContinueTrace(SentryTrace, BaggageHeaders);
 
-	USentryTransactionContext* unrealTransactionContext = NewObject<USentryTransactionContext>();
-	unrealTransactionContext->InitWithNativeImpl(transactionContextNativeImpl);
-
-	return unrealTransactionContext;
+	return USentryTransactionContext::Create(transactionContextNativeImpl);
 }
 
 bool USentrySubsystem::IsSupportedForCurrentSettings()

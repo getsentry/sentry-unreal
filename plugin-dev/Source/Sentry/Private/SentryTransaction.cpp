@@ -5,122 +5,94 @@
 
 #include "Interface/SentryTransactionInterface.h"
 
-#if PLATFORM_ANDROID
-#include "Android/SentryTransactionAndroid.h"
-#elif PLATFORM_IOS || PLATFORM_MAC
-#include "Apple/SentryTransactionApple.h"
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
-#include "Desktop/SentryTransactionDesktop.h"
-#endif
-
-USentryTransaction::USentryTransaction()
-{
-}
-
 USentrySpan* USentryTransaction::StartChild(const FString& Operation, const FString& Description)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = SentryTransactionNativeImpl->StartChild(Operation, Description);
+	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChild(Operation, Description);
 
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-
-	return unrealSpan;
+	return USentrySpan::Create(spanNativeImpl);
 }
 
 USentrySpan* USentryTransaction::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = SentryTransactionNativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
+	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
 
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-
-	return unrealSpan;
+	return USentrySpan::Create(spanNativeImpl);
 }
 
 void USentryTransaction::Finish()
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->Finish();
+	NativeImpl->Finish();
 }
 
 void USentryTransaction::FinishWithTimestamp(int64 Timestamp)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->FinishWithTimestamp(Timestamp);
+	NativeImpl->FinishWithTimestamp(Timestamp);
 }
 
 bool USentryTransaction::IsFinished() const
 {
-	if (!SentryTransactionNativeImpl)
+	if (!NativeImpl)
 		return false;
 
-	return SentryTransactionNativeImpl->IsFinished();
+	return NativeImpl->IsFinished();
 }
 
 void USentryTransaction::SetName(const FString& name)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->SetName(name);
+	NativeImpl->SetName(name);
 }
 
 void USentryTransaction::SetTag(const FString& key, const FString& value)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->SetTag(key, value);
+	NativeImpl->SetTag(key, value);
 }
 
 void USentryTransaction::RemoveTag(const FString& key)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->RemoveTag(key);
+	NativeImpl->RemoveTag(key);
 }
 
 void USentryTransaction::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->SetData(key, values);
+	NativeImpl->SetData(key, values);
 }
 
 void USentryTransaction::RemoveData(const FString& key)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->RemoveData(key);
+	NativeImpl->RemoveData(key);
 }
 
 void USentryTransaction::GetTrace(FString& name, FString& value)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->GetTrace(name, value);
-}
-
-void USentryTransaction::InitWithNativeImpl(TSharedPtr<ISentryTransaction> transactionImpl)
-{
-	SentryTransactionNativeImpl = transactionImpl;
-}
-
-TSharedPtr<ISentryTransaction> USentryTransaction::GetNativeImpl()
-{
-	return SentryTransactionNativeImpl;
+	NativeImpl->GetTrace(name, value);
 }

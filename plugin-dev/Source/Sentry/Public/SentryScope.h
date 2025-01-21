@@ -3,7 +3,7 @@
 #pragma once
 
 #include "SentryDataTypes.h"
-
+#include "SentryImplWrapper.h"
 #include "SentryScope.generated.h"
 
 class ISentryScope;
@@ -14,13 +14,11 @@ class USentryAttachment;
  * Scope data to be sent with the event.
  */
 UCLASS(BlueprintType)
-class SENTRY_API USentryScope : public UObject
+class SENTRY_API USentryScope : public UObject, public TSentryImplWrapper<ISentryScope, USentryScope>
 {
 	GENERATED_BODY()
 
 public:
-	USentryScope();
-
 	/** Adds a breadcrumb to the current Scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void AddBreadcrumb(USentryBreadcrumb* Breadcrumb);
@@ -120,12 +118,6 @@ public:
 	/** Clears the current scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Clear();
-
-	void InitWithNativeImpl(TSharedPtr<ISentryScope> scopeImpl);
-	TSharedPtr<ISentryScope> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentryScope> ScopeNativeImpl;
 };
 
 DECLARE_DELEGATE_OneParam(FConfigureScopeNativeDelegate, USentryScope*);

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+
+#include "SentryImplWrapper.h"
 #include "SentrySpan.generated.h"
 
 class ISentrySpan;
@@ -12,13 +14,11 @@ class ISentrySpan;
  * Unit of work within a transaction.
  */
 UCLASS(BlueprintType)
-class SENTRY_API USentrySpan : public UObject
+class SENTRY_API USentrySpan : public UObject, public TSentryImplWrapper<ISentrySpan, USentrySpan>
 {
 	GENERATED_BODY()
 
 public:
-	USentrySpan();
-
 	/** Starts a new child span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentrySpan* StartChild(const FString& Operation, const FString& Description);
@@ -56,10 +56,4 @@ public:
 	/** Gets trace information that could be sent as a `sentry-trace` header */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void GetTrace(FString& name, FString& value);
-
-	void InitWithNativeImpl(TSharedPtr<ISentrySpan> spanImpl);
-	TSharedPtr<ISentrySpan> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentrySpan> SentrySpanNativeImpl;
 };

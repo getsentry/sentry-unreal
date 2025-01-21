@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "SentryImplWrapper.h"
 #include "SentryUser.generated.h"
 
 class ISentryUser;
@@ -10,13 +11,11 @@ class ISentryUser;
  * Information about the user who triggered an event.
  */
 UCLASS(BlueprintType)
-class SENTRY_API USentryUser : public UObject
+class SENTRY_API USentryUser : public UObject, public TSentryImplWrapper<ISentryUser, USentryUser>
 {
 	GENERATED_BODY()
 
 public:
-	USentryUser();
-
 	/** Sets the email address of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetEmail(const FString& Email);
@@ -56,10 +55,4 @@ public:
 	/** Gets additional arbitrary fields related to the user. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TMap<FString, FString> GetData() const;
-
-	void InitWithNativeImpl(TSharedPtr<ISentryUser> userImpl);
-	TSharedPtr<ISentryUser> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentryUser> UserNativeImpl;
 };
