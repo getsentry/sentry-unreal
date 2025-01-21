@@ -16,6 +16,9 @@
 - Bump Native SDK from v0.7.17 to v0.7.19 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0719)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.19)
+- Bump Java SDK (Android) from v7.20.0 to v7.20.1 ([#741](https://github.com/getsentry/sentry-unreal/pull/741))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7201)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.20.0...7.20.1)
 
 ## 0.22.0
 
