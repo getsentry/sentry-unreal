@@ -15,7 +15,7 @@
 
 const FName FSentryModule::ModuleName = "Sentry";
 
-const bool FSentryModule::IsMarketplace = true;
+const bool FSentryModule::IsMarketplace = false;
 
 void FSentryModule::StartupModule()
 {
