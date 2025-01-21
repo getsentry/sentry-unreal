@@ -2,16 +2,16 @@
 
 #if USE_SENTRY_NATIVE
 
-#include "GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h"
+#include "Windows/Infrastructure/WindowsSentryConverters.h"
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
 void FWindowsSentrySubsystem::InitWithSettings(
-    const USentrySettings* Settings,
-    USentryBeforeSendHandler* BeforeSendHandler,
-    USentryTraceSampler* TraceSampler)
+	const USentrySettings* Settings,
+	USentryBeforeSendHandler* BeforeSendHandler,
+	USentryTraceSampler* TraceSampler)
 {
-    FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
+	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
 
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)
 	FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing
@@ -22,13 +22,13 @@ void FWindowsSentrySubsystem::InitWithSettings(
 
 void FWindowsSentrySubsystem::ConfigureGpuDumpAttachment(sentry_options_t *Options)
 {
-    sentry_options_add_attachmentw(Options, *GetGpuDumpBackupPath());
+	sentry_options_add_attachmentw(Options, *GetGpuDumpBackupPath());
 }
 
 static void PrintCrashLog(const sentry_ucontext_t *uctx)
 {
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
-	FGenericPlatformSentryConverters::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
+	FWindowsSentryConverters::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
 
 	const SIZE_T StackTraceSize = 65535;
 	ANSICHAR* StackTrace = (ANSICHAR*)GMalloc->Malloc(StackTraceSize);
@@ -57,11 +57,11 @@ static void PrintCrashLog(const sentry_ucontext_t *uctx)
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure)
 {
-    // Ensures that error message and corresponding callstack flushed to a log file (if available)
+	// Ensures that error message and corresponding callstack flushed to a log file (if available)
 	// before it's attached to the captured crash event and uploaded to Sentry.
 	PrintCrashLog(uctx);
 
-    return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
+	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
 }
 
 #endif // USE_SENTRY_NATIVE

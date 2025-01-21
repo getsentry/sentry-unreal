@@ -3,6 +3,7 @@
 #pragma once
 
 #include "SentryImplWrapper.h"
+
 #include "SentryUser.generated.h"
 
 class ISentryUser;

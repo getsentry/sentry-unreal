@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+
 #include "SentryEvent.generated.h"
 
 class ISentryEvent;
@@ -17,7 +18,6 @@ class SENTRY_API USentryEvent : public UObject, public TSentryImplWrapper<ISentr
 	GENERATED_BODY()
 
 public:
-
 	/** Sets message of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetMessage(const FString& Message);

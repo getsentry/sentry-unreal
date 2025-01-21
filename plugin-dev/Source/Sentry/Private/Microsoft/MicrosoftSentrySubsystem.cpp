@@ -10,7 +10,7 @@
 
 void FMicrosoftSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 {
-    if (!FSentryModule::Get().IsMarketplaceVersion())
+	if (!FSentryModule::Get().IsMarketplaceVersion())
 	{
 		const FString HandlerPath = GetHandlerPath();
 
@@ -26,18 +26,18 @@ void FMicrosoftSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 void FMicrosoftSentrySubsystem::ConfigureDatabasePath(sentry_options_t* Options)
 {
-    sentry_options_set_database_pathw(Options, *GetDatabasePath());
+	sentry_options_set_database_pathw(Options, *GetDatabasePath());
 }
 
 void FMicrosoftSentrySubsystem::ConfigureLogFileAttachment(sentry_options_t* Options)
 {
-    const FString LogFilePath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
+	const FString LogFilePath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
 	sentry_options_add_attachmentw(Options, *FPaths::ConvertRelativePathToFull(LogFilePath));
 }
 
 void FMicrosoftSentrySubsystem::ConfigureScreenshotAttachment(sentry_options_t* Options)
 {
-    sentry_options_add_attachmentw(Options, *GetScreenshotPath());
+	sentry_options_add_attachmentw(Options, *GetScreenshotPath());
 }
 
 #endif // USE_SENTRY_NATIVE

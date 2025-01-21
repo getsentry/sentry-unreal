@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+
 #include "SentryBreadcrumb.generated.h"
 
 class ISentryBreadcrumb;
@@ -17,7 +18,6 @@ class SENTRY_API USentryBreadcrumb : public UObject, public TSentryImplWrapper<I
 	GENERATED_BODY()
 
 public:
-
 	/** Sets message of the breadcrumb. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetMessage(const FString& Message);

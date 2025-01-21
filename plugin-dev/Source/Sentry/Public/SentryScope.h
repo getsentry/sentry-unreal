@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+
 #include "SentryScope.generated.h"
 
 class ISentryScope;

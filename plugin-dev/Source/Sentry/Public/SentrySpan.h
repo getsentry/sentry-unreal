@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 
 #include "SentryImplWrapper.h"
+
 #include "SentrySpan.generated.h"
 
 class ISentrySpan;

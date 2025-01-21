@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 
 #include "SentryImplWrapper.h"
+
 #include "SentryTransactionContext.generated.h"
 
 class ISentryTransactionContext;
@@ -16,7 +17,6 @@ class SENTRY_API USentryTransactionContext : public UObject, public TSentryImplW
 	GENERATED_BODY()
 
 public:
-
 	/** Gets transaction name. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetName() const;

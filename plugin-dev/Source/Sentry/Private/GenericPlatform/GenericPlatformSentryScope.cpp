@@ -55,12 +55,12 @@ void FGenericPlatformSentryScope::ClearBreadcrumbs()
 
 void FGenericPlatformSentryScope::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	// Not available for 
+	// Not available for generic platform
 }
 
 void FGenericPlatformSentryScope::ClearAttachments()
 {
-	// Not available for 
+	// Not available for generic platform
 }
 
 void FGenericPlatformSentryScope::SetTagValue(const FString& key, const FString& value)

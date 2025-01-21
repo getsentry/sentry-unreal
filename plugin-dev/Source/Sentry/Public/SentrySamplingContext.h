@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "SentryImplWrapper.h"
+
 #include "SentrySamplingContext.generated.h"
 
 class ISentrySamplingContext;

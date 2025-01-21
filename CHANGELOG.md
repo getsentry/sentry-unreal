@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+
 ### Dependencies
 
 - Bump CLI from v2.39.1 to v2.40.0 ([#725](https://github.com/getsentry/sentry-unreal/pull/725))

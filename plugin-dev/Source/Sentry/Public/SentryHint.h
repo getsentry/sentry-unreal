@@ -3,6 +3,7 @@
 #pragma once
 
 #include "SentryImplWrapper.h"
+
 #include "SentryHint.generated.h"
 
 class ISentryHint;
@@ -17,7 +18,6 @@ class SENTRY_API USentryHint : public UObject, public TSentryImplWrapper<ISentry
 	GENERATED_BODY()
 
 public:
-
 	/** Adds attachment to event hint. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void AddAttachment(USentryAttachment* Attachment);

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "SentryImplWrapper.h"
+
 #include "SentryId.generated.h"
 
 class ISentryId;

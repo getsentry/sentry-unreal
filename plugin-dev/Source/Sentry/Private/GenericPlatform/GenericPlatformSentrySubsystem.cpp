@@ -37,11 +37,6 @@
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
-#if PLATFORM_WINDOWS
-#include "Windows/WindowsPlatformMisc.h"
-#include "Windows/WindowsPlatformCrashContext.h"
-#endif
-
 extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE

@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 
 #include "SentryImplWrapper.h"
+
 #include "SentryTransaction.generated.h"
 
 class ISentryTransaction;

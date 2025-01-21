@@ -7,17 +7,17 @@
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
 public:
-    virtual void InitWithSettings(
-        const USentrySettings* Settings,
-        USentryBeforeSendHandler* BeforeSendHandler,
-        USentryTraceSampler* TraceSampler
-    ) override;
+	virtual void InitWithSettings(
+		const USentrySettings* Settings,
+		USentryBeforeSendHandler* BeforeSendHandler,
+		USentryTraceSampler* TraceSampler
+	) override;
 
 protected:
-    virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) override;
-    virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler.exe"); }
+	virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) override;
+	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler.exe"); }
 
-    virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
+	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
 };
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;

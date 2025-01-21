@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "SentryImplWrapper.h"
+
 #include "SentryAttachment.generated.h"
 
 class ISentryAttachment;
@@ -18,7 +19,6 @@ class SENTRY_API USentryAttachment : public UObject, public TSentryImplWrapper<I
 	GENERATED_BODY()
 
 public:
-
 	/** Gets the bytes of the attachment. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TArray<uint8> GetData() const;
