@@ -134,6 +134,8 @@ public class Sentry : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
 #endif
 		{
+			AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
+
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
