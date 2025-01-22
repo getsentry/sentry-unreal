@@ -12,5 +12,5 @@
 #endif
 
 #ifndef NEW_SENTRY_ATTACHMENT
-#error Make sure the macro is defined for your platform
+#error Make sure the NEW_SENTRY_ATTACHMENT macro is defined for supported platforms
 #endif

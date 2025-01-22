@@ -7,6 +7,8 @@
 
 #if WITH_AUTOMATION_TESTS
 
+#include "GenericPlatform/GenericPlatformSentryBreadcrumb.h"
+
 BEGIN_DEFINE_SPEC(SentryBreadcrumbSpec, "Sentry.SentryBreadcrumb", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryBreadcrumb* SentryBreadcrumb;
 END_DEFINE_SPEC(SentryBreadcrumbSpec)
@@ -15,7 +17,8 @@ void SentryBreadcrumbSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryBreadcrumb = NewObject<USentryBreadcrumb>();
+		TSharedPtr<ISentryBreadcrumb> NativeImpl = MakeShareable(new FGenericPlatformSentryBreadcrumb);
+		SentryBreadcrumb = USentryBreadcrumb::Create(NativeImpl);
 	});
 
 	Describe("Breadcrumb params", [this]()

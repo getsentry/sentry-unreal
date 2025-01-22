@@ -10,7 +10,10 @@
 #include "SentryTransactionContext.h"
 
 #include "HAL/PlatformSentryAttachment.h"
+#include "HAL/PlatformSentryBreadcrumb.h"
+#include "HAL/PlatformSentryEvent.h"
 #include "HAL/PlatformSentryTransactionContext.h"
+#include "HAL/PlatformSentryUser.h"
 #include "HAL/PlatformSentryUserFeedback.h"
 
 #include "HAL/FileManager.h"
@@ -19,7 +22,7 @@
 
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
-	USentryEvent* Event = NewObject<USentryEvent>();
+	USentryEvent* Event = USentryEvent::Create(MakeShareable(NEW_SENTRY_EVENT));
 
 	if (!Message.IsEmpty())
 		Event->SetMessage(Message);
@@ -31,7 +34,7 @@ USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryL
 
 USentryUser* USentryLibrary::CreateSentryUser(const FString& Email, const FString& Id, const FString& Username, const FString& IpAddress, const TMap<FString, FString>& Data)
 {
-	USentryUser* User = NewObject<USentryUser>();
+	USentryUser* User = USentryUser::Create(MakeShareable(NEW_SENTRY_USER));
 
 	if (!Email.IsEmpty())
 		User->SetEmail(Email);
@@ -67,7 +70,7 @@ USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(USentryId* EventId
 USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
 	const TMap<FString, FString>& Data, ESentryLevel Level)
 {
-	USentryBreadcrumb* Breadcrumb = NewObject<USentryBreadcrumb>();
+	USentryBreadcrumb* Breadcrumb = USentryBreadcrumb::Create(MakeShareable(NEW_SENTRY_BREADCRUMB));
 
 	Breadcrumb->SetMessage(Message);
 	Breadcrumb->SetCategory(Category);

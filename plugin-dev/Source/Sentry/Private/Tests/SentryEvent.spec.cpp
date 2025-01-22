@@ -7,6 +7,8 @@
 
 #if WITH_AUTOMATION_TESTS
 
+#include "GenericPlatform/GenericPlatformSentryEvent.h"
+
 BEGIN_DEFINE_SPEC(SentryEventSpec, "Sentry.SentryEvent", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryEvent* SentryEvent;
 END_DEFINE_SPEC(SentryEventSpec)
@@ -15,7 +17,8 @@ void SentryEventSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryEvent = NewObject<USentryEvent>();
+		TSharedPtr<ISentryEvent> NativeImpl = MakeShareable(new FGenericPlatformSentryEvent);
+		SentryEvent = USentryEvent::Create(NativeImpl);
 	});
 
 	Describe("Event params", [this]()

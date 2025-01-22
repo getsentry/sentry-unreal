@@ -7,6 +7,8 @@
 
 #if WITH_AUTOMATION_TESTS
 
+#include "GenericPlatform/GenericPlatformSentryUser.h"
+
 BEGIN_DEFINE_SPEC(SentryUserSpec, "Sentry.SentryUser", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryUser* SentryUser;
 END_DEFINE_SPEC(SentryUserSpec)
@@ -15,7 +17,8 @@ void SentryUserSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryUser = NewObject<USentryUser>();
+		TSharedPtr<ISentryUser> NativeImpl = MakeShareable(new FGenericPlatformSentryUser);
+		SentryUser = USentryUser::Create(NativeImpl);
 	});
 
 	Describe("User params", [this]()
