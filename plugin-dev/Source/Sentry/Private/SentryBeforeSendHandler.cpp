@@ -25,14 +25,13 @@ USentryEvent* USentryBeforeSendHandler::HandleBeforeSend_Implementation(USentryE
 		const FString LogFilePath = SentryFileUtils::GetGameLogPath();
 #endif
 
-		TSharedPtr<ISentryAttachment> AttachmentImpl =
+		Hint->AddAttachment(
 			USentryLibrary::CreateSentryAttachmentWithPath(
 				LogFilePath,
 				FPaths::GetCleanFilename(LogFilePath),
 				TEXT("text/plain")
-			);
-
-		Hint->AddAttachment(USentryAttachment::Create(AttachmentImpl));
+			)
+		);
 	}
 
 	return Event;
