@@ -25,3 +25,6 @@ public:
 protected:
 	TSharedPtr<Interface> NativeImpl;
 };
+
+template<class Interface, class Unreal>
+TSentryImplWrapper<Interface, Unreal>::~TSentryImplWrapper() {}

@@ -97,7 +97,7 @@ public class Sentry : ModuleRules
 			string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
 
 			PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Windows"));
 
 			PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
 
@@ -135,7 +135,7 @@ public class Sentry : ModuleRules
 #endif
 		{
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Linux"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 

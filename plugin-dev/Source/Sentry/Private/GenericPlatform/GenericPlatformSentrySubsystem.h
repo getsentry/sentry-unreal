@@ -11,7 +11,7 @@ class FGenericPlatformSentryCrashReporter;
 
 #if USE_SENTRY_NATIVE
 
-#include "Convenience/SentryInclude.h"
+#include "GenericPlatform/Convenience/SentryInclude.h"
 
 class FGenericPlatformSentrySubsystem : public ISentrySubsystem
 {

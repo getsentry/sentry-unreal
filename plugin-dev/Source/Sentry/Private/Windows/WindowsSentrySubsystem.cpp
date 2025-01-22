@@ -2,9 +2,10 @@
 
 #if USE_SENTRY_NATIVE
 
-#include "Windows/Infrastructure/WindowsSentryConverters.h"
 #include "SentryDefines.h"
 #include "SentrySettings.h"
+
+#include "Windows/Infrastructure/WindowsSentryConverters.h"
 
 void FWindowsSentrySubsystem::InitWithSettings(
 	const USentrySettings* Settings,

@@ -2,9 +2,7 @@
 
 #if USE_SENTRY_NATIVE
 
-#include "GenericPlatform/Convenience/SentryInclude.h"
-
-void FWindowsSentryConverters::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
+/* static */ void FWindowsSentryConverters::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
 {
 	EXCEPTION_RECORD* ExceptionRecord = crashContext->exception_ptrs.ExceptionRecord;
 
