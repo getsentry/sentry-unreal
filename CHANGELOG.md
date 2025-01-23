@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Change how variables are piped in SDKs download script to fix GitHub CI run ID retrieval ([#751](https://github.com/getsentry/sentry-unreal/pull/751))
+
 ### Dependencies
 
 - Bump CLI from v2.39.1 to v2.41.1 ([#725](https://github.com/getsentry/sentry-unreal/pull/725), [#740](https://github.com/getsentry/sentry-unreal/pull/740), [#746](https://github.com/getsentry/sentry-unreal/pull/746))
