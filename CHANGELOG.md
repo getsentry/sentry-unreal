@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Remove assertion/ensure callstack modification logic ([#744](https://github.com/getsentry/sentry-unreal/pull/744))
+
 ### Dependencies
 
 - Bump CLI from v2.39.1 to v2.41.1 ([#725](https://github.com/getsentry/sentry-unreal/pull/725), [#740](https://github.com/getsentry/sentry-unreal/pull/740), [#746](https://github.com/getsentry/sentry-unreal/pull/746))
