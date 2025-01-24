@@ -17,8 +17,7 @@ void SentryEventSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		TSharedPtr<ISentryEvent> NativeImpl = MakeShareable(new FGenericPlatformSentryEvent);
-		SentryEvent = USentryEvent::Create(NativeImpl);
+		SentryEvent = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent));
 	});
 
 	Describe("Event params", [this]()
