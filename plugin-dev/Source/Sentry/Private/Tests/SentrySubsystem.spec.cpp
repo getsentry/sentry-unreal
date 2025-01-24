@@ -7,6 +7,7 @@
 #include "SentryTransactionContext.h"
 #include "SentrySpan.h"
 #include "GenericPlatform/GenericPlatformSentryTransactionContext.h"
+#include "HAL/PlatformSentryEvent.h"
 
 #include "UObject/UObjectGlobals.h"
 #include "Misc/AutomationTest.h"
@@ -51,7 +52,7 @@ void SentrySubsystemSpec::Define()
 	{
 		It("should return a non-null Event ID if event captured", [this]()
 		{
-			USentryEvent* testEvent = NewObject<USentryEvent>();
+			USentryEvent* testEvent = USentryEvent::Create(MakeShareable(NEW_SENTRY_EVENT));
 			testEvent->SetMessage(TEXT("Automation: Sentry test event message"));
 
 			const USentryId* eventId = SentrySubsystem->CaptureEvent(testEvent);
@@ -60,7 +61,7 @@ void SentrySubsystemSpec::Define()
 
 		It("should always return non-null Event ID if scoped version used", [this]()
 		{
-			USentryEvent* testEvent = NewObject<USentryEvent>();
+			USentryEvent* testEvent = USentryEvent::Create(MakeShareable(NEW_SENTRY_EVENT));
 			testEvent->SetMessage(TEXT("Automation: Sentry test event message"));
 
 			const FConfigureScopeNativeDelegate testDelegate;

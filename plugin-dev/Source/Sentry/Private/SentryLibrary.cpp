@@ -84,7 +84,7 @@ USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message
 USentryAttachment* USentryLibrary::CreateSentryAttachmentWithData(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType)
 {
 	TSharedPtr<ISentryAttachment> AttachmentImpl = MakeShareable(
-		NEW_SENTRY_ATTACHMENT(Data, Filename, ContentType)
+		CreateSentryAttachment(Data, Filename, ContentType)
 	);
 
 	return USentryAttachment::Create(AttachmentImpl);
@@ -93,7 +93,7 @@ USentryAttachment* USentryLibrary::CreateSentryAttachmentWithData(const TArray<u
 USentryAttachment* USentryLibrary::CreateSentryAttachmentWithPath(const FString& Path, const FString& Filename, const FString& ContentType)
 {
 	TSharedPtr<ISentryAttachment> AttachmentImpl = MakeShareable(
-		NEW_SENTRY_ATTACHMENT(Path, Filename, ContentType)
+		CreateSentryAttachment(Path, Filename, ContentType)
 	);
 
 	return USentryAttachment::Create(AttachmentImpl);

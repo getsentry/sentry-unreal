@@ -1,16 +1,31 @@
 #pragma once
 
+#include "Interface/SentryAttachmentInterface.h"
+
+static ISentryAttachment* CreateSentryAttachment(const FString& Path, const FString& Filename, const FString& ContentType)
+{
 #if PLATFORM_ANDROID
 #include "Android/SentryAttachmentAndroid.h"
-#define NEW_SENTRY_ATTACHMENT(Data, Filename, ContentType) new SentryAttachmentAndroid(Data, Filename, ContentType)
+	return new SentryAttachmentAndroid(Path, Filename, ContentType);
 #elif PLATFORM_APPLE
 #include "Apple/SentryAttachmentApple.h"
-#define NEW_SENTRY_ATTACHMENT(Data, Filename, ContentType) new SentryAttachmentApple(Data, Filename, ContentType)
+	return new SentryAttachmentApple(Path, Filename, ContentType);
 #else
 #include "Null/NullSentryAttachment.h"
-#define NEW_SENTRY_ATTACHMENT(Data, Filename, ContentType) new FNullSentryAttachment()
+	return new FNullSentryAttachment();
 #endif
+}
 
-#ifndef NEW_SENTRY_ATTACHMENT
-#error Make sure the NEW_SENTRY_ATTACHMENT macro is defined for supported platforms
+static ISentryAttachment* CreateSentryAttachment(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType)
+{
+#if PLATFORM_ANDROID
+#include "Android/SentryAttachmentAndroid.h"
+	return new SentryAttachmentAndroid(Data, Filename, ContentType);
+#elif PLATFORM_APPLE
+#include "Apple/SentryAttachmentApple.h"
+	return new SentryAttachmentApple(Data, Filename, ContentType);
+#else
+#include "Null/NullSentryAttachment.h"
+	return new FNullSentryAttachment();
 #endif
+}

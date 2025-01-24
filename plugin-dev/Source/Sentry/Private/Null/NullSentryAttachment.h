@@ -5,10 +5,10 @@
 class FNullSentryAttachment : public ISentryAttachment
 {
 public:
-	virtual ~FNullSentryAttachment() = default;
+	virtual ~FNullSentryAttachment() override = default;
 
-	virtual TArray<uint8> GetData() const { return {}; }
-	virtual FString GetPath() const { return TEXT(""); }
-	virtual FString GetFilename() const { return TEXT(""); }
-	virtual FString GetContentType() const { return TEXT(""); }
+	virtual TArray<uint8> GetData() const override { return {}; }
+	virtual FString GetPath() const override { return TEXT(""); }
+	virtual FString GetFilename() const override { return TEXT(""); }
+	virtual FString GetContentType() const override { return TEXT(""); }
 };
