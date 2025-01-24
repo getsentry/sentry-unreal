@@ -8,18 +8,18 @@
 
 ### Dependencies
 
-- Bump CLI from v2.39.1 to v2.40.0 ([#725](https://github.com/getsentry/sentry-unreal/pull/725))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2400)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.1...2.40.0)
-- Bump Java SDK (Android) from v7.19.1 to v7.20.0 ([#724](https://github.com/getsentry/sentry-unreal/pull/724))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7200)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.19.1...7.20.0)
+- Bump CLI from v2.39.1 to v2.41.1 ([#725](https://github.com/getsentry/sentry-unreal/pull/725), [#740](https://github.com/getsentry/sentry-unreal/pull/740), [#746](https://github.com/getsentry/sentry-unreal/pull/746))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.1...2.41.1)
+- Bump Java SDK (Android) from v7.19.1 to v7.20.1 ([#724](https://github.com/getsentry/sentry-unreal/pull/724), [#741](https://github.com/getsentry/sentry-unreal/pull/741))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7201)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.19.1...7.20.1)
 - Bump Cocoa SDK (iOS and Mac) from v8.42.1 to v8.43.0 ([#723](https://github.com/getsentry/sentry-unreal/pull/723))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8430)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.1...8.43.0)
-- Bump Native SDK from v0.7.17 to v0.7.18 ([#737](https://github.com/getsentry/sentry-unreal/pull/737))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0718)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.18)
+- Bump Native SDK from v0.7.17 to v0.7.19 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0719)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.19)
 
 ## 0.22.0
 
