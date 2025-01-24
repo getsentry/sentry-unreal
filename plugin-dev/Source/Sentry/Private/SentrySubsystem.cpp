@@ -290,7 +290,7 @@ void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 
 void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name)
 {
-	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(MakeShareable(NEW_USER_FEEDBACK(EventId->GetNativeObject())));
+	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId->GetNativeObject()));
 	UserFeedback->SetEmail(Email);
 	UserFeedback->SetComment(Comments);
 	UserFeedback->SetName(Name);

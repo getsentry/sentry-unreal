@@ -22,7 +22,7 @@
 
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
-	USentryEvent* Event = USentryEvent::Create(MakeShareable(NEW_SENTRY_EVENT));
+	USentryEvent* Event = USentryEvent::Create(CreateSharedSentryEvent());
 
 	if (!Message.IsEmpty())
 		Event->SetMessage(Message);
@@ -34,7 +34,7 @@ USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryL
 
 USentryUser* USentryLibrary::CreateSentryUser(const FString& Email, const FString& Id, const FString& Username, const FString& IpAddress, const TMap<FString, FString>& Data)
 {
-	USentryUser* User = USentryUser::Create(MakeShareable(NEW_SENTRY_USER));
+	USentryUser* User = USentryUser::Create(CreateSharedSentryUser());
 
 	if (!Email.IsEmpty())
 		User->SetEmail(Email);
@@ -53,9 +53,7 @@ USentryUser* USentryLibrary::CreateSentryUser(const FString& Email, const FStrin
 
 USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(USentryId* EventId, const FString& Name, const FString& Email, const FString& Comments)
 {
-	TSharedPtr<ISentryUserFeedback> UserFeedbackImpl = MakeShareable(NEW_USER_FEEDBACK(EventId->GetNativeObject()));
-
-	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(UserFeedbackImpl);
+	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId->GetNativeObject()));
 
 	if (!Name.IsEmpty())
 		UserFeedback->SetName(Name);
@@ -70,7 +68,7 @@ USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(USentryId* EventId
 USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
 	const TMap<FString, FString>& Data, ESentryLevel Level)
 {
-	USentryBreadcrumb* Breadcrumb = USentryBreadcrumb::Create(MakeShareable(NEW_SENTRY_BREADCRUMB));
+	USentryBreadcrumb* Breadcrumb = USentryBreadcrumb::Create(CreateSharedSentryBreadcrumb());
 
 	Breadcrumb->SetMessage(Message);
 	Breadcrumb->SetCategory(Category);
@@ -83,29 +81,17 @@ USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message
 
 USentryAttachment* USentryLibrary::CreateSentryAttachmentWithData(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType)
 {
-	TSharedPtr<ISentryAttachment> AttachmentImpl = MakeShareable(
-		CreateSentryAttachment(Data, Filename, ContentType)
-	);
-
-	return USentryAttachment::Create(AttachmentImpl);
+	return USentryAttachment::Create(CreateSharedSentryAttachment(Data, Filename, ContentType));
 }
 
 USentryAttachment* USentryLibrary::CreateSentryAttachmentWithPath(const FString& Path, const FString& Filename, const FString& ContentType)
 {
-	TSharedPtr<ISentryAttachment> AttachmentImpl = MakeShareable(
-		CreateSentryAttachment(Path, Filename, ContentType)
-	);
-
-	return USentryAttachment::Create(AttachmentImpl);
+	return USentryAttachment::Create(CreateSharedSentryAttachment(Path, Filename, ContentType));
 }
 
 USentryTransactionContext* USentryLibrary::CreateSentryTransactionContext(const FString& Name, const FString& Operation)
 {
-	TSharedPtr<ISentryTransactionContext> TransactionContextImpl = MakeShareable(
-		NEW_SENTRY_TRANSACTION_CONTEXT(Name, Operation)
-	);
-
-	return USentryTransactionContext::Create(TransactionContextImpl);
+	return USentryTransactionContext::Create(CreateSharedSentryTransactionContext(Name, Operation));
 }
 
 TArray<uint8> USentryLibrary::StringToBytesArray(const FString& InString)
