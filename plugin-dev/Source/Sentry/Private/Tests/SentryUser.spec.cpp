@@ -17,8 +17,7 @@ void SentryUserSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		TSharedPtr<ISentryUser> NativeImpl = MakeShareable(new FGenericPlatformSentryUser);
-		SentryUser = USentryUser::Create(NativeImpl);
+		SentryUser = USentryUser::Create(MakeShareable(new FGenericPlatformSentryUser));
 	});
 
 	Describe("User params", [this]()

@@ -31,8 +31,7 @@ void SentryScopeSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		TSharedPtr<ISentryScope> NativeImpl = MakeShareable(new FGenericPlatformSentryScope);
-		SentryScope = USentryScope::Create(NativeImpl);
+		SentryScope = USentryScope::Create(MakeShareable(new FGenericPlatformSentryScope));
 
 		TestDist = TEXT("dist_str");
 		TestEnvironment = TEXT("env_str");
@@ -154,8 +153,7 @@ void SentryScopeSpec::Define()
 			SentryScope->SetExtras(TestExtras);
 			SentryScope->SetContext(TEXT("TestContext"), TestContext);
 
-			TSharedPtr<ISentryEvent> NativeImpl = MakeShareable(new FGenericPlatformSentryEvent);
-			USentryEvent* SentryEvent = USentryEvent::Create(NativeImpl);
+			USentryEvent* SentryEvent = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent));
 
 			TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(SentryEvent->GetNativeObject());
 

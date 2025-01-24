@@ -17,8 +17,7 @@ void SentryBreadcrumbSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		TSharedPtr<ISentryBreadcrumb> NativeImpl = MakeShareable(new FGenericPlatformSentryBreadcrumb);
-		SentryBreadcrumb = USentryBreadcrumb::Create(NativeImpl);
+		SentryBreadcrumb = USentryBreadcrumb::Create(MakeShareable(new FGenericPlatformSentryBreadcrumb));
 	});
 
 	Describe("Breadcrumb params", [this]()
