@@ -4,7 +4,12 @@
 #include "SentryBreadcrumb.h"
 #include "SentryAttachment.h"
 
-#include "Interface/SentryScopeInterface.h"
+#include "HAL/PlatformSentryScope.h"
+
+void USentryScope::Initialize()
+{
+	NativeImpl = CreateSharedSentryScope();
+}
 
 void USentryScope::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 {
@@ -136,7 +141,7 @@ void USentryScope::SetLevel(ESentryLevel Level)
 
 ESentryLevel USentryScope::GetLevel() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return ESentryLevel::Debug;
 
 	return NativeImpl->GetLevel();
@@ -144,7 +149,7 @@ ESentryLevel USentryScope::GetLevel() const
 
 void USentryScope::SetContext(const FString& Key, const TMap<FString, FString>& Values)
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return;
 
 	NativeImpl->SetContext(Key, Values);
@@ -152,7 +157,7 @@ void USentryScope::SetContext(const FString& Key, const TMap<FString, FString>& 
 
 void USentryScope::RemoveContext(const FString& Key)
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return;
 
 	NativeImpl->RemoveContext(Key);
@@ -160,7 +165,7 @@ void USentryScope::RemoveContext(const FString& Key)
 
 void USentryScope::SetExtraValue(const FString& Key, const FString& Value)
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return;
 
 	NativeImpl->SetExtraValue(Key, Value);
@@ -168,7 +173,7 @@ void USentryScope::SetExtraValue(const FString& Key, const FString& Value)
 
 FString USentryScope::GetExtraValue(const FString& Key) const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetExtraValue(Key);
@@ -176,7 +181,7 @@ FString USentryScope::GetExtraValue(const FString& Key) const
 
 void USentryScope::RemoveExtra(const FString& Key)
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return;
 
 	NativeImpl->RemoveExtra(Key);
@@ -184,7 +189,7 @@ void USentryScope::RemoveExtra(const FString& Key)
 
 void USentryScope::SetExtras(const TMap<FString, FString>& Extras)
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return;
 
 	NativeImpl->SetExtras(Extras);

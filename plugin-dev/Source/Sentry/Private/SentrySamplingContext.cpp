@@ -3,7 +3,12 @@
 #include "SentrySamplingContext.h"
 #include "SentryTransactionContext.h"
 
-#include "Interface/SentrySamplingContextInterface.h"
+#include "HAL/PlatformSentrySamplingContext.h"
+
+void USentrySamplingContext::Initialize()
+{
+	NativeImpl = CreateSharedSentrySamplingContext();
+}
 
 USentryTransactionContext* USentrySamplingContext::GetTransactionContext() const
 {

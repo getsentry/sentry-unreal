@@ -2,7 +2,12 @@
 
 #include "SentryTransactionContext.h"
 
-#include "Interface/SentryTransactionContextInterface.h"
+#include "HAL/PlatformSentryTransactionContext.h"
+
+void USentryTransactionContext::Initialize(const FString& Name, const FString& Operation)
+{
+	NativeImpl = CreateSharedSentryTransactionContext(Name, Operation);
+}
 
 FString USentryTransactionContext::GetName() const
 {

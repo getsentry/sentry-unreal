@@ -2,7 +2,12 @@
 
 #include "SentryBreadcrumb.h"
 
-#include "Interface/SentryBreadcrumbInterface.h"
+#include "HAL/PlatformSentryBreadcrumb.h"
+
+void USentryBreadcrumb::Initialize()
+{
+	NativeImpl = CreateSharedSentryBreadcrumb();
+}
 
 void USentryBreadcrumb::SetMessage(const FString &Message)
 {

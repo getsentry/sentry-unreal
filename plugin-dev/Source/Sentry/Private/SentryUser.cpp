@@ -2,7 +2,12 @@
 
 #include "SentryUser.h"
 
-#include "Interface/SentryUserInterface.h"
+#include "HAL/PlatformSentryUser.h"
+
+void USentryUser::Initialize()
+{
+	NativeImpl = CreateSharedSentryUser();
+}
 
 void USentryUser::SetEmail(const FString& Email)
 {

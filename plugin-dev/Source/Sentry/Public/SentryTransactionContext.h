@@ -17,6 +17,15 @@ class SENTRY_API USentryTransactionContext : public UObject, public TSentryImplW
 	GENERATED_BODY()
 
 public:
+	/**
+	 * Initializes the transaction context with the specified name and operation.
+	 *
+	 * @param Name Transaction name.
+	 * @param Operation Operation name.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Initialize(const FString& Name, const FString& Operation);
+
 	/** Gets transaction name. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetName() const;

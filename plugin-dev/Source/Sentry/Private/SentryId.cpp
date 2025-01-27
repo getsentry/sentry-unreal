@@ -2,7 +2,12 @@
 
 #include "SentryId.h"
 
-#include "Interface/SentryIdInterface.h"
+#include "HAL/PlatformSentryId.h"
+
+void USentryId::Initialize()
+{
+	NativeImpl = CreateSharedSentryId();
+}
 
 FString USentryId::ToString() const
 {

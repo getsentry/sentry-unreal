@@ -2,7 +2,7 @@
 
 #include "Interface/SentryAttachmentInterface.h"
 
-class FNullSentryAttachment : public ISentryAttachment
+class FNullSentryAttachment final : public ISentryAttachment
 {
 public:
 	virtual ~FNullSentryAttachment() override = default;

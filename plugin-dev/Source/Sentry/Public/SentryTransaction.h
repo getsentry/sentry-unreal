@@ -21,6 +21,10 @@ class SENTRY_API USentryTransaction : public UObject, public TSentryImplWrapper<
 	GENERATED_BODY()
 
 public:
+	/** Initializes the transaction. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Initialize();
+
 	/** Starts a new child span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentrySpan* StartChild(const FString& Operation, const FString& Description);

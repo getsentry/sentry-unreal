@@ -3,7 +3,12 @@
 #include "SentryTransaction.h"
 #include "SentrySpan.h"
 
-#include "Interface/SentryTransactionInterface.h"
+#include "HAL/PlatformSentryTransaction.h"
+
+void USentryTransaction::Initialize()
+{
+	NativeImpl = CreateSharedSentryTransaction();
+}
 
 USentrySpan* USentryTransaction::StartChild(const FString& Operation, const FString& Description)
 {

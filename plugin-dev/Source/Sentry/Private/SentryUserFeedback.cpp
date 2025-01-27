@@ -3,7 +3,15 @@
 #include "SentryUserFeedback.h"
 #include "SentryId.h"
 
-#include "Interface/SentryUserFeedbackInterface.h"
+#include "HAL/PlatformSentryUserFeedback.h"
+
+void USentryUserFeedback::Initialize(USentryId* EventId)
+{
+	if (ensure(IsValid(EventId)))
+	{
+		NativeImpl = CreateSharedSentryUserFeedback(EventId->GetNativeObject());
+	}
+}
 
 void USentryUserFeedback::SetName(const FString& Name)
 {

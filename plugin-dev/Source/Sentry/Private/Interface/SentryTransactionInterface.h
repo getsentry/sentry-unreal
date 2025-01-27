@@ -11,8 +11,8 @@ class ISentryTransaction
 public:
 	virtual ~ISentryTransaction() = default;
 
-	virtual TSharedPtr<ISentrySpan> StartChild(const FString& operation, const FString& desctiption) = 0;
-	virtual TSharedPtr<ISentrySpan> StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) = 0;
+	virtual TSharedPtr<ISentrySpan> StartChildSpan(const FString& operation, const FString& desctiption) = 0;
+	virtual TSharedPtr<ISentrySpan> StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) = 0;
 	virtual void Finish() = 0;
 	virtual void FinishWithTimestamp(int64 timestamp) = 0;
 	virtual bool IsFinished() const = 0;

@@ -7,9 +7,9 @@
 
 #if USE_SENTRY_NATIVE
 
-void CopyTransactionTracingHeader(const char *key, const char *value, void *userdata)
+void CopyTransactionTracingHeader(const char* key, const char* value, void* userdata)
 {
-	sentry_value_t *header = static_cast<sentry_value_t*>(userdata);
+	sentry_value_t* header = static_cast<sentry_value_t*>(userdata);
 	sentry_value_set_by_key(*header, key, sentry_value_new_string(value));
 }
 
@@ -28,16 +28,28 @@ sentry_transaction_t* FGenericPlatformSentryTransaction::GetNativeObject()
 	return Transaction;
 }
 
-TSharedPtr<ISentrySpan> FGenericPlatformSentryTransaction::StartChild(const FString& operation, const FString& desctiption)
+TSharedPtr<ISentrySpan> FGenericPlatformSentryTransaction::StartChildSpan(const FString& operation, const FString& description)
 {
-	sentry_span_t* nativeSpan = sentry_transaction_start_child(Transaction, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*desctiption));
-	return MakeShareable(new FGenericPlatformSentrySpan(nativeSpan));
+	if (sentry_span_t* nativeSpan = sentry_transaction_start_child(Transaction, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*description)))
+	{
+		return MakeShareable(new FGenericPlatformSentrySpan(nativeSpan));
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
-TSharedPtr<ISentrySpan> FGenericPlatformSentryTransaction::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+TSharedPtr<ISentrySpan> FGenericPlatformSentryTransaction::StartChildSpanWithTimestamp(const FString& operation, const FString& description, int64 timestamp)
 {
-	sentry_span_t* nativeSpan = sentry_transaction_start_child_ts(Transaction, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*desctiption), timestamp);
-	return MakeShareable(new FGenericPlatformSentrySpan(nativeSpan));
+	if (sentry_span_t* nativeSpan = sentry_transaction_start_child_ts(Transaction, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*description), timestamp))
+	{
+		return MakeShareable(new FGenericPlatformSentrySpan(nativeSpan));
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 void FGenericPlatformSentryTransaction::Finish()

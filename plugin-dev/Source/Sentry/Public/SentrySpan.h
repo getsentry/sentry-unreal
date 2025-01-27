@@ -20,9 +20,14 @@ class SENTRY_API USentrySpan : public UObject, public TSentryImplWrapper<ISentry
 	GENERATED_BODY()
 
 public:
+	/** Initializes the span. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Initialize();
+
 	/** Starts a new child span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentrySpan* StartChild(const FString& Operation, const FString& Description);
+
 	/** Starts a new child span with timestamp. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentrySpan* StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp);
@@ -30,6 +35,7 @@ public:
 	/** Finishes and sends a span to Sentry. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Finish();
+
 	/** Finishes with timestamp and sends a span to Sentry. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void FinishWithTimestamp(int64 Timestamp);

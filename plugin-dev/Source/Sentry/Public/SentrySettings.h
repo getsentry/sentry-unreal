@@ -274,23 +274,23 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Override release name", ToolTip = "Release name which will be used for enriching events.", EditCondition = "OverrideReleaseName"))
 	FString Release;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Transport",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (InlineEditConditionToggle))
 	bool UseProxy;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Transport",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
 		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
 	FString ProxyUrl;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
-		Meta = (DisplayName = "Custom `beforeSend` event hanler", ToolTip = "Custom hanler for processing events before sending them to Sentry."))
+		Meta = (DisplayName = "Custom `beforeSend` event hanler", ToolTip = "Custom handler for processing events before sending them to Sentry."))
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Windows",
 		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
 	bool EnableAutoCrashCapturing;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Sentry database location", ToolTip = "Location where Sentry stores its internal/temporary files."))
 	ESentryDatabaseLocation DatabaseLocation;
 
@@ -299,7 +299,7 @@ class SENTRY_API USentrySettings : public UObject
 	TArray<FString> InAppInclude;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
-		Meta = (DisplayName = "In-app exludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
+		Meta = (DisplayName = "In-app excludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
 	TArray<FString> InAppExclude;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",

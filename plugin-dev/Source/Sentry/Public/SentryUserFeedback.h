@@ -18,6 +18,14 @@ class SENTRY_API USentryUserFeedback : public UObject, public TSentryImplWrapper
 	GENERATED_BODY()
 
 public:
+	/**
+	 * Initializes the user feedback with the event identifier to which it is associated.
+	 * 
+	 * @param EventId The associated event identifier.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Initialize(USentryId* EventId);
+
 	/** Sets the name of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetName(const FString& Name);

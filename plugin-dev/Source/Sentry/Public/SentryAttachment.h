@@ -19,6 +19,26 @@ class SENTRY_API USentryAttachment : public UObject, public TSentryImplWrapper<I
 	GENERATED_BODY()
 
 public:
+	/** 
+	 * Initializes an attachment with bytes and a filename.
+	 *
+	 * @param Data The data for the attachment.
+	 * @param Filename The name of the attachment to display in Sentry.
+	 * @param ContentType The content type of the attachment. Default is "application/octet-stream".
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void InitializeWithData(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType = FString(TEXT("application/octet-stream")));
+
+	/**
+	 * Initializes an attachment with a path and a filename.
+	 *
+	 * @param Path The path string of the file to upload as an attachment.
+	 * @param Filename The name of the attachment to display in Sentry.
+	 * @param ContentType The content type of the attachment. Default is "application/octet-stream".
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void InitializeWithPath(const FString& Path, const FString& Filename, const FString& ContentType = FString(TEXT("application/octet-stream")));
+
 	/** Gets the bytes of the attachment. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TArray<uint8> GetData() const;

@@ -2,7 +2,12 @@
 
 #include "SentrySpan.h"
 
-#include "Interface/SentrySpanInterface.h"
+#include "HAL/PlatformSentrySpan.h"
+
+void USentrySpan::Initialize()
+{
+	NativeImpl = CreateSharedSentrySpan();
+}
 
 USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
 {

@@ -14,12 +14,12 @@ class FGenericPlatformSentrySpan : public ISentrySpan
 {
 public:
 	FGenericPlatformSentrySpan(sentry_span_t* span);
-	virtual ~FGenericPlatformSentrySpan() override;
+	virtual ~FGenericPlatformSentrySpan() override = default;
 
 	sentry_span_t* GetNativeObject();
 
-	virtual TSharedPtr<ISentrySpan> StartChild(const FString& operation, const FString& desctiption) override;
-	virtual TSharedPtr<ISentrySpan> StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) override;
+	virtual TSharedPtr<ISentrySpan> StartChild(const FString& operation, const FString& description) override;
+	virtual TSharedPtr<ISentrySpan> StartChildWithTimestamp(const FString& operation, const FString& description, int64 timestamp) override;
 	virtual void Finish() override;
 	virtual void FinishWithTimestamp(int64 timestamp) override;
 	virtual bool IsFinished() const override;
