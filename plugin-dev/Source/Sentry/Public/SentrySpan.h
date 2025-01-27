@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -13,6 +13,9 @@ class ISentrySpan;
 
 /**
  * Unit of work within a transaction.
+ * 
+ * NOTE: USentrySpan should not be constructed with NewObject<...>() etc., and should instead
+ *       only be created by calling methods like StartChild(...) on this object or USentryTransaction.
  */
 UCLASS(BlueprintType)
 class SENTRY_API USentrySpan : public UObject, public TSentryImplWrapper<ISentrySpan, USentrySpan>
@@ -20,10 +23,6 @@ class SENTRY_API USentrySpan : public UObject, public TSentryImplWrapper<ISentry
 	GENERATED_BODY()
 
 public:
-	/** Initializes the span. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize();
-
 	/** Starts a new child span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	USentrySpan* StartChild(const FString& Operation, const FString& Description);

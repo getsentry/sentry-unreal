@@ -1,33 +1,42 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentryTransaction.h"
+
+#include "SentryDefines.h"
 #include "SentrySpan.h"
 
-#include "HAL/PlatformSentryTransaction.h"
+#include "Interface/SentryTransactionInterface.h"
 
-void USentryTransaction::Initialize()
-{
-	NativeImpl = CreateSharedSentryTransaction();
-}
-
-USentrySpan* USentryTransaction::StartChild(const FString& Operation, const FString& Description)
+USentrySpan* USentryTransaction::StartChildSpan(const FString& Operation, const FString& Description)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChild(Operation, Description);
-
-	return USentrySpan::Create(spanNativeImpl);
+	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpan(Operation, Description))
+	{
+		return USentrySpan::Create(spanNativeImpl);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid Span after attempting to start child"));
+		return nullptr;
+	}
 }
 
-USentrySpan* USentryTransaction::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
+USentrySpan* USentryTransaction::StartChildSpanWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
-
-	return USentrySpan::Create(spanNativeImpl);
+	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpanWithTimestamp(Operation, Description, Timestamp))
+	{
+		return USentrySpan::Create(spanNativeImpl);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid Span after attempting to start child with timestamp"));
+		return nullptr;
+	}
 }
 
 void USentryTransaction::Finish()

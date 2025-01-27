@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -21,20 +21,18 @@ class SENTRY_API USentryTransaction : public UObject, public TSentryImplWrapper<
 	GENERATED_BODY()
 
 public:
-	/** Initializes the transaction. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize();
-
 	/** Starts a new child span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentrySpan* StartChild(const FString& Operation, const FString& Description);
+	USentrySpan* StartChildSpan(const FString& Operation, const FString& Description);
+
 	/** Starts a new child span with timestamp. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentrySpan* StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp);
+	USentrySpan* StartChildSpanWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp);
 
 	/** Finishes and sends a transaction to Sentry. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Finish();
+
 	/** Finishes with timestamp and sends a transaction to Sentry. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void FinishWithTimestamp(int64 Timestamp);

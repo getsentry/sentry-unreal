@@ -8,7 +8,7 @@
 #include "GenericPlatform/GenericPlatformSentryTransactionContext.h"
 #endif
 
-TSharedPtr<ISentryTransactionContext> CreateSharedSentryTransactionContext(const FString& Name, const FString& Operation)
+static TSharedPtr<ISentryTransactionContext> CreateSharedSentryTransactionContext(const FString& Name, const FString& Operation)
 {
 #if PLATFORM_ANDROID
 	return MakeShareable(new SentryTransactionContextAndroid(Name, Operation));

@@ -2,6 +2,7 @@
 
 #include "SentryHint.h"
 
+#include "SentryAttachment.h"
 #include "HAL/PlatformSentryHint.h"
 
 void USentryHint::Initialize()

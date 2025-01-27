@@ -16,11 +16,6 @@ FGenericPlatformSentryBreadcrumb::FGenericPlatformSentryBreadcrumb(sentry_value_
 	Breadcrumb = breadcrumb;
 }
 
-FGenericPlatformSentryBreadcrumb::~FGenericPlatformSentryBreadcrumb()
-{
-	// Put custom destructor logic here if needed
-}
-
 sentry_value_t FGenericPlatformSentryBreadcrumb::GetNativeObject()
 {
 	return Breadcrumb;

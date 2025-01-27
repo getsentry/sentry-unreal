@@ -462,29 +462,19 @@ void FGenericPlatformSentrySubsystem::EndSession()
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction(const FString& name, const FString& operation)
 {
-	sentry_transaction_context_t* transactionContext = sentry_transaction_context_new(TCHAR_TO_ANSI(*name), TCHAR_TO_ANSI(*operation));
+	TSharedPtr<ISentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(name, operation));
 
-	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContext, sentry_value_new_null());
-
-	return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+	return transactionContext->StartTransaction();
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
 {
-	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context);
-
-	sentry_transaction_t* nativeTransaction = sentry_transaction_start(transactionContext->GetNativeObject(), sentry_value_new_null());
-
-	return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+	return context->StartTransaction();
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
 {
-	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context);
-
-	sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(transactionContext->GetNativeObject(), sentry_value_new_null(), timestamp);
-
-	return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+	return context->StartTransactionWithTimestamp(timestamp);
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
@@ -495,12 +485,11 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 
 TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
 {
-	sentry_transaction_context_t* nativeTransactionContext = sentry_transaction_context_new("<unlabeled transaction>", "default");
-	sentry_transaction_context_update_from_header(nativeTransactionContext, "sentry-trace", TCHAR_TO_ANSI(*sentryTrace));
+	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("<unlabeled transaction>"), TEXT("default")));
+
+	sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "sentry-trace", TCHAR_TO_ANSI(*sentryTrace));
 
 	// currently `sentry-native` doesn't have API for `sentry_transaction_context_t` to set `baggageHeaders`
-
-	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(nativeTransactionContext));
 
 	return transactionContext;
 }

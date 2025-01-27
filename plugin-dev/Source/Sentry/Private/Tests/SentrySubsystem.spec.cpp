@@ -75,11 +75,11 @@ void SentrySubsystemSpec::Define()
 	{
 		It("should be started and finished", [this]()
 		{
-			USentryTransaction* transaction = SentrySubsystem->StartTransaction(TEXT("Automation transaction"), TEXT("Automation operation"));
+			USentryTransaction* transaction = SentrySubsystem->StartTransaction(TEXT("Automation transaction 1"), TEXT("Automation operation"));
 			TestNotNull("Transaction is non-null", transaction);
 			TestFalse("Transaction is not finished", transaction->IsFinished());
 
-			USentrySpan* span = transaction->StartChild(TEXT("Automation span"), TEXT("Description text"));
+			USentrySpan* span = transaction->StartChildSpan(TEXT("Automation span"), TEXT("Description text"));
 			TestNotNull("Span is non-null", span);
 			TestFalse("Span is not finished", span->IsFinished());
 

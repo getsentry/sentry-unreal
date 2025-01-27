@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
+// Copyright (c) 2024 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -8,6 +8,8 @@
 
 #if USE_SENTRY_NATIVE
 
+class ISentryTransaction;
+
 class FGenericPlatformSentryTransactionContext : public ISentryTransactionContext
 {
 public:
@@ -15,6 +17,8 @@ public:
 	FGenericPlatformSentryTransactionContext(sentry_transaction_context_t* context);
 	virtual ~FGenericPlatformSentryTransactionContext() override;
 
+	virtual TSharedPtr<ISentryTransaction> StartTransaction() const override;
+	virtual TSharedPtr<ISentryTransaction> StartTransactionWithTimestamp(int64 timestamp) const override;
 	virtual FString GetName() const override;
 	virtual FString GetOperation() const override;
 

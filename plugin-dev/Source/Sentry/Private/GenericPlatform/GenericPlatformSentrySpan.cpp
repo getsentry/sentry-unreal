@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentrySpan.h"
 
@@ -6,9 +6,9 @@
 
 #if USE_SENTRY_NATIVE
 
-void CopySpanTracingHeader(const char *key, const char *value, void *userdata)
+void CopySpanTracingHeader(const char* key, const char* value, void* userdata)
 {
-	sentry_value_t *header = static_cast<sentry_value_t*>(userdata);
+	sentry_value_t* header = static_cast<sentry_value_t*>(userdata);
 	sentry_value_set_by_key(*header, key, sentry_value_new_string(value));
 }
 
@@ -16,11 +16,6 @@ FGenericPlatformSentrySpan::FGenericPlatformSentrySpan(sentry_span_t* span)
 	: Span(span)
 	, isFinished(false)
 {
-}
-
-FGenericPlatformSentrySpan::~FGenericPlatformSentrySpan()
-{
-	// Put custom destructor logic here if needed
 }
 
 sentry_span_t* FGenericPlatformSentrySpan::GetNativeObject()

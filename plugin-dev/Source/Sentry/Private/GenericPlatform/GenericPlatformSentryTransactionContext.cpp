@@ -1,6 +1,7 @@
-﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
+// Copyright (c) 2024 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryTransactionContext.h"
+#include "GenericPlatformSentryTransaction.h"
 
 #include "SentryDefines.h"
 
@@ -19,6 +20,30 @@ FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionConte
 FGenericPlatformSentryTransactionContext::~FGenericPlatformSentryTransactionContext()
 {
 	// Put custom destructor logic here if needed
+}
+
+TSharedPtr<ISentryTransaction> FGenericPlatformSentryTransactionContext::StartTransaction() const
+{
+	if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(TransactionContext, sentry_value_new_null()))
+	{
+		return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+TSharedPtr<ISentryTransaction> FGenericPlatformSentryTransactionContext::StartTransactionWithTimestamp(int64 timestamp) const
+{
+	if (sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(TransactionContext, sentry_value_new_null(), timestamp))
+	{
+		return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 FString FGenericPlatformSentryTransactionContext::GetName() const

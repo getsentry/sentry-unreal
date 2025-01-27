@@ -12,16 +12,29 @@ public:
 	/** Pure virtual destructor to ensure class is abstract. */
 	virtual ~TSentryImplWrapper() = 0;
 
-	/** Method to instantiate object with an input native implementation. */
+	/**
+	 * Method to instantiate an object with a native implementation.
+	 * 
+	 * @param InObject The native implementation.
+	 * @return Returns an instance of the Unreal object if instantiation is valid; otherwise nullptr.
+	 */
 	static Unreal* Create(TSharedPtr<Interface> InObject)
 	{
-		Unreal* OutObject = NewObject<Unreal>();
-		StaticCast<TSentryImplWrapper<Interface, Unreal>*>(OutObject)->NativeImpl = InObject;
-		return OutObject;
+		if (InObject)
+		{
+			Unreal* OutObject = NewObject<Unreal>();
+			StaticCast<TSentryImplWrapper<Interface, Unreal>*>(OutObject)->NativeImpl = InObject;
+			return OutObject;
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 
 	/** Retrieves the underlying native implementation. */
 	TSharedPtr<Interface> GetNativeObject() const { return NativeImpl; }
+
 protected:
 	TSharedPtr<Interface> NativeImpl;
 };

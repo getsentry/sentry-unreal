@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryTransaction.h"
 #include "GenericPlatformSentrySpan.h"

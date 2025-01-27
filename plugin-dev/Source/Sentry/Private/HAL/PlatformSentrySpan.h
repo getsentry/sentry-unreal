@@ -8,13 +8,13 @@
 #include "GenericPlatform/GenericPlatformSentrySpan.h"
 #endif
 
-static TSharedPtr<ISentrySpan> CreateSharedSentrySpan()
+static TSharedPtr<ISentrySpan> CreateSharedSentrySpan(const FString& Name, const FString& Operation)
 {
 #if PLATFORM_ANDROID
-    return MakeShareable(new SentrySpanAndroid);
+	return MakeShareable(new SentrySpanAndroid);
 #elif PLATFORM_APPLE
-    return MakeShareable(new SentrySpanApple);
+	return MakeShareable(new SentrySpanApple);
 #else
-    return MakeShareable(new FGenericPlatformSentrySpan);
+	return MakeShareable(new FGenericPlatformSentrySpan);
 #endif
 }

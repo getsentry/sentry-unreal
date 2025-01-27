@@ -1,22 +1,15 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentrySpan.h"
 
-#include "HAL/PlatformSentrySpan.h"
-
-void USentrySpan::Initialize()
-{
-	NativeImpl = CreateSharedSentrySpan();
-}
+#include "Interface/SentrySpanInterface.h"
 
 USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChild(Operation, Description);
-
-	return USentrySpan::Create(spanNativeImpl);
+	return USentrySpan::Create(NativeImpl->StartChild(Operation, Description));
 }
 
 USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
@@ -24,9 +17,7 @@ USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, cons
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
-
-	return USentrySpan::Create(spanNativeImpl);
+	return USentrySpan::Create(NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp));
 }
 
 void USentrySpan::Finish()
