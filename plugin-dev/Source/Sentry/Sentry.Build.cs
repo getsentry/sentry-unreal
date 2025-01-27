@@ -477,6 +477,10 @@ public class Sentry : ModuleRules
 		UnrealTargetPlatform.TryParse("XSX", out XboxXPlatform);
 		UnrealTargetPlatform XboxOnePlatform;
 		UnrealTargetPlatform.TryParse("XB1", out XboxOnePlatform);
+		
+		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
+		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
+
 			
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
@@ -513,18 +517,23 @@ public class Sentry : ModuleRules
 		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
 #endif
 		{
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
-			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
-			
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
+
+			PublicAdditionalFrameworks.Add(new Framework("Sentry", Path.Combine(PlatformThirdPartyPath, "Sentry.embeddedframework.zip"), null, true));
+
+			PrivateDependencyModuleNames.AddRange(new string[] { "Launch" });
+			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
+
+			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
+
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
+			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
 		else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
 		{
@@ -644,28 +653,21 @@ public class Sentry : ModuleRules
 			else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
 #endif
 			{
-				string buildPath = Path.Combine(intermediatePath, "Linux", "build");
-				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "libsentry.a"));
-				
-				string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build", "handler");
-				
-				string buildOutputPath = Path.Combine(Target.ProjectFile.Directory.FullName, "Binaries", "Linux");
-				
-				if (!File.Exists(Path.Combine(crashpadBuildPath, "handler", "crashpad_handler.exe")))
-				{
-					File.Copy(Path.Combine(crashpadBuildPath, "handler", "crashpad_handler.exe"),
-						Path.Combine(buildOutputPath, "crashpad_handler.exe"));
-				}
+				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+				PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
-				RuntimeDependencies.Add(Path.Combine(crashpadBuildPath, "handler", "crashpad_handler"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "libcrashpad_handler_lib.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "libcrashpad_client.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "libcrashpad_compat.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", "libcrashpad_minidump.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", "libcrashpad_snapshot.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium", "libmini_chromium.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", "libcrashpad_tools.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "libcrashpad_util.a"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
+
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_client.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_compat.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_handler_lib.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_minidump.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_snapshot.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_tools.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_util.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libmini_chromium.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
+
 			}
 			else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
 			{
