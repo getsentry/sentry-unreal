@@ -283,7 +283,7 @@ class SENTRY_API USentrySettings : public UObject
 	FString ProxyUrl;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
-		Meta = (DisplayName = "Custom `beforeSend` event hanler", ToolTip = "Custom handler for processing events before sending them to Sentry."))
+		Meta = (DisplayName = "Custom `beforeSend` event handler", ToolTip = "Custom handler for processing events before sending them to Sentry."))
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Windows",
@@ -320,7 +320,7 @@ class SENTRY_API USentrySettings : public UObject
 	float TracesSampleRate;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
-		Meta = (DisplayName = "Traces sampler", ToolTip = "Custom hanler for determining traces sample rate based on the sampling context.",
+		Meta = (DisplayName = "Traces sampler", ToolTip = "Custom handler for determining traces sample rate based on the sampling context.",
 			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
 	TSubclassOf<USentryTraceSampler> TracesSampler;
 
@@ -353,7 +353,7 @@ class SENTRY_API USentrySettings : public UObject
 	FString ProjectName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organisation associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
 	FString OrgName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
