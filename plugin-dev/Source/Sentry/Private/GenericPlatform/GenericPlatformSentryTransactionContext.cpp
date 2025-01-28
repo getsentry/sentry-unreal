@@ -17,11 +17,6 @@ FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionConte
 {
 }
 
-FGenericPlatformSentryTransactionContext::~FGenericPlatformSentryTransactionContext()
-{
-	// Put custom destructor logic here if needed
-}
-
 TSharedPtr<ISentryTransaction> FGenericPlatformSentryTransactionContext::StartTransaction() const
 {
 	if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(TransactionContext, sentry_value_new_null()))

@@ -18,7 +18,7 @@ USentrySpan* USentryTransaction::StartChildSpan(const FString& Operation, const 
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid Span after attempting to start child"));
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid span after attempting to start child on transaction"));
 		return nullptr;
 	}
 }
@@ -34,7 +34,7 @@ USentrySpan* USentryTransaction::StartChildSpanWithTimestamp(const FString& Oper
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid Span after attempting to start child with timestamp"));
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid span after attempting to start child with timestamp on transaction"));
 		return nullptr;
 	}
 }

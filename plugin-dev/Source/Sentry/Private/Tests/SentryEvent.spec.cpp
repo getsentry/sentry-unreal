@@ -5,9 +5,9 @@
 
 #include "Misc/AutomationTest.h"
 
-#if WITH_AUTOMATION_TESTS
+#include "HAL/PlatformSentryEvent.h"
 
-#include "GenericPlatform/GenericPlatformSentryEvent.h"
+#if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentryEventSpec, "Sentry.SentryEvent", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryEvent* SentryEvent;
@@ -17,7 +17,7 @@ void SentryEventSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryEvent = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent));
+		SentryEvent = USentryEvent::Create(CreateSharedSentryEvent());
 	});
 
 	Describe("Event params", [this]()

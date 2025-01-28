@@ -19,10 +19,6 @@ FGenericPlatformSentryTransaction::FGenericPlatformSentryTransaction(sentry_tran
 {
 }
 
-FGenericPlatformSentryTransaction::~FGenericPlatformSentryTransaction()
-{
-}
-
 sentry_transaction_t* FGenericPlatformSentryTransaction::GetNativeObject()
 {
 	return Transaction;

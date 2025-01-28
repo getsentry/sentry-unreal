@@ -6,8 +6,9 @@
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
 #include "SentrySpan.h"
-#include "GenericPlatform/GenericPlatformSentryTransactionContext.h"
+
 #include "HAL/PlatformSentryEvent.h"
+#include "HAL/PlatformSentryTransactionContext.h"
 
 #include "UObject/UObjectGlobals.h"
 #include "Misc/AutomationTest.h"
@@ -101,7 +102,7 @@ void SentrySubsystemSpec::Define()
 		{
 			USentryTransactionContext* transactionContext =
 				USentryTransactionContext::Create(
-					MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")))
+					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation"))
 				);
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContext(transactionContext);
@@ -116,7 +117,7 @@ void SentrySubsystemSpec::Define()
 		{
 			USentryTransactionContext* transactionContext =
 				USentryTransactionContext::Create(
-					MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")))
+					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation"))
 				);
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContextAndTimestamp(transactionContext, FDateTime::UtcNow().ToUnixTimestamp());

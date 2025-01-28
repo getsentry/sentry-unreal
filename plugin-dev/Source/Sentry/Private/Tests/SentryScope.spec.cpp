@@ -11,8 +11,9 @@
 
 #include "Misc/AutomationTest.h"
 
-#include "GenericPlatform/GenericPlatformSentryScope.h"
-#include "GenericPlatform/GenericPlatformSentryEvent.h"
+#include "HAL/PlatformSentryScope.h"
+#include "HAL/PlatformSentryEvent.h"
+
 #include "GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h"
 
 #if WITH_AUTOMATION_TESTS
@@ -31,7 +32,7 @@ void SentryScopeSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryScope = USentryScope::Create(MakeShareable(new FGenericPlatformSentryScope));
+		SentryScope = USentryScope::Create(CreateSharedSentryScope());
 
 		TestDist = TEXT("dist_str");
 		TestEnvironment = TEXT("env_str");
@@ -153,7 +154,7 @@ void SentryScopeSpec::Define()
 			SentryScope->SetExtras(TestExtras);
 			SentryScope->SetContext(TEXT("TestContext"), TestContext);
 
-			USentryEvent* SentryEvent = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent));
+			USentryEvent* SentryEvent = USentryEvent::Create(CreateSharedSentryEvent());
 
 			TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(SentryEvent->GetNativeObject());
 

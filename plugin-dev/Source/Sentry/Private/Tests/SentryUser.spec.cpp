@@ -5,9 +5,9 @@
 
 #include "Misc/AutomationTest.h"
 
-#if WITH_AUTOMATION_TESTS
+#include "HAL/PlatformSentryUser.h"
 
-#include "GenericPlatform/GenericPlatformSentryUser.h"
+#if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentryUserSpec, "Sentry.SentryUser", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryUser* SentryUser;
@@ -17,7 +17,7 @@ void SentryUserSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryUser = USentryUser::Create(MakeShareable(new FGenericPlatformSentryUser));
+		SentryUser = USentryUser::Create(CreateSharedSentryUser());
 	});
 
 	Describe("User params", [this]()

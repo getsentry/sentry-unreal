@@ -2,6 +2,7 @@
 
 #include "SentrySpan.h"
 
+#include "SentryDefines.h"
 #include "Interface/SentrySpanInterface.h"
 
 USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
@@ -9,7 +10,15 @@ USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& De
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	return USentrySpan::Create(NativeImpl->StartChild(Operation, Description));
+	if (TSharedPtr<ISentrySpan> ChildSpan = NativeImpl->StartChild(Operation, Description))
+	{
+		return USentrySpan::Create(ChildSpan);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid span after attempting to start child on span"));
+		return nullptr;
+	}
 }
 
 USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
@@ -17,7 +26,15 @@ USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, cons
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	return USentrySpan::Create(NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp));
+	if (TSharedPtr<ISentrySpan> ChildSpan = NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp))
+	{
+		return USentrySpan::Create(ChildSpan);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid span after attempting to start child with timestamp on span"));
+		return nullptr;
+	}
 }
 
 void USentrySpan::Finish()

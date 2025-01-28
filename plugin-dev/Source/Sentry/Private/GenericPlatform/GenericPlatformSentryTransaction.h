@@ -14,7 +14,7 @@ class FGenericPlatformSentryTransaction : public ISentryTransaction
 {
 public:
 	FGenericPlatformSentryTransaction(sentry_transaction_t* transaction);
-	virtual ~FGenericPlatformSentryTransaction() override;
+	virtual ~FGenericPlatformSentryTransaction() override = default;
 
 	sentry_transaction_t* GetNativeObject();
 
