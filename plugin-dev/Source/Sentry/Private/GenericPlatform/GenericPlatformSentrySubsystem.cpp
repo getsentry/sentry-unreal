@@ -237,6 +237,8 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
+	// TODO: Remove magic number when https://github.com/getsentry/sentry-native/issues/1131 is resolved
+	sentry_options_set_max_spans(options, 1000);
 
 	ConfigureTransport(options);
 
