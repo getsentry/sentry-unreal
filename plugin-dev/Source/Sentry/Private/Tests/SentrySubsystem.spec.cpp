@@ -76,7 +76,7 @@ void SentrySubsystemSpec::Define()
 	{
 		It("should be started and finished", [this]()
 		{
-			USentryTransaction* transaction = SentrySubsystem->StartTransaction(TEXT("Automation transaction 1"), TEXT("Automation operation"));
+			USentryTransaction* transaction = SentrySubsystem->StartTransaction(TEXT("Automation transaction"), TEXT("Automation operation"));
 			TestNotNull("Transaction is non-null", transaction);
 			TestFalse("Transaction is not finished", transaction->IsFinished());
 
