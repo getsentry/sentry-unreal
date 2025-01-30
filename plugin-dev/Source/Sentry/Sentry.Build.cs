@@ -75,7 +75,7 @@ public class CMakeTargetInst
 		m_targetName=targetName;
 		m_targetPlatform=targetPlatform;
 		m_targetLocation=targetLocation;
-		
+#if !UE_5_0
 		Regex buildTypeRegex=new Regex(@"-DCMAKE_BUILD_TYPE=(\w*)");
 		Match buildTypeMatch=buildTypeRegex.Match(args);
 
@@ -84,7 +84,7 @@ public class CMakeTargetInst
 			m_forceBuild=true;
 			m_forceBuildType=buildTypeMatch.Groups[1].Value;
 		}
-		
+#endif
 		m_cmakeArgs=args;
 	}
 	
@@ -567,7 +567,6 @@ public class Sentry : ModuleRules
 			
 			if (Target.Platform == UnrealTargetPlatform.Win64)
 			{
-				
 				string buildOutputPath = Path.Combine(PluginDirectory, "Binaries", "Win64");
 				
 				string buildPath = Path.Combine(intermediatePath, "Win64", "build");
@@ -643,7 +642,7 @@ public class Sentry : ModuleRules
 						PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Release", "crashpad_util.lib"));
 					}
 				}
-				
+
 				PublicSystemLibraries.Add("winhttp.lib");
 				PublicSystemLibraries.Add("version.lib");
 			}
