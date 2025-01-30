@@ -5,8 +5,8 @@ Write-Host "Downloading native SDKs from the latest CI pipeline"
 function findCiRun([string] $branch)
 {
     Write-Host "Looking for the latest successful CI run on branch '$branch'"
-    $id = gh run list --branch $branch --workflow package-plugin-workflow --json 'conclusion,databaseId' `
-    | ConvertFrom-Json | Where-Object 'conclusion' -EQ 'success' | Select-Object -First 1 -ExpandProperty 'databaseId'
+    $jsonArray = gh run list --branch $branch --workflow package-plugin-workflow --json 'conclusion,databaseId' | ConvertFrom-Json
+    $id = $jsonArray | Where-Object 'conclusion' -EQ 'success' | Select-Object -First 1 -ExpandProperty 'databaseId'
     if ( "$id" -eq "" )
     {
         Write-Warning "  ... no successful CI run found on $branch"
