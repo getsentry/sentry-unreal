@@ -27,8 +27,6 @@
 #include "CrashReporter/SentryCrashReporter.h"
 #include "CrashReporter/SentryCrashContext.h"
 
-#include "Transport/SentryTransport.h"
-
 #include "Misc/Paths.h"
 #include "Misc/ScopeLock.h"
 #include "Misc/CoreDelegates.h"
@@ -288,10 +286,6 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
 	sentry_options_set_on_crash(options, HandleBeforeCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
-
-#if PLATFORM_LINUX
-	sentry_options_set_transport(options, FSentryTransport::Create());
-#endif
 
 	int initResult = sentry_init(options);
 

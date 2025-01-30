@@ -122,11 +122,6 @@ Source/Sentry/Private/Desktop/SentryUserDesktop.cpp
 Source/Sentry/Private/Desktop/SentryUserDesktop.h
 Source/Sentry/Private/Desktop/SentryUserFeedbackDesktop.cpp
 Source/Sentry/Private/Desktop/SentryUserFeedbackDesktop.h
-Source/Sentry/Private/Desktop/Transport/
-Source/Sentry/Private/Desktop/Transport/SentryDsnUrl.cpp
-Source/Sentry/Private/Desktop/Transport/SentryDsnUrl.h
-Source/Sentry/Private/Desktop/Transport/SentryTransport.cpp
-Source/Sentry/Private/Desktop/Transport/SentryTransport.h
 Source/Sentry/Private/Interface/
 Source/Sentry/Private/Interface/SentryAttachmentInterface.h
 Source/Sentry/Private/Interface/SentryBreadcrumbInterface.h

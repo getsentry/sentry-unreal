@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
+
 ### Fixes
 
 - Fix assertion during screenshot capturing in a thread that can't use Slate ([#756](https://github.com/getsentry/sentry-unreal/pull/756))
