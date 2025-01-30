@@ -240,8 +240,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	// TODO: Remove magic number when https://github.com/getsentry/sentry-native/issues/1131 is resolved
 	sentry_options_set_max_spans(options, 1000);
 
-	ConfigureTransport(options);
-
 	int initResult = sentry_init(options);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);

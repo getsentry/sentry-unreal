@@ -57,7 +57,6 @@ public:
 	TSharedPtr<FGenericPlatformSentryScope> GetCurrentScope();
 
 protected:
-	virtual void ConfigureTransport(sentry_options_t* Options) {}
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) {}
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) {}
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) {}

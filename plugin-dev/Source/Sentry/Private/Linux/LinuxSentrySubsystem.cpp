@@ -2,11 +2,6 @@
 
 #if USE_SENTRY_NATIVE
 
-void FLinuxSentrySubsystem::ConfigureTransport(sentry_options_t* Options)
-{
-	sentry_options_set_transport(Options, FLinuxSentryTransport::Create());
-}
-
 void FLinuxSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 {
 	sentry_options_set_handler_path(options, TCHAR_TO_UTF8(*GetHandlerPath()));

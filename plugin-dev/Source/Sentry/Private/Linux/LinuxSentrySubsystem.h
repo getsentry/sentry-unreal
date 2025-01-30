@@ -7,7 +7,6 @@
 class FLinuxSentrySubsystem : public GenericPlatformSentrySubsystem
 {
 protected:
-	virtual void ConfigureTransport(sentry_options_t* Options) override;
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) override;
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
