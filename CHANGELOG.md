@@ -4,7 +4,13 @@
 
 ### Features
 
+- Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
 - Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+
+### Fixes
+
+- Fix incorrect game log attachment on Android ([#743](https://github.com/getsentry/sentry-unreal/pull/743))
+- Fix assertion during screenshot capturing in a thread that can't use Slate ([#756](https://github.com/getsentry/sentry-unreal/pull/756))
 
 ### Dependencies
 
