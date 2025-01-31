@@ -75,7 +75,7 @@ public class CMakeTargetInst
 		m_targetName=targetName;
 		m_targetPlatform=targetPlatform;
 		m_targetLocation=targetLocation;
-#if !UE_5_0
+#if UE_5_1_OR_LATER
 		Regex buildTypeRegex=new Regex(@"-DCMAKE_BUILD_TYPE=(\w*)");
 		Match buildTypeMatch=buildTypeRegex.Match(args);
 
@@ -268,7 +268,12 @@ public class CMakeTargetInst
 	
 	String GetGeneratorName(ReadOnlyTargetRules target)
     {
-        if((target.Platform == UnrealTargetPlatform.Win64) 
+	    UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
+	    UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
+
+        if((target.Platform == XboxXPlatform) 
+			|| (target.Platform == XboxXPlatform) 
+			|| (target.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
             || (target.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
@@ -289,7 +294,12 @@ public class CMakeTargetInst
 	{
 		string program = "cmake";
 
-		if((BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+		UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
+		UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
+
+		if((BuildHostPlatform.Current.Platform == XboxXPlatform) 
+			|| (BuildHostPlatform.Current.Platform == XboxXPlatform) 
+			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
             || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
@@ -326,8 +336,11 @@ public class CMakeTargetInst
 
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
 
+		UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
+		UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
+
 		string buildToolchain = "";
-		if (rules.PublicDefinitions.Contains("SENTRY_BUILD_XBOX_TOOLCHAIN=1"))
+		if((target.Platform == XboxXPlatform) || (target.Platform == XboxOnePlatform))
 		{
 			buildToolchain = "-DCMAKE_TOOLCHAIN_FILE=" + Path.Combine(m_generatedTargetPath,"toolchains/xbox/gxdk_xs_toolchain.cmake");
 		}
@@ -363,7 +376,12 @@ public class CMakeTargetInst
         string cmd = "";
         string options = "";
 
-        if((BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+        UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
+        UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
+
+        if((BuildHostPlatform.Current.Platform == XboxXPlatform) 
+			|| (BuildHostPlatform.Current.Platform == XboxOnePlatform) 
+			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
             || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
@@ -473,10 +491,8 @@ public class Sentry : ModuleRules
 			}
 		);
 		
-		UnrealTargetPlatform XboxXPlatform;
-		UnrealTargetPlatform.TryParse("XSX", out XboxXPlatform);
-		UnrealTargetPlatform XboxOnePlatform;
-		UnrealTargetPlatform.TryParse("XB1", out XboxOnePlatform);
+		UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
+		UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
 		
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
@@ -542,7 +558,7 @@ public class Sentry : ModuleRules
 			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
-			PublicDefinitions.Add("SENTRY_BUILD_XBOX_TOOLCHAIN=1");
+			PublicDefinitions.Add("USE_SENTRY_BREAKPAD=1");
 		}
 		else
 		{
@@ -670,7 +686,7 @@ public class Sentry : ModuleRules
 			}
 			else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
 			{
-				string buildPath = Path.Combine(intermediatePath, "Xbox", "build");
+				string buildPath = Path.Combine(intermediatePath, "XSX", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
 				{
 					PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.lib"));
