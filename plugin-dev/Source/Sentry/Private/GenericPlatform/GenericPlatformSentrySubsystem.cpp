@@ -469,26 +469,28 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
 {
-	if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(context->GetNativeObject(), sentry_value_new_null()))
+	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
 	{
-		return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->GetNativeObject(), sentry_value_new_null()))
+		{
+			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		}
 	}
-	else
-	{
-		return nullptr;
-	}
+
+	return nullptr;
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
 {
-	if (sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(context->GetNativeObject(), sentry_value_new_null(), timestamp))
+	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
 	{
-		return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(platformTransactionContext->GetNativeObject(), sentry_value_new_null(), timestamp))
+		{
+			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		}
 	}
-	else
-	{
-		return nullptr;
-	}
+
+	return nullptr;
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)

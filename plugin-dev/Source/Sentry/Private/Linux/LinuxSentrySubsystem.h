@@ -2,7 +2,7 @@
 
 #if USE_SENTRY_NATIVE
 
-#include "GenericPlatformSentrySubsystem.h"
+#include "GenericPlatform/GenericPlatformSentrySubsystem.h"
 
 class FLinuxSentrySubsystem : public GenericPlatformSentrySubsystem
 {

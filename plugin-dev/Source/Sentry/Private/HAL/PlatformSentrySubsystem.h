@@ -6,6 +6,6 @@
 #include "Apple/SentrySubsystemApple.h"
 #elif PLATFORM_WINDOWS
 #include "Windows/WindowsSentrySubsystem.h"
-#elif PLAFORM_LINUX
+#elif PLATFORM_LINUX
 #include "Linux/LinuxSentrySubsystem.h"
 #endif
