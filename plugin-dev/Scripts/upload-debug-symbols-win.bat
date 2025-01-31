@@ -113,7 +113,7 @@ echo Sentry: Upload started using PropertiesFile '%PropertiesFile%'
 set "SENTRY_PROPERTIES=%PropertiesFile%"
 echo %ProjectBinariesPath%
 echo %PluginBinariesPath%
-call "%CliExec%" upload-dif %CliArgs% --log-level %CliLogLevel% "%ProjectBinariesPath%" "%PluginBinariesPath%"
+call "%CliExec%" debug-files upload %CliArgs% --log-level %CliLogLevel% "%ProjectBinariesPath%" "%PluginBinariesPath%"
 
 echo Sentry: Upload finished
 
