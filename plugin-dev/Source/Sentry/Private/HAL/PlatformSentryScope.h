@@ -2,7 +2,7 @@
 
 #if PLATFORM_ANDROID
 #include "Android/SentryScopeAndroid.h"
-#elif PLATFORM_ANDROID
+#elif PLATFORM_APPLE
 #include "Apple/SentryScopeApple.h"
 #else
 #include "GenericPlatform/GenericPlatformSentryScope.h"

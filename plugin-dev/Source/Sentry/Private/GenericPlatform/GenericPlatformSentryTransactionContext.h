@@ -17,8 +17,6 @@ public:
 	FGenericPlatformSentryTransactionContext(sentry_transaction_context_t* context);
 	virtual ~FGenericPlatformSentryTransactionContext() override = default;
 
-	virtual TSharedPtr<ISentryTransaction> StartTransaction() const override;
-	virtual TSharedPtr<ISentryTransaction> StartTransactionWithTimestamp(int64 timestamp) const override;
 	virtual FString GetName() const override;
 	virtual FString GetOperation() const override;
 

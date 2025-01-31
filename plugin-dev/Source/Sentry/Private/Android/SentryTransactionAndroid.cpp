@@ -25,16 +25,16 @@ void SentryTransactionAndroid::SetupClassMethods()
 	ToSentryTraceMethod = GetMethod("toSentryTrace", "()Lio/sentry/SentryTraceHeader;");
 }
 
-TSharedPtr<ISentrySpan> SentryTransactionAndroid::StartChild(const FString& operation, const FString& desctiption)
+TSharedPtr<ISentrySpan> SentryTransactionAndroid::StartChildSpan(const FString& operation, const FString& desctiption)
 {
 	auto span = CallObjectMethod<jobject>(StartChildMethod, *GetJString(operation), *GetJString(desctiption));
 	return MakeShareable(new SentrySpanAndroid(*span));
 }
 
-TSharedPtr<ISentrySpan> SentryTransactionAndroid::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+TSharedPtr<ISentrySpan> SentryTransactionAndroid::StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Android."));
-	return StartChild(operation, desctiption);
+	return StartChildSpan(operation, desctiption);
 }
 
 void SentryTransactionAndroid::Finish()

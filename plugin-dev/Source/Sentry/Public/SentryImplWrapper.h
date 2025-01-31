@@ -1,5 +1,6 @@
 #pragma once
 
+#include "UObject/UObjectGlobals.h"
 #include "Templates/SharedPointer.h"
 
 /**
