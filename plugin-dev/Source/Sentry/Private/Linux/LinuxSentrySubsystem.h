@@ -4,7 +4,7 @@
 
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
 
-class FLinuxSentrySubsystem : public GenericPlatformSentrySubsystem
+class FLinuxSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
