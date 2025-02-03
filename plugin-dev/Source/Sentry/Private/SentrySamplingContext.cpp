@@ -3,45 +3,27 @@
 #include "SentrySamplingContext.h"
 #include "SentryTransactionContext.h"
 
-#include "Interface/SentrySamplingContextInterface.h"
+#include "HAL/PlatformSentrySamplingContext.h"
 
-#if PLATFORM_ANDROID
-#include "Android/SentrySamplingContextAndroid.h"
-#elif PLATFORM_IOS || PLATFORM_MAC
-#include "Apple/SentrySamplingContextApple.h"
-#endif
-
-USentrySamplingContext::USentrySamplingContext()
+void USentrySamplingContext::Initialize()
 {
+	NativeImpl = CreateSharedSentrySamplingContext();
 }
 
 USentryTransactionContext* USentrySamplingContext::GetTransactionContext() const
 {
-	if (!SentrySamplingContextNativeImpl)
+	if (!NativeImpl)
 		return nullptr;
 
-	TSharedPtr<ISentryTransactionContext> transactionContextNativeImpl = SentrySamplingContextNativeImpl->GetTransactionContext();
+	TSharedPtr<ISentryTransactionContext> transactionContextNativeImpl = NativeImpl->GetTransactionContext();
 
-	USentryTransactionContext* unrealTransactionContext = NewObject<USentryTransactionContext>();
-	unrealTransactionContext->InitWithNativeImpl(transactionContextNativeImpl);
-
-	return unrealTransactionContext;
+	return USentryTransactionContext::Create(transactionContextNativeImpl);
 }
 
 TMap<FString, FString> USentrySamplingContext::GetCustomSamplingContext() const
 {
-	if (!SentrySamplingContextNativeImpl)
+	if (!NativeImpl)
 		return TMap<FString, FString>();
 
-	return SentrySamplingContextNativeImpl->GetCustomSamplingContext();
-}
-
-void USentrySamplingContext::InitWithNativeImpl(TSharedPtr<ISentrySamplingContext> samplingContextImpl)
-{
-	SentrySamplingContextNativeImpl = samplingContextImpl;
-}
-
-TSharedPtr<ISentrySamplingContext> USentrySamplingContext::GetNativeImpl()
-{
-	return SentrySamplingContextNativeImpl;
+	return NativeImpl->GetCustomSamplingContext();
 }

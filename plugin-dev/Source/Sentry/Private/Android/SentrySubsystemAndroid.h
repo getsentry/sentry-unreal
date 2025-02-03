@@ -37,3 +37,5 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) override;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 };
+
+typedef SentrySubsystemAndroid FPlatformSentrySubsystem;

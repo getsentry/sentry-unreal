@@ -73,6 +73,7 @@ public class Sentry : ModuleRules
 
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
@@ -87,6 +88,8 @@ public class Sentry : ModuleRules
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 
 			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Sentry_Android_UPL.xml"));
+
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 		}
 
 		// Additional routine for Windows
@@ -97,7 +100,7 @@ public class Sentry : ModuleRules
 			string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
 
 			PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Windows"));
 
 			PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
 
@@ -137,7 +140,7 @@ public class Sentry : ModuleRules
 			AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
 
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Linux"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 
