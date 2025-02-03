@@ -35,6 +35,30 @@ public static class DateTimeExtensions
 		       dt1.Hour == dt2.Hour && dt1.Minute == dt2.Minute && dt1.Second == dt2.Second;
 	}   
 }
+
+public static class PlatformChecks
+{
+	public static bool IsXBoxPlatform(ReadOnlyTargetRules target)
+	{
+		bool XBoxSupported = false;
+		UnrealTargetPlatform XboxXPlatform;
+		UnrealTargetPlatform XboxOnePlatform;
+		XBoxSupported = UnrealTargetPlatform.TryParse("XSX", out XboxXPlatform) || UnrealTargetPlatform.TryParse("XB1", out XboxOnePlatform);
+
+		return XBoxSupported && ((target.Platform == XboxXPlatform) || (target.Platform == XboxXPlatform));
+	}
+	
+	public static bool IsXBoxPlatform(UnrealTargetPlatform target)
+	{
+		bool XBoxSupported = false;
+		UnrealTargetPlatform XboxXPlatform;
+		UnrealTargetPlatform XboxOnePlatform;
+		XBoxSupported = UnrealTargetPlatform.TryParse("XSX", out XboxXPlatform) || UnrealTargetPlatform.TryParse("XB1", out XboxOnePlatform);
+
+		return XBoxSupported && ((target == XboxXPlatform) || (target == XboxXPlatform));
+	}
+}
+
 public class CMakeTargetInst
 {
 	// Based on UE4CMake with modifications 
@@ -265,17 +289,15 @@ public class CMakeTargetInst
 		}
 		return generatorOptions;
 	}
-	
+    
 	String GetGeneratorName(ReadOnlyTargetRules target)
-    {
-	    UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
-	    UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
+	{
 
-        if((target.Platform == XboxXPlatform) 
-			|| (target.Platform == XboxXPlatform) 
-			|| (target.Platform == UnrealTargetPlatform.Win64) 
+
+        if(PlatformChecks.IsXBoxPlatform(target)
+           || (target.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
-            || (target.Platform == UnrealTargetPlatform.Win32)
+           || (target.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
             )
         {
@@ -294,14 +316,10 @@ public class CMakeTargetInst
 	{
 		string program = "cmake";
 
-		UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
-		UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
-
-		if((BuildHostPlatform.Current.Platform == XboxXPlatform) 
-			|| (BuildHostPlatform.Current.Platform == XboxXPlatform) 
-			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+		if(PlatformChecks.IsXBoxPlatform(BuildHostPlatform.Current.Platform)
+		   || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
-            || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
+		   || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
 		  )
 		{
@@ -335,12 +353,9 @@ public class CMakeTargetInst
 		}
 
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
-
-		UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
-		UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
-
+		
 		string buildToolchain = "";
-		if((target.Platform == XboxXPlatform) || (target.Platform == XboxOnePlatform))
+		if(PlatformChecks.IsXBoxPlatform(target))
 		{
 			buildToolchain = "-DCMAKE_TOOLCHAIN_FILE=" + Path.Combine(m_generatedTargetPath,"toolchains/xbox/gxdk_xs_toolchain.cmake");
 		}
@@ -376,14 +391,10 @@ public class CMakeTargetInst
         string cmd = "";
         string options = "";
 
-        UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
-        UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
-
-        if((BuildHostPlatform.Current.Platform == XboxXPlatform) 
-			|| (BuildHostPlatform.Current.Platform == XboxOnePlatform) 
-			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+        if(PlatformChecks.IsXBoxPlatform(BuildHostPlatform.Current.Platform)
+           || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
-            || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
+           || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
             )
         {
@@ -491,9 +502,6 @@ public class Sentry : ModuleRules
 			}
 		);
 		
-		UnrealTargetPlatform XboxXPlatform = UnrealTargetPlatform.Parse("XSX");
-		UnrealTargetPlatform XboxOnePlatform = UnrealTargetPlatform.Parse("XB1");
-		
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
 
@@ -551,7 +559,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
-		else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
+		else if (PlatformChecks.IsXBoxPlatform(Target.Platform))
 		{
 			// Note: We may need a new xbox platform include
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
@@ -684,7 +692,7 @@ public class Sentry : ModuleRules
 				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
 
 			}
-			else if (Target.Platform == XboxXPlatform || Target.Platform == XboxOnePlatform)
+			else if (PlatformChecks.IsXBoxPlatform(Target.Platform))
 			{
 				string buildPath = Path.Combine(intermediatePath, "XSX", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
