@@ -102,6 +102,6 @@ echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
 
 chmod +x "$SENTRY_CLI_EXEC"
 
-"$SENTRY_CLI_EXEC" upload-dif $CLI_ARGS[@] --log-level $CLI_LOG_LEVEL "$PROJECT_BINARIES_PATH" "$PLUGIN_BINARIES_PATH"
+"$SENTRY_CLI_EXEC" debug-files upload $CLI_ARGS[@] --log-level $CLI_LOG_LEVEL "$PROJECT_BINARIES_PATH" "$PLUGIN_BINARIES_PATH"
 
 echo "Sentry: Upload finished"
