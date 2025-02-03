@@ -19,7 +19,7 @@
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
 
-#include "Infrastructure/SentryConvertorsApple.h"
+#include "Infrastructure/SentryConvertersApple.h"
 
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
@@ -143,7 +143,7 @@ void SentrySubsystemApple::ClearBreadcrumbs()
 TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
-		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
+		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
 	}];
 
 	return MakeShareable(new SentryIdApple(id));
@@ -152,7 +152,7 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessage(const FString& messag
 TSharedPtr<ISentryId> SentrySubsystemApple::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
-		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
+		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
 		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
@@ -188,7 +188,7 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureException(const FString& type
 
 	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
-	exceptionEvent.stacktrace = SentryConvertorsApple::CallstackToNative(StackFrames);
+	exceptionEvent.stacktrace = SentryConvertersApple::CallstackToNative(StackFrames);
 	
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
 	return MakeShareable(new SentryIdApple(id));
@@ -245,7 +245,7 @@ void SentrySubsystemApple::ConfigureScope(const FSentryScopeDelegate& onConfigur
 void SentrySubsystemApple::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
-		[scope setContextValue:SentryConvertorsApple::StringMapToNative(values) forKey:key.GetNSString()];
+		[scope setContextValue:SentryConvertersApple::StringMapToNative(values) forKey:key.GetNSString()];
 	}];
 }
 
@@ -266,7 +266,7 @@ void SentrySubsystemApple::RemoveTag(const FString& key)
 void SentrySubsystemApple::SetLevel(ESentryLevel level)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
-		[scope setLevel:SentryConvertorsApple::SentryLevelToNative(level)];
+		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
 	}];
 }
 
@@ -296,12 +296,18 @@ TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContext
 	return MakeShareable(new SentryTransactionApple(transaction));
 }
 
+TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Setting transaction timestamp explicitly not supported on Mac/iOS."));
+	return StartTransactionWithContext(context);
+}
+
 TSharedPtr<ISentryTransaction> SentrySubsystemApple::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
 {
 	TSharedPtr<SentryTransactionContextApple> transactionContextIOS = StaticCastSharedPtr<SentryTransactionContextApple>(context);
 
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
-		customSamplingContext:SentryConvertorsApple::StringMapToNative(options)];
+		customSamplingContext:SentryConvertersApple::StringMapToNative(options)];
 
 	return MakeShareable(new SentryTransactionApple(transaction));
 }

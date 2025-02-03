@@ -2,7 +2,7 @@
 
 #include "SentrySpanDesktop.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -28,9 +28,28 @@ sentry_span_t* SentrySpanDesktop::GetNativeObject()
 	return SpanDesktop;
 }
 
+TSharedPtr<ISentrySpan> SentrySpanDesktop::StartChild(const FString& operation, const FString& desctiption)
+{
+	sentry_span_t* nativeSpan = sentry_span_start_child(SpanDesktop, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*desctiption));
+	return MakeShareable(new SentrySpanDesktop(nativeSpan));
+}
+
+TSharedPtr<ISentrySpan> SentrySpanDesktop::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+{
+	sentry_span_t* nativeSpan = sentry_span_start_child_ts(SpanDesktop, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*desctiption), timestamp);
+	return MakeShareable(new SentrySpanDesktop(nativeSpan));
+}
+
 void SentrySpanDesktop::Finish()
 {
 	sentry_span_finish(SpanDesktop);
+
+	isFinished = true;
+}
+
+void SentrySpanDesktop::FinishWithTimestamp(int64 timestamp)
+{
+	sentry_span_finish_ts(SpanDesktop, timestamp);
 
 	isFinished = true;
 }
@@ -58,7 +77,7 @@ void SentrySpanDesktop::SetData(const FString& key, const TMap<FString, FString>
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_set_data(SpanDesktop, TCHAR_TO_ANSI(*key), SentryConvertorsDesktop::StringMapToNative(values));
+	sentry_span_set_data(SpanDesktop, TCHAR_TO_ANSI(*key), SentryConvertersDesktop::StringMapToNative(values));
 }
 
 void SentrySpanDesktop::RemoveData(const FString& key)

@@ -38,6 +38,12 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
+	if (!(IsInGameThread() || IsInSlateThread()))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Can't take a screenshot when not in the game thread or slate thread"));
+		return false;
+	}
+
 	TSharedPtr<SWindow> WindowPtr = GameViewportClient->GetWindow();
 	TSharedRef<SWidget> WindowRef = WindowPtr.ToSharedRef();
 

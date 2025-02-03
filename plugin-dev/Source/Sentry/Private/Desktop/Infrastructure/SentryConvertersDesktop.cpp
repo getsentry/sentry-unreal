@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryConvertorsDesktop.h"
+#include "SentryConvertersDesktop.h"
 
 #include "SentryDefines.h"
 
@@ -13,7 +13,7 @@
 
 #if USE_SENTRY_NATIVE
 
-sentry_level_e SentryConvertorsDesktop::SentryLevelToNative(ESentryLevel level)
+sentry_level_e SentryConvertersDesktop::SentryLevelToNative(ESentryLevel level)
 {
 	sentry_level_e desktopLevel = {};
 
@@ -41,7 +41,7 @@ sentry_level_e SentryConvertorsDesktop::SentryLevelToNative(ESentryLevel level)
 	return desktopLevel;
 }
 
-sentry_value_t SentryConvertorsDesktop::StringMapToNative(const TMap<FString, FString>& map)
+sentry_value_t SentryConvertersDesktop::StringMapToNative(const TMap<FString, FString>& map)
 {
 	sentry_value_t sentryObject = sentry_value_new_object();
 
@@ -53,7 +53,7 @@ sentry_value_t SentryConvertorsDesktop::StringMapToNative(const TMap<FString, FS
 	return sentryObject;
 }
 
-sentry_value_t SentryConvertorsDesktop::StringArrayToNative(const TArray<FString>& array)
+sentry_value_t SentryConvertersDesktop::StringArrayToNative(const TArray<FString>& array)
 {
 	sentry_value_t sentryArray = sentry_value_new_list();
 
@@ -66,7 +66,7 @@ sentry_value_t SentryConvertorsDesktop::StringArrayToNative(const TArray<FString
 	return sentryArray;
 }
 
-sentry_value_t SentryConvertorsDesktop::AddressToNative(uint64 address)
+sentry_value_t SentryConvertersDesktop::AddressToNative(uint64 address)
 {
 	char buffer[32];
 	size_t written = (size_t)snprintf(buffer, sizeof(buffer), "0x%llx", (unsigned long long)address);
@@ -78,7 +78,7 @@ sentry_value_t SentryConvertorsDesktop::AddressToNative(uint64 address)
 	return sentry_value_new_string(buffer);
 }
 
-sentry_value_t SentryConvertorsDesktop::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
+sentry_value_t SentryConvertersDesktop::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
 {
 	int32 framesCount = callstack.Num();
 
@@ -96,7 +96,7 @@ sentry_value_t SentryConvertorsDesktop::CallstackToNative(const TArray<FProgramC
 	return stacktrace;
 }
 
-ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
+ESentryLevel SentryConvertersDesktop::SentryLevelToUnreal(sentry_value_t level)
 {
 	FString levelStr = FString(sentry_value_as_string(level));
 
@@ -109,7 +109,7 @@ ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_value_t level)
 	return static_cast<ESentryLevel>(Enum->GetValueByName(FName(*levelStr)));
 }
 
-ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_level_t level)
+ESentryLevel SentryConvertersDesktop::SentryLevelToUnreal(sentry_level_t level)
 {
 	ESentryLevel Level = ESentryLevel::Debug;
 
@@ -137,7 +137,7 @@ ESentryLevel SentryConvertorsDesktop::SentryLevelToUnreal(sentry_level_t level)
 	return Level;
 }
 
-TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t map)
+TMap<FString, FString> SentryConvertersDesktop::StringMapToUnreal(sentry_value_t map)
 {
 	TMap<FString, FString> unrealMap;
 
@@ -166,7 +166,7 @@ TMap<FString, FString> SentryConvertorsDesktop::StringMapToUnreal(sentry_value_t
 	return unrealMap;
 }
 
-TArray<FString> SentryConvertorsDesktop::StringArrayToUnreal(sentry_value_t array)
+TArray<FString> SentryConvertersDesktop::StringArrayToUnreal(sentry_value_t array)
 {
 	TArray<FString> unrealArray;
 
@@ -192,7 +192,7 @@ TArray<FString> SentryConvertorsDesktop::StringArrayToUnreal(sentry_value_t arra
 	return unrealArray;
 }
 
-FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
+FString SentryConvertersDesktop::SentryLevelToString(ESentryLevel level)
 {
 	const UEnum* EnumPtr = StaticEnum<ESentryLevel>();
 
@@ -207,7 +207,7 @@ FString SentryConvertorsDesktop::SentryLevelToString(ESentryLevel level)
 	return Result;
 }
 
-TArray<uint8> SentryConvertorsDesktop::SentryEnvelopeToByteArray(sentry_envelope_t* envelope)
+TArray<uint8> SentryConvertersDesktop::SentryEnvelopeToByteArray(sentry_envelope_t* envelope)
 {
 	size_t size;
 	ANSICHAR* serializedEnvelopeStr = sentry_envelope_serialize(envelope, &size);
@@ -219,7 +219,7 @@ TArray<uint8> SentryConvertorsDesktop::SentryEnvelopeToByteArray(sentry_envelope
 	return envelopeData;
 }
 
-ELogVerbosity::Type SentryConvertorsDesktop::SentryLevelToLogVerbosity(sentry_level_t level)
+ELogVerbosity::Type SentryConvertersDesktop::SentryLevelToLogVerbosity(sentry_level_t level)
 {
 	ELogVerbosity::Type LogVerbosity = ELogVerbosity::Error;
 
@@ -247,7 +247,7 @@ ELogVerbosity::Type SentryConvertorsDesktop::SentryLevelToLogVerbosity(sentry_le
 	return LogVerbosity;
 }
 
-void SentryConvertorsDesktop::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
+void SentryConvertersDesktop::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
 {
 #if PLATFORM_WINDOWS
 

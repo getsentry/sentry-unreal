@@ -2,7 +2,9 @@
 
 #include "SentrySpanAndroid.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "SentryDefines.h"
+
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentrySpanAndroid::SentrySpanAndroid(jobject span)
@@ -13,6 +15,7 @@ SentrySpanAndroid::SentrySpanAndroid(jobject span)
 
 void SentrySpanAndroid::SetupClassMethods()
 {
+	StartChildMethod = GetMethod("startChild", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/ISpan;");
 	FinishMethod = GetMethod("finish", "()V");
 	IsFinishedMethod = GetMethod("isFinished", "()Z");
 	SetTagMethod = GetMethod("setTag", "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -20,9 +23,27 @@ void SentrySpanAndroid::SetupClassMethods()
 	ToSentryTraceMethod = GetMethod("toSentryTrace", "()Lio/sentry/SentryTraceHeader;");
 }
 
+TSharedPtr<ISentrySpan> SentrySpanAndroid::StartChild(const FString& operation, const FString& desctiption)
+{
+	auto span = CallObjectMethod<jobject>(StartChildMethod, *GetJString(operation), *GetJString(desctiption));
+	return MakeShareable(new SentrySpanAndroid(*span));
+}
+
+TSharedPtr<ISentrySpan> SentrySpanAndroid::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Android."));
+	return StartChild(operation, desctiption);
+}
+
 void SentrySpanAndroid::Finish()
 {
 	CallMethod<void>(FinishMethod);
+}
+
+void SentrySpanAndroid::FinishWithTimestamp(int64 timestamp)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Finishing span with explicit timestamp not supported on Android."));
+	Finish();
 }
 
 bool SentrySpanAndroid::IsFinished() const
@@ -42,7 +63,7 @@ void SentrySpanAndroid::RemoveTag(const FString& key)
 
 void SentrySpanAndroid::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	CallMethod<void>(SetDataMethod, *GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetDataMethod, *GetJString(key), SentryConvertersAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentrySpanAndroid::RemoveData(const FString& key)

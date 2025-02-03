@@ -504,23 +504,22 @@ public class Sentry : ModuleRules
 		
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
-
+		string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 			
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 			
-			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
+			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Android"));
 			
-			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Sentry_Android_UPL.xml"));
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
@@ -546,15 +545,13 @@ public class Sentry : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 
-			PublicAdditionalFrameworks.Add(new Framework("Sentry", Path.Combine(PlatformThirdPartyPath, "Sentry.embeddedframework.zip"), null, true));
-
-			PrivateDependencyModuleNames.AddRange(new string[] { "Launch" });
-			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
+            PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
@@ -676,8 +673,10 @@ public class Sentry : ModuleRules
 			else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
 #endif
 			{
-				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-				PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
+				AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
+
+			    PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+                PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
 
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 

@@ -2,7 +2,7 @@
 
 #include "SentryTransactionContextAndroid.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryTransactionContextAndroid::SentryTransactionContextAndroid(const FString& name, const FString& operation)

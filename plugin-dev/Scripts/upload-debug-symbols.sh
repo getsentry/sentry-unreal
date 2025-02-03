@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 targetPlatform=$1
 targetName=$2

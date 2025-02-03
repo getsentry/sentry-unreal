@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryConvertorsAndroid.h"
+#include "SentryConvertersAndroid.h"
 #include "SentryJavaObjectWrapper.h"
 #include "SentryJavaClasses.h"
 
@@ -11,7 +11,7 @@
 
 #include "Dom/JsonValue.h"
 
-TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::SentryLevelToNative(ESentryLevel level)
+TSharedPtr<FSentryJavaObjectWrapper> SentryConvertersAndroid::SentryLevelToNative(ESentryLevel level)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> nativeLevel = nullptr;
 
@@ -49,7 +49,7 @@ TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::SentryLevelToNativ
 	return nativeLevel;
 }
 
-TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringArrayToNative(const TArray<FString>& stringArray)
+TSharedPtr<FSentryJavaObjectWrapper> SentryConvertersAndroid::StringArrayToNative(const TArray<FString>& stringArray)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> NativeArrayList = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::ArrayList, "()V"));
 	FSentryJavaMethod AddMethod = NativeArrayList->GetMethod("add", "(Ljava/lang/Object;)Z");
@@ -62,7 +62,7 @@ TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringArrayToNativ
 	return NativeArrayList;
 }
 
-TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringMapToNative(const TMap<FString, FString>& stringMap)
+TSharedPtr<FSentryJavaObjectWrapper> SentryConvertersAndroid::StringMapToNative(const TMap<FString, FString>& stringMap)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> NativeHashMap = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::HashMap, "()V"));
 	FSentryJavaMethod PutMethod = NativeHashMap->GetMethod("put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
@@ -75,7 +75,7 @@ TSharedPtr<FSentryJavaObjectWrapper> SentryConvertorsAndroid::StringMapToNative(
 	return NativeHashMap;
 }
 
-jbyteArray SentryConvertorsAndroid::ByteArrayToNative(const TArray<uint8>& byteArray)
+jbyteArray SentryConvertersAndroid::ByteArrayToNative(const TArray<uint8>& byteArray)
 {
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
@@ -95,7 +95,7 @@ jbyteArray SentryConvertorsAndroid::ByteArrayToNative(const TArray<uint8>& byteA
 	return javaByteArray;
 }
 
-ESentryLevel SentryConvertorsAndroid::SentryLevelToUnreal(jobject level)
+ESentryLevel SentryConvertersAndroid::SentryLevelToUnreal(jobject level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
 
@@ -128,7 +128,7 @@ ESentryLevel SentryConvertorsAndroid::SentryLevelToUnreal(jobject level)
 	return unrealLevel;
 }
 
-TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)
+TMap<FString, FString> SentryConvertersAndroid::StringMapToUnreal(jobject map)
 {
 	TMap<FString, FString> result;
 
@@ -157,7 +157,7 @@ TMap<FString, FString> SentryConvertorsAndroid::StringMapToUnreal(jobject map)
 	return result;
 }
 
-TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
+TArray<FString> SentryConvertersAndroid::StringListToUnreal(jobject stringList)
 {
 	TArray<FString> result;
 
@@ -179,7 +179,7 @@ TArray<FString> SentryConvertorsAndroid::StringListToUnreal(jobject stringList)
 	return result;
 }
 
-TArray<uint8> SentryConvertorsAndroid::ByteArrayToUnreal(jbyteArray byteArray)
+TArray<uint8> SentryConvertersAndroid::ByteArrayToUnreal(jbyteArray byteArray)
 {
 	TArray<uint8> result;
 
@@ -202,7 +202,7 @@ TArray<uint8> SentryConvertorsAndroid::ByteArrayToUnreal(jbyteArray byteArray)
 	return result;
 }
 
-TArray<TSharedPtr<FJsonValue>> SentryConvertorsAndroid::StrinArrayToJsonArray(const TArray<FString>& stringArray)
+TArray<TSharedPtr<FJsonValue>> SentryConvertersAndroid::StrinArrayToJsonArray(const TArray<FString>& stringArray)
 {
 	TArray<TSharedPtr<FJsonValue>> jsonArray;
 

@@ -5,7 +5,7 @@
 #include "SentryBreadcrumbAndroid.h"
 #include "SentryAttachmentAndroid.h"
 
-#include "Infrastructure/SentryConvertorsAndroid.h"
+#include "Infrastructure/SentryConvertersAndroid.h"
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryScopeAndroid::SentryScopeAndroid()
@@ -96,7 +96,7 @@ void SentryScopeAndroid::SetTags(const TMap<FString, FString>& tags)
 TMap<FString, FString> SentryScopeAndroid::GetTags() const
 {
 	auto tags = CallObjectMethod<jobject>(GetTagsMethod);
-	return SentryConvertorsAndroid::StringMapToUnreal(*tags);
+	return SentryConvertersAndroid::StringMapToUnreal(*tags);
 }
 
 void SentryScopeAndroid::SetDist(const FString& dist)
@@ -121,29 +121,29 @@ FString SentryScopeAndroid::GetEnvironment() const
 
 void SentryScopeAndroid::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	CallMethod<void>(SetFingerprintMethod, SentryConvertorsAndroid::StringArrayToNative(fingerprint)->GetJObject());
+	CallMethod<void>(SetFingerprintMethod, SentryConvertersAndroid::StringArrayToNative(fingerprint)->GetJObject());
 }
 
 TArray<FString> SentryScopeAndroid::GetFingerprint() const
 {
 	auto fingerprint = CallObjectMethod<jobject>(GetFingerprintMethod);
-	return SentryConvertorsAndroid::StringListToUnreal(*fingerprint);
+	return SentryConvertersAndroid::StringListToUnreal(*fingerprint);
 }
 
 void SentryScopeAndroid::SetLevel(ESentryLevel level)
 {
-	CallMethod<void>(SetLevelMethod, SentryConvertorsAndroid::SentryLevelToNative(level)->GetJObject());
+	CallMethod<void>(SetLevelMethod, SentryConvertersAndroid::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel SentryScopeAndroid::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
-	return SentryConvertorsAndroid::SentryLevelToUnreal(*level);
+	return SentryConvertersAndroid::SentryLevelToUnreal(*level);
 }
 
 void SentryScopeAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
-	CallMethod<void>(SetContextMethod, *GetJString(key), SentryConvertorsAndroid::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetContextMethod, *GetJString(key), SentryConvertersAndroid::StringMapToNative(values)->GetJObject());
 }
 
 void SentryScopeAndroid::RemoveContext(const FString& key)
@@ -183,7 +183,7 @@ void SentryScopeAndroid::SetExtras(const TMap<FString, FString>& extras)
 TMap<FString, FString> SentryScopeAndroid::GetExtras() const
 {
 	auto extras = CallObjectMethod<jobject>(GetExtrasMethod);
-	return SentryConvertorsAndroid::StringMapToUnreal(*extras);
+	return SentryConvertersAndroid::StringMapToUnreal(*extras);
 }
 
 void SentryScopeAndroid::Clear()

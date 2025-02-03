@@ -13,7 +13,10 @@ public:
 
 	void SetupClassMethods();
 
+	virtual TSharedPtr<ISentrySpan> StartChild(const FString& operation, const FString& desctiption) override;
+	virtual TSharedPtr<ISentrySpan> StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) override;
 	virtual void Finish() override;
+	virtual void FinishWithTimestamp(int64 timestamp) override;
 	virtual bool IsFinished() const override;
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;
@@ -22,6 +25,7 @@ public:
 	virtual void GetTrace(FString& name, FString& value) override;
 
 private:
+	FSentryJavaMethod StartChildMethod;
 	FSentryJavaMethod FinishMethod;
 	FSentryJavaMethod IsFinishedMethod;
 	FSentryJavaMethod SetTagMethod;

@@ -18,15 +18,14 @@
 
 #include "SentryTraceSampler.h"
 
+#include "Utils/SentryFileUtils.h"
 #include "Utils/SentryLogUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
-#include "Infrastructure/SentryConvertorsDesktop.h"
+#include "Infrastructure/SentryConvertersDesktop.h"
 
 #include "CrashReporter/SentryCrashReporter.h"
 #include "CrashReporter/SentryCrashContext.h"
-
-#include "Transport/SentryTransport.h"
 
 #include "Misc/Paths.h"
 #include "Misc/ScopeLock.h"
@@ -41,7 +40,10 @@
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsPlatformMisc.h"
+#include "Windows/WindowsPlatformCrashContext.h"
 #endif
+
+extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
 
@@ -66,14 +68,14 @@ void PrintVerboseLog(sentry_level_t level, const char *message, va_list args, vo
 	const FName SentryCategoryName(TEXT("LogSentrySdk"));
 #endif
 
-	GLog->CategorizedLogf(SentryCategoryName, SentryConvertorsDesktop::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
+	GLog->CategorizedLogf(SentryCategoryName, SentryConvertersDesktop::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
 }
 
 void PrintCrashLog(const sentry_ucontext_t *uctx)
 {
 #if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 0, 0)
 
-	SentryConvertorsDesktop::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
+	SentryConvertersDesktop::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
 
 	const SIZE_T StackTraceSize = 65535;
 	ANSICHAR* StackTrace = (ANSICHAR*)GMalloc->Malloc(StackTraceSize);
@@ -134,6 +136,11 @@ sentry_value_t HandleBeforeCrash(const sentry_ucontext_t *uctx, sentry_value_t e
 
 	SentrySubsystemDesktop* SentrySubsystem = static_cast<SentrySubsystemDesktop*>(closure);
 	SentrySubsystem->TryCaptureScreenshot();
+
+	if (GIsGPUCrashed)
+	{
+		IFileManager::Get().Copy(*SentrySubsystem->GetGpuDumpBackupPath(), *SentryFileUtils::GetGpuDumpPath());
+	}
 
 	FSentryCrashContext::Get()->Apply(SentrySubsystem->GetCurrentScope());
 
@@ -219,6 +226,15 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 #endif
 	}
 
+	if (settings->AttachGpuDump)
+	{
+#if PLATFORM_WINDOWS
+		sentry_options_add_attachmentw(options, *GetGpuDumpBackupPath());
+#elif PLATFORM_LINUX
+		sentry_options_add_attachment(options, TCHAR_TO_UTF8(*GetGpuDumpBackupPath()));
+#endif
+	}
+
 	if(settings->UseProxy)
 	{
 		sentry_options_set_http_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
@@ -270,10 +286,6 @@ void SentrySubsystemDesktop::InitWithSettings(const USentrySettings* settings, U
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
 	sentry_options_set_on_crash(options, HandleBeforeCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
-
-#if PLATFORM_LINUX
-	sentry_options_set_transport(options, FSentryTransport::Create());
-#endif
 
 	int initResult = sentry_init(options);
 
@@ -355,7 +367,7 @@ void SentrySubsystemDesktop::ClearBreadcrumbs()
 
 TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertorsDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
+	sentry_value_t sentryEvent = sentry_value_new_message_event(SentryConvertersDesktop::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
 
 	if(isStackTraceEnabled)
 	{
@@ -416,7 +428,7 @@ TSharedPtr<ISentryId> SentrySubsystemDesktop::CaptureException(const FString& ty
 	sentry_value_t exceptionEvent = sentry_value_new_event();
 
 	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
-	sentry_value_set_by_key(exceptionEvent, "stacktrace", SentryConvertorsDesktop::CallstackToNative(StackFrames));
+	sentry_value_set_by_key(exceptionEvent, "stacktrace", SentryConvertersDesktop::CallstackToNative(StackFrames));
 
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
@@ -528,6 +540,15 @@ TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithConte
 	return MakeShareable(new SentryTransactionDesktop(nativeTransaction));
 }
 
+TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
+{
+	TSharedPtr<SentryTransactionContextDesktop> transactionContextDesktop = StaticCastSharedPtr<SentryTransactionContextDesktop>(context);
+
+	sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(transactionContextDesktop->GetNativeObject(), sentry_value_new_null(), timestamp);
+
+	return MakeShareable(new SentryTransactionDesktop(nativeTransaction));
+}
+
 TSharedPtr<ISentryTransaction> SentrySubsystemDesktop::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not supported on desktop."));
@@ -560,6 +581,16 @@ void SentrySubsystemDesktop::TryCaptureScreenshot() const
 	}
 
 	SentryScreenshotUtils::CaptureScreenshot(GetScreenshotPath());
+}
+
+FString SentrySubsystemDesktop::GetGpuDumpBackupPath() const
+{
+	static const FString DateTimeString = FDateTime::Now().ToString();
+
+	const FString GpuDumpPath = FPaths::Combine(GetDatabasePath(), TEXT("gpudumps"), *FString::Printf(TEXT("UEAftermath-%s.nv-gpudmp"), *DateTimeString));;
+	const FString GpuDumpFullPath = FPaths::ConvertRelativePathToFull(GpuDumpPath);
+
+	return GpuDumpFullPath;
 }
 
 TSharedPtr<SentryScopeDesktop> SentrySubsystemDesktop::GetCurrentScope()
