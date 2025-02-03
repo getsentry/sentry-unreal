@@ -38,7 +38,7 @@ public static class DateTimeExtensions
 
 public static class PlatformChecks
 {
-	public static bool IsXBoxPlatform(ReadOnlyTargetRules target)
+	public static bool IsXboxPlatform(ReadOnlyTargetRules target)
 	{
 		bool XBoxSupported = false;
 		UnrealTargetPlatform XboxXPlatform;
@@ -48,7 +48,7 @@ public static class PlatformChecks
 		return XBoxSupported && ((target.Platform == XboxXPlatform) || (target.Platform == XboxXPlatform));
 	}
 	
-	public static bool IsXBoxPlatform(UnrealTargetPlatform target)
+	public static bool IsXboxPlatform(UnrealTargetPlatform target)
 	{
 		bool XBoxSupported = false;
 		UnrealTargetPlatform XboxXPlatform;
@@ -294,7 +294,7 @@ public class CMakeTargetInst
 	{
 
 
-        if(PlatformChecks.IsXBoxPlatform(target)
+        if(PlatformChecks.IsXboxPlatform(target)
            || (target.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
            || (target.Platform == UnrealTargetPlatform.Win32)
@@ -316,7 +316,7 @@ public class CMakeTargetInst
 	{
 		string program = "cmake";
 
-		if(PlatformChecks.IsXBoxPlatform(BuildHostPlatform.Current.Platform)
+		if(PlatformChecks.IsXboxPlatform(BuildHostPlatform.Current.Platform)
 		   || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
 		   || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
@@ -355,7 +355,7 @@ public class CMakeTargetInst
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
 		
 		string buildToolchain = "";
-		if(PlatformChecks.IsXBoxPlatform(target))
+		if(PlatformChecks.IsXboxPlatform(target))
 		{
 			buildToolchain = "-DCMAKE_TOOLCHAIN_FILE=" + Path.Combine(m_generatedTargetPath,"toolchains/xbox/gxdk_xs_toolchain.cmake");
 		}
@@ -391,7 +391,7 @@ public class CMakeTargetInst
         string cmd = "";
         string options = "";
 
-        if(PlatformChecks.IsXBoxPlatform(BuildHostPlatform.Current.Platform)
+        if(PlatformChecks.IsXboxPlatform(BuildHostPlatform.Current.Platform)
            || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
            || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
@@ -559,7 +559,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
-		else if (PlatformChecks.IsXBoxPlatform(Target.Platform))
+		else if (PlatformChecks.IsXboxPlatform(Target.Platform))
 		{
 			// Note: We may need a new xbox platform include
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Desktop"));
@@ -692,7 +692,7 @@ public class Sentry : ModuleRules
 				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
 
 			}
-			else if (PlatformChecks.IsXBoxPlatform(Target.Platform))
+			else if (PlatformChecks.IsXboxPlatform(Target.Platform))
 			{
 				string buildPath = Path.Combine(intermediatePath, "XSX", "build");
 				if(Target.Configuration == UnrealTargetConfiguration.Debug)
