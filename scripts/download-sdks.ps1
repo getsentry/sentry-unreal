@@ -48,7 +48,7 @@ foreach ($sdk in $sdks)
     Write-Host "Downloading $sdk SDK to $sdkDir ..."
     if (Test-Path $sdkDir)
     {
-        Remove-Item "$outDir/$sdk" -Recurse
+        Remove-Item "$sdkDir" -Recurse
     }
 
     gh run download $runId -n "$sdk-sdk" -D $sdkDir

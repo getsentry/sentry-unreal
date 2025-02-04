@@ -33,6 +33,7 @@ plugin-dev/Source/ThirdParty/Linux
 plugin-dev/Source/ThirdParty/LinuxArm64
 plugin-dev/Source/ThirdParty/Mac
 plugin-dev/Source/ThirdParty/Win64
+plugin-dev/Source/ThirdParty/XSX
 plugin-dev/Source/ThirdParty/CLI/*
 !plugin-dev/Source/ThirdParty/.gitkeep
 !plugin-dev/Source/ThirdParty/CLI/.gitkeep

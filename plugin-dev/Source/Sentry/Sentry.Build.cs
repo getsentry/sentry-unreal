@@ -171,5 +171,11 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
+
+		// Additional routine for Xbox
+		if (Target.Platform == UnrealTargetPlatform.XSX)
+		{
+
+		}
 	}
 }

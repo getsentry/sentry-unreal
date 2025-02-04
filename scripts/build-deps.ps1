@@ -133,27 +133,46 @@ function buildSentryNative()
     Copy-Item "$modulesDir/sentry-native/install/include/sentry.h" -Destination $nativeOutDirIncludes
 }
 
+function buildSentryNativeXbox()
+{
+    Push-Location -Path "$modulesDir/sentry-native"
+
+    cmake -B "build" -G "Visual Studio 17 2022" -A "Gaming.Xbox.Scarlett.x64" -DXdkEditionTarget="240602" -DCMAKE_TOOLCHAIN_FILE="./toolchains/xbox/gxdk_xs_toolchain.cmake" -D SENTRY_SDK_NAME=sentry.native.unreal
+    cmake --build build --config RelWithDebInfo
+    cmake --install build --prefix install --config RelWithDebInfo
+
+    Pop-Location
+
+    $nativeOutDir = "$outDir/XSX"
+    $nativeOutDirLibs = "$nativeOutDir/lib"
+    $nativeOutDirBinaries = "$nativeOutDir/bin"
+    $nativeOutDirIncludes = "$nativeOutDir/include"
+
+    if (Test-Path $nativeOutDir)
+    {
+        Remove-Item $nativeOutDir -Recurse -Force
+    }
+
+    New-Item $nativeOutDir -ItemType Directory > $null
+    New-Item $nativeOutDirLibs -ItemType Directory > $null
+    New-Item $nativeOutDirBinaries -ItemType Directory > $null
+    New-Item $nativeOutDirIncludes -ItemType Directory > $null
+
+    Get-ChildItem -Path "$modulesDir/sentry-native/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination $nativeOutDirLibs
+    Get-ChildItem -Path "$modulesDir/sentry-native/install/bin" -Filter "sentry.*" -Recurse | Copy-Item -Destination $nativeOutDirBinaries
+    Copy-Item "$modulesDir/sentry-native/install/include/sentry.h" -Destination $nativeOutDirIncludes
+}
+
 function buildPlatformDependency([string] $platform)
 {
-    if ($platform -eq "win")
+    switch ($platform)
     {
-        buildSentryNative
-    }
-    elseif ($platform -eq "mac")
-    {
-        buildSentryCocoaMac
-    }
-    elseif ($platform -eq "ios")
-    {
-        buildSentryCocoaIos
-    }
-    elseif ($platform -eq "android")
-    {
-        buildSentryJava
-    }
-    else
-    {
-        Write-Warning "Platform '$platform' is not supported"
+        "win" { buildSentryNative }
+        "mac" { buildSentryCocoaMac }
+        "ios" { buildSentryCocoaIos }
+        "android" { buildSentryJava }
+        "xsx" { buildSentryNativeXbox }
+        default { Write-Warning "Platform '$platform' is not supported" }
     }
 }
 
