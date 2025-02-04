@@ -247,6 +247,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_clear_crashed_last_run();
 
 	isStackTraceEnabled = settings->AttachStacktrace;
+	isPiiAttachmentEnabled = settings->SendDefaultPii;
 
 	crashReporter->SetRelease(settings->Release);
 	crashReporter->SetEnvironment(settings->Environment);
@@ -405,6 +406,14 @@ void FGenericPlatformSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUser
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
 {
 	TSharedPtr<FGenericPlatformSentryUser> user = StaticCastSharedPtr<FGenericPlatformSentryUser>(InUser);
+
+	// sentry-native doesn't provide `send_default_pii` option, so we need to check if user's `ip_address`
+	// allowed to be determined automatically
+	if (isPiiAttachmentEnabled && user->GetIpAddress().IsEmpty())
+	{
+		user->SetIpAddress(TEXT("{{auto}}"));
+	}
+
 	sentry_set_user(user->GetNativeObject());
 
 	crashReporter->SetUser(user);
