@@ -40,22 +40,12 @@ public static class PlatformChecks
 {
 	public static bool IsXboxPlatform(ReadOnlyTargetRules target)
 	{
-		bool XBoxSupported = false;
-		UnrealTargetPlatform XboxXPlatform;
-		UnrealTargetPlatform XboxOnePlatform;
-		XBoxSupported = UnrealTargetPlatform.TryParse("XSX", out XboxXPlatform) || UnrealTargetPlatform.TryParse("XB1", out XboxOnePlatform);
-
-		return XBoxSupported && ((target.Platform == XboxXPlatform) || (target.Platform == XboxXPlatform));
+		return target.Platform.ToString() == "XSX";
 	}
 	
 	public static bool IsXboxPlatform(UnrealTargetPlatform target)
 	{
-		bool XBoxSupported = false;
-		UnrealTargetPlatform XboxXPlatform;
-		UnrealTargetPlatform XboxOnePlatform;
-		XBoxSupported = UnrealTargetPlatform.TryParse("XSX", out XboxXPlatform) || UnrealTargetPlatform.TryParse("XB1", out XboxOnePlatform);
-
-		return XBoxSupported && ((target == XboxXPlatform) || (target == XboxXPlatform));
+		return target.ToString() == "XSX";
 	}
 }
 
@@ -312,6 +302,7 @@ public class CMakeTargetInst
         return "";
     }
 	
+	
 	private string GetCMakeExe()
 	{
 		string program = "cmake";
@@ -355,7 +346,7 @@ public class CMakeTargetInst
 		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
 		
 		string buildToolchain = "";
-		if(PlatformChecks.IsXboxPlatform(target))
+		if(target.Platform.ToString() == "XSX")
 		{
 			buildToolchain = "-DCMAKE_TOOLCHAIN_FILE=" + Path.Combine(m_generatedTargetPath,"toolchains/xbox/gxdk_xs_toolchain.cmake");
 		}
@@ -505,7 +496,7 @@ public class Sentry : ModuleRules
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
 		string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-			
+		
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
