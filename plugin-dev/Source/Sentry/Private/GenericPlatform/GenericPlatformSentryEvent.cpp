@@ -28,6 +28,13 @@ sentry_value_t FGenericPlatformSentryEvent::GetNativeObject()
 	return Event;
 }
 
+TSharedPtr<ISentryId> GetId() const
+{
+	sentry_value_t eventId = sentry_value_get_by_key(Event, "event_id");
+	sentry_uuid_t uuid = sentry_uuid_from_string(sentry_value_as_string(eventId));
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
 void FGenericPlatformSentryEvent::SetMessage(const FString& message)
 {
 	sentry_value_t messageСontainer = sentry_value_new_object();
