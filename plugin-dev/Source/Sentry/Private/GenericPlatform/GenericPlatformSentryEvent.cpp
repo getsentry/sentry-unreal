@@ -34,7 +34,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentryEvent::GetId() const
 {
 	sentry_value_t eventId = sentry_value_get_by_key(Event, "event_id");
 	sentry_uuid_t uuid = sentry_uuid_from_string(sentry_value_as_string(eventId));
-	return MakeShareable(new FGenericPlatformSentryId(id));
+	return MakeShareable(new FGenericPlatformSentryId(uuid));
 }
 
 void FGenericPlatformSentryEvent::SetMessage(const FString& message)
