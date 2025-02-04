@@ -6,6 +6,7 @@
 
 - Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
 - Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- Determine user's IP address automatically on Win/Linux only if PII attachment enabled in settings ([#769](https://github.com/getsentry/sentry-unreal/pull/769))
 
 ### Fixes
 
@@ -263,7 +264,7 @@
 
 - Fix Linux intermediates paths in `FilterPlugin.ini` ([#468](https://github.com/getsentry/sentry-unreal/pull/468))
 - Fix casing for include of HAL/PlatformFileManager for Linux compilation ([#468](https://github.com/getsentry/sentry-unreal/pull/499))
-- The message in events in the `SentryBeforeSendHandler` are no longer missing their message  ([#510](https://github.com/getsentry/sentry-unreal/pull/510))
+- The message in events in the `SentryBeforeSendHandler` are no longer missing their message ([#510](https://github.com/getsentry/sentry-unreal/pull/510))
 
 ### Dependencies
 
@@ -291,8 +292,8 @@
 ### Breaking Changes
 
 - Change `USentrySubsystem` base class to `UEngineSubsystem` in order to capture editor crashes ([#436](https://github.com/getsentry/sentry-unreal/pull/436))\
-    If you make use of plugin's blueprint API, you will need to recreate `Get Sentry Subsystem` nodes\
-    If you make use of plugin's C++ API, you will need to update your implementation by accessing `USentrySubsystem` via `GEngine` pointer
+   If you make use of plugin's blueprint API, you will need to recreate `Get Sentry Subsystem` nodes\
+   If you make use of plugin's C++ API, you will need to update your implementation by accessing `USentrySubsystem` via `GEngine` pointer
 
 ### Fixes
 
@@ -460,7 +461,6 @@
 
 - Fix automatic game log attachment (Android) ([#309](https://github.com/getsentry/sentry-unreal/pull/309))
 
-
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.23.0 to v6.25.0 ([#312](https://github.com/getsentry/sentry-unreal/pull/312), [#316](https://github.com/getsentry/sentry-unreal/pull/316))
@@ -486,6 +486,7 @@
 - Update plugin initialization logic ([#299](https://github.com/getsentry/sentry-unreal/pull/299))
 
 ### Dependencies
+
 - Bump Java SDK (Android) from v6.19.1 to v6.23.0 ([#291](https://github.com/getsentry/sentry-unreal/pull/291), [#293](https://github.com/getsentry/sentry-unreal/pull/293), [#296](https://github.com/getsentry/sentry-unreal/pull/296), [#308](https://github.com/getsentry/sentry-unreal/pull/308))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6230)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.19.1...6.23.0)
