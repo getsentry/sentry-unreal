@@ -196,6 +196,10 @@ struct FEnableBuildPlatforms
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Mac", ToolTip = "Flag indicating whether event capturing should be enabled for the Mac platform type."))
 	bool bEnableMac = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "XSX", ToolTip = "Flag indicating whether event capturing should be enabled for the Xbox Series X|S platform type."))
+	bool bEnableXSX = true;
 };
 
 /**

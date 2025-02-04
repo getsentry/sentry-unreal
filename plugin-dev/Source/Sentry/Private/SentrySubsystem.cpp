@@ -675,6 +675,8 @@ bool USentrySubsystem::IsCurrentPlatformEnabled()
 	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableAndroid;
 #elif PLATFORM_MAC
 	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableMac;
+#elif PLATFORM_XSX
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableXSX;
 #endif
 
 	return IsBuildPlatformEnabled;

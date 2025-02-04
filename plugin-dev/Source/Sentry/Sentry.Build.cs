@@ -175,7 +175,15 @@ public class Sentry : ModuleRules
 		// Additional routine for Xbox
 		if (Target.Platform == UnrealTargetPlatform.XSX)
 		{
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Xbox"));
 
+			PublicDependencyModuleNames.Add("WinHttp");
+
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "sentry.lib"));
+			RuntimeDependencies.Add(Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dll"));
+
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		}
 	}
 }

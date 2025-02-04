@@ -137,7 +137,7 @@ function buildSentryNativeXbox()
 {
     Push-Location -Path "$modulesDir/sentry-native"
 
-    cmake -B "build" -G "Visual Studio 17 2022" -A "Gaming.Xbox.Scarlett.x64" -DXdkEditionTarget="240602" -DCMAKE_TOOLCHAIN_FILE="./toolchains/xbox/gxdk_xs_toolchain.cmake" -D SENTRY_SDK_NAME=sentry.native.unreal
+    cmake -B "build" -G "Visual Studio 17 2022" -A "Gaming.Xbox.Scarlett.x64" -DXdkEditionTarget="240602" -DCMAKE_TOOLCHAIN_FILE="./toolchains/xbox/gxdk_xs_toolchain.cmake" -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BACKEND=breakpad
     cmake --build build --config RelWithDebInfo
     cmake --install build --prefix install --config RelWithDebInfo
 
