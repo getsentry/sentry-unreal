@@ -9,9 +9,7 @@ public class SentryIOS : ModuleRules
 		Type = ModuleType.External;
 		
 		string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-		
-		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Apple"));
-			
+					
 		AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
 		PublicDefinitions.Add("COCOAPODS=0");

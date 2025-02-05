@@ -9,8 +9,6 @@ public class SentryAndroid : ModuleRules
 		Type = ModuleType.External;
 		
 		string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-		
-		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Android"));
 			
 		AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "Sentry_Android_UPL.xml"));
 	}

@@ -7,9 +7,7 @@ public class SentryLinux : ModuleRules
 	public SentryLinux(ReadOnlyTargetRules Target) : base(Target)
 	{
 		Type = ModuleType.External;
-		
-		PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
-		PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
+		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
@@ -27,5 +25,8 @@ public class SentryLinux : ModuleRules
 		PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_util.a"));
 		PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libmini_chromium.a"));
 		PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
+
+		PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+		PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 	}
 }

@@ -45,14 +45,17 @@ public class Sentry : ModuleRules
 		
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 			PrivateDependencyModuleNames.Add("SentryIOS");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Android"));
 			PrivateDependencyModuleNames.Add("SentryAndroid");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Microsoft"));
 			PrivateDependencyModuleNames.Add("SentryWindows");
 		}
 #if UE_5_0_OR_LATER
@@ -69,10 +72,12 @@ public class Sentry : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 			PrivateDependencyModuleNames.Add("SentryMac");
 		}
 		else if (Target.Platform.ToString() == "XSX")
 		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Microsoft"));
 			PrivateDependencyModuleNames.Add("SentryXbox");
 		}
 		else
