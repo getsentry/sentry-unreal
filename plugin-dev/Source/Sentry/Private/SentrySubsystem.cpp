@@ -712,7 +712,7 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 			// Shut things down before exiting to ensure all the outgoing events are sent to Sentry
 			Close();
 
-			FPlatformMisc::RequestExit( true);
+			FPlatformMisc::RequestExit(true, TEXT("USentrySubsystem::OutputDeviceError->OnAssert"));
 		});
 
 		GError = OutputDeviceError.Get();
