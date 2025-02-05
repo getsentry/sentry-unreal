@@ -10,8 +10,6 @@ public class SentryLinux : ModuleRules
 		
 		PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
-
-		AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
 		
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
