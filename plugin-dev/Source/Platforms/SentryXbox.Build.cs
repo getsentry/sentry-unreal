@@ -6,7 +6,9 @@ public class SentryXbox : ModuleRules
 {
 	public SentryXbox(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "../", "Sentry", "Private", "Desktop"));
+		Type = ModuleType.External;
+		
+		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Desktop"));
 			
 		PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");

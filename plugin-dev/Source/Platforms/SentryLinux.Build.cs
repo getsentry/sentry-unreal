@@ -6,6 +6,8 @@ public class SentryLinux : ModuleRules
 {
 	public SentryLinux(ReadOnlyTargetRules Target) : base(Target)
 	{
+		Type = ModuleType.External;
+		
 		PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 
@@ -15,7 +17,7 @@ public class SentryLinux : ModuleRules
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
 
 		PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "../", "Sentry", "Private", "Desktop"));
+		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Desktop"));
 
 		RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 

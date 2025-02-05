@@ -6,15 +6,14 @@ public class SentryWindows : ModuleRules
 {
 	public SentryWindows(ReadOnlyTargetRules Target) : base(Target)
 	{
-		string path = Path.Combine(ModuleDirectory, "../", "Sentry", "Private", "Desktop");
-		Console.WriteLine("\n SenLog: " + path);
-		PrivateIncludePaths.Add(path);
+		Type = ModuleType.External;
+		
+		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Desktop"));
 			
 		PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 		PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		
-		var cmakeTargetPath = Path.GetFullPath(Target.ProjectFile.FullName);
-		var targetLocation = Directory.GetParent(cmakeTargetPath).FullName + "/Plugins/sentry/sentry-native";
+		var targetLocation = Path.Combine(PluginDirectory, "sentry-native");
 
 		CMakeTargetInst cmakeTarget =
 			new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");

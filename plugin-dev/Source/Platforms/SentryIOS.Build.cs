@@ -6,9 +6,11 @@ public class SentryIOS : ModuleRules
 {
 	public SentryIOS(ReadOnlyTargetRules Target) : base(Target)
 	{
+		Type = ModuleType.External;
+		
 		string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 		
-		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "../", "Sentry", "Private", "Apple"));
+		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Apple"));
 			
 		AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
