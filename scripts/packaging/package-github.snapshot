@@ -3373,13 +3373,6 @@ sentry-native/vendor/stb_sprintf.c
 sentry-native/vendor/stb_sprintf.h
 Sentry.uplugin
 Source/
-Source/Platforms/
-Source/Platforms/SentryAndroid.Build.cs
-Source/Platforms/SentryIOS.Build.cs
-Source/Platforms/SentryLinux.Build.cs
-Source/Platforms/SentryMac.Build.cs
-Source/Platforms/SentryWindows.Build.cs
-Source/Platforms/SentryXbox.Build.cs
 Source/Sentry/
 Source/Sentry/Private/
 Source/Sentry/Private/Android/
