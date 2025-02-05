@@ -62,6 +62,9 @@ public class Sentry : ModuleRules
 #endif
 		{
 			AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
+	
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Linux"));
+
 			PrivateDependencyModuleNames.Add("SentryLinux");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
