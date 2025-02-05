@@ -112,7 +112,7 @@ void USentrySubsystem::Initialize()
 
 	AddDefaultContext();
 
-#if PLATFORM_WINDOWS || PLATFORM_LINUX || PLATFORM_MAC
+#if PLATFORM_WINDOWS || PLATFORM_LINUX || PLATFORM_MAC || PLATFORM_XSX
 	AddGpuContext();
 	AddDeviceContext();
 #endif
