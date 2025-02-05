@@ -17,7 +17,7 @@ public class SentryLinux : ModuleRules
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
 
 		PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
-		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Desktop"));
+		PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Linux"));
 
 		RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
 

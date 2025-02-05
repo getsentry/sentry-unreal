@@ -3,6 +3,7 @@
 #pragma once
 
 #include "SentryDataTypes.h"
+#include "SentryImplWrapper.h"
 
 #include "SentryEvent.generated.h"
 
@@ -12,21 +13,19 @@ class ISentryEvent;
  * Data being sent to Sentry.
  */
 UCLASS(BlueprintType)
-class SENTRY_API USentryEvent : public UObject
+class SENTRY_API USentryEvent : public UObject, public TSentryImplWrapper<ISentryEvent, USentryEvent>
 {
 	GENERATED_BODY()
 
 public:
-	USentryEvent();
-
 	/**
-	 * Creates the event with specified message and level.
-	 *
-	 * @param Message Message to sent.
+	 * Initializes the event with the specified message and level.
+	 * 
+	 * @param Message Message to be sent.
 	 * @param Level Level of the event.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static USentryEvent* CreateEventWithMessageAndLevel(const FString& Message, ESentryLevel Level);
+	void Initialize(const FString& Message, ESentryLevel Level);
 
 	/** Sets message of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -51,10 +50,4 @@ public:
 	/** Gets flag indicating whether the event is an Application Not Responding (ANR) error. */
 	UFUNCTION(BlueprintPure, Category = "Sentry", meta=(DisplayName="Is App Not Responding"))
 	bool IsAnr() const;
-
-	void InitWithNativeImpl(TSharedPtr<ISentryEvent> eventImpl);
-	TSharedPtr<ISentryEvent> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentryEvent> EventNativeImpl;
 };

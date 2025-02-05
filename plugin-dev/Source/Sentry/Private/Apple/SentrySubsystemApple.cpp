@@ -62,8 +62,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				FGCScopeGuard GCScopeGuard;
-				USentryEvent* EventToProcess = NewObject<USentryEvent>();
-				EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventApple(event)));
+				USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventApple(event)));
 				return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
@@ -83,8 +82,7 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			{
 				options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
 					FGCScopeGuard GCScopeGuard;
-					USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
-					Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextApple(samplingContext)));
+					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new SentrySamplingContextApple(samplingContext)));
 					float samplingValue;
 					return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
 				};

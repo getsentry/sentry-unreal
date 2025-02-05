@@ -3,36 +3,17 @@
 #include "SentryHint.h"
 
 #include "SentryAttachment.h"
-#include "Interface/SentryHintInterface.h"
+#include "HAL/PlatformSentryHint.h"
 
-#if PLATFORM_ANDROID
-#include "Android/SentryHintAndroid.h"
-#endif
-
-USentryHint::USentryHint()
+void USentryHint::Initialize()
 {
-	if (USentryHint::StaticClass()->GetDefaultObject() != this)
-	{
-#if PLATFORM_ANDROID
-		SentryHintNativeImpl = MakeShareable(new SentryHintAndroid());
-#endif
-	}
+	NativeImpl = CreateSharedSentryHint();
 }
 
 void USentryHint::AddAttachment(USentryAttachment* Attachment)
 {
-	if(!SentryHintNativeImpl)
+	if(!NativeImpl)
 		return;
 
-	SentryHintNativeImpl->AddAttachment(Attachment->GetNativeImpl());
-}
-
-void USentryHint::InitWithNativeImpl(TSharedPtr<ISentryHint> hintImpl)
-{
-	SentryHintNativeImpl = hintImpl;
-}
-
-TSharedPtr<ISentryHint> USentryHint::GetNativeImpl()
-{
-	return SentryHintNativeImpl;
+	NativeImpl->AddAttachment(Attachment->GetNativeObject());
 }

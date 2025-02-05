@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "SentryImplWrapper.h"
+
 #include "SentryAttachment.generated.h"
 
 class ISentryAttachment;
@@ -12,13 +14,13 @@ class ISentryAttachment;
  * Additional file to store alongside an event or transaction.
  */
 UCLASS(BlueprintType)
-class SENTRY_API USentryAttachment : public UObject
+class SENTRY_API USentryAttachment : public UObject, public TSentryImplWrapper<ISentryAttachment, USentryAttachment>
 {
 	GENERATED_BODY()
 
 public:
-
-	/** Initializes an attachment with bytes and a filename.
+	/** 
+	 * Initializes an attachment with bytes and a filename.
 	 *
 	 * @param Data The data for the attachment.
 	 * @param Filename The name of the attachment to display in Sentry.
@@ -27,7 +29,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void InitializeWithData(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType = FString(TEXT("application/octet-stream")));
 
-	/** Initializes an attachment with a path and a filename.
+	/**
+	 * Initializes an attachment with a path and a filename.
 	 *
 	 * @param Path The path string of the file to upload as an attachment.
 	 * @param Filename The name of the attachment to display in Sentry.
@@ -51,10 +54,4 @@ public:
 	/** Gets the content type of the attachment. Default is "application/octet-stream". */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetContentType() const;
-
-	void InitWithNativeImpl(TSharedPtr<ISentryAttachment> attachmentImpl);
-	TSharedPtr<ISentryAttachment> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentryAttachment> AttachmentNativeImpl;
 };

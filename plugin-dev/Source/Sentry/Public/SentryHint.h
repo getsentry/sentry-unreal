@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "SentryImplWrapper.h"
+
 #include "SentryHint.generated.h"
 
 class ISentryHint;
@@ -11,20 +13,16 @@ class USentryAttachment;
  * Hint associated with the event.
  */
 UCLASS(BlueprintType)
-class SENTRY_API USentryHint : public UObject
+class SENTRY_API USentryHint : public UObject, public TSentryImplWrapper<ISentryHint, USentryHint>
 {
 	GENERATED_BODY()
 
 public:
-	USentryHint();
+	/** Initializes the hint. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void Initialize();
 
 	/** Adds attachment to event hint. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void AddAttachment(USentryAttachment* Attachment);
-
-	void InitWithNativeImpl(TSharedPtr<ISentryHint> hintImpl);
-	TSharedPtr<ISentryHint> GetNativeImpl();
-
-private:
-	TSharedPtr<ISentryHint> SentryHintNativeImpl;
 };

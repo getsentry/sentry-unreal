@@ -3,81 +3,60 @@
 #include "SentryUserFeedback.h"
 #include "SentryId.h"
 
-#include "Interface/SentryUserFeedbackInterface.h"
-
-#if PLATFORM_ANDROID
-#include "Android/SentryUserFeedbackAndroid.h"
-#elif PLATFORM_IOS || PLATFORM_MAC
-#include "Apple/SentryUserFeedbackApple.h"
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
-#include "Desktop/SentryUserFeedbackDesktop.h"
-#endif
+#include "HAL/PlatformSentryUserFeedback.h"
 
 void USentryUserFeedback::Initialize(USentryId* EventId)
 {
-#if PLATFORM_ANDROID
-	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackAndroid(EventId->GetNativeImpl()));
-#elif PLATFORM_IOS || PLATFORM_MAC
-	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackApple(EventId->GetNativeImpl()));
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
-	UserFeedbackNativeImpl = MakeShareable(new SentryUserFeedbackDesktop(EventId->GetNativeImpl()));
-#endif
+	if (ensure(IsValid(EventId)))
+	{
+		NativeImpl = CreateSharedSentryUserFeedback(EventId->GetNativeObject());
+	}
 }
 
 void USentryUserFeedback::SetName(const FString& Name)
 {
-	if (!UserFeedbackNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserFeedbackNativeImpl->SetName(Name);
+	NativeImpl->SetName(Name);
 }
 
 FString USentryUserFeedback::GetName() const
 {
-	if(!UserFeedbackNativeImpl)
+	if(!NativeImpl)
 		return FString();
 
-	return UserFeedbackNativeImpl->GetName();
+	return NativeImpl->GetName();
 }
 
 void USentryUserFeedback::SetEmail(const FString& Email)
 {
-	if (!UserFeedbackNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserFeedbackNativeImpl->SetEmail(Email);
+	NativeImpl->SetEmail(Email);
 }
 
 FString USentryUserFeedback::GetEmail() const
 {
-	if(!UserFeedbackNativeImpl)
+	if(!NativeImpl)
 		return FString();
 
-	return UserFeedbackNativeImpl->GetEmail();
+	return NativeImpl->GetEmail();
 }
 
 void USentryUserFeedback::SetComment(const FString& Comments)
 {
-	if (!UserFeedbackNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserFeedbackNativeImpl->SetComment(Comments);
+	NativeImpl->SetComment(Comments);
 }
 
 FString USentryUserFeedback::GetComment() const
 {
-	if (!UserFeedbackNativeImpl)
+	if (!NativeImpl)
 		return FString();
 
-	return UserFeedbackNativeImpl->GetComment();
-}
-
-void USentryUserFeedback::InitWithNativeImpl(TSharedPtr<ISentryUserFeedback> userFeedbackImpl)
-{
-	UserFeedbackNativeImpl = userFeedbackImpl;
-}
-
-TSharedPtr<ISentryUserFeedback> USentryUserFeedback::GetNativeImpl()
-{
-	return UserFeedbackNativeImpl;
+	return NativeImpl->GetComment();
 }
