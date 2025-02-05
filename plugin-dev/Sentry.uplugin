@@ -19,7 +19,7 @@
 			"Name": "Sentry",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64", "XSX" ]
 		},
 		{
 			"Name": "SentryEditor",
