@@ -38,12 +38,6 @@ jobs:
             ${{ steps.env.outputs.path }}
           key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', '.github/workflows/native-sdk-download.yml') }}
 
-      - name: Download
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p '${{ steps.env.outputs.path }}'
-          ${{ steps.env.outputs.downloadScript }} '${{ steps.env.outputs.cacheLocation }}' '${{ steps.env.outputs.path }}'
-
       - uses: actions/upload-artifact@v4
         if: steps.cache.outputs.cache-hit != 'true'
         with:
