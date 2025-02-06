@@ -1,7 +1,13 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-using System.IO;
 using UnrealBuildTool;
+using System;
+using System.IO;
+using System.Reflection;
+using System.Diagnostics;
+using System.Text;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 #if UE_5_0_OR_LATER
 using EpicGames.Core;
@@ -11,23 +17,12 @@ using Tools.DotNETCommon;
 
 public class Sentry : ModuleRules
 {
+	[CommandLine("-buildNativeForWindows")]
+	public bool bBuildNativeForWindows = false;
+	
 	public Sentry(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-
-		PublicIncludePaths.AddRange(
-			new string[]
-			{
-				// ... add public include paths required here ...
-			}
-		);
-
-		PrivateIncludePaths.AddRange(
-			new string[]
-			{
-				// ... add other private include paths required here ...
-			}
-		);
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]
@@ -50,18 +45,10 @@ public class Sentry : ModuleRules
 				// ... add private dependencies that you statically link with here ...	
 			}
 		);
-
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[]
-			{
-				// ... add any modules that your module loads dynamically here ...
-			}
-		);
-
+		
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
-
-		// Additional routine for iOS
+		
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
@@ -78,9 +65,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 		}
-
-		// Additional routine for Android
-		if (Target.Platform == UnrealTargetPlatform.Android)
+		else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Android"));
 
@@ -91,50 +76,55 @@ public class Sentry : ModuleRules
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 		}
-
-		// Additional routine for Windows
-		if (Target.Platform == UnrealTargetPlatform.Win64)
+		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			bool CrashpadExists = File.Exists(Path.Combine(PlatformThirdPartyPath, "Crashpad", "bin", "crashpad_handler.exe"));
+			PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Microsoft"));
+			
+			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 
-			string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
-
-			PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Windows"));
-
-			PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
-
-			if (CrashpadExists)
+			if (bBuildNativeForWindows)
 			{
-				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(WindowsThirdPartyPath, "bin", "crashpad_handler.exe"));
-
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_compat.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_snapshot.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_util.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "mini_chromium.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_client.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_zlib.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_getopt.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_tools.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_handler_lib.lib"));
+				PrivateDependencyModuleNames.Add("SentryNative");
 			}
 			else
 			{
-				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "breakpad_client.lib"));
+				bool CrashpadExists = File.Exists(Path.Combine(PlatformThirdPartyPath, "Crashpad", "bin", "crashpad_handler.exe"));
+
+				string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
+
+				PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
+				PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Windows"));
+
+				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
+
+				if (CrashpadExists)
+				{
+					RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(WindowsThirdPartyPath, "bin", "crashpad_handler.exe"));
+
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_compat.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_snapshot.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_util.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "mini_chromium.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_client.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_zlib.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_getopt.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_tools.lib"));
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_handler_lib.lib"));
+				}
+				else
+				{
+					PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "breakpad_client.lib"));
+				}
 			}
 
 			PublicSystemLibraries.Add("winhttp.lib");
 			PublicSystemLibraries.Add("version.lib");
-
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
-			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
-
-		// Additional routine for Linux
 #if UE_5_0_OR_LATER
-		if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
+		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
 #else
-		if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
+		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64)
 #endif
 		{
 			AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
@@ -157,9 +147,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
 		}
-
-		// Additional routine for Mac
-		if (Target.Platform == UnrealTargetPlatform.Mac)
+		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
@@ -170,6 +158,14 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
+		}
+		else if (Target.Platform.ToString() == "XSX")
+		{
+			PrivateDependencyModuleNames.Add("SentryNative");
+		}
+		else
+		{
+			Console.WriteLine("Sentry Unreal SDK does not support platform: " + Target.Platform);
 		}
 	}
 }
