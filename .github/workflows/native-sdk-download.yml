@@ -22,7 +22,7 @@ jobs:
         id: env
         run: |
           if [[ "${{ inputs.target }}" == "Native" ]]; then
-            submodule="plugin-dev/sentry-native"
+            submodule="modules/sentry-native"
           fi
           echo "submodule=$submodule" >> $GITHUB_OUTPUT
           echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
