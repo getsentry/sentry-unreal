@@ -9,7 +9,7 @@
 Sentry SDK for Unreal Engine
 ===========
 
-This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for desktopm mobile, and console. Also, it [has a stable support for the Unreal Engine Crash Reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
+This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for desktop, mobile, and console. Also, it [has stable support for the Unreal Engine Crash Reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
 
 ## Downloads
 
@@ -42,6 +42,7 @@ Blog posts:
 
 - On all platforms, captured crashes are uploaded to Sentry only after relaunching the crashed app since the in-process handler cannot do this within the same session. The only exceptions are Windows (if using the GitHub package) and Linux for which the out-of-process `crashpad` handler is used and crashes are uploaded immediately.
 - Xbox Series X|S is configured with `breakpad` (in-process crash handling) instead of `crashpad` due to the nature of Xbox packaged builds.
+- Automatic crash handling and crash dump writing on Xbox Series X|S will require Engine code modifications that replicate Structured Exception Handling (SEH) changes made to Windows (until Epic upstreams the proposal).
 - To automatically capture crashes in Windows game builds that were made using engine versions prior to UE 5.2, the [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/) first.
 - Using Unreal Game Sync (UGS) binaries requires tagging of files to ensure the `crashpad_handler.exe` is present. For inclusion in BuildGraph, you'd want something like this:
 
