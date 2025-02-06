@@ -3149,6 +3149,7 @@ sentry-native/src/sentry_random.c
 sentry-native/src/sentry_random.h
 sentry-native/src/sentry_ratelimiter.c
 sentry-native/src/sentry_ratelimiter.h
+sentry-native/src/sentry_sampling_context.h
 sentry-native/src/sentry_scope.c
 sentry-native/src/sentry_scope.h
 sentry-native/src/sentry_session.c
@@ -3362,6 +3363,15 @@ sentry-native/tests/win_utils.py
 sentry-native/toolchains/
 sentry-native/toolchains/msys2-mingw64-pkglist.txt
 sentry-native/toolchains/msys2.cmake
+sentry-native/toolchains/xbox/
+sentry-native/toolchains/xbox/CMakeGDKScarlett.cmake
+sentry-native/toolchains/xbox/DetectGDK.cmake
+sentry-native/toolchains/xbox/DetectWindowsSDK.cmake
+sentry-native/toolchains/xbox/gdk_build.props
+sentry-native/toolchains/xbox/gdk_build.props.md
+sentry-native/toolchains/xbox/GDK-targets.cmake
+sentry-native/toolchains/xbox/gxdk_xs_toolchain.cmake
+sentry-native/toolchains/xbox/xbox_build.md
 sentry-native/vendor/
 sentry-native/vendor/acutest.h
 sentry-native/vendor/jsmn.h
