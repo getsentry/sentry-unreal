@@ -18,7 +18,7 @@ using Tools.DotNETCommon;
 public class Sentry : ModuleRules
 {
 	[CommandLine("-buildNativeForWindows")]
-	public bool bBuildNativeForWindows = true;
+	public bool bBuildNativeForWindows = false;
 	
 	public Sentry(ReadOnlyTargetRules Target) : base(Target)
 	{
