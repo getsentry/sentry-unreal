@@ -1,0 +1,52 @@
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+
+jobs:
+  download:
+    runs-on: ${{ inputs.runsOn }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select submodule
+        id: env
+        run: |
+          if [[ "${{ inputs.target }}" == "Native" ]]; then
+            submodule="plugin-dev/sentry-native"
+          fi
+          echo "submodule=$submodule" >> $GITHUB_OUTPUT
+          echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
+
+      - name: Get submodule status
+        run: |          
+          git submodule status --cached ${{ steps.env.outputs.submodule }} | tee submodule-status
+
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            ${{ steps.env.outputs.path }}
+          key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', '.github/workflows/native-sdk-download.yml') }}
+
+      - name: Download
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p '${{ steps.env.outputs.path }}'
+          ${{ steps.env.outputs.downloadScript }} '${{ steps.env.outputs.cacheLocation }}' '${{ steps.env.outputs.path }}'
+
+      - uses: actions/upload-artifact@v4
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          name: ${{ inputs.target }}-sdk
+          path: ${{ steps.env.outputs.submodule }}
+          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}

@@ -2,6 +2,6 @@
 path = modules/sentry-java
 url = https://github.com/getsentry/sentry-java.git
 
-[submodule "plugin-dev/sentry-native"]
-path = plugin-dev/sentry-native
+[submodule "modules/sentry-native"]
+path = modules/sentry-native
 url = https://github.com/getsentry/sentry-native.git
