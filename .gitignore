@@ -36,7 +36,6 @@ plugin-dev/Source/ThirdParty/Win64
 plugin-dev/Source/ThirdParty/Native/*
 !plugin-dev/Source/ThirdParty/Native/.gitkeep
 !plugin-dev/Source/ThirdParty/Native/SentryNative.Build.cs
-!plugin-dev/Source/ThirdParty/Native/SentryCMake.Build.cs
 plugin-dev/Source/ThirdParty/CLI/*
 !plugin-dev/Source/ThirdParty/.gitkeep
 !plugin-dev/Source/ThirdParty/CLI/.gitkeep
