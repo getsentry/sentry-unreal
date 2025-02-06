@@ -39,7 +39,6 @@ jobs:
           key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', '.github/workflows/native-sdk-download.yml') }}
 
       - uses: actions/upload-artifact@v4
-        if: steps.cache.outputs.cache-hit != 'true'
         with:
           name: ${{ inputs.target }}-sdk
           path: ${{ steps.env.outputs.submodule }}
