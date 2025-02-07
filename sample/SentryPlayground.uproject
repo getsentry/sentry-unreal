@@ -42,6 +42,7 @@
 		"Linux",
 		"Windows",
 		"Mac",
-		"LinuxArm64"
+		"LinuxArm64",
+		"XSX"
 	]
 }

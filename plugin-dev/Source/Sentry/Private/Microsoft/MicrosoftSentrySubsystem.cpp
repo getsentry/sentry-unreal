@@ -6,6 +6,7 @@
 
 #include "SentryDefines.h"
 #include "SentryModule.h"
+#include "SentrySettings.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 
 void FMicrosoftSentrySubsystem::InitWithSettings(
