@@ -47,7 +47,6 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, U
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), SentryConvertersAndroid::StrinArrayToJsonArray(settings->InAppExclude));
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
-	SettingsJson->SetBoolField(TEXT("enableTracing"), settings->EnableTracing);
 	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);
