@@ -89,6 +89,7 @@ private:
 	bool isEnabled;
 
 	bool isStackTraceEnabled;
+	bool isPiiAttachmentEnabled;
 	bool isScreenshotAttachmentEnabled;
 
 	FCriticalSection CriticalSection;
