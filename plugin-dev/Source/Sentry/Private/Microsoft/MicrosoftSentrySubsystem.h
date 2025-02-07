@@ -8,6 +8,12 @@
 
 class FMicrosoftSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
+public:
+	virtual void InitWithSettings(
+		const USentrySettings* Settings,
+		USentryBeforeSendHandler* BeforeSendHandler,
+		USentryTraceSampler* TraceSampler
+	) override;
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) override;

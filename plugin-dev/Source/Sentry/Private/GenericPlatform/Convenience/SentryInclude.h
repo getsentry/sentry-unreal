@@ -4,9 +4,9 @@
 
 #include "HAL/Platform.h"
 
-#if PLATFORM_WINDOWS
+#if PLATFORM_MICROSOFT
 #include "Microsoft/WindowsHWrapper.h"
-#endif // PLATFORM_WINDOWS
+#endif // PLATFORM_MICROSOFT
 
 #if USE_SENTRY_NATIVE
 #include "sentry.h"

@@ -554,7 +554,7 @@ public class SentryNative : ModuleRules
 		}
 		else if (Target.Platform.ToString() == "XSX")
 		{
-			PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Microsoft"));
+			PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Xbox"));
 			
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");

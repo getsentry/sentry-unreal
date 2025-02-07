@@ -196,6 +196,10 @@ struct FEnableBuildPlatforms
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Mac", ToolTip = "Flag indicating whether event capturing should be enabled for the Mac platform type."))
 	bool bEnableMac = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+	Meta = (DisplayName = "XSX", ToolTip = "Flag indicating whether event capturing should be enabled for the Xbox Series X|S platform type."))
+	bool bEnableXSX = true;
 };
 
 /**
@@ -286,8 +290,8 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Custom `beforeSend` event handler", ToolTip = "Custom handler for processing events before sending them to Sentry."))
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Windows",
-		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Override default crash capturing mechanism (for Windows/Xbox only) (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows and Xbox Series X|S as an alternative to Crash Reporter."))
 	bool EnableAutoCrashCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",

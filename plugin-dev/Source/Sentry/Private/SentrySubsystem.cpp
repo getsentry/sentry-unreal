@@ -112,7 +112,7 @@ void USentrySubsystem::Initialize()
 
 	AddDefaultContext();
 
-#if PLATFORM_WINDOWS || PLATFORM_LINUX || PLATFORM_MAC
+#if PLATFORM_MICROSOFT || PLATFORM_LINUX || PLATFORM_MAC
 	AddGpuContext();
 	AddDeviceContext();
 #endif
@@ -675,6 +675,8 @@ bool USentrySubsystem::IsCurrentPlatformEnabled()
 	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableAndroid;
 #elif PLATFORM_MAC
 	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableMac;
+#elif PLATFORM_MICROSOFT // If we fail the windows check but are still Microsoft assume Xbox
+	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableXSX;
 #endif
 
 	return IsBuildPlatformEnabled;
