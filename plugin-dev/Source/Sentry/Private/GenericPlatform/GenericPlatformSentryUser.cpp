@@ -9,9 +9,6 @@
 FGenericPlatformSentryUser::FGenericPlatformSentryUser()
 {
 	User = sentry_value_new_object();
-
-	// Due to backwards compatibility concerns it is more reliable to initialize IP address explicitly with a specific value or "{{auto}}"
-	sentry_value_set_by_key(User, "ip_address", sentry_value_new_string("{{auto}}"));
 }
 
 FGenericPlatformSentryUser::FGenericPlatformSentryUser(sentry_value_t user)
@@ -70,7 +67,7 @@ void FGenericPlatformSentryUser::SetIpAddress(const FString& ipAddress)
 	}
 	else
 	{
-		sentry_value_set_by_key(User, "ip_address", sentry_value_new_string("{{auto}}"));
+		sentry_value_set_by_key(User, "ip_address", sentry_value_new_null());
 	}
 }
 
