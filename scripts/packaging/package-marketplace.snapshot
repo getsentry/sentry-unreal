@@ -201,6 +201,8 @@ Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.cpp
 Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.h
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.cpp
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.h
+Source/Sentry/Private/Xbox/
+Source/Sentry/Private/Xbox/XboxSentrySubsystem.h
 Source/Sentry/Public/
 Source/Sentry/Public/SentryAttachment.h
 Source/Sentry/Public/SentryBeforeSendHandler.h
