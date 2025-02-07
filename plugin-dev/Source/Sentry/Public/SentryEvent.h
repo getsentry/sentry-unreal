@@ -7,6 +7,7 @@
 
 #include "SentryEvent.generated.h"
 
+class USentryId;
 class ISentryEvent;
 
 /**
@@ -26,6 +27,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Initialize(const FString& Message, ESentryLevel Level);
+
+	/** Gets id of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	USentryId* GetId() const;
 
 	/** Sets message of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
