@@ -7,6 +7,7 @@
 - Build the plugin through the Unreal Engine build system ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
 - Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
 - Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- Xbox Series S/X support ([#775](https://github.com/getsentry/sentry-unreal/pull/775))
 
 ### Fixes
 
