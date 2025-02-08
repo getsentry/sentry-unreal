@@ -72,9 +72,9 @@ function packFiles([string] $publishingPlatform)
         # Workaround for Compress-Archive discarding file permissions
         # ======
         # Use of [System.IO.Compression.ZipFile]::CreateFromDirectory instead of Compress-Archive (or a third-party tool)
-        # requires that we add this assembly prior to zip calls
+        # so that we retain file permissions
         # For more information, see https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/36
-        # This requires .NET 6: https://github.com/dotnet/runtime/issues/1548
+        # NOTE: This requires .NET 6+: https://github.com/dotnet/runtime/issues/1548
         Push-Location package-release-$publishingPlatform
         try
         {
