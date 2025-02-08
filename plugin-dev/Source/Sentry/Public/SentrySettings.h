@@ -172,32 +172,6 @@ struct FEnableBuildTargets
 	bool bEnableProgram = true;
 };
 
-USTRUCT(BlueprintType)
-struct FEnableBuildPlatforms
-{
-	GENERATED_BODY()
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Linux", ToolTip = "Flag indicating whether event capturing should be enabled for the Linux platform type."))
-	bool bEnableLinux = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Windows", ToolTip = "Flag indicating whether event capturing should be enabled for the Windows platform type."))
-	bool bEnableWindows = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "IOS", ToolTip = "Flag indicating whether event capturing should be enabled for the IOS platform type."))
-	bool bEnableIOS = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Android", ToolTip = "Flag indicating whether event capturing should be enabled for the Android platform type."))
-	bool bEnableAndroid = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Mac", ToolTip = "Flag indicating whether event capturing should be enabled for the Mac platform type."))
-	bool bEnableMac = true;
-};
-
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -337,8 +311,12 @@ class SENTRY_API USentrySettings : public UObject
 	FEnableBuildTargets EnableBuildTargets;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
-		Meta = (DisplayName = "Enable for Build Platform Types"))
-	FEnableBuildPlatforms EnableBuildPlatforms;
+		Meta = (DisplayName = "Enable for a subset of target platform types (e.g. Win64, Linux etc.)", EditCondition = "!bEnableForAllTargetPlatforms"))
+	TArray<FString> EnableTargetPlatforms;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
+		Meta = (DisplayName = "Enable for all supported target platform types"))
+	bool bEnableForAllTargetPlatforms;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Misc",
 		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))

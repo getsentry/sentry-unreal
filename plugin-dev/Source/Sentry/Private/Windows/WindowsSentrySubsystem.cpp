@@ -3,24 +3,9 @@
 #if USE_SENTRY_NATIVE
 
 #include "SentryDefines.h"
-#include "SentrySettings.h"
 
 #include "Windows/WindowsPlatformStackWalk.h"
 #include "Windows/Infrastructure/WindowsSentryConverters.h"
-
-void FWindowsSentrySubsystem::InitWithSettings(
-	const USentrySettings* Settings,
-	USentryBeforeSendHandler* BeforeSendHandler,
-	USentryTraceSampler* TraceSampler)
-{
-	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
-
-#if !UE_VERSION_OLDER_THAN(5, 2, 0)
-	FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing
-		? ECrashHandlingType::Disabled
-		: ECrashHandlingType::Default);
-#endif // !UE_VERSION_OLDER_THAN(5, 2, 0)
-}
 
 void FWindowsSentrySubsystem::ConfigureGpuDumpAttachment(sentry_options_t *Options)
 {

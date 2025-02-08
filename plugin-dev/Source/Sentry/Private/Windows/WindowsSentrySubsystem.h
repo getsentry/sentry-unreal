@@ -6,13 +6,6 @@
 
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
-public:
-	virtual void InitWithSettings(
-		const USentrySettings* Settings,
-		USentryBeforeSendHandler* BeforeSendHandler,
-		USentryTraceSampler* TraceSampler
-	) override;
-
 protected:
 	virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) override;
 	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler.exe"); }
