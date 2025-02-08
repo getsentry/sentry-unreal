@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentrySubsystemAndroid.h"
+#include "AndroidSentrySubsystem.h"
 
 #include "SentryEventAndroid.h"
 #include "SentryBreadcrumbAndroid.h"
@@ -28,7 +28,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 
-void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
+void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
@@ -68,17 +68,17 @@ void SentrySubsystemAndroid::InitWithSettings(const USentrySettings* settings, U
 		(jlong)beforeSendHandler);
 }
 
-void SentrySubsystemAndroid::Close()
+void FAndroidSentrySubsystem::Close()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "close", "()V");
 }
 
-bool SentrySubsystemAndroid::IsEnabled()
+bool FAndroidSentrySubsystem::IsEnabled()
 {
 	return FSentryJavaObjectWrapper::CallStaticMethod<bool>(SentryJavaClasses::Sentry, "isEnabled", "()Z");
 }
 
-ESentryCrashedLastRun SentrySubsystemAndroid::IsCrashedLastRun()
+ESentryCrashedLastRun FAndroidSentrySubsystem::IsCrashedLastRun()
 {
 	ESentryCrashedLastRun unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
 
@@ -100,7 +100,7 @@ ESentryCrashedLastRun SentrySubsystemAndroid::IsCrashedLastRun()
 	return unrealIsCrashed;
 }
 
-void SentrySubsystemAndroid::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
+void FAndroidSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
 	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = StaticCastSharedPtr<SentryBreadcrumbAndroid>(breadcrumb);
 
@@ -108,7 +108,7 @@ void SentrySubsystemAndroid::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcr
 		breadcrumbAndroid->GetJObject());
 }
 
-void SentrySubsystemAndroid::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
 {
 	TSharedPtr<SentryBreadcrumbAndroid> breadcrumbAndroid = MakeShareable(new SentryBreadcrumbAndroid());
 	breadcrumbAndroid->SetMessage(Message);
@@ -121,12 +121,12 @@ void SentrySubsystemAndroid::AddBreadcrumbWithParams(const FString& Message, con
 		breadcrumbAndroid->GetJObject());
 }
 
-void SentrySubsystemAndroid::ClearBreadcrumbs()
+void FAndroidSentrySubsystem::ClearBreadcrumbs()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "clearBreadcrumbs", "()V");
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureMessage(const FString& message, ESentryLevel level)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Lio/sentry/protocol/SentryId;",
 		*FSentryJavaObjectWrapper::GetJString(message), SentryConvertersAndroid::SentryLevelToNative(level)->GetJObject());
@@ -134,7 +134,7 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureMessage(const FString& mess
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
 	int64 scopeCallbackId = SentryScopeCallbackAndroid::SaveDelegate(onConfigureScope);
 
@@ -144,7 +144,7 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureMessageWithScope(const FStr
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEvent(TSharedPtr<ISentryEvent> event)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEvent(TSharedPtr<ISentryEvent> event)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event);
 
@@ -154,7 +154,7 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEvent(TSharedPtr<ISentryEve
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
 {
 	TSharedPtr<SentryEventAndroid> eventAndroid = StaticCastSharedPtr<SentryEventAndroid>(event);
 
@@ -166,12 +166,12 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEventWithScope(TSharedPtr<I
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
 {
 	return nullptr;
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureAssertion(const FString& type, const FString& message)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureAssertion(const FString& type, const FString& message)
 {
 	const int32 framesToSkip = 8;
 
@@ -186,7 +186,7 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureAssertion(const FString& ty
 	return nullptr;
 }
 
-TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEnsure(const FString& type, const FString& message)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
 	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureException", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/protocol/SentryId;",
 		*FSentryJavaObjectWrapper::GetJString(type), *FSentryJavaObjectWrapper::GetJString(message));
@@ -194,7 +194,7 @@ TSharedPtr<ISentryId> SentrySubsystemAndroid::CaptureEnsure(const FString& type,
 	return MakeShareable(new SentryIdAndroid(*id));
 }
 
-void SentrySubsystemAndroid::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
+void FAndroidSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
 	TSharedPtr<SentryUserFeedbackAndroid> userFeedbackAndroid = StaticCastSharedPtr<SentryUserFeedbackAndroid>(userFeedback);
 
@@ -202,7 +202,7 @@ void SentrySubsystemAndroid::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback>
 		userFeedbackAndroid->GetJObject());
 }
 
-void SentrySubsystemAndroid::SetUser(TSharedPtr<ISentryUser> user)
+void FAndroidSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
 {
 	TSharedPtr<SentryUserAndroid> userAndroid = StaticCastSharedPtr<SentryUserAndroid>(user);
 
@@ -210,53 +210,53 @@ void SentrySubsystemAndroid::SetUser(TSharedPtr<ISentryUser> user)
 		userAndroid->GetJObject());
 }
 
-void SentrySubsystemAndroid::RemoveUser()
+void FAndroidSentrySubsystem::RemoveUser()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
 }
 
-void SentrySubsystemAndroid::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
+void FAndroidSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
 {
 	int64 scopeCallbackId = SentryScopeCallbackAndroid::SaveDelegate(onConfigureScope);
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "configureScope", "(J)V", scopeCallbackId);
 }
 
-void SentrySubsystemAndroid::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",
 		*FSentryJavaObjectWrapper::GetJString(key), SentryConvertersAndroid::StringMapToNative(values)->GetJObject());
 }
 
-void SentrySubsystemAndroid::SetTag(const FString& key, const FString& value)
+void FAndroidSentrySubsystem::SetTag(const FString& key, const FString& value)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",
 		*FSentryJavaObjectWrapper::GetJString(key), *FSentryJavaObjectWrapper::GetJString(value));
 }
 
-void SentrySubsystemAndroid::RemoveTag(const FString& key)
+void FAndroidSentrySubsystem::RemoveTag(const FString& key)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "removeTag", "(Ljava/lang/String;)V",
 		*FSentryJavaObjectWrapper::GetJString(key));
 }
 
-void SentrySubsystemAndroid::SetLevel(ESentryLevel level)
+void FAndroidSentrySubsystem::SetLevel(ESentryLevel level)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setLevel", "(Lio/sentry/SentryLevel;)V",
 		SentryConvertersAndroid::SentryLevelToNative(level)->GetJObject());
 }
 
-void SentrySubsystemAndroid::StartSession()
+void FAndroidSentrySubsystem::StartSession()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "startSession", "()V", nullptr);
 }
 
-void SentrySubsystemAndroid::EndSession()
+void FAndroidSentrySubsystem::EndSession()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "endSession", "()V", nullptr);
 }
 
-TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransaction(const FString& name, const FString& operation)
+TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransaction(const FString& name, const FString& operation)
 {
 	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/ITransaction;",
 		*FSentryJavaObjectWrapper::GetJString(name), *FSentryJavaObjectWrapper::GetJString(operation));
@@ -264,7 +264,7 @@ TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransaction(const FS
 	return MakeShareable(new SentryTransactionAndroid(*transaction));
 }
 
-TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
+TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
 {
 	TSharedPtr<SentryTransactionContextAndroid> transactionContextAndroid = StaticCastSharedPtr<SentryTransactionContextAndroid>(context);
 
@@ -274,13 +274,13 @@ TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransactionWithConte
 	return MakeShareable(new SentryTransactionAndroid(*transaction));
 }
 
-TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
+TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Setting transaction timestamp explicitly not supported on Android."));
 	return StartTransactionWithContext(context);
 }
 
-TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
+TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
 {
 	TSharedPtr<SentryTransactionContextAndroid> transactionContextAndroid = StaticCastSharedPtr<SentryTransactionContextAndroid>(context);
 
@@ -293,7 +293,7 @@ TSharedPtr<ISentryTransaction> SentrySubsystemAndroid::StartTransactionWithConte
 	return MakeShareable(new SentryTransactionAndroid(*transaction));
 }
 
-TSharedPtr<ISentryTransactionContext> SentrySubsystemAndroid::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+TSharedPtr<ISentryTransactionContext> FAndroidSentrySubsystem::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
 {
 	auto transactionContext = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "continueTrace", "(Ljava/lang/String;Ljava/util/List;)Lio/sentry/TransactionContext;",
 		*FSentryJavaObjectWrapper::GetJString(sentryTrace), SentryConvertersAndroid::StringArrayToNative(baggageHeaders)->GetJObject());

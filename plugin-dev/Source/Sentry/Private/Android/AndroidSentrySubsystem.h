@@ -4,7 +4,7 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-class SentrySubsystemAndroid : public ISentrySubsystem
+class FAndroidSentrySubsystem : public ISentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) override;
@@ -38,4 +38,4 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 };
 
-typedef SentrySubsystemAndroid FPlatformSentrySubsystem;
+typedef FAndroidSentrySubsystem FPlatformSentrySubsystem;

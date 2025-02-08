@@ -35,6 +35,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, SamplingType(ESentryTracesSamplingType::UniformSampleRate)
 	, TracesSampleRate(0.0f)
 	, TracesSampler(USentryTraceSampler::StaticClass())
+	// Maintain backwards compatibility with behavior of `FEnableBuildPlatforms`
 	, EnableTargetPlatforms({TEXT("Linux"), TEXT("IOS"), TEXT("Windows"), TEXT("Android"), TEXT("Mac")})
 	, bEnableForAllTargetPlatforms(false)
 	, EnableForPromotedBuildsOnly(false)

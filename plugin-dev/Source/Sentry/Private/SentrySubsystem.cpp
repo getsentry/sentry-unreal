@@ -659,10 +659,15 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 	return IsBuildTargetTypeEnabled;
 }
 
-bool USentrySubsystem::IsCurrentPlatformEnabled()
+bool USentrySubsystem::IsCurrentPlatformEnabled() const
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	return Settings->EnableTargetPlatforms.Contains(FPlatformProperties::IniPlatformName());
+	if (!Settings->bEnableForAllTargetPlatforms)
+	{
+		return Settings->EnableTargetPlatforms.Contains(FPlatformProperties::IniPlatformName());
+	}
+
+	return true;
 }
 
 bool USentrySubsystem::IsPromotedBuildsOnlyEnabled()
