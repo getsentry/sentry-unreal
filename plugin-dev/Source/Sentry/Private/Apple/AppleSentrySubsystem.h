@@ -4,7 +4,7 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-class SentrySubsystemApple : public ISentrySubsystem
+class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) override;
@@ -38,4 +38,4 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 };
 
-typedef SentrySubsystemApple FPlatformSentrySubsystem;
+typedef FAppleSentrySubsystem FPlatformSentrySubsystem;
