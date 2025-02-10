@@ -78,6 +78,7 @@ jobs:
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
+          sudo apt install tree 
           git submodule update --init --recursive ${{ steps.env.outputs.submodule }}
           mkdir -p '${{ steps.env.outputs.path }}'
           ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
