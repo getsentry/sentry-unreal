@@ -16,3 +16,5 @@ cp "${sentryJavaRoot}/sentry-android-ndk/build/outputs/aar/sentry-android-ndk-re
 cp "${sentryJavaRoot}/sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" "${sentryArtifactsDestination}/sentry-android-core-release.aar"
 
 cp "${sentryJavaRoot}/sentry/build/libs/"sentry-*.jar "${sentryArtifactsDestination}/sentry.jar"
+
+ls -al "${sentryJavaRoot}/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib"
