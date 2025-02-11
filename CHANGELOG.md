@@ -9,6 +9,7 @@
 - Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
 - Add getter for the event's Id ([#768](https://github.com/getsentry/sentry-unreal/pull/768))
 - Determine user's IP address automatically on Win/Linux only if PII attachment enabled in settings ([#769](https://github.com/getsentry/sentry-unreal/pull/769))
+- Split build platform ([#781](https://github.com/getsentry/sentry-unreal/pull/781))
 
 ### Fixes
 
