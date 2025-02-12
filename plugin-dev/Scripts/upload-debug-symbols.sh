@@ -10,6 +10,7 @@ pluginPath=$6
 PROJECT_BINARIES_PATH="$projectPath/Binaries/$targetPlatform"
 PLUGIN_BINARIES_PATH="$pluginPath/Source/ThirdParty/$targetPlatform"
 CONFIG_PATH="$projectPath/Config"
+DEFAULT_ENGINE_INI="$CONFIG_PATH/DefaultEngine.ini"
 
 echo "Sentry: Start debug symbols upload"
 
@@ -30,7 +31,7 @@ else
     exit
 fi
 
-UPLOAD_SYMBOLS=$(awk -F "=" '/UploadSymbolsAutomatically/ {print $2}' "${CONFIG_PATH}/DefaultEngine.ini")
+UPLOAD_SYMBOLS=$(awk -F "=" '/UploadSymbolsAutomatically/ {print $2}' "$DEFAULT_ENGINE_INI")
 
 if [ ! -z $SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY ]; then
     UPLOAD_SYMBOLS=$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY
@@ -47,26 +48,30 @@ if [ $UPLOAD_SYMBOLS != "True" ]; then
     exit
 fi
 
-INCLUDE_SOURCES=$(awk -F "=" '/IncludeSources/ {print $2}' "${CONFIG_PATH}/DefaultEngine.ini")
+INCLUDE_SOURCES=$(awk -F "=" '/IncludeSources/ {print $2}' "$DEFAULT_ENGINE_INI")
 
 CLI_ARGS=()
 if [ -z $INCLUDE_SOURCES -a $UPLOAD_SYMBOLS == "True" ]; then
     CLI_ARGS+=(--include-sources)
 fi
 
-CLI_LOG_LEVEL=$(awk -F "=" '/DiagnosticLevel/ {print $2}' "${CONFIG_PATH}/DefaultEngine.ini")
+CLI_LOG_LEVEL=$(awk -F "=" '/DiagnosticLevel/ {print $2}' "$DEFAULT_ENGINE_INI")
 
 if [ -z $CLI_LOG_LEVEL ]; then
     CLI_LOG_LEVEL="info"
 fi
 
-TARGET_PLATFORM_ENTRY_COUNT=$(grep -E -c "^\+EnableTargetPlatforms=$targetPlatform$" "${CONFIG_PATH}/DefaultEngine.ini")
-if [ $TARGET_PLATFORM_ENTRY_COUNT -e 0 ]; then
-    echo "Sentry: Automatic symbols upload is disabled for build platform $targetPlatform. Skipping..."
-    exit
+# Only check for specific platform if bEnableAllTargetPlatforms is omitted or disabled
+ALL_TARGET_PLATFORMS_ENABLED_COUNT=$(grep -E -c "^bEnableAllTargetPlatforms=[tT]rue$" "$DEFAULT_ENGINE_INI")
+if [ $ALL_TARGET_PLATFORMS_ENABLED_COUNT -e 0 ]; then
+    TARGET_PLATFORM_ENTRY_COUNT=$(grep -E -c "^\+EnableTargetPlatforms=$targetPlatform$" "$DEFAULT_ENGINE_INI")
+    if [ $TARGET_PLATFORM_ENTRY_COUNT -e 0 ]; then
+        echo "Sentry: Automatic symbols upload is disabled for build platform $targetPlatform. Skipping..."
+        exit
+    fi
 fi
 
-ENABLED_TARGETS=$(grep "EnableBuildTargets" "${CONFIG_PATH}/DefaultEngine.ini" | sed -n 's/^EnableBuildTargets=//p' | sed -e 's/^(\(.*\))$/\1/')
+ENABLED_TARGETS=$(grep "EnableBuildTargets" "$DEFAULT_ENGINE_INI" | sed -n 's/^EnableBuildTargets=//p' | sed -e 's/^(\(.*\))$/\1/')
 if [ ! -z $ENABLED_TARGETS ]; then
     TARGETS_ARRAY=$(echo "$ENABLED_TARGETS" | sed -e 's/,/ /g')
     if [[ "${TARGETS_ARRAY[@]}" =~ "bEnable$targetType=False" ]]; then
@@ -75,7 +80,7 @@ if [ ! -z $ENABLED_TARGETS ]; then
     fi
 fi
 
-ENABLED_CONFIGS=$(grep "EnableBuildConfigurations" "${CONFIG_PATH}/DefaultEngine.ini" | sed -n 's/^EnableBuildConfigurations=//p' | sed -e 's/^(\(.*\))$/\1/')
+ENABLED_CONFIGS=$(grep "EnableBuildConfigurations" "$DEFAULT_ENGINE_INI" | sed -n 's/^EnableBuildConfigurations=//p' | sed -e 's/^(\(.*\))$/\1/')
 if [ ! -z $ENABLED_CONFIGS ]; then
     CONFIGS_ARRAY=$(echo "$ENABLED_CONFIGS" | sed -e 's/,/ /g')
     if [[ "${CONFIGS_ARRAY[@]}" =~ "bEnable$targetConfig=False" ]]; then
