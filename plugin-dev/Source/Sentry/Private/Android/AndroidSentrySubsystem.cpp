@@ -173,7 +173,7 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureException(const FString& t
 
 TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureAssertion(const FString& type, const FString& message)
 {
-	const int32 framesToSkip = 8;
+	const int32 framesToSkip = GetAssertionFramesToSkip();
 
 	// add marker tags specific for Unreal assertions
 	SetTag(TEXT("sentry_unreal_exception"), TEXT("assert"));

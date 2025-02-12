@@ -36,6 +36,10 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) override;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
+
+protected:
+	virtual int32 GetAssertionFramesToSkip() const override { return 8; }
+	virtual int32 GetEnsureFramesToSkip() const override { return -1; }
 };
 
 typedef FAndroidSentrySubsystem FPlatformSentrySubsystem;
