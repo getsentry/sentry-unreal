@@ -10,13 +10,14 @@
 #include "Android/SentrySamplingContextAndroid.h"
 
 #include "Android/AndroidJNI.h"
-#include "UObject/GarbageCollection.h"
 
 #include "SentryEvent.h"
 #include "SentryHint.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryTraceSampler.h"
 #include "SentrySamplingContext.h"
+#include "UObject/GarbageCollection.h"
+#include "UObject/UObjectThreadContext.h"
 
 JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong callbackId, jobject scope)
 {
@@ -38,7 +39,14 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventAndroid(event)));
 	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new SentryHintAndroid(hint)));
 
-	return handler->HandleBeforeSend(EventToProcess, HintToProcess) ? event : nullptr;
+	USentryEvent* ProcessedEvent = EventToProcess;
+	if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		// Executing UFUNCTION is allowed only when not post-loading
+		ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
+	}
+
+	return ProcessedEvent ? event : nullptr;
 }
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
