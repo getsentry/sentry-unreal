@@ -14,6 +14,7 @@
 
 - Fix incorrect game log attachment on Android ([#743](https://github.com/getsentry/sentry-unreal/pull/743))
 - Fix assertion during screenshot capturing in a thread that can't use Slate ([#756](https://github.com/getsentry/sentry-unreal/pull/756))
+- Fix stack overflow when calling `beforeSend` during object post-loading on mobile ([#782](https://github.com/getsentry/sentry-unreal/pull/782))
 
 ### Dependencies
 
