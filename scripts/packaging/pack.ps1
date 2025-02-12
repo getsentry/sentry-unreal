@@ -79,6 +79,11 @@ function packFiles([string] $publishingPlatform)
         try
         {
             $location = Get-Location
+            # Workaround in order to support LTS PowerShell version 5.1 on Windows
+            if ([Environment]::GetEnvironmentVariable("OS") -Match "Windows")
+            {
+                Add-Type -AssemblyName "System.IO.Compression.FileSystem"
+            }
             [System.IO.Compression.ZipFile]::CreateFromDirectory($location, "$location/../$packageName")
         }
         finally
