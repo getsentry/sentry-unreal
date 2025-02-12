@@ -66,8 +66,8 @@ protected:
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;
+	virtual int32 GetAssertionFramesToSkip() const override { return 5; }
 	virtual int32 GetEnsureFramesToSkip() const { return 7; }
-	virtual int32 GetAssertionFramesToSkip() const { return 5; }
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
 
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure);

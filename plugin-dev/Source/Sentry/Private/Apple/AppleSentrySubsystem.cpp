@@ -194,11 +194,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureException(const FString& typ
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureAssertion(const FString& type, const FString& message)
 {
-#if PLATFORM_MAC
-	int32 framesToSkip = 6;
-#elif PLATFORM_IOS
-	int32 framesToSkip = 5;
-#endif
+	int32 framesToSkip = GetAssertionFramesToSkip();
 
 	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
 
@@ -207,7 +203,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureAssertion(const FString& typ
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	int32 framesToSkip = 6;
+	int32 framesToSkip = GetEnsureFramesToSkip();
 
 	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
 
