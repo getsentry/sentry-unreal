@@ -5,7 +5,7 @@
 class FMacSentrySubsystem : public FAppleSentrySubsystem
 {
 protected:
-    virtual int32 GetAssertionFramesToSkip() override { return 5; }
+    virtual int32 GetAssertionFramesToSkip() const override { return 5; }
 };
 
 typedef FIOSSentrySubsystem FPlatformSentrySubsystem;
