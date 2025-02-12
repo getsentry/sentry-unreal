@@ -27,6 +27,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "UObject/GarbageCollection.h"
+#include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
 
 void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
@@ -63,7 +64,14 @@ void SentrySubsystemApple::InitWithSettings(const USentrySettings* settings, USe
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				FGCScopeGuard GCScopeGuard;
 				USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventApple(event)));
-				return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
+				USentryEvent* ProcessedEvent = EventToProcess;
+				if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
+				{
+					// Executing UFUNCTION is allowed only when not post-loading
+					ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+				}
+
+				return ProcessedEvent ? event : nullptr;
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
