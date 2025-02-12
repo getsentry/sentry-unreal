@@ -60,13 +60,10 @@ if [ -z $CLI_LOG_LEVEL ]; then
     CLI_LOG_LEVEL="info"
 fi
 
-ENABLED_PLATFORMS=$(grep "EnableBuildPlatforms" "${CONFIG_PATH}/DefaultEngine.ini" | sed -n 's/^EnableBuildPlatforms=//p' | sed -e 's/^(\(.*\))$/\1/')
-if [ ! -z $ENABLED_PLATFORMS ]; then
-    PLATFORMS_ARRAY=$(echo "$ENABLED_PLATFORMS" | sed -e 's/,/ /g')
-    if [[ "${PLATFORMS_ARRAY[@]}" =~ "bEnable$targetPlatform=False" ]]; then
-        echo "Sentry: Automatic symbols upload is disabled for build platform $targetPlatform. Skipping..."
-        exit
-    fi
+TARGET_PLATFORM_ENTRY_COUNT=$(grep -E -c "^\+EnableTargetPlatforms=$targetPlatform$" "${CONFIG_PATH}/DefaultEngine.ini")
+if [ $TARGET_PLATFORM_ENTRY_COUNT -e 0 ]; then
+    echo "Sentry: Automatic symbols upload is disabled for build platform $targetPlatform. Skipping..."
+    exit
 fi
 
 ENABLED_TARGETS=$(grep "EnableBuildTargets" "${CONFIG_PATH}/DefaultEngine.ini" | sed -n 's/^EnableBuildTargets=//p' | sed -e 's/^(\(.*\))$/\1/')
