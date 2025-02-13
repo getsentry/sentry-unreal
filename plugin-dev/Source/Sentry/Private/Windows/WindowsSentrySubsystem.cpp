@@ -4,6 +4,7 @@
 
 #include "SentryDefines.h"
 
+#include "Misc/OutputDeviceRedirector.h"
 #include "Windows/WindowsPlatformStackWalk.h"
 #include "Windows/Infrastructure/WindowsSentryConverters.h"
 
