@@ -659,25 +659,15 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 	return IsBuildTargetTypeEnabled;
 }
 
-bool USentrySubsystem::IsCurrentPlatformEnabled()
+bool USentrySubsystem::IsCurrentPlatformEnabled() const
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	if (!Settings->bEnableForAllTargetPlatforms)
+	{
+		return Settings->EnableTargetPlatforms.Contains(FPlatformProperties::IniPlatformName());
+	}
 
-	bool IsBuildPlatformEnabled = false;
-
-#if PLATFORM_LINUX
-	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableLinux;
-#elif PLATFORM_IOS
-	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableIOS;
-#elif PLATFORM_WINDOWS
-	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableWindows;
-#elif PLATFORM_ANDROID
-	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableAndroid;
-#elif PLATFORM_MAC
-	IsBuildPlatformEnabled = Settings->EnableBuildPlatforms.bEnableMac;
-#endif
-
-	return IsBuildPlatformEnabled;
+	return true;
 }
 
 bool USentrySubsystem::IsPromotedBuildsOnlyEnabled()

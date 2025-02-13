@@ -38,7 +38,7 @@ function testFiles([string] $publishingPlatform)
             if ($accept)
             {
                 # Override the snapshot file with the current package contents
-                $snapshotContent | Out-File $snapshotFile
+                [System.IO.File]::WriteAllLines($snapshotFile, $snapshotContent)
             }
             $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
             if ($result.count -eq 0)
