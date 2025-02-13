@@ -3764,7 +3764,13 @@ Source/ThirdParty/Native/sentry-native/vendor/mpack.c
 Source/ThirdParty/Native/sentry-native/vendor/mpack.h
 Source/ThirdParty/Native/sentry-native/vendor/stb_sprintf.c
 Source/ThirdParty/Native/sentry-native/vendor/stb_sprintf.h
+Source/ThirdParty/Android/SentryAndroid.Build.cs
+Source/ThirdParty/IOS/SentryIOS.Build.cs
+Source/ThirdParty/Linux/SentryLinux.Build.cs
+Source/ThirdParty/Mac/SentryMac.Build.cs
 Source/ThirdParty/Native/SentryNative.Build.cs
+Source/ThirdParty/Win64/SentryWin64.Build.cs
+Source/ThirdParty/Win64/SentryWin64Native.Build.cs
 Source/ThirdParty/Win64/
 Source/ThirdParty/Win64/Breakpad/
 Source/ThirdParty/Win64/Breakpad/include/
