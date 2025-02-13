@@ -15,28 +15,6 @@ using EpicGames.Core;
 using Tools.DotNETCommon;
 #endif
 
-public static class DateTimeExtensions
-{
-	// From UE4CMake 
-	// Reference commit: b59317c2ee48f8eaeb5d0b1a5f837c3c2c3dd313
-	// MIT License
-	//
-	// Copyright (c) 2020 Krazer
-	//
-	// 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	// 	of this software and associated documentation files (the "Software"), to deal
-	// in the Software without restriction, including without limitation the rights
-	// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	// copies of the Software, and to permit persons to whom the Software is
-	// furnished to do so, subject to the following conditions:
-	public static bool EqualsUpToSeconds(this DateTime dt1, DateTime dt2)
-	{
-		return dt1.Year == dt2.Year && dt1.Month == dt2.Month && dt1.Day == dt2.Day &&
-		       dt1.Hour == dt2.Hour && dt1.Minute == dt2.Minute && dt1.Second == dt2.Second;
-	}   
-}
-
-
 public class CMakeTargetInst
 {
 	// Based on UE4CMake with modifications 
@@ -159,7 +137,7 @@ public class CMakeTargetInst
 			string builtTimeString=System.IO.File.ReadAllText(builtFile);
 			DateTime builtTime=DateTime.Parse(builtTimeString);
 
-			if(builtTime.EqualsUpToSeconds(cmakeLastWrite))
+			if(builtTime.Equals(cmakeLastWrite))
 				configCMake=false;
 		}
 
