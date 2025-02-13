@@ -26,6 +26,14 @@ public class SentryWin64Native : ModuleRules
 		
 		PrivateDependencyModuleNames.Add("SentryNative");
 		
+		var targetLocation = Path.Combine(PluginDirectory, "Source", "ThirdParty", "Native", "sentry-native");
+
+		CMakeTargetInst cmakeTarget =
+			new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
+		cmakeTarget.Load(Target, this);
+		
+		PublicIncludePaths.Add(targetLocation + "/include");
+		
 		string intermediatePath =
 			Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate", "CMakeTarget", "sentry-native");
 

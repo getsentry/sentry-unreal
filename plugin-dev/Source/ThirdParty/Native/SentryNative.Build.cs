@@ -435,12 +435,6 @@ public class SentryNative : ModuleRules
 	{
 		Type = ModuleType.External;
 		
-		var targetLocation = Path.Combine(PluginDirectory, "Source", "ThirdParty", "Native", "sentry-native");
-
-		CMakeTargetInst cmakeTarget =
-			new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
-		cmakeTarget.Load(Target, this);
-		
-		PublicIncludePaths.Add(targetLocation + "/include");
+		// Empty. Just used to organise cmake specific code.
 	}
 }
