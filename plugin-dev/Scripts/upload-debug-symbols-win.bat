@@ -70,7 +70,6 @@ if not "%EnabledPlatforms%"=="True" (
     set PlatformToCheck=+EnableTargetPlatforms=%TargetPlatform%
   )
   call :FindInFile "%ConfigPath%\DefaultEngine.ini" "!PlatformToCheck!" IsPlatformEnabled
-  echo "IVAN !IsPlatformEnabled!"
   if "!IsPlatformEnabled!"=="false" (
       echo "Sentry: Automatic symbols upload is disabled for build platform %TargetPlatform%. Skipping..."
       exit /B 0
