@@ -61,16 +61,17 @@ if "%CliLogLevel%"=="" (
     set "CliLogLevel=info"
 )
 
-call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings EnableBuildPlatforms EnabledPlatforms
-if not "%EnabledPlatforms%"=="" (
+call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings bEnableForAllTargetPlatforms EnabledPlatforms
+if not "%EnabledPlatforms%"=="True" (
   set PlatformToCheck=
   if "%TargetPlatform%"=="Win64" (
-    set "PlatformToCheck=bEnableWindows=False"
+    set PlatformToCheck=+EnableTargetPlatforms=Windows
   ) else (
-    set "PlatformToCheck=bEnable%TargetPlatform%=False"
+    set PlatformToCheck=+EnableTargetPlatforms=%TargetPlatform%
   )
-  call :FindString EnabledPlatforms PlatformToCheck IsPlatformDisabled
-  if "!IsPlatformDisabled!"=="true" (
+  call :FindInFile "%ConfigPath%\DefaultEngine.ini" "!PlatformToCheck!" IsPlatformEnabled
+  echo "IVAN !IsPlatformEnabled!"
+  if "!IsPlatformEnabled!"=="false" (
       echo "Sentry: Automatic symbols upload is disabled for build platform %TargetPlatform%. Skipping..."
       exit /B 0
   )
@@ -131,6 +132,17 @@ exit /B 0
   ) else (
     set %~3=false
   )
+  goto :eof
+
+:FindInFile <filePath> <findStr> <result>
+  setlocal
+  for /f "tokens=*" %%A in ('findstr /i /r "%~2" "%~1"') do (
+    endlocal
+    set %~3=true
+    goto :eof
+  )
+  endlocal
+  set %~3=false
   goto :eof
 
 :ParseIniFile <filename> <section> <key> <result>
