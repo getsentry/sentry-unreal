@@ -61,11 +61,11 @@ if [ -z $CLI_LOG_LEVEL ]; then
     CLI_LOG_LEVEL="info"
 fi
 
-# Only check for specific platform if bEnableAllTargetPlatforms is omitted or disabled
-ALL_TARGET_PLATFORMS_ENABLED_COUNT=$(grep -E -c "^bEnableAllTargetPlatforms=[tT]rue$" "$DEFAULT_ENGINE_INI")
-if [ $ALL_TARGET_PLATFORMS_ENABLED_COUNT -e 0 ]; then
+# Only check for specific platform if bEnableForAllTargetPlatforms is omitted or disabled
+ALL_TARGET_PLATFORMS_ENABLED_COUNT=$(grep -E -c "^bEnableForAllTargetPlatforms=[tT]rue$" "$DEFAULT_ENGINE_INI")
+if [ $ALL_TARGET_PLATFORMS_ENABLED_COUNT -eq 0 ]; then
     TARGET_PLATFORM_ENTRY_COUNT=$(grep -E -c "^\+EnableTargetPlatforms=$targetPlatform$" "$DEFAULT_ENGINE_INI")
-    if [ $TARGET_PLATFORM_ENTRY_COUNT -e 0 ]; then
+    if [ $TARGET_PLATFORM_ENTRY_COUNT -eq 0 ]; then
         echo "Sentry: Automatic symbols upload is disabled for build platform $targetPlatform. Skipping..."
         exit
     fi
