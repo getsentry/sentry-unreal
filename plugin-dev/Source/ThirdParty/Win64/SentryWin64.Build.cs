@@ -25,7 +25,6 @@ public class SentryWin64 : ModuleRules
 		string WindowsThirdPartyPath = Path.Combine(PlatformThirdPartyPath, CrashpadExists ? "Crashpad" : "Breakpad");
 
 		PublicIncludePaths.Add(Path.Combine(WindowsThirdPartyPath, "include"));
-		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Windows"));
 
 		PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "sentry.lib"));
 

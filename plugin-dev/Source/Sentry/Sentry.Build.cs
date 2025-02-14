@@ -64,7 +64,7 @@ public class Sentry : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Microsoft"));
+			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Microsoft"));
 
 			if (bBuildNativeForWindows)
 			{
