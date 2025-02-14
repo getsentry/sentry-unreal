@@ -4,7 +4,7 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-class SentrySubsystemApple : public ISentrySubsystem
+class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) override;
@@ -36,6 +36,8 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) override;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
-};
 
-typedef SentrySubsystemApple FPlatformSentrySubsystem;
+protected:
+	virtual int32 GetAssertionFramesToSkip() const override { return -1; }
+	virtual int32 GetEnsureFramesToSkip() const override { return 6; }
+};

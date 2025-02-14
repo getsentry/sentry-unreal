@@ -9,6 +9,7 @@
 - Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
 - Add getter for the event's Id ([#768](https://github.com/getsentry/sentry-unreal/pull/768))
 - Determine user's IP address automatically on Win/Linux only if PII attachment enabled in settings ([#769](https://github.com/getsentry/sentry-unreal/pull/769))
+- Initial cleanup for plugin extensions ([#779](https://github.com/getsentry/sentry-unreal/pull/779))
 - Split build platform ([#781](https://github.com/getsentry/sentry-unreal/pull/781))
 
 ### Fixes
@@ -24,9 +25,9 @@
 - Bump Java SDK (Android) from v7.19.1 to v7.20.1 ([#724](https://github.com/getsentry/sentry-unreal/pull/724), [#741](https://github.com/getsentry/sentry-unreal/pull/741))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7201)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.19.1...7.20.1)
-- Bump Cocoa SDK (iOS and Mac) from v8.42.1 to v8.44.0 ([#723](https://github.com/getsentry/sentry-unreal/pull/723), [#761](https://github.com/getsentry/sentry-unreal/pull/761))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8440)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.1...8.44.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.42.1 to v8.45.0 ([#723](https://github.com/getsentry/sentry-unreal/pull/723), [#761](https://github.com/getsentry/sentry-unreal/pull/761), [#784](https://github.com/getsentry/sentry-unreal/pull/784))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.1...8.45.0)
 - Bump Native SDK from v0.7.17 to v0.7.20 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742), [#764](https://github.com/getsentry/sentry-unreal/pull/764))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.20)
