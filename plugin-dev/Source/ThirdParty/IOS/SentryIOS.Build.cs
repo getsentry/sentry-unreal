@@ -18,7 +18,7 @@ public class SentryIOS : ModuleRules
 		
 		PublicAdditionalFrameworks.Add(new Framework("Sentry", Path.Combine(PlatformThirdPartyPath, "Sentry.embeddedframework.zip"), null, true));
 			
-		string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
+		string PluginPath = Utils.MakePathRelativeTo(Path.Combine(PluginDirectory, "Source", "Sentry"), Target.RelativeEnginePath);
 
 		AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
 
