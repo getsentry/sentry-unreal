@@ -38,6 +38,10 @@ echo "Extracted Sentry Native NDK version: $nativeNdkVersion"
 nativeNdkUrl="https://github.com/getsentry/sentry-native/releases/download/${nativeNdkVersion}/sentry-native-ndk-${nativeNdkVersion}.zip"
 nativeNdkCache="${sentryJavaRoot}/native-ndk-cache"
 
+if ! [ -d "$nativeNdkCache" ]; then
+    mkdir $nativeNdkCache
+fi
+
 curl -L "${nativeNdkUrl}" -o "${nativeNdkCache}/sentry-native-ndk-${nativeNdkVersion}.zip"
 
 unzip -o "${nativeNdkCache}/sentry-native-ndk-${nativeNdkVersion}.zip" -d "${nativeNdkCache}/"
