@@ -20,14 +20,12 @@ cp "${sentryJavaRoot}/sentry/build/libs/"sentry-*.jar "${sentryArtifactsDestinat
 # With version v8 of the sentry-java the Native SDK NDK has to be downloaded separately from the sentry-native repo release page
 
 configFile="${sentryJavaRoot}/buildSrc/src/main/java/Config.kt"
-
 if [[ ! -f "$configFile" ]]; then
   echo "Error: Config.kt file not found at $configFile"
   exit 1
 fi
 
 nativeNdkVersion=$(grep 'sentryNativeNdk' "$configFile" | sed -E 's/.*sentryNativeNdk\s*=\s*"[^"]+:([^"]+)".*/\1/')
-
 if [[ -z "$nativeNdkVersion" ]]; then
   echo "Error: Failed to extract Native SDK NDK version."
   exit 1
@@ -35,12 +33,12 @@ fi
 
 echo "Extracted Sentry Native NDK version: $nativeNdkVersion"
 
-nativeNdkUrl="https://github.com/getsentry/sentry-native/releases/download/${nativeNdkVersion}/sentry-native-ndk-${nativeNdkVersion}.zip"
 nativeNdkCache="${sentryJavaRoot}/native-ndk-cache"
-
 if ! [ -d "$nativeNdkCache" ]; then
-    mkdir $nativeNdkCache
+    mkdir "$nativeNdkCache"
 fi
+
+nativeNdkUrl="https://github.com/getsentry/sentry-native/releases/download/${nativeNdkVersion}/sentry-native-ndk-${nativeNdkVersion}.zip"
 
 curl -L "${nativeNdkUrl}" -o "${nativeNdkCache}/sentry-native-ndk-${nativeNdkVersion}.zip"
 
