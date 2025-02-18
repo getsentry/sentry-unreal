@@ -15,28 +15,6 @@ using EpicGames.Core;
 using Tools.DotNETCommon;
 #endif
 
-public static class DateTimeExtensions
-{
-	// From UE4CMake 
-	// Reference commit: b59317c2ee48f8eaeb5d0b1a5f837c3c2c3dd313
-	// MIT License
-	//
-	// Copyright (c) 2020 Krazer
-	//
-	// 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	// 	of this software and associated documentation files (the "Software"), to deal
-	// in the Software without restriction, including without limitation the rights
-	// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	// copies of the Software, and to permit persons to whom the Software is
-	// furnished to do so, subject to the following conditions:
-	public static bool EqualsUpToSeconds(this DateTime dt1, DateTime dt2)
-	{
-		return dt1.Year == dt2.Year && dt1.Month == dt2.Month && dt1.Day == dt2.Day &&
-		       dt1.Hour == dt2.Hour && dt1.Minute == dt2.Minute && dt1.Second == dt2.Second;
-	}   
-}
-
-
 public class CMakeTargetInst
 {
 	// Based on UE4CMake with modifications 
@@ -159,7 +137,7 @@ public class CMakeTargetInst
 			string builtTimeString=System.IO.File.ReadAllText(builtFile);
 			DateTime builtTime=DateTime.Parse(builtTimeString);
 
-			if(builtTime.EqualsUpToSeconds(cmakeLastWrite))
+			if(builtTime.Equals(cmakeLastWrite))
 				configCMake=false;
 		}
 
@@ -435,161 +413,6 @@ public class SentryNative : ModuleRules
 	{
 		Type = ModuleType.External;
 		
-		if (Target.Platform == UnrealTargetPlatform.Win64)
-		{
-			PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Microsoft"));
-			
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
-			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
-			
-			var targetLocation = Path.Combine(PluginDirectory, "Source", "ThirdParty", "Native", "sentry-native");
-
-			CMakeTargetInst cmakeTarget =
-				new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
-			cmakeTarget.Load(Target, this);
-
-			string intermediatePath =
-				Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate", "CMakeTarget", "sentry-native");
-
-			Console.WriteLine("Adding include path: " + targetLocation + "/include");
-			PublicIncludePaths.Add(targetLocation + "/include");
-
-			string buildOutputPath = Path.Combine(PluginDirectory, "Binaries", "Win64");
-
-			string buildPath = Path.Combine(intermediatePath, "Win64", "build");
-			if (Target.Configuration == UnrealTargetConfiguration.Debug)
-			{
-				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.lib"));
-			}
-			else
-			{
-				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.lib"));
-			}
-
-			if (!PublicDefinitions.Contains("USE_SENTRY_BREAKPAD=1"))
-			{
-				string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build");
-				if (Target.Configuration == UnrealTargetConfiguration.Debug)
-				{
-					if (!File.Exists(Path.Combine(buildOutputPath, "crashpad_handler.exe")))
-					{
-						Console.WriteLine("Copying crashpad_handler.exe");
-						if (!System.IO.Directory.Exists(buildOutputPath))
-						{
-							System.IO.Directory.CreateDirectory(buildOutputPath);
-						}
-
-						File.Copy(Path.Combine(crashpadBuildPath, "handler", "Debug", "crashpad_handler.exe"),
-							Path.Combine(buildOutputPath, "crashpad_handler.exe"));
-					}
-					else
-					{
-						Console.WriteLine("crashpad_handler.exe already exists");
-					}
-
-					RuntimeDependencies.Add(Path.Combine(buildOutputPath, "crashpad_handler.exe"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Debug",
-						"crashpad_handler_lib.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Debug",
-						"crashpad_client.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Debug",
-						"crashpad_compat.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", "Debug",
-						"crashpad_minidump.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", "Debug",
-						"crashpad_snapshot.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "getopt", "Debug",
-						"crashpad_getopt.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium",
-						"Debug", "mini_chromium.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "zlib", "Debug",
-						"crashpad_zlib.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", "Debug",
-						"crashpad_tools.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Debug",
-						"crashpad_util.lib"));
-				}
-				else
-				{
-					if (!File.Exists(Path.Combine(buildOutputPath, "crashpad_handler.exe")))
-					{
-						Console.WriteLine("Copying crashpad_handler.exe");
-						if (!System.IO.Directory.Exists(buildOutputPath))
-						{
-							System.IO.Directory.CreateDirectory(buildOutputPath);
-						}
-
-						File.Copy(Path.Combine(crashpadBuildPath, "handler", "Release", "crashpad_handler.exe"),
-							Path.Combine(buildOutputPath, "crashpad_handler.exe"));
-					}
-					else
-					{
-						Console.WriteLine("crashpad_handler.exe already exists");
-					}
-
-					RuntimeDependencies.Add(Path.Combine(buildOutputPath, "crashpad_handler.exe"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", "Release",
-						"crashpad_handler_lib.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", "Release",
-						"crashpad_client.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", "Release",
-						"crashpad_compat.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", "Release",
-						"crashpad_minidump.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", "Release",
-						"crashpad_snapshot.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "getopt",
-						"Release",
-						"crashpad_getopt.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium",
-						"Release", "mini_chromium.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "zlib", "Release",
-						"crashpad_zlib.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", "Release",
-						"crashpad_tools.lib"));
-					PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", "Release",
-						"crashpad_util.lib"));
-				}
-			}
-		}
-		else if (Target.Platform.ToString() == "XSX")
-		{
-			PublicIncludePaths.Add(Path.Combine(PluginDirectory, "Source", "Sentry", "Private", "Microsoft"));
-			
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
-			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
-			
-			var targetLocation = Path.Combine(PluginDirectory, "sentry-native");
-
-			CMakeTargetInst cmakeTarget =
-				new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
-			cmakeTarget.Load(Target, this);
-
-			string intermediatePath =
-				Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate", "CMakeTarget", "sentry-native");
-				
-			Console.WriteLine("Adding include path: "+targetLocation+"/include");
-			PublicIncludePaths.Add(targetLocation + "/include");
-			
-			string buildOutputPath = Path.Combine(PluginDirectory, "Binaries", "Win64");
-					
-			string buildPath = Path.Combine(intermediatePath, "XSX", "build");
-			if(Target.Configuration == UnrealTargetConfiguration.Debug)
-			{
-				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "sentry.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Debug", "breakpad_client.lib"));
-			}
-			else
-			{ 
-				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "sentry.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(buildPath, "Release", "breakpad_client.lib"));
-			}
-			
-			PublicSystemLibraries.Add("winhttp.lib");
-		}
-		else
-		{
-			Console.WriteLine("Sentry Unreal SDK does not support platform: " + Target.Platform);
-		}
+		// Empty. Just used to organise cmake specific code.
 	}
 }

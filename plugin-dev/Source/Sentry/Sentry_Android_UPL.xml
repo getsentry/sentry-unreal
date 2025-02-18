@@ -46,6 +46,7 @@
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry.jar" dst="$S(BuildDir)/gradle/app/libs/sentry.jar" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-ndk-release.aar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-native-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-native-ndk-release.aar" />
         <if condition="bUploadSymbols">
             <true>
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />

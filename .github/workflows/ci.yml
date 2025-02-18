@@ -75,11 +75,6 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: Android-libraries
-          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-
-      - uses: actions/download-artifact@v4
-        with:
           name: IOS-sdk
           path: plugin-dev/Source/ThirdParty/IOS
 

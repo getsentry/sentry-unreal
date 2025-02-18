@@ -3,7 +3,7 @@
 #include "Android/Callbacks/SentryScopeCallbackAndroid.h"
 #include "Android/Infrastructure/SentryConvertersAndroid.h"
 #include "Android/Infrastructure/SentryJavaClasses.h"
-#include "Android/SentrySubsystemAndroid.h"
+#include "Android/AndroidSentrySubsystem.h"
 #include "Android/SentryScopeAndroid.h"
 #include "Android/SentryEventAndroid.h"
 #include "Android/SentryHintAndroid.h"

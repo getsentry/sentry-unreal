@@ -6,7 +6,22 @@
 
 #include "SentryDefines.h"
 #include "SentryModule.h"
+#include "SentrySettings.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+
+void FMicrosoftSentrySubsystem::InitWithSettings(
+	const USentrySettings* Settings,
+	USentryBeforeSendHandler* BeforeSendHandler,
+	USentryTraceSampler* TraceSampler)
+{
+	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
+
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+	FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing
+		? ECrashHandlingType::Disabled
+		: ECrashHandlingType::Default);
+#endif // !UE_VERSION_OLDER_THAN(5, 2, 0)
+}
 
 void FMicrosoftSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 {
