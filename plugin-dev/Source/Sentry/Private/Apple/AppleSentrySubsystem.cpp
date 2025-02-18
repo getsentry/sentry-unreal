@@ -176,7 +176,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 	return MakeShareable(new SentryIdApple(id));
 }
 
-TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEnsure(const FString& type, const FString& message)
+TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
 	SentryException *nativeException = [[SENTRY_APPLE_CLASS(SentryException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
 	NSMutableArray *nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
@@ -190,7 +190,7 @@ TSharedPtr<ISentryId> SentrySubsystemApple::CaptureEnsure(const FString& type, c
 }
 
 
-void SentrySubsystemApple::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
+void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
 	TSharedPtr<SentryUserFeedbackApple> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackApple>(userFeedback);
 
