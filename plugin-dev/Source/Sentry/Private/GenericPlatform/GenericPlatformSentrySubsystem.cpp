@@ -102,16 +102,17 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	FGCScopeGuard GCScopeGuard;
 
-	USentryEvent* EventToProcess = USentryEvent::Create(Event);
-
-	USentryEvent* ProcessedEvent = EventToProcess;
 	if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
+		USentryEvent* EventToProcess = USentryEvent::Create(Event);
+
 		// Executing UFUNCTION is allowed only when not post-loading
-		ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+		USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+
+		return ProcessedEvent ? event : sentry_value_new_null();
 	}
 
-	return ProcessedEvent ? event : sentry_value_new_null();
+	return event;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)

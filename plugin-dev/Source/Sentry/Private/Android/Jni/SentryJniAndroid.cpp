@@ -34,19 +34,20 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 {
 	FGCScopeGuard GCScopeGuard;
 
-	USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
-
-	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventAndroid(event)));
-	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new SentryHintAndroid(hint)));
-
-	USentryEvent* ProcessedEvent = EventToProcess;
 	if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
+		USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
+
+		USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventAndroid(event)));
+		USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new SentryHintAndroid(hint)));
+
 		// Executing UFUNCTION is allowed only when not post-loading
-		ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
+		USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
+		
+		return ProcessedEvent ? event : nullptr;
 	}
 
-	return ProcessedEvent ? event : nullptr;
+	return event;
 }
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)

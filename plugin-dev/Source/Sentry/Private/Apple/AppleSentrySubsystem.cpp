@@ -63,15 +63,17 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				FGCScopeGuard GCScopeGuard;
-				USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventApple(event)));
-				USentryEvent* ProcessedEvent = EventToProcess;
 				if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
 				{
+					USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventApple(event)));
+				
 					// Executing UFUNCTION is allowed only when not post-loading
-					ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+					USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+
+					return ProcessedEvent ? event : nullptr;
 				}
 
-				return ProcessedEvent ? event : nullptr;
+				return event;
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
