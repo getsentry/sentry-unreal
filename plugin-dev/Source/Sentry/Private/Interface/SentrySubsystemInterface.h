@@ -55,4 +55,8 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) = 0;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) = 0;
+
+protected:
+	virtual int32 GetAssertionFramesToSkip() const = 0;
+	virtual int32 GetEnsureFramesToSkip() const = 0;
 };

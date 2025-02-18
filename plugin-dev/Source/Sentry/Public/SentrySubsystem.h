@@ -320,7 +320,7 @@ private:
 	bool IsCurrentBuildTargetEnabled();
 
 	/** Check whether the event capturing should be enabled for the current platform */
-	bool IsCurrentPlatformEnabled();
+	bool IsCurrentPlatformEnabled() const;
 
 	/** Check whether the event capturing should be enabled for promoted builds only */
 	bool IsPromotedBuildsOnlyEnabled();

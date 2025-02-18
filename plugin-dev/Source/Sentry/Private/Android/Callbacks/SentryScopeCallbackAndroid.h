@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Android/SentrySubsystemAndroid.h"
+#include "Android/AndroidSentrySubsystem.h"
 
 class SentryScopeCallbackAndroid
 {
