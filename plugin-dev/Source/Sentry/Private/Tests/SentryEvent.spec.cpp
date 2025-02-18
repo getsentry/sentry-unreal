@@ -5,6 +5,8 @@
 
 #include "Misc/AutomationTest.h"
 
+#include "HAL/PlatformSentryEvent.h"
+
 #if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentryEventSpec, "Sentry.SentryEvent", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
@@ -15,7 +17,7 @@ void SentryEventSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryEvent = NewObject<USentryEvent>();
+		SentryEvent = USentryEvent::Create(CreateSharedSentryEvent());
 	});
 
 	Describe("Event params", [this]()
@@ -29,6 +31,7 @@ void SentryEventSpec::Define()
 
 			TestEqual("Event level", SentryEvent->GetLevel(), ESentryLevel::Fatal);
 			TestEqual("Event message", SentryEvent->GetMessage(), TestMessage);
+			TestNotNull("Event ID is non-null", SentryEvent->GetId());
 		});
 	});
 }

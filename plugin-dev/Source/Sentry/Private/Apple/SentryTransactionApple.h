@@ -14,8 +14,8 @@ public:
 
 	id<SentrySpan> GetNativeObject();
 
-	virtual TSharedPtr<ISentrySpan> StartChild(const FString& operation, const FString& desctiption) override;
-	virtual TSharedPtr<ISentrySpan> StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) override;
+	virtual TSharedPtr<ISentrySpan> StartChildSpan(const FString& operation, const FString& desctiption) override;
+	virtual TSharedPtr<ISentrySpan> StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) override;
 	virtual void Finish() override;
 	virtual void FinishWithTimestamp(int64 timestamp) override;
 	virtual bool IsFinished() const override;

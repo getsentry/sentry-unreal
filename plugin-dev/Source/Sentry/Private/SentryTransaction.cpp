@@ -1,126 +1,112 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentryTransaction.h"
+
+#include "SentryDefines.h"
 #include "SentrySpan.h"
 
 #include "Interface/SentryTransactionInterface.h"
 
-#if PLATFORM_ANDROID
-#include "Android/SentryTransactionAndroid.h"
-#elif PLATFORM_IOS || PLATFORM_MAC
-#include "Apple/SentryTransactionApple.h"
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
-#include "Desktop/SentryTransactionDesktop.h"
-#endif
-
-USentryTransaction::USentryTransaction()
+USentrySpan* USentryTransaction::StartChildSpan(const FString& Operation, const FString& Description)
 {
-}
-
-USentrySpan* USentryTransaction::StartChild(const FString& Operation, const FString& Description)
-{
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = SentryTransactionNativeImpl->StartChild(Operation, Description);
-
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-
-	return unrealSpan;
+	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpan(Operation, Description))
+	{
+		return USentrySpan::Create(spanNativeImpl);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid span after attempting to start child on transaction"));
+		return nullptr;
+	}
 }
 
-USentrySpan* USentryTransaction::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
+USentrySpan* USentryTransaction::StartChildSpanWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	TSharedPtr<ISentrySpan> spanNativeImpl = SentryTransactionNativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp);
-
-	USentrySpan* unrealSpan = NewObject<USentrySpan>();
-	unrealSpan->InitWithNativeImpl(spanNativeImpl);
-
-	return unrealSpan;
+	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpanWithTimestamp(Operation, Description, Timestamp))
+	{
+		return USentrySpan::Create(spanNativeImpl);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Received invalid span after attempting to start child with timestamp on transaction"));
+		return nullptr;
+	}
 }
 
 void USentryTransaction::Finish()
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->Finish();
+	NativeImpl->Finish();
 }
 
 void USentryTransaction::FinishWithTimestamp(int64 Timestamp)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->FinishWithTimestamp(Timestamp);
+	NativeImpl->FinishWithTimestamp(Timestamp);
 }
 
 bool USentryTransaction::IsFinished() const
 {
-	if (!SentryTransactionNativeImpl)
+	if (!NativeImpl)
 		return false;
 
-	return SentryTransactionNativeImpl->IsFinished();
+	return NativeImpl->IsFinished();
 }
 
 void USentryTransaction::SetName(const FString& name)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->SetName(name);
+	NativeImpl->SetName(name);
 }
 
 void USentryTransaction::SetTag(const FString& key, const FString& value)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->SetTag(key, value);
+	NativeImpl->SetTag(key, value);
 }
 
 void USentryTransaction::RemoveTag(const FString& key)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->RemoveTag(key);
+	NativeImpl->RemoveTag(key);
 }
 
 void USentryTransaction::SetData(const FString& key, const TMap<FString, FString>& values)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->SetData(key, values);
+	NativeImpl->SetData(key, values);
 }
 
 void USentryTransaction::RemoveData(const FString& key)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->RemoveData(key);
+	NativeImpl->RemoveData(key);
 }
 
 void USentryTransaction::GetTrace(FString& name, FString& value)
 {
-	if (!SentryTransactionNativeImpl || SentryTransactionNativeImpl->IsFinished())
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
-	SentryTransactionNativeImpl->GetTrace(name, value);
-}
-
-void USentryTransaction::InitWithNativeImpl(TSharedPtr<ISentryTransaction> transactionImpl)
-{
-	SentryTransactionNativeImpl = transactionImpl;
-}
-
-TSharedPtr<ISentryTransaction> USentryTransaction::GetNativeImpl()
-{
-	return SentryTransactionNativeImpl;
+	NativeImpl->GetTrace(name, value);
 }

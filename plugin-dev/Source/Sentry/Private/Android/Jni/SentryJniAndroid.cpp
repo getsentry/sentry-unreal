@@ -3,7 +3,7 @@
 #include "Android/Callbacks/SentryScopeCallbackAndroid.h"
 #include "Android/Infrastructure/SentryConvertersAndroid.h"
 #include "Android/Infrastructure/SentryJavaClasses.h"
-#include "Android/SentrySubsystemAndroid.h"
+#include "Android/AndroidSentrySubsystem.h"
 #include "Android/SentryScopeAndroid.h"
 #include "Android/SentryEventAndroid.h"
 #include "Android/SentryHintAndroid.h"
@@ -35,10 +35,8 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 	USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
 
-	USentryEvent* EventToProcess = NewObject<USentryEvent>();
-	EventToProcess->InitWithNativeImpl(MakeShareable(new SentryEventAndroid(event)));
-	USentryHint* HintToProcess = NewObject<USentryHint>();
-	HintToProcess->InitWithNativeImpl(MakeShareable(new SentryHintAndroid(hint)));
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventAndroid(event)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new SentryHintAndroid(hint)));
 
 	return handler->HandleBeforeSend(EventToProcess, HintToProcess) ? event : nullptr;
 }
@@ -49,8 +47,7 @@ JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv*
 
 	USentryTraceSampler* sampler = reinterpret_cast<USentryTraceSampler*>(objAddr);
 
-	USentrySamplingContext* Context = NewObject<USentrySamplingContext>();
-	Context->InitWithNativeImpl(MakeShareable(new SentrySamplingContextAndroid(samplingContext)));
+	USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new SentrySamplingContextAndroid(samplingContext)));
 
 	float samplingValue;
 	if(sampler->Sample(Context, samplingValue))

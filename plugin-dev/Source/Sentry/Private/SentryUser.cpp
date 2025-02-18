@@ -2,116 +2,89 @@
 
 #include "SentryUser.h"
 
-#include "Interface/SentryUserInterface.h"
+#include "HAL/PlatformSentryUser.h"
 
-#if PLATFORM_ANDROID
-#include "Android/SentryUserAndroid.h"
-#elif PLATFORM_IOS || PLATFORM_MAC
-#include "Apple/SentryUserApple.h"
-#elif PLATFORM_WINDOWS || PLATFORM_LINUX
-#include "Desktop/SentryUserDesktop.h"
-#endif
-
-USentryUser::USentryUser()
+void USentryUser::Initialize()
 {
-	if (USentryUser::StaticClass()->GetDefaultObject() != this)
-	{
-#if PLATFORM_ANDROID
-		UserNativeImpl = MakeShareable(new SentryUserAndroid());
-#elif PLATFORM_IOS || PLATFORM_MAC
-		UserNativeImpl = MakeShareable(new SentryUserApple());
-#elif (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
-		UserNativeImpl = MakeShareable(new SentryUserDesktop());
-#endif
-	}
+	NativeImpl = CreateSharedSentryUser();
 }
 
 void USentryUser::SetEmail(const FString& Email)
 {
-	if (!UserNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserNativeImpl->SetEmail(Email);
+	NativeImpl->SetEmail(Email);
 }
 
 FString USentryUser::GetEmail() const
 {
-	if(!UserNativeImpl)
+	if(!NativeImpl)
 		return FString();
 
-	return UserNativeImpl->GetEmail();
+	return NativeImpl->GetEmail();
 }
 
 void USentryUser::SetId(const FString& Id)
 {
-	if (!UserNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserNativeImpl->SetId(Id);
+	NativeImpl->SetId(Id);
 }
 
 FString USentryUser::GetId() const
 {
-	if(!UserNativeImpl)
+	if(!NativeImpl)
 		return FString();
 
-	return UserNativeImpl->GetId();
+	return NativeImpl->GetId();
 }
 
 void USentryUser::SetUsername(const FString& Username)
 {
-	if (!UserNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserNativeImpl->SetUsername(Username);
+	NativeImpl->SetUsername(Username);
 }
 
 FString USentryUser::GetUsername() const
 {
-	if(!UserNativeImpl)
+	if(!NativeImpl)
 		return FString();
 
-	return UserNativeImpl->GetUsername();
+	return NativeImpl->GetUsername();
 }
 
 void USentryUser::SetIpAddress(const FString& IpAddress)
 {
-	if (!UserNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserNativeImpl->SetIpAddress(IpAddress);
+	NativeImpl->SetIpAddress(IpAddress);
 }
 
 FString USentryUser::GetIpAddress() const
 {
-	if(!UserNativeImpl)
+	if(!NativeImpl)
 		return FString();
 
-	return UserNativeImpl->GetIpAddress();
+	return NativeImpl->GetIpAddress();
 }
 
 void USentryUser::SetData(const TMap<FString, FString>& Data)
 {
-	if (!UserNativeImpl)
+	if (!NativeImpl)
 		return;
 
-	UserNativeImpl->SetData(Data);
+	NativeImpl->SetData(Data);
 }
 
 TMap<FString, FString> USentryUser::GetData() const
 {
-	if(!UserNativeImpl)
+	if(!NativeImpl)
 		return TMap<FString, FString>();
 
-	return UserNativeImpl->GetData();
-}
-
-void USentryUser::InitWithNativeImpl(TSharedPtr<ISentryUser> userImpl)
-{
-	UserNativeImpl = userImpl;
-}
-
-TSharedPtr<ISentryUser> USentryUser::GetNativeImpl()
-{
-	return UserNativeImpl;
+	return NativeImpl->GetData();
 }

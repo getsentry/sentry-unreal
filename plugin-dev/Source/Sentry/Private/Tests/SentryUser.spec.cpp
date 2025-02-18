@@ -5,6 +5,8 @@
 
 #include "Misc/AutomationTest.h"
 
+#include "HAL/PlatformSentryUser.h"
+
 #if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentryUserSpec, "Sentry.SentryUser", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
@@ -15,7 +17,7 @@ void SentryUserSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryUser = NewObject<USentryUser>();
+		SentryUser = USentryUser::Create(CreateSharedSentryUser());
 	});
 
 	Describe("User params", [this]()
@@ -45,6 +47,20 @@ void SentryUserSpec::Define()
 			TMap<FString, FString> ReceivedData = SentryUser->GetData();
 			TestEqual("Data 1", ReceivedData[TEXT("Key1")], TestData[TEXT("Key1")]);
 			TestEqual("Data 2", ReceivedData[TEXT("Key2")], TestData[TEXT("Key2")]);
+		});
+	});
+
+	Describe("User IP address", [this]()
+	{
+		It("should be empty if not set", [this]()
+		{
+			TestTrue("Ip Address", SentryUser->GetIpAddress().IsEmpty());
+		});
+
+		It("should be empty if initialized with empty string", [this]()
+		{
+			SentryUser->SetIpAddress(TEXT(""));
+			TestTrue("Ip Address", SentryUser->GetIpAddress().IsEmpty());
 		});
 	});
 }

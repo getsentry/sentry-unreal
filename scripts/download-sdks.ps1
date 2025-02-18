@@ -5,8 +5,8 @@ Write-Host "Downloading native SDKs from the latest CI pipeline"
 function findCiRun([string] $branch)
 {
     Write-Host "Looking for the latest successful CI run on branch '$branch'"
-    $id = gh run list --branch $branch --workflow package-plugin-workflow --json 'conclusion,databaseId' `
-    | ConvertFrom-Json | Where-Object 'conclusion' -EQ 'success' | Select-Object -First 1 -ExpandProperty 'databaseId'
+    $jsonArray = gh run list --branch $branch --workflow package-plugin-workflow --json 'conclusion,databaseId' | ConvertFrom-Json
+    $id = $jsonArray | Where-Object 'conclusion' -EQ 'success' | Select-Object -First 1 -ExpandProperty 'databaseId'
     if ( "$id" -eq "" )
     {
         Write-Warning "  ... no successful CI run found on $branch"
@@ -34,7 +34,7 @@ if (-not (Test-Path $outDir))
     New-Item $outDir -ItemType Directory > $null
 }
 
-$sdks = @("Android", "IOS", "Linux", "LinuxArm64", "Mac", "Win64-Crashpad", "Win64-Breakpad")
+$sdks = @("Android", "IOS", "Linux", "LinuxArm64", "Mac", "Win64-Crashpad", "Win64-Breakpad", "Native")
 foreach ($sdk in $sdks)
 {
     $sdkDir = "$outDir/$sdk"
@@ -45,10 +45,15 @@ foreach ($sdk in $sdks)
         $sdkDir = "$outDir/$winSdk/$crashBackend"
     }  
 
+    if ($sdk.StartsWith('Native'))
+    {
+        $sdkDir = "$outDir/$sdk/sentry-native"
+    }  
+
     Write-Host "Downloading $sdk SDK to $sdkDir ..."
     if (Test-Path $sdkDir)
     {
-        Remove-Item "$outDir/$sdk" -Recurse
+        Remove-Item "$sdkDir" -Recurse
     }
 
     gh run download $runId -n "$sdk-sdk" -D $sdkDir

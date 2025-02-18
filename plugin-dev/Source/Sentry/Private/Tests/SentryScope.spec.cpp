@@ -11,11 +11,10 @@
 
 #include "Misc/AutomationTest.h"
 
-#if PLATFORM_WINDOWS || PLATFORM_LINUX
-#include "Desktop/SentryScopeDesktop.h"
-#include "Desktop/SentryEventDesktop.h"
-#include "Desktop/Infrastructure/SentryConvertersDesktop.h"
-#endif
+#include "HAL/PlatformSentryScope.h"
+#include "HAL/PlatformSentryEvent.h"
+
+#include "GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h"
 
 #if WITH_AUTOMATION_TESTS
 
@@ -33,7 +32,7 @@ void SentryScopeSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryScope = NewObject<USentryScope>();
+		SentryScope = USentryScope::Create(CreateSharedSentryScope());
 
 		TestDist = TEXT("dist_str");
 		TestEnvironment = TEXT("env_str");
@@ -155,13 +154,13 @@ void SentryScopeSpec::Define()
 			SentryScope->SetExtras(TestExtras);
 			SentryScope->SetContext(TEXT("TestContext"), TestContext);
 
-			USentryEvent* SentryEvent = NewObject<USentryEvent>();
+			USentryEvent* SentryEvent = USentryEvent::Create(CreateSharedSentryEvent());
 
-			TSharedPtr<SentryEventDesktop> EventDesktop = StaticCastSharedPtr<SentryEventDesktop>(SentryEvent->GetNativeImpl());
+			TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(SentryEvent->GetNativeObject());
 
-			StaticCastSharedPtr<SentryScopeDesktop>(SentryScope->GetNativeImpl())->Apply(EventDesktop);
+			StaticCastSharedPtr<FGenericPlatformSentryScope>(SentryScope->GetNativeObject())->Apply(Event);
 
-			sentry_value_t NativeEvent = EventDesktop->GetNativeObject();
+			sentry_value_t NativeEvent = Event->GetNativeObject();
 
 			sentry_value_t level = sentry_value_get_by_key(NativeEvent, "level");
 			sentry_value_t dist = sentry_value_get_by_key(NativeEvent, "dist");
@@ -173,16 +172,16 @@ void SentryScopeSpec::Define()
 			sentry_value_t contexts = sentry_value_get_by_key(NativeEvent, "contexts");
 			sentry_value_t testContext = sentry_value_get_by_key(contexts, "TestContext");
 
-			TestEqual("Event level", SentryConvertersDesktop::SentryLevelToUnreal(level), ESentryLevel::Fatal);
+			TestEqual("Event level", FGenericPlatformSentryConverters::SentryLevelToUnreal(level), ESentryLevel::Fatal);
 			TestEqual("Event dist", FString(sentry_value_as_string(dist)), TestDist);
 			TestEqual("Event environment", FString(sentry_value_as_string(environment)), TestEnvironment);
-			TestEqual("Event fingerprint", SentryConvertersDesktop::StringArrayToUnreal(fingerprint), TestFingerprint);
-			TestEqual("Event tags 1", SentryConvertersDesktop::StringMapToUnreal(tags)[TEXT("TagsKey1")], TestTags[TEXT("TagsKey1")]);
-			TestEqual("Event tags 2", SentryConvertersDesktop::StringMapToUnreal(tags)[TEXT("TagsKey2")], TestTags[TEXT("TagsKey2")]);
-			TestEqual("Event extra 1", SentryConvertersDesktop::StringMapToUnreal(extra)[TEXT("ExtrasKey1")], TestExtras[TEXT("ExtrasKey1")]);
-			TestEqual("Event extra 2", SentryConvertersDesktop::StringMapToUnreal(extra)[TEXT("ExtrasKey2")], TestExtras[TEXT("ExtrasKey2")]);
-			TestEqual("Event context 1", SentryConvertersDesktop::StringMapToUnreal(testContext)[TEXT("ContextKey1")], TestContext[TEXT("ContextKey1")]);
-			TestEqual("Event context 2", SentryConvertersDesktop::StringMapToUnreal(testContext)[TEXT("ContextKey2")], TestContext[TEXT("ContextKey2")]);
+			TestEqual("Event fingerprint", FGenericPlatformSentryConverters::StringArrayToUnreal(fingerprint), TestFingerprint);
+			TestEqual("Event tags 1", FGenericPlatformSentryConverters::StringMapToUnreal(tags)[TEXT("TagsKey1")], TestTags[TEXT("TagsKey1")]);
+			TestEqual("Event tags 2", FGenericPlatformSentryConverters::StringMapToUnreal(tags)[TEXT("TagsKey2")], TestTags[TEXT("TagsKey2")]);
+			TestEqual("Event extra 1", FGenericPlatformSentryConverters::StringMapToUnreal(extra)[TEXT("ExtrasKey1")], TestExtras[TEXT("ExtrasKey1")]);
+			TestEqual("Event extra 2", FGenericPlatformSentryConverters::StringMapToUnreal(extra)[TEXT("ExtrasKey2")], TestExtras[TEXT("ExtrasKey2")]);
+			TestEqual("Event context 1", FGenericPlatformSentryConverters::StringMapToUnreal(testContext)[TEXT("ContextKey1")], TestContext[TEXT("ContextKey1")]);
+			TestEqual("Event context 2", FGenericPlatformSentryConverters::StringMapToUnreal(testContext)[TEXT("ContextKey2")], TestContext[TEXT("ContextKey2")]);
 		});
 	});
 #endif

@@ -33,7 +33,7 @@ jobs:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: LinuxArm64
-      runsOn: ubuntu-latest-4-cores-arm64
+      runsOn: ubuntu-22.04-arm
       container: arm64v8/ubuntu:20.04
 
   windows-crashpad-sdk:
@@ -48,13 +48,21 @@ jobs:
       target: Win64-Breakpad
       runsOn: windows-2019
 
+  native-sdk:
+    uses: ./.github/workflows/native-sdk-download.yml
+    with:
+      target: Native
+      runsOn: ubuntu-latest
+
   build:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk, native-sdk]
     name: Package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Download CLI
         shell: pwsh
@@ -64,11 +72,6 @@ jobs:
         with:
           name: Android-sdk
           path: plugin-dev/Source/ThirdParty/Android
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: Android-libraries
-          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
 
       - uses: actions/download-artifact@v4
         with:
@@ -99,6 +102,11 @@ jobs:
         with:
           name: Win64-Breakpad-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Breakpad
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Native-sdk
+          path: plugin-dev/Source/ThirdParty/Native/sentry-native
 
       - name: Prepare Sentry packages for release
         shell: pwsh
@@ -226,6 +234,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: checkout
+          submodules: recursive
 
       - name: Extract package to ${{ matrix.app }}/Plugins
         run: unzip sentry-unreal-*-engine${{ matrix.unreal }}-github.zip -d checkout/${{ matrix.app }}/Plugins/sentry
@@ -237,6 +246,8 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
+          docker exec -w /workspace/checkout/${{ matrix.app }} unreal bash -c "
+            ls -al /workspace/checkout/${{ matrix.app }}/Plugins/sentry "
           docker exec -w /workspace/checkout/${{ matrix.app }} unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/${{ matrix.app }}/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/${{ matrix.app }}/Builds \

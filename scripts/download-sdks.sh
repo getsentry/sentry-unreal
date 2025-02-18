@@ -37,3 +37,7 @@ for winSdk in "${winSdks[@]}"; do
     echo "Downloading Win64-$winSdk SDK to $PWD/Win64/$winSdk ..."
     gh run download $runId -n "Win64-$winSdk-sdk" -D Win64/$winSdk
 done
+
+rm -rf "./Native/sentry-native"
+echo "Downloading Native SDK to $PWD/Native/sentry-native ..."
+gh run download $runId -n "Native-sdk" -D Native/sentry-native

@@ -38,7 +38,7 @@ function testFiles([string] $publishingPlatform)
             if ($accept)
             {
                 # Override the snapshot file with the current package contents
-                $snapshotContent | Out-File $snapshotFile
+                [System.IO.File]::WriteAllLines($snapshotFile, $snapshotContent)
             }
             $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
             if ($result.count -eq 0)
@@ -61,21 +61,3 @@ function testFiles([string] $publishingPlatform)
 
 testFiles("github")
 testFiles("marketplace")
-
-# TODO
-# $androidLibsDir = "$projectRoot/modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/"
-# if (-not(Test-Path -Path $androidLibsDir)) {
-#     Write-Host  "Android native libs not found in: '$androidLibsDir'"
-#     exit 1
-# }
-
-# $androidLibs = Get-ChildItem -Recurse $androidLibsDir | ForEach-Object {$_.Directory.Name + "/" + $_.Name}
-# $result = Compare-Object $androidLibs (Get-Content "$PSScriptRoot/android-libs.snapshot")
-# if ($result.count -eq 0) {
-#     Write-Host  "Android native libs match snapshot."
-# }
-# else {
-#     Write-Host  "Android native libs do not match snapshot."
-#     $result | Format-Table -AutoSize
-#     exit 3
-# }
