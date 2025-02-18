@@ -4,32 +4,32 @@ on: push
 
 jobs:
   build:
-    runs-on: windows-latest-4-cores
+    runs-on: windows-latest-16-cores
     steps:
       - name: Print disk space 1
         run: |
           Get-PSDrive
 
-      - name: Clean up disk space
-        run: |
-          docker system prune -a -f
-          Remove-Item -Path "C:\Android\android-sdk" -Force -Recurse
+      # - name: Clean up disk space
+      #   run: |
+      #     docker system prune -a -f
+      #     Remove-Item -Path "C:\Android\android-sdk" -Force -Recurse
 
-      - name: Print disk space 2
-        run: |
-          Get-PSDrive
+      # - name: Print disk space 2
+      #   run: |
+      #     Get-PSDrive
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12.8'
-          architecture: 'x64'
+      # - name: Set up Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: '3.12.8'
+      #     architecture: 'x64'
 
-      - name: Install unreal-docker
-        run: |
-          pip install ue4-docker
+      # - name: Install unreal-docker
+      #   run: |
+      #     pip install ue4-docker
 
-      - name: Build Unreal Engine Docker image
-        run: |
-          ue4-docker setup
-          ue4-docker build -basetag ltsc2022 --visual-studio 2019 --target minimal --exclude debug --exclude templates -isolation=process -username=${{ secrets.DOCKER_USERNAME }} -password=${{ secrets.DOCKER_TOKEN }} custom -repo=https://github.com/EpicGames/UnrealEngine.git -branch="4.27" --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
+      # - name: Build Unreal Engine Docker image
+      #   run: |
+      #     ue4-docker setup
+      #     ue4-docker build -basetag ltsc2022 --visual-studio 2019 --target minimal --exclude debug --exclude templates -isolation=process -username=${{ secrets.DOCKER_USERNAME }} -password=${{ secrets.DOCKER_TOKEN }} custom -repo=https://github.com/EpicGames/UnrealEngine.git -branch="4.27" --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
