@@ -211,7 +211,6 @@ Source/ThirdParty/Android/sentry-android-core-release.aar
 Source/ThirdParty/Android/sentry-android-ndk-release.aar
 Source/ThirdParty/Android/sentry-native-ndk-release.aar
 Source/ThirdParty/Android/sentry.jar
-Source/ThirdParty/Android/SentryAndroid.Build.cs
 Source/ThirdParty/CLI/sentry-cli-Darwin-universal
 Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
 Source/ThirdParty/CLI/sentry-cli-Windows-x86_64.exe
@@ -308,7 +307,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwizzle.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryUser+Private.h
 Source/ThirdParty/IOS/Sentry.framework/Sentry
-Source/ThirdParty/IOS/SentryIOS.Build.cs
 Source/ThirdParty/Linux/bin/crashpad_handler
 Source/ThirdParty/Linux/include/sentry.h
 Source/ThirdParty/Linux/lib/libcrashpad_client.a
@@ -320,7 +318,6 @@ Source/ThirdParty/Linux/lib/libcrashpad_tools.a
 Source/ThirdParty/Linux/lib/libcrashpad_util.a
 Source/ThirdParty/Linux/lib/libmini_chromium.a
 Source/ThirdParty/Linux/lib/libsentry.a
-Source/ThirdParty/Linux/SentryLinux.Build.cs
 Source/ThirdParty/LinuxArm64/bin/crashpad_handler
 Source/ThirdParty/LinuxArm64/include/sentry.h
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_client.a
@@ -413,7 +410,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryUser.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryUserFeedback.h
 Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
-Source/ThirdParty/Mac/SentryMac.Build.cs
 Source/ThirdParty/Native/sentry-native/CHANGELOG.md
 Source/ThirdParty/Native/sentry-native/cmake/utils.cmake
 Source/ThirdParty/Native/sentry-native/CMakeLists.txt
@@ -3363,5 +3359,3 @@ Source/ThirdParty/Win64/Crashpad/lib/crashpad_util.lib
 Source/ThirdParty/Win64/Crashpad/lib/crashpad_zlib.lib
 Source/ThirdParty/Win64/Crashpad/lib/mini_chromium.lib
 Source/ThirdParty/Win64/Crashpad/lib/sentry.lib
-Source/ThirdParty/Win64/SentryWin64.Build.cs
-Source/ThirdParty/Win64/SentryWin64Native.Build.cs
