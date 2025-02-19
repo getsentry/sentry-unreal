@@ -102,17 +102,17 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	FGCScopeGuard GCScopeGuard;
 
-	if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		USentryEvent* EventToProcess = USentryEvent::Create(Event);
-
-		// Executing UFUNCTION is allowed only when not post-loading
-		USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
-
-		return ProcessedEvent ? event : sentry_value_new_null();
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+		return event;
 	}
 
-	return event;
+	USentryEvent* EventToProcess = USentryEvent::Create(Event);
+	
+	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+
+	return ProcessedEvent ? event : sentry_value_new_null();
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)

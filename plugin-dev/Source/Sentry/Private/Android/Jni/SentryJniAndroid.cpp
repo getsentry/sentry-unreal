@@ -11,6 +11,7 @@
 
 #include "Android/AndroidJNI.h"
 
+#include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
 #include "SentryBeforeSendHandler.h"
@@ -34,20 +35,20 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 {
 	FGCScopeGuard GCScopeGuard;
 
-	if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
-
-		USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventAndroid(event)));
-		USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new SentryHintAndroid(hint)));
-
-		// Executing UFUNCTION is allowed only when not post-loading
-		USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
-		
-		return ProcessedEvent ? event : nullptr;
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+		return event;
 	}
 
-	return event;
+	USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
+
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventAndroid(event)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new SentryHintAndroid(hint)));
+
+	USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
+
+	return ProcessedEvent ? event : nullptr;
 }
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
