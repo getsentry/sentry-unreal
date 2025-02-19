@@ -6,11 +6,8 @@
 
 - Build the plugin through the Unreal Engine build system ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
 - Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
-- Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
 - Add getter for the event's Id ([#768](https://github.com/getsentry/sentry-unreal/pull/768))
 - Determine user's IP address automatically on Win/Linux only if PII attachment enabled in settings ([#769](https://github.com/getsentry/sentry-unreal/pull/769))
-- Initial cleanup for plugin extensions ([#779](https://github.com/getsentry/sentry-unreal/pull/779))
-- Split build platform ([#781](https://github.com/getsentry/sentry-unreal/pull/781))
 
 ### Fixes
 
@@ -34,6 +31,11 @@
 - Bump Java SDK (Android) from v8.2.0-1-g9180dc53 to v8.2.0 ([#783](https://github.com/getsentry/sentry-unreal/pull/783))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.2.0-1-g9180dc53...8.2.0)
+
+### Internal
+
+- Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- Initial cleanup for plugin extensions ([#779](https://github.com/getsentry/sentry-unreal/pull/779))
 
 ## 0.22.0
 
