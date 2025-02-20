@@ -37,8 +37,6 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) = 0;
-	virtual TSharedPtr<ISentryId> CaptureException(const FString& type, const FString& message, int32 framesToSkip = 0) = 0;
-	virtual TSharedPtr<ISentryId> CaptureAssertion(const FString& type, const FString& message) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) = 0;
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) = 0;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) = 0;
@@ -55,8 +53,4 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) = 0;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) = 0;
-
-protected:
-	virtual int32 GetAssertionFramesToSkip() const = 0;
-	virtual int32 GetEnsureFramesToSkip() const = 0;
 };
