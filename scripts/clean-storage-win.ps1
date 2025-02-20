@@ -9,79 +9,84 @@ function printSpaceFreed([string] $stepName) {
 }
 
 $initialSpace = (Get-PSDrive C).Free / 1GB
+
 $script:lastReportedSpace = $initialSpace
 $script:totalFreed = 0
 
 Write-Host "Initial free space: $([math]::Round($initialSpace, 2)) GB"
 
-Stop-Service -Name wuauserv -Force
-Remove-Item -Path "C:\Windows\SoftwareDistribution\*" -Recurse -Force -ErrorAction SilentlyContinue
-Start-Service -Name wuauserv
-printSpaceFreed "Windows Update Cache Cleanup"
-
-Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
-printSpaceFreed "Windows Component Store Cleanup"
-
-Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\Catalogs" -Recurse | Remove-Item -Force -ErrorAction SilentlyContinue
-printSpaceFreed "Windows Kits Catalogs Cleanup"
-
-Remove-Item -Path "C:\Windows.old" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "C:\`$WINDOWS.~BT" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "C:\`$WINDOWS.~WS" -Recurse -Force -ErrorAction SilentlyContinue
-printSpaceFreed "Windows Update Backup Folders Cleanup"
-
-Remove-Item -Path "C:\Windows\symbols\*" -Recurse -Force -ErrorAction SilentlyContinue
-printSpaceFreed "Symbol Cache Cleanup"
-
+# ~1.21 GB
 Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Temp Files Cleanup"
 
+# ~4.26 GB
 Remove-Item -Path "C:\ProgramData\Package Cache\*" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Package Cache Cleanup"
 
-Remove-Item -Path "C:\ProgramData\Microsoft\VisualStudio\Packages\*.vsix" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\layout\*.vsix" -Recurse -Force -ErrorAction SilentlyContinue
-printSpaceFreed "Visual Studio Cache Cleanup"
-
+# ~12.44 GB
 Remove-Item -Path "C:\ghcup" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Haskell Removal"
 
+# ~11.78 GB
 Remove-Item -Path "C:\Program Files\Android" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Program Files (x86)\Android" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Android SDK Removal"
 
-Remove-Item -Path "C:\Program Files\nodejs\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-printSpaceFreed "Node.js Modules Cleanup"
-
+# ~1.21 GB
 Remove-Item -Path "C:\Program Files\MongoDB" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "MongoDB Removal"
 
+# ~0.54 GB
 Remove-Item -Path "C:\Program Files\MySQL" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "MySQL Removal"
 
+# ~0.89 GB
 Remove-Item -Path "C:\Program Files\PostgreSQL" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "PostgreSQL Removal"
 
-Remove-Item -Path "C:\Users\runneradmin\AppData\Local\Temp\chocolatey" -Recurse -Force -ErrorAction SilentlyContinue
-printSpaceFreed "Chocolatey Cache Cleanup"
-
+# ~0.36 GB
 Remove-Item -Path "C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Program Files (x86)\Windows Kits\10\Microsoft Application Inspector" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Windows Kits Components Removal"
 
+# ~2.93 GB
 Remove-Item -Path "C:\rtools44" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "R Tools Removal"
 
+# ~0.68 GB
 Remove-Item -Path "C:\Julia" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Julia Removal"
 
+# ~0.46 GB
 Remove-Item -Path "C:\Miniconda" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Miniconda Removal"
 
+# ~10.24 GB
 docker system prune -a -f
 printSpaceFreed "Docker Cleanup"
 
+$vsInstallPath = Get-ChildItem -Path "C:\Program Files\*Visual Studio*", "C:\Program Files (x86)\*Visual Studio*" -Directory -ErrorAction SilentlyContinue
+if ($vsInstallPath) {
+    Remove-Item -Path "$vsInstallPath\Android" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -Path "$vsInstallPath\iOS" -Recurse -Force -ErrorAction SilentlyContinue
+}
+printSpaceFreed "Visual Studio Mobile Components Removal"
+
+$dotnetPath = "C:\Program Files\dotnet\sdk"
+if (Test-Path $dotnetPath) {
+    $allSdks = Get-ChildItem -Path $dotnetPath -Directory | Sort-Object Name -Descending
+    if ($allSdks.Count -gt 1) {
+        # Keep the latest SDK, remove others
+        $allSdks | Select-Object -Skip 1 | ForEach-Object {
+            Remove-Item -Path $_.FullName -Recurse -Force
+        }
+    }
+}
+printSpaceFreed ".NET Core SDKs Cleanup"
+
+$finalSpace = (Get-PSDrive C).Free / 1GB
+
 Write-Host "Initial free space: $([math]::Round($initialSpace, 2)) GB"
 Write-Host "Final free space: $([math]::Round($finalSpace, 2)) GB"
-Write-Host "Total space gained: $([math]::Round($totalGained, 2)) GB"
+Write-Host "Total space gained: $([math]::Round($totalFreed, 2)) GB"
