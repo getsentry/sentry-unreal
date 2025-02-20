@@ -40,6 +40,8 @@ public class CMakeTargetInst
 
 	private string m_buildDirectory;
 	private string m_buildPath;
+	private string m_installDirectory;
+	private string m_installPath;
 	private string m_generatedTargetPath;
 
 	private string m_thirdPartyGeneratedPath;
@@ -67,7 +69,7 @@ public class CMakeTargetInst
 #endif
 		m_cmakeArgs=args;
 	}
-	
+
 	private string GetBuildType(ReadOnlyTargetRules target)
 	{
 		string buildType = "Release";
@@ -104,6 +106,8 @@ public class CMakeTargetInst
 		m_generatedTargetPath=Path.Combine(m_thirdPartyGeneratedPath, m_targetName, m_targetPlatform);
 		m_buildDirectory = "build";
 		m_buildPath=Path.Combine(m_generatedTargetPath, m_buildDirectory);
+		m_installDirectory = "install";
+		m_installPath=Path.Combine(m_generatedTargetPath, m_installDirectory);
 
 		m_buildInfoFile="buildinfo_"+buildType+".output";
 		m_buildInfoPath=Path.Combine(m_buildPath, m_buildInfoFile).Replace("\\", "/");
@@ -173,9 +177,19 @@ public class CMakeTargetInst
 				File.WriteAllText(builtFile, cmakeLastWrite.ToString());
 			}
 		}
+
+		var installCommand = CreateCMakeInstallCommand(m_buildPath, m_installPath, buildType);
+		var installCode = ExecuteCommandSync(installCommand);
+
+		if(installCode!=0)
+		{
+			Console.WriteLine("Cannot perform install. Exited with code: "+buildCode);
+			return false;
+		}
+
 		return true;
 	}
-	
+
 	private string GetWindowsGeneratorName(WindowsCompiler compiler)
 	{
 		string generatorName="";
@@ -211,7 +225,7 @@ public class CMakeTargetInst
 #if UE_5_2_OR_LATER   // UE 5.2 and onwards
 	private string GetWindowsGeneratorOptions(WindowsCompiler compiler, UnrealArch architecture)
 #else
-private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchitecture architecture)
+	private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchitecture architecture)
 #endif
 	{
 		string generatorOptions="";
@@ -235,7 +249,6 @@ private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchi
 				generatorOptions="-A x64";
 			else if(architecture == WindowsArchitecture.ARM64)
 				generatorOptions="-A ARM64";
-
 #else // Everything before UE 5.0
 			if(architecture == WindowsArchitecture.x86)
 				generatorOptions="-A Win32";
@@ -302,8 +315,6 @@ private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchi
 			options += " -DSENTRY_BACKEND=breakpad";
 		}
 
-		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
-
 		string buildToolchain = "";
 		if(target.Platform.ToString() == "XSX")
 		{
@@ -316,7 +327,8 @@ private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchi
 			buildToolchain+
 			" -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
 			" -DCMAKE_INSTALL_PREFIX=\""+installPath+"\""+
-			" -DSENTRY_BUILD_SHARED_LIBS=Off"+
+			" -DSENTRY_BUILD_SHARED_LIBS=OFF"+
+			" -DSENTRY_SDK_NAME=sentry.native.unreal"+
 			options+
 			" "+m_cmakeArgs+
 			" -B \""+buildDirectory+"\""+
@@ -332,9 +344,9 @@ private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchi
 		return GetCMakeExe()+" --build \""+buildDirectory+"\" --config "+buildType;
 	}
 
-	private string CreateCMakeInstallCommand(string buildDirectory, string buildType)
+	private string CreateCMakeInstallCommand(string buildDirectory, string installDirectory, string buildType)
 	{
-		return GetCMakeExe()+" --build \""+buildDirectory+"\" --target install --config "+buildType;
+		return GetCMakeExe()+" --install \""+buildDirectory+"\" --prefix \""+installDirectory+"\" --config "+buildType;
 	}
 
 	private Tuple<string, string> GetExecuteCommandSync()
@@ -409,57 +421,33 @@ public class SentryNative : ModuleRules
 	{
 		Type = ModuleType.External;
 
+		string projectIntermediatePath = Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate");
+		string platformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
+
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			var targetLocation = Path.Combine(PluginDirectory, "Source", "ThirdParty", "Native", "sentry-native");
+			var nativeSourcePath = Path.Combine(PluginDirectory, "Source", "ThirdParty", "Native", "sentry-native");
 
-			PublicIncludePaths.Add(Path.Combine(targetLocation, "include"));
+			PublicIncludePaths.Add(Path.Combine(nativeSourcePath, "include"));
 
-			CMakeTargetInst cmakeTarget = new CMakeTargetInst("sentry-native", Target.Platform.ToString(), targetLocation, "");
+			CMakeTargetInst cmakeTarget = new CMakeTargetInst("sentry-native", Target.Platform.ToString(), nativeSourcePath, "");
 			cmakeTarget.Load(Target, this);
 
-			string buildOutputPath = Path.Combine(PluginDirectory, "Binaries", "Win64");
+			string installPath = Path.Combine(projectIntermediatePath, "CMakeTarget", "sentry-native", Target.Platform.ToString(), "install");
 
-			string intermediatePath = Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate", "CMakeTarget", "sentry-native");
-			string buildPath = Path.Combine(intermediatePath, "Win64", "build");
+			RuntimeDependencies.Add(Path.Combine(platformBinariesPath, "crashpad_handler.exe"), Path.Combine(installPath, "bin", "crashpad_handler.exe"));
 
-			string targetConfiguration = Target.Configuration == UnrealTargetConfiguration.Debug ? "Debug" : "Release";
-
-			if (!PublicDefinitions.Contains("USE_SENTRY_BREAKPAD=1"))
-			{
-				string crashpadBuildPath = Path.Combine(buildPath, "crashpad_build");
-
-				if (!File.Exists(Path.Combine(buildOutputPath, "crashpad_handler.exe")))
-				{
-					Console.WriteLine("Copying crashpad_handler.exe");
-					if (!Directory.Exists(buildOutputPath))
-					{
-						Directory.CreateDirectory(buildOutputPath);
-					}
-
-					File.Copy(Path.Combine(crashpadBuildPath, "handler", targetConfiguration, "crashpad_handler.exe"),
-						Path.Combine(buildOutputPath, "crashpad_handler.exe"));
-				}
-				else
-				{
-					Console.WriteLine("crashpad_handler.exe already exists");
-				}
-
-				RuntimeDependencies.Add(Path.Combine(buildOutputPath, "crashpad_handler.exe"));
-
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "handler", targetConfiguration, "crashpad_handler_lib.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "client", targetConfiguration, "crashpad_client.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "compat", targetConfiguration, "crashpad_compat.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "minidump", targetConfiguration, "crashpad_minidump.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "snapshot", targetConfiguration, "crashpad_snapshot.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "getopt", targetConfiguration, "crashpad_getopt.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "mini_chromium", targetConfiguration, "mini_chromium.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "third_party", "zlib", targetConfiguration, "crashpad_zlib.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "tools", targetConfiguration, "crashpad_tools.lib"));
-				PublicAdditionalLibraries.Add(Path.Combine(crashpadBuildPath, "util", targetConfiguration, "crashpad_util.lib"));
-			}
-
-			PublicAdditionalLibraries.Add(Path.Combine(buildPath, targetConfiguration, "sentry.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_handler_lib.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_client.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_compat.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_minidump.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_snapshot.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_getopt.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "mini_chromium.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_zlib.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_tools.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_util.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "sentry.lib"));
 		}
 	}
 }
