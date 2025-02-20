@@ -66,23 +66,8 @@ printSpaceFreed "Miniconda Removal"
 docker system prune -a -f
 printSpaceFreed "Docker Cleanup"
 
-$vsInstallPath = Get-ChildItem -Path "C:\Program Files\*Visual Studio*", "C:\Program Files (x86)\*Visual Studio*" -Directory -ErrorAction SilentlyContinue
-if ($vsInstallPath) {
-    Remove-Item -Path "$vsInstallPath\Android" -Recurse -Force -ErrorAction SilentlyContinue
-    Remove-Item -Path "$vsInstallPath\iOS" -Recurse -Force -ErrorAction SilentlyContinue
-}
-printSpaceFreed "Visual Studio Mobile Components Removal"
-
-$dotnetPath = "C:\Program Files\dotnet\sdk"
-if (Test-Path $dotnetPath) {
-    $allSdks = Get-ChildItem -Path $dotnetPath -Directory | Sort-Object Name -Descending
-    if ($allSdks.Count -gt 1) {
-        # Keep the latest SDK, remove others
-        $allSdks | Select-Object -Skip 1 | ForEach-Object {
-            Remove-Item -Path $_.FullName -Recurse -Force
-        }
-    }
-}
+# ~2.82 GB
+Remove-Item -Path "C:\Program Files\dotnet\sdk" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed ".NET Core SDKs Cleanup"
 
 $finalSpace = (Get-PSDrive C).Free / 1GB
