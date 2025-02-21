@@ -1,19 +1,20 @@
 name: UE Windows Docker build
 
-workflow_dispatch:
-  inputs:
-    ue_version:
-      description: "Select Unreal Engine version"
-      required: true
-      type: choice
-      options:
-        - 4.27
-        - 5.0
-        - 5.1
-        - 5.2
-        - 5.3
-        - 5.4
-        - 5.5
+on:
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: "Select Unreal Engine version"
+        required: true
+        type: choice
+        options:
+          - 4.27
+          - 5.0
+          - 5.1
+          - 5.2
+          - 5.3
+          - 5.4
+          - 5.5
 
 jobs:
   build:
