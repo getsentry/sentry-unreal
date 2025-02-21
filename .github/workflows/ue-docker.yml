@@ -1,4 +1,4 @@
-name: UE Windows Docker build
+name: Build UE Windows Docker image
 
 on:
   workflow_dispatch:
