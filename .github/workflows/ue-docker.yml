@@ -33,14 +33,13 @@ jobs:
 
       - name: Set Visual Studio version based on UE version
         id: set_vs_version
+        shell: bash
         run: |
-          if ("${{ inputs.ue_version }}" -eq "4.27") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
-          elseif ("${{ inputs.ue_version }}" -eq "5.0") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
-          elseif ("${{ inputs.ue_version }}" -eq "5.1") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
-          elseif ("${{ inputs.ue_version }}" -eq "5.2") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
-          elseif ("${{ inputs.ue_version }}" -eq "5.3") { echo "vs_version=2022" >> $GITHUB_OUTPUT }
-          elseif ("${{ inputs.ue_version }}" -eq "5.4") { echo "vs_version=2022" >> $GITHUB_OUTPUT }
-          elseif ("${{ inputs.ue_version }}" -eq "5.5") { echo "vs_version=2022" >> $GITHUB_OUTPUT }
+          if [[ "${{ inputs.ue_version }}" == "4.27" || "${{ inputs.ue_version }}" == "5.0" || "${{ inputs.ue_version }}" == "5.1" ]]; then
+            echo "vs_version=2019" >> $GITHUB_OUTPUT
+          else
+            echo "vs_version=2022" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -60,7 +59,7 @@ jobs:
         run: |
           ue4-docker build custom -repo=https://github.com/getsentry/UnrealEngine.git -branch="${{ inputs.ue_version }}" \
           -basetag ltsc2022 \
-          -suffix ${{ inputs.ue_version }} \
+          -suffix "${{ inputs.ue_version }}" \
           -isolation=process \
           -username=${{ secrets.DOCKER_USERNAME }} \
           -password=${{ secrets.DOCKER_TOKEN }} \
