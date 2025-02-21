@@ -26,7 +26,6 @@ jobs:
 
       # Building docker images for UE 5.4 and newer require extra disk space
       - name: Clean up disk space before Docker build        
-        if: ${{ inputs.ue_version == '5.4' || inputs.ue_version == '5.5' }}
         shell: pwsh
         run: |
           .\scripts\clean-storage-win.ps1
