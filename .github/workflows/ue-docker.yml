@@ -57,16 +57,16 @@ jobs:
 
       - name: Build Unreal Engine Docker image
         run: |
-          ue4-docker build custom -repo=https://github.com/getsentry/UnrealEngine.git -branch="${{ inputs.ue_version }}" \
-          -basetag ltsc2022 \
-          -suffix "${{ inputs.ue_version }}" \
-          -isolation=process \
-          -username=${{ secrets.DOCKER_USERNAME }} \
-          -password=${{ secrets.DOCKER_TOKEN }} \
-          --visual-studio ${{ steps.set_vs_version.outputs.vs_version }} \
-          --target minimal \
-          --exclude debug \
-          --exclude templates \
+          ue4-docker build custom -repo=https://github.com/getsentry/UnrealEngine.git -branch="${{ inputs.ue_version }}" `
+          -basetag ltsc2022 `
+          -suffix "${{ inputs.ue_version }}" `
+          -isolation=process `
+          -username=${{ secrets.DOCKER_USERNAME }} `
+          -password=${{ secrets.DOCKER_TOKEN }} `
+          --visual-studio ${{ steps.set_vs_version.outputs.vs_version }} `
+          --target minimal `
+          --exclude debug `
+          --exclude templates `
           --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
 
       - name: Tag Unreal Engine Docker image
