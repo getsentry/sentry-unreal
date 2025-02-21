@@ -1,35 +1,79 @@
-name: ue-docker
+name: UE Windows Docker build
 
-on: push
+workflow_dispatch:
+  inputs:
+    ue_version:
+      description: "Select Unreal Engine version"
+      required: true
+      type: choice
+      options:
+        - 4.27
+        - 5.0
+        - 5.1
+        - 5.2
+        - 5.3
+        - 5.4
+        - 5.5
 
 jobs:
   build:
     runs-on: windows-latest-16-cores
+
     steps:
-      - name: Print disk space 1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Building docker images for UE 5.4 and newer require extra disk space
+      - name: Clean up disk space before Docker build        
+        if: ${{ inputs.ue_version == '5.4' || inputs.ue_version == '5.5' }}
+        shell: pwsh
         run: |
-          Get-PSDrive
+          .\scripts\clean-storage-win.ps1
 
-      # - name: Clean up disk space
-      #   run: |
-      #     docker system prune -a -f
-      #     Remove-Item -Path "C:\Android\android-sdk" -Force -Recurse
+      - name: Set Visual Studio version based on UE version
+        id: set_vs_version
+        run: |
+          if ("${{ inputs.ue_version }}" -eq "4.27") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
+          elseif ("${{ inputs.ue_version }}" -eq "5.0") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
+          elseif ("${{ inputs.ue_version }}" -eq "5.1") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
+          elseif ("${{ inputs.ue_version }}" -eq "5.2") { echo "vs_version=2019" >> $GITHUB_OUTPUT }
+          elseif ("${{ inputs.ue_version }}" -eq "5.3") { echo "vs_version=2022" >> $GITHUB_OUTPUT }
+          elseif ("${{ inputs.ue_version }}" -eq "5.4") { echo "vs_version=2022" >> $GITHUB_OUTPUT }
+          elseif ("${{ inputs.ue_version }}" -eq "5.5") { echo "vs_version=2022" >> $GITHUB_OUTPUT }
 
-      # - name: Print disk space 2
-      #   run: |
-      #     Get-PSDrive
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.8'
+          architecture: 'x64'
 
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.12.8'
-      #     architecture: 'x64'
+      - name: Install unreal-docker
+        run: |
+          pip install ue4-docker
 
-      # - name: Install unreal-docker
-      #   run: |
-      #     pip install ue4-docker
+      - name: Configure unreal-docker
+        run: |
+          ue4-docker setup
 
-      # - name: Build Unreal Engine Docker image
-      #   run: |
-      #     ue4-docker setup
-      #     ue4-docker build -basetag ltsc2022 --visual-studio 2019 --target minimal --exclude debug --exclude templates -isolation=process -username=${{ secrets.DOCKER_USERNAME }} -password=${{ secrets.DOCKER_TOKEN }} custom -repo=https://github.com/EpicGames/UnrealEngine.git -branch="4.27" --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
+      - name: Build Unreal Engine Docker image
+        run: |
+          ue4-docker build custom -repo=https://github.com/getsentry/UnrealEngine.git -branch="${{ inputs.ue_version }}" \
+          -basetag ltsc2022 \
+          -suffix ${{ inputs.ue_version }} \
+          -isolation=process \
+          -username=${{ secrets.DOCKER_USERNAME }} \
+          -password=${{ secrets.DOCKER_TOKEN }}
+          --visual-studio ${{ steps.env.outputs.vs_version }} \
+          --target minimal \
+          --exclude debug \
+          --exclude templates \
+          --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
+
+      - name: Tag Unreal Engine Docker image
+        run: |
+          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ghcr.io/getsentry/unreal-docker:${{ inputs.ue_version }}
+
+      - name: Push Unreal Engine Docker image to GitHub package registry
+        run: |
+          echo ${{ secrets.DOCKER_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push ghcr.io/getsentry/unreal-docker:${{ inputs.ue_version }}
