@@ -63,7 +63,7 @@ jobs:
           -suffix ${{ inputs.ue_version }} \
           -isolation=process \
           -username=${{ secrets.DOCKER_USERNAME }} \
-          -password=${{ secrets.DOCKER_TOKEN }}
+          -password=${{ secrets.DOCKER_TOKEN }} \
           --visual-studio ${{ steps.set_vs_version.outputs.vs_version }} \
           --target minimal \
           --exclude debug \
