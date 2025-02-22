@@ -19,15 +19,8 @@ if [ $targetType = "Editor" ]; then
     exit
 fi
 
-if [ $targetPlatform = "IOS" ] || [ $targetPlatform = "Mac" ]; then
-    SENTRY_CLI_EXEC="$pluginPath/Source/ThirdParty/CLI/sentry-cli-Darwin-universal"
-elif [ $targetPlatform = "Linux" ] || [ $targetPlatform = "LinuxArm64" ]; then
-    SENTRY_CLI_EXEC="$pluginPath/Source/ThirdParty/CLI/sentry-cli-Linux-x86_64"
-elif [ $targetPlatform = "Android" ]; then
-    echo "Sentry: Debug symbols upload for Android is handled by Sentry's gradle plugin if enabled"
-    exit
-else
-    echo "Sentry: Unexpected platform ${targetPlatform}. Skipping..."
+if [ $targetPlatform = "Android" ]; then
+    echo "Sentry: Debug symbols upload for Android is handled by Sentry's Gradle plugin (if enabled)"
     exit
 fi
 
@@ -95,8 +88,17 @@ if [ ! -f "$SENTRY_PROPERTIES" ]; then
     exit
 fi
 
+if [ $targetPlatform = "IOS" ] || [ $targetPlatform = "Mac" ]; then
+    SENTRY_CLI_EXEC="$pluginPath/Source/ThirdParty/CLI/sentry-cli-Darwin-universal"
+elif [ $targetPlatform = "Linux" ] || [ $targetPlatform = "LinuxArm64" ]; then
+    SENTRY_CLI_EXEC="$pluginPath/Source/ThirdParty/CLI/sentry-cli-Linux-x86_64"
+else
+    echo "Sentry: Unexpected platform ${targetPlatform}. Skipping..."
+    exit
+fi
+
 if [ ! -f "$SENTRY_CLI_EXEC" ]; then
-    echo "Sentry: Sentry CLI is not configured in plugin settings. Skipping..."
+    echo "Sentry: Sentry CLI is missing. Skipping..."
     exit
 fi
 
