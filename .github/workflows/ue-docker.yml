@@ -58,6 +58,7 @@ jobs:
       - name: Configure unreal-docker
         run: |
           ue4-docker setup
+          ue4-docker diagnostics network
 
       - name: Build Unreal Engine Docker image
         run: |
