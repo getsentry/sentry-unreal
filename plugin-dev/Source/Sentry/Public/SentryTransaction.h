@@ -15,7 +15,7 @@ class USentrySpan;
 /**
  * Representation of an activity to measure or track.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryTransaction : public UObject, public TSentryImplWrapper<ISentryTransaction, USentryTransaction>
 {
 	GENERATED_BODY()

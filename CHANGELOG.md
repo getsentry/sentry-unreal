@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Sentry entities created with `NewObject<T>` now require an explicit call to the `Initialize` method before use ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- In Blueprints, Sentry entities must be created using the corresponding library functions ([#796](https://github.com/getsentry/sentry-unreal/pull/796))
+- The utility functions `StringToBytesArray`, `ByteArrayToString`, and `SaveStringToFile` have been removed ([#796](https://github.com/getsentry/sentry-unreal/pull/796))
+- The plugin setting `EnableBuildPlatforms` now uses a string array instead of a struct ([#779](https://github.com/getsentry/sentry-unreal/pull/779))
+
 ### Features
 
 - Build the plugin through the Unreal Engine build system ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
@@ -28,9 +35,6 @@
 - Bump Native SDK from v0.7.17 to v0.7.20 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742), [#764](https://github.com/getsentry/sentry-unreal/pull/764))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.20)
-- Bump Java SDK (Android) from v8.2.0-1-g9180dc53 to v8.2.0 ([#783](https://github.com/getsentry/sentry-unreal/pull/783))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.2.0-1-g9180dc53...8.2.0)
 
 ### Internal
 

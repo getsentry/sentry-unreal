@@ -31,8 +31,7 @@ public:
 	 * @param Message Message to sent.
 	 * @param Level Level of the event.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Function has been deprecated. Use SentryEvent CreateEventWithMessageAndLevel instead"))
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static USentryEvent* CreateSentryEvent(const FString& Message, ESentryLevel Level);
 
 	/**
@@ -102,23 +101,4 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static USentryTransactionContext* CreateSentryTransactionContext(const FString& Name, const FString& Operation);
-
-	/** Converts string to byte array. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static TArray<uint8> StringToBytesArray(const FString& InString);
-
-	/** Converts byte array to string. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static FString ByteArrayToString(const TArray<uint8>& Array);
-
-	/**
-	 * Saves string to a file.
-	 *
-	 * @param InString Content of a file.
-	 * @param Filename Name of a file to be saved.
-	 *
-	 * @return Absolute path to a file with specified name and content.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static FString SaveStringToFile(const FString& InString, const FString& Filename);
 };
