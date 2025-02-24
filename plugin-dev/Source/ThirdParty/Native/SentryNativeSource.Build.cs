@@ -417,7 +417,7 @@ public class CMakeTargetInst
 
 public class SentryNativeSource : ModuleRules
 {
-	public SentryNative(ReadOnlyTargetRules Target) : base(Target)
+	public SentryNativeSource(ReadOnlyTargetRules Target) : base(Target)
 	{
 		Type = ModuleType.External;
 
