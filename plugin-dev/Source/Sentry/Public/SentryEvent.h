@@ -13,7 +13,7 @@ class ISentryEvent;
 /**
  * Data being sent to Sentry.
  */
-UCLASS(BlueprintType, HideDropdown)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryEvent : public UObject, public TSentryImplWrapper<ISentryEvent, USentryEvent>
 {
 	GENERATED_BODY()

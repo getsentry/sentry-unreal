@@ -13,7 +13,7 @@ class ISentryAttachment;
 /**
  * Additional file to store alongside an event or transaction.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryAttachment : public UObject, public TSentryImplWrapper<ISentryAttachment, USentryAttachment>
 {
 	GENERATED_BODY()
