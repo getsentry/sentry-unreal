@@ -6,7 +6,7 @@
 
 - Sentry entities created with `NewObject<T>` now require an explicit call to the `Initialize` method before use ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
 - In Blueprints, Sentry entities must be created using the corresponding library functions ([#796](https://github.com/getsentry/sentry-unreal/pull/796))
-- The utility functions StringToBytesArray, ByteArrayToString, and SaveStringToFile have been removed ([#796](https://github.com/getsentry/sentry-unreal/pull/796))
+- The utility functions `StringToBytesArray`, `ByteArrayToString`, and `SaveStringToFile` have been removed ([#796](https://github.com/getsentry/sentry-unreal/pull/796))
 - The plugin setting `EnableBuildPlatforms` now uses a string array instead of a struct ([#779](https://github.com/getsentry/sentry-unreal/pull/779))
 
 ### Features
