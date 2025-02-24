@@ -31,8 +31,7 @@ public:
 	 * @param Message Message to sent.
 	 * @param Level Level of the event.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry",
-		Meta = (DeprecatedFunction, DeprecationMessage="Function has been deprecated. Use SentryEvent CreateEventWithMessageAndLevel instead"))
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static USentryEvent* CreateSentryEvent(const FString& Message, ESentryLevel Level);
 
 	/**
