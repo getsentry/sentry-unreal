@@ -3133,7 +3133,7 @@ Source/ThirdParty/Native/sentry-native/vendor/mpack.c
 Source/ThirdParty/Native/sentry-native/vendor/mpack.h
 Source/ThirdParty/Native/sentry-native/vendor/stb_sprintf.c
 Source/ThirdParty/Native/sentry-native/vendor/stb_sprintf.h
-Source/ThirdParty/Native/SentryNative.Build.cs
+Source/ThirdParty/Native/SentryNativeSource.Build.cs
 Source/ThirdParty/Win64/Breakpad/include/sentry.h
 Source/ThirdParty/Win64/Breakpad/lib/breakpad_client.lib
 Source/ThirdParty/Win64/Breakpad/lib/sentry.lib

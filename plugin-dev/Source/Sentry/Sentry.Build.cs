@@ -95,7 +95,7 @@ public class Sentry : ModuleRules
 
 			if (bBuildNativeForWindows)
 			{
-				PrivateDependencyModuleNames.Add("SentryNative");
+				PrivateDependencyModuleNames.Add("SentryNativeSource");
 			}
 			else
 			{

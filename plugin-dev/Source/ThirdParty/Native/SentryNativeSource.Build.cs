@@ -415,7 +415,7 @@ public class CMakeTargetInst
 	}
 }
 
-public class SentryNative : ModuleRules
+public class SentryNativeSource : ModuleRules
 {
 	public SentryNative(ReadOnlyTargetRules Target) : base(Target)
 	{
