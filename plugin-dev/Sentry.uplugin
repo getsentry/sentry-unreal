@@ -32,10 +32,10 @@
 	{
 		"Mac": [
 			"if [ $(TargetPlatform) = \"Mac\" ] && [ ! -f \"$(PluginDir)/Binaries/Mac/sentry.dylib\" ]; then\n cp \"$(PluginDir)/Source/ThirdParty/Mac/bin/sentry.dylib\" \"$(PluginDir)/Binaries/Mac/sentry.dylib\"\nfi",
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
+			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
 		],
 		"Linux": [
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n sh \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
+			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
 		],
 		"Win64": [
 			"setlocal enabledelayedexpansion",
