@@ -16,10 +16,6 @@
 #include "HAL/PlatformSentryUser.h"
 #include "HAL/PlatformSentryUserFeedback.h"
 
-#include "HAL/FileManager.h"
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
-
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
 	USentryEvent* Event = USentryEvent::Create(CreateSharedSentryEvent());
@@ -92,38 +88,4 @@ USentryAttachment* USentryLibrary::CreateSentryAttachmentWithPath(const FString&
 USentryTransactionContext* USentryLibrary::CreateSentryTransactionContext(const FString& Name, const FString& Operation)
 {
 	return USentryTransactionContext::Create(CreateSharedSentryTransactionContext(Name, Operation));
-}
-
-TArray<uint8> USentryLibrary::StringToBytesArray(const FString& InString)
-{
-	TArray<uint8> byteArray;
-	byteArray.AddUninitialized(InString.Len());
-
-	uint8* byteArrayPtr = byteArray.GetData();
-
-	int32 NumBytes = 0;
-	const TCHAR* CharPos = *InString;
-
-	while (*CharPos && NumBytes < TNumericLimits<int16>::Max())
-	{
-		byteArrayPtr[NumBytes] = (int8)(*CharPos);
-		CharPos++;
-		++NumBytes;
-	}
-
-	return byteArray;
-}
-
-FString USentryLibrary::ByteArrayToString(const TArray<uint8>& Array)
-{
-	return BytesToString(Array.GetData(), Array.Num());
-}
-
-FString USentryLibrary::SaveStringToFile(const FString& InString, const FString& Filename)
-{
-	FString filePath = FPaths::Combine(FPaths::ProjectPersistentDownloadDir(), Filename);
-
-	FFileHelper::SaveStringToFile(InString, *filePath);
-
-	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*filePath);
 }
