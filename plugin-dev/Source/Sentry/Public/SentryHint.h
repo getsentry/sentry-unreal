@@ -12,7 +12,7 @@ class USentryAttachment;
 /**
  * Hint associated with the event.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryHint : public UObject, public TSentryImplWrapper<ISentryHint, USentryHint>
 {
 	GENERATED_BODY()

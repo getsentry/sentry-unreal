@@ -13,20 +13,15 @@ class ISentryEvent;
 /**
  * Data being sent to Sentry.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryEvent : public UObject, public TSentryImplWrapper<ISentryEvent, USentryEvent>
 {
 	GENERATED_BODY()
 
 public:
-	/**
-	 * Initializes the event with the specified message and level.
-	 * 
-	 * @param Message Message to be sent.
-	 * @param Level Level of the event.
-	 */
+	/** Initializes the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize(const FString& Message, ESentryLevel Level);
+	void Initialize();
 
 	/** Gets id of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")

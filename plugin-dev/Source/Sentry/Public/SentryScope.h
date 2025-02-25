@@ -14,7 +14,7 @@ class USentryAttachment;
 /**
  * Scope data to be sent with the event.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryScope : public UObject, public TSentryImplWrapper<ISentryScope, USentryScope>
 {
 	GENERATED_BODY()
