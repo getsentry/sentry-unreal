@@ -21,6 +21,7 @@
 
 - Fix incorrect game log attachment on Android ([#743](https://github.com/getsentry/sentry-unreal/pull/743))
 - Fix assertion during screenshot capturing in a thread that can't use Slate ([#756](https://github.com/getsentry/sentry-unreal/pull/756))
+- Fix invalid native method name for Android `User` class ([#800](https://github.com/getsentry/sentry-unreal/pull/800))
 
 ### Dependencies
 
