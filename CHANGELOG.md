@@ -34,9 +34,9 @@
 - Bump Cocoa SDK (iOS and Mac) from v8.42.1 to v8.45.0 ([#723](https://github.com/getsentry/sentry-unreal/pull/723), [#761](https://github.com/getsentry/sentry-unreal/pull/761), [#784](https://github.com/getsentry/sentry-unreal/pull/784))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.1...8.45.0)
-- Bump Native SDK from v0.7.17 to v0.7.20 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742), [#764](https://github.com/getsentry/sentry-unreal/pull/764))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.20)
+- Bump Native SDK from v0.7.17 to v0.8.0 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742), [#764](https://github.com/getsentry/sentry-unreal/pull/764), [#797](https://github.com/getsentry/sentry-unreal/pull/797))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#080)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.8.0)
 
 ### Internal
 
