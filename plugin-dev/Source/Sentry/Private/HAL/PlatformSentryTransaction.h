@@ -4,7 +4,7 @@
 #include "Android/SentryTransactionAndroid.h"
 #elif PLATFORM_APPLE
 #include "Apple/SentryTransactionApple.h"
-#else
+#elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryTransaction.h"
 #endif
 
@@ -14,7 +14,9 @@ static TSharedPtr<ISentryTransaction> CreateSharedSentryTransaction()
     return MakeShareable(new SentryTransactionAndroid);
 #elif PLATFORM_APPLE
     return MakeShareable(new SentryTransactionApple);
-#else
+#elif USE_SENTRY_NATIVE
     return MakeShareable(new FGenericPlatformSentryTransaction);
+#else
+	return nullptr;
 #endif
 }

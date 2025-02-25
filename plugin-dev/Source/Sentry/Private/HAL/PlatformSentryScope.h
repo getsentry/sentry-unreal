@@ -4,7 +4,7 @@
 #include "Android/SentryScopeAndroid.h"
 #elif PLATFORM_APPLE
 #include "Apple/SentryScopeApple.h"
-#else
+#elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryScope.h"
 #endif
 
@@ -14,7 +14,9 @@ static TSharedPtr<ISentryScope> CreateSharedSentryScope()
     return MakeShareable(new SentryScopeAndroid);
 #elif PLATFORM_APPLE
     return MakeShareable(new SentryScopeApple);
-#else
+#elif USE_SENTRY_NATIVE
     return MakeShareable(new FGenericPlatformSentryScope);
+#else
+	return nullptr;
 #endif
 }

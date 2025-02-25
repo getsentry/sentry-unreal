@@ -15,7 +15,7 @@ static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const FString&
 #elif PLATFORM_APPLE
 	return MakeShareable(new SentryAttachmentApple(Path, Filename, ContentType));
 #else
-	return MakeShareable(new FNullSentryAttachment());
+	return MakeShareable(new FNullSentryAttachment);
 #endif
 }
 
@@ -26,6 +26,6 @@ static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const TArray<u
 #elif PLATFORM_APPLE
 	return MakeShareable(new SentryAttachmentApple(Data, Filename, ContentType));
 #else
-	return MakeShareable(new FNullSentryAttachment());
+	return MakeShareable(new FNullSentryAttachment);
 #endif
 }

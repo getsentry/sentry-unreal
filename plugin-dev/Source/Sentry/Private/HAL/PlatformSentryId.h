@@ -4,7 +4,7 @@
 #include "Android/SentryIdAndroid.h"
 #elif PLATFORM_APPLE
 #include "Apple/SentryIdApple.h"
-#else
+#elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryId.h"
 #endif
 
@@ -14,7 +14,9 @@ static TSharedPtr<ISentryId> CreateSharedSentryId()
     return MakeShareable(new SentryIdAndroid);
 #elif PLATFORM_APPLE
     return MakeShareable(new SentryIdApple);
-#else
+#elif USE_SENTRY_NATIVE
     return MakeShareable(new FGenericPlatformSentryId);
+#else
+	return nullptr;
 #endif
 }
