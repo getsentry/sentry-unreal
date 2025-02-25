@@ -6,6 +6,8 @@
 #include "Apple/SentryTransactionApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryTransaction.h"
+#else
+#include "Interface/SentryTransactionInterface.h"
 #endif
 
 static TSharedPtr<ISentryTransaction> CreateSharedSentryTransaction()

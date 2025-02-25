@@ -6,6 +6,8 @@
 #include "Apple/SentryEventApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryEvent.h"
+#else
+#include "Interface/SentryEventInterface.h"
 #endif
 
 static TSharedPtr<ISentryEvent> CreateSharedSentryEvent()

@@ -6,6 +6,8 @@
 #include "Apple/SentryUserFeedbackApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryUserFeedback.h"
+#else
+#include "Interface/SentryUserFeedbackInterface.h"
 #endif
 
 static TSharedPtr<ISentryUserFeedback> CreateSharedSentryUserFeedback(TSharedPtr<ISentryId> EventId)

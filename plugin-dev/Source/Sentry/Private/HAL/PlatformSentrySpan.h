@@ -6,6 +6,8 @@
 #include "Apple/SentrySpanApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentrySpan.h"
+#else
+#include "Interface/SentrySpanInterface.h"
 #endif
 
 static TSharedPtr<ISentrySpan> CreateSharedSentrySpan(const FString& Name, const FString& Operation)

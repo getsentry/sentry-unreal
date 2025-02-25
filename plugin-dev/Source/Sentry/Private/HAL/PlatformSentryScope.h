@@ -6,6 +6,8 @@
 #include "Apple/SentryScopeApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryScope.h"
+#else
+#include "Interface/SentryScopeInterface.h"
 #endif
 
 static TSharedPtr<ISentryScope> CreateSharedSentryScope()

@@ -6,6 +6,8 @@
 #include "Apple/SentryIdApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryId.h"
+#else
+#include "Interface/SentryIdInterface.h"
 #endif
 
 static TSharedPtr<ISentryId> CreateSharedSentryId()

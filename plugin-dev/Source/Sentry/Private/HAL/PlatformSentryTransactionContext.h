@@ -6,6 +6,8 @@
 #include "Apple/SentryTransactionContextApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryTransactionContext.h"
+#else
+#include "Interface/SentryTransactionContextInterface.h"
 #endif
 
 static TSharedPtr<ISentryTransactionContext> CreateSharedSentryTransactionContext(const FString& Name, const FString& Operation)

@@ -6,6 +6,8 @@
 #include "Apple/SentryUserApple.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryUser.h"
+#else
+#include "Interface/SentryUserInterface.h"
 #endif
 
 static TSharedPtr<ISentryUser> CreateSharedSentryUser()
