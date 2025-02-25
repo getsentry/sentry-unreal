@@ -21,7 +21,7 @@ if "%TargetType%"=="Editor" (
 )
 
 if "%TargetPlatform%"=="Android" (
-	echo Sentry: Debug symbols upload for Android is handled by Sentry's Gradle plugin (if enabled)
+	echo Sentry: Debug symbols upload for Android is handled by Sentry's Gradle plugin if enabled
 	exit /B 0
 )
 
