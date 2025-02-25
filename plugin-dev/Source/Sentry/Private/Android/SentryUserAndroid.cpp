@@ -27,8 +27,8 @@ void SentryUserAndroid::SetupClassMethods()
 	GetUsernameMethod = GetMethod("getUsername", "()Ljava/lang/String;");
 	SetIpAddressMethod = GetMethod("setIpAddress", "(Ljava/lang/String;)V");
 	GetIpAddressMethod = GetMethod("getIpAddress", "()Ljava/lang/String;");
-	SetDataMethod = GetMethod("setOthers", "(Ljava/util/Map;)V");
-	GetDataMethod = GetMethod("getOthers", "()Ljava/util/Map;");
+	SetDataMethod = GetMethod("setData", "(Ljava/util/Map;)V");
+	GetDataMethod = GetMethod("getData", "()Ljava/util/Map;");
 }
 
 void SentryUserAndroid::SetEmail(const FString& email)
