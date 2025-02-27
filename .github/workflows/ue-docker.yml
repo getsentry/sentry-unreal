@@ -25,7 +25,10 @@ jobs:
   build:
     runs-on: windows-latest-16-cores
 
-    steps:
+      - name: Test connection to UE fork
+        run: |
+          git ls-remote https://${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_TOKEN }}@github.com/getsentry/UnrealEngine.git
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -51,19 +54,9 @@ jobs:
           python-version: '3.12.8'
           architecture: 'x64'
 
-      # ue4-docker v0.0.115 has a known bug (https://github.com/adamrehn/ue4-docker/issues/371) 
-      # that breaks the current workflow. As a workaround, we pull the latest sources from upstream 
-      # and build it locally instead of installing via pip.
-      - name: Check out unreal-docker
-        uses: actions/checkout@master
-        with:
-          repository: adamrehn/ue4-docker
-          path: unreal-docker
-
-      - name: Build and install unreal-docker
+      - name: Install unreal-docker
         run: |
-          cd unreal-docker
-          pip install . --user
+            pip install ue4-docker
 
       - name: Configure unreal-docker
         run: |
