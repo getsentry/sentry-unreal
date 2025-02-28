@@ -13,11 +13,11 @@
 static TSharedPtr<ISentryTransaction> CreateSharedSentryTransaction()
 {
 #if PLATFORM_ANDROID
-    return MakeShareable(new SentryTransactionAndroid);
+	return MakeShareable(new SentryTransactionAndroid);
 #elif PLATFORM_APPLE
-    return MakeShareable(new SentryTransactionApple);
+	return MakeShareable(new SentryTransactionApple);
 #elif USE_SENTRY_NATIVE
-    return MakeShareable(new FGenericPlatformSentryTransaction);
+	return MakeShareable(new FGenericPlatformSentryTransaction);
 #else
 	return nullptr;
 #endif

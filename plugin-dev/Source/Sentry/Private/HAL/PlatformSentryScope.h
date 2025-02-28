@@ -13,11 +13,11 @@
 static TSharedPtr<ISentryScope> CreateSharedSentryScope()
 {
 #if PLATFORM_ANDROID
-    return MakeShareable(new SentryScopeAndroid);
+	return MakeShareable(new SentryScopeAndroid);
 #elif PLATFORM_APPLE
-    return MakeShareable(new SentryScopeApple);
+	return MakeShareable(new SentryScopeApple);
 #elif USE_SENTRY_NATIVE
-    return MakeShareable(new FGenericPlatformSentryScope);
+	return MakeShareable(new FGenericPlatformSentryScope);
 #else
 	return nullptr;
 #endif
