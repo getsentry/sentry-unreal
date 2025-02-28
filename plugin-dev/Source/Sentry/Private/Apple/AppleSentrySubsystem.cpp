@@ -187,39 +187,19 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 	return MakeShareable(new SentryIdApple(id));
 }
 
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
-
 	SentryException *nativeException = [[SENTRY_APPLE_CLASS(SentryException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
 	NSMutableArray *nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
 	[nativeExceptionArray addObject:nativeException];
 
 	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
-	exceptionEvent.stacktrace = SentryConvertersApple::CallstackToNative(StackFrames);
-	
+
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
 	return MakeShareable(new SentryIdApple(id));
 }
 
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureAssertion(const FString& type, const FString& message)
-{
-	int32 framesToSkip = GetAssertionFramesToSkip();
-
-	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
-
-	return CaptureException(type, message, framesToSkip);
-}
-
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
-{
-	int32 framesToSkip = GetEnsureFramesToSkip();
-
-	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
-
-	return CaptureException(type, message, framesToSkip);
-}
 
 void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {

@@ -29,8 +29,6 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onScopeConfigure, ESentryLevel level) override;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure) override;
-	virtual TSharedPtr<ISentryId> CaptureException(const FString& type, const FString& message, int32 framesToSkip) override;
-	virtual TSharedPtr<ISentryId> CaptureAssertion(const FString& type, const FString& message) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
@@ -66,8 +64,6 @@ protected:
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;
-	virtual int32 GetAssertionFramesToSkip() const override { return 5; }
-	virtual int32 GetEnsureFramesToSkip() const override { return 7; }
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
 
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure);

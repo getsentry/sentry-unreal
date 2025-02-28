@@ -370,32 +370,17 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 	return Id;
 }
 
-TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
-
-	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
-	sentry_value_set_by_key(exceptionEvent, "stacktrace", FGenericPlatformSentryConverters::CallstackToNative(StackFrames));
 
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
+	sentry_value_set_stacktrace(exceptionEvent, nullptr, 0);
+
 	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
 	return MakeShareable(new FGenericPlatformSentryId(id));
-}
-
-TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureAssertion(const FString& type, const FString& message)
-{
-	int32 framesToSkip = GetAssertionFramesToSkip();
-
-	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
-
-	return CaptureException(type, message, GetAssertionFramesToSkip());
-}
-
-TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
-{
-	return CaptureException(type, message, GetEnsureFramesToSkip());
 }
 
 void FGenericPlatformSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> InUserFeedback)
