@@ -13,11 +13,11 @@
 static TSharedPtr<ISentryId> CreateSharedSentryId()
 {
 #if PLATFORM_ANDROID
-    return MakeShareable(new SentryIdAndroid);
+	return MakeShareable(new SentryIdAndroid);
 #elif PLATFORM_APPLE
-    return MakeShareable(new SentryIdApple);
+	return MakeShareable(new SentryIdApple);
 #elif USE_SENTRY_NATIVE
-    return MakeShareable(new FGenericPlatformSentryId);
+	return MakeShareable(new FGenericPlatformSentryId);
 #else
 	return nullptr;
 #endif
