@@ -21,7 +21,7 @@
 
 - Fix incorrect game log attachment on Android ([#743](https://github.com/getsentry/sentry-unreal/pull/743))
 - Fix assertion during screenshot capturing in a thread that can't use Slate ([#756](https://github.com/getsentry/sentry-unreal/pull/756))
-- Remove assertion/ensure callstack modification logic ([#744](https://github.com/getsentry/sentry-unreal/pull/744))
+- Due to improvements to the server-side grouping logic, the SDK no longer relies on client side manipulation of the callstack for assertions and ensures. ([#744](https://github.com/getsentry/sentry-unreal/pull/744))
 - Fix invalid syntax in symbol upload batch script ([#801](https://github.com/getsentry/sentry-unreal/pull/801))
 
 ### Dependencies
