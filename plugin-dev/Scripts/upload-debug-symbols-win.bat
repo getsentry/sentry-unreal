@@ -20,18 +20,9 @@ if "%TargetType%"=="Editor" (
     exit /B 0
 )
 
-if "%TargetPlatform%"=="Win64" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="Linux" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="LinuxArm64" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="Android" (
-    echo Warning: Sentry: Debug symbols upload for Android is handled by Sentry's gradle plugin if enabled
-    exit /B 0
-) else (
-    echo Warning: Sentry: Unexpected platform %TargetPlatform%. Skipping...
-    exit /B 0
+if "%TargetPlatform%"=="Android" (
+	echo Sentry: Debug symbols upload for Android is handled by Sentry's Gradle plugin if enabled
+	exit /B 0
 )
 
 call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings UploadSymbolsAutomatically UploadSymbols
@@ -103,8 +94,19 @@ if not exist "%PropertiesFile%" (
     exit /B 0
 )
 
+if "%TargetPlatform%"=="Win64" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else if "%TargetPlatform%"=="Linux" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else if "%TargetPlatform%"=="LinuxArm64" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else (
+    echo Warning: Sentry: Unexpected platform %TargetPlatform%. Skipping...
+    exit /B 0
+)
+
 if not exist "%CliExec%" (
-    echo Warning: Sentry: Sentry CLI is not configured in plugin settings. Skipping...
+    echo Error: Sentry: Sentry CLI is missing. Skipping...
     exit /B 0
 )
 

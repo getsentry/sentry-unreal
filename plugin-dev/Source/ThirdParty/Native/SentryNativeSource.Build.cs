@@ -23,13 +23,13 @@ public class CMakeTargetInst
 	//
 	// Copyright (c) 2020 Krazer
 	//
-	// 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	// 	of this software and associated documentation files (the "Software"), to deal
+	// Permission is hereby granted, free of charge, to any person obtaining a copy
+	// of this software and associated documentation files (the "Software"), to deal
 	// in the Software without restriction, including without limitation the rights
 	// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	// copies of the Software, and to permit persons to whom the Software is
 	// furnished to do so, subject to the following conditions:
-	
+
 	private string m_cmakeTargetPath;
 	private string m_modulePath;
 	private string m_targetName;
@@ -40,6 +40,8 @@ public class CMakeTargetInst
 
 	private string m_buildDirectory;
 	private string m_buildPath;
+	private string m_installDirectory;
+	private string m_installPath;
 	private string m_generatedTargetPath;
 
 	private string m_thirdPartyGeneratedPath;
@@ -67,7 +69,7 @@ public class CMakeTargetInst
 #endif
 		m_cmakeArgs=args;
 	}
-	
+
 	private string GetBuildType(ReadOnlyTargetRules target)
 	{
 		string buildType = "Release";
@@ -104,10 +106,12 @@ public class CMakeTargetInst
 		m_generatedTargetPath=Path.Combine(m_thirdPartyGeneratedPath, m_targetName, m_targetPlatform);
 		m_buildDirectory = "build";
 		m_buildPath=Path.Combine(m_generatedTargetPath, m_buildDirectory);
+		m_installDirectory = "install";
+		m_installPath=Path.Combine(m_generatedTargetPath, m_installDirectory);
 
 		m_buildInfoFile="buildinfo_"+buildType+".output";
 		m_buildInfoPath=Path.Combine(m_buildPath, m_buildInfoFile).Replace("\\", "/");
-    
+
 		if(!Directory.Exists(m_generatedTargetPath))
 			Directory.CreateDirectory(m_generatedTargetPath);
 
@@ -151,7 +155,7 @@ public class CMakeTargetInst
 			if(configureCode!=0)
 			{
 				Console.WriteLine("Cannot configure CMake project. Exited with code: "
-				                  +configureCode);
+				  +configureCode);
 				return false;
 			}
 		}
@@ -173,9 +177,19 @@ public class CMakeTargetInst
 				File.WriteAllText(builtFile, cmakeLastWrite.ToString());
 			}
 		}
+
+		var installCommand = CreateCMakeInstallCommand(m_buildPath, m_installPath, buildType);
+		var installCode = ExecuteCommandSync(installCommand);
+
+		if(installCode!=0)
+		{
+			Console.WriteLine("Cannot perform install. Exited with code: "+buildCode);
+			return false;
+		}
+
 		return true;
 	}
-	
+
 	private string GetWindowsGeneratorName(WindowsCompiler compiler)
 	{
 		string generatorName="";
@@ -191,14 +205,14 @@ public class CMakeTargetInst
 				generatorName="NMake Makefiles";
 				break;
 #if !UE_5_0_OR_LATER
-        case WindowsCompiler.VisualStudio2017:
-            generatorName="Visual Studio 15 2017";
-        break;
+			case WindowsCompiler.VisualStudio2017:
+				generatorName="Visual Studio 15 2017";
+				break;
 #endif//!UE_5_0_OR_LATER
 #if !UE_5_4_OR_LATER
-        case WindowsCompiler.VisualStudio2019:
-            generatorName="Visual Studio 16 2019";
-        break;
+			case WindowsCompiler.VisualStudio2019:
+				generatorName="Visual Studio 16 2019";
+				break;
 #endif//!UE_5_4_OR_LATER
 			case WindowsCompiler.VisualStudio2022:
 				generatorName="Visual Studio 17 2022";
@@ -207,23 +221,23 @@ public class CMakeTargetInst
 
 		return generatorName;
 	}
-	
+
 #if UE_5_2_OR_LATER   // UE 5.2 and onwards
 	private string GetWindowsGeneratorOptions(WindowsCompiler compiler, UnrealArch architecture)
 #else
-    private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchitecture architecture)
+	private string GetWindowsGeneratorOptions(WindowsCompiler compiler, WindowsArchitecture architecture)
 #endif
 	{
 		string generatorOptions="";
 
 		if((compiler == WindowsCompiler.VisualStudio2022)
 #if !UE_5_4_OR_LATER
-            || (compiler == WindowsCompiler.VisualStudio2019)
+			|| (compiler == WindowsCompiler.VisualStudio2019)
 #endif//!UE_5_4_OR_LATER 
 #if !UE_5_0_OR_LATER
-            || (compiler == WindowsCompiler.VisualStudio2017)
+			|| (compiler == WindowsCompiler.VisualStudio2017)
 #endif//!UE_5_0_OR_LATER 
-		  )
+			)
 		{
 #if UE_5_2_OR_LATER   // UE 5.2 and onwards
 			if(architecture == UnrealArch.X64)
@@ -232,53 +246,50 @@ public class CMakeTargetInst
 				generatorOptions="-A ARM64";
 #elif UE_5_0_OR_LATER // UE 5.0 to 5.1
 			if(architecture == WindowsArchitecture.x64)
-                generatorOptions="-A x64";
-            else if(architecture == WindowsArchitecture.ARM64)
-                generatorOptions="-A ARM64";
-
-#else                 // Everything before UE 5.0
-            if(architecture == WindowsArchitecture.x86)
-                generatorOptions="-A Win32";
-            else if(architecture == WindowsArchitecture.ARM32)
-                generatorOptions="-A ARM";
+				generatorOptions="-A x64";
+			else if(architecture == WindowsArchitecture.ARM64)
+				generatorOptions="-A ARM64";
+#else // Everything before UE 5.0
+			if(architecture == WindowsArchitecture.x86)
+				generatorOptions="-A Win32";
+			else if(architecture == WindowsArchitecture.ARM32)
+				generatorOptions="-A ARM";
 #endif
 		}
 		return generatorOptions;
 	}
-    
+
 	String GetGeneratorName(ReadOnlyTargetRules target)
 	{
 
 
-        if(target.Platform.ToString() == "XSX"
-           || (target.Platform == UnrealTargetPlatform.Win64) 
+		if(target.Platform.ToString() == "XSX"
+			|| (target.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
-           || (target.Platform == UnrealTargetPlatform.Win32)
+			|| (target.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
-            )
-        {
-            return GetWindowsGeneratorName(target.WindowsPlatform.Compiler);
-        
-        }
-        else if (IsUnixPlatform(target.Platform))
-        {
-	        return "Unix Makefiles";
-        }
+			)
+		{
+			return GetWindowsGeneratorName(target.WindowsPlatform.Compiler);
+		}
+		else if (IsUnixPlatform(target.Platform))
+		{
+			return "Unix Makefiles";
+		}
 
-        return "";
-    }
-	
-	
+		return "";
+	}
+
 	private string GetCMakeExe()
 	{
 		string program = "cmake";
 
 		if(BuildHostPlatform.Current.Platform.ToString() == "XSX"
-		   || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
-		   || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
+			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
-		  )
+			)
 		{
 			program+=".exe";
 		}
@@ -292,9 +303,9 @@ public class CMakeTargetInst
 
 		if((target.Platform == UnrealTargetPlatform.Win64) 
 #if !UE_5_0_OR_LATER
-            || (target.Platform == UnrealTargetPlatform.Win32)
+			|| (target.Platform == UnrealTargetPlatform.Win32)
 #endif//!UE_5_0_OR_LATER
-		  )
+			)
 		{
 			options=" -T host=x64";
 		}
@@ -304,13 +315,6 @@ public class CMakeTargetInst
 			options += " -DSENTRY_BACKEND=breakpad";
 		}
 
-		if (rules.PublicDefinitions.Contains("SENTRY_BUILD_STATIC=1"))
-		{
-			options += " -DSENTRY_BUILD_SHARED_LIBS=Off";
-		}
-
-		string cmakeFile = Path.Combine(m_generatedTargetPath, "CMakeLists.txt");
-		
 		string buildToolchain = "";
 		if(target.Platform.ToString() == "XSX")
 		{
@@ -320,99 +324,130 @@ public class CMakeTargetInst
 		var installPath = m_thirdPartyGeneratedPath;
 
 		var arguments = " -G \""+GetGeneratorName(target)+"\""+
-		                buildToolchain+
-		                " -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
-		                " -DCMAKE_INSTALL_PREFIX=\""+installPath+"\""+
-		                options+
-		                " "+m_cmakeArgs+
-		                " -B \""+buildDirectory+"\""+
-		                " -S \""+m_targetLocation+"\"";
+			buildToolchain+
+			" -DCMAKE_BUILD_TYPE="+GetBuildType(target)+
+			" -DCMAKE_INSTALL_PREFIX=\""+installPath+"\""+
+			" -DSENTRY_BUILD_SHARED_LIBS=OFF"+
+			" -DSENTRY_SDK_NAME=sentry.native.unreal"+
+			options+
+			" "+m_cmakeArgs+
+			" -B \""+buildDirectory+"\""+
+			" -S \""+m_targetLocation+"\"";
 
 		Console.WriteLine("CMakeTarget calling cmake with: "+arguments);
 
 		return program+arguments;
 	}
 
-    private string CreateCMakeBuildCommand(string buildDirectory, string buildType)
-    {
-        return GetCMakeExe()+" --build \""+buildDirectory+"\" --config "+buildType;
-    }
+	private string CreateCMakeBuildCommand(string buildDirectory, string buildType)
+	{
+		return GetCMakeExe()+" --build \""+buildDirectory+"\" --config "+buildType;
+	}
 
-    private string CreateCMakeInstallCommand(string buildDirectory, string buildType)
-    {
-        return GetCMakeExe()+" --build \""+buildDirectory+"\" --target install --config "+buildType;
-    }
+	private string CreateCMakeInstallCommand(string buildDirectory, string installDirectory, string buildType)
+	{
+		return GetCMakeExe()+" --install \""+buildDirectory+"\" --prefix \""+installDirectory+"\" --config "+buildType;
+	}
 
-    private Tuple<string, string> GetExecuteCommandSync()
-    {
-        string cmd = "";
-        string options = "";
+	private Tuple<string, string> GetExecuteCommandSync()
+	{
+		string cmd = "";
+		string options = "";
 
-        if(BuildHostPlatform.Current.Platform.ToString() == "XSX"
-           || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
-#if !UE_5_0_OR_LATER
-           || (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
-#endif//!UE_5_0_OR_LATER
-            )
-        {
-            cmd="cmd.exe";
-            options="/c ";
-        }
-        else if(IsUnixPlatform(BuildHostPlatform.Current.Platform)) 
-        {
-            cmd="bash";
-            options="-c ";
-        }
-        return Tuple.Create(cmd, options);
-    }
+		if(BuildHostPlatform.Current.Platform.ToString() == "XSX"
+			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win64) 
+		#if !UE_5_0_OR_LATER
+			|| (BuildHostPlatform.Current.Platform == UnrealTargetPlatform.Win32)
+		#endif//!UE_5_0_OR_LATER
+			)
+		{
+			cmd="cmd.exe";
+			options="/c ";
+		}
+		else if(IsUnixPlatform(BuildHostPlatform.Current.Platform)) 
+		{
+			cmd="bash";
+			options="-c ";
+		}
+		return Tuple.Create(cmd, options);
+	}
 
-    private int ExecuteCommandSync(string command)
-    {
-        var cmdInfo=GetExecuteCommandSync();
+	private int ExecuteCommandSync(string command)
+	{
+		var cmdInfo=GetExecuteCommandSync();
 
-        if(IsUnixPlatform(BuildHostPlatform.Current.Platform)) 
-        {
-            command=" \""+command.Replace("\"", "\\\"")+" \"";
-        }
+		if(IsUnixPlatform(BuildHostPlatform.Current.Platform)) 
+		{
+			command=" \""+command.Replace("\"", "\\\"")+" \"";
+		}
 
-        Console.WriteLine("Calling: "+cmdInfo.Item1+" "+cmdInfo.Item2+command);
+		Console.WriteLine("Calling: "+cmdInfo.Item1+" "+cmdInfo.Item2+command);
 
-        var processInfo = new ProcessStartInfo(cmdInfo.Item1, cmdInfo.Item2+command)
-        {
-            CreateNoWindow=true,
-            UseShellExecute=false,
-            RedirectStandardError=true,
-            RedirectStandardOutput=true,
-            WorkingDirectory=m_modulePath
-        };
+		var processInfo = new ProcessStartInfo(cmdInfo.Item1, cmdInfo.Item2+command)
+		{
+			CreateNoWindow=true,
+			UseShellExecute=false,
+			RedirectStandardError=true,
+			RedirectStandardOutput=true,
+			WorkingDirectory=m_modulePath
+		};
 
-        StringBuilder outputString = new StringBuilder();
-        Process p = Process.Start(processInfo);
+		StringBuilder outputString = new StringBuilder();
+		Process p = Process.Start(processInfo);
 
-        p.OutputDataReceived+=(sender, args) => {outputString.Append(args.Data); Console.WriteLine(args.Data);};
-        p.ErrorDataReceived+=(sender, args) => {outputString.Append(args.Data); Console.WriteLine(args.Data);};
-        p.BeginOutputReadLine();
-        p.BeginErrorReadLine();
-        p.WaitForExit();
+		p.OutputDataReceived+=(sender, args) => {outputString.Append(args.Data); Console.WriteLine(args.Data);};
+		p.ErrorDataReceived+=(sender, args) => {outputString.Append(args.Data); Console.WriteLine(args.Data);};
+		p.BeginOutputReadLine();
+		p.BeginErrorReadLine();
+		p.WaitForExit();
 
-        if(p.ExitCode != 0)
-        {
-             Console.WriteLine(outputString);
-        }
-        return p.ExitCode;
-    }
+		if(p.ExitCode != 0)
+		{
+			Console.WriteLine(outputString);
+		}
 
-    private bool IsUnixPlatform(UnrealTargetPlatform platform) {
-        return platform == UnrealTargetPlatform.Linux || platform == UnrealTargetPlatform.Mac;
-    }
+		return p.ExitCode;
+	}
+
+	private bool IsUnixPlatform(UnrealTargetPlatform platform)
+	{
+		return platform == UnrealTargetPlatform.Linux || platform == UnrealTargetPlatform.Mac;
+	}
 }
 
-public class SentryNative : ModuleRules
+public class SentryNativeSource : ModuleRules
 {
-	public SentryNative(ReadOnlyTargetRules Target) : base(Target)
+	public SentryNativeSource(ReadOnlyTargetRules Target) : base(Target)
 	{
 		Type = ModuleType.External;
-		
-		// Empty. Just used to organise cmake specific code.
+
+		string projectIntermediatePath = Path.Combine(Target.ProjectFile.Directory.FullName, "Intermediate");
+		string platformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
+
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			var nativeSourcePath = Path.Combine(PluginDirectory, "Source", "ThirdParty", "Native", "sentry-native");
+
+			PublicIncludePaths.Add(Path.Combine(nativeSourcePath, "include"));
+
+			CMakeTargetInst cmakeTarget = new CMakeTargetInst("sentry-native", Target.Platform.ToString(), nativeSourcePath, "");
+			cmakeTarget.Load(Target, this);
+
+			string installPath = Path.Combine(projectIntermediatePath, "CMakeTarget", "sentry-native", Target.Platform.ToString(), "install");
+
+			RuntimeDependencies.Add(Path.Combine(platformBinariesPath, "crashpad_handler.exe"), Path.Combine(installPath, "bin", "crashpad_handler.exe"));
+
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_handler_lib.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_client.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_compat.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_minidump.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_snapshot.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_getopt.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "mini_chromium.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_zlib.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_tools.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "crashpad_util.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(installPath, "lib", "sentry.lib"));
+		}
 	}
 }

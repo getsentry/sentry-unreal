@@ -17,7 +17,7 @@ class ISentrySpan;
  * NOTE: USentrySpan should not be constructed with NewObject<...>() etc., and should instead
  *       only be created by calling methods like StartChild(...) on this object or USentryTransaction.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentrySpan : public UObject, public TSentryImplWrapper<ISentrySpan, USentrySpan>
 {
 	GENERATED_BODY()
