@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update `include`s and `return`s in HAL to correctly support platform extensions ([#806](https://github.com/getsentry/sentry-unreal/pull/806))
+
 ## 1.0.0-alpha.1
 
 ### Breaking Changes
