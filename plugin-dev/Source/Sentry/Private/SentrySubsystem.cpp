@@ -693,14 +693,11 @@ void USentrySubsystem::ConfigureOutputDeviceError()
 	if (OutputDeviceError)
 	{
 		OnAssertDelegate = OutputDeviceError->OnAssert.AddLambda([this](const FString& Message)
-
 		{
-			SubsystemNativeImpl->CaptureAssertion(TEXT("Assertion failed"), Message);
-
-			// Shut things down before exiting to ensure all the outgoing events are sent to Sentry
-			Close();
-
-			FPlatformMisc::RequestExit( true);
+		#if PLATFORM_ANDROID
+			GError->HandleError();
+			PLATFORM_BREAK();
+		#endif
 		});
 
 		GError = OutputDeviceError.Get();
