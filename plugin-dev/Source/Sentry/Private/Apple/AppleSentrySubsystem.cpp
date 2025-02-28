@@ -27,6 +27,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "UObject/GarbageCollection.h"
+#include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
 
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
@@ -62,8 +63,18 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				FGCScopeGuard GCScopeGuard;
+
+				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+				{
+					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+					return event;
+				}
+
 				USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventApple(event)));
-				return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
+
+				USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+
+				return ProcessedEvent ? event : nullptr;
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
