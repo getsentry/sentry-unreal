@@ -27,6 +27,7 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "UObject/GarbageCollection.h"
+#include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
 
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
@@ -62,8 +63,18 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				FGCScopeGuard GCScopeGuard;
+
+				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+				{
+					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+					return event;
+				}
+
 				USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new SentryEventApple(event)));
-				return beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr) ? event : nullptr;
+
+				USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+
+				return ProcessedEvent ? event : nullptr;
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
@@ -176,39 +187,19 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 	return MakeShareable(new SentryIdApple(id));
 }
 
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
-
 	SentryException *nativeException = [[SENTRY_APPLE_CLASS(SentryException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
 	NSMutableArray *nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
 	[nativeExceptionArray addObject:nativeException];
 
 	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
-	exceptionEvent.stacktrace = SentryConvertersApple::CallstackToNative(StackFrames);
-	
+
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
 	return MakeShareable(new SentryIdApple(id));
 }
 
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureAssertion(const FString& type, const FString& message)
-{
-	int32 framesToSkip = GetAssertionFramesToSkip();
-
-	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
-
-	return CaptureException(type, message, framesToSkip);
-}
-
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
-{
-	int32 framesToSkip = GetEnsureFramesToSkip();
-
-	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
-
-	return CaptureException(type, message, framesToSkip);
-}
 
 void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
