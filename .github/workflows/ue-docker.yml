@@ -79,7 +79,7 @@ jobs:
 
       - name: Tag Unreal Engine Docker image
         run: |
-          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ghcr.io/getsentry/unreal-docker:${{ inputs.ue_version }}
+          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ghcr.io/${{ secrets.DOCKER_USERNAME }}/unreal-docker:${{ inputs.ue_version }}
 
       - name: Push Unreal Engine Docker image to GitHub package registry
         run: |
