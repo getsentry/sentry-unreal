@@ -33,6 +33,26 @@ jobs:
       packages: write
 
     steps:
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@v3
+        if: ${{ steps.exists.outputs.value == 0 }}
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Unreal Engine Docker image to GitHub package registry
+        run: |
+          docker pull ${{ env.REGISTRY }}/getsentry/sentry-unreal/unreal-docker:${{ inputs.ue_version }}
+
+      - name: Tag Unreal Engine Docker image
+        run: |
+          docker tag ${{ env.REGISTRY }}/getsentry/sentry-unreal/unreal-docker:${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}
+
+      - name: Push Unreal Engine Docker image to GitHub package registry
+        run: |
+          docker push ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}
+
       - name: Test connection to UE fork
         run: |
           git ls-remote https://${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_TOKEN }}@github.com/getsentry/UnrealEngine.git
