@@ -84,4 +84,4 @@ jobs:
       - name: Push Unreal Engine Docker image to GitHub package registry
         run: |
           echo ${{ secrets.DOCKER_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker push ghcr.io/getsentry/unreal-docker:${{ inputs.ue_version }}
+          docker push ghcr.io/${{ secrets.DOCKER_USERNAME }}/unreal-docker:${{ inputs.ue_version }}
