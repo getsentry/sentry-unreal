@@ -86,7 +86,7 @@ jobs:
 
       - name: Tag Unreal Engine Docker image
         run: |
-          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/sentry-unreral/unreal-docker:${{ inputs.ue_version }}
+          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/sentry-unreal/unreal-docker:${{ inputs.ue_version }}
 
       - name: Log in to GitHub package registry
         uses: docker/login-action@v3
