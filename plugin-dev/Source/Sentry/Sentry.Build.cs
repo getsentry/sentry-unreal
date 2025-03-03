@@ -160,9 +160,5 @@ public class Sentry : ModuleRules
 
 			AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
 		}
-		else
-		{
-			Console.WriteLine("Sentry Unreal SDK does not support platform: " + Target.Platform);
-		}
 	}
 }

@@ -8,6 +8,10 @@
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#081)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.8.0...0.8.1)
 
+### Internal
+
+- Update `include`s and `return`s in HAL to correctly support platform extensions ([#806](https://github.com/getsentry/sentry-unreal/pull/806))
+
 ## 1.0.0-alpha.1
 
 ### Breaking Changes
