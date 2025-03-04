@@ -52,25 +52,6 @@ if "%CliLogLevel%"=="" (
     set "CliLogLevel=info"
 )
 
-call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings bEnableForAllTargetPlatforms EnabledPlatforms
-if not "%EnabledPlatforms%"=="True" (
-  call :FindInFile "%ConfigPath%\DefaultEngine.ini" "+EnableTargetPlatforms=" PlatformDefaultsChanged
-  if "!PlatformDefaultsChanged!"=="true" (   
-    set PlatformToCheck=
-    if "%TargetPlatform%"=="Win64" (
-      set PlatformToCheck=+EnableTargetPlatforms=Windows
-    ) else (
-      set PlatformToCheck=+EnableTargetPlatforms=%TargetPlatform%
-    )
-
-    call :FindInFile "%ConfigPath%\DefaultEngine.ini" "!PlatformToCheck!" IsPlatformEnabled
-    if "!IsPlatformEnabled!"=="false" (
-        echo "Sentry: Automatic symbols upload is disabled for build platform %TargetPlatform%. Skipping..."
-        exit /B 0
-    )
-  )
-)
-
 call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings EnableBuildTargets EnabledTargets
 if not "%EnabledTargets%"=="" (
   set TargetToCheck="bEnable%TargetType%=False"

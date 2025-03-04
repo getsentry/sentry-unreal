@@ -310,14 +310,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable for Build Target Types"))
 	FEnableBuildTargets EnableBuildTargets;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
-		Meta = (DisplayName = "Enable for a subset of target platform types (e.g. Win64, Linux etc.)", EditCondition = "!bEnableForAllTargetPlatforms"))
-	TArray<FString> EnableTargetPlatforms;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
-		Meta = (DisplayName = "Enable for all supported target platform types"))
-	bool bEnableForAllTargetPlatforms;
-
 	UPROPERTY(Config, EditAnywhere, Category = "General|Misc",
 		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))
 	bool EnableForPromotedBuildsOnly;
