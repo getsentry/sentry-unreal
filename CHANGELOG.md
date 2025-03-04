@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Breaking Changes
+
+- Remove Native SDK build from source in Unreal ([#808](https://github.com/getsentry/sentry-unreal/pull/808))
+
 ## 1.0.0-alpha.2
 
 ### Dependencies
