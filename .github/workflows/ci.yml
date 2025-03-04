@@ -97,11 +97,6 @@ jobs:
           name: Win64-Breakpad-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Breakpad
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: Native-sdk
-          path: plugin-dev/Source/ThirdParty/Native/sentry-native
-
       - name: Prepare Sentry packages for release
         shell: pwsh
         run: ./scripts/packaging/pack.ps1
