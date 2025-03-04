@@ -48,14 +48,8 @@ jobs:
       target: Win64-Breakpad
       runsOn: windows-2019
 
-  native-sdk:
-    uses: ./.github/workflows/native-sdk-download.yml
-    with:
-      target: Native
-      runsOn: ubuntu-latest
-
   build:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk, native-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -120,8 +114,6 @@ jobs:
           if-no-files-found: error
           path: |
             sentry-unreal-*.zip
-          # Adding the native libraries so the symbol collector craft target can find/upload them
-          # TODO modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
   package-validation:
     needs: [build]
