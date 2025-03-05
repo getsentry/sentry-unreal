@@ -38,8 +38,7 @@ jobs:
       runsOn: windows-latest-16-cores
       ue_version: ${{ inputs.ue_version }}
       ue_repo: ${{ inputs.ue_repo }}
-      gh_usernam: ${{ secrets.DOCKER_USERNAME }}
-      gh_token: ${{ secrets.DOCKER_TOKEN }}
+    secrets: inherit
 
   target-minimal:
     needs: target-source
