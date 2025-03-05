@@ -106,7 +106,7 @@ jobs:
           docker tag adamrehn/ue4-${{ inputs.target }}:custom-${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-${{ inputs.target }}
           docker push ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-${{ inputs.target }}
 
-      - name: Tag and push Docker image with pre-built Unreal ENgine
+      - name: Tag and push Docker image with pre-built Unreal Engine
         if: ${{ inputs.target == 'minimal' }}
         run: |
           docker tag adamrehn/ue4-${{ inputs.target }}:custom-${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}
