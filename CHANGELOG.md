@@ -4,6 +4,7 @@
 
 ### Breaking Changes
 
+- Remove `EnableTargetPlatforms` from plugin settings ([#809](https://github.com/getsentry/sentry-unreal/pull/809))
 - Remove Native SDK build from source in Unreal ([#808](https://github.com/getsentry/sentry-unreal/pull/808))
 
 ## 1.0.0-alpha.2

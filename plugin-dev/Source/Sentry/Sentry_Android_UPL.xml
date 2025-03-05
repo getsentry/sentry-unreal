@@ -10,11 +10,10 @@
         <setStringFromProperty result="enabledBuildPlatforms" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildPlatforms" default=""/>
         <setStringFromProperty result="enabledBuildConfigurations" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildConfigurations" default=""/>
         <setStringFromProperty result="enabledBuildTargetTypes" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildTargets" default=""/>
-        
-        <setBoolContains result="bCurrentPlatformDisabled" source="$S(enabledBuildPlatforms)" find="bEnableAndroid=False"/>
+
         <setBoolContains result="bCurrentConfigurationDisabled" source="$S(enabledBuildConfigurations)" find="bEnable$S(Configuration)=False"/>
 
-        <setBoolOr result="bSkipUpload" arg1="$B(bCurrentPlatformDisabled)" arg2="$B(bCurrentConfigurationDisabled)"/>
+        <setBool result="bSkipUpload" value="$B(bCurrentConfigurationDisabled)"/>
 
         <if condition="bSkipUpload">
             <true>

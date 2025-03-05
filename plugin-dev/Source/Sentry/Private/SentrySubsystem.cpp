@@ -78,9 +78,9 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled())
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current configuration/target/platform/build in plugin settings."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry initialization skipped since event capturing is disabled for the current configuration/target/build in plugin settings."));
 		return;
 	}
 
@@ -431,7 +431,7 @@ USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& Sentry
 
 bool USentrySubsystem::IsSupportedForCurrentSettings()
 {
-	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled() || !IsCurrentPlatformEnabled())
+	if(!IsCurrentBuildConfigurationEnabled() || !IsCurrentBuildTargetEnabled())
 	{
 		return false;
 	}
@@ -657,17 +657,6 @@ bool USentrySubsystem::IsCurrentBuildTargetEnabled()
 	}
 
 	return IsBuildTargetTypeEnabled;
-}
-
-bool USentrySubsystem::IsCurrentPlatformEnabled() const
-{
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	if (!Settings->bEnableForAllTargetPlatforms)
-	{
-		return Settings->EnableTargetPlatforms.Contains(FPlatformProperties::IniPlatformName());
-	}
-
-	return true;
 }
 
 bool USentrySubsystem::IsPromotedBuildsOnlyEnabled()
