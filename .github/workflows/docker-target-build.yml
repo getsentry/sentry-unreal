@@ -58,7 +58,7 @@ jobs:
         if: ${{ inputs.target == 'source' || inputs.target == 'minimal' }} 
         run: |
           docker pull ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-build-prerequisites
-          docker tag ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-build-prerequisites adamrehn/ue4-build-prerequisites:ltsc2022-${{ steps.set_vs_version.outputs.vs_version }}
+          docker tag ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-build-prerequisites adamrehn/ue4-build-prerequisites:ltsc2022-vs${{ steps.set_vs_version.outputs.vs_version }}
 
       - name: Pull Docker image with engine sources
         if: ${{ inputs.target == 'minimal' }}
