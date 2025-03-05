@@ -5,6 +5,7 @@ on:
     paths-ignore:
       - "**.md"
       - "**ue-docker.yml"
+      - "**docker-target-build.yml"
 
 jobs:
   android-sdk:

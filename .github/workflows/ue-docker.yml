@@ -21,77 +21,31 @@ on:
         type: string
         default: 'https://github.com/getsentry/UnrealEngine.git'
 
-env:
-  REGISTRY: ghcr.io
-
 jobs:
-  build:
-    runs-on: windows-latest-16-cores
+  target-prerequisites:
+    uses: ./.github/workflows/docker-target-build.yml
+    with:
+      target: build-prerequisites
+      runsOn: windows-latest-16-cores
+      ue_version: ${{ inputs.ue_version }}
+      ue_repo: ${{ inputs.ue_repo }}
 
-    permissions:
-      contents: read
-      packages: write
+  target-source:
+    needs: target-prerequisites
+    uses: ./.github/workflows/docker-target-build.yml
+    with:
+      target: source
+      runsOn: windows-latest-16-cores
+      ue_version: ${{ inputs.ue_version }}
+      ue_repo: ${{ inputs.ue_repo }}
+    secrets: inherit
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Building docker images for UE 5.4 and newer require extra disk space
-      - name: Clean up disk space before Docker build        
-        shell: pwsh
-        run: |
-          .\scripts\clean-storage-win.ps1
-
-      - name: Set Visual Studio version based on UE version
-        id: set_vs_version
-        shell: bash
-        run: |
-          if [[ "${{ inputs.ue_version }}" == "4.27" || "${{ inputs.ue_version }}" == "5.0" || "${{ inputs.ue_version }}" == "5.1" ]]; then
-            echo "vs_version=2019" >> $GITHUB_OUTPUT
-          else
-            echo "vs_version=2022" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12.8'
-          architecture: 'x64'
-
-      - name: Install unreal-docker
-        run: |
-            pip install ue4-docker
-
-      - name: Configure unreal-docker
-        run: |
-          ue4-docker setup
-
-      - name: Build Unreal Engine Docker image
-        run: |
-          ue4-docker build custom -repo="${{ inputs.ue_repo }}" -branch="${{ inputs.ue_version }}" `
-          -basetag ltsc2022 `
-          -suffix "${{ inputs.ue_version }}" `
-          -isolation=process `
-          -username=${{ secrets.DOCKER_USERNAME }} `
-          -password=${{ secrets.DOCKER_TOKEN }} `
-          --visual-studio ${{ steps.set_vs_version.outputs.vs_version }} `
-          --target minimal `
-          --exclude debug `
-          --exclude templates `
-          --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
-
-      - name: Tag Unreal Engine Docker image
-        run: |
-          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}
-
-      - name: Log in to GitHub package registry
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        if: ${{ steps.exists.outputs.value == 0 }}
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Unreal Engine Docker image to GitHub package registry
-        run: |
-          docker push ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}
+  target-minimal:
+    needs: target-source
+    uses: ./.github/workflows/docker-target-build.yml
+    with:
+      target: minimal
+      runsOn: windows-latest-16-cores
+      ue_version: ${{ inputs.ue_version }}
+      ue_repo: ${{ inputs.ue_repo }}
+    secrets: inherit

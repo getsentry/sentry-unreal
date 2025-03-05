@@ -15,6 +15,11 @@ $script:totalFreed = 0
 
 Write-Host "Initial free space: $([math]::Round($initialSpace, 2)) GB"
 
+# ~33.89 GB
+Remove-Item -Path "C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "C:\Program Files\Microsoft Visual Studio" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed "Visual Studio Removal"
+
 # ~1.21 GB
 Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
@@ -27,6 +32,10 @@ printSpaceFreed "Package Cache Cleanup"
 # ~12.44 GB
 Remove-Item -Path "C:\ghcup" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Haskell Removal"
+
+# ~9.25 GB
+Remove-Item -Path "C:\hostedtoolcache" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed "hostedtoolcache Removal"
 
 # ~11.78 GB
 Remove-Item -Path "C:\Program Files\Android" -Recurse -Force -ErrorAction SilentlyContinue
@@ -45,10 +54,17 @@ printSpaceFreed "MySQL Removal"
 Remove-Item -Path "C:\Program Files\PostgreSQL" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "PostgreSQL Removal"
 
-# ~0.36 GB
-Remove-Item -Path "C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "C:\Program Files (x86)\Windows Kits\10\Microsoft Application Inspector" -Recurse -Force -ErrorAction SilentlyContinue
+# ~11.05 GB
+Remove-Item -Path "C:\Program Files (x86)\Windows Kits" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Windows Kits Components Removal"
+
+# ~11.05 GB
+Remove-Item -Path "C:\Program Files (x86)\Microsoft SDKs" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed "Microsoft SDKs Removal"
+
+# ~0.58 GB
+Remove-Item -Path "C:\Program Files (x86)\Epic Games" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed "Microsoft SDKs Removal"
 
 # ~2.93 GB
 Remove-Item -Path "C:\rtools44" -Recurse -Force -ErrorAction SilentlyContinue
@@ -66,9 +82,21 @@ printSpaceFreed "Miniconda Removal"
 docker system prune -a -f
 printSpaceFreed "Docker Cleanup"
 
-# ~2.82 GB
-Remove-Item -Path "C:\Program Files\dotnet\sdk" -Recurse -Force -ErrorAction SilentlyContinue
-printSpaceFreed ".NET Core SDKs Cleanup"
+# ~10.29 GB
+Remove-Item -Path "C:\Program Files\dotnet" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed ".NET Cleanup"
+
+# ~2.65 GB
+Remove-Item -Path "C:\Program Files\LLVM" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed "LLVM Cleanup"
+
+# ~1,72 GB
+Remove-Item -Path "C:\Program Files\Azure Cosmos DB Emulator" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed "Azure Cosmos DB Emulator Cleanup"
+
+# ~1,72 GB
+Remove-Item -Path "C:\Program Files\Google" -Recurse -Force -ErrorAction SilentlyContinue
+printSpaceFreed "Google Cleanup"
 
 $finalSpace = (Get-PSDrive C).Free / 1GB
 
