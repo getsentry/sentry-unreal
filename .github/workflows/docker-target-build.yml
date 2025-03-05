@@ -97,7 +97,7 @@ jobs:
       - name: Tag and push Docker image with build prerequisites
         if: ${{ inputs.target == 'build-prerequisites' }}
         run: |
-          docker tag adamrehn/ue4-${{ inputs.target }}:ltsc2022-${{ steps.set_vs_version.outputs.vs_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-${{ inputs.target }}
+          docker tag adamrehn/ue4-${{ inputs.target }}:ltsc2022-vs${{ steps.set_vs_version.outputs.vs_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-${{ inputs.target }}
           docker push ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-${{ inputs.target }}
 
       - name: Tag and push Docker image with engine sources
