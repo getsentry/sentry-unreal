@@ -23,7 +23,7 @@ on:
 
 jobs:
   target-prerequisites:
-    uses: ./.github/workflows/docker-targer-build.yml
+    uses: ./.github/workflows/docker-target-build.yml
     with:
       target: build-prerequisites
       runsOn: windows-latest-16-cores
@@ -32,7 +32,7 @@ jobs:
 
   target-source:
     needs: target-prerequisites
-    uses: ./.github/workflows/docker-targer-build.yml
+    uses: ./.github/workflows/docker-target-build.yml
     with:
       target: source
       runsOn: windows-latest-16-cores
@@ -41,7 +41,7 @@ jobs:
 
   target-minimal:
     needs: target-source
-    uses: ./.github/workflows/docker-targer-build.yml
+    uses: ./.github/workflows/docker-target-build.yml
     with:
       target: minimal
       runsOn: windows-latest-16-cores
