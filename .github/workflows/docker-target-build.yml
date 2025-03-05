@@ -92,6 +92,7 @@ jobs:
           --target ${{ inputs.target }} `
           --exclude debug `
           --exclude templates `
+          --exclude ddc `
           --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
 
       - name: Tag and push Docker image with build prerequisites
