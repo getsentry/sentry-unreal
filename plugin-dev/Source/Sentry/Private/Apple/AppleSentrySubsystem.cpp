@@ -15,6 +15,7 @@
 #include "SentryEvent.h"
 #include "SentrySettings.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryDefines.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
@@ -30,7 +31,7 @@
 #include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
 
-void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
+void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
