@@ -46,6 +46,12 @@ jobs:
             echo "vs_version=2022" >> $GITHUB_OUTPUT
           fi
 
+      # Reduce max concurrent uploads to avoid timeout issues when pushing multilayerd images
+      - name: Configure Docker daemon
+        run: |
+          Set-Content -Path "C:\ProgramData\docker\config\daemon.json" -Value '{ "max-concurrent-uploads": 3 }'
+          Restart-Service docker
+
       - name: Log in to GitHub package registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         if: ${{ steps.exists.outputs.value == 0 }}
