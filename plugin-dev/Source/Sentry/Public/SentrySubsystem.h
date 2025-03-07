@@ -17,6 +17,7 @@ class USentryId;
 class USentryUserFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
+class USentryBeforeBreadcrumbHandler;
 class USentryTransaction;
 class USentryTraceSampler;
 class USentryTransactionContext;
@@ -336,6 +337,8 @@ private:
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;
+	UPROPERTY()
+	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler;
 
 	UPROPERTY()
 	USentryTraceSampler* TraceSampler;

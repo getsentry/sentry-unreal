@@ -12,6 +12,7 @@ public:
 	virtual void InitWithSettings(
 		const USentrySettings* Settings,
 		USentryBeforeSendHandler* BeforeSendHandler,
+		USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
 		USentryTraceSampler* TraceSampler
 	) override;
 

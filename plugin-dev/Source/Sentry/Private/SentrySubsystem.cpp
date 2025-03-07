@@ -11,6 +11,7 @@
 #include "SentryUser.h"
 #include "SentryUserFeedback.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
@@ -96,13 +97,17 @@ void USentrySubsystem::Initialize()
 
 	BeforeSendHandler = NewObject<USentryBeforeSendHandler>(this, BeforeSendHandlerClass);
 
+	BeforeBreadcrumbHandler = Settings->BeforeBreadcrumbHandler != nullptr
+		? NewObject<USentryBeforeBreadcrumbHandler>(this, static_cast<UClass*>(Settings->BeforeBreadcrumbHandler))
+		: nullptr;
+
 	const UClass* TraceSamplerClass = Settings->TracesSampler != nullptr
 		? static_cast<UClass*>(Settings->TracesSampler)
 		: USentryTraceSampler::StaticClass();
 
 	TraceSampler = NewObject<USentryTraceSampler>(this, TraceSamplerClass);
 
-	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
+	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
 	if(!SubsystemNativeImpl->IsEnabled())
 	{
