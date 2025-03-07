@@ -9,7 +9,7 @@
 
 ### Fixes
 
-- Fix screenshot attachment display at Sentry event page ([#813](https://github.com/getsentry/sentry-unreal/pull/813))
+- Captured screenshots are now displayed correctly on the issues details ([#813](https://github.com/getsentry/sentry-unreal/pull/813))
 
 ### Dependencies
 
