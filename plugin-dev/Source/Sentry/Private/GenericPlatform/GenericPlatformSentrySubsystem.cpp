@@ -118,7 +118,8 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+		// Executing `onBeforeBreadcrumb` handler is not allowed when post-loading.
+		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
 		return event;
 	}
 

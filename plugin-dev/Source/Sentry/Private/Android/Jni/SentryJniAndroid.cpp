@@ -67,7 +67,8 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNI
 
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `onBeforeBreadcrumb` handler is not allowed when post-loading."));
+		// Executing `onBeforeBreadcrumb` handler is not allowed when post-loading.
+		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
 		return breadcrumb;
 	}
 

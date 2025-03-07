@@ -102,20 +102,21 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			}
 			if (beforeBreadcrumbHandler != nullptr)
 			{
-				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* crumb) {
+				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* breadcrumb) {
 					FGCScopeGuard GCScopeGuard;
 
 					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 					{
-						UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeBreadcrumb` handler is not allowed when post-loading."));
-						return crumb;
+						// Executing `onBeforeBreadcrumb` handler is not allowed when post-loading.
+						// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+						return breadcrumb;
 					}
 
-					USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new SentryBreadcrumbApple(crumb)));
+					USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new SentryBreadcrumbApple(breadcrumb)));
 
 					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
 
-					return ProcessedBreadcrumb ? crumb : nullptr;
+					return ProcessedBreadcrumb ? breadcrumb : nullptr;
 				};
 			}
 		}];
