@@ -30,18 +30,18 @@ jobs:
   #     ue_version: ${{ inputs.ue_version }}
   #     ue_repo: ${{ inputs.ue_repo }}
 
-  # target-source:
-  #   needs: target-prerequisites
-  #   uses: ./.github/workflows/docker-target-build.yml
-  #   with:
-  #     target: source
-  #     runsOn: windows-latest-16-cores
-  #     ue_version: ${{ inputs.ue_version }}
-  #     ue_repo: ${{ inputs.ue_repo }}
-  #   secrets: inherit
+  target-source:
+    # needs: target-prerequisites
+    uses: ./.github/workflows/docker-target-build.yml
+    with:
+      target: source
+      runsOn: windows-latest-16-cores
+      ue_version: ${{ inputs.ue_version }}
+      ue_repo: ${{ inputs.ue_repo }}
+    secrets: inherit
 
   target-minimal:
-    # needs: target-source
+    needs: target-source
     uses: ./.github/workflows/docker-target-build.yml
     with:
       target: minimal
