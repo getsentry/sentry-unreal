@@ -56,7 +56,12 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)
 {
-	FTaskTagScope Scope(ETaskTag::EGameThread);
+	if (!FTaskTagScope::IsCurrentTag(ETaskTag::EGameThread))
+	{
+		// Executing `onBeforeBreadcrumb` handler is not allowed when called from Android main thread.
+		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+		return breadcrumb;
+	}
 
 	FGCScopeGuard GCScopeGuard;
 
