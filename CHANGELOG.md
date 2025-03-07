@@ -7,6 +7,10 @@
 - Remove `EnableTargetPlatforms` from plugin settings ([#809](https://github.com/getsentry/sentry-unreal/pull/809))
 - Remove Native SDK build from source in Unreal ([#808](https://github.com/getsentry/sentry-unreal/pull/808))
 
+### Fixes
+
+- Fix screenshot attachment display at Sentry event page ([#813](https://github.com/getsentry/sentry-unreal/pull/813))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS and Mac) from v8.45.0 to v8.46.0 ([#810](https://github.com/getsentry/sentry-unreal/pull/810))
