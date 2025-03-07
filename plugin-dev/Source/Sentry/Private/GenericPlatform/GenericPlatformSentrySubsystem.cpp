@@ -282,11 +282,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 
-	if (beforeBreadcrumb != nullptr)
-	{
-		sentry_options_set_before_breadcrumb(options, HandleBeforeBreadcrumb, this);
-	}
-
 	int initResult = sentry_init(options);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
