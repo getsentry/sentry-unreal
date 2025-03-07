@@ -15,6 +15,25 @@ $script:totalFreed = 0
 
 Write-Host "Initial free space: $([math]::Round($initialSpace, 2)) GB"
 
+# Remove Visual Studio components (5-15GB)
+if (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio") {
+    Write-Host "Removing Visual Studio components..."
+    Remove-Item -Path "C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Force -ErrorAction SilentlyContinue
+    printSpaceFreed "Visual Studio Removal"
+}
+
+# Clear WSL distributions if any (5-20GB)
+if (Get-Command wsl -ErrorAction SilentlyContinue) {
+    wsl --list --verbose
+    Write-Host "Removing WSL distributions..."
+    wsl --shutdown
+    wsl --unregister Ubuntu-20.04
+    wsl --unregister Ubuntu-22.04
+    wsl --unregister Ubuntu-24.04
+    wsl --unregister Debian
+    printSpaceFreed "WSL Distributions Removal"
+}
+
 # ~1.21 GB
 Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
