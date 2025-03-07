@@ -12,6 +12,7 @@
 #include "SentrySamplingContextApple.h"
 #include "SentryIdApple.h"
 
+#include "SentryBreadcrumb.h
 #include "SentryEvent.h"
 #include "SentrySettings.h"
 #include "SentryBeforeSendHandler.h"
@@ -97,6 +98,24 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new SentrySamplingContextApple(samplingContext)));
 					float samplingValue;
 					return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
+				};
+			}
+			if (beforeBreadcrumbHandler != nullptr)
+			{
+				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* crumb) {
+					FGCScopeGuard GCScopeGuard;
+
+					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					{
+						UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeBreadcrumb` handler is not allowed when post-loading."));
+						return crumb;
+					}
+
+					USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new SentryBreadcrumbApple(crumb)));
+
+					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
+
+					return ProcessedBreadcrumb ? crumb : nullptr;
 				};
 			}
 		}];
