@@ -57,6 +57,8 @@ function packFiles([string] $publishingPlatform)
         $packageName = "sentry-unreal-$version-engine$engineVersion-$publishingPlatform.zip"
         Write-Host "Creating a release package for Unreal $engineVersion as $packageName"
 
+        $newPluginSpec = $pluginSpec
+
         # Add EngineVersion key only for marketplace package to avoid warnings in licensee versions of Unreal
         # where github package is used (https://github.com/getsentry/sentry-unreal/issues/811)
         if ($publishingPlatform -eq "marketplace")
