@@ -31,7 +31,7 @@ jobs:
   #     ue_repo: ${{ inputs.ue_repo }}
 
   target-source:
-    needs: target-prerequisites
+    # needs: target-prerequisites
     uses: ./.github/workflows/docker-target-build.yml
     with:
       target: source
