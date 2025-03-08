@@ -1,0 +1,51 @@
+name: Build UE Windows Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: Select Unreal Engine version
+        required: true
+        type: choice
+        options:
+        - 4.27
+        - 5.0
+        - 5.1
+        - 5.2
+        - 5.3
+        - 5.4
+        - 5.5
+      ue_repo:
+        description: Set Unreal Engine repository
+        required: true
+        type: string
+        default: 'https://github.com/getsentry/UnrealEngine.git'
+
+jobs:
+  # target-prerequisites:
+  #   uses: ./.github/workflows/docker-target-build.yml
+  #   with:
+  #     target: build-prerequisites
+  #     runsOn: windows-latest-16-cores
+  #     ue_version: ${{ inputs.ue_version }}
+  #     ue_repo: ${{ inputs.ue_repo }}
+
+  target-source:
+    # needs: target-prerequisites
+    uses: ./.github/workflows/docker-target-build.yml
+    with:
+      target: source
+      runsOn: windows-latest-16-cores
+      ue_version: ${{ inputs.ue_version }}
+      ue_repo: ${{ inputs.ue_repo }}
+    secrets: inherit
+
+  target-minimal:
+    needs: target-source
+    uses: ./.github/workflows/docker-target-build.yml
+    with:
+      target: minimal
+      runsOn: windows-latest-16-cores
+      ue_version: ${{ inputs.ue_version }}
+      ue_repo: ${{ inputs.ue_repo }}
+    secrets: inherit
