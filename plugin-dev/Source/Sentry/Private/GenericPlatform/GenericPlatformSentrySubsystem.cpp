@@ -611,7 +611,7 @@ FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
 
 FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 {
-	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), TEXT("crash_screenshot.png"));
+	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), TEXT("screenshot.png"));
 	const FString ScreenshotFullPath = FPaths::ConvertRelativePathToFull(ScreenshotPath);
 
 	return ScreenshotFullPath;
