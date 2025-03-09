@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add callback to pre-process breadcrumbs before adding ([#814](https://github.com/getsentry/sentry-unreal/pull/814))
+
 ## 1.0.0-alpha.3
 
 ### Breaking Changes

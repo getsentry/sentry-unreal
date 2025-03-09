@@ -12,9 +12,10 @@
 void FMicrosoftSentrySubsystem::InitWithSettings(
 	const USentrySettings* Settings,
 	USentryBeforeSendHandler* BeforeSendHandler,
+	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
 	USentryTraceSampler* TraceSampler)
 {
-	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
+	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)
 	FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing
