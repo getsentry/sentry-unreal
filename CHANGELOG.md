@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Add `crashpad_wer.dll` to CMake install ([#818](https://github.com/getsentry/sentry-unreal/pull/818))
+
 ## 1.0.0-alpha.3
 
 ### Breaking Changes
