@@ -23,7 +23,8 @@ function packFiles([string] $publishingPlatform)
             'sentry-cli-Windows-x86_64.exe',
             'upload-debug-symbols-win.bat',
             'upload-debug-symbols.sh',
-            'crashpad_handler.exe'
+            'crashpad_handler.exe',
+            'crashpad_wer.dll'
         )
     }
 

@@ -21,11 +21,17 @@ function testFiles([string] $publishingPlatform)
         exit 2
     }
 
-    $packages = Get-ChildItem "$projectRoot/sentry-unreal-*-$publishingPlatform.zip"
+    # TODO: Extract this functionality to share between `test-contents.ps1` and `pack.ps1`
+    $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
+    $version = [regex]::Match("$pluginSpec", '"VersionName": "([^"]+)"').Groups[1].Value
+
+    Write-Host "Searching version $version release packages..."
+
+    $packages = Get-ChildItem -Path "$projectRoot/*" -Include "sentry-unreal-$version-engine*-$publishingPlatform.zip"
     $expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
-    if ($packages.Length -ne $expectedPackagesCount)
+    if ($packages.Count -ne $expectedPackagesCount)
     {
-        throw "Invalid number of packages - expected $expectedPackagesCount, got $packages"
+        throw "Invalid number of packages: expected $expectedPackagesCount, got ${packages.Count}"
     }
 
     foreach ($packageFile in $packages)
