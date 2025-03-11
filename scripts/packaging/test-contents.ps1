@@ -29,9 +29,9 @@ function testFiles([string] $publishingPlatform)
 
     $packages = Get-ChildItem -Path "$projectRoot/*" -Include "sentry-unreal-$version-engine*-$publishingPlatform.zip"
     $expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
-    if ($packages.Count -ne $expectedPackagesCount)
+    if ($packages.Length -ne $expectedPackagesCount)
     {
-        throw "Invalid number of packages: expected $expectedPackagesCount, got ${packages.Count}"
+        throw "Invalid number of packages - expected $expectedPackagesCount, got $($packages.Length)"
     }
 
     foreach ($packageFile in $packages)
