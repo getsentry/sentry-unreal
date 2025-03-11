@@ -103,6 +103,9 @@ public class Sentry : ModuleRules
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(WindowsThirdPartyPath, "bin", "crashpad_handler.exe"));
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_wer.dll"), Path.Combine(WindowsThirdPartyPath, "bin", "crashpad_wer.dll"));
 
+				// Changes behavior of the Unreal crash reporting thread to allow WER to handle exceptions
+				PublicDefinitions.Add("WINDOWS_USE_WER=1");
+
 				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_compat.lib"));
 				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_snapshot.lib"));
 				PublicAdditionalLibraries.Add(Path.Combine(WindowsThirdPartyPath, "lib", "crashpad_util.lib"));
