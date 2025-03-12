@@ -20,32 +20,39 @@ on:
         required: true
         type: string
         default: 'https://github.com/getsentry/UnrealEngine.git'
+      split_build:
+        description: Split build into multiple jobs
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   target-prerequisites:
+    if: ${{ inputs.split_build == true }}
     uses: ./.github/workflows/docker-target-build.yml
     with:
       target: build-prerequisites
-      runsOn: windows-latest-16-cores
+      runsOn: windows-latest-32-cores
       ue_version: ${{ inputs.ue_version }}
       ue_repo: ${{ inputs.ue_repo }}
 
   target-source:
-    needs: target-prerequisites
+    if: ${{ inputs.split_build == true }}
+    needs: ${{ inputs.split_build == true && 'target-prerequisites' || '' }}
     uses: ./.github/workflows/docker-target-build.yml
     with:
       target: source
-      runsOn: windows-latest-16-cores
+      runsOn: windows-latest-32-cores
       ue_version: ${{ inputs.ue_version }}
       ue_repo: ${{ inputs.ue_repo }}
     secrets: inherit
 
   target-minimal:
-    needs: target-source
+    needs: ${{ inputs.split_build == true && 'target-source' || '' }}
     uses: ./.github/workflows/docker-target-build.yml
     with:
       target: minimal
-      runsOn: windows-latest-16-cores
+      runsOn: windows-latest-32-cores
       ue_version: ${{ inputs.ue_version }}
       ue_repo: ${{ inputs.ue_repo }}
     secrets: inherit

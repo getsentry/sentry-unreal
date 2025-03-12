@@ -64,7 +64,7 @@ printSpaceFreed "Microsoft SDKs Removal"
 
 # ~0.58 GB
 Remove-Item -Path "C:\Program Files (x86)\Epic Games" -Recurse -Force -ErrorAction SilentlyContinue
-printSpaceFreed "Microsoft SDKs Removal"
+printSpaceFreed "Epic Games Removal"
 
 # ~2.93 GB
 Remove-Item -Path "C:\rtools44" -Recurse -Force -ErrorAction SilentlyContinue
@@ -94,7 +94,7 @@ printSpaceFreed "LLVM Cleanup"
 Remove-Item -Path "C:\Program Files\Azure Cosmos DB Emulator" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Azure Cosmos DB Emulator Cleanup"
 
-# ~1,72 GB
+# ~0.76 GB
 Remove-Item -Path "C:\Program Files\Google" -Recurse -Force -ErrorAction SilentlyContinue
 printSpaceFreed "Google Cleanup"
 
