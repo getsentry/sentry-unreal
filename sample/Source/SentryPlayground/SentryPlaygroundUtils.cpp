@@ -4,6 +4,10 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
+#if PLATFORM_MICROSOFT
+#include "Microsoft/WindowsHWrapper.h"
+#endif // PLA
+
 void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 {
 	switch (Type)
@@ -30,6 +34,13 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			{
 				int* addrPtr = reinterpret_cast<int*>(0x12345678);
 				*addrPtr = 10;
+			}
+			break;
+		case ESentryAppTerminationType::FastFail:
+			{
+#if PLATFORM_MICROSOFT
+				RaiseFailFastException(nullptr, nullptr, 0);
+#endif
 			}
 			break;
 		case ESentryAppTerminationType::Assert:
