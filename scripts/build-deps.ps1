@@ -17,7 +17,7 @@ $modulesDir = Resolve-Path "$PSScriptRoot/../modules"
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 
 $macPlatfromDeps = @("mac", "ios", "android")
-$winPlatfromDeps = @("win", "android")
+$winPlatfromDeps = @("win")
 
 function buildSentryCocoaIos()
 {
@@ -130,6 +130,7 @@ function buildSentryNative()
 
     Get-ChildItem -Path "$modulesDir/sentry-native/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination $nativeOutDirLibs
     Copy-Item "$modulesDir/sentry-native/install/bin/crashpad_handler.exe" -Destination $nativeOutDirBinaries
+    Copy-Item "$modulesDir/sentry-native/install/bin/crashpad_wer.dll" -Destination $nativeOutDirBinaries
     Copy-Item "$modulesDir/sentry-native/install/include/sentry.h" -Destination $nativeOutDirIncludes
 }
 

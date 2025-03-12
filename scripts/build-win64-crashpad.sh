@@ -17,4 +17,5 @@ mkdir "${sentryArtifactsDestination}/lib"
 
 cp ${sentryNativeRoot}/install/lib/*.lib ${sentryArtifactsDestination}/lib
 cp ${sentryNativeRoot}/install/bin/crashpad_handler.exe ${sentryArtifactsDestination}/bin/crashpad_handler.exe
+cp ${sentryNativeRoot}/install/bin/crashpad_wer.dll ${sentryArtifactsDestination}/bin/crashpad_wer.dll
 cp ${sentryNativeRoot}/install/include/sentry.h ${sentryArtifactsDestination}/include/sentry.h
