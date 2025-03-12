@@ -133,7 +133,7 @@ jobs:
 
   test:
     name: Test UE ${{ matrix.unreal }}
-    runs-on: ubuntu-latest-4-cores
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
