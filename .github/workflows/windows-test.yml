@@ -1,5 +1,3 @@
-name: Windows UE Build and Test
-
 on:
   workflow_call:
     inputs:
@@ -11,7 +9,7 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  build-test:
+  test:
     runs-on: windows-latest
 
     steps:
@@ -28,7 +26,7 @@ jobs:
             --name unreal `
             --volume "${{ github.workspace }}:C:\workspace" `
             --workdir C:\workspace `
-            ghcr.io/getsentry/unreal-docker:${{ inputs.unreal_version }}
+            ghcr.io/getsentry/unreal-docker:${{ inputs.unreal-version }}
 
       - name: Download package
         uses: actions/download-artifact@v4
@@ -43,7 +41,7 @@ jobs:
       - name: Extract package to sample/Plugins
         run: |
           New-Item -ItemType Directory -Path "${{ github.workspace }}\checkout\sample\Plugins\sentry" -Force
-          Expand-Archive -Path "sentry-unreal-*-engine${{ inputs.unreal_version }}-github.zip" -DestinationPath "${{ github.workspace }}\checkout\sample\Plugins\sentry" -Force
+          Expand-Archive -Path "sentry-unreal-*-engine${{ inputs.unreal-version }}-github.zip" -DestinationPath "${{ github.workspace }}\checkout\sample\Plugins\sentry" -Force
 
       - name: Run tests
         id: run-tests
@@ -59,7 +57,7 @@ jobs:
             -prereqss `
             -package `
             -archive
-          docker exec unreal C:\UnrealEngine\Engine\Binaries\Win64\${{ inputs.unreal_version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }} C:\workspace\checkout\sample\SentryPlayground.uproject `
+          docker exec unreal C:\UnrealEngine\Engine\Binaries\Win64\${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }} C:\workspace\checkout\sample\SentryPlayground.uproject `
             -ReportExportPath=C:\workspace\checkout\sample\Saved\Automation `
             -ExecCmds="Automation RunTests Sentry;quit" `
             -TestExit="Automation Test Queue Empty" `

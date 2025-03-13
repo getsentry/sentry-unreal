@@ -134,25 +134,25 @@ jobs:
   test-linux:
     needs: [package-preparation]
     name: Test UE Linux ${{ matrix.unreal }}
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4',]
-    uses: ./.github/workflows/linux-build-test.yml
+    uses: ./.github/workflows/linux-test.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
   test-windows:
     needs: [package-preparation]
     name: Test UE Windows ${{ matrix.unreal }}
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4',]
-    uses: ./.github/workflows/windows-build-test.yml
+    uses: ./.github/workflows/windows-test.yml
     with:
       unreal-version: ${{ matrix.unreal }}
-
-    
