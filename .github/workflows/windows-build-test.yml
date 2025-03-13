@@ -25,10 +25,10 @@ jobs:
       - name: Start Docker container
         run: |
           docker run -td `
-              --name unreal `
-              --volume "${{ github.workspace }}:C:\workspace" `
-              --workdir C:\workspace `
-              ghcr.io/getsentry/unreal-docker:${{ inputs.unreal_version }}
+            --name unreal `
+            --volume "${{ github.workspace }}:C:\workspace" `
+            --workdir C:\workspace `
+            ghcr.io/getsentry/unreal-docker:${{ inputs.unreal_version }}
 
       - name: Download package
         uses: actions/download-artifact@v4

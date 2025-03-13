@@ -131,16 +131,27 @@ jobs:
         shell: pwsh
         run: ./scripts/packaging/test-contents.ps1
 
-  test:
+  test-linux:
     needs: [package-preparation]
-    name: Test UE ${{ matrix.platform }} ${{ matrix.unreal }}
+    name: Test UE Linux ${{ matrix.unreal }}
     strategy:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4',]
-        platform: ['windows', 'linux']
-    uses: ./.github/workflows/${{ matrix.platform }}-build-test.yml
+    uses: ./.github/workflows/linux-build-test.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
+  test-windows:
+    needs: [package-preparation]
+    name: Test UE Windows ${{ matrix.unreal }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Note: these versions must match scripts/packaging/engine-versions.txt
+        unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4',]
+    uses: ./.github/workflows/windows-build-test.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
