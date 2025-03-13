@@ -42,7 +42,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Building docker images for UE 5.4 and newer require extra disk space
+      # Building docker images for newer UE versions may require extra disk space
       - name: Clean up disk space before Docker build
         if: ${{ inputs.clean_disk == true }}
         shell: pwsh
