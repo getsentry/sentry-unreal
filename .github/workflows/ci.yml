@@ -140,7 +140,7 @@ jobs:
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4', '5.5']
-    uses: ./.github/workflows/linux-test.yml
+    uses: ./.github/workflows/test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
@@ -153,6 +153,6 @@ jobs:
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
         unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4', '5.5']
-    uses: ./.github/workflows/windows-test.yml
+    uses: ./.github/workflows/test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
