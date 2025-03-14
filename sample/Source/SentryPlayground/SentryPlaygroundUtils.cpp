@@ -6,7 +6,7 @@
 
 #if PLATFORM_MICROSOFT
 #include "Microsoft/WindowsHWrapper.h"
-#endif // PLA
+#endif
 
 void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 {
