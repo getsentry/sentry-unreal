@@ -64,7 +64,7 @@ sudo apt-get install -y libstdc++6
 
 - Plugin supports Linux arm64 platform for UE 5.0 and newer.
 
-- Fast-fail crash capturing is currently supported only in package game builds when using the `github` plugin version. When a fast-fail crash occurs the `HandleBeforeSend` hook will not be invoked and any custom event pre-processing will be skipped. Also, captured fast-fail crash events will not include UE-specific tags or context.
+- Fast-fail crash capturing is currently supported only in packaged game builds when using the `github` plugin version. When a fast-fail crash occurs the `HandleBeforeSend` hook will not be invoked and any custom event pre-processing will be skipped. Also, captured fast-fail crash events will not include UE-specific tags or context.
 
 ## Development
 
