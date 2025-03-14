@@ -11,6 +11,7 @@ enum class ESentryAppTerminationType : uint8
 	ArrayOutOfBounds,
 	BadFunctionPtr,
 	InvalidMemoryAccess,
+	FastFail,
 	Assert,
 	Ensure
 };

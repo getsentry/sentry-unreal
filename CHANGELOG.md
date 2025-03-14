@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add support of fast-fail crash capturing ([#828](https://github.com/getsentry/sentry-unreal/pull/828))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS and Mac) from v8.46.0 to v8.47.0 ([#823](https://github.com/getsentry/sentry-unreal/pull/823))

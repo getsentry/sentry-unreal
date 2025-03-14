@@ -48,14 +48,6 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 
 	FString MessageBuf = FString(buffer);
 
-	// The WER (Windows Error Reporting) module (crashpad_wer.dll) can't be distributed along with other Sentry binaries
-	// within the plugin package due to some UE Marketplace restrictions. Its absence doesn't affect crash capturing
-	// and the corresponding warning can be disregarded
-	if (MessageBuf.Equals(TEXT("crashpad WER handler module not found")))
-	{
-		return;
-	}
-
 #if !NO_LOGGING
 	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
 #else
