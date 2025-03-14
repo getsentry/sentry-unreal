@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add support of fast-fail crash capturing ([#828](https://github.com/getsentry/sentry-unreal/pull/828))
+
 ## 1.0.0-alpha.3
 
 ### Breaking Changes
