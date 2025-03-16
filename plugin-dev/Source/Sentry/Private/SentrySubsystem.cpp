@@ -40,7 +40,7 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %s"), Settings->InitAutomatically ? TEXT("true") : TEXT("false"));
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %s"), LexToString(Settings->InitAutomatically));
 
 	if (Settings->InitAutomatically)
 	{
@@ -125,18 +125,12 @@ void USentrySubsystem::Initialize()
 	ConfigureBreadcrumbs();
 
 	ConfigureOutputDevice();
-
-#if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 2, 0)
-	if (Settings->EnableAutoCrashCapturing)
-	{
-		ConfigureErrorOutputDevice();
-	}
-#else
 	ConfigureErrorOutputDevice();
-#endif
 
-	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddWeakLambda(this, [this]()
+	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddWeakLambda(this, [SubsystemNativeImpl]()
 	{
+		verify(SubsystemNativeImpl);
+
 		FString EnsureMessage = GErrorHist;
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
@@ -520,13 +514,13 @@ void USentrySubsystem::AddDefaultContext()
 	TMap<FString, FString> DefaultContext;
 	DefaultContext.Add(TEXT("Engine version"), FEngineVersion::Current().ToString(EVersionComponent::Changelist));
 	DefaultContext.Add(TEXT("Plugin version"), FSentryModule::Get().GetPluginVersion());
-	DefaultContext.Add(TEXT("Is Marketplace version"), FSentryModule::Get().IsMarketplaceVersion() ? TEXT("True") : TEXT("False"));
+	DefaultContext.Add(TEXT("Is Marketplace version"), LexToString(FSentryModule::Get().IsMarketplaceVersion()));
 	DefaultContext.Add(TEXT("Configuration"), LexToString(FApp::GetBuildConfiguration()));
 	DefaultContext.Add(TEXT("Target Type"), LexToString(FApp::GetBuildTargetType()));
 	DefaultContext.Add(TEXT("Engine mode"), FGenericPlatformMisc::GetEngineMode());
-	DefaultContext.Add(TEXT("Is game"), FApp::IsGame() ? TEXT("True") : TEXT("False"));
-	DefaultContext.Add(TEXT("Is standalone"), FApp::IsStandalone() ? TEXT("True") : TEXT("False"));
-	DefaultContext.Add(TEXT("Is unattended"), FApp::IsUnattended() ? TEXT("True") : TEXT("False"));
+	DefaultContext.Add(TEXT("Is game"), LexToString(FApp::IsGame()));
+	DefaultContext.Add(TEXT("Is standalone"), LexToString(FApp::IsStandalone()));
+	DefaultContext.Add(TEXT("Is unattended"), LexToString(FApp::IsUnattended()));
 	DefaultContext.Add(TEXT("Game name"), FApp::GetName());
 
 	SubsystemNativeImpl->SetContext(TEXT("Unreal Engine"), DefaultContext);
@@ -589,17 +583,17 @@ void USentrySubsystem::PromoteTags()
 
 	if (Settings->TagsPromotion.bPromoteIsGame)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Is game"), FApp::IsGame() ? TEXT("True") : TEXT("False"));
+		SubsystemNativeImpl->SetTag(TEXT("Is game"), LexToString(FApp::IsGame()));
 	}
 
 	if (Settings->TagsPromotion.bPromoteIsStandalone)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Is standalone"), FApp::IsStandalone() ? TEXT("True") : TEXT("False"));
+		SubsystemNativeImpl->SetTag(TEXT("Is standalone"), LexToString(FApp::IsStandalone()));
 	}
 
 	if (Settings->TagsPromotion.bPromoteIsUnattended)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Is unattended"), FApp::IsUnattended() ? TEXT("True") : TEXT("False"));
+		SubsystemNativeImpl->SetTag(TEXT("Is unattended"), LexToString(FApp::IsUnattended()));
 	}
 }
 
