@@ -15,7 +15,7 @@
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
 #include "SentryOutputDevice.h"
-#include "SentryOutputDeviceError.h"
+#include "SentryErrorOutputDevice.h"
 
 #include "CoreGlobals.h"
 #include "Engine/World.h"
