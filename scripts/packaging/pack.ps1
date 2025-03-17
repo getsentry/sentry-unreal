@@ -24,6 +24,7 @@ function packFiles([string] $publishingPlatform)
             'upload-debug-symbols-win.bat',
             'upload-debug-symbols.sh',
             'crashpad_handler.exe'
+            'crashpad_wer.dll'
         )
     }
 
