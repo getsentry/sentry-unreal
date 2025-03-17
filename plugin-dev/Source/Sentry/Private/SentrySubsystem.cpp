@@ -202,7 +202,7 @@ void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 	check(SubsystemNativeImpl);
 	check(Breadcrumb);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -214,7 +214,7 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -226,7 +226,7 @@ void USentrySubsystem::ClearBreadcrumbs()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -238,7 +238,7 @@ USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -257,7 +257,7 @@ USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, con
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -276,7 +276,7 @@ USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
 	check(SubsystemNativeImpl);
 	check(Event);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -296,7 +296,7 @@ USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FC
 	check(SubsystemNativeImpl);
 	check(Event);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -315,7 +315,7 @@ void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 	check(SubsystemNativeImpl);
 	check(UserFeedback);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -343,7 +343,7 @@ void USentrySubsystem::SetUser(USentryUser* User)
 	check(SubsystemNativeImpl);
 	check(User);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -355,7 +355,7 @@ void USentrySubsystem::RemoveUser()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -372,7 +372,7 @@ void USentrySubsystem::ConfigureScope(const FConfigureScopeNativeDelegate& OnCon
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -388,7 +388,7 @@ void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FStrin
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -412,7 +412,7 @@ void USentrySubsystem::RemoveTag(const FString& Key)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -424,7 +424,7 @@ void USentrySubsystem::SetLevel(ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -436,7 +436,7 @@ void USentrySubsystem::StartSession()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -448,7 +448,7 @@ void USentrySubsystem::EndSession()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
@@ -460,7 +460,7 @@ USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, cons
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -476,7 +476,7 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 	check(SubsystemNativeImpl);
 	check(Context);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -492,7 +492,7 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 	check(SubsystemNativeImpl);
 	check(Context);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -508,7 +508,7 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 	check(SubsystemNativeImpl);
 	check(Context);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -523,7 +523,7 @@ USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& Sentry
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -553,7 +553,7 @@ void USentrySubsystem::AddDefaultContext()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -577,7 +577,7 @@ void USentrySubsystem::AddGpuContext()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
@@ -596,7 +596,7 @@ void USentrySubsystem::AddDeviceContext()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsytemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return nullptr;
 	}
