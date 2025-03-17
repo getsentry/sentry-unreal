@@ -22,6 +22,14 @@
 
 JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong callbackId, jobject scope)
 {
+	FGCScopeGuard GCScopeGuard;
+
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `onConfigureScope` handler is not allowed when post-loading."));
+		return;
+	}
+
 	FSentryScopeDelegate* callback = SentryScopeCallbackAndroid::GetDelegateById(callbackId);
 
 	if (callback != nullptr)
