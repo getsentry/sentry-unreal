@@ -40,7 +40,7 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %s"), LexToString(Settings->InitAutomatically));
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry plugin auto initialization: %s"), *LexToString(Settings->InitAutomatically));
 
 	if (Settings->InitAutomatically)
 	{
@@ -129,7 +129,7 @@ void USentrySubsystem::Initialize()
 	ConfigureOutputDevice();
 	ConfigureErrorOutputDevice();
 
-	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddWeakLambda(this, [SubsystemNativeImpl]()
+	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddWeakLambda(this, [this]()
 	{
 		verify(SubsystemNativeImpl);
 
@@ -555,7 +555,7 @@ void USentrySubsystem::AddDefaultContext()
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		return;
 	}
 
 	TMap<FString, FString> DefaultContext;
@@ -579,7 +579,7 @@ void USentrySubsystem::AddGpuContext()
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		return;
 	}
 
 	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
@@ -598,7 +598,7 @@ void USentrySubsystem::AddDeviceContext()
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		return;
 	}
 
 	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();
