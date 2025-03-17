@@ -414,6 +414,7 @@ Source/ThirdParty/Win64/Breakpad/include/sentry.h
 Source/ThirdParty/Win64/Breakpad/lib/breakpad_client.lib
 Source/ThirdParty/Win64/Breakpad/lib/sentry.lib
 Source/ThirdParty/Win64/Crashpad/bin/crashpad_handler.exe
+Source/ThirdParty/Win64/Crashpad/bin/crashpad_wer.dll
 Source/ThirdParty/Win64/Crashpad/include/sentry.h
 Source/ThirdParty/Win64/Crashpad/lib/crashpad_client.lib
 Source/ThirdParty/Win64/Crashpad/lib/crashpad_compat.lib
