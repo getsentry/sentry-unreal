@@ -6,10 +6,10 @@
 #include "Misc/OutputDeviceError.h"
 #include "Delegates/Delegate.h"
 
-class FSentryOutputDeviceError : public FOutputDeviceError
+class FSentryErrorOutputDevice : public FOutputDeviceError
 {
 public:
-	FSentryOutputDeviceError(FOutputDeviceError* Parent);
+	FSentryErrorOutputDevice(FOutputDeviceError* Parent);
 
 	virtual void Serialize( const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category) override;
 	virtual void HandleError() override;

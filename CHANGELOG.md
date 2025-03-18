@@ -6,6 +6,10 @@
 
 - Add support of fast-fail crash capturing ([#828](https://github.com/getsentry/sentry-unreal/pull/828))
 
+### Internal
+
+- Rename error output device, add development checks for pointers, and general clean-up ([#831](https://github.com/getsentry/sentry-unreal/pull/831))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS and Mac) from v8.46.0 to v8.47.0 ([#823](https://github.com/getsentry/sentry-unreal/pull/823))
