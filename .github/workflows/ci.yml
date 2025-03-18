@@ -101,6 +101,15 @@ jobs:
           name: Win64-Breakpad-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Breakpad
 
+      # Workaround for https://github.com/actions/download-artifact/issues/14
+      # Adding execute permission for crashpad before preparing final packages
+      # allows to avoid issues with plugin initialization on Unix-based systems.
+      - name: Set permissions for crashpad_handler
+        shell: pwsh
+        run: |
+          chmod +x plugin-dev/Source/ThirdParty/Linux/bin/crashpad_handler
+          chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/bin/crashpad_handler
+
       - name: Prepare Sentry packages for release
         shell: pwsh
         run: ./scripts/packaging/pack.ps1
