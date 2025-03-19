@@ -7,7 +7,7 @@
         <setBoolFromProperty result="bIncludeSources" ini="Engine" section="/Script/Sentry.SentrySettings" property="IncludeSources" default="false" />
         <setBoolFromProperty result="bUseLegacyGradlePlugin" ini="Engine" section="/Script/Sentry.SentrySettings" property="UseLegacyGradlePlugin" default="false" />
 
-        <setStringFromProperty result="authType" ini="Engine" section="/Script/Sentry.SentrySettings" property="SentryCliAuthType" default="PropertiesFile"/>
+        <setStringFromProperty result="configType" ini="Engine" section="/Script/Sentry.SentrySettings" property="SentryCliConfigType" default="PropertiesFile"/>
 
         <setStringFromProperty result="enabledBuildConfigurations" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildConfigurations" default=""/>
         <setStringFromProperty result="enabledBuildTargetTypes" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildTargets" default=""/>
@@ -40,7 +40,7 @@
 
         <setBoolOr result="bSkipGradleOverride" arg1="$B(bUseLegacyGradlePlugin)" arg2="$B(bHasModernGradle)"/>
 
-        <setBoolIsEqual result="bUseEnvVariables" arg1="$S(authType)" arg2="EnvVariables" />
+        <setBoolIsEqual result="bUseEnvVariables" arg1="$S(configType)" arg2="EnvVariables" />
     </init>
 
     <prebuildCopies>
