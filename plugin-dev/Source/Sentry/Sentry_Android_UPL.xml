@@ -53,7 +53,7 @@
             <true>
                 <if condition="bUseEnvVariables">
                     <true>
-                        <log text="Sentry gradle plugin will use environment variables to authenticate with Sentry"/>
+                        <log text="Sentry Gradle plugin will use environment variables to authenticate with Sentry" />
                     </true>
                     <false>
                         <log text="Sentry gradle plugin will use properties file to authenticate with Sentry"/>
