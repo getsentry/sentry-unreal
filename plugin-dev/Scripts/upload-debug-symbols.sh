@@ -88,13 +88,13 @@ fi
 
 export SENTRY_PROPERTIES="$projectPath/sentry.properties"
 
-AUTH_TYPE=$(awk -F "=" '/SentryCliAuthType/ {print $2}' "$DEFAULT_ENGINE_INI")
+CONFIG_TYPE=$(awk -F "=" '/SentryCliConfigType/ {print $2}' "$DEFAULT_ENGINE_INI")
 
-if [ -z $AUTH_TYPE ]; then
-    AUTH_TYPE="PropertiesFile"
+if [ -z $CONFIG_TYPE ]; then
+    CONFIG_TYPE="PropertiesFile"
 fi
 
-if [ $AUTH_TYPE != "EnvVariables" ]; then
+if [ $CONFIG_TYPE != "EnvVariables" ]; then
     echo "Sentry: Upload started using properties file"
     if [ ! -f "$SENTRY_PROPERTIES" ]; then
         echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'. Skipping..."

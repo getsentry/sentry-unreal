@@ -11,11 +11,11 @@ class USentryBeforeSendHandler;
 class USentryTraceSampler;
 
 UENUM(BlueprintType)
-enum class ESentryDebugSymbolsAuthType : uint8
+enum class ESentryDebugSymbolsConfigType : uint8
 {
-	// Use properties file to authenticate with Sentry
+	// Use properties file to configure Sentry CLI
 	PropertiesFile,
-	// Use environment variables to authenticate with Sentry
+	// Use environment variables to configure Sentry CLI
 	EnvVariables
 };
 
@@ -328,8 +328,8 @@ class SENTRY_API USentrySettings : public UObject
 	bool UploadSymbolsAutomatically;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Authentication type", ToolTip = "Method to authenticate with Sentry for debug symbols upload.", EditCondition = "UploadSymbolsAutomatically"))
-	ESentryDebugSymbolsAuthType SentryCliAuthType;
+		Meta = (DisplayName = "Configuration type", ToolTip = "Method to configure Sentry CLI for debug symbols upload.", EditCondition = "UploadSymbolsAutomatically"))
+	ESentryDebugSymbolsConfigType SentryCliConfigType;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.",

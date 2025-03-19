@@ -90,9 +90,9 @@ if not exist "%CliExec%" (
 
 set PropertiesFile=%ProjectPath:"=%\sentry.properties
 
-call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings SentryCliAuthType AuthType
+call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings SentryCliConfigType ConfigType
 
-if /i "%AuthType%" NEQ "EnvVariables" (
+if /i "%ConfigType%" NEQ "EnvVariables" (
     echo Sentry: Upload started using properties file
     if not exist "%PropertiesFile%" (
         echo Error: Properties file is missing: '%PropertiesFile%'. Skipping...
