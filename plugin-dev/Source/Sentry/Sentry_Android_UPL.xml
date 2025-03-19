@@ -7,7 +7,8 @@
         <setBoolFromProperty result="bIncludeSources" ini="Engine" section="/Script/Sentry.SentrySettings" property="IncludeSources" default="false" />
         <setBoolFromProperty result="bUseLegacyGradlePlugin" ini="Engine" section="/Script/Sentry.SentrySettings" property="UseLegacyGradlePlugin" default="false" />
 
-        <setStringFromProperty result="enabledBuildPlatforms" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildPlatforms" default=""/>
+        <setStringFromProperty result="authType" ini="Engine" section="/Script/Sentry.SentrySettings" property="SentryCliAuthType" default="PropertiesFile"/>
+
         <setStringFromProperty result="enabledBuildConfigurations" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildConfigurations" default=""/>
         <setStringFromProperty result="enabledBuildTargetTypes" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildTargets" default=""/>
 
@@ -38,6 +39,8 @@
         </if>
 
         <setBoolOr result="bSkipGradleOverride" arg1="$B(bUseLegacyGradlePlugin)" arg2="$B(bHasModernGradle)"/>
+
+        <setBoolIsEqual result="bUseEnvVariables" arg1="$S(authType)" arg2="EnvVariables" />
     </init>
 
     <prebuildCopies>
@@ -48,8 +51,16 @@
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-native-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-native-ndk-release.aar" />
         <if condition="bUploadSymbols">
             <true>
-                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
-                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
+                <if condition="bUseEnvVariables">
+                    <true>
+                        <log text="Sentry gradle plugin will use environment variables to authenticate with Sentry"/>
+                    </true>
+                    <false>
+                        <log text="Sentry gradle plugin will use properties file to authenticate with Sentry"/>
+                        <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
+                        <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
+                    </false>
+                </if>
                 <if condition="bSkipGradleOverride">
                     <false>
                         <log text="Modifying engine's Gradle version used by replacing gradle-wrapper.properties"/>

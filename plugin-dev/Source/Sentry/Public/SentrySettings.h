@@ -11,6 +11,15 @@ class USentryBeforeSendHandler;
 class USentryTraceSampler;
 
 UENUM(BlueprintType)
+enum class ESentryDebugSymbolsAuthType : uint8
+{
+	// Use properties file to authenticate with Sentry
+	PropertiesFile,
+	// Use environment variables to authenticate with Sentry
+	EnvVariables
+};
+
+UENUM(BlueprintType)
 enum class ESentryTracesSamplingType : uint8
 {
 	// Use uniform sample rate for all transactions
@@ -318,16 +327,23 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
 	bool UploadSymbolsAutomatically;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Authentication type", ToolTip = "Method to authenticate with Sentry for debug symbols upload.", EditCondition = "UploadSymbolsAutomatically"))
+	ESentryDebugSymbolsAuthType SentryCliAuthType;
+
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.",
+			EditCondition = "UploadSymbolsAutomatically && SentryCliAuthType == ESentryDebugSymbolsAuthType::PropertiesFile", EditConditionHides))
 	FString ProjectName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.",
+			EditCondition = "UploadSymbolsAutomatically && SentryCliAuthType == ESentryDebugSymbolsAuthType::PropertiesFile", EditConditionHides))
 	FString OrgName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.",
+			EditCondition = "UploadSymbolsAutomatically && SentryCliAuthType == ESentryDebugSymbolsAuthType::PropertiesFile", EditConditionHides))
 	FString AuthToken;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
