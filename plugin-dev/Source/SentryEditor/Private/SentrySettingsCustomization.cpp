@@ -649,7 +649,7 @@ int32 FSentrySettingsCustomization::GetSentryCliStatusAsInt() const
 
 int32 FSentrySettingsCustomization::GetSentryCliAuthTypeAsInt() const
 {
-	return static_cast<int32>(FSentryModule::Get().GetSettings()->SentryCliAuthType);
+	return static_cast<int32>(FSentryModule::Get().GetSettings()->SentryCliConfigType);
 }
 
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata)
