@@ -97,21 +97,21 @@ fi
 if [ $AUTH_TYPE != "EnvVariables" ]; then
     echo "Sentry: Upload started using properties file"
     if [ ! -f "$SENTRY_PROPERTIES" ]; then
-        echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'"
+        echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'. Skipping..."
         exit
     fi
 else
     echo "Sentry: Upload started using environment variables"
-    if [ ! -z $SENTRY_PROJECT ]; then        
-        echo "Error: $SENTRY_PROJECT env var is not set. Skipping..."
+    if [ -z "$SENTRY_PROJECT" ]; then        
+        echo "Error: SENTRY_PROJECT env var is not set. Skipping..."
         exit
     fi
-    if [ ! -z $SENTRY_ORG ]; then        
-        echo "Error: $SENTRY_ORG env var is not set. Skipping..."
+    if [ -z "$SENTRY_ORG" ]; then        
+        echo "Error: SENTRY_ORG env var is not set. Skipping..."
         exit
     fi
-    if [ ! -z $SENTRY_AUTH_TOKEN ]; then        
-        echo "Error: $SENTRY_AUTH_TOKEN env var is not set. Skipping..."
+    if [ -z "$SENTRY_AUTH_TOKEN" ]; then        
+        echo "Error: SENTRY_AUTH_TOKEN env var is not set. Skipping..."
         exit
     fi
 fi
