@@ -5,6 +5,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "SentryDataTypes.h"
+#include "SentryId.h"
 
 #include "SentryLibrary.generated.h"
 
@@ -13,7 +14,6 @@ class USentryEvent;
 class USentryBreadcrumb;
 class USentryUser;
 class USentryUserFeedback;
-class USentryId;
 class USentryAttachment;
 
 /**
@@ -56,7 +56,7 @@ public:
 	 * @param Comments Comments of the user about what happened.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static USentryUserFeedback* CreateSentryUserFeedback(USentryId* EventId, const FString& Name, const FString& Email, const FString& Comments);
+	static USentryUserFeedback* CreateSentryUserFeedback(const FSentryId& EventId, const FString& Name, const FString& Email, const FString& Comments);
 
 	/**
 	 * Creates breadcrumb.

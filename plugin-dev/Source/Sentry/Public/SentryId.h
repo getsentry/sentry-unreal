@@ -11,17 +11,21 @@ class ISentryId;
 /**
  * Unique identifier of the event.
  */
-UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
-class SENTRY_API USentryId : public UObject, public TSentryImplWrapper<ISentryId, USentryId>
+USTRUCT(BlueprintType)
+struct SENTRY_API FSentryId
 {
 	GENERATED_BODY()
 
-public:
-	/** Initializes the identifier. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize();
+	FSentryId();
+	FSentryId(TSharedPtr<ISentryId> Id);
 
 	/** Gets string representation of the event ID. */
-	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString ToString() const;
+
+	bool IsValid() const { return NativeImpl.IsValid(); }
+
+	TSharedPtr<ISentryId> GetNativeObject() const { return NativeImpl; }
+
+private:
+	TSharedPtr<ISentryId> NativeImpl;
 };

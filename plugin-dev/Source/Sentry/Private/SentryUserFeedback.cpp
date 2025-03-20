@@ -5,11 +5,11 @@
 
 #include "HAL/PlatformSentryUserFeedback.h"
 
-void USentryUserFeedback::Initialize(USentryId* EventId)
+void USentryUserFeedback::Initialize(const FSentryId& EventId)
 {
-	if (ensure(IsValid(EventId)))
+	if (ensure(EventId.GetNativeObject()))
 	{
-		NativeImpl = CreateSharedSentryUserFeedback(EventId->GetNativeObject());
+		NativeImpl = CreateSharedSentryUserFeedback(EventId.GetNativeObject());
 	}
 }
 

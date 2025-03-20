@@ -47,9 +47,9 @@ USentryUser* USentryLibrary::CreateSentryUser(const FString& Email, const FStrin
 	return User;
 }
 
-USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(USentryId* EventId, const FString& Name, const FString& Email, const FString& Comments)
+USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(const FSentryId& EventId, const FString& Name, const FString& Email, const FString& Comments)
 {
-	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId->GetNativeObject()));
+	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId.GetNativeObject()));
 
 	if (!Name.IsEmpty())
 		UserFeedback->SetName(Name);

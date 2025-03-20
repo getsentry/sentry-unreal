@@ -4,10 +4,10 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+#include "SentryId.h"
 
 #include "SentryEvent.generated.h"
 
-class USentryId;
 class ISentryEvent;
 
 /**
@@ -25,7 +25,7 @@ public:
 
 	/** Gets id of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	USentryId* GetId() const;
+	FSentryId GetId() const;
 
 	/** Sets message of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

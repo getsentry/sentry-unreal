@@ -10,14 +10,14 @@ void USentryEvent::Initialize()
 	NativeImpl = CreateSharedSentryEvent();
 }
 
-USentryId* USentryEvent::GetId() const
+FSentryId USentryEvent::GetId() const
 {
 	if (!NativeImpl)
-		return nullptr;
+		return FSentryId();
 
 	TSharedPtr<ISentryId> idNativeImpl = NativeImpl->GetId();
 
-	return USentryId::Create(idNativeImpl);
+	return FSentryId(idNativeImpl);
 }
 
 void USentryEvent::SetMessage(const FString &Message)

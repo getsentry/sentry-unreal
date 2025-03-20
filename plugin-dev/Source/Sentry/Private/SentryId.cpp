@@ -4,12 +4,16 @@
 
 #include "HAL/PlatformSentryId.h"
 
-void USentryId::Initialize()
+FSentryId::FSentryId()
 {
-	NativeImpl = CreateSharedSentryId();
 }
 
-FString USentryId::ToString() const
+FSentryId::FSentryId(TSharedPtr<ISentryId> Id)
+{
+	NativeImpl = Id;
+}
+
+FString FSentryId::ToString() const
 {
 	if(!NativeImpl)
 		return FString();

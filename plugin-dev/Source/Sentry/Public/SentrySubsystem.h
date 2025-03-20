@@ -7,13 +7,13 @@
 
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
+#include "SentryId.h"
 
 #include "SentrySubsystem.generated.h"
 
 class USentrySettings;
 class USentryBreadcrumb;
 class USentryEvent;
-class USentryId;
 class USentryUserFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
@@ -108,7 +108,7 @@ public:
 	 * @param Level The message level.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryId* CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
+	FSentryId CaptureMessage(const FString& Message, ESentryLevel Level = ESentryLevel::Info);
 
 	/**
 	 * Captures the message with a configurable scope.
@@ -122,8 +122,8 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnConfigureScope"))
-	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
-	USentryId* CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+	FSentryId CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
+	FSentryId CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level = ESentryLevel::Info);
 
 	/**
 	 * Captures a manually created event and sends it to Sentry.
@@ -131,7 +131,7 @@ public:
 	 * @param Event The event to send to Sentry.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryId* CaptureEvent(USentryEvent* Event);
+	FSentryId CaptureEvent(USentryEvent* Event);
 
 	/**
 	 * Captures a manually created event and sends it to Sentry.
@@ -142,8 +142,8 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
-	USentryId* CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope);
+	FSentryId CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope);
+	FSentryId CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope);
 
 	/**
 	 * Captures a user feedback.
@@ -166,7 +166,7 @@ public:
 	 * @note: Not supported for Windows/Linux.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name);
+	void CaptureUserFeedbackWithParams(const FSentryId& EventId, const FString& Email, const FString& Comments, const FString& Name);
 
 	/**
 	 * Sets a user for the current scope.
