@@ -333,17 +333,17 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.",
-			EditCondition = "UploadSymbolsAutomatically && SentryCliAuthType == ESentryDebugSymbolsAuthType::PropertiesFile", EditConditionHides))
+			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
 	FString ProjectName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.",
-			EditCondition = "UploadSymbolsAutomatically && SentryCliAuthType == ESentryDebugSymbolsAuthType::PropertiesFile", EditConditionHides))
+			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
 	FString OrgName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.",
-			EditCondition = "UploadSymbolsAutomatically && SentryCliAuthType == ESentryDebugSymbolsAuthType::PropertiesFile", EditConditionHides))
+			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
 	FString AuthToken;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
