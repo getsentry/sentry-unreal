@@ -6,6 +6,10 @@
 
 - Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
 
+### Fixes
+
+- Fix crash during garbage collection if SentryId was instantiated outside of game thread ([#840](https://github.com/getsentry/sentry-unreal/pull/840))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.4.0 to v8.5.0 ([#835](https://github.com/getsentry/sentry-unreal/pull/835))
