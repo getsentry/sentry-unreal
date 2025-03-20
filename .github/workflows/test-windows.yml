@@ -1,0 +1,68 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  test:
+    name: Test
+    runs-on: windows-latest
+
+    steps:
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start Docker container
+        run: |
+          docker run -td `
+            --name unreal `
+            --volume "${{ github.workspace }}:C:\workspace" `
+            --workdir C:\workspace `
+            ghcr.io/getsentry/unreal-docker:${{ inputs.unreal-version }}
+
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.sha }}
+
+      - uses: actions/checkout@v4
+        with:
+          path: checkout
+          submodules: recursive
+
+      - name: Extract package to sample/Plugins
+        run: |
+          New-Item -ItemType Directory -Path "${{ github.workspace }}\checkout\sample\Plugins\sentry" -Force
+          Expand-Archive -Path "sentry-unreal-*-engine${{ inputs.unreal-version }}-github.zip" -DestinationPath "${{ github.workspace }}\checkout\sample\Plugins\sentry" -Force
+
+      - name: Run tests
+        id: run-tests
+        run: |
+          docker exec unreal C:\UnrealEngine\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun `
+            -project=C:\workspace\checkout\sample\SentryPlayground.uproject `
+            -archivedirectory=C:\workspace\checkout\sample\Builds `
+            -platform=Win64 `
+            -nop4 `
+            -cook `
+            -build `
+            -stage `
+            -prereqss `
+            -package `
+            -archive
+          docker exec unreal C:\UnrealEngine\Engine\Binaries\Win64\${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }} C:\workspace\checkout\sample\SentryPlayground.uproject `
+            -ReportExportPath=C:\workspace\checkout\sample\Saved\Automation `
+            -ExecCmds="Automation RunTests Sentry;quit" `
+            -TestExit="Automation Test Queue Empty" `
+            -Unattended `
+            -NoPause `
+            -NoSplash `
+            -NullRHI
