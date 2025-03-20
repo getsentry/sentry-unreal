@@ -72,13 +72,6 @@ if not "%EnabledConfigurations%"=="" (
   )
 )
 
-set PropertiesFile=%ProjectPath:"=%\sentry.properties
-
-if not exist "%PropertiesFile%" (
-    echo Warning: Sentry: Properties file is missing: '%PropertiesFile%'
-    exit /B 0
-)
-
 if "%TargetPlatform%"=="Win64" (
     set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
 ) else if "%TargetPlatform%"=="Linux" (
@@ -95,11 +88,33 @@ if not exist "%CliExec%" (
     exit /B 0
 )
 
-echo Sentry: Upload started using PropertiesFile '%PropertiesFile%'
+set PropertiesFile=%ProjectPath:"=%\sentry.properties
 
-set "SENTRY_PROPERTIES=%PropertiesFile%"
-echo %ProjectBinariesPath%
-echo %PluginBinariesPath%
+call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings SentryCliConfigType ConfigType
+
+if /i "%ConfigType%" NEQ "EnvVariables" (
+    echo Sentry: Upload started using properties file
+    if not exist "%PropertiesFile%" (
+        echo Error: Properties file is missing: '%PropertiesFile%'. Skipping...
+        exit /B 0
+    )    
+    set "SENTRY_PROPERTIES=%PropertiesFile%"
+) else (
+    echo Sentry: Upload started using environment variables
+    if /i "%SENTRY_PROJECT%"=="" (
+        echo Error: SENTRY_PROJECT env var is not set. Skipping...
+        exit /B 0
+    )
+    if /i "%SENTRY_ORG%"=="" (
+        echo Error: SENTRY_ORG env var is not set. Skipping...
+        exit /B 0
+    )
+    if /i "%SENTRY_AUTH_TOKEN%"=="" (
+        echo Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...
+        exit /B 0
+    )    
+)
+
 call "%CliExec%" debug-files upload %CliArgs% --log-level %CliLogLevel% "%ProjectBinariesPath%" "%PluginBinariesPath%"
 
 echo Sentry: Upload finished

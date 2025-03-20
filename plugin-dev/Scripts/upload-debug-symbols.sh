@@ -72,12 +72,6 @@ if [ ! -z $ENABLED_CONFIGS ]; then
     fi
 fi
 
-export SENTRY_PROPERTIES="$projectPath/sentry.properties"
-if [ ! -f "$SENTRY_PROPERTIES" ]; then
-    echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'"
-    exit
-fi
-
 if [ $targetPlatform = "IOS" ] || [ $targetPlatform = "Mac" ]; then
     SENTRY_CLI_EXEC="$pluginPath/Source/ThirdParty/CLI/sentry-cli-Darwin-universal"
 elif [ $targetPlatform = "Linux" ] || [ $targetPlatform = "LinuxArm64" ]; then
@@ -92,7 +86,35 @@ if [ ! -f "$SENTRY_CLI_EXEC" ]; then
     exit
 fi
 
-echo "Sentry: Upload started using PropertiesFile '$SENTRY_PROPERTIES'"
+export SENTRY_PROPERTIES="$projectPath/sentry.properties"
+
+CONFIG_TYPE=$(awk -F "=" '/SentryCliConfigType/ {print $2}' "$DEFAULT_ENGINE_INI")
+
+if [ -z $CONFIG_TYPE ]; then
+    CONFIG_TYPE="PropertiesFile"
+fi
+
+if [ $CONFIG_TYPE != "EnvVariables" ]; then
+    echo "Sentry: Upload started using properties file"
+    if [ ! -f "$SENTRY_PROPERTIES" ]; then
+        echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'. Skipping..."
+        exit
+    fi
+else
+    echo "Sentry: Upload started using environment variables"
+    if [ -z "$SENTRY_PROJECT" ]; then        
+        echo "Error: SENTRY_PROJECT env var is not set. Skipping..."
+        exit
+    fi
+    if [ -z "$SENTRY_ORG" ]; then        
+        echo "Error: SENTRY_ORG env var is not set. Skipping..."
+        exit
+    fi
+    if [ -z "$SENTRY_AUTH_TOKEN" ]; then        
+        echo "Error: SENTRY_AUTH_TOKEN env var is not set. Skipping..."
+        exit
+    fi
+fi
 
 chmod +x "$SENTRY_CLI_EXEC"
 

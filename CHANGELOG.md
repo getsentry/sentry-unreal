@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.4.0 to v8.5.0 ([#835](https://github.com/getsentry/sentry-unreal/pull/835))
