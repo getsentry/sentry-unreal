@@ -272,11 +272,11 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 			]
 		];
 
-	TSharedRef<SWidget> CliAuthPropertiesFileWidget = MakeSentryCliAuthTypeRow(
+	TSharedRef<SWidget> CliAuthPropertiesFileWidget = MakeSentryCliConfigTypeRow(
 		FText::FromString(TEXT("Note that the Sentry SDK creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, "
 			"that should <RichTextBlock.TextHighlight>NOT</> be made publicly available.")));
 
-	TSharedRef<SWidget> CliAuthEnvVarWidget = MakeSentryCliAuthTypeRow(
+	TSharedRef<SWidget> CliAuthEnvVarWidget = MakeSentryCliConfigTypeRow(
 		FText::FromString(TEXT("Set up the environment variables <RichTextBlock.TextHighlight>SENTRY_AUTH_TOKEN</>, <RichTextBlock.TextHighlight>SENTRY_ORG</> and "
 			"<RichTextBlock.TextHighlight>SENTRY_PROJECT</> with the necessary information to upload debug symbols on the build agent.")));
 
@@ -287,7 +287,7 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 			.Padding(1)
 			[
 				SNew(SWidgetSwitcher)
-				.WidgetIndex(this, &FSentrySettingsCustomization::GetSentryCliAuthTypeAsInt)
+				.WidgetIndex(this, &FSentrySettingsCustomization::GetSentryCliConfigTypeAsInt)
 				+SWidgetSwitcher::Slot()
 				[
 					CliAuthPropertiesFileWidget
@@ -501,7 +501,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 	return Result;
 }
 
-TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliAuthTypeRow(FText Message)
+TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliConfigTypeRow(FText Message)
 {
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	const ISlateStyle& Style = FEditorStyle::Get();
@@ -647,7 +647,7 @@ int32 FSentrySettingsCustomization::GetSentryCliStatusAsInt() const
 	return 0;
 }
 
-int32 FSentrySettingsCustomization::GetSentryCliAuthTypeAsInt() const
+int32 FSentrySettingsCustomization::GetSentryCliConfigTypeAsInt() const
 {
 	return static_cast<int32>(FSentryModule::Get().GetSettings()->SentryCliConfigType);
 }
