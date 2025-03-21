@@ -26,26 +26,21 @@ void SentrySubsystemSpec::Define()
 	BeforeEach([this]()
 	{
 		SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-
-		if(SentrySubsystem && !SentrySubsystem->IsEnabled())
-		{
-			SentrySubsystem->Initialize();
-		}
 	});
 
 	Describe("Capture Message", [this]()
 	{
 		It("should return a non-null Event ID if message captured", [this]()
 		{
-			const USentryId* eventId = SentrySubsystem->CaptureMessage(FString(TEXT("Automation: Sentry test message")), ESentryLevel::Debug);
-			TestNotNull("Event ID is non-null", eventId);
+			FSentryId eventId = SentrySubsystem->CaptureMessage(FString(TEXT("Automation: Sentry test message")), ESentryLevel::Debug);
+			TestTrue("Event ID is valid", eventId.IsValid());
 		});
 
 		It("should always return non-null Event ID if scoped version used", [this]()
 		{
 			const FConfigureScopeNativeDelegate testDelegate;
-			const USentryId* eventId = SentrySubsystem->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
-			TestNotNull("Event ID is non-null", eventId);
+			FSentryId eventId = SentrySubsystem->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
+			TestTrue("Event ID is valid", eventId.IsValid());
 		});
 	});
 
@@ -56,8 +51,8 @@ void SentrySubsystemSpec::Define()
 			USentryEvent* testEvent = USentryEvent::Create(CreateSharedSentryEvent());
 			testEvent->SetMessage(TEXT("Automation: Sentry test event message"));
 
-			const USentryId* eventId = SentrySubsystem->CaptureEvent(testEvent);
-			TestNotNull("Event ID is non-null", eventId);
+			FSentryId eventId = SentrySubsystem->CaptureEvent(testEvent);
+			TestTrue("Event ID is valid", eventId.IsValid());
 		});
 
 		It("should always return non-null Event ID if scoped version used", [this]()
@@ -67,8 +62,8 @@ void SentrySubsystemSpec::Define()
 
 			const FConfigureScopeNativeDelegate testDelegate;
 
-			const USentryId* eventId = SentrySubsystem->CaptureEventWithScope(testEvent, testDelegate);
-			TestNotNull("Event ID is non-null", eventId);
+			FSentryId eventId = SentrySubsystem->CaptureEventWithScope(testEvent, testDelegate);
+			TestTrue("Event ID is valid", eventId.IsValid());
 		});
 	});
 
@@ -152,11 +147,6 @@ void SentrySubsystemSpec::Define()
 			TestEqual("Trace header", outTraceKey, TEXT("sentry-trace"));
 			TestEqual("Trace ID", outTraceParts[0], TEXT("2674eb52d5874b13b560236d6c79ce8a"));
 		});
-	});
-
-	AfterEach([this]
-	{
-		SentrySubsystem->Close();
 	});
 }
 
