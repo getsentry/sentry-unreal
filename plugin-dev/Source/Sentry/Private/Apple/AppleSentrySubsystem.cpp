@@ -28,27 +28,14 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformSentryAttachment.h"
 #include "Misc/CoreDelegates.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
 
-#if PLATFORM_IOS && !WITH_EDITOR && !PLATFORM_VISIONOS
-#include "IOS/IOSAppDelegate.h"
-#endif
-
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
-	FCoreDelegates::OnHandleSystemError.AddLambda([this]()
-	{
-		
-		//SentryScreenshotUtils::CaptureScreenshot(IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*filePath));
-
-
-	});
-
-	static bool onCrashCalled = false;
-
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
 	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
@@ -77,8 +64,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					[scope addAttachment:logAttachment];
 				}
 				if (settings->AttachScreenshot) {
-					FString filePath = FPaths::Combine(FPaths::ProjectPersistentDownloadDir(), TEXT("screenshot1.png"));
-					const FString screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*filePath);
+					const FString screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GetScreenshotPath());
 					SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePath.GetNSString()];
 					[scope addAttachment:screenshotAttachment];
 				}
@@ -358,28 +344,4 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
 	return MakeShareable(new SentryTransactionContextApple(transactionContext));
-}
-
-void FAppleSentrySubsystem::TryCaptureScreenshot() const
-{
-#if PLATFORM_IOS && !WITH_EDITOR && !PLATFORM_VISIONOS
-	dispatch_async(dispatch_get_main_queue(), ^{
-		UIGraphicsBeginImageContextWithOptions([IOSAppDelegate GetDelegate].RootView.bounds.size, NO, 2.0f);
-		[[IOSAppDelegate GetDelegate].RootView drawViewHierarchyInRect:[IOSAppDelegate GetDelegate].RootView.bounds afterScreenUpdates:YES];
-		UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
-
-		NSData *imageData = UIImagePNGRepresentation(image);
-
-		TArray<uint8> ImageBytes;
-
-		uint32 SavedSize = imageData.length;
-
-		ImageBytes.AddUninitialized(SavedSize);
-		FPlatformMemory::Memcpy(ImageBytes.GetData(), [imageData bytes], SavedSize);
-
-		FString filePath = FPaths::Combine(FPaths::ProjectDir(), TEXT("screenshot1.png"));
-		FFileHelper::SaveArrayToFile(ImageBytes, *filePath);
-	});
-#endif
 }
