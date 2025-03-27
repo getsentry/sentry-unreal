@@ -3,10 +3,10 @@
 #pragma once
 
 #include "SentryImplWrapper.h"
+#include "SentryId.h"
 
 #include "SentryUserFeedback.generated.h"
 
-class USentryId;
 class ISentryUserFeedback;
 
 /**
@@ -24,7 +24,7 @@ public:
 	 * @param EventId The associated event identifier.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize(USentryId* EventId);
+	void Initialize(const FSentryId& EventId);
 
 	/** Sets the name of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

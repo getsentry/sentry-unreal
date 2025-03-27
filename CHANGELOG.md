@@ -2,9 +2,17 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Change `SentryId` type from class to struct.
+
 ### Features
 
 - Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
+
+### Fixes
+
+- Fix crash during garbage collection if SentryId was instantiated outside of game thread ([#840](https://github.com/getsentry/sentry-unreal/pull/840))
 
 ### Dependencies
 
