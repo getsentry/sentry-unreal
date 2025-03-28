@@ -26,6 +26,10 @@
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformSentryAttachment.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
@@ -59,7 +63,17 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
 					[scope addAttachment:logAttachment];
 				}
+				if (settings->AttachScreenshot) {
+					const FString screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GetScreenshotPath());
+					SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePath.GetNSString()];
+					[scope addAttachment:screenshotAttachment];
+				}
 				return scope;
+			};
+			options.onCrashedLastRun = ^(SentryEvent* event) {
+				[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+					[scope clearAttachments];
+				}];
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				FGCScopeGuard GCScopeGuard;
