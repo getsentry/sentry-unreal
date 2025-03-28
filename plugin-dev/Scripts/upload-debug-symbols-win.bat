@@ -90,17 +90,13 @@ if not exist "%CliExec%" (
 
 set PropertiesFile=%ProjectPath:"=%\sentry.properties
 
-call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings SentryCliConfigType ConfigType
+echo Sentry: Looking for properties file '%PropertiesFile%'
 
-if /i "%ConfigType%" NEQ "EnvVariables" (
-    echo Sentry: Upload started using properties file
-    if not exist "%PropertiesFile%" (
-        echo Error: Properties file is missing: '%PropertiesFile%'. Skipping...
-        exit /B 0
-    )    
+if exist "%PropertiesFile%" (
+    echo Sentry: Properties file found. Starting upload...
     set "SENTRY_PROPERTIES=%PropertiesFile%"
 ) else (
-    echo Sentry: Upload started using environment variables
+    echo Sentry: Properties file not found. Falling back to environment variables.
     if /i "%SENTRY_PROJECT%"=="" (
         echo Error: SENTRY_PROJECT env var is not set. Skipping...
         exit /B 0
@@ -112,7 +108,7 @@ if /i "%ConfigType%" NEQ "EnvVariables" (
     if /i "%SENTRY_AUTH_TOKEN%"=="" (
         echo Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...
         exit /B 0
-    )    
+    )
 )
 
 call "%CliExec%" debug-files upload %CliArgs% --log-level %CliLogLevel% "%ProjectBinariesPath%" "%PluginBinariesPath%"

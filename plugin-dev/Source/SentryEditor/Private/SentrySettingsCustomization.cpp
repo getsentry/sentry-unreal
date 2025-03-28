@@ -249,6 +249,12 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 	TSharedRef<SWidget> CliConfiguredWidget = MakeSentryCliStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
 		FText::FromString(TEXT("Sentry symbol upload tools are configured.")), FText::FromString(TEXT("Reload")));
 
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	const ISlateStyle& Style = FEditorStyle::Get();
+#else
+	const ISlateStyle& Style = FAppStyle::Get();
+#endif
+
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
 		.WholeRowWidget
 		[
@@ -272,29 +278,28 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 			]
 		];
 
-	TSharedRef<SWidget> CliAuthPropertiesFileWidget = MakeSentryCliConfigTypeRow(
-		FText::FromString(TEXT("Note that the Sentry SDK creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, "
-			"that should <RichTextBlock.TextHighlight>NOT</> be made publicly available.")));
-
-	TSharedRef<SWidget> CliAuthEnvVarWidget = MakeSentryCliConfigTypeRow(
-		FText::FromString(TEXT("Set up the environment variables <RichTextBlock.TextHighlight>SENTRY_AUTH_TOKEN</>, <RichTextBlock.TextHighlight>SENTRY_ORG</> and "
-			"<RichTextBlock.TextHighlight>SENTRY_PROJECT</> with the necessary information to upload debug symbols on the build agent.")));
-
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
 		.WholeRowWidget
 		[
 			SNew(SBorder)
 			.Padding(1)
 			[
-				SNew(SWidgetSwitcher)
-				.WidgetIndex(this, &FSentrySettingsCustomization::GetSentryCliConfigTypeAsInt)
-				+SWidgetSwitcher::Slot()
+				SNew(SBorder)
+				.Padding(1)
 				[
-					CliAuthPropertiesFileWidget
-				]
-				+SWidgetSwitcher::Slot()
-				[
-					CliAuthEnvVarWidget
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.Padding(FMargin(10, 10, 10, 10))
+					.FillWidth(1.0f)
+					[
+						SNew(SRichTextBlock)
+							.Text(FText::FromString(TEXT("Note that the Sentry SDK automatically creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, "
+								"that should <RichTextBlock.TextHighlight>NOT</> be made publicly available. Alternatively, set up the environment variables "
+								"'SENTRY_PROJECT', 'SENTRY_ORG' and 'SENTRY_AUTH_TOKEN' with the necessary information to upload debug symbols on the build agent.")))
+							.TextStyle(Style, "MessageLog")
+							.DecoratorStyleSet(&Style)
+							.AutoWrapText(true)
+					]
 				]
 			]
 		];
@@ -501,33 +506,6 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 	return Result;
 }
 
-TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliConfigTypeRow(FText Message)
-{
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-	const ISlateStyle& Style = FEditorStyle::Get();
-#else
-	const ISlateStyle& Style = FAppStyle::Get();
-#endif
-
-	TSharedRef<SBorder> Result = SNew(SBorder)
-		.Padding(1)
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.Padding(FMargin(10, 10, 10, 10))
-			.FillWidth(1.0f)
-			[
-				SNew(SRichTextBlock)
-					.Text(Message)
-					.TextStyle(Style, "MessageLog")
-					.DecoratorStyleSet(&Style)
-					.AutoWrapText(true)
-			]
-		];
-
-	return Result;
-}
-
 void FSentrySettingsCustomization::UpdateProjectName()
 {
 	FString Value;
@@ -645,11 +623,6 @@ int32 FSentrySettingsCustomization::GetSentryCliStatusAsInt() const
 	}
 
 	return 0;
-}
-
-int32 FSentrySettingsCustomization::GetSentryCliConfigTypeAsInt() const
-{
-	return static_cast<int32>(FSentryModule::Get().GetSettings()->SentryCliConfigType);
 }
 
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata)
