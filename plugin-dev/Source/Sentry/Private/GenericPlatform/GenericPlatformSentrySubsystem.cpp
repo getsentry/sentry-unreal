@@ -229,8 +229,11 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->Dsn));
 #if WITH_EDITOR
-	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->EditorDsn));
-#endif
+	if(!settings->EditorDsn.IsEmpty())
+	{
+		sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->EditorDsn));
+	}
+#endif // WITH_EDITOR
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);
