@@ -197,17 +197,16 @@ ESentryCrashedLastRun USentrySubsystem::IsCrashedLastRun() const
 	return SubsystemNativeImpl->IsCrashedLastRun();
 }
 
-void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
+void USentrySubsystem::AddBreadcrumb(const FSentryBreadcrumb& Breadcrumb)
 {
 	check(SubsystemNativeImpl);
-	check(Breadcrumb);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
 
-	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
+	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb.GetNativeObject());
 }
 
 void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)

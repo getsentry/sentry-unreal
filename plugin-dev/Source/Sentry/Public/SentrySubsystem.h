@@ -67,7 +67,7 @@ public:
 	 * @param Breadcrumb The breadcrumb to send to Sentry.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddBreadcrumb(USentryBreadcrumb* Breadcrumb);
+	void AddBreadcrumb(const FSentryBreadcrumb& Breadcrumb);
 
 	/**
 	 * Adds a breadcrumb to the current Scope.

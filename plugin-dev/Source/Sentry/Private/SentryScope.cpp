@@ -11,12 +11,12 @@ void USentryScope::Initialize()
 	NativeImpl = CreateSharedSentryScope();
 }
 
-void USentryScope::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
+void USentryScope::AddBreadcrumb(const FSentryBreadcrumb& Breadcrumb)
 {
 	if (!NativeImpl)
 		return;
 
-	NativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
+	NativeImpl->AddBreadcrumb(Breadcrumb.GetNativeObject());
 }
 
 void USentryScope::ClearBreadcrumbs()

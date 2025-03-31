@@ -4,12 +4,11 @@
 
 #include "HAL/PlatformSentryBreadcrumb.h"
 
-void USentryBreadcrumb::Initialize()
+FSentryBreadcrumb::FSentryBreadcrumb() : NativeImpl(CreateSharedSentryBreadcrumb())
 {
-	NativeImpl = CreateSharedSentryBreadcrumb();
 }
 
-void USentryBreadcrumb::SetMessage(const FString &Message)
+void FSentryBreadcrumb::SetMessage(const FString &Message)
 {
 	if (!NativeImpl)
 		return;
@@ -17,7 +16,7 @@ void USentryBreadcrumb::SetMessage(const FString &Message)
 	NativeImpl->SetMessage(Message);
 }
 
-FString USentryBreadcrumb::GetMessage() const
+FString FSentryBreadcrumb::GetMessage() const
 {
 	if(!NativeImpl)
 		return FString();
@@ -25,7 +24,7 @@ FString USentryBreadcrumb::GetMessage() const
 	return NativeImpl->GetMessage();
 }
 
-void USentryBreadcrumb::SetType(const FString& Type)
+void FSentryBreadcrumb::SetType(const FString& Type)
 {
 	if (!NativeImpl)
 		return;
@@ -33,7 +32,7 @@ void USentryBreadcrumb::SetType(const FString& Type)
 	NativeImpl->SetType(Type);
 }
 
-FString USentryBreadcrumb::GetType() const
+FString FSentryBreadcrumb::GetType() const
 {
 	if(!NativeImpl)
 		return FString();
@@ -41,7 +40,7 @@ FString USentryBreadcrumb::GetType() const
 	return NativeImpl->GetType();
 }
 
-void USentryBreadcrumb::SetCategory(const FString& Category)
+void FSentryBreadcrumb::SetCategory(const FString& Category)
 {
 	if (!NativeImpl)
 		return;
@@ -49,7 +48,7 @@ void USentryBreadcrumb::SetCategory(const FString& Category)
 	NativeImpl->SetCategory(Category);
 }
 
-FString USentryBreadcrumb::GetCategory() const
+FString FSentryBreadcrumb::GetCategory() const
 {
 	if(!NativeImpl)
 		return FString();
@@ -57,7 +56,7 @@ FString USentryBreadcrumb::GetCategory() const
 	return NativeImpl->GetCategory();
 }
 
-void USentryBreadcrumb::SetData(const TMap<FString, FString>& Data)
+void FSentryBreadcrumb::SetData(const TMap<FString, FString>& Data)
 {
 	if (!NativeImpl)
 		return;
@@ -65,7 +64,7 @@ void USentryBreadcrumb::SetData(const TMap<FString, FString>& Data)
 	NativeImpl->SetData(Data);
 }
 
-TMap<FString, FString> USentryBreadcrumb::GetData() const
+TMap<FString, FString> FSentryBreadcrumb::GetData() const
 {
 	if(!NativeImpl)
 		return TMap<FString, FString>();
@@ -73,7 +72,7 @@ TMap<FString, FString> USentryBreadcrumb::GetData() const
 	return NativeImpl->GetData();
 }
 	
-void USentryBreadcrumb::SetLevel(ESentryLevel Level)
+void FSentryBreadcrumb::SetLevel(ESentryLevel Level)
 {
 	if (!NativeImpl)
 		return;
@@ -81,10 +80,60 @@ void USentryBreadcrumb::SetLevel(ESentryLevel Level)
 	NativeImpl->SetLevel(Level);
 }
 
-ESentryLevel USentryBreadcrumb::GetLevel() const
+ESentryLevel FSentryBreadcrumb::GetLevel() const
 {
 	if(!NativeImpl)
 		return ESentryLevel::Debug;
 
 	return NativeImpl->GetLevel();
+}
+
+void USentryBreadcrumbLibrary::SetMessage(FSentryBreadcrumb& Breadcrumb, const FString& Message)
+{
+	Breadcrumb.SetMessage(Message);
+}
+
+FString USentryBreadcrumbLibrary::GetMessage(const FSentryBreadcrumb& Breadcrumb)
+{
+	return Breadcrumb.GetMessage();
+}
+
+void USentryBreadcrumbLibrary::SetType(FSentryBreadcrumb& Breadcrumb, const FString& Type)
+{
+	Breadcrumb.SetType(Type);
+}
+
+FString USentryBreadcrumbLibrary::GetType(const FSentryBreadcrumb& Breadcrumb)
+{
+	return Breadcrumb.GetType();
+}
+
+void USentryBreadcrumbLibrary::SetCategory(FSentryBreadcrumb& Breadcrumb, const FString& Category)
+{
+	Breadcrumb.SetCategory(Category);
+}
+
+FString USentryBreadcrumbLibrary::GetCategory(const FSentryBreadcrumb& Breadcrumb)
+{
+	return Breadcrumb.GetCategory();
+}
+
+void USentryBreadcrumbLibrary::SetData(FSentryBreadcrumb& Breadcrumb, const TMap<FString, FString>& Data)
+{
+	Breadcrumb.SetData(Data);
+}
+
+TMap<FString, FString> USentryBreadcrumbLibrary::GetData(const FSentryBreadcrumb& Breadcrumb)
+{
+	return Breadcrumb.GetData();
+}
+
+void USentryBreadcrumbLibrary::SetLevel(FSentryBreadcrumb& Breadcrumb, ESentryLevel Level)
+{
+	Breadcrumb.SetLevel(Level);
+}
+
+ESentryLevel USentryBreadcrumbLibrary::GetLevel(const FSentryBreadcrumb& Breadcrumb)
+{
+	return Breadcrumb.GetLevel();
 }

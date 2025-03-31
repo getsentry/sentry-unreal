@@ -26,7 +26,7 @@ public:
 
 	/** Adds a breadcrumb to the current Scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddBreadcrumb(USentryBreadcrumb* Breadcrumb);
+	void AddBreadcrumb(const FSentryBreadcrumb& Breadcrumb);
 
 	/** Clear all breadcrumbs of the current Scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
