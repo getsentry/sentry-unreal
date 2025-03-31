@@ -229,7 +229,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->Dsn));
 #if WITH_EDITOR
-	if(!settings->EditorDsn.IsEmpty())
+	if (!settings->EditorDsn.IsEmpty())
 	{
 		sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->EditorDsn));
 	}
