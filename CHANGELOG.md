@@ -2,9 +2,17 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Replace `USentryId` class with `FString` ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
+
 ### Features
 
 - Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
+
+### Fixes
+
+- Fix crash during garbage collection if SentryId was instantiated outside of game thread ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
 
 ### Dependencies
 

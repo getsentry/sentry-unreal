@@ -31,7 +31,7 @@ void SentryEventSpec::Define()
 
 			TestEqual("Event level", SentryEvent->GetLevel(), ESentryLevel::Fatal);
 			TestEqual("Event message", SentryEvent->GetMessage(), TestMessage);
-			TestNotNull("Event ID is non-null", SentryEvent->GetId());
+			TestFalse("Event ID is non-empty", SentryEvent->GetId().IsEmpty());
 		});
 	});
 }

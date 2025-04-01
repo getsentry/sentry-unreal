@@ -9,6 +9,11 @@ FGenericPlatformSentryId::FGenericPlatformSentryId()
 	Id = sentry_uuid_new_v4();
 }
 
+FGenericPlatformSentryId::FGenericPlatformSentryId(const FString& id)
+{
+	Id = sentry_uuid_from_string(TCHAR_TO_UTF8(*id));
+}
+
 FGenericPlatformSentryId::FGenericPlatformSentryId(sentry_uuid_t id)
 {
 	Id = id;

@@ -15,6 +15,16 @@ SentryIdApple::SentryIdApple()
 #endif
 }
 
+SentryIdApple::SentryIdApple(const FString& id)
+{
+	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
+#if PLATFORM_MAC
+	IdApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry8SentryId) alloc] initWithUUIDString:id.GetNSString()];
+#elif PLATFORM_IOS
+	IdApple = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:id.GetNSString()];
+#endif
+}
+
 SentryIdApple::SentryIdApple(SentryId* id)
 {
 	IdApple = id;
