@@ -197,6 +197,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "DSN", ToolTip = "The DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard."))
 	FString Dsn;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Editor DSN", ToolTip = "The Editor DSN (Data Source Name) if you want to isolate editor crashes from packaged game crashes, defaults to Dsn if not provided."))
+	FString EditorDsn;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General",
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging."))
 	bool Debug;

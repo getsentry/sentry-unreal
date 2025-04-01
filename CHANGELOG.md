@@ -5,6 +5,7 @@
 ### Features
 
 - Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
+- Added the ability to specify a separate DSN for crashes while in editor vs cooked title ([#853](https://github.com/getsentry/sentry-unreal/pull/853))
 
 ### Dependencies
 
