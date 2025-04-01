@@ -24,7 +24,7 @@ public:
 	 * @param EventId The associated event identifier.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize(USentryId* EventId);
+	void Initialize(const FString& EventId);
 
 	/** Sets the name of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

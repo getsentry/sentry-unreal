@@ -7,7 +7,6 @@
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
-#include "SentryId.h"
 #include "SentryUser.h"
 #include "SentryUserFeedback.h"
 #include "SentryBeforeSendHandler.h"
@@ -234,32 +233,32 @@ void USentrySubsystem::ClearBreadcrumbs()
 	SubsystemNativeImpl->ClearBreadcrumbs();
 }
 
-USentryId* USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
+FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		return FString();
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessage(Message, Level);
 
-	return USentryId::Create(SentryId);
+	return SentryId->ToString();
 }
 
-USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
+FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
 {
 	return CaptureMessageWithScope(Message, FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()), Level);
 }
 
-USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level)
+FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeNativeDelegate& OnConfigureScope, ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		return FString();
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
@@ -268,37 +267,37 @@ USentryId* USentrySubsystem::CaptureMessageWithScope(const FString& Message, con
 		OnConfigureScope.ExecuteIfBound(UnrealScope);
 	}), Level);
 
-	return USentryId::Create(SentryId);
+	return SentryId->ToString();
 }
 
-USentryId* USentrySubsystem::CaptureEvent(USentryEvent* Event)
+FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 {
 	check(SubsystemNativeImpl);
 	check(Event);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		return FString();
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEvent(Event->GetNativeObject());
 
-	return USentryId::Create(SentryId);
+	return SentryId->ToString();
 }
 
-USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
+FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
 {
 	return CaptureEventWithScope(Event, FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
 }
 
-USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope)
+FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeNativeDelegate& OnConfigureScope)
 {
 	check(SubsystemNativeImpl);
 	check(Event);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		return FString();
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
@@ -307,7 +306,7 @@ USentryId* USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FC
 		OnConfigureScope.ExecuteIfBound(UnrealScope);
 	}));
 
-	return USentryId::Create(SentryId);
+	return SentryId->ToString();
 }
 
 void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
@@ -323,12 +322,12 @@ void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback->GetNativeObject());
 }
 
-void USentrySubsystem::CaptureUserFeedbackWithParams(USentryId* EventId, const FString& Email, const FString& Comments, const FString& Name)
+void USentrySubsystem::CaptureUserFeedbackWithParams(const FString& EventId, const FString& Email, const FString& Comments, const FString& Name)
 {
 	check(SubsystemNativeImpl);
-	check(EventId);
+	check(!EventId.IsEmpty());
 
-	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId->GetNativeObject()));
+	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId));
 	check(UserFeedback);
 
 	UserFeedback->SetEmail(Email);
