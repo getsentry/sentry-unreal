@@ -11,7 +11,7 @@
 class ISentrySamplingContext;
 class USentryTransactionContext;
 
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentrySamplingContext : public UObject, public TSentryImplWrapper<ISentrySamplingContext, USentrySamplingContext>
 {
 	GENERATED_BODY()

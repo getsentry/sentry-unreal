@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryEventApple.h"
+#include "SentryIdApple.h"
 
 #include "Infrastructure/SentryConvertersApple.h"
 
@@ -25,6 +26,12 @@ SentryEventApple::~SentryEventApple()
 SentryEvent* SentryEventApple::GetNativeObject()
 {
 	return EventApple;
+}
+
+TSharedPtr<ISentryId> SentryEventApple::GetId() const
+{
+	SentryId* id = EventApple.eventId;
+	return MakeShareable(new SentryIdApple(id));
 }
 
 void SentryEventApple::SetMessage(const FString& message)

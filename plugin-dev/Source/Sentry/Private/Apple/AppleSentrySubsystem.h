@@ -4,7 +4,7 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-class SentrySubsystemApple : public ISentrySubsystem
+class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) override;
@@ -18,8 +18,6 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level) override;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) override;
-	virtual TSharedPtr<ISentryId> CaptureException(const FString& type, const FString& message, int32 framesToSkip) override;
-	virtual TSharedPtr<ISentryId> CaptureAssertion(const FString& type, const FString& message) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
@@ -37,5 +35,3 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) override;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 };
-
-typedef SentrySubsystemApple FPlatformSentrySubsystem;

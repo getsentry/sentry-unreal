@@ -48,14 +48,6 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 
 	FString MessageBuf = FString(buffer);
 
-	// The WER (Windows Error Reporting) module (crashpad_wer.dll) can't be distributed along with other Sentry binaries
-	// within the plugin package due to some UE Marketplace restrictions. Its absence doesn't affect crash capturing
-	// and the corresponding warning can be disregarded
-	if (MessageBuf.Equals(TEXT("crashpad WER handler module not found")))
-	{
-		return;
-	}
-
 #if !NO_LOGGING
 	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
 #else
@@ -102,14 +94,15 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	FGCScopeGuard GCScopeGuard;
 
-	USentryEvent* EventToProcess = USentryEvent::Create(Event);
-
-	USentryEvent* ProcessedEvent = EventToProcess;
-	if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		// Executing UFUNCTION is allowed only when not post-loading
-		ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+		return event;
 	}
+
+	USentryEvent* EventToProcess = USentryEvent::Create(Event);
+	
+	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
 
 	return ProcessedEvent ? event : sentry_value_new_null();
 }
@@ -253,6 +246,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_clear_crashed_last_run();
 
 	isStackTraceEnabled = settings->AttachStacktrace;
+	isPiiAttachmentEnabled = settings->SendDefaultPii;
 
 	crashReporter->SetRelease(settings->Release);
 	crashReporter->SetEnvironment(settings->Environment);
@@ -374,32 +368,17 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 	return Id;
 }
 
-TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureException(const FString& type, const FString& message, int32 framesToSkip)
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
-
-	auto StackFrames = FGenericPlatformStackWalk::GetStack(framesToSkip);
-	sentry_value_set_by_key(exceptionEvent, "stacktrace", FGenericPlatformSentryConverters::CallstackToNative(StackFrames));
 
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
+	sentry_value_set_stacktrace(exceptionEvent, nullptr, 0);
+
 	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
 	return MakeShareable(new FGenericPlatformSentryId(id));
-}
-
-TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureAssertion(const FString& type, const FString& message)
-{
-	int32 framesToSkip = GetAssertionFramesToSkip();
-
-	SentryLogUtils::LogStackTrace(*message, ELogVerbosity::Error, framesToSkip);
-
-	return CaptureException(type, message, GetAssertionFramesToSkip());
-}
-
-TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
-{
-	return CaptureException(type, message, GetEnsureFramesToSkip());
 }
 
 void FGenericPlatformSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> InUserFeedback)
@@ -411,6 +390,14 @@ void FGenericPlatformSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUser
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
 {
 	TSharedPtr<FGenericPlatformSentryUser> user = StaticCastSharedPtr<FGenericPlatformSentryUser>(InUser);
+
+	// sentry-native doesn't provide `send_default_pii` option, so we need to check if user's `ip_address`
+	// allowed to be determined automatically
+	if (isPiiAttachmentEnabled && user->GetIpAddress().IsEmpty())
+	{
+		user->SetIpAddress(TEXT("{{auto}}"));
+	}
+
 	sentry_set_user(user->GetNativeObject());
 
 	crashReporter->SetUser(user);
@@ -569,7 +556,7 @@ FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
 
 FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 {
-	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), TEXT("crash_screenshot.png"));
+	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), TEXT("screenshot.png"));
 	const FString ScreenshotFullPath = FPaths::ConvertRelativePathToFull(ScreenshotPath);
 
 	return ScreenshotFullPath;

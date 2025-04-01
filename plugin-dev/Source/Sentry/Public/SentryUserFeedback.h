@@ -12,7 +12,7 @@ class ISentryUserFeedback;
 /**
  * Additional information about what happened to an event.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryUserFeedback : public UObject, public TSentryImplWrapper<ISentryUserFeedback, USentryUserFeedback>
 {
 	GENERATED_BODY()

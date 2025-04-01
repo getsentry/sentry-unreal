@@ -49,6 +49,20 @@ void SentryUserSpec::Define()
 			TestEqual("Data 2", ReceivedData[TEXT("Key2")], TestData[TEXT("Key2")]);
 		});
 	});
+
+	Describe("User IP address", [this]()
+	{
+		It("should be empty if not set", [this]()
+		{
+			TestTrue("Ip Address", SentryUser->GetIpAddress().IsEmpty());
+		});
+
+		It("should be empty if initialized with empty string", [this]()
+		{
+			SentryUser->SetIpAddress(TEXT(""));
+			TestTrue("Ip Address", SentryUser->GetIpAddress().IsEmpty());
+		});
+	});
 }
 
 #endif

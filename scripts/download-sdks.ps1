@@ -43,12 +43,12 @@ foreach ($sdk in $sdks)
     {
         $winSdk, $crashBackend = $sdk.Split("-")
         $sdkDir = "$outDir/$winSdk/$crashBackend"
-    }  
+    }
 
     Write-Host "Downloading $sdk SDK to $sdkDir ..."
     if (Test-Path $sdkDir)
     {
-        Remove-Item "$outDir/$sdk" -Recurse
+        Remove-Item "$sdkDir" -Recurse
     }
 
     gh run download $runId -n "$sdk-sdk" -D $sdkDir

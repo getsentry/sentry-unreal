@@ -7,14 +7,14 @@
         <setBoolFromProperty result="bIncludeSources" ini="Engine" section="/Script/Sentry.SentrySettings" property="IncludeSources" default="false" />
         <setBoolFromProperty result="bUseLegacyGradlePlugin" ini="Engine" section="/Script/Sentry.SentrySettings" property="UseLegacyGradlePlugin" default="false" />
 
-        <setStringFromProperty result="enabledBuildPlatforms" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildPlatforms" default=""/>
+        <setStringFromProperty result="configType" ini="Engine" section="/Script/Sentry.SentrySettings" property="SentryCliConfigType" default="PropertiesFile"/>
+
         <setStringFromProperty result="enabledBuildConfigurations" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildConfigurations" default=""/>
         <setStringFromProperty result="enabledBuildTargetTypes" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildTargets" default=""/>
-        
-        <setBoolContains result="bCurrentPlatformDisabled" source="$S(enabledBuildPlatforms)" find="bEnableAndroid=False"/>
+
         <setBoolContains result="bCurrentConfigurationDisabled" source="$S(enabledBuildConfigurations)" find="bEnable$S(Configuration)=False"/>
 
-        <setBoolOr result="bSkipUpload" arg1="$B(bCurrentPlatformDisabled)" arg2="$B(bCurrentConfigurationDisabled)"/>
+        <setBool result="bSkipUpload" value="$B(bCurrentConfigurationDisabled)"/>
 
         <if condition="bSkipUpload">
             <true>
@@ -39,6 +39,8 @@
         </if>
 
         <setBoolOr result="bSkipGradleOverride" arg1="$B(bUseLegacyGradlePlugin)" arg2="$B(bHasModernGradle)"/>
+
+        <setBoolIsEqual result="bUseEnvVariables" arg1="$S(configType)" arg2="EnvVariables" />
     </init>
 
     <prebuildCopies>
@@ -46,10 +48,19 @@
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry.jar" dst="$S(BuildDir)/gradle/app/libs/sentry.jar" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
         <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-ndk-release.aar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-native-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-native-ndk-release.aar" />
         <if condition="bUploadSymbols">
             <true>
-                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
-                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
+                <if condition="bUseEnvVariables">
+                    <true>
+                        <log text="Sentry Gradle plugin will use environment variables to authenticate with Sentry" />
+                    </true>
+                    <false>
+                        <log text="Sentry Gradle plugin will use properties file to authenticate with Sentry" />
+                        <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
+                        <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
+                    </false>
+                </if>
                 <if condition="bSkipGradleOverride">
                     <false>
                         <log text="Modifying engine's Gradle version used by replacing gradle-wrapper.properties"/>

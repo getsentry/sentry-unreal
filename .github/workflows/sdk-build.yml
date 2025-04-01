@@ -87,10 +87,3 @@ jobs:
           name: ${{ inputs.target }}-sdk
           path: ${{ steps.env.outputs.path }}
           retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ inputs.target == 'Android' }}
-        with:
-          name: ${{ inputs.target }}-libraries
-          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
-          retention-days: 1

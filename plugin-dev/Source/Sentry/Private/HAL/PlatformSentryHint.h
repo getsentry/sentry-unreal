@@ -9,8 +9,8 @@
 static TSharedPtr<ISentryHint> CreateSharedSentryHint()
 {
 #if PLATFORM_ANDROID
-    return MakeShareable(new SentryHintAndroid);
+	return MakeShareable(new SentryHintAndroid);
 #else
-    return MakeShareable(new FNullSentryHint);
+	return MakeShareable(new FNullSentryHint);
 #endif
 }

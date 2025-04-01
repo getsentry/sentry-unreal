@@ -11,7 +11,7 @@ class ISentryUser;
 /**
  * Information about the user who triggered an event.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryUser : public UObject, public TSentryImplWrapper<ISentryUser, USentryUser>
 {
 	GENERATED_BODY()

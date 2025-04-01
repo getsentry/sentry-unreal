@@ -11,6 +11,15 @@ class USentryBeforeSendHandler;
 class USentryTraceSampler;
 
 UENUM(BlueprintType)
+enum class ESentryDebugSymbolsConfigType : uint8
+{
+	// Use properties file to configure Sentry CLI
+	PropertiesFile,
+	// Use environment variables to configure Sentry CLI
+	EnvVariables
+};
+
+UENUM(BlueprintType)
 enum class ESentryTracesSamplingType : uint8
 {
 	// Use uniform sample rate for all transactions
@@ -172,32 +181,6 @@ struct FEnableBuildTargets
 	bool bEnableProgram = true;
 };
 
-USTRUCT(BlueprintType)
-struct FEnableBuildPlatforms
-{
-	GENERATED_BODY()
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Linux", ToolTip = "Flag indicating whether event capturing should be enabled for the Linux platform type."))
-	bool bEnableLinux = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Windows", ToolTip = "Flag indicating whether event capturing should be enabled for the Windows platform type."))
-	bool bEnableWindows = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "IOS", ToolTip = "Flag indicating whether event capturing should be enabled for the IOS platform type."))
-	bool bEnableIOS = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Android", ToolTip = "Flag indicating whether event capturing should be enabled for the Android platform type."))
-	bool bEnableAndroid = true;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Mac", ToolTip = "Flag indicating whether event capturing should be enabled for the Mac platform type."))
-	bool bEnableMac = true;
-};
-
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -340,10 +323,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable for Build Target Types"))
 	FEnableBuildTargets EnableBuildTargets;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
-		Meta = (DisplayName = "Enable for Build Platform Types"))
-	FEnableBuildPlatforms EnableBuildPlatforms;
-
 	UPROPERTY(Config, EditAnywhere, Category = "General|Misc",
 		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))
 	bool EnableForPromotedBuildsOnly;
@@ -352,16 +331,23 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
 	bool UploadSymbolsAutomatically;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Configuration type", ToolTip = "Method to configure Sentry CLI for debug symbols upload.", EditCondition = "UploadSymbolsAutomatically"))
+	ESentryDebugSymbolsConfigType SentryCliConfigType;
+
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.",
+			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
 	FString ProjectName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.",
+			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
 	FString OrgName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.",
+			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
 	FString AuthToken;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",

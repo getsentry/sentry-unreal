@@ -4,29 +4,117 @@
 
 ### Features
 
-- Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
-- Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
 - Added the ability to specify a separate DSN for crashes while in editor vs cooked title ([#853](https://github.com/getsentry/sentry-unreal/pull/853))
+
+### Dependencies
+
+- Bump Java SDK (Android) from v8.4.0 to v8.5.0 ([#835](https://github.com/getsentry/sentry-unreal/pull/835))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#850)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.4.0...8.5.0)
+- Bump Native SDK from v0.8.1 to v0.8.3 ([#837](https://github.com/getsentry/sentry-unreal/pull/837), [#851](https://github.com/getsentry/sentry-unreal/pull/851))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#083)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.3)
+- Bump CLI from v2.42.3 to v2.43.0 ([#838](https://github.com/getsentry/sentry-unreal/pull/838), [#844](https://github.com/getsentry/sentry-unreal/pull/844), [#847](https://github.com/getsentry/sentry-unreal/pull/847))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2430)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.3...2.43.0)
+
+## 1.0.0-alpha.4
+
+### Features
+
+- Add support of fast-fail crash capturing ([#828](https://github.com/getsentry/sentry-unreal/pull/828))
+
+### Internal
+
+- Rename error output device, add development checks for pointers, and general clean-up ([#831](https://github.com/getsentry/sentry-unreal/pull/831))
+
+### Dependencies
+
+- Bump Cocoa SDK (iOS and Mac) from v8.46.0 to v8.48.0 ([#823](https://github.com/getsentry/sentry-unreal/pull/823), [#832](https://github.com/getsentry/sentry-unreal/pull/832))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8480)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.46.0...8.48.0)
+- Bump CLI from v2.42.2 to v2.42.3 ([#825](https://github.com/getsentry/sentry-unreal/pull/825))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2423)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.42.3)
+- Bump Java SDK (Android) from v8.3.0 to v8.4.0 ([#830](https://github.com/getsentry/sentry-unreal/pull/830))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#840)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.4.0)
+
+## 1.0.0-alpha.3
+
+### Breaking Changes
+
+- Remove `EnableTargetPlatforms` from plugin settings ([#809](https://github.com/getsentry/sentry-unreal/pull/809))
+- Remove Native SDK build from source in Unreal ([#808](https://github.com/getsentry/sentry-unreal/pull/808))
+
+### Fixes
+
+- Captured screenshots are now displayed correctly on the issues details ([#813](https://github.com/getsentry/sentry-unreal/pull/813))
+
+### Dependencies
+
+- Bump Cocoa SDK (iOS and Mac) from v8.45.0 to v8.46.0 ([#810](https://github.com/getsentry/sentry-unreal/pull/810))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8460)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.46.0)
+
+## 1.0.0-alpha.2
+
+### Dependencies
+
+- Bump Native SDK from v0.8.0 to v0.8.1 ([#805](https://github.com/getsentry/sentry-unreal/pull/805))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#081)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.0...0.8.1)
+
+### Internal
+
+- Update `include`s and `return`s in HAL to correctly support platform extensions ([#806](https://github.com/getsentry/sentry-unreal/pull/806))
+
+## 1.0.0-alpha.1
+
+### Breaking Changes
+
+- Sentry entities created with `NewObject<T>` now require an explicit call to the `Initialize` method before use ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- In Blueprints, Sentry entities must be created using the corresponding library functions ([#796](https://github.com/getsentry/sentry-unreal/pull/796))
+- The utility functions `StringToBytesArray`, `ByteArrayToString`, and `SaveStringToFile` have been removed ([#796](https://github.com/getsentry/sentry-unreal/pull/796))
+- The plugin setting `EnableBuildPlatforms` now uses a string array instead of a struct ([#779](https://github.com/getsentry/sentry-unreal/pull/779))
+
+### Features
+
+- Build the plugin through the Unreal Engine build system ([#706](https://github.com/getsentry/sentry-unreal/pull/706))
+- Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
+- Add getter for the event's Id ([#768](https://github.com/getsentry/sentry-unreal/pull/768))
+- Determine user's IP address automatically on Win/Linux only if PII attachment enabled in settings ([#769](https://github.com/getsentry/sentry-unreal/pull/769))
+- Rearrange upload script to check earlier for automatic upload ([#794](https://github.com/getsentry/sentry-unreal/pull/794))
 
 ### Fixes
 
 - Fix incorrect game log attachment on Android ([#743](https://github.com/getsentry/sentry-unreal/pull/743))
 - Fix assertion during screenshot capturing in a thread that can't use Slate ([#756](https://github.com/getsentry/sentry-unreal/pull/756))
+- Due to improvements to the server-side grouping logic, the SDK no longer relies on client side manipulation of the callstack for assertions and ensures. ([#744](https://github.com/getsentry/sentry-unreal/pull/744))
+- Fix invalid native method name for Android `User` class ([#800](https://github.com/getsentry/sentry-unreal/pull/800))
+- Fix stack overflow when calling `beforeSend` during object post-loading on mobile ([#782](https://github.com/getsentry/sentry-unreal/pull/782))
+- Fix invalid syntax in symbol upload batch script ([#801](https://github.com/getsentry/sentry-unreal/pull/801))
 
 ### Dependencies
 
-- Bump CLI from v2.39.1 to v2.41.1 ([#725](https://github.com/getsentry/sentry-unreal/pull/725), [#740](https://github.com/getsentry/sentry-unreal/pull/740), [#746](https://github.com/getsentry/sentry-unreal/pull/746))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.1...2.41.1)
-- Bump Java SDK (Android) from v7.19.1 to v7.20.1 ([#724](https://github.com/getsentry/sentry-unreal/pull/724), [#741](https://github.com/getsentry/sentry-unreal/pull/741))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7201)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.19.1...7.20.1)
-- Bump Cocoa SDK (iOS and Mac) from v8.42.1 to v8.44.0 ([#723](https://github.com/getsentry/sentry-unreal/pull/723), [#761](https://github.com/getsentry/sentry-unreal/pull/761))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8440)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.1...8.44.0)
-- Bump Native SDK from v0.7.17 to v0.7.20 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742), [#764](https://github.com/getsentry/sentry-unreal/pull/764))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.20)
+- Bump CLI from v2.39.1 to v2.42.2 ([#725](https://github.com/getsentry/sentry-unreal/pull/725), [#740](https://github.com/getsentry/sentry-unreal/pull/740), [#746](https://github.com/getsentry/sentry-unreal/pull/746), [#787](https://github.com/getsentry/sentry-unreal/pull/787), [#798](https://github.com/getsentry/sentry-unreal/pull/798))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2422)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.1...2.42.2)
+- Bump Java SDK (Android) from v7.19.1 to v8.3.0 ([#724](https://github.com/getsentry/sentry-unreal/pull/724), [#741](https://github.com/getsentry/sentry-unreal/pull/741), [#786](https://github.com/getsentry/sentry-unreal/pull/786), [#804](https://github.com/getsentry/sentry-unreal/pull/804))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#830)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.19.1...8.3.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.42.1 to v8.45.0 ([#723](https://github.com/getsentry/sentry-unreal/pull/723), [#761](https://github.com/getsentry/sentry-unreal/pull/761), [#784](https://github.com/getsentry/sentry-unreal/pull/784))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.1...8.45.0)
+- Bump Native SDK from v0.7.17 to v0.8.0 ([#737](https://github.com/getsentry/sentry-unreal/pull/737), [#742](https://github.com/getsentry/sentry-unreal/pull/742), [#764](https://github.com/getsentry/sentry-unreal/pull/764), [#797](https://github.com/getsentry/sentry-unreal/pull/797))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#080)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.8.0)
+
+### Internal
+
+- Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- Initial cleanup for plugin extensions ([#779](https://github.com/getsentry/sentry-unreal/pull/779))
 
 ## 0.22.0
 
@@ -264,7 +352,7 @@
 
 - Fix Linux intermediates paths in `FilterPlugin.ini` ([#468](https://github.com/getsentry/sentry-unreal/pull/468))
 - Fix casing for include of HAL/PlatformFileManager for Linux compilation ([#468](https://github.com/getsentry/sentry-unreal/pull/499))
-- The message in events in the `SentryBeforeSendHandler` are no longer missing their message  ([#510](https://github.com/getsentry/sentry-unreal/pull/510))
+- The message in events in the `SentryBeforeSendHandler` are no longer missing their message ([#510](https://github.com/getsentry/sentry-unreal/pull/510))
 
 ### Dependencies
 
@@ -292,8 +380,8 @@
 ### Breaking Changes
 
 - Change `USentrySubsystem` base class to `UEngineSubsystem` in order to capture editor crashes ([#436](https://github.com/getsentry/sentry-unreal/pull/436))\
-    If you make use of plugin's blueprint API, you will need to recreate `Get Sentry Subsystem` nodes\
-    If you make use of plugin's C++ API, you will need to update your implementation by accessing `USentrySubsystem` via `GEngine` pointer
+   If you make use of plugin's blueprint API, you will need to recreate `Get Sentry Subsystem` nodes\
+   If you make use of plugin's C++ API, you will need to update your implementation by accessing `USentrySubsystem` via `GEngine` pointer
 
 ### Fixes
 
@@ -461,7 +549,6 @@
 
 - Fix automatic game log attachment (Android) ([#309](https://github.com/getsentry/sentry-unreal/pull/309))
 
-
 ### Dependencies
 
 - Bump Java SDK (Android) from v6.23.0 to v6.25.0 ([#312](https://github.com/getsentry/sentry-unreal/pull/312), [#316](https://github.com/getsentry/sentry-unreal/pull/316))
@@ -487,6 +574,7 @@
 - Update plugin initialization logic ([#299](https://github.com/getsentry/sentry-unreal/pull/299))
 
 ### Dependencies
+
 - Bump Java SDK (Android) from v6.19.1 to v6.23.0 ([#291](https://github.com/getsentry/sentry-unreal/pull/291), [#293](https://github.com/getsentry/sentry-unreal/pull/293), [#296](https://github.com/getsentry/sentry-unreal/pull/296), [#308](https://github.com/getsentry/sentry-unreal/pull/308))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6230)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.19.1...6.23.0)

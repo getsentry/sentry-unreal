@@ -21,11 +21,18 @@ function testFiles([string] $publishingPlatform)
         exit 2
     }
 
-    $packages = Get-ChildItem "$projectRoot/sentry-unreal-*-$publishingPlatform.zip"
+    # TODO: Extract this functionality to share between `test-contents.ps1` and `pack.ps1`
+    # See https://github.com/getsentry/sentry-unreal/issues/820 for more details.
+    $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
+    $version = [regex]::Match("$pluginSpec", '"VersionName": "([^"]+)"').Groups[1].Value
+
+    Write-Host "Searching version $version release packages..."
+
+    $packages = Get-ChildItem -Path "$projectRoot/*" -Include "sentry-unreal-$version-engine*-$publishingPlatform.zip"
     $expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
     if ($packages.Length -ne $expectedPackagesCount)
     {
-        throw "Invalid number of packages - expected $expectedPackagesCount, got $packages"
+        throw "Invalid number of packages - expected $expectedPackagesCount, got $($packages.Length)"
     }
 
     foreach ($packageFile in $packages)
@@ -38,7 +45,7 @@ function testFiles([string] $publishingPlatform)
             if ($accept)
             {
                 # Override the snapshot file with the current package contents
-                $snapshotContent | Out-File $snapshotFile
+                [System.IO.File]::WriteAllLines($snapshotFile, $snapshotContent)
             }
             $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
             if ($result.count -eq 0)
@@ -61,21 +68,3 @@ function testFiles([string] $publishingPlatform)
 
 testFiles("github")
 testFiles("marketplace")
-
-# TODO
-# $androidLibsDir = "$projectRoot/modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/"
-# if (-not(Test-Path -Path $androidLibsDir)) {
-#     Write-Host  "Android native libs not found in: '$androidLibsDir'"
-#     exit 1
-# }
-
-# $androidLibs = Get-ChildItem -Recurse $androidLibsDir | ForEach-Object {$_.Directory.Name + "/" + $_.Name}
-# $result = Compare-Object $androidLibs (Get-Content "$PSScriptRoot/android-libs.snapshot")
-# if ($result.count -eq 0) {
-#     Write-Host  "Android native libs match snapshot."
-# }
-# else {
-#     Write-Host  "Android native libs do not match snapshot."
-#     $result | Format-Table -AutoSize
-#     exit 3
-# }

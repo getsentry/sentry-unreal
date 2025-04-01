@@ -20,18 +20,9 @@ if "%TargetType%"=="Editor" (
     exit /B 0
 )
 
-if "%TargetPlatform%"=="Win64" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="Linux" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="LinuxArm64" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="Android" (
-    echo Warning: Sentry: Debug symbols upload for Android is handled by Sentry's gradle plugin if enabled
-    exit /B 0
-) else (
-    echo Warning: Sentry: Unexpected platform %TargetPlatform%. Skipping...
-    exit /B 0
+if "%TargetPlatform%"=="Android" (
+	echo Sentry: Debug symbols upload for Android is handled by Sentry's Gradle plugin if enabled
+	exit /B 0
 )
 
 call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings UploadSymbolsAutomatically UploadSymbols
@@ -61,21 +52,6 @@ if "%CliLogLevel%"=="" (
     set "CliLogLevel=info"
 )
 
-call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings EnableBuildPlatforms EnabledPlatforms
-if not "%EnabledPlatforms%"=="" (
-  set PlatformToCheck=
-  if "%TargetPlatform%"=="Win64" (
-    set "PlatformToCheck=bEnableWindows=False"
-  ) else (
-    set "PlatformToCheck=bEnable%TargetPlatform%=False"
-  )
-  call :FindString EnabledPlatforms PlatformToCheck IsPlatformDisabled
-  if "!IsPlatformDisabled!"=="true" (
-      echo "Sentry: Automatic symbols upload is disabled for build platform %TargetPlatform%. Skipping..."
-      exit /B 0
-  )
-)
-
 call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings EnableBuildTargets EnabledTargets
 if not "%EnabledTargets%"=="" (
   set TargetToCheck="bEnable%TargetType%=False"
@@ -96,23 +72,49 @@ if not "%EnabledConfigurations%"=="" (
   )
 )
 
-set PropertiesFile=%ProjectPath:"=%\sentry.properties
-
-if not exist "%PropertiesFile%" (
-    echo Warning: Sentry: Properties file is missing: '%PropertiesFile%'
+if "%TargetPlatform%"=="Win64" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else if "%TargetPlatform%"=="Linux" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else if "%TargetPlatform%"=="LinuxArm64" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else (
+    echo Warning: Sentry: Unexpected platform %TargetPlatform%. Skipping...
     exit /B 0
 )
 
 if not exist "%CliExec%" (
-    echo Warning: Sentry: Sentry CLI is not configured in plugin settings. Skipping...
+    echo Error: Sentry: Sentry CLI is missing. Skipping...
     exit /B 0
 )
 
-echo Sentry: Upload started using PropertiesFile '%PropertiesFile%'
+set PropertiesFile=%ProjectPath:"=%\sentry.properties
 
-set "SENTRY_PROPERTIES=%PropertiesFile%"
-echo %ProjectBinariesPath%
-echo %PluginBinariesPath%
+call :ParseIniFile "%ConfigPath%\DefaultEngine.ini" /Script/Sentry.SentrySettings SentryCliConfigType ConfigType
+
+if /i "%ConfigType%" NEQ "EnvVariables" (
+    echo Sentry: Upload started using properties file
+    if not exist "%PropertiesFile%" (
+        echo Error: Properties file is missing: '%PropertiesFile%'. Skipping...
+        exit /B 0
+    )    
+    set "SENTRY_PROPERTIES=%PropertiesFile%"
+) else (
+    echo Sentry: Upload started using environment variables
+    if /i "%SENTRY_PROJECT%"=="" (
+        echo Error: SENTRY_PROJECT env var is not set. Skipping...
+        exit /B 0
+    )
+    if /i "%SENTRY_ORG%"=="" (
+        echo Error: SENTRY_ORG env var is not set. Skipping...
+        exit /B 0
+    )
+    if /i "%SENTRY_AUTH_TOKEN%"=="" (
+        echo Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...
+        exit /B 0
+    )    
+)
+
 call "%CliExec%" debug-files upload %CliArgs% --log-level %CliLogLevel% "%ProjectBinariesPath%" "%PluginBinariesPath%"
 
 echo Sentry: Upload finished
@@ -131,6 +133,17 @@ exit /B 0
   ) else (
     set %~3=false
   )
+  goto :eof
+
+:FindInFile <filePath> <findStr> <result>
+  setlocal
+  for /f "tokens=*" %%A in ('findstr /i /r "%~2" "%~1"') do (
+    endlocal
+    set %~3=true
+    goto :eof
+  )
+  endlocal
+  set %~3=false
   goto :eof
 
 :ParseIniFile <filename> <section> <key> <result>

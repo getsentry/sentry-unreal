@@ -1,15 +1,23 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryEvent.h"
+#include "SentryId.h"
 
 #include "HAL/PlatformSentryEvent.h"
 
-void USentryEvent::Initialize(const FString& Message, ESentryLevel Level)
+void USentryEvent::Initialize()
 {
 	NativeImpl = CreateSharedSentryEvent();
+}
 
-	SetMessage(Message);
-	SetLevel(Level);
+USentryId* USentryEvent::GetId() const
+{
+	if (!NativeImpl)
+		return nullptr;
+
+	TSharedPtr<ISentryId> idNativeImpl = NativeImpl->GetId();
+
+	return USentryId::Create(idNativeImpl);
 }
 
 void USentryEvent::SetMessage(const FString &Message)

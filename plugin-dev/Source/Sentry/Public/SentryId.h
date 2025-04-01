@@ -11,7 +11,7 @@ class ISentryId;
 /**
  * Unique identifier of the event.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryId : public UObject, public TSentryImplWrapper<ISentryId, USentryId>
 {
 	GENERATED_BODY()

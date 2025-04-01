@@ -12,7 +12,7 @@ class ISentryBreadcrumb;
 /**
  * Information to create a trail of events that happened prior to an issue.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryBreadcrumb : public UObject, public TSentryImplWrapper<ISentryBreadcrumb, USentryBreadcrumb>
 {
 	GENERATED_BODY()
