@@ -6,6 +6,7 @@
 
 - Remove custom transport implementation for Linux ([#748](https://github.com/getsentry/sentry-unreal/pull/748))
 - Refactor code to better align with Unreal's structure ([#745](https://github.com/getsentry/sentry-unreal/pull/745))
+- Added the ability to specify a separate DSN for crashes while in editor vs cooked title ([#853](https://github.com/getsentry/sentry-unreal/pull/853))
 
 ### Fixes
 
