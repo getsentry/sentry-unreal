@@ -92,19 +92,27 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	GetCurrentScope()->Apply(Event);
 
-	FGCScopeGuard GCScopeGuard;
-
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!IsGarbageCollecting())
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+		if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+			return event;
+		}
+
+		USentryEvent* EventToProcess = USentryEvent::Create(Event);
+
+		USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+
+		return ProcessedEvent ? event : sentry_value_new_null();
+	}
+	else
+	{
+		// If event is captured during garbage collection we can't obtain a GC lock required for safe USentryEvent instantiation
+		// since there is no guarantee it will be ever freed.
+		// In this case event will be reported without calling a `beforeSend` handler.
 		return event;
 	}
-
-	USentryEvent* EventToProcess = USentryEvent::Create(Event);
-	
-	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
-
-	return ProcessedEvent ? event : sentry_value_new_null();
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
@@ -142,9 +150,9 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 	}
 	else
 	{
-		// If crash occurred during garbage collection we can't just obtain a GC lock like with normal events
-		// since there is no guarantee it will be ever freed. In this case crash event will be reported
-		// without calling a `beforeSend` handler.
+		// If crash occurred during garbage collection we can't obtain a GC lock required for safe USentryEvent instantiation
+		// since there is no guarantee it will be ever freed.
+		// In this case crash event will be reported without calling a `beforeSend` handler.
 		return event;
 	}
 }
