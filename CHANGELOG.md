@@ -15,6 +15,10 @@
 
 - Fix crash during garbage collection if SentryId was instantiated outside of game thread ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
 
+### Fixes
+
+- Fix ensure when log message from non-game thread ([#845](https://github.com/getsentry/sentry-unreal/pull/845))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.4.0 to v8.5.0 ([#835](https://github.com/getsentry/sentry-unreal/pull/835))
