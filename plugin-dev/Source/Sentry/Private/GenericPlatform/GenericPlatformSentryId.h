@@ -12,6 +12,7 @@ class FGenericPlatformSentryId : public ISentryId
 {
 public:
 	FGenericPlatformSentryId();
+	FGenericPlatformSentryId(const FString& id);
 	FGenericPlatformSentryId(sentry_uuid_t id);
 	virtual ~FGenericPlatformSentryId() override;
 

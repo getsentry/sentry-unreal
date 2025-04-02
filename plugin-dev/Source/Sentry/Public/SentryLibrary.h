@@ -13,7 +13,6 @@ class USentryEvent;
 class USentryBreadcrumb;
 class USentryUser;
 class USentryUserFeedback;
-class USentryId;
 class USentryAttachment;
 
 /**
@@ -56,7 +55,7 @@ public:
 	 * @param Comments Comments of the user about what happened.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static USentryUserFeedback* CreateSentryUserFeedback(USentryId* EventId, const FString& Name, const FString& Email, const FString& Comments);
+	static USentryUserFeedback* CreateSentryUserFeedback(const FString& EventId, const FString& Name, const FString& Email, const FString& Comments);
 
 	/**
 	 * Creates breadcrumb.

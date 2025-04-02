@@ -37,15 +37,15 @@ void SentrySubsystemSpec::Define()
 	{
 		It("should return a non-null Event ID if message captured", [this]()
 		{
-			const USentryId* eventId = SentrySubsystem->CaptureMessage(FString(TEXT("Automation: Sentry test message")), ESentryLevel::Debug);
-			TestNotNull("Event ID is non-null", eventId);
+			FString eventId = SentrySubsystem->CaptureMessage(FString(TEXT("Automation: Sentry test message")), ESentryLevel::Debug);
+			TestFalse("Event ID is non-empty", eventId.IsEmpty());
 		});
 
 		It("should always return non-null Event ID if scoped version used", [this]()
 		{
 			const FConfigureScopeNativeDelegate testDelegate;
-			const USentryId* eventId = SentrySubsystem->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
-			TestNotNull("Event ID is non-null", eventId);
+			FString eventId = SentrySubsystem->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
+			TestFalse("Event ID is non-empty", eventId.IsEmpty());
 		});
 	});
 
@@ -56,8 +56,8 @@ void SentrySubsystemSpec::Define()
 			USentryEvent* testEvent = USentryEvent::Create(CreateSharedSentryEvent());
 			testEvent->SetMessage(TEXT("Automation: Sentry test event message"));
 
-			const USentryId* eventId = SentrySubsystem->CaptureEvent(testEvent);
-			TestNotNull("Event ID is non-null", eventId);
+			FString eventId = SentrySubsystem->CaptureEvent(testEvent);
+			TestFalse("Event ID is non-empty", eventId.IsEmpty());
 		});
 
 		It("should always return non-null Event ID if scoped version used", [this]()
@@ -67,8 +67,8 @@ void SentrySubsystemSpec::Define()
 
 			const FConfigureScopeNativeDelegate testDelegate;
 
-			const USentryId* eventId = SentrySubsystem->CaptureEventWithScope(testEvent, testDelegate);
-			TestNotNull("Event ID is non-null", eventId);
+			FString eventId = SentrySubsystem->CaptureEventWithScope(testEvent, testDelegate);
+			TestFalse("Event ID is non-empty", eventId.IsEmpty());
 		});
 	});
 

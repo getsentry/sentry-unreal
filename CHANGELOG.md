@@ -2,9 +2,22 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Replace `USentryId` class with `FString` ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
+
 ### Features
 
 - Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
+- Added the ability to specify a separate DSN for crashes while in editor vs cooked title ([#853](https://github.com/getsentry/sentry-unreal/pull/853))
+
+### Fixes
+
+- Fix crash during garbage collection if SentryId was instantiated outside of game thread ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
+
+### Fixes
+
+- Fix ensure when log message from non-game thread ([#845](https://github.com/getsentry/sentry-unreal/pull/845))
 
 ### Dependencies
 
@@ -17,6 +30,9 @@
 - Bump CLI from v2.42.3 to v2.43.0 ([#838](https://github.com/getsentry/sentry-unreal/pull/838), [#844](https://github.com/getsentry/sentry-unreal/pull/844), [#847](https://github.com/getsentry/sentry-unreal/pull/847))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2430)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.3...2.43.0)
+- Bump Java SDK (Android) from v8.5.0 to v8.6.0 ([#858](https://github.com/getsentry/sentry-unreal/pull/858))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#860)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.5.0...8.6.0)
 
 ## 1.0.0-alpha.4
 
