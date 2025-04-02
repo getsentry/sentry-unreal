@@ -140,11 +140,10 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 		return breadcrumb;
 	}
 
-	FGCScopeGuard GCScopeGuard;
-
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad || IsGarbageCollecting() || FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeBreadcrumb` handler is not allowed when post-loading."));
+		// Executing `onBeforeBreadcrumb` handler is not allowed during engine's static init, garbage collection and post-loading.
+		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
 		return breadcrumb;
 	}
 

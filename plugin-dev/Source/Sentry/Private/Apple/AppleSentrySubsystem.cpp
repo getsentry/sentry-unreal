@@ -103,11 +103,9 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (beforeBreadcrumbHandler != nullptr)
 			{
 				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* breadcrumb) {
-					FGCScopeGuard GCScopeGuard;
-
-					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					if (FTaskTagScope::IsRunningDuringStaticInit() || IsGarbageCollecting() || FUObjectThreadContext::Get().IsRoutingPostLoad)
 					{
-						// Executing `onBeforeBreadcrumb` handler is not allowed when post-loading.
+						// Executing `onBeforeBreadcrumb` handler is not allowed during engine's static init, garbage collection and post-loading.
 						// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
 						return breadcrumb;
 					}
