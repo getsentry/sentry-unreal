@@ -40,7 +40,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 		[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
 			options.dsn = settings->Dsn.GetNSString();
 #if WITH_EDITOR
-			if(!settings->EditorDsn) {
+			if(!settings->EditorDsn.IsEmpty()) {
 				options.dsn = settings->EditorDsn.GetNSString();
 			}
 #endif
