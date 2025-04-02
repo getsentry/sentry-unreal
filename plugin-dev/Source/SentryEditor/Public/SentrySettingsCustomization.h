@@ -44,7 +44,6 @@ private:
 	TSharedRef<SWidget> MakeGeneralSettingsStatusRow(FName IconName, FText Message, FText ButtonMessage);
 	TSharedRef<SWidget> MakeLinuxBinariesStatusRow(FName IconName, FText Message, FText ButtonMessage);
 	TSharedRef<SWidget> MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage);
-	TSharedRef<SWidget> MakeSentryCliConfigTypeRow(FText Message);
 
 	void UpdateProjectName();
 	void UpdateOrganizationName();
@@ -61,7 +60,6 @@ private:
 	int32 GetGeneralSettingsStatusAsInt() const;
 	int32 GetLinuxBinariesStatusAsInt() const;
 	int32 GetSentryCliStatusAsInt() const;
-	int32 GetSentryCliConfigTypeAsInt() const;
 
 	TSharedPtr<IPropertyHandle> ProjectNameHandle;
 	TSharedPtr<IPropertyHandle> OrganizationNameHandle;
