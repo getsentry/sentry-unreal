@@ -53,7 +53,7 @@ Blog posts:
 
 - Only crash events captured on Android contain the full callstack. Events that were captured manually won't have the native C++ part there.
 
-- On Windows/Linux if crash event was captured during the garbage collection the `BeforeSendHandler` will not be invoked.
+- If an event was captured during the garbage collection, the `BeforeSendHandler` will not be invoked.
 
 - It may be required to upgrade the C++ standard library (`libstdc++`) on older Linux distributions (such as Ubuntu 18.04 and 20.04) to ensure crashpad handler proper functionality within the deployment environment. This can be achieved with something like this:
 ```

@@ -92,16 +92,23 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	GetCurrentScope()->Apply(Event);
 
-	FGCScopeGuard GCScopeGuard;
-
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
+		return event;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
+		// In this case event will be reported without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 		return event;
 	}
 
 	USentryEvent* EventToProcess = USentryEvent::Create(Event);
-	
+
 	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
 
 	return ProcessedEvent ? event : sentry_value_new_null();
@@ -127,26 +134,27 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 	GetCurrentScope()->Apply(Event);
 
-	if (!IsGarbageCollecting())
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		USentryEvent* EventToProcess = USentryEvent::Create(Event);
-
-		USentryEvent* ProcessedEvent = EventToProcess;
-		if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
-		{
-			// Executing UFUNCTION is allowed only when not post-loading
-			ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
-		}
-
-		return ProcessedEvent ? event : sentry_value_new_null();
-	}
-	else
-	{
-		// If crash occurred during garbage collection we can't just obtain a GC lock like with normal events
-		// since there is no guarantee it will be ever freed. In this case crash event will be reported
-		// without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
 		return event;
 	}
+
+	if (IsGarbageCollecting())
+	{
+		// If crash occurred during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since there is no guarantee it will be ever freed.
+		// In this case crash event will be reported without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
+		return event;
+	}
+
+	USentryEvent* EventToProcess = USentryEvent::Create(Event);
+
+	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+
+	return ProcessedEvent ? event : sentry_value_new_null();
+
 }
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
