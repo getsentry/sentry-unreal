@@ -14,9 +14,6 @@
 ### Fixes
 
 - Fix crash during garbage collection if SentryId was instantiated outside of game thread ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
-
-### Fixes
-
 - Fix ensure when log message from non-game thread ([#845](https://github.com/getsentry/sentry-unreal/pull/845))
 
 ### Dependencies
