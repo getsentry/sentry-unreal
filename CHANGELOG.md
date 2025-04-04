@@ -2,9 +2,57 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Replace `USentryId` class with `FString` ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
+
 ### Features
 
+- Allow Sentry CLI to authenticate via environment variables during debug symbols upload ([#836](https://github.com/getsentry/sentry-unreal/pull/836))
+- Added the ability to specify a separate DSN for crashes while in editor vs cooked title ([#853](https://github.com/getsentry/sentry-unreal/pull/853))
 - Add callback to pre-process breadcrumbs before adding ([#814](https://github.com/getsentry/sentry-unreal/pull/814))
+
+### Fixes
+
+- Fix crash during garbage collection if SentryId was instantiated outside of game thread ([#857](https://github.com/getsentry/sentry-unreal/pull/857))
+- Fix ensure when log message from non-game thread ([#845](https://github.com/getsentry/sentry-unreal/pull/845))
+
+### Dependencies
+
+- Bump Java SDK (Android) from v8.4.0 to v8.5.0 ([#835](https://github.com/getsentry/sentry-unreal/pull/835))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#850)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.4.0...8.5.0)
+- Bump Native SDK from v0.8.1 to v0.8.3 ([#837](https://github.com/getsentry/sentry-unreal/pull/837), [#851](https://github.com/getsentry/sentry-unreal/pull/851))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#083)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.3)
+- Bump CLI from v2.42.3 to v2.43.0 ([#838](https://github.com/getsentry/sentry-unreal/pull/838), [#844](https://github.com/getsentry/sentry-unreal/pull/844), [#847](https://github.com/getsentry/sentry-unreal/pull/847))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2430)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.3...2.43.0)
+- Bump Java SDK (Android) from v8.5.0 to v8.6.0 ([#858](https://github.com/getsentry/sentry-unreal/pull/858))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#860)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.5.0...8.6.0)
+
+## 1.0.0-alpha.4
+
+### Features
+
+- Add support of fast-fail crash capturing ([#828](https://github.com/getsentry/sentry-unreal/pull/828))
+
+### Internal
+
+- Rename error output device, add development checks for pointers, and general clean-up ([#831](https://github.com/getsentry/sentry-unreal/pull/831))
+
+### Dependencies
+
+- Bump Cocoa SDK (iOS and Mac) from v8.46.0 to v8.48.0 ([#823](https://github.com/getsentry/sentry-unreal/pull/823), [#832](https://github.com/getsentry/sentry-unreal/pull/832))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8480)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.46.0...8.48.0)
+- Bump CLI from v2.42.2 to v2.42.3 ([#825](https://github.com/getsentry/sentry-unreal/pull/825))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2423)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.42.3)
+- Bump Java SDK (Android) from v8.3.0 to v8.4.0 ([#830](https://github.com/getsentry/sentry-unreal/pull/830))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#840)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.4.0)
 
 ## 1.0.0-alpha.3
 

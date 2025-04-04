@@ -7,7 +7,6 @@
         <setBoolFromProperty result="bIncludeSources" ini="Engine" section="/Script/Sentry.SentrySettings" property="IncludeSources" default="false" />
         <setBoolFromProperty result="bUseLegacyGradlePlugin" ini="Engine" section="/Script/Sentry.SentrySettings" property="UseLegacyGradlePlugin" default="false" />
 
-        <setStringFromProperty result="enabledBuildPlatforms" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildPlatforms" default=""/>
         <setStringFromProperty result="enabledBuildConfigurations" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildConfigurations" default=""/>
         <setStringFromProperty result="enabledBuildTargetTypes" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildTargets" default=""/>
 

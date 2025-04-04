@@ -83,12 +83,6 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 	TSharedRef<SWidget> GeneralConfiguredWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
 		FText::FromString(TEXT("Sentry is configured.")), FText());
 
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-	const ISlateStyle& Style = FEditorStyle::Get();
-#else
-	const ISlateStyle& Style = FAppStyle::Get();
-#endif
-
 	GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
 		.WholeRowWidget
 		[
@@ -290,17 +284,22 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 			SNew(SBorder)
 			.Padding(1)
 			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.Padding(FMargin(10, 10, 10, 10))
-				.FillWidth(1.0f)
+				SNew(SBorder)
+				.Padding(1)
 				[
-					SNew(SRichTextBlock)
-						.Text(FText::FromString(TEXT("Note that the Sentry SDK creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, "
-							"that should <RichTextBlock.TextHighlight>NOT</> be made publicly available.")))
-						.TextStyle(Style, "MessageLog")
-						.DecoratorStyleSet(&Style)
-						.AutoWrapText(true)
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.Padding(FMargin(10, 10, 10, 10))
+					.FillWidth(1.0f)
+					[
+						SNew(SRichTextBlock)
+							.Text(FText::FromString(TEXT("Note that the Sentry SDK automatically creates a <RichTextBlock.TextHighlight>sentry.properties</> file at project root to store the configuration, "
+								"that should <RichTextBlock.TextHighlight>NOT</> be made publicly available. Alternatively, set up the environment variables "
+								"'SENTRY_PROJECT', 'SENTRY_ORG' and 'SENTRY_AUTH_TOKEN' with the necessary information to upload debug symbols on the build agent.")))
+							.TextStyle(Style, "MessageLog")
+							.DecoratorStyleSet(&Style)
+							.AutoWrapText(true)
+					]
 				]
 			]
 		];

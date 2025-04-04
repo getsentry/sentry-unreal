@@ -1,15 +1,15 @@
 // Copyright (c) 2024 Sentry. All Rights Reserved.
 
-#include "SentryOutputDeviceError.h"
+#include "SentryErrorOutputDevice.h"
 
 #include "Misc/AssertionMacros.h"
 
-FSentryOutputDeviceError::FSentryOutputDeviceError(FOutputDeviceError* Parent)
+FSentryErrorOutputDevice::FSentryErrorOutputDevice(FOutputDeviceError* Parent)
 	: ParentDevice(Parent)
 {
 }
 
-void FSentryOutputDeviceError::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
+void FSentryErrorOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
 	if(FDebug::HasAsserted())
 	{
@@ -22,7 +22,7 @@ void FSentryOutputDeviceError::Serialize(const TCHAR* V, ELogVerbosity::Type Ver
 	ParentDevice->Serialize(V, Verbosity, Category);
 }
 
-void FSentryOutputDeviceError::HandleError()
+void FSentryErrorOutputDevice::HandleError()
 {
 	if (!ParentDevice)
 		return;
@@ -30,7 +30,7 @@ void FSentryOutputDeviceError::HandleError()
 	ParentDevice->HandleError();
 }
 
-FOutputDeviceError* FSentryOutputDeviceError::GetParentDevice()
+FOutputDeviceError* FSentryErrorOutputDevice::GetParentDevice()
 {
 	return ParentDevice;
 }

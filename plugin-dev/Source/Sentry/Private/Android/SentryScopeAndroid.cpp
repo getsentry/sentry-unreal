@@ -9,7 +9,7 @@
 #include "Infrastructure/SentryJavaClasses.h"
 
 SentryScopeAndroid::SentryScopeAndroid()
-	: FSentryJavaObjectWrapper(SentryJavaClasses::Scope, "(Lio/sentry/SentryOptions;)V",
+	: FSentryJavaObjectWrapper(FSentryJavaClass { "io/sentry/Scope", ESentryJavaClassType::External }, "(Lio/sentry/SentryOptions;)V",
 		*FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getOptions", "()Lio/sentry/SentryOptions;"))
 {
 	SetupClassMethods();

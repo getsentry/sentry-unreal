@@ -15,8 +15,6 @@
 #include "SentryEvent.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
-#include "SentryBeforeBreadcrumbHandler.h"
-#include "SentryBreadcrumb.h"
 
 #include "SentryTraceSampler.h"
 
@@ -50,14 +48,6 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 
 	FString MessageBuf = FString(buffer);
 
-	// The WER (Windows Error Reporting) module (crashpad_wer.dll) can't be distributed along with other Sentry binaries
-	// within the plugin package due to some UE Marketplace restrictions. Its absence doesn't affect crash capturing
-	// and the corresponding warning can be disregarded
-	if (MessageBuf.Equals(TEXT("crashpad WER handler module not found")))
-	{
-		return;
-	}
-
 #if !NO_LOGGING
 	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
 #else
@@ -76,18 +66,6 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 	else
 	{
 		return event;
-	}
-}
-
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure)
-{
-	if (closure)
-	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeBreadcrumb(breadcrumb, hint, closure);
-	}
-	else
-	{
-		return breadcrumb;
 	}
 }
 
@@ -114,12 +92,18 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	GetCurrentScope()->Apply(Event);
 
-	FGCScopeGuard GCScopeGuard;
-
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		// Executing `onBeforeBreadcrumb` handler is not allowed when post-loading.
-		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
+		return event;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
+		// In this case event will be reported without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 		return event;
 	}
 
@@ -128,32 +112,6 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
 
 	return ProcessedEvent ? event : sentry_value_new_null();
-}
-
-// Currently this handler is not set anywhere since the Unreal SDK doesn't use `sentry_add_breadcrumb` directly and relies on
-// custom scope implementation to store breadcrumbs instead.
-// The support for it will be enabled with https://github.com/getsentry/sentry-native/pull/1166 
-sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure)
-{
-	if (!closure || this != closure)
-	{
-		return breadcrumb;
-	}
-
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad || IsGarbageCollecting() || FUObjectThreadContext::Get().IsRoutingPostLoad)
-	{
-		// Executing `onBeforeBreadcrumb` handler is not allowed during engine's static init, garbage collection and post-loading.
-		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
-		return breadcrumb;
-	}
-
-	TSharedPtr<FGenericPlatformSentryBreadcrumb> Breadcrumb = MakeShareable(new FGenericPlatformSentryBreadcrumb(breadcrumb));
-
-	USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(Breadcrumb);
-
-	USentryBreadcrumb* ProcessedBreadcrumb = GetBeforeBreadcrumbHandler()->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
-
-	return ProcessedBreadcrumb ? breadcrumb : sentry_value_new_null();
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
@@ -176,26 +134,27 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 	GetCurrentScope()->Apply(Event);
 
-	if (!IsGarbageCollecting())
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		USentryEvent* EventToProcess = USentryEvent::Create(Event);
-
-		USentryEvent* ProcessedEvent = EventToProcess;
-		if (!FUObjectThreadContext::Get().IsRoutingPostLoad)
-		{
-			// Executing UFUNCTION is allowed only when not post-loading
-			ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
-		}
-
-		return ProcessedEvent ? event : sentry_value_new_null();
-	}
-	else
-	{
-		// If crash occurred during garbage collection we can't just obtain a GC lock like with normal events
-		// since there is no guarantee it will be ever freed. In this case crash event will be reported
-		// without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
 		return event;
 	}
+
+	if (IsGarbageCollecting())
+	{
+		// If crash occurred during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since there is no guarantee it will be ever freed.
+		// In this case crash event will be reported without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
+		return event;
+	}
+
+	USentryEvent* EventToProcess = USentryEvent::Create(Event);
+
+	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+
+	return ProcessedEvent ? event : sentry_value_new_null();
+
 }
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
@@ -207,10 +166,9 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 {
 }
 
-void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
+void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
 {
 	beforeSend = beforeSendHandler;
-	beforeBreadcrumb = beforeBreadcrumbHandler;
 
 	scopeStack.Push(MakeShareable(new FGenericPlatformSentryScope()));
 
@@ -271,6 +229,12 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		: *settings->GetFormattedReleaseName()));
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->Dsn));
+#if WITH_EDITOR
+	if (!settings->EditorDsn.IsEmpty())
+	{
+		sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->EditorDsn));
+	}
+#endif // WITH_EDITOR
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);
@@ -334,11 +298,6 @@ ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	if (beforeBreadcrumb != nullptr)
-	{
-		HandleBeforeBreadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject(), nullptr, this);
-	}
-
 	GetCurrentScope()->AddBreadcrumb(breadcrumb);
 }
 
@@ -351,7 +310,7 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	Breadcrumb->SetData(Data);
 	Breadcrumb->SetLevel(Level);
 
-	AddBreadcrumb(Breadcrumb);
+	GetCurrentScope()->AddBreadcrumb(Breadcrumb);
 }
 
 void FGenericPlatformSentrySubsystem::ClearBreadcrumbs()
@@ -553,11 +512,6 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler()
 {
 	return beforeSend;
-}
-
-USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler()
-{
-	return beforeBreadcrumb;
 }
 
 void FGenericPlatformSentrySubsystem::TryCaptureScreenshot() const

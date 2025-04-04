@@ -41,6 +41,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
 			options.dsn = settings->Dsn.GetNSString();
+#if WITH_EDITOR
+			if(!settings->EditorDsn.IsEmpty()) {
+				options.dsn = settings->EditorDsn.GetNSString();
+			}
+#endif
 			options.environment = settings->Environment.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
@@ -64,11 +69,18 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				return scope;
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
-				FGCScopeGuard GCScopeGuard;
-
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 				{
 					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+					return event;
+				}
+
+				if (IsGarbageCollecting())
+				{
+					// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+					// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
+					// In this case event will be reported without calling a `beforeSend` handler.
+					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 					return event;
 				}
 

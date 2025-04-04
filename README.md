@@ -53,7 +53,7 @@ Blog posts:
 
 - Only crash events captured on Android contain the full callstack. Events that were captured manually won't have the native C++ part there.
 
-- On Windows/Linux if crash event was captured during the garbage collection the `BeforeSendHandler` will not be invoked.
+- If an event was captured during the garbage collection, the `BeforeSendHandler` will not be invoked.
 
 - It may be required to upgrade the C++ standard library (`libstdc++`) on older Linux distributions (such as Ubuntu 18.04 and 20.04) to ensure crashpad handler proper functionality within the deployment environment. This can be achieved with something like this:
 ```
@@ -63,6 +63,8 @@ sudo apt-get install -y libstdc++6
 ```
 
 - Plugin supports Linux arm64 platform for UE 5.0 and newer.
+
+- Fast-fail crash capturing is currently supported only in packaged game builds when using the `github` plugin version. When a fast-fail crash occurs the `HandleBeforeSend` hook will not be invoked and any custom event pre-processing will be skipped. Also, captured fast-fail crash events will not include UE-specific tags or context.
 
 ## Development
 
