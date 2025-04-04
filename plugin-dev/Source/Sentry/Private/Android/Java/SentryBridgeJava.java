@@ -34,6 +34,7 @@ import io.sentry.protocol.SentryId;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
+	public static native Breadcrumb onBeforeBreadcrumb(long handlerAddr, Breadcrumb breadcrumb, Hint hint);
 	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
 
 	public static void init(Activity activity, final String settingsJsonStr, final long beforeSendHandler) {
@@ -82,6 +83,15 @@ public class SentryBridgeJava {
 							} else {
 								return null;
 							}
+							}
+						});
+					}
+					if(settingJson.has("beforeBreadcrumb")) {
+						final long beforeBreadcrumbAddr = settingJson.getLong("beforeBreadcrumb");
+						options.setBeforeBreadcrumb(new SentryOptions.BeforeBreadcrumbCallback() {
+							@Override
+							public Breadcrumb execute(Breadcrumb breadcrumb, Hint hint) {
+								return onBeforeBreadcrumb(beforeBreadcrumbAddr, breadcrumb, hint);
 							}
 						});
 					}

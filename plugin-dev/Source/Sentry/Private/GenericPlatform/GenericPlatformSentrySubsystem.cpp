@@ -15,6 +15,8 @@
 #include "SentryEvent.h"
 #include "SentryModule.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBreadcrumb.h"
 
 #include "SentryTraceSampler.h"
 
@@ -69,6 +71,18 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 	}
 }
 
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeBreadcrumb(breadcrumb, hint, closure);
+	}
+	else
+	{
+		return breadcrumb;
+	}
+}
+
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
 	if (closure)
@@ -112,6 +126,39 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
 
 	return ProcessedEvent ? event : sentry_value_new_null();
+}
+
+// Currently this handler is not set anywhere since the Unreal SDK doesn't use `sentry_add_breadcrumb` directly and relies on
+// custom scope implementation to store breadcrumbs instead.
+// The support for it will be enabled with https://github.com/getsentry/sentry-native/pull/1166 
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return breadcrumb;
+	}
+
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+		return breadcrumb;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since there is no guarantee it will be ever freed.
+		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
+		return breadcrumb;
+	}
+
+	TSharedPtr<FGenericPlatformSentryBreadcrumb> Breadcrumb = MakeShareable(new FGenericPlatformSentryBreadcrumb(breadcrumb));
+
+	USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(Breadcrumb);
+
+	USentryBreadcrumb* ProcessedBreadcrumb = GetBeforeBreadcrumbHandler()->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
+
+	return ProcessedBreadcrumb ? breadcrumb : sentry_value_new_null();
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
@@ -159,16 +206,19 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
+	, beforeBreadcrumb(nullptr)
 	, crashReporter(MakeShareable(new FGenericPlatformSentryCrashReporter))
 	, isEnabled(false)
 	, isStackTraceEnabled(true)
+	, isPiiAttachmentEnabled(false)
 	, isScreenshotAttachmentEnabled(false)
 {
 }
 
-void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
+void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
 	beforeSend = beforeSendHandler;
+	beforeBreadcrumb = beforeBreadcrumbHandler;
 
 	scopeStack.Push(MakeShareable(new FGenericPlatformSentryScope()));
 
@@ -298,6 +348,15 @@ ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
+	if (beforeBreadcrumb != nullptr)
+	{
+		sentry_value_t processdBreadcrumb = HandleBeforeBreadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject(), nullptr, this);
+		if (sentry_value_is_null(processdBreadcrumb))
+		{
+			return;
+		}
+	}
+
 	GetCurrentScope()->AddBreadcrumb(breadcrumb);
 }
 
@@ -309,6 +368,15 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	Breadcrumb->SetType(Type);
 	Breadcrumb->SetData(Data);
 	Breadcrumb->SetLevel(Level);
+
+	if (beforeBreadcrumb != nullptr)
+	{
+		sentry_value_t processdBreadcrumb = HandleBeforeBreadcrumb(Breadcrumb->GetNativeObject(), nullptr, this);
+		if (sentry_value_is_null(processdBreadcrumb))
+		{
+			return;
+		}
+	}
 
 	GetCurrentScope()->AddBreadcrumb(Breadcrumb);
 }
@@ -512,6 +580,11 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler()
 {
 	return beforeSend;
+}
+
+USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler()
+{
+	return beforeBreadcrumb;
 }
 
 void FGenericPlatformSentrySubsystem::TryCaptureScreenshot() const

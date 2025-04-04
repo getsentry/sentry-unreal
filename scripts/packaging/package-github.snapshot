@@ -139,6 +139,7 @@ Source/Sentry/Private/Null/NullSentryAttachment.h
 Source/Sentry/Private/Null/NullSentryHint.h
 Source/Sentry/Private/Null/NullSentrySamplingContext.h
 Source/Sentry/Private/SentryAttachment.cpp
+Source/Sentry/Private/SentryBeforeBreadcrumbHandler.cpp
 Source/Sentry/Private/SentryBeforeSendHandler.cpp
 Source/Sentry/Private/SentryBreadcrumb.cpp
 Source/Sentry/Private/SentryDefines.h
@@ -175,6 +176,7 @@ Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.h
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.cpp
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.h
 Source/Sentry/Public/SentryAttachment.h
+Source/Sentry/Public/SentryBeforeBreadcrumbHandler.h
 Source/Sentry/Public/SentryBeforeSendHandler.h
 Source/Sentry/Public/SentryBreadcrumb.h
 Source/Sentry/Public/SentryDataTypes.h
