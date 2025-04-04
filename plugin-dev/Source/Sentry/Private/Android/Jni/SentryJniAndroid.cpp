@@ -71,10 +71,17 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)
 {
-	if (FTaskTagScope::IsRunningDuringStaticInit() || IsGarbageCollecting() || FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		// Executing `onBeforeBreadcrumb` handler is not allowed during engine's static init, garbage collection and post-loading.
 		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+		return breadcrumb;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since there is no guarantee it will be ever freed.
+		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
 		return breadcrumb;
 	}
 
