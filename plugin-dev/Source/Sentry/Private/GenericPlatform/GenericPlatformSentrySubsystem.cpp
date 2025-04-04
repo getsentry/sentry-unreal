@@ -206,9 +206,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
+	, beforeBreadcrumb(nullptr)
 	, crashReporter(MakeShareable(new FGenericPlatformSentryCrashReporter))
 	, isEnabled(false)
 	, isStackTraceEnabled(true)
+	, isPiiAttachmentEnabled(false)
 	, isScreenshotAttachmentEnabled(false)
 {
 }
@@ -578,6 +580,11 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler()
 {
 	return beforeSend;
+}
+
+USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler()
+{
+	return beforeBreadcrumb;
 }
 
 void FGenericPlatformSentrySubsystem::TryCaptureScreenshot() const
