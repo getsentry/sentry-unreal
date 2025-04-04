@@ -12,7 +12,7 @@
 #include "SentrySamplingContextApple.h"
 #include "SentryIdApple.h"
 
-#include "SentryBreadcrumb.h
+#include "SentryBreadcrumb.h"
 #include "SentryEvent.h"
 #include "SentrySettings.h"
 #include "SentryBeforeSendHandler.h"
