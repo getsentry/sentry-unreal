@@ -1,6 +1,10 @@
 name: Build UE Linux Docker image
 
 on:
+  push:
+    paths-ignore:
+        - "**.md"
+        - "**ue-docker.yml"
   workflow_dispatch:
     inputs:
       ue_version:
