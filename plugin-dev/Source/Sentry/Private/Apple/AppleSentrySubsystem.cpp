@@ -12,9 +12,11 @@
 #include "SentrySamplingContextApple.h"
 #include "SentryIdApple.h"
 
+#include "SentryBreadcrumb.h"
 #include "SentryEvent.h"
 #include "SentrySettings.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryDefines.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
@@ -30,7 +32,7 @@
 #include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
 
-void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
+void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
@@ -108,6 +110,30 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new SentrySamplingContextApple(samplingContext)));
 					float samplingValue;
 					return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
+				};
+			}
+			if (beforeBreadcrumbHandler != nullptr)
+			{
+				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* breadcrumb) {
+					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					{
+						// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+						return breadcrumb;
+					}
+
+					if (IsGarbageCollecting())
+					{
+						// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+						// since there is no guarantee it will be ever freed.
+						// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
+						return breadcrumb;
+					}
+
+					USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new SentryBreadcrumbApple(breadcrumb)));
+
+					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
+
+					return ProcessedBreadcrumb ? breadcrumb : nullptr;
 				};
 			}
 		}];
