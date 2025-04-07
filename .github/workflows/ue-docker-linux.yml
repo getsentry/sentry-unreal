@@ -1,10 +1,6 @@
 name: Build UE Linux Docker image
 
 on:
-  push:
-    paths-ignore:
-        - "**.md"
-        - "**ue-docker.yml"
   workflow_dispatch:
     inputs:
       ue_version:
@@ -52,6 +48,11 @@ jobs:
         shell: pwsh
         run: |
           .\scripts\clean-storage-win.ps1
+
+      - name: Set Docker to use Linux containers
+        run: |
+          docker info | Select-String -Pattern 'OSType'
+          'C:\Program Files\Docker\Docker\DockerCli.exe' -SwitchLinux
 
       - name: Set up Python
         uses: actions/setup-python@v4
