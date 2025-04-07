@@ -83,16 +83,16 @@ jobs:
 
       - name: Build Unreal Engine Docker image
         run: |
-          ue4-docker build custom -repo="${{ inputs.ue_repo }}" -branch="${{ inputs.ue_version }}" `
-          -basetag ubuntu22.04 `
-          -suffix "${{ inputs.ue_version }}" `
-          -username=${{ secrets.DOCKER_USERNAME }} `
-          -password=${{ secrets.DOCKER_TOKEN }} `
-          --linux `
-          --target minimal `
-          --exclude debug `
-          --exclude templates `
-          --exclude ddc `
+          ue4-docker build custom -repo="${{ inputs.ue_repo }}" -branch="${{ inputs.ue_version }}" \
+          -basetag ubuntu22.04 \
+          -suffix "${{ inputs.ue_version }}" \
+          -username=${{ secrets.DOCKER_USERNAME }} \
+          -password=${{ secrets.DOCKER_TOKEN }} \
+          --linux \
+          --target minimal \
+          --exclude debug \
+          --exclude templates \
+          --exclude ddc \
           --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
 
       - name: Log in to GitHub package registry
