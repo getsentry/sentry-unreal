@@ -51,8 +51,7 @@ jobs:
 
       - name: Set Docker to use Linux containers
         run: |
-          docker info | Select-String -Pattern 'OSType'
-          'C:\Program Files\Docker\Docker\DockerCli.exe' -SwitchLinux
+          docker context use default
 
       - name: Set up Python
         uses: actions/setup-python@v4
