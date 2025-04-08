@@ -92,6 +92,21 @@ echo "Sentry: Looking for properties file '$SENTRY_PROPERTIES'"
 
 if [ -f "$PROPERTIES_FILE" ]; then
     echo "Sentry: Properties file found. Starting upload..."
+    ProjectName=$(awk -F "=" '/defaults.project/ {print $2}' "$PROPERTIES_FILE")
+    if [ -z "$ProjectName" ]; then        
+        echo "Error: Project name is not set. Skipping..."
+        exit
+    fi
+    OrgName=$(awk -F "=" '/defaults.org/ {print $2}' "$PROPERTIES_FILE")
+    if [ -z "$OrgName" ]; then        
+        echo "Error: Project organization is not set. Skipping..."
+        exit
+    fi
+    AuthToken=$(awk -F "=" '/auth.token/ {print $2}' "$PROPERTIES_FILE")
+    if [ -z "$AuthToken" ]; then        
+        echo "Error: Auth token is not set. Skipping..."
+        exit
+    fi
     export SENTRY_PROPERTIES=$PROPERTIES_FILE
 else
     echo "Sentry: Properties file not found. Falling back to environment variables."
