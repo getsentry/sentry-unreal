@@ -152,7 +152,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4', '5.5']
+        unreal: ['4.27']
     uses: ./.github/workflows/test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}

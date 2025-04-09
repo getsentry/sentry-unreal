@@ -52,7 +52,7 @@ jobs:
             --env HOME="/home/$user" \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
-            ghcr.io/epicgames/unreal-engine:dev-slim-${{ inputs.unreal-version }}.1
+            ghcr.io/getsentry/unreal-docker:${{ inputs.unreal-version }}-linux
           docker logout ghcr.io
           # Add the user so it has a home directory (needed to run tests later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
@@ -74,11 +74,11 @@ jobs:
             mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun "
 
-      - name: Setup C++ runtime
-        run: docker exec --user root unreal bash -c '
-          apt-get update ;
-          add-apt-repository ppa:ubuntu-toolchain-r/test ;
-          apt-get install -y libstdc++6'
+      # - name: Setup C++ runtime
+      #   run: docker exec --user root unreal bash -c '
+      #     apt-get update ;
+      #     add-apt-repository ppa:ubuntu-toolchain-r/test ;
+      #     apt-get install -y libstdc++6'
 
       - name: Download package
         uses: actions/download-artifact@v4
