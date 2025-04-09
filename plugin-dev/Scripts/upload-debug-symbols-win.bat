@@ -94,6 +94,21 @@ echo Sentry: Looking for properties file '%PropertiesFile%'
 
 if exist "%PropertiesFile%" (
     echo Sentry: Properties file found. Starting upload...
+    call :ParseIniFile "%PropertiesFile%" Sentry defaults.project ProjectName
+    if "!ProjectName!"=="" (
+        echo Error: Project name is not set. Skipping...
+        exit /B 0
+    )
+    call :ParseIniFile "%PropertiesFile%" Sentry defaults.org OrgName
+    if "!OrgName!"=="" ( 
+        echo Error: Project organization is not set. Skipping...
+        exit /B 0
+    )
+    call :ParseIniFile "%PropertiesFile%" Sentry auth.token AuthToken
+    if "!AuthToken!"=="" (
+        echo Error: Auth token is not set. Skipping...
+        exit /B 0
+    )
     set "SENTRY_PROPERTIES=%PropertiesFile%"
 ) else (
     echo Sentry: Properties file not found. Falling back to environment variables.
