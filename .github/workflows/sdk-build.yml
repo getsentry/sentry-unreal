@@ -44,8 +44,7 @@ jobs:
         with:
           path: |
             ${{ steps.env.outputs.path }}
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk.yml') }}
+          key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk-build.yml') }}
 
       - name: Install Linux/LinuxArm64 Dependencies
         if: ${{ (inputs.target == 'Linux' || inputs.target == 'LinuxArm64') && steps.cache.outputs.cache-hit != 'true' }}
