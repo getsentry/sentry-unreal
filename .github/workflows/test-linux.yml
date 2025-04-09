@@ -5,6 +5,9 @@ on:
         required: true
         type: string
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   test:
     name: Test
