@@ -17,6 +17,7 @@ class ISentryScope;
 
 class USentrySettings;
 class USentryBeforeSendHandler;
+class USentryBeforeBreadcrumbHandler;
 class USentryTraceSampler;
 
 DECLARE_DELEGATE_OneParam(FSentryScopeDelegate, TSharedPtr<ISentryScope>);
@@ -26,7 +27,7 @@ class ISentrySubsystem
 public:
 	virtual ~ISentrySubsystem() = default;
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;

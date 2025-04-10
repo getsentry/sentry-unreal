@@ -10,6 +10,7 @@ class SentryIdApple : public ISentryId
 {
 public:
 	SentryIdApple();
+	SentryIdApple(const FString& id);
 	SentryIdApple(SentryId* id);
 	virtual ~SentryIdApple() override;
 

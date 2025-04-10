@@ -10,6 +10,12 @@ SentryIdAndroid::SentryIdAndroid()
 	SetupClassMethods();
 }
 
+SentryIdAndroid::SentryIdAndroid(const FString& id)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryId, "(Ljava/lang/String;)V", *GetJString(id))
+{
+	SetupClassMethods();
+}
+
 SentryIdAndroid::SentryIdAndroid(jobject id)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryId, id)
 {

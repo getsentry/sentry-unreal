@@ -18,7 +18,7 @@ class FGenericPlatformSentrySubsystem : public ISentrySubsystem
 public:
 	FGenericPlatformSentrySubsystem();
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
@@ -47,6 +47,7 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	USentryBeforeSendHandler* GetBeforeSendHandler();
+	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler();
 
 	void TryCaptureScreenshot() const;
 
@@ -67,6 +68,7 @@ protected:
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
 
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure);
+	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 
 private:
@@ -74,9 +76,11 @@ private:
 	 * Static wrappers that are passed to the Sentry library.
 	 */
 	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
+	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 
 	USentryBeforeSendHandler* beforeSend;
+	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;
 
 	TSharedPtr<FGenericPlatformSentryCrashReporter> crashReporter;
 

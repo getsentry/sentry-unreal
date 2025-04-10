@@ -28,7 +28,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 
-void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
+void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
@@ -54,6 +54,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)traceSampler);
+	}
+	if(beforeBreadcrumbHandler != nullptr)
+	{
+		SettingsJson->SetNumberField(TEXT("beforeBreadcrumb"), (jlong)beforeBreadcrumbHandler);
 	}
 
 	FString SettingsJsonStr;

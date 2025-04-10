@@ -86,22 +86,30 @@ if [ ! -f "$SENTRY_CLI_EXEC" ]; then
     exit
 fi
 
-export SENTRY_PROPERTIES="$projectPath/sentry.properties"
+PROPERTIES_FILE="$projectPath/sentry.properties"
 
-CONFIG_TYPE=$(awk -F "=" '/SentryCliConfigType/ {print $2}' "$DEFAULT_ENGINE_INI")
+echo "Sentry: Looking for properties file '$SENTRY_PROPERTIES'"
 
-if [ -z $CONFIG_TYPE ]; then
-    CONFIG_TYPE="PropertiesFile"
-fi
-
-if [ $CONFIG_TYPE != "EnvVariables" ]; then
-    echo "Sentry: Upload started using properties file"
-    if [ ! -f "$SENTRY_PROPERTIES" ]; then
-        echo "Sentry: Properties file is missing: '$SENTRY_PROPERTIES'. Skipping..."
+if [ -f "$PROPERTIES_FILE" ]; then
+    echo "Sentry: Properties file found. Starting upload..."
+    ProjectName=$(awk -F "=" '/defaults.project/ {print $2}' "$PROPERTIES_FILE")
+    if [ -z "$ProjectName" ]; then        
+        echo "Error: Project name is not set. Skipping..."
         exit
     fi
+    OrgName=$(awk -F "=" '/defaults.org/ {print $2}' "$PROPERTIES_FILE")
+    if [ -z "$OrgName" ]; then        
+        echo "Error: Project organization is not set. Skipping..."
+        exit
+    fi
+    AuthToken=$(awk -F "=" '/auth.token/ {print $2}' "$PROPERTIES_FILE")
+    if [ -z "$AuthToken" ]; then        
+        echo "Error: Auth token is not set. Skipping..."
+        exit
+    fi
+    export SENTRY_PROPERTIES=$PROPERTIES_FILE
 else
-    echo "Sentry: Upload started using environment variables"
+    echo "Sentry: Properties file not found. Falling back to environment variables."
     if [ -z "$SENTRY_PROJECT" ]; then        
         echo "Error: SENTRY_PROJECT env var is not set. Skipping..."
         exit

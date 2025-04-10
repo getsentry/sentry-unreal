@@ -1,15 +1,14 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentryUserFeedback.h"
-#include "SentryId.h"
 
 #include "HAL/PlatformSentryUserFeedback.h"
 
-void USentryUserFeedback::Initialize(USentryId* EventId)
+void USentryUserFeedback::Initialize(const FString& EventId)
 {
-	if (ensure(IsValid(EventId)))
+	if (ensure(!EventId.IsEmpty()))
 	{
-		NativeImpl = CreateSharedSentryUserFeedback(EventId->GetNativeObject());
+		NativeImpl = CreateSharedSentryUserFeedback(EventId);
 	}
 }
 

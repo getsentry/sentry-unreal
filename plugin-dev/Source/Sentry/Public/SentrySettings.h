@@ -8,16 +8,8 @@
 #include "SentrySettings.generated.h"
 
 class USentryBeforeSendHandler;
+class USentryBeforeBreadcrumbHandler;
 class USentryTraceSampler;
-
-UENUM(BlueprintType)
-enum class ESentryDebugSymbolsConfigType : uint8
-{
-	// Use properties file to configure Sentry CLI
-	PropertiesFile,
-	// Use environment variables to configure Sentry CLI
-	EnvVariables
-};
 
 UENUM(BlueprintType)
 enum class ESentryTracesSamplingType : uint8
@@ -197,6 +189,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "DSN", ToolTip = "The DSN (Data Source Name) tells the SDK where to send the events to. Get your DSN in the Sentry dashboard."))
 	FString Dsn;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Editor DSN", ToolTip = "The Editor DSN (Data Source Name) if you want to isolate editor crashes from packaged game crashes, defaults to Dsn if not provided."))
+	FString EditorDsn;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General",
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging."))
 	bool Debug;
@@ -269,6 +265,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Custom `beforeSend` event handler", ToolTip = "Custom handler for processing events before sending them to Sentry."))
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
+		Meta = (DisplayName = "Custom `beforeBreadcrumb` event handler", ToolTip = "Custom handler for processing breadcrumbs before adding them to the scope."))
+	TSubclassOf<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Windows",
 		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))
 	bool EnableAutoCrashCapturing;
@@ -327,23 +327,16 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
 	bool UploadSymbolsAutomatically;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Configuration type", ToolTip = "Method to configure Sentry CLI for debug symbols upload.", EditCondition = "UploadSymbolsAutomatically"))
-	ESentryDebugSymbolsConfigType SentryCliConfigType;
-
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.",
-			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
+		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
 	FString ProjectName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.",
-			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
+		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
 	FString OrgName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.",
-			EditCondition = "UploadSymbolsAutomatically && SentryCliConfigType == ESentryDebugSymbolsConfigType::PropertiesFile", EditConditionHides))
+		Meta = (DisplayName = "Authentication token", ToolTip = "Authentication token for performing actions against Sentry API.", EditCondition = "UploadSymbolsAutomatically"))
 	FString AuthToken;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",

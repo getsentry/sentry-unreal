@@ -25,7 +25,7 @@ public:
 
 	/** Gets id of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	USentryId* GetId() const;
+	FString GetId() const;
 
 	/** Sets message of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

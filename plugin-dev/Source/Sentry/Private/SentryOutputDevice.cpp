@@ -7,50 +7,30 @@
 #include "SentrySubsystem.h"
 
 #include "Engine/Engine.h"
+#include "Utils/SentryLogUtils.h"
+
+FSentryOutputDevice::FSentryOutputDevice()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+
+	BreadcrumbFlags.Add(ESentryLevel::Fatal, Settings->AutomaticBreadcrumbsForLogs.bOnFatalLog);
+	BreadcrumbFlags.Add(ESentryLevel::Error, Settings->AutomaticBreadcrumbsForLogs.bOnErrorLog);
+	BreadcrumbFlags.Add(ESentryLevel::Warning, Settings->AutomaticBreadcrumbsForLogs.bOnWarningLog);
+	BreadcrumbFlags.Add(ESentryLevel::Info, Settings->AutomaticBreadcrumbsForLogs.bOnInfoLog);
+	BreadcrumbFlags.Add(ESentryLevel::Debug, Settings->AutomaticBreadcrumbsForLogs.bOnDebugLog);
+}
 
 void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
 	const FString Message = FString(V).TrimStartAndEnd();
-	if (Message.IsEmpty() || Message.StartsWith(TEXT("[Callstack]")))
+	if (Message.IsEmpty() || Message.Contains(TEXT("[Callstack]")))
 	{
 		return;
 	}
 
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	ESentryLevel BreadcrumbLevel = SentryLogUtils::ConvertLogVerbosityToSentryLevel(Verbosity);
 
-	bool bAddBreadcrumb;
-
-	ESentryLevel BreadcrumbLevel = ESentryLevel::Debug;
-
-	switch (Verbosity)
-	{
-	case ELogVerbosity::Fatal:
-		bAddBreadcrumb = Settings->AutomaticBreadcrumbsForLogs.bOnFatalLog;
-		BreadcrumbLevel = ESentryLevel::Fatal;
-		break;
-	case ELogVerbosity::Error:
-		bAddBreadcrumb = Settings->AutomaticBreadcrumbsForLogs.bOnErrorLog;
-		BreadcrumbLevel = ESentryLevel::Error;
-		break;
-	case ELogVerbosity::Warning:
-		bAddBreadcrumb = Settings->AutomaticBreadcrumbsForLogs.bOnWarningLog;
-		BreadcrumbLevel = ESentryLevel::Warning;
-		break;
-	case ELogVerbosity::Display:
-	case ELogVerbosity::Log:
-		bAddBreadcrumb = Settings->AutomaticBreadcrumbsForLogs.bOnInfoLog;
-		BreadcrumbLevel = ESentryLevel::Info;
-		break;
-	case ELogVerbosity::Verbose:
-	case ELogVerbosity::VeryVerbose:
-		bAddBreadcrumb = Settings->AutomaticBreadcrumbsForLogs.bOnDebugLog;
-		BreadcrumbLevel = ESentryLevel::Debug;
-		break;
-	default:
-		bAddBreadcrumb = false;
-	}
-
-	if(!bAddBreadcrumb)
+	if (!BreadcrumbFlags.Contains(BreadcrumbLevel) || !BreadcrumbFlags[BreadcrumbLevel])
 	{
 		return;
 	}
