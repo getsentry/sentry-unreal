@@ -93,8 +93,7 @@ jobs:
           --target minimal \
           --exclude debug \
           --exclude templates \
-          --exclude ddc \
-          --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
+          --exclude ddc
 
       - name: Log in to GitHub package registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
