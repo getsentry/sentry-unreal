@@ -7,10 +7,10 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler,
+void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
 	USentryTraceSampler* TraceSampler)
 {
-	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
+	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
 	if (Settings->AttachScreenshot)
 	{

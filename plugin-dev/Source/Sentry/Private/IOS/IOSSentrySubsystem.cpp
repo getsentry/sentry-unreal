@@ -9,10 +9,10 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler,
+void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
 	USentryTraceSampler* TraceSampler)
 {
-	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, TraceSampler);
+	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 }
 
 void FIOSSentrySubsystem::TryCaptureScreenshot() const
