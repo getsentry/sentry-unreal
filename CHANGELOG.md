@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add screenshot capturing for Mac/iOS ([#849](https://github.com/getsentry/sentry-unreal/pull/849))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.6.0 to v8.7.0 ([#863](https://github.com/getsentry/sentry-unreal/pull/863))
