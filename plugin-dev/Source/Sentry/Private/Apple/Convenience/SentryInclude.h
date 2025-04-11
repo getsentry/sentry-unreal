@@ -10,10 +10,12 @@
 
 #if PLATFORM_MAC
 #include <Sentry/Sentry.h>
+#include <Sentry/SentryEnvelope.h>
 #include <Sentry/PrivateSentrySDKOnly.h>
 #include <Sentry/SentrySwift.h>
 #elif PLATFORM_IOS
 #import <Sentry/Sentry.h>
+#import <Sentry/SentryEnvelope.h>
 #import <Sentry/PrivateSentrySDKOnly.h>
 #import <Sentry/SentrySwift.h>
 #endif

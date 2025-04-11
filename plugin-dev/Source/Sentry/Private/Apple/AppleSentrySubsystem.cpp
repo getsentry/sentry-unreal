@@ -70,17 +70,20 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
 					[scope addAttachment:logAttachment];
 				}
-				if (settings->AttachScreenshot) {
-					const FString screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GetScreenshotPath());
-					SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePath.GetNSString()];
-					[scope addAttachment:screenshotAttachment];
-				}
 				return scope;
 			};
 			options.onCrashedLastRun = ^(SentryEvent* event) {
-				[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
-					[scope clearAttachments];
-				}];
+				if (settings->AttachScreenshot)
+				{
+					const FString& screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GetScreenshotPath());
+					SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePath.GetNSString()];
+
+					SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:screenshotAttachment maxAttachmentSize:options.maxAttachmentSize];
+
+					SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:event.eventId singleItem:envelopeItem];
+
+					[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
+				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
