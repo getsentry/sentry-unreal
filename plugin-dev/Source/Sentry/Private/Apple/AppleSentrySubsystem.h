@@ -37,8 +37,9 @@ public:
 
 	virtual void TryCaptureScreenshot() const {};
 
-	virtual void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId) const;
-
 protected:
+	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId) const;
+	void CreateScreenshotBackup() const;
+
 	virtual FString GetScreenshotPath() const { return FString(); }
 };

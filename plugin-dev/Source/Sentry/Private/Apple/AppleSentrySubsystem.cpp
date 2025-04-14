@@ -76,7 +76,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.onCrashedLastRun = ^(SentryEvent* event) {
 				if (settings->AttachScreenshot)
 				{
-					//UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)));
+					UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)));
 				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
@@ -396,4 +396,25 @@ void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> event
 	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
 
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
+
+	// After uploading screenshot create its timestamped backup
+	CreateScreenshotBackup();
+}
+
+void FAppleSentrySubsystem::CreateScreenshotBackup() const
+{
+	const FString& screenshotFilePath = GetScreenshotPath();
+
+	IFileManager& fileManager = IFileManager::Get();
+	if (fileManager.FileExists(*screenshotFilePath))
+	{
+		FString name, extension;
+		FString(screenshotFilePath).Split(TEXT("."), &name, &extension, ESearchCase::CaseSensitive, ESearchDir::FromEnd);
+		FDateTime originalTime = fileManager.GetTimeStamp(*screenshotFilePath);
+		FString backupFilePath = FString::Printf(TEXT("%s%s%s.%s"), *name, TEXT("-backup-"), *originalTime.ToString(), *extension);
+		if (!fileManager.Move(*backupFilePath, *screenshotFilePath, true))
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to backup screenshot."));
+		}
+	}
 }
