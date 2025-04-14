@@ -12,6 +12,8 @@ public:
 		USentryTraceSampler* TraceSampler
 	) override;
 
+	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
+
 	virtual void TryCaptureScreenshot() const override;
 
 protected:

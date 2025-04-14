@@ -1,6 +1,9 @@
 #include "Mac/MacSentrySubsystem.h"
 
+#include "SentryIdApple.h"
+
 #include "SentryDefines.h"
+#include "SentryModule.h"
 #include "SentrySettings.h"
 
 #include "Misc/CoreDelegates.h"
@@ -19,6 +22,20 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USen
 			TryCaptureScreenshot();
 		});
 	}
+}
+
+TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
+{
+	TSharedPtr<ISentryId> id = FAppleSentrySubsystem::CaptureEnsure(type, message);
+
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	if (Settings->AttachScreenshot)
+	{
+		TryCaptureScreenshot();
+		UploadScreenshotForEvent(id);
+	}
+
+	return id;
 }
 
 void FMacSentrySubsystem::TryCaptureScreenshot() const

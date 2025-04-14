@@ -61,6 +61,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.sendDefaultPii = settings->SendDefaultPii;
+			options.maxAttachmentSize = settings->MaxAttachmentSize;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
@@ -75,14 +76,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.onCrashedLastRun = ^(SentryEvent* event) {
 				if (settings->AttachScreenshot)
 				{
-					const FString& screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GetScreenshotPath());
-					SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePath.GetNSString()];
-
-					SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:screenshotAttachment maxAttachmentSize:options.maxAttachmentSize];
-
-					SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:event.eventId singleItem:envelopeItem];
-
-					[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
+					//UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)));
 				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
@@ -385,4 +379,21 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
 	return MakeShareable(new SentryTransactionContextApple(transactionContext));
+}
+
+void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId) const
+{
+	SentryId* id = StaticCastSharedPtr<SentryIdApple>(eventId)->GetNativeObject();
+
+	const FString& screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GetScreenshotPath());
+	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePath.GetNSString()];
+
+	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
+	int32 size = options.maxAttachmentSize;
+
+	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:screenshotAttachment maxAttachmentSize:size];
+
+	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
+
+	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
 }
