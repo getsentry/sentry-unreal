@@ -18,6 +18,9 @@ public:
 
 protected:
 	virtual FString GetScreenshotPath() const override;
+
+private:
+	bool isScreenshotAttachmentEnabled = false;
 };
 
 typedef FMacSentrySubsystem FPlatformSentrySubsystem;
