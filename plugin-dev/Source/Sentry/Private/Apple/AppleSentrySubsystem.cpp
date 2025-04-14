@@ -383,15 +383,25 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 
 void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId) const
 {
-	SentryId* id = StaticCastSharedPtr<SentryIdApple>(eventId)->GetNativeObject();
+	const FString& screenshotFilePath = GetScreenshotPath();
 
-	const FString& screenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GetScreenshotPath());
-	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePath.GetNSString()];
+	IFileManager& fileManager = IFileManager::Get();
+	if (!fileManager.FileExists(*screenshotFilePath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot."));
+		return;
+	}
+
+	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotFilePath);
+
+	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString()];
 
 	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
 	int32 size = options.maxAttachmentSize;
 
 	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:screenshotAttachment maxAttachmentSize:size];
+
+	SentryId* id = StaticCastSharedPtr<SentryIdApple>(eventId)->GetNativeObject();
 
 	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
 
