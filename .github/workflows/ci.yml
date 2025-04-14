@@ -4,7 +4,6 @@ on:
   push:
     paths-ignore:
       - "**.md"
-      - "**ue-docker.yml"
 
 jobs:
   android-sdk:
@@ -149,6 +148,7 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
+        # Note: Currently 5.0 is not supported due to ue4-docker issue https://github.com/adamrehn/ue4-docker/issues/373
         unreal: ['4.27', '5.1', '5.2', '5.3', '5.4', '5.5']
     uses: ./.github/workflows/test-linux.yml
     with:

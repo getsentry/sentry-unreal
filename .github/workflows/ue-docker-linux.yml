@@ -80,12 +80,11 @@ jobs:
       - name: Configure unreal-docker
         run: |
           ue4-docker setup
-          ue4-docker info
 
       - name: Build Unreal Engine Docker image
         run: |
           ue4-docker build custom -repo="${{ inputs.ue_repo }}" -branch="${{ inputs.ue_version }}" \
-          -basetag ubuntu20.04 \
+          -basetag ubuntu24.04 \
           -suffix "${{ inputs.ue_version }}" \
           -username=${{ secrets.DOCKER_USERNAME }} \
           -password=${{ secrets.DOCKER_TOKEN }} \
