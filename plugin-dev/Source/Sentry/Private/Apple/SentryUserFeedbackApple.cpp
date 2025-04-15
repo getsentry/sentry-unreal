@@ -11,7 +11,15 @@ SentryUserFeedbackApple::SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId)
 {
 	TSharedPtr<SentryIdApple> idIOS = StaticCastSharedPtr<SentryIdApple>(eventId);
 	SentryId* id = idIOS->GetNativeObject();
-	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryUserFeedback) alloc] initWithEventId:id];
+
+	// `SentryFeedback` is defined in Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
+#if PLATFORM_MAC
+	UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:@""
+		name:nil email:nil source:SentryFeedbackSourceCustom associatedEventId:id attachments:nil];
+#elif PLATFORM_IOS
+	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:@""
+		name:nil email:nil source:SentryFeedbackSourceCustom associatedEventId:id attachments:nil];
+#endif
 }
 
 SentryUserFeedbackApple::~SentryUserFeedbackApple()
@@ -19,7 +27,7 @@ SentryUserFeedbackApple::~SentryUserFeedbackApple()
 	// Put custom destructor logic here if needed
 }
 
-SentryUserFeedback* SentryUserFeedbackApple::GetNativeObject()
+SentryFeedback* SentryUserFeedbackApple::GetNativeObject()
 {
 	return UserFeedbackApple;
 }
@@ -46,10 +54,10 @@ FString SentryUserFeedbackApple::GetEmail() const
 
 void SentryUserFeedbackApple::SetComment(const FString& comment)
 {
-	UserFeedbackApple.comments = comment.GetNSString();
+	UserFeedbackApple.message = comment.GetNSString();
 }
 
 FString SentryUserFeedbackApple::GetComment() const
 {
-	return FString(UserFeedbackApple.comments);
+	return FString(UserFeedbackApple.message);
 }

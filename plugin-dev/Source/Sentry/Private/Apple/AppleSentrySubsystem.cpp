@@ -243,7 +243,7 @@ void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> 
 {
 	TSharedPtr<SentryUserFeedbackApple> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackApple>(userFeedback);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) captureUserFeedback:userFeedbackIOS->GetNativeObject()];
+	[SENTRY_APPLE_CLASS(SentrySDK) captureFeedback:userFeedbackIOS->GetNativeObject()];
 }
 
 void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
@@ -363,7 +363,9 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 		traceId:traceId
 		spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
 		parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
-		parentSampled:sampleDecision];
+		parentSampled:sampleDecision
+		parentSampleRate:nil
+		parentSampleRand:nil];
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 

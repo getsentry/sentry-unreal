@@ -6,7 +6,7 @@
 
 class ISentryId;
 
-@class SentryUserFeedback;
+@class SentryFeedback;
 
 class SentryUserFeedbackApple : public ISentryUserFeedback
 {
@@ -14,7 +14,7 @@ public:
 	SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId);
 	virtual ~SentryUserFeedbackApple() override;
 
-	SentryUserFeedback* GetNativeObject();
+	SentryFeedback* GetNativeObject();
 
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
@@ -24,5 +24,5 @@ public:
 	virtual FString GetComment() const override;
 
 private:
-	SentryUserFeedback* UserFeedbackApple;
+	SentryFeedback* UserFeedbackApple;
 };
