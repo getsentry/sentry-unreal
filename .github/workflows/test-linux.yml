@@ -83,12 +83,6 @@ jobs:
             mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun "
 
-      # - name: Setup C++ runtime
-      #   run: docker exec --user root unreal bash -c '
-      #     apt-get update ;
-      #     add-apt-repository ppa:ubuntu-toolchain-r/test ;
-      #     apt-get install -y libstdc++6'
-
       - name: Download package
         uses: actions/download-artifact@v4
         with:
