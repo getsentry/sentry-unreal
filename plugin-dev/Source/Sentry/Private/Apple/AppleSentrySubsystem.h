@@ -35,11 +35,10 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) override;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
-	virtual void TryCaptureScreenshot() const {};
+	virtual void TryCaptureScreenshot(TSharedPtr<ISentryId> eventId = nullptr) const {};
 
 protected:
 	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId) const;
-	void CreateScreenshotBackup() const;
 
-	virtual FString GetScreenshotPath() const { return FString(); }
+	virtual FString GetScreenshotPath(TSharedPtr<ISentryId> eventId = nullptr) const;
 };

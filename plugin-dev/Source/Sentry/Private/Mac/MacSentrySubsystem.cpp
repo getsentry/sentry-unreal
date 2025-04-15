@@ -32,14 +32,14 @@ TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, co
 
 	if (isScreenshotAttachmentEnabled)
 	{
-		TryCaptureScreenshot();
+		TryCaptureScreenshot(id);
 		UploadScreenshotForEvent(id);
 	}
 
 	return id;
 }
 
-void FMacSentrySubsystem::TryCaptureScreenshot() const
+void FMacSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) const
 {
 	NSWindow* MainWindow = [NSApp mainWindow];
 	if (!MainWindow)
@@ -66,21 +66,16 @@ void FMacSentrySubsystem::TryCaptureScreenshot() const
 	ImageBytes.AddUninitialized(SavedSize);
 	FPlatformMemory::Memcpy(ImageBytes.GetData(), [ImageData bytes], SavedSize);
 
-	FString FilePath = GetScreenshotPath();
+	FString ScreenshotPath = GetScreenshotPath(eventId);
 
-	if (FFileHelper::SaveArrayToFile(ImageBytes, *FilePath))
+	if (FFileHelper::SaveArrayToFile(ImageBytes, *ScreenshotPath))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Screenshot saved to: %s"), *FilePath);
+		UE_LOG(LogSentrySdk, Log, TEXT("Screenshot saved to: %s"), *ScreenshotPath);
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *FilePath);
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *ScreenshotPath);
 	}
 
 	CGImageRelease(ScreenshotRef);
-}
-
-FString FMacSentrySubsystem::GetScreenshotPath() const
-{
-	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("screenshot.png"));
 }

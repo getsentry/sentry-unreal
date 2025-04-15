@@ -385,18 +385,25 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 
 void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId) const
 {
-	const FString& screenshotFilePath = GetScreenshotPath();
+	FString screenshotFilePath = GetScreenshotPath(eventId);
 
 	IFileManager& fileManager = IFileManager::Get();
 	if (!fileManager.FileExists(*screenshotFilePath))
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotFilePath);
-		return;
+		// Couldn't find screenshot with a name that matches given Event ID so we will check for the default 'screenshot.png'
+		// that gets created during assertion/crash and is not associated with any event.
+		screenshotFilePath = GetScreenshotPath();
+
+		if (!fileManager.FileExists(*screenshotFilePath))
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotFilePath);
+			return;
+		}
 	}
 
 	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotFilePath);
 
-	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString()];
+	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString() filename:@"screenshot.png"];
 
 	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
 	int32 size = options.maxAttachmentSize;
@@ -409,25 +416,18 @@ void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> event
 
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
 
-	// After uploading screenshot create its timestamped backup
-	CreateScreenshotBackup();
+	// After uploading screenshot it's no longer needed so delete
+	if (!fileManager.Delete(*screenshotFilePath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot: %s"), *screenshotFilePath);
+	}
 }
 
-void FAppleSentrySubsystem::CreateScreenshotBackup() const
+FString FAppleSentrySubsystem::GetScreenshotPath(TSharedPtr<ISentryId> eventId) const
 {
-	const FString& screenshotFilePath = GetScreenshotPath();
+	FString screenshotFileName = eventId != nullptr
+		? FString::Printf(TEXT("screenshot-%s.png"), *eventId->ToString())
+		: TEXT("screenshot.png");
 
-	IFileManager& fileManager = IFileManager::Get();
-
-	FString name, extension;
-	FString(screenshotFilePath).Split(TEXT("."), &name, &extension, ESearchCase::CaseSensitive, ESearchDir::FromEnd);
-
-	FDateTime originalTime = fileManager.GetTimeStamp(*screenshotFilePath);
-
-	FString backupFilePath = FString::Printf(TEXT("%s%s%s.%s"), *name, TEXT("-backup-"), *originalTime.ToString(), *extension);
-
-	if (!fileManager.Move(*backupFilePath, *screenshotFilePath, true))
-	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to backup screenshot."));
-	}
+	return FPaths::Combine(FPaths::ProjectSavedDir(), screenshotFileName);
 }

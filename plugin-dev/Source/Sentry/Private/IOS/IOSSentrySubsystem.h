@@ -12,10 +12,7 @@ public:
 		USentryTraceSampler* TraceSampler
 	) override;
 
-	virtual void TryCaptureScreenshot() const override;
-
-protected:
-	virtual FString GetScreenshotPath() const override;
+	virtual void TryCaptureScreenshot(TSharedPtr<ISentryId> eventId = nullptr) const override;
 };
 
 typedef FIOSSentrySubsystem FPlatformSentrySubsystem;
