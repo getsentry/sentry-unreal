@@ -4,7 +4,6 @@ on:
   push:
     paths-ignore:
       - "**.md"
-      - "**ue-docker.yml"
 
 jobs:
   android-sdk:
@@ -29,16 +28,13 @@ jobs:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: Linux
-      # Build for an older GLIBC so that it can run with the old GLIBC included in EpicGames' Unreal docker images.
-      # See discussion in https://github.com/getsentry/sentry-unreal/pull/173
-      runsOn: ubuntu-20.04
+      runsOn: ubuntu-22.04
 
   linux-arm64-sdk:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: LinuxArm64
       runsOn: ubuntu-22.04-arm
-      container: arm64v8/ubuntu:20.04
 
   windows-crashpad-sdk:
     uses: ./.github/workflows/sdk-build.yml
@@ -152,7 +148,8 @@ jobs:
       fail-fast: false
       matrix:
         # Note: these versions must match scripts/packaging/engine-versions.txt
-        unreal: ['4.27', '5.0', '5.1', '5.2', '5.3', '5.4', '5.5']
+        # Note: Currently 5.0 is not supported due to ue4-docker issue https://github.com/adamrehn/ue4-docker/issues/373
+        unreal: ['4.27', '5.1', '5.2', '5.3', '5.4', '5.5']
     uses: ./.github/workflows/test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
