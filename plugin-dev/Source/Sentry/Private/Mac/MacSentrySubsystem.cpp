@@ -44,7 +44,7 @@ void FMacSentrySubsystem::TryCaptureScreenshot() const
 	NSWindow* MainWindow = [NSApp mainWindow];
 	if (!MainWindow)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("No main window found!"));
+		UE_LOG(LogSentrySdk, Error, TEXT("No main window found!"));
 		return;
 	}
 
@@ -54,7 +54,7 @@ void FMacSentrySubsystem::TryCaptureScreenshot() const
 
 	if (!ScreenshotRef)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Failed to capture screenshot."));
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to capture screenshot - invalid ScreenshotRef."));
 		return;
 	}
 
@@ -74,7 +74,7 @@ void FMacSentrySubsystem::TryCaptureScreenshot() const
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Failed to save screenshot."));
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *FilePath);
 	}
 
 	CGImageRelease(ScreenshotRef);

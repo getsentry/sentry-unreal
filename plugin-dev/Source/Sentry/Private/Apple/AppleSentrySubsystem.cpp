@@ -390,7 +390,7 @@ void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> event
 	IFileManager& fileManager = IFileManager::Get();
 	if (!fileManager.FileExists(*screenshotFilePath))
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot."));
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotFilePath);
 		return;
 	}
 
@@ -418,15 +418,16 @@ void FAppleSentrySubsystem::CreateScreenshotBackup() const
 	const FString& screenshotFilePath = GetScreenshotPath();
 
 	IFileManager& fileManager = IFileManager::Get();
-	if (fileManager.FileExists(*screenshotFilePath))
+
+	FString name, extension;
+	FString(screenshotFilePath).Split(TEXT("."), &name, &extension, ESearchCase::CaseSensitive, ESearchDir::FromEnd);
+
+	FDateTime originalTime = fileManager.GetTimeStamp(*screenshotFilePath);
+
+	FString backupFilePath = FString::Printf(TEXT("%s%s%s.%s"), *name, TEXT("-backup-"), *originalTime.ToString(), *extension);
+
+	if (!fileManager.Move(*backupFilePath, *screenshotFilePath, true))
 	{
-		FString name, extension;
-		FString(screenshotFilePath).Split(TEXT("."), &name, &extension, ESearchCase::CaseSensitive, ESearchDir::FromEnd);
-		FDateTime originalTime = fileManager.GetTimeStamp(*screenshotFilePath);
-		FString backupFilePath = FString::Printf(TEXT("%s%s%s.%s"), *name, TEXT("-backup-"), *originalTime.ToString(), *extension);
-		if (!fileManager.Move(*backupFilePath, *screenshotFilePath, true))
-		{
-			UE_LOG(LogSentrySdk, Error, TEXT("Failed to backup screenshot."));
-		}
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to backup screenshot."));
 	}
 }
