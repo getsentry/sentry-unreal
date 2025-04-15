@@ -1,0 +1,106 @@
+name: Build UE Linux Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: Select Unreal Engine version
+        required: true
+        type: choice
+        options:
+        - 4.27
+        - 5.1
+        - 5.2
+        - 5.3
+        - 5.4
+        - 5.5
+      ue_repo:
+        description: Set Unreal Engine repository
+        required: true
+        type: string
+        default: 'https://github.com/getsentry/UnrealEngine.git'
+      clean_disk:
+        description: Clean up disk space before Docker build
+        required: true
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: 'Build for UE ${{ inputs.ue_version }}'
+    runs-on: ubuntu-latest-32-cores
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Building docker images for newer UE versions may require extra disk space
+      - name: Clean up disk space before Docker build
+        if: ${{ inputs.clean_disk == true }}
+        run: |
+          # time df -h
+          sudo time swapoff -a
+          sudo time rm -f /swapfile
+          sudo time rm -rf /usr/local/lib/android
+          sudo time rm -rf /usr/share/dotnet
+          sudo time rm -rf /usr/share/swift
+          sudo time rm -rf /usr/local/share/powershell
+          sudo time rm -rf /usr/local/.ghcup
+          sudo time rm -rf /usr/local/lib/node_modules
+          sudo time rm -rf /usr/local/share/boost
+          sudo time rm -rf /usr/lib/google-cloud-sdk
+          sudo time rm -rf /usr/lib/jvm
+          sudo time rm -rf /opt/pipx
+          sudo time rm -rf /opt/ghc
+          sudo time rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo time apt-get clean
+          sudo time rm -rf /var/lib/apt/lists/*
+          # time docker rmi $(docker image ls -aq)
+          # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
+          df -h
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.8'
+          architecture: 'x64'
+
+      - name: Install unreal-docker
+        run: |
+            pip install ue4-docker
+
+      - name: Configure unreal-docker
+        run: |
+          ue4-docker setup
+
+      - name: Build Unreal Engine Docker image
+        run: |
+          ue4-docker build custom -repo="${{ inputs.ue_repo }}" -branch="${{ inputs.ue_version }}" \
+          -basetag ubuntu22.04 \
+          -suffix "${{ inputs.ue_version }}" \
+          -username=${{ secrets.DOCKER_USERNAME }} \
+          -password=${{ secrets.DOCKER_TOKEN }} \
+          --linux \
+          --target minimal \
+          --exclude debug \
+          --exclude templates \
+          --exclude ddc
+
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push Docker image with pre-built Unreal Engine
+        run: |
+          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-linux
+          docker push ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-linux
