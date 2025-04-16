@@ -23,7 +23,7 @@ FSentryOutputDevice::FSentryOutputDevice()
 void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
 	const FString Message = FString(V).TrimStartAndEnd();
-	if (Message.IsEmpty() || Message.StartsWith(TEXT("[Callstack]")))
+	if (Message.IsEmpty() || Message.Contains(TEXT("[Callstack]")))
 	{
 		return;
 	}

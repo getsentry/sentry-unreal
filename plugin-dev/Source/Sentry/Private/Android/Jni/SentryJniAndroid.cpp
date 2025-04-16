@@ -5,6 +5,7 @@
 #include "Android/Infrastructure/SentryJavaClasses.h"
 #include "Android/AndroidSentrySubsystem.h"
 #include "Android/SentryScopeAndroid.h"
+#include "Android/SentryBreadcrumbAndroid.h"
 #include "Android/SentryEventAndroid.h"
 #include "Android/SentryHintAndroid.h"
 #include "Android/SentrySamplingContextAndroid.h"
@@ -12,9 +13,11 @@
 #include "Android/AndroidJNI.h"
 
 #include "SentryDefines.h"
+#include "SentryBreadcrumb.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryTraceSampler.h"
 #include "SentrySamplingContext.h"
 #include "UObject/GarbageCollection.h"
@@ -41,11 +44,18 @@ JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* 
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* env, jclass clazz, jlong objAddr, jobject event, jobject hint)
 {
-	FGCScopeGuard GCScopeGuard;
-
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
+		return event;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
+		// In this case event will be reported without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 		return event;
 	}
 
@@ -57,6 +67,32 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 	USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
 
 	return ProcessedEvent ? event : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)
+{
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+		return breadcrumb;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since there is no guarantee it will be ever freed.
+		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
+		return breadcrumb;
+	}
+
+	USentryBeforeBreadcrumbHandler* handler = reinterpret_cast<USentryBeforeBreadcrumbHandler*>(objAddr);
+
+	USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new SentryBreadcrumbAndroid(breadcrumb)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new SentryHintAndroid(hint)));
+
+	USentryBreadcrumb* ProcessedBreadcrumb = handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, HintToProcess);
+
+	return ProcessedBreadcrumb ? breadcrumb : nullptr;
 }
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)

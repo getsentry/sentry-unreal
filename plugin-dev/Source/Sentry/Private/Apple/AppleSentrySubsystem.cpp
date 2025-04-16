@@ -12,9 +12,11 @@
 #include "SentrySamplingContextApple.h"
 #include "SentryIdApple.h"
 
+#include "SentryBreadcrumb.h"
 #include "SentryEvent.h"
 #include "SentrySettings.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryDefines.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
@@ -29,10 +31,14 @@
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformSentryAttachment.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
-void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryTraceSampler* traceSampler)
+void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
@@ -57,6 +63,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.sendDefaultPii = settings->SendDefaultPii;
+			options.maxAttachmentSize = settings->MaxAttachmentSize;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
@@ -68,12 +75,31 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				}
 				return scope;
 			};
+			options.onCrashedLastRun = ^(SentryEvent* event) {
+				if (settings->AttachScreenshot)
+				{
+					// If a screenshot was captured during assertion/crash in the previous app run
+					// find the most recent one and upload it to Sentry.
+					const FString& screenshotPath = GetLatestScreenshot();
+					if (!screenshotPath.IsEmpty())
+					{
+						UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)), screenshotPath);
+					}
+				}
+			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
-				FGCScopeGuard GCScopeGuard;
-
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 				{
 					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
+					return event;
+				}
+
+				if (IsGarbageCollecting())
+				{
+					// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+					// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
+					// In this case event will be reported without calling a `beforeSend` handler.
+					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 					return event;
 				}
 
@@ -103,6 +129,30 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new SentrySamplingContextApple(samplingContext)));
 					float samplingValue;
 					return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
+				};
+			}
+			if (beforeBreadcrumbHandler != nullptr)
+			{
+				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* breadcrumb) {
+					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					{
+						// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
+						return breadcrumb;
+					}
+
+					if (IsGarbageCollecting())
+					{
+						// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+						// since there is no guarantee it will be ever freed.
+						// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
+						return breadcrumb;
+					}
+
+					USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new SentryBreadcrumbApple(breadcrumb)));
+
+					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
+
+					return ProcessedBreadcrumb ? breadcrumb : nullptr;
 				};
 			}
 		}];
@@ -212,7 +262,7 @@ void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> 
 {
 	TSharedPtr<SentryUserFeedbackApple> userFeedbackIOS = StaticCastSharedPtr<SentryUserFeedbackApple>(userFeedback);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) captureUserFeedback:userFeedbackIOS->GetNativeObject()];
+	[SENTRY_APPLE_CLASS(SentrySDK) captureFeedback:userFeedbackIOS->GetNativeObject()];
 }
 
 void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
@@ -332,9 +382,75 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 		traceId:traceId
 		spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
 		parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
-		parentSampled:sampleDecision];
+		parentSampled:sampleDecision
+		parentSampleRate:nil
+		parentSampleRand:nil];
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
 	return MakeShareable(new SentryTransactionContextApple(transactionContext));
+}
+
+void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const
+{
+	IFileManager& fileManager = IFileManager::Get();
+	if (!fileManager.FileExists(*screenshotPath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotPath);
+		return;
+	}
+
+	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotPath);
+
+	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString() filename:@"screenshot.png"];
+
+	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
+	int32 size = options.maxAttachmentSize;
+
+	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:screenshotAttachment maxAttachmentSize:size];
+
+	SentryId* id = StaticCastSharedPtr<SentryIdApple>(eventId)->GetNativeObject();
+
+	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
+
+	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
+
+	// After uploading screenshot it's no longer needed so delete
+	if (!fileManager.Delete(*screenshotPath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot: %s"), *screenshotPath);
+	}
+}
+
+FString FAppleSentrySubsystem::GetScreenshotPath() const
+{
+	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
+}
+
+FString FAppleSentrySubsystem::GetLatestScreenshot() const
+{
+	const FString& ScreenshotsDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"));
+
+	TArray<FString> Screenshots;
+	IFileManager::Get().FindFiles(Screenshots, *ScreenshotsDir, TEXT("*.png"));
+
+	if(Screenshots.Num() == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("There are no screenshots found."));
+		return FString("");
+	}
+
+	for (int i = 0; i < Screenshots.Num(); ++i)
+	{
+		Screenshots[i] = ScreenshotsDir / Screenshots[i];
+	}
+
+	Screenshots.Sort([](const FString& A, const FString& B)
+	{
+		const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
+		const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
+		return TimestampB < TimestampA;
+	});
+
+	return Screenshots[0];
 }
