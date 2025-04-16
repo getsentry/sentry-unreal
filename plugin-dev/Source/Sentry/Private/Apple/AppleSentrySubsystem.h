@@ -34,4 +34,12 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) override;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
+
+	virtual FString TryCaptureScreenshot() const { return FString(); };
+
+protected:
+	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const;
+
+	virtual FString GetScreenshotPath() const;
+	virtual FString GetLatestScreenshot() const;
 };

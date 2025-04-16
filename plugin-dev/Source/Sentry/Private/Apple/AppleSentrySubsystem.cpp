@@ -28,6 +28,10 @@
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformSentryAttachment.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 #include "Utils/SentryLogUtils.h"
@@ -57,6 +61,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.sendDefaultPii = settings->SendDefaultPii;
+			options.maxAttachmentSize = settings->MaxAttachmentSize;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
@@ -67,6 +72,18 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					[scope addAttachment:logAttachment];
 				}
 				return scope;
+			};
+			options.onCrashedLastRun = ^(SentryEvent* event) {
+				if (settings->AttachScreenshot)
+				{
+					// If a screenshot was captured during assertion/crash in the previous app run
+					// find the most recent one and upload it to Sentry.
+					const FString& screenshotPath = GetLatestScreenshot();
+					if (!screenshotPath.IsEmpty())
+					{
+						UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)), screenshotPath);
+					}
+				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
@@ -370,4 +387,68 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
 	return MakeShareable(new SentryTransactionContextApple(transactionContext));
+}
+
+void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const
+{
+	IFileManager& fileManager = IFileManager::Get();
+	if (!fileManager.FileExists(*screenshotPath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotPath);
+		return;
+	}
+
+	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotPath);
+
+	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString() filename:@"screenshot.png"];
+
+	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
+	int32 size = options.maxAttachmentSize;
+
+	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:screenshotAttachment maxAttachmentSize:size];
+
+	SentryId* id = StaticCastSharedPtr<SentryIdApple>(eventId)->GetNativeObject();
+
+	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
+
+	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
+
+	// After uploading screenshot it's no longer needed so delete
+	if (!fileManager.Delete(*screenshotPath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot: %s"), *screenshotPath);
+	}
+}
+
+FString FAppleSentrySubsystem::GetScreenshotPath() const
+{
+	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
+}
+
+FString FAppleSentrySubsystem::GetLatestScreenshot() const
+{
+	const FString& ScreenshotsDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"));
+
+	TArray<FString> Screenshots;
+	IFileManager::Get().FindFiles(Screenshots, *ScreenshotsDir, TEXT("*.png"));
+
+	if(Screenshots.Num() == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("There are no screenshots found."));
+		return FString("");
+	}
+
+	for (int i = 0; i < Screenshots.Num(); ++i)
+	{
+		Screenshots[i] = ScreenshotsDir / Screenshots[i];
+	}
+
+	Screenshots.Sort([](const FString& A, const FString& B)
+	{
+		const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
+		const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
+		return TimestampB < TimestampA;
+	});
+
+	return Screenshots[0];
 }

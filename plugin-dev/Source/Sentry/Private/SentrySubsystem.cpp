@@ -808,8 +808,13 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 			GError->HandleError();
 			PLATFORM_BREAK();
 		});
-#endif // PLATFORM_ANDROID
-
+#elif PLATFORM_IOS
+		OnAssertDelegate = OutputDeviceError->OnAssert.AddWeakLambda(this, [this](const FString& Message)
+		{
+			check(SubsystemNativeImpl);
+			StaticCastSharedPtr<FIOSSentrySubsystem>(SubsystemNativeImpl)->TryCaptureScreenshot();
+		});
+#endif
 		GError = OutputDeviceError.Get();
 	}
 }

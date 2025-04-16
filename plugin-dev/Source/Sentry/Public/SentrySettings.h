@@ -225,6 +225,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only."))
 	bool AttachGpuDump;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Attachments",
+		Meta = (DisplayName = "Max attachment size in bytes", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed but this size is planned to be increased. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/"))
+	int32 MaxAttachmentSize;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
 	int32 MaxBreadcrumbs;
