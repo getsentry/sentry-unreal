@@ -76,7 +76,13 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.onCrashedLastRun = ^(SentryEvent* event) {
 				if (settings->AttachScreenshot)
 				{
-					UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)));
+					// If a screenshot was captured during assertion/crash in the previous app run
+					// find the most recent one and upload it to Sentry.
+					const FString& screenshotPath = GetLatestScreenshot();
+					if (!screenshotPath.IsEmpty())
+					{
+						UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)), screenshotPath);
+					}
 				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
@@ -383,25 +389,16 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	return MakeShareable(new SentryTransactionContextApple(transactionContext));
 }
 
-void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId) const
+void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const
 {
-	FString screenshotFilePath = GetScreenshotPath(eventId);
-
 	IFileManager& fileManager = IFileManager::Get();
-	if (!fileManager.FileExists(*screenshotFilePath))
+	if (!fileManager.FileExists(*screenshotPath))
 	{
-		// Couldn't find screenshot with a name that matches given Event ID so we will check for the default 'screenshot.png'
-		// that gets created during assertion/crash and is not associated with any event.
-		screenshotFilePath = GetScreenshotPath();
-
-		if (!fileManager.FileExists(*screenshotFilePath))
-		{
-			UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotFilePath);
-			return;
-		}
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotPath);
+		return;
 	}
 
-	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotFilePath);
+	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotPath);
 
 	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString() filename:@"screenshot.png"];
 
@@ -417,17 +414,41 @@ void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> event
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
 
 	// After uploading screenshot it's no longer needed so delete
-	if (!fileManager.Delete(*screenshotFilePath))
+	if (!fileManager.Delete(*screenshotPath))
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot: %s"), *screenshotFilePath);
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot: %s"), *screenshotPath);
 	}
 }
 
-FString FAppleSentrySubsystem::GetScreenshotPath(TSharedPtr<ISentryId> eventId) const
+FString FAppleSentrySubsystem::GetScreenshotPath() const
 {
-	FString screenshotFileName = eventId != nullptr
-		? FString::Printf(TEXT("screenshot-%s.png"), *eventId->ToString())
-		: TEXT("screenshot.png");
+	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
+}
 
-	return FPaths::Combine(FPaths::ProjectSavedDir(), screenshotFileName);
+FString FAppleSentrySubsystem::GetLatestScreenshot() const
+{
+	const FString& ScreenshotsDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"));
+
+	TArray<FString> Screenshots;
+	IFileManager::Get().FindFiles(Screenshots, *ScreenshotsDir, TEXT("*.png"));
+
+	if(Screenshots.Num() == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("There are no screenshots found."));
+		return FString("");
+	}
+
+	for (int i = 0; i < Screenshots.Num(); ++i)
+	{
+		Screenshots[i] = ScreenshotsDir / Screenshots[i];
+	}
+
+	Screenshots.Sort([](const FString& A, const FString& B)
+	{
+		const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
+		const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
+		return TimestampB < TimestampA;
+	});
+
+	return Screenshots[0];
 }

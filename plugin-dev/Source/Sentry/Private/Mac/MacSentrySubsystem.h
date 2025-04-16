@@ -14,7 +14,7 @@ public:
 
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 
-	virtual void TryCaptureScreenshot(TSharedPtr<ISentryId> eventId = nullptr) const override;
+	virtual FString TryCaptureScreenshot() const override;
 
 private:
 	bool isScreenshotAttachmentEnabled = false;

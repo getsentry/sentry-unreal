@@ -78,8 +78,10 @@ void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USen
 	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 }
 
-void FIOSSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) const
+FString FIOSSentrySubsystem::TryCaptureScreenshot() const
 {
+	FString ScreenshotPath = GetScreenshotPath();
+
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		UIGraphicsBeginImageContextWithOptions([IOSAppDelegate GetDelegate].RootView.bounds.size, NO, 2.0f);
 		[[IOSAppDelegate GetDelegate].RootView drawViewHierarchyInRect:[IOSAppDelegate GetDelegate].RootView.bounds afterScreenUpdates:YES];
@@ -93,11 +95,11 @@ void FIOSSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) co
 		ImageBytes.AddUninitialized(SavedSize);
 		FPlatformMemory::Memcpy(ImageBytes.GetData(), [ImageData bytes], SavedSize);
 
-		FString FilePath = GetScreenshotPath(eventId);
-
-		if (!FFileHelper::SaveArrayToFile(ImageBytes, *FilePath))
+		if (!FFileHelper::SaveArrayToFile(ImageBytes, *ScreenshotPath))
 		{
-			UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *FilePath);
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *ScreenshotPath);
 		}
 	});
+
+	return ScreenshotPath;
 }

@@ -32,20 +32,23 @@ TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, co
 
 	if (isScreenshotAttachmentEnabled)
 	{
-		TryCaptureScreenshot(id);
-		UploadScreenshotForEvent(id);
+		const FString& screenshotPath = TryCaptureScreenshot();
+		if (!screenshotPath.IsEmpty())
+		{
+			UploadScreenshotForEvent(id, screenshotPath);
+		}
 	}
 
 	return id;
 }
 
-void FMacSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) const
+FString FMacSentrySubsystem::TryCaptureScreenshot() const
 {
 	NSWindow* MainWindow = [NSApp mainWindow];
 	if (!MainWindow)
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("No main window found!"));
-		return;
+		return FString("");
 	}
 
 	NSRect WindowRect = [MainWindow frame];
@@ -55,7 +58,7 @@ void FMacSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) co
 	if (!ScreenshotRef)
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("Failed to capture screenshot - invalid ScreenshotRef."));
-		return;
+		return FString("");
 	}
 
 	NSBitmapImageRep* BitmapRep = [[NSBitmapImageRep alloc] initWithCGImage:ScreenshotRef];
@@ -68,10 +71,13 @@ void FMacSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) co
 
 	CGImageRelease(ScreenshotRef);
 
-	FString ScreenshotPath = GetScreenshotPath(eventId);
+	FString ScreenshotPath = GetScreenshotPath();
 
 	if (!FFileHelper::SaveArrayToFile(ImageBytes, *ScreenshotPath))
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *ScreenshotPath);
+		return FString("");
 	}
+
+	return ScreenshotPath;
 }
