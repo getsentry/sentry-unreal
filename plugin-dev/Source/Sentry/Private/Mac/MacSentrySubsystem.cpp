@@ -66,16 +66,12 @@ void FMacSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) co
 	ImageBytes.AddUninitialized(SavedSize);
 	FPlatformMemory::Memcpy(ImageBytes.GetData(), [ImageData bytes], SavedSize);
 
+	CGImageRelease(ScreenshotRef);
+
 	FString ScreenshotPath = GetScreenshotPath(eventId);
 
-	if (FFileHelper::SaveArrayToFile(ImageBytes, *ScreenshotPath))
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Screenshot saved to: %s"), *ScreenshotPath);
-	}
-	else
+	if (!FFileHelper::SaveArrayToFile(ImageBytes, *ScreenshotPath))
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *ScreenshotPath);
 	}
-
-	CGImageRelease(ScreenshotRef);
 }

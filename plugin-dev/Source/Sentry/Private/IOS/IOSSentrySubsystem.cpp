@@ -95,11 +95,7 @@ void FIOSSentrySubsystem::TryCaptureScreenshot(TSharedPtr<ISentryId> eventId) co
 
 		FString FilePath = GetScreenshotPath(eventId);
 
-		if (FFileHelper::SaveArrayToFile(ImageBytes, *FilePath))
-		{
-			UE_LOG(LogSentrySdk, Log, TEXT("Screenshot saved to: %s"), *FilePath);
-		}
-		else
+		if (!FFileHelper::SaveArrayToFile(ImageBytes, *FilePath))
 		{
 			UE_LOG(LogSentrySdk, Error, TEXT("Failed to save screenshot to: %s"), *FilePath);
 		}
