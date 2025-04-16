@@ -17,7 +17,7 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USen
 
 	isScreenshotAttachmentEnabled = Settings->AttachScreenshot;
 
-	if (Settings->AttachScreenshot)
+	if (IsEnabled() && Settings->AttachScreenshot)
 	{
 		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
 		{
