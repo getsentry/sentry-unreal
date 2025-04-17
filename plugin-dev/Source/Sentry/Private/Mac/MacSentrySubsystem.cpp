@@ -15,9 +15,7 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USen
 {
 	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
-	isScreenshotAttachmentEnabled = Settings->AttachScreenshot;
-
-	if (IsEnabled() && Settings->AttachScreenshot)
+	if (IsEnabled() && isScreenshotAttachmentEnabled)
 	{
 		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
 		{

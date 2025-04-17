@@ -15,9 +15,6 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 
 	virtual FString TryCaptureScreenshot() const override;
-
-private:
-	bool isScreenshotAttachmentEnabled = false;
 };
 
 typedef FMacSentrySubsystem FPlatformSentrySubsystem;

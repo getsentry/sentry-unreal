@@ -42,4 +42,8 @@ protected:
 
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;
+
+protected:
+	bool isScreenshotAttachmentEnabled = false;
+	bool isGameLogAttachmentEnabled = false;
 };

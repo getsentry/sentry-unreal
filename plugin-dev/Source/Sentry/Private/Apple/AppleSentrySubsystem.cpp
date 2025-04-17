@@ -40,6 +40,9 @@
 
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
+	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
+	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
+
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
 	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
@@ -84,20 +87,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					const FString logFilePath = SentryFileUtils::GetGameLogBackupPath();
 					if (!logFilePath.IsEmpty())
 					{
-						UploadAttachmentForEvent(MakeShareable(new SentryIdApple(event.eventId)), logFilePath, FPaths::GetCleanFilename(logFilePath));
+						UploadAttachmentForEvent(MakeShareable(new SentryIdApple(event.eventId)), logFilePath, SentryFileUtils::GetGameLogName());
 					}
 				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
-				// TODO: check if crash
-				if(settings->EnableAutoLogAttachment) {
-					const FString logFilePath = SentryFileUtils::GetGameLogPath();
-					if (!logFilePath.IsEmpty())
-					{
-						UploadAttachmentForEvent(MakeShareable(new SentryIdApple(event.eventId)), logFilePath, FPaths::GetCleanFilename(logFilePath));
-					}
-				}
-
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 				{
 					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
@@ -218,17 +212,19 @@ void FAppleSentrySubsystem::ClearBreadcrumbs()
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
-		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
-	}];
-
-	return MakeShareable(new SentryIdApple(id));
+	FSentryScopeDelegate onConfigureScope;
+	return CaptureMessageWithScope(message, onConfigureScope, level);
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
+		if(isGameLogAttachmentEnabled) {
+			const FString logFilePath = SentryFileUtils::GetGameLogPath();
+			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
+			[scope addAttachment:logAttachment];
+		}
 		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
@@ -237,10 +233,8 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FStri
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEvent(TSharedPtr<ISentryEvent> event)
 {
-	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
-
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject()];
-	return MakeShareable(new SentryIdApple(id));
+	FSentryScopeDelegate onConfigureScope;
+	return CaptureEventWithScope(event,	onConfigureScope);
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
@@ -248,6 +242,11 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
 
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
+		if(isGameLogAttachmentEnabled) {
+			const FString logFilePath = SentryFileUtils::GetGameLogPath();
+			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
+			[scope addAttachment:logAttachment];
+		}
 		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
@@ -263,7 +262,14 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
 
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
+	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent withScopeBlock:^(SentryScope* scope) {
+		if(isGameLogAttachmentEnabled) {
+			const FString logFilePath = SentryFileUtils::GetGameLogPath();
+			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
+			[scope addAttachment:logAttachment];
+		}
+	}];
+
 	return MakeShareable(new SentryIdApple(id));
 }
 
