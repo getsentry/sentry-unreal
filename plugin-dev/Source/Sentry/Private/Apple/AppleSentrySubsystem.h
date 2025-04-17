@@ -38,7 +38,7 @@ public:
 	virtual FString TryCaptureScreenshot() const { return FString(); };
 
 protected:
-	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const;
+	void UploadAttachmentForEvent(TSharedPtr<ISentryId> eventId, const FString& filePath, const FString& name, bool deleteAfterUpload = false) const;
 
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;

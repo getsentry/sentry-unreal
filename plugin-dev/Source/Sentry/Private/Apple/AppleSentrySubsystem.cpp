@@ -67,14 +67,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
-			options.initialScope = ^(SentryScope* scope) {
-				if(settings->EnableAutoLogAttachment) {
-					const FString logFilePath = SentryFileUtils::GetGameLogPath();
-					SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
-					[scope addAttachment:logAttachment];
-				}
-				return scope;
-			};
 			options.onCrashedLastRun = ^(SentryEvent* event) {
 				if (settings->AttachScreenshot)
 				{
@@ -83,11 +75,29 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					const FString& screenshotPath = GetLatestScreenshot();
 					if (!screenshotPath.IsEmpty())
 					{
-						UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)), screenshotPath);
+						UploadAttachmentForEvent(MakeShareable(new SentryIdApple(event.eventId)), screenshotPath, TEXT("screenshot.png"), true);
+					}
+				}
+				if(settings->EnableAutoLogAttachment) {
+					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration SDK can
+					// find the most recent one and upload it to Sentry.
+					const FString logFilePath = SentryFileUtils::GetGameLogBackupPath();
+					if (!logFilePath.IsEmpty())
+					{
+						UploadAttachmentForEvent(MakeShareable(new SentryIdApple(event.eventId)), logFilePath, FPaths::GetCleanFilename(logFilePath));
 					}
 				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
+				// TODO: check if crash
+				if(settings->EnableAutoLogAttachment) {
+					const FString logFilePath = SentryFileUtils::GetGameLogPath();
+					if (!logFilePath.IsEmpty())
+					{
+						UploadAttachmentForEvent(MakeShareable(new SentryIdApple(event.eventId)), logFilePath, FPaths::GetCleanFilename(logFilePath));
+					}
+				}
+
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 				{
 					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
@@ -391,18 +401,18 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	return MakeShareable(new SentryTransactionContextApple(transactionContext));
 }
 
-void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const
+void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> eventId, const FString& filePath, const FString& name, bool deleteAfterUpload) const
 {
 	IFileManager& fileManager = IFileManager::Get();
-	if (!fileManager.FileExists(*screenshotPath))
+	if (!fileManager.FileExists(*filePath))
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotPath);
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload attachment - file path provided did not exist: %s"), *filePath);
 		return;
 	}
 
-	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotPath);
+	const FString& filePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*filePath);
 
-	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString() filename:@"screenshot.png"];
+	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
 
 	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
 	int32 size = options.maxAttachmentSize;
@@ -415,10 +425,12 @@ void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> event
 
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
 
-	// After uploading screenshot it's no longer needed so delete
-	if (!fileManager.Delete(*screenshotPath))
+	if (deleteAfterUpload)
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot: %s"), *screenshotPath);
+		if (!fileManager.Delete(*filePath))
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete file attachment after upload: %s"), *filePath);
+		}
 	}
 }
 
