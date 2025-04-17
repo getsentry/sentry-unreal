@@ -15,9 +15,7 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USen
 {
 	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
-	isScreenshotAttachmentEnabled = Settings->AttachScreenshot;
-
-	if (IsEnabled() && Settings->AttachScreenshot)
+	if (IsEnabled() && isScreenshotAttachmentEnabled)
 	{
 		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
 		{
@@ -35,7 +33,7 @@ TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, co
 		const FString& screenshotPath = TryCaptureScreenshot();
 		if (!screenshotPath.IsEmpty())
 		{
-			UploadScreenshotForEvent(id, screenshotPath);
+			UploadAttachmentForEvent(id, screenshotPath, TEXT("screenshot.png"), true);
 		}
 	}
 
