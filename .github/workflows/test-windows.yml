@@ -11,7 +11,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: windows-latest
+    runs-on: windows-latest-32-cores
 
     steps:
       - name: Log in to GitHub package registry
