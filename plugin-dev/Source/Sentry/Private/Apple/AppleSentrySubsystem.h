@@ -42,6 +42,8 @@ protected:
 
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;
+	virtual FString GetGameLogPath() const { return FString(); };
+	virtual FString GetLatestGameLog() const { return FString(); };
 
 protected:
 	bool isScreenshotAttachmentEnabled = false;

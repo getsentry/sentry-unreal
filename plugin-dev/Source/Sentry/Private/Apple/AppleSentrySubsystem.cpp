@@ -84,7 +84,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				if(settings->EnableAutoLogAttachment) {
 					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration SDK can
 					// find the most recent one and upload it to Sentry.
-					const FString logFilePath = SentryFileUtils::GetGameLogBackupPath();
+					const FString logFilePath = GetLatestGameLog();
 					if (!logFilePath.IsEmpty())
 					{
 						UploadAttachmentForEvent(MakeShareable(new SentryIdApple(event.eventId)), logFilePath, SentryFileUtils::GetGameLogName());
@@ -221,7 +221,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FStri
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
 		if(isGameLogAttachmentEnabled) {
-			const FString logFilePath = SentryFileUtils::GetGameLogPath();
+			const FString logFilePath = GetGameLogPath();
 			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
 			[scope addAttachment:logAttachment];
 		}
@@ -243,7 +243,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
 		if(isGameLogAttachmentEnabled) {
-			const FString logFilePath = SentryFileUtils::GetGameLogPath();
+			const FString logFilePath = GetGameLogPath();
 			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
 			[scope addAttachment:logAttachment];
 		}
@@ -264,7 +264,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 
 	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent withScopeBlock:^(SentryScope* scope) {
 		if(isGameLogAttachmentEnabled) {
-			const FString logFilePath = SentryFileUtils::GetGameLogPath();
+			const FString logFilePath = GetGameLogPath();
 			SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
 			[scope addAttachment:logAttachment];
 		}

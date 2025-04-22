@@ -6,6 +6,8 @@
 #include "SentryModule.h"
 #include "SentrySettings.h"
 
+#include "Utils/SentryFileUtils.h"
+
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -78,4 +80,14 @@ FString FMacSentrySubsystem::TryCaptureScreenshot() const
 	}
 
 	return ScreenshotPath;
+}
+
+FString FMacSentrySubsystem::GetGameLogPath() const
+{
+	return SentryFileUtils::GetGameLogPath();
+}
+
+FString FMacSentrySubsystem::GetLatestGameLog() const
+{
+	return SentryFileUtils::GetGameLogBackupPath();
 }

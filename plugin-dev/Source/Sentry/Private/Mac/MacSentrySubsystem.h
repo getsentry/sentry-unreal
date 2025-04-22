@@ -15,6 +15,10 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 
 	virtual FString TryCaptureScreenshot() const override;
+
+protected:
+	virtual FString GetGameLogPath() const override;
+	virtual FString GetLatestGameLog() const override;
 };
 
 typedef FMacSentrySubsystem FPlatformSentrySubsystem;
