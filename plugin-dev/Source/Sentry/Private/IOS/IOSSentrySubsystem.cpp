@@ -121,7 +121,7 @@ FString FIOSSentrySubsystem::GetLatestGameLog() const
 
 FString FIOSSentrySubsystem::NormalizeToPublicIOSPath(const FString& logFilePath) const
 {
-	// This is a workaround for iOS log file path not being accessible via the path returned by engine's API.
+	// This is a workaround for iOS log file not being accessible via the path returned by engine's API.
 	// See https://github.com/getsentry/sentry-unreal/pull/732
 
 	static FString PublicWritePathBase = FString([NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]);
@@ -129,7 +129,7 @@ FString FIOSSentrySubsystem::NormalizeToPublicIOSPath(const FString& logFilePath
 
 	if (logFilePath.StartsWith(PrivateWritePathBase))
 	{
-		return logFilePath.Replace(PrivateWritePathBase, PublicWritePathBase);
+		return logFilePath.Replace(*PrivateWritePathBase, *PublicWritePathBase);
 	}
 
 	return logFilePath;
