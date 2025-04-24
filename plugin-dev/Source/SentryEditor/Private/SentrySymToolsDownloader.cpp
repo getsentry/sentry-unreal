@@ -155,7 +155,7 @@ bool FSentrySymToolsDownloader::HasExecutePermission(const FString& FilePath) co
 	return false;
 #else
 	// No-op on Windows
-	retrun true;
+	return true;
 #endif
 }
 
@@ -171,6 +171,6 @@ bool FSentrySymToolsDownloader::SetExecutePermission(const FString& FilePath) co
 	return false;
 #else
 	// No-op on Windows
-	retrun true;
+	return true;
 #endif
 }
