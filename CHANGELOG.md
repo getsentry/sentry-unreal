@@ -9,6 +9,7 @@
 ### Fixes
 
 - Fix warnings caused by deprecated Cocoa SDK API usages ([#868](https://github.com/getsentry/sentry-unreal/pull/868))
+- Fix Sentry cURL transport can't send envelopes on Linux ([#882](https://github.com/getsentry/sentry-unreal/pull/882))
 
 ### Dependencies
 
