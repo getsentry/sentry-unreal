@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentrySymToolsDownloader.h"
+#include "SentryModule.h"
 
 #include "Runtime/Launch/Resources/Version.h"
 #include "HttpModule.h"
@@ -38,8 +39,9 @@ void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnComplete
 	const FString SentryCliExecPath = GetSentryCliPath();
 	const FString CliDownloadUrl = FString::Printf(TEXT("https://github.com/getsentry/sentry-cli/releases/download/%s/%s"), *GetSentryCliVersion(), *SentryCliExecName);
 
+	const FString PluginVersion = FSentryModule::Get().GetPluginVersion();
 	const FString SymUploadScriptPath = GetSymUploadScriptPath();
-	const FString SymUploadScriptDownloadUrl = FString::Printf(TEXT("https://raw.githubusercontent.com/getsentry/sentry-unreal/main/plugin-dev/Scripts/%s"), *SentrySymUploadScriptName);
+	const FString SymUploadScriptDownloadUrl = FString::Printf(TEXT("https://raw.githubusercontent.com/getsentry/sentry-unreal/refs/tags/%s/plugin-dev/Scripts/%s"), *PluginVersion, *SentrySymUploadScriptName);
 
 	Download(SentryCliDownloadRequest, CliDownloadUrl, SentryCliExecPath, OnCompleted);
 	Download(SentryScriptDownloadRequest, SymUploadScriptDownloadUrl, SymUploadScriptPath, OnCompleted);
