@@ -10,15 +10,20 @@
 
 - Fix warnings caused by deprecated Cocoa SDK API usages ([#868](https://github.com/getsentry/sentry-unreal/pull/868))
 - Fix invalid log file being attached to crash events on Mac/iOS ([#873](https://github.com/getsentry/sentry-unreal/pull/873))
+- Fix Sentry cURL transport can't send envelopes on Linux ([#882](https://github.com/getsentry/sentry-unreal/pull/882))
+- The SDK now ensures the execute permission is set for Sentry CLI and symbol upload script when they have been downloaded via the Editor ([#881](https://github.com/getsentry/sentry-unreal/pull/881))
 
 ### Dependencies
 
-- Bump Java SDK (Android) from v8.6.0 to v8.8.0 ([#863](https://github.com/getsentry/sentry-unreal/pull/863), [#869](https://github.com/getsentry/sentry-unreal/pull/869))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#880)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.6.0...8.8.0)
-- Bump Cocoa SDK (iOS and Mac) from v8.48.0 to v8.49.0 ([#866](https://github.com/getsentry/sentry-unreal/pull/866))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8490)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.48.0...8.49.0)
+- Bump Java SDK (Android) from v8.6.0 to v8.9.0 ([#863](https://github.com/getsentry/sentry-unreal/pull/863), [#869](https://github.com/getsentry/sentry-unreal/pull/869), [#879](https://github.com/getsentry/sentry-unreal/pull/879))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#890)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.6.0...8.9.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.48.0 to v8.49.1 ([#866](https://github.com/getsentry/sentry-unreal/pull/866), [#878](https://github.com/getsentry/sentry-unreal/pull/878))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8491)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.48.0...8.49.1)
+- Bump Native SDK from v0.8.3 to v0.8.4 ([#872](https://github.com/getsentry/sentry-unreal/pull/872))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#084)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.3...0.8.4)
 
 ## 1.0.0-alpha.5
 
