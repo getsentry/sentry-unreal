@@ -40,7 +40,8 @@ void FLinuxSentrySubsystem::ConfigureCertsPath(sentry_options_t* Options)
 		}
 	}
 
-	UE_LOG(LogSentrySdk, Warning, TEXT("Could not find CA certificates in any known location. Sentry transport may not function properly."));
+	UE_LOG(LogSentrySdk, Warning, TEXT("Could not find CA certificates in any known location. Sentry transport may not function properly for handled events"));
+
 }
 
 void FLinuxSentrySubsystem::ConfigureLogFileAttachment(sentry_options_t* Options)
