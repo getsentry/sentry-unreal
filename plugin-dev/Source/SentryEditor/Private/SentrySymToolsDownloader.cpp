@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
 
 #include "SentrySymToolsDownloader.h"
+#include "SentryModule.h"
 
 #include "Runtime/Launch/Resources/Version.h"
 #include "HttpModule.h"
@@ -38,8 +39,9 @@ void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnComplete
 	const FString SentryCliExecPath = GetSentryCliPath();
 	const FString CliDownloadUrl = FString::Printf(TEXT("https://github.com/getsentry/sentry-cli/releases/download/%s/%s"), *GetSentryCliVersion(), *SentryCliExecName);
 
+	const FString PluginVersion = FSentryModule::Get().GetPluginVersion();
 	const FString SymUploadScriptPath = GetSymUploadScriptPath();
-	const FString SymUploadScriptDownloadUrl = FString::Printf(TEXT("https://raw.githubusercontent.com/getsentry/sentry-unreal/main/plugin-dev/Scripts/%s"), *SentrySymUploadScriptName);
+	const FString SymUploadScriptDownloadUrl = FString::Printf(TEXT("https://raw.githubusercontent.com/getsentry/sentry-unreal/refs/tags/%s/plugin-dev/Scripts/%s"), *PluginVersion, *SentrySymUploadScriptName);
 
 	Download(SentryCliDownloadRequest, CliDownloadUrl, SentryCliExecPath, OnCompleted);
 	Download(SentryScriptDownloadRequest, SymUploadScriptDownloadUrl, SymUploadScriptPath, OnCompleted);
@@ -53,7 +55,8 @@ ESentrySymToolsStatus FSentrySymToolsDownloader::GetStatus()
 		return ESentrySymToolsStatus::Downloading;
 	}
 
-	if(FPaths::FileExists(GetSentryCliPath()) && FPaths::FileExists(GetSymUploadScriptPath()))
+	if (FPaths::FileExists(GetSentryCliPath()) && FPaths::FileExists(GetSymUploadScriptPath()) &&
+		HasExecutePermission(GetSentryCliPath()) && HasExecutePermission(GetSymUploadScriptPath()))
 	{
 		return ESentrySymToolsStatus::Configured;
 	}
@@ -96,6 +99,14 @@ void FSentrySymToolsDownloader::Download(TSharedPtr<IHttpRequest, ESPMode::Threa
 
 		FFileHelper::SaveArrayToFile(Response->GetContent(), *SavePath);
 
+#if PLATFORM_LINUX || PLATFORM_MAC
+		if (!SetExecutePermission(SavePath))
+		{
+			OnCompleted(false);
+			return;
+		}
+#endif
+
 		if(GetStatus() == ESentrySymToolsStatus::Configured)
 		{
 			OnCompleted(true);
@@ -132,4 +143,36 @@ FString FSentrySymToolsDownloader::GetSymUploadScriptPath() const
 {
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 	return FPaths::Combine(PluginDir, TEXT("Scripts"), SentrySymUploadScriptName);
+}
+
+bool FSentrySymToolsDownloader::HasExecutePermission(const FString& FilePath) const
+{
+#if PLATFORM_LINUX || PLATFORM_MAC
+	struct stat FileInfo;
+	if (stat(TCHAR_TO_UTF8(*FilePath), &FileInfo) == 0)
+	{
+		return (FileInfo.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) != 0;
+	}
+
+	return false;
+#else
+	// No-op on Windows
+	return true;
+#endif
+}
+
+bool FSentrySymToolsDownloader::SetExecutePermission(const FString& FilePath) const
+{
+#if PLATFORM_LINUX || PLATFORM_MAC
+	struct stat FileInfo;
+	if (stat(TCHAR_TO_UTF8(*FilePath), &FileInfo) == 0)
+	{
+		return chmod(TCHAR_TO_UTF8(*FilePath), FileInfo.st_mode | S_IXUSR | S_IXGRP | S_IXOTH) == 0;
+	}
+
+	return false;
+#else
+	// No-op on Windows
+	return true;
+#endif
 }

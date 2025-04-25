@@ -10,6 +10,7 @@
 
 - Fix warnings caused by deprecated Cocoa SDK API usages ([#868](https://github.com/getsentry/sentry-unreal/pull/868))
 - Fix Sentry cURL transport can't send envelopes on Linux ([#882](https://github.com/getsentry/sentry-unreal/pull/882))
+- The SDK now ensures the execute permission is set for Sentry CLI and symbol upload script when they have been downloaded via the Editor ([#881](https://github.com/getsentry/sentry-unreal/pull/881))
 
 ### Dependencies
 
