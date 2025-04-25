@@ -9,6 +9,7 @@ class FLinuxSentrySubsystem : public FGenericPlatformSentrySubsystem
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) override;
+	virtual void ConfigureCertsPath(sentry_options_t* Options) override;
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
 	virtual void ConfigureScreenshotAttachment(sentry_options_t* Options) override;
 	virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) override;
