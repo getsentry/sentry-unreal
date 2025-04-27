@@ -14,9 +14,9 @@
 
 ### Dependencies
 
-- Bump Java SDK (Android) from v8.6.0 to v8.9.0 ([#863](https://github.com/getsentry/sentry-unreal/pull/863), [#869](https://github.com/getsentry/sentry-unreal/pull/869), [#879](https://github.com/getsentry/sentry-unreal/pull/879))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#890)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.6.0...8.9.0)
+- Bump Java SDK (Android) from v8.6.0 to v8.10.0 ([#863](https://github.com/getsentry/sentry-unreal/pull/863), [#869](https://github.com/getsentry/sentry-unreal/pull/869), [#879](https://github.com/getsentry/sentry-unreal/pull/879), [#884](https://github.com/getsentry/sentry-unreal/pull/884))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8100)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.6.0...8.10.0)
 - Bump Cocoa SDK (iOS and Mac) from v8.48.0 to v8.49.1 ([#866](https://github.com/getsentry/sentry-unreal/pull/866), [#878](https://github.com/getsentry/sentry-unreal/pull/878))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8491)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.48.0...8.49.1)
