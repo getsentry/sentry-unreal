@@ -33,10 +33,7 @@ TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, co
 	if (isScreenshotAttachmentEnabled)
 	{
 		const FString& screenshotPath = TryCaptureScreenshot();
-		if (!screenshotPath.IsEmpty())
-		{
-			UploadAttachmentForEvent(id, screenshotPath, TEXT("screenshot.png"), true);
-		}
+		UploadScreenshotForEvent(id, screenshotPath);
 	}
 
 	return id;
