@@ -78,6 +78,8 @@ if "%TargetPlatform%"=="Win64" (
     set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
 ) else if "%TargetPlatform%"=="LinuxArm64" (
     set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
+) else if "%TargetPlatform%"=="XSX" (
+    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
 ) else (
     echo Warning: Sentry: Unexpected platform %TargetPlatform%. Skipping...
     exit /B 0
