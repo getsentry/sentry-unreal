@@ -23,6 +23,9 @@
 - Bump Native SDK from v0.8.3 to v0.8.4 ([#872](https://github.com/getsentry/sentry-unreal/pull/872))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#084)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.8.3...0.8.4)
+- Bump CLI from v2.43.0 to v2.43.1 ([#887](https://github.com/getsentry/sentry-unreal/pull/887))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2431)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.0...2.43.1)
 
 ## 1.0.0-alpha.5
 
