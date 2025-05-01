@@ -55,12 +55,6 @@ void FGenericPlatformSentryCrashContext::Apply(TSharedPtr<ISentryScope> Scope)
 	ContextValues.Add("Memory Stats Page Size", FString::FromInt(SessionContext.MemoryStats.PageSize));
 	ContextValues.Add("Memory Stats Total Virtual", FString::Printf(TEXT("%lld"), SessionContext.MemoryStats.TotalVirtual));
 
-	if(Settings->SendDefaultPii)
-	{
-		ContextValues.Add("Epic Account Id", SessionContext.EpicAccountId);
-		ContextValues.Add("Login Id", SessionContext.LoginIdStr);
-	}
-
 	Scope->SetContext(TEXT("Crash Info"), ContextValues);
 }
 
