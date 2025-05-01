@@ -16,8 +16,9 @@ public:
 
 	virtual FString TryCaptureScreenshot() const override;
 
-private:
-	bool isScreenshotAttachmentEnabled = false;
+protected:
+	virtual FString GetGameLogPath() const override;
+	virtual FString GetLatestGameLog() const override;
 };
 
 typedef FMacSentrySubsystem FPlatformSentrySubsystem;

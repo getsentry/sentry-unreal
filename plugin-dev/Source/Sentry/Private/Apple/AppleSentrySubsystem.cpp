@@ -26,6 +26,9 @@
 #include "Convenience/SentryInclude.h"
 #include "Convenience/SentryMacro.h"
 
+#include "Utils/SentryFileUtils.h"
+#include "Utils/SentryLogUtils.h"
+
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformSentryAttachment.h"
@@ -34,10 +37,12 @@
 #include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
-#include "Utils/SentryLogUtils.h"
 
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
+	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
+	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
+
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
 	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
@@ -65,24 +70,18 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
-			options.initialScope = ^(SentryScope* scope) {
-				if(settings->EnableAutoLogAttachment) {
-					const FString logFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
-					SentryAttachment* logAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:logFilePath.GetNSString()];
-					[scope addAttachment:logAttachment];
-				}
-				return scope;
-			};
 			options.onCrashedLastRun = ^(SentryEvent* event) {
 				if (settings->AttachScreenshot)
 				{
 					// If a screenshot was captured during assertion/crash in the previous app run
 					// find the most recent one and upload it to Sentry.
-					const FString& screenshotPath = GetLatestScreenshot();
-					if (!screenshotPath.IsEmpty())
-					{
-						UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)), screenshotPath);
-					}
+					UploadScreenshotForEvent(MakeShareable(new SentryIdApple(event.eventId)), GetLatestScreenshot());
+				}
+				if(settings->EnableAutoLogAttachment)
+				{
+					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
+					// find the most recent one and upload it to Sentry.
+					UploadGameLogForEvent(MakeShareable(new SentryIdApple(event.eventId)), GetLatestGameLog());
 				}
 			};
 			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
@@ -206,40 +205,49 @@ void FAppleSentrySubsystem::ClearBreadcrumbs()
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
-		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
-	}];
-
-	return MakeShareable(new SentryIdApple(id));
+	FSentryScopeDelegate onConfigureScope;
+	return CaptureMessageWithScope(message, onConfigureScope, level);
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
+	SentryId* nativeId = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:SentryConvertersApple::SentryLevelToNative(level)];
 		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
-	return MakeShareable(new SentryIdApple(id));
+	TSharedPtr<ISentryId> id = MakeShareable(new SentryIdApple(nativeId));
+
+	if (isGameLogAttachmentEnabled)
+	{
+		UploadGameLogForEvent(id, GetGameLogPath());
+	}
+
+	return id;
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEvent(TSharedPtr<ISentryEvent> event)
 {
-	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
-
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject()];
-	return MakeShareable(new SentryIdApple(id));
+	FSentryScopeDelegate onConfigureScope;
+	return CaptureEventWithScope(event,	onConfigureScope);
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
 {
-	TSharedPtr<SentryEventApple> eventIOS = StaticCastSharedPtr<SentryEventApple>(event);
+	TSharedPtr<SentryEventApple> eventApple = StaticCastSharedPtr<SentryEventApple>(event);
 
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventIOS->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
+	SentryId* nativeId = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventApple->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
 		onConfigureScope.ExecuteIfBound(MakeShareable(new SentryScopeApple(scope)));
 	}];
 
-	return MakeShareable(new SentryIdApple(id));
+	TSharedPtr<ISentryId> id = MakeShareable(new SentryIdApple(nativeId));
+
+	if (isGameLogAttachmentEnabled)
+	{
+		UploadGameLogForEvent(id, GetGameLogPath());
+	}
+
+	return id;
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
@@ -251,8 +259,16 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
 
-	SentryId* id = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
-	return MakeShareable(new SentryIdApple(id));
+	SentryId* nativeId = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
+
+	TSharedPtr<ISentryId> id = MakeShareable(new SentryIdApple(nativeId));
+
+	if (isGameLogAttachmentEnabled)
+	{
+		UploadGameLogForEvent(id, GetGameLogPath());
+	}
+
+	return id;
 }
 
 
@@ -389,23 +405,23 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	return MakeShareable(new SentryTransactionContextApple(transactionContext));
 }
 
-void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const
+void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> eventId, const FString& filePath, const FString& name, bool deleteAfterUpload) const
 {
 	IFileManager& fileManager = IFileManager::Get();
-	if (!fileManager.FileExists(*screenshotPath))
+	if (!fileManager.FileExists(*filePath))
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload screenshot - path provided did not exist: %s"), *screenshotPath);
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload attachment - file path provided did not exist: %s"), *filePath);
 		return;
 	}
 
-	const FString& screenshotFilePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*screenshotPath);
+	const FString& filePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*filePath);
 
-	SentryAttachment* screenshotAttachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:screenshotFilePathExt.GetNSString() filename:@"screenshot.png"];
+	SentryAttachment* attachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
 
 	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
 	int32 size = options.maxAttachmentSize;
 
-	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:screenshotAttachment maxAttachmentSize:size];
+	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:attachment maxAttachmentSize:size];
 
 	SentryId* id = StaticCastSharedPtr<SentryIdApple>(eventId)->GetNativeObject();
 
@@ -413,11 +429,34 @@ void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> event
 
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
 
-	// After uploading screenshot it's no longer needed so delete
-	if (!fileManager.Delete(*screenshotPath))
+	if (deleteAfterUpload)
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot: %s"), *screenshotPath);
+		if (!fileManager.Delete(*filePath))
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete file attachment after upload: %s"), *filePath);
+		}
 	}
+}
+
+void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const
+{
+	if (screenshotPath.IsEmpty())
+	{
+		// Screenshot capturing is a best-effort solution so if one wasn't captured (path is empty) skip the upload
+		return;
+	}
+
+	UploadAttachmentForEvent(eventId, screenshotPath, TEXT("screenshot.png"), true);
+}
+
+void FAppleSentrySubsystem::UploadGameLogForEvent(TSharedPtr<ISentryId> eventId, const FString& logFilePath) const
+{
+#if NO_LOGGING
+	// If writing logs to a file is disabled (i.e. default behavior for Shipping builds) skip the upload
+	return;
+#endif
+
+	UploadAttachmentForEvent(eventId, logFilePath, SentryFileUtils::GetGameLogName());
 }
 
 FString FAppleSentrySubsystem::GetScreenshotPath() const

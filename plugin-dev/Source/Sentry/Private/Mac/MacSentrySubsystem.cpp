@@ -6,6 +6,8 @@
 #include "SentryModule.h"
 #include "SentrySettings.h"
 
+#include "Utils/SentryFileUtils.h"
+
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -15,9 +17,7 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USen
 {
 	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
-	isScreenshotAttachmentEnabled = Settings->AttachScreenshot;
-
-	if (IsEnabled() && Settings->AttachScreenshot)
+	if (IsEnabled() && isScreenshotAttachmentEnabled)
 	{
 		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
 		{
@@ -33,10 +33,7 @@ TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, co
 	if (isScreenshotAttachmentEnabled)
 	{
 		const FString& screenshotPath = TryCaptureScreenshot();
-		if (!screenshotPath.IsEmpty())
-		{
-			UploadScreenshotForEvent(id, screenshotPath);
-		}
+		UploadScreenshotForEvent(id, screenshotPath);
 	}
 
 	return id;
@@ -80,4 +77,14 @@ FString FMacSentrySubsystem::TryCaptureScreenshot() const
 	}
 
 	return ScreenshotPath;
+}
+
+FString FMacSentrySubsystem::GetGameLogPath() const
+{
+	return SentryFileUtils::GetGameLogPath();
+}
+
+FString FMacSentrySubsystem::GetLatestGameLog() const
+{
+	return SentryFileUtils::GetGameLogBackupPath();
 }
