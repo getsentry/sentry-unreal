@@ -73,11 +73,11 @@ FString FAndroidSentryUser::GetIpAddress() const
 
 void FAndroidSentryUser::SetData(const TMap<FString, FString>& data)
 {
-	CallMethod<void>(SetDataMethod, AndroidSentryConverters::StringMapToNative(data)->GetJObject());
+	CallMethod<void>(SetDataMethod, FAndroidSentryConverters::StringMapToNative(data)->GetJObject());
 }
 
 TMap<FString, FString> FAndroidSentryUser::GetData()
 {
 	auto data = CallObjectMethod<jobject>(GetDataMethod);
-	return AndroidSentryConverters::StringMapToUnreal(*data);
+	return FAndroidSentryConverters::StringMapToUnreal(*data);
 }

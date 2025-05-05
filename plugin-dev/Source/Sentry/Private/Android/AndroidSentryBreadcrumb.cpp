@@ -72,16 +72,16 @@ void FAndroidSentryBreadcrumb::SetData(const TMap<FString, FString>& data)
 TMap<FString, FString> FAndroidSentryBreadcrumb::GetData() const
 {
 	auto data = CallObjectMethod<jobject>(GetDataMethod);
-	return AndroidSentryConverters::StringMapToUnreal(*data);
+	return FAndroidSentryConverters::StringMapToUnreal(*data);
 }
 
 void FAndroidSentryBreadcrumb::SetLevel(ESentryLevel level)
 {
-	CallMethod<void>(SetLevelMethod, AndroidSentryConverters::SentryLevelToNative(level)->GetJObject());
+	CallMethod<void>(SetLevelMethod, FAndroidSentryConverters::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel FAndroidSentryBreadcrumb::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
-	return AndroidSentryConverters::SentryLevelToUnreal(*level);
+	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
 }

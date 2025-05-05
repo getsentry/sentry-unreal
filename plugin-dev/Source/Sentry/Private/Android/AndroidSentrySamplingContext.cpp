@@ -34,5 +34,5 @@ TMap<FString, FString> FAndroidSentrySamplingContext::GetCustomSamplingContext()
 	FSentryJavaMethod GetDataMethod = NativeCustomSamplingContext.GetMethod("getData", "()Ljava/util/Map;");
 
 	auto data = NativeCustomSamplingContext.CallObjectMethod<jobject>(GetDataMethod);
-	return AndroidSentryConverters::StringMapToUnreal(*data);
+	return FAndroidSentryConverters::StringMapToUnreal(*data);
 }

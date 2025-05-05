@@ -48,13 +48,13 @@ FString FAndroidSentryEvent::GetMessage() const
 
 void FAndroidSentryEvent::SetLevel(ESentryLevel level)
 {
-	CallMethod<void>(SetLevelMethod, AndroidSentryConverters::SentryLevelToNative(level)->GetJObject());
+	CallMethod<void>(SetLevelMethod, FAndroidSentryConverters::SentryLevelToNative(level)->GetJObject());
 }
 
 ESentryLevel FAndroidSentryEvent::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
-	return AndroidSentryConverters::SentryLevelToUnreal(*level);
+	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
 }
 
 bool FAndroidSentryEvent::IsCrash() const
