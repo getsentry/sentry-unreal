@@ -1,7 +1,7 @@
 #pragma once
 
 #if PLATFORM_ANDROID
-#include "Android/SentryEventAndroid.h"
+#include "Android/AndroidSentryEvent.h"
 #elif PLATFORM_APPLE
 #include "Apple/SentryEventApple.h"
 #elif USE_SENTRY_NATIVE
@@ -13,7 +13,7 @@
 static TSharedPtr<ISentryEvent> CreateSharedSentryEvent()
 {
 #if PLATFORM_ANDROID
-	return MakeShareable(new SentryEventAndroid);
+	return MakeShareable(new FAndroidSentryEvent);
 #elif PLATFORM_APPLE
 	return MakeShareable(new SentryEventApple);
 #elif USE_SENTRY_NATIVE

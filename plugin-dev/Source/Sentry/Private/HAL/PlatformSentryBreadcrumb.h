@@ -1,7 +1,7 @@
 #pragma once
 
 #if PLATFORM_ANDROID
-#include "Android/SentryBreadcrumbAndroid.h"
+#include "Android/AndroidSentryBreadcrumb.h"
 #elif PLATFORM_APPLE
 #include "Apple/SentryBreadcrumbApple.h"
 #elif USE_SENTRY_NATIVE
@@ -13,7 +13,7 @@
 static TSharedPtr<ISentryBreadcrumb> CreateSharedSentryBreadcrumb()
 {
 #if PLATFORM_ANDROID
-	return MakeShareable(new SentryBreadcrumbAndroid);
+	return MakeShareable(new FAndroidSentryBreadcrumb);
 #elif PLATFORM_APPLE
 	return MakeShareable(new SentryBreadcrumbApple);
 #elif USE_SENTRY_NATIVE
