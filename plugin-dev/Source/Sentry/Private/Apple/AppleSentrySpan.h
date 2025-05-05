@@ -6,11 +6,11 @@
 
 @protocol SentrySpan;
 
-class SentrySpanApple : public ISentrySpan
+class FAppleSentrySpan : public ISentrySpan
 {
 public:
-	SentrySpanApple(id<SentrySpan> span);
-	virtual ~SentrySpanApple() override;
+	FAppleSentrySpan(id<SentrySpan> span);
+	virtual ~FAppleSentrySpan() override;
 
 	id<SentrySpan> GetNativeObject();
 

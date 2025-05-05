@@ -15,7 +15,7 @@ static TSharedPtr<ISentrySpan> CreateSharedSentrySpan(const FString& Name, const
 #if PLATFORM_ANDROID
 	return MakeShareable(new FAndroidSentrySpan);
 #elif PLATFORM_APPLE
-	return MakeShareable(new SentrySpanApple);
+	return MakeShareable(new FAppleSentrySpan);
 #elif USE_SENTRY_NATIVE
 	return MakeShareable(new FGenericPlatformSentrySpan);
 #else

@@ -6,12 +6,12 @@
 
 @class SentryBreadcrumb;
 
-class SentryBreadcrumbApple : public ISentryBreadcrumb
+class FAppleSentryBreadcrumb : public ISentryBreadcrumb
 {
 public:
-	SentryBreadcrumbApple();
-	SentryBreadcrumbApple(SentryBreadcrumb* breadcrumb);
-	virtual ~SentryBreadcrumbApple() override;
+	FAppleSentryBreadcrumb();
+	FAppleSentryBreadcrumb(SentryBreadcrumb* breadcrumb);
+	virtual ~FAppleSentryBreadcrumb() override;
 
 	SentryBreadcrumb* GetNativeObject();
 

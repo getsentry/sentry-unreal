@@ -6,11 +6,11 @@
 
 @protocol SentrySpan;
 
-class SentryTransactionApple : public ISentryTransaction
+class FAppleSentryTransaction : public ISentryTransaction
 {
 public:
-	SentryTransactionApple(id<SentrySpan> transaction);
-	virtual ~SentryTransactionApple() override;
+	FAppleSentryTransaction(id<SentrySpan> transaction);
+	virtual ~FAppleSentryTransaction() override;
 
 	id<SentrySpan> GetNativeObject();
 

@@ -1,15 +1,15 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryUserFeedbackApple.h"
+#include "AppleSentryUserFeedback.h"
 
-#include "SentryIdApple.h"
+#include "AppleSentryId.h"
 
-#include "Convenience/SentryInclude.h"
-#include "Convenience/SentryMacro.h"
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
-SentryUserFeedbackApple::SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId)
+FAppleSentryUserFeedback::FAppleSentryUserFeedback(TSharedPtr<ISentryId> eventId)
 {
-	TSharedPtr<SentryIdApple> idIOS = StaticCastSharedPtr<SentryIdApple>(eventId);
+	TSharedPtr<FAppleSentryId> idIOS = StaticCastSharedPtr<FAppleSentryId>(eventId);
 	SentryId* id = idIOS->GetNativeObject();
 
 	// `SentryFeedback` is defined in Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
@@ -22,42 +22,42 @@ SentryUserFeedbackApple::SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId)
 #endif
 }
 
-SentryUserFeedbackApple::~SentryUserFeedbackApple()
+FAppleSentryUserFeedback::~FAppleSentryUserFeedback()
 {
 	// Put custom destructor logic here if needed
 }
 
-SentryFeedback* SentryUserFeedbackApple::GetNativeObject()
+SentryFeedback* FAppleSentryUserFeedback::GetNativeObject()
 {
 	return UserFeedbackApple;
 }
 
-void SentryUserFeedbackApple::SetName(const FString& name)
+void FAppleSentryUserFeedback::SetName(const FString& name)
 {
 	UserFeedbackApple.name = name.GetNSString();
 }
 
-FString SentryUserFeedbackApple::GetName() const
+FString FAppleSentryUserFeedback::GetName() const
 {
 	return FString(UserFeedbackApple.name);
 }
 
-void SentryUserFeedbackApple::SetEmail(const FString& email)
+void FAppleSentryUserFeedback::SetEmail(const FString& email)
 {
 	UserFeedbackApple.email = email.GetNSString();
 }
 
-FString SentryUserFeedbackApple::GetEmail() const
+FString FAppleSentryUserFeedback::GetEmail() const
 {
 	return FString(UserFeedbackApple.email);
 }
 
-void SentryUserFeedbackApple::SetComment(const FString& comment)
+void FAppleSentryUserFeedback::SetComment(const FString& comment)
 {
 	UserFeedbackApple.message = comment.GetNSString();
 }
 
-FString SentryUserFeedbackApple::GetComment() const
+FString FAppleSentryUserFeedback::GetComment() const
 {
 	return FString(UserFeedbackApple.message);
 }

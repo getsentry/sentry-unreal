@@ -6,12 +6,12 @@
 
 @class SentryEvent;
 
-class SentryEventApple : public ISentryEvent
+class FAppleSentryEvent : public ISentryEvent
 {
 public:
-	SentryEventApple();
-	SentryEventApple(SentryEvent* event);
-	virtual ~SentryEventApple() override;
+	FAppleSentryEvent();
+	FAppleSentryEvent(SentryEvent* event);
+	virtual ~FAppleSentryEvent() override;
 
 	SentryEvent* GetNativeObject();
 

@@ -3,7 +3,7 @@
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryTransactionContext.h"
 #elif PLATFORM_APPLE
-#include "Apple/SentryTransactionContextApple.h"
+#include "Apple/AppleSentryTransactionContext.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryTransactionContext.h"
 #else
@@ -15,7 +15,7 @@ static TSharedPtr<ISentryTransactionContext> CreateSharedSentryTransactionContex
 #if PLATFORM_ANDROID
 	return MakeShareable(new FAndroidSentryTransactionContext(Name, Operation));
 #elif PLATFORM_APPLE
-	return MakeShareable(new SentryTransactionContextApple(Name, Operation));
+	return MakeShareable(new FAppleSentryTransactionContext(Name, Operation));
 #elif USE_SENTRY_NATIVE
 	return MakeShareable(new FGenericPlatformSentryTransactionContext(Name, Operation));
 #else

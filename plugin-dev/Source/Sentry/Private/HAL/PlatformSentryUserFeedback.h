@@ -3,7 +3,7 @@
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryUserFeedback.h"
 #elif PLATFORM_APPLE
-#include "Apple/SentryUserFeedbackApple.h"
+#include "Apple/AppleSentryUserFeedback.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryUserFeedback.h"
 #else
@@ -19,7 +19,7 @@ static TSharedPtr<ISentryUserFeedback> CreateSharedSentryUserFeedback(const FStr
 #if PLATFORM_ANDROID
 	return MakeShareable(new FAndroidSentryUserFeedback(Id));
 #elif PLATFORM_APPLE
-	return MakeShareable(new SentryUserFeedbackApple(Id));
+	return MakeShareable(new FAppleSentryUserFeedback(Id));
 #elif USE_SENTRY_NATIVE
 	return MakeShareable(new FGenericPlatformSentryUserFeedback(Id));
 #else

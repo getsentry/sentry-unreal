@@ -6,12 +6,12 @@
 
 @class SentryAttachment;
 
-class SentryAttachmentApple : public ISentryAttachment
+class FAppleSentryAttachment : public ISentryAttachment
 {
 public:
-	SentryAttachmentApple(const TArray<uint8>& data, const FString& filename, const FString& contentType);
-	SentryAttachmentApple(const FString& path, const FString& filename, const FString& contentType);
-	virtual ~SentryAttachmentApple() override;
+	FAppleSentryAttachment(const TArray<uint8>& data, const FString& filename, const FString& contentType);
+	FAppleSentryAttachment(const FString& path, const FString& filename, const FString& contentType);
+	virtual ~FAppleSentryAttachment() override;
 
 	SentryAttachment* GetNativeObject();
 

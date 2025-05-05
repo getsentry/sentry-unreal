@@ -3,7 +3,7 @@
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryUser.h"
 #elif PLATFORM_APPLE
-#include "Apple/SentryUserApple.h"
+#include "Apple/AppleSentryUser.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryUser.h"
 #else
@@ -15,7 +15,7 @@ static TSharedPtr<ISentryUser> CreateSharedSentryUser()
 #if PLATFORM_ANDROID
 	return MakeShareable(new FAndroidSentryUser);
 #elif PLATFORM_APPLE
-	return MakeShareable(new SentryUserApple);
+	return MakeShareable(new FSentryUserApple);
 #elif USE_SENTRY_NATIVE
 	return MakeShareable(new FGenericPlatformSentryUser);
 #else

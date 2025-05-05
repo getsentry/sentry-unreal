@@ -3,7 +3,7 @@
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryAttachment.h"
 #elif PLATFORM_APPLE
-#include "Apple/SentryAttachmentApple.h"
+#include "Apple/AppleSentryAttachment.h"
 #else
 #include "Null/NullSentryAttachment.h"
 #endif
@@ -13,7 +13,7 @@ static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const FString&
 #if PLATFORM_ANDROID
 	return MakeShareable(new FAndroidSentryAttachment(Path, Filename, ContentType));
 #elif PLATFORM_APPLE
-	return MakeShareable(new SentryAttachmentApple(Path, Filename, ContentType));
+	return MakeShareable(new FAppleSentryAttachment(Path, Filename, ContentType));
 #else
 	return MakeShareable(new FNullSentryAttachment);
 #endif
@@ -24,7 +24,7 @@ static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const TArray<u
 #if PLATFORM_ANDROID
 	return MakeShareable(new FAndroidSentryAttachment(Data, Filename, ContentType));
 #elif PLATFORM_APPLE
-	return MakeShareable(new SentryAttachmentApple(Data, Filename, ContentType));
+	return MakeShareable(new FAppleSentryAttachment(Data, Filename, ContentType));
 #else
 	return MakeShareable(new FNullSentryAttachment);
 #endif

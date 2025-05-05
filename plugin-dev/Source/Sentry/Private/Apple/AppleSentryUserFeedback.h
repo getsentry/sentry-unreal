@@ -8,11 +8,11 @@ class ISentryId;
 
 @class SentryFeedback;
 
-class SentryUserFeedbackApple : public ISentryUserFeedback
+class FAppleSentryUserFeedback : public ISentryUserFeedback
 {
 public:
-	SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId);
-	virtual ~SentryUserFeedbackApple() override;
+	FAppleSentryUserFeedback(TSharedPtr<ISentryId> eventId);
+	virtual ~FAppleSentryUserFeedback() override;
 
 	SentryFeedback* GetNativeObject();
 

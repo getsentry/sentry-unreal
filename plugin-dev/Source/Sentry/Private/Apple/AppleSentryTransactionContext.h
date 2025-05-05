@@ -6,12 +6,12 @@
 
 @class SentryTransactionContext;
 
-class SentryTransactionContextApple : public ISentryTransactionContext
+class FAppleSentryTransactionContext : public ISentryTransactionContext
 {
 public:
-	SentryTransactionContextApple(const FString& name, const FString& operation);
-	SentryTransactionContextApple(SentryTransactionContext* context);
-	virtual ~SentryTransactionContextApple() override;
+	FAppleSentryTransactionContext(const FString& name, const FString& operation);
+	FAppleSentryTransactionContext(SentryTransactionContext* context);
+	virtual ~FAppleSentryTransactionContext() override;
 
 	virtual FString GetName() const override;
 	virtual FString GetOperation() const override;

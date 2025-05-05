@@ -1,11 +1,11 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryIdApple.h"
+#include "AppleSentryId.h"
 
-#include "Convenience/SentryInclude.h"
-#include "Convenience/SentryMacro.h"
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
-SentryIdApple::SentryIdApple()
+FAppleSentryId::FAppleSentryId()
 {
 	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
 #if PLATFORM_MAC
@@ -15,7 +15,7 @@ SentryIdApple::SentryIdApple()
 #endif
 }
 
-SentryIdApple::SentryIdApple(const FString& id)
+FAppleSentryId::FAppleSentryId(const FString& id)
 {
 	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
 #if PLATFORM_MAC
@@ -25,22 +25,22 @@ SentryIdApple::SentryIdApple(const FString& id)
 #endif
 }
 
-SentryIdApple::SentryIdApple(SentryId* id)
+FAppleSentryId::FAppleSentryId(SentryId* id)
 {
 	IdApple = id;
 }
 
-SentryIdApple::~SentryIdApple()
+FAppleSentryId::~FAppleSentryId()
 {
 	// Put custom destructor logic here if needed
 }
 
-SentryId* SentryIdApple::GetNativeObject()
+SentryId* FAppleSentryId::GetNativeObject()
 {
 	return IdApple;
 }
 
-FString SentryIdApple::ToString() const
+FString FAppleSentryId::ToString() const
 {
 	return FString(IdApple.sentryIdString);
 }

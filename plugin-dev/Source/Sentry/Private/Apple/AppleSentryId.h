@@ -6,13 +6,13 @@
 
 @class SentryId;
 
-class SentryIdApple : public ISentryId
+class FAppleSentryId : public ISentryId
 {
 public:
-	SentryIdApple();
-	SentryIdApple(const FString& id);
-	SentryIdApple(SentryId* id);
-	virtual ~SentryIdApple() override;
+	FAppleSentryId();
+	FAppleSentryId(const FString& id);
+	FAppleSentryId(SentryId* id);
+	virtual ~FAppleSentryId() override;
 
 	SentryId* GetNativeObject();
 

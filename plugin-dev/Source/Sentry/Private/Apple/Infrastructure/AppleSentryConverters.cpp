@@ -1,14 +1,14 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryConvertersApple.h"
+#include "AppleSentryConverters.h"
 
 #include "SentryDefines.h"
 
-#include "Apple/SentryScopeApple.h"
+#include "Apple/AppleSentryScope.h"
 
-#include "Convenience/SentryMacro.h"
+#include "Convenience/AppleSentryMacro.h"
 
-SentryLevel SentryConvertersApple::SentryLevelToNative(ESentryLevel level)
+SentryLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 {
 	SentryLevel nativeLevel = kSentryLevelDebug;
 
@@ -36,7 +36,7 @@ SentryLevel SentryConvertersApple::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
-NSDictionary* SentryConvertersApple::StringMapToNative(const TMap<FString, FString>& map)
+NSDictionary* FAppleSentryConverters::StringMapToNative(const TMap<FString, FString>& map)
 {
 	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:map.Num()];
 
@@ -48,7 +48,7 @@ NSDictionary* SentryConvertersApple::StringMapToNative(const TMap<FString, FStri
 	return dict;
 }
 
-NSArray* SentryConvertersApple::StringArrayToNative(const TArray<FString>& array)
+NSArray* FAppleSentryConverters::StringArrayToNative(const TArray<FString>& array)
 {
 	NSMutableArray *arr = [NSMutableArray arrayWithCapacity:array.Num()];
 
@@ -60,12 +60,12 @@ NSArray* SentryConvertersApple::StringArrayToNative(const TArray<FString>& array
 	return arr;
 }
 
-NSData* SentryConvertersApple::ByteDataToNative(const TArray<uint8>& array)
+NSData* FAppleSentryConverters::ByteDataToNative(const TArray<uint8>& array)
 {
 	return [NSData dataWithBytes:array.GetData() length:array.Num()];
 }
 
-SentryStacktrace* SentryConvertersApple::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
+SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
 {
 	int32 framesCount = callstack.Num();
 
@@ -83,7 +83,7 @@ SentryStacktrace* SentryConvertersApple::CallstackToNative(const TArray<FProgram
 	return trace;
 }
 
-ESentryLevel SentryConvertersApple::SentryLevelToUnreal(SentryLevel level)
+ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
 
@@ -111,7 +111,7 @@ ESentryLevel SentryConvertersApple::SentryLevelToUnreal(SentryLevel level)
 	return unrealLevel;
 }
 
-TMap<FString, FString> SentryConvertersApple::StringMapToUnreal(NSDictionary* dict)
+TMap<FString, FString> FAppleSentryConverters::StringMapToUnreal(NSDictionary* dict)
 {
 	TMap<FString, FString> map;
 
@@ -123,7 +123,7 @@ TMap<FString, FString> SentryConvertersApple::StringMapToUnreal(NSDictionary* di
 	return map;
 }
 
-TArray<FString> SentryConvertersApple::StringArrayToUnreal(NSArray* array)
+TArray<FString> FAppleSentryConverters::StringArrayToUnreal(NSArray* array)
 {
 	TArray<FString> arr;
 
@@ -135,7 +135,7 @@ TArray<FString> SentryConvertersApple::StringArrayToUnreal(NSArray* array)
 	return arr;
 }
 
-TArray<uint8> SentryConvertersApple::ByteDataToUnreal(NSData* data)
+TArray<uint8> FAppleSentryConverters::ByteDataToUnreal(NSData* data)
 {
 	TArray<uint8> ByteData;
 
@@ -149,7 +149,7 @@ TArray<uint8> SentryConvertersApple::ByteDataToUnreal(NSData* data)
 	return ByteData;
 }
 
-SentryLevel SentryConvertersApple::StringToSentryLevel(NSString* string)
+SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 {
 	SentryLevel nativeLevel = kSentryLevelDebug;
 

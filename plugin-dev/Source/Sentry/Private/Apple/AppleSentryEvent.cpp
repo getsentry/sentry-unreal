@@ -1,68 +1,68 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryEventApple.h"
-#include "SentryIdApple.h"
+#include "AppleSentryEvent.h"
+#include "AppleSentryId.h"
 
-#include "Infrastructure/SentryConvertersApple.h"
+#include "Infrastructure/AppleSentryConverters.h"
 
-#include "Convenience/SentryInclude.h"
-#include "Convenience/SentryMacro.h"
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
-SentryEventApple::SentryEventApple()
+FAppleSentryEvent::FAppleSentryEvent()
 {
 	EventApple = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 }
 
-SentryEventApple::SentryEventApple(SentryEvent* event)
+FAppleSentryEvent::FAppleSentryEvent(SentryEvent* event)
 {
 	EventApple = event;
 }
 
-SentryEventApple::~SentryEventApple()
+FAppleSentryEvent::~FAppleSentryEvent()
 {
 	// Put custom destructor logic here if needed
 }
 
-SentryEvent* SentryEventApple::GetNativeObject()
+SentryEvent* FAppleSentryEvent::GetNativeObject()
 {
 	return EventApple;
 }
 
-TSharedPtr<ISentryId> SentryEventApple::GetId() const
+TSharedPtr<ISentryId> FAppleSentryEvent::GetId() const
 {
 	SentryId* id = EventApple.eventId;
-	return MakeShareable(new SentryIdApple(id));
+	return MakeShareable(new FAppleSentryId(id));
 }
 
-void SentryEventApple::SetMessage(const FString& message)
+void FAppleSentryEvent::SetMessage(const FString& message)
 {
 	SentryMessage* msg = [SENTRY_APPLE_CLASS(SentryMessage) alloc];
 	msg.message = message.GetNSString();
 	EventApple.message = msg;
 }
 
-FString SentryEventApple::GetMessage() const
+FString FAppleSentryEvent::GetMessage() const
 {
 	SentryMessage* msg = EventApple.message;
 	return FString(msg.message);
 }
 
-void SentryEventApple::SetLevel(ESentryLevel level)
+void FAppleSentryEvent::SetLevel(ESentryLevel level)
 {
-	EventApple.level = SentryConvertersApple::SentryLevelToNative(level);
+	EventApple.level = FAppleSentryConverters::SentryLevelToNative(level);
 }
 
-ESentryLevel SentryEventApple::GetLevel() const
+ESentryLevel FAppleSentryEvent::GetLevel() const
 {
-	return SentryConvertersApple::SentryLevelToUnreal(EventApple.level);
+	return FAppleSentryConverters::SentryLevelToUnreal(EventApple.level);
 }
 
-bool SentryEventApple::IsCrash() const
+bool FAppleSentryEvent::IsCrash() const
 {
 	return EventApple.error != nullptr;
 }
 
-bool SentryEventApple::IsAnr() const
+bool FAppleSentryEvent::IsAnr() const
 {
 	bool isErrorLevel = EventApple.level == kSentryLevelError;
 	bool isAppHangException = false;

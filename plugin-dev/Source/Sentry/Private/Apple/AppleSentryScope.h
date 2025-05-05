@@ -6,12 +6,12 @@
 
 @class SentryScope;
 
-class SentryScopeApple : public ISentryScope
+class FAppleSentryScope : public ISentryScope
 {
 public:
-	SentryScopeApple();
-	SentryScopeApple(SentryScope* scope);
-	virtual ~SentryScopeApple() override;
+	FAppleSentryScope();
+	FAppleSentryScope(SentryScope* scope);
+	virtual ~FAppleSentryScope() override;
 
 	SentryScope* GetNativeObject();
 

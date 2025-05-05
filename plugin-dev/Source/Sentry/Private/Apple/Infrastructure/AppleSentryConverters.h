@@ -4,11 +4,11 @@
 
 #include "SentryDataTypes.h"
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/AppleSentryInclude.h"
 
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 
-class SentryConvertersApple
+class FAppleSentryConverters
 {
 public:
 	/** Conversions to native iOS types */

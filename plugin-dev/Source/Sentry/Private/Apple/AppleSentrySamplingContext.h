@@ -6,11 +6,11 @@
 
 @class SentrySamplingContext;
 
-class SentrySamplingContextApple : public ISentrySamplingContext
+class FAppleSentrySamplingContext : public ISentrySamplingContext
 {
 public:
-	SentrySamplingContextApple(SentrySamplingContext* context);
-	virtual ~SentrySamplingContextApple() override;
+	FAppleSentrySamplingContext(SentrySamplingContext* context);
+	virtual ~FAppleSentrySamplingContext() override;
 
 	virtual TSharedPtr<ISentryTransactionContext> GetTransactionContext() const override;
 	virtual TMap<FString, FString> GetCustomSamplingContext() const override;
