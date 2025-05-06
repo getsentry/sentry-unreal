@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "HAL/CriticalSection.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentrySubsystemInterface.h"
+
+#include "HAL/CriticalSection.h"
 
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
 
 #if USE_SENTRY_NATIVE
-
-#include "GenericPlatform/Convenience/SentryInclude.h"
 
 class FGenericPlatformSentrySubsystem : public ISentrySubsystem
 {
