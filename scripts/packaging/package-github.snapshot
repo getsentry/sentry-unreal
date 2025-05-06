@@ -138,8 +138,17 @@ Source/Sentry/Private/Mac/MacSentrySubsystem.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryAttachment.h
+Source/Sentry/Private/Null/NullSentryBreadcrumb.h
+Source/Sentry/Private/Null/NullSentryEvent.h
 Source/Sentry/Private/Null/NullSentryHint.h
+Source/Sentry/Private/Null/NullSentryId.h
 Source/Sentry/Private/Null/NullSentrySamplingContext.h
+Source/Sentry/Private/Null/NullSentryScope.h
+Source/Sentry/Private/Null/NullSentrySpan.h
+Source/Sentry/Private/Null/NullSentryTransaction.h
+Source/Sentry/Private/Null/NullSentryTransactionContext.h
+Source/Sentry/Private/Null/NullSentryUser.h
+Source/Sentry/Private/Null/NullSentryUserFeedback.h
 Source/Sentry/Private/SentryAttachment.cpp
 Source/Sentry/Private/SentryBeforeBreadcrumbHandler.cpp
 Source/Sentry/Private/SentryBeforeSendHandler.cpp
