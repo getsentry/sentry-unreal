@@ -15,5 +15,5 @@ static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const FString&
 
 static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType)
 {
-	return MakeShareable(new FAppleSentryAttachment(Data, Filename, ContentType));
+	return MakeShareable(new FPlatformSentryAttachment(Data, Filename, ContentType));
 }
