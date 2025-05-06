@@ -30,4 +30,6 @@ private:
 	sentry_value_t UserFeedback;
 };
 
+typedef FGenericPlatformSentryUserFeedback FPlatformSentryUserFeedback;
+
 #endif

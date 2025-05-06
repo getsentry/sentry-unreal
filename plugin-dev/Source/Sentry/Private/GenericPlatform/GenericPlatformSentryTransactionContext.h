@@ -26,4 +26,6 @@ private:
 	sentry_transaction_context_t* TransactionContext;
 };
 
+typedef FGenericPlatformSentryTransactionContext FPlatformSentryTransactionContext;
+
 #endif

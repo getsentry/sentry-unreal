@@ -15,7 +15,7 @@ static TSharedPtr<ISentryUser> CreateSharedSentryUser()
 #if PLATFORM_ANDROID
 	return MakeShareable(new FAndroidSentryUser);
 #elif PLATFORM_APPLE
-	return MakeShareable(new FSentryUserApple);
+	return MakeShareable(new FAppleSentryUser);
 #elif USE_SENTRY_NATIVE
 	return MakeShareable(new FGenericPlatformSentryUser);
 #else

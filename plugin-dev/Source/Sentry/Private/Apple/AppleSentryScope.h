@@ -44,3 +44,5 @@ public:
 private:
 	SentryScope* ScopeApple;
 };
+
+typedef FAppleSentryScope FPlatformSentryScope;

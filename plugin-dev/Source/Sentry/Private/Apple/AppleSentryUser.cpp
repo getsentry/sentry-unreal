@@ -7,72 +7,72 @@
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
 
-FSentryUserApple::FSentryUserApple()
+FAppleSentryUser::FAppleSentryUser()
 {
 	UserApple = [[SENTRY_APPLE_CLASS(SentryUser) alloc] init];
 }
 
-FSentryUserApple::FSentryUserApple(SentryUser* user)
+FAppleSentryUser::FAppleSentryUser(SentryUser* user)
 {
 	UserApple = user;
 }
 
-FSentryUserApple::~FSentryUserApple()
+FAppleSentryUser::~FAppleSentryUser()
 {
 	// Put custom destructor logic here if needed
 }
 
-SentryUser* FSentryUserApple::GetNativeObject()
+SentryUser* FAppleSentryUser::GetNativeObject()
 {
 	return UserApple;
 }
 
-void FSentryUserApple::SetEmail(const FString& email)
+void FAppleSentryUser::SetEmail(const FString& email)
 {
 	UserApple.email = email.GetNSString();
 }
 
-FString FSentryUserApple::GetEmail() const
+FString FAppleSentryUser::GetEmail() const
 {
 	return FString(UserApple.email);
 }
 
-void FSentryUserApple::SetId(const FString& id)
+void FAppleSentryUser::SetId(const FString& id)
 {
 	UserApple.userId = id.GetNSString();
 }
 
-FString FSentryUserApple::GetId() const
+FString FAppleSentryUser::GetId() const
 {
 	return FString(UserApple.userId);
 }
 
-void FSentryUserApple::SetUsername(const FString& username)
+void FAppleSentryUser::SetUsername(const FString& username)
 {
 	UserApple.username = username.GetNSString();
 }
 
-FString FSentryUserApple::GetUsername() const
+FString FAppleSentryUser::GetUsername() const
 {
 	return FString(UserApple.username);
 }
 
-void FSentryUserApple::SetIpAddress(const FString& ipAddress)
+void FAppleSentryUser::SetIpAddress(const FString& ipAddress)
 {
 	UserApple.ipAddress = ipAddress.GetNSString();
 }
 
-FString FSentryUserApple::GetIpAddress() const
+FString FAppleSentryUser::GetIpAddress() const
 {
 	return FString(UserApple.ipAddress);
 }
 
-void FSentryUserApple::SetData(const TMap<FString, FString>& data)
+void FAppleSentryUser::SetData(const TMap<FString, FString>& data)
 {
 	UserApple.data = FAppleSentryConverters::StringMapToNative(data);
 }
 
-TMap<FString, FString> FSentryUserApple::GetData()
+TMap<FString, FString> FAppleSentryUser::GetData()
 {
 	return FAppleSentryConverters::StringMapToUnreal(UserApple.data);
 }

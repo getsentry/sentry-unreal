@@ -22,3 +22,5 @@ private:
 	FSentryJavaMethod GetNameMethod;
 	FSentryJavaMethod GetOperationMethod;
 };
+
+typedef FAndroidSentryTransactionContext FPlatformSentryTransactionContext;

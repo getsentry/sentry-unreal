@@ -21,3 +21,5 @@ public:
 private:
 	SentryId* IdApple;
 };
+
+typedef FAppleSentryId FPlatformSentryId;

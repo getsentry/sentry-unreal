@@ -23,3 +23,5 @@ public:
 private:
 	SentryAttachment* AttachmentApple;
 };
+
+typedef FAppleSentryAttachment FPlatformSentryAttachment;

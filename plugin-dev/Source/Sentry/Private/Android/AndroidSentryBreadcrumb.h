@@ -37,3 +37,5 @@ private:
 	FSentryJavaMethod SetLevelMethod;
 	FSentryJavaMethod GetLevelMethod;
 };
+
+typedef FAndroidSentryBreadcrumb FPlatformSentryBreadcrumb;

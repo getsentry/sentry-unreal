@@ -34,3 +34,5 @@ private:
 	FSentryJavaMethod SetDataMethod;
 	FSentryJavaMethod ToSentryTraceMethod;
 };
+
+typedef FAndroidSentryTransaction FPlatformSentryTransaction;

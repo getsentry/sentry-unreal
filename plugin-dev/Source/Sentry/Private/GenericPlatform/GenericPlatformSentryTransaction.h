@@ -38,4 +38,6 @@ private:
 	bool isFinished;
 };
 
+typedef FGenericPlatformSentryTransaction FPlatformSentryTransaction;
+
 #endif

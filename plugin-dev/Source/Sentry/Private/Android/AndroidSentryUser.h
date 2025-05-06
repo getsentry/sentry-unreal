@@ -37,3 +37,5 @@ private:
 	FSentryJavaMethod SetDataMethod;
 	FSentryJavaMethod GetDataMethod;
 };
+
+typedef FAndroidSentryUser FPlatformSentryUser;

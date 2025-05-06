@@ -6,12 +6,12 @@
 
 @class SentryUser;
 
-class FSentryUserApple : public ISentryUser
+class FAppleSentryUser : public ISentryUser
 {
 public:
-	FSentryUserApple();
-	FSentryUserApple(SentryUser* user);
-	virtual ~FSentryUserApple() override;
+	FAppleSentryUser();
+	FAppleSentryUser(SentryUser* user);
+	virtual ~FAppleSentryUser() override;
 
 	SentryUser* GetNativeObject();
 
@@ -29,3 +29,5 @@ public:
 private:
 	SentryUser* UserApple;
 };
+
+typedef FAppleSentryUser FPlatformSentryUser;

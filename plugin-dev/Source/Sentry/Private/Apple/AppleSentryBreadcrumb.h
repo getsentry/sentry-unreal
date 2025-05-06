@@ -29,3 +29,5 @@ public:
 private:
 	SentryBreadcrumb* BreadcrumbApple;
 };
+
+typedef FAppleSentryBreadcrumb FPlatformSentryBreadcrumb;

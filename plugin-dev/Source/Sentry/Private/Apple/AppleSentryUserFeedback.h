@@ -26,3 +26,5 @@ public:
 private:
 	SentryFeedback* UserFeedbackApple;
 };
+
+typedef FAppleSentryUserFeedback FPlatformSentryUserFeedback;

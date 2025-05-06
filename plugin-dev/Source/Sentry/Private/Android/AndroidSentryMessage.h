@@ -18,3 +18,5 @@ private:
 	FSentryJavaMethod SetMessageMethod;
 	FSentryJavaMethod GetMessageMethod;
 };
+
+typedef FAndroidSentryMessage FPlatformSentryMessage;

@@ -20,3 +20,5 @@ public:
 private:
 	FSentryJavaMethod ToStringMethod;
 };
+
+typedef FAndroidSentryId FPlatformSentryId;

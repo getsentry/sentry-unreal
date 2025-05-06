@@ -30,3 +30,5 @@ private:
 	FSentryJavaMethod SetCommentMethod;
 	FSentryJavaMethod GetCommentMethod;
 };
+
+typedef FAndroidSentryUserFeedback FPlatformSentryUserFeedback;

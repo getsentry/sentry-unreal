@@ -32,4 +32,6 @@ private:
 	sentry_value_t User;
 };
 
+typedef FGenericPlatformSentryUser FPlatformSentryUser;
+
 #endif

@@ -30,3 +30,5 @@ private:
 	FSentryJavaMethod GetLevelMethod;
 	FSentryJavaMethod IsCrashMethod;
 };
+
+typedef FAndroidSentryEvent FPlatformSentryEvent;

@@ -19,3 +19,5 @@ public:
 private:
 	FSentryJavaMethod AddAttachmentMethod;
 };
+
+typedef FAndroidSentryHint FPlatformSentryHint;

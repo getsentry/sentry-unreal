@@ -28,3 +28,5 @@ public:
 private:
 	id<SentrySpan> SpanApple;
 };
+
+typedef FAppleSentrySpan FPlatformSentrySpan;

@@ -32,4 +32,6 @@ private:
 	sentry_value_t Breadcrumb;
 };
 
+typedef FGenericPlatformSentryBreadcrumb FPlatformSentryBreadcrumb;
+
 #endif

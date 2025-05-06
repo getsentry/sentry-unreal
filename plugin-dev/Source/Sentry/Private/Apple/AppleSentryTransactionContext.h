@@ -21,3 +21,5 @@ public:
 private:
 	SentryTransactionContext* TransactionContext;
 };
+
+typedef FAppleSentryTransactionContext FPlatformSentryTransactionContext;

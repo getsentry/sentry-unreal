@@ -60,3 +60,5 @@ private:
 	FSentryJavaMethod GetExtrasMethod;
 	FSentryJavaMethod ClearMethod;
 };
+
+typedef FAndroidSentryScope FPlatformSentryScope;

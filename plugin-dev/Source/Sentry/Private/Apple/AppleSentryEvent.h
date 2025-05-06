@@ -26,3 +26,5 @@ public:
 private:
 	SentryEvent* EventApple;
 };
+
+typedef FAppleSentryEvent FPlatformSentryEvent;

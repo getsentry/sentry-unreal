@@ -25,3 +25,5 @@ private:
 	FSentryJavaMethod GetFilenameMethod;
 	FSentryJavaMethod GetContentTypeMethod;
 };
+
+typedef FAndroidSentryAttachment FPlatformSentryAttachment;

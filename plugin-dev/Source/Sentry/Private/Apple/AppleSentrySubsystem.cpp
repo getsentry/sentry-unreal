@@ -281,7 +281,7 @@ void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> 
 
 void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
 {
-	TSharedPtr<FSentryUserApple> userIOS = StaticCastSharedPtr<FSentryUserApple>(user);
+	TSharedPtr<FAppleSentryUser> userIOS = StaticCastSharedPtr<FAppleSentryUser>(user);
 
 	[SENTRY_APPLE_CLASS(SentrySDK) setUser:userIOS->GetNativeObject()];
 }

@@ -32,3 +32,5 @@ private:
 	FSentryJavaMethod SetDataMethod;
 	FSentryJavaMethod ToSentryTraceMethod;
 };
+
+typedef FAndroidSentrySpan FPlatformSentrySpan;

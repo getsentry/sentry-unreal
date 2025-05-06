@@ -20,3 +20,5 @@ public:
 private:
 	SentrySamplingContext* SamplingContext;
 };
+
+typedef FAppleSentrySamplingContext FPlatformSentrySamplingContext;

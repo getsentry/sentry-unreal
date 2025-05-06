@@ -29,3 +29,5 @@ public:
 private:
 	id<SentrySpan> TransactionApple;
 };
+
+typedef FAppleSentryTransaction FPlatformSentryTransaction;

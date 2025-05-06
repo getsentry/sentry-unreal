@@ -24,4 +24,6 @@ private:
 	sentry_uuid_t Id;
 };
 
+typedef FGenericPlatformSentryId FPlatformSentryId;
+
 #endif

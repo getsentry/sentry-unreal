@@ -31,4 +31,6 @@ private:
 	bool IsCrashEvent;
 };
 
+typedef FGenericPlatformSentryEvent FPlatformSentryEvent;
+
 #endif

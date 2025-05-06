@@ -37,4 +37,6 @@ private:
 	bool isFinished;
 };
 
+typedef FGenericPlatformSentrySpan FPlatformSentrySpan;
+
 #endif

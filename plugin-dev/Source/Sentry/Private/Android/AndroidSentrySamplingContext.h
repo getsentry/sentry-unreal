@@ -20,3 +20,5 @@ private:
 	FSentryJavaMethod GetTransactionContextMethod;
 	FSentryJavaMethod GetCustomSamplingContextMethod;
 };
+
+typedef FAndroidSentrySamplingContext FPlatformSentrySamplingContext;
