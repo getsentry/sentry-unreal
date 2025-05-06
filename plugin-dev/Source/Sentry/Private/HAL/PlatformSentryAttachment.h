@@ -10,22 +10,10 @@
 
 static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const FString& Path, const FString& Filename, const FString& ContentType)
 {
-#if PLATFORM_ANDROID
-	return MakeShareable(new FAndroidSentryAttachment(Path, Filename, ContentType));
-#elif PLATFORM_APPLE
-	return MakeShareable(new FAppleSentryAttachment(Path, Filename, ContentType));
-#else
-	return MakeShareable(new FNullSentryAttachment);
-#endif
+	return MakeShareable(new FPlatformSentryAttachment(Path, Filename, ContentType));
 }
 
 static TSharedPtr<ISentryAttachment> CreateSharedSentryAttachment(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType)
 {
-#if PLATFORM_ANDROID
-	return MakeShareable(new FAndroidSentryAttachment(Data, Filename, ContentType));
-#elif PLATFORM_APPLE
 	return MakeShareable(new FAppleSentryAttachment(Data, Filename, ContentType));
-#else
-	return MakeShareable(new FNullSentryAttachment);
-#endif
 }

@@ -7,18 +7,10 @@
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentrySpan.h"
 #else
-#include "Interface/SentrySpanInterface.h"
+#include "Null/NullSentrySpan.h"
 #endif
 
 static TSharedPtr<ISentrySpan> CreateSharedSentrySpan(const FString& Name, const FString& Operation)
 {
-#if PLATFORM_ANDROID
-	return MakeShareable(new FAndroidSentrySpan);
-#elif PLATFORM_APPLE
-	return MakeShareable(new FAppleSentrySpan);
-#elif USE_SENTRY_NATIVE
-	return MakeShareable(new FGenericPlatformSentrySpan);
-#else
-	return nullptr;
-#endif
+	return MakeShareable(new FPlatformSentrySpan(Name, Operation));
 }

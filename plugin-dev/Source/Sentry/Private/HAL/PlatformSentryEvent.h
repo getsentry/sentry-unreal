@@ -7,18 +7,10 @@
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryEvent.h"
 #else
-#include "Interface/SentryEventInterface.h"
+#include "Null/NullSentryEvent.h"
 #endif
 
 static TSharedPtr<ISentryEvent> CreateSharedSentryEvent()
 {
-#if PLATFORM_ANDROID
-	return MakeShareable(new FAndroidSentryEvent);
-#elif PLATFORM_APPLE
-	return MakeShareable(new FAppleSentryEvent);
-#elif USE_SENTRY_NATIVE
-	return MakeShareable(new FGenericPlatformSentryEvent);
-#else
-	return nullptr;
-#endif
+	return MakeShareable(new FPlatformSentryEvent);
 }

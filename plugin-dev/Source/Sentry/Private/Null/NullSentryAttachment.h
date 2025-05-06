@@ -12,3 +12,5 @@ public:
 	virtual FString GetFilename() const override { return TEXT(""); }
 	virtual FString GetContentType() const override { return TEXT(""); }
 };
+
+typedef FNullSentryAttachment FPlatformSentryAttachment;
