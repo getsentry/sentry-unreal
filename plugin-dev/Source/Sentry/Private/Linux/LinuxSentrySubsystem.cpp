@@ -7,6 +7,17 @@
 
 #if USE_SENTRY_NATIVE
 
+void FLinuxSentrySubsystem::InitWithSettings(
+	const USentrySettings* Settings,
+	USentryBeforeSendHandler* BeforeSendHandler,
+	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
+	USentryTraceSampler* TraceSampler)
+{
+	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
+
+	InitCrashReporter(Settings->Release, Settings->Environment);
+}
+
 void FLinuxSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 {
 	sentry_options_set_handler_path(Options, TCHAR_TO_UTF8(*GetHandlerPath()));

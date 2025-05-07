@@ -72,6 +72,8 @@ protected:
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 
+	void InitCrashReporter(const FString& release, const FString& environment);
+
 private:
 	/**
 	 * Static wrappers that are passed to the Sentry library.
