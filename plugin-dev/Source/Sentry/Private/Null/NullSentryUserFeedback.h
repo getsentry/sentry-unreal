@@ -2,9 +2,13 @@
 
 #include "Interface/SentryUserFeedbackInterface.h"
 
+class ISentryId;
+
 class FNullSentryUserFeedback final : public ISentryUserFeedback
 {
 public:
+	FNullSentryUserFeedback(TSharedPtr<ISentryId> eventId) {}
+
 	virtual ~FNullSentryUserFeedback() override = default;
 
 	virtual void SetName(const FString& name) override {}
