@@ -57,7 +57,7 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	GetHighResScreenshotConfig().MergeMaskIntoAlpha(*Bitmap);
-	TArray<uint8> *CompressedBitmap = new TArray64<uint8>();
+	TArray<uint8> *CompressedBitmap = new TArray<uint8>();
 	FImageUtils::CompressImageArray(ViewportSize.X, ViewportSize.Y, *Bitmap, *CompressedBitmap);
 #else
 	GetHighResScreenshotConfig().MergeMaskIntoAlpha(*Bitmap, FIntRect());
