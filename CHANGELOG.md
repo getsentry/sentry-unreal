@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Windows default crash handling mechanism is no longer disabled if SDK initialization failed ([#901](https://github.com/getsentry/sentry-unreal/pull/901))
+
 ### Dependencies
 
 - Bump CLI from v2.43.1 to v2.44.0 ([#896](https://github.com/getsentry/sentry-unreal/pull/896))
