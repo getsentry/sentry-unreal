@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The image buffer is now allocated on the heap to prevent stack overflow during screenshot capture on Windows ([#900](https://github.com/getsentry/sentry-unreal/pull/900))
+
 ### Dependencies
 
 - Bump CLI from v2.43.1 to v2.44.0 ([#896](https://github.com/getsentry/sentry-unreal/pull/896))
