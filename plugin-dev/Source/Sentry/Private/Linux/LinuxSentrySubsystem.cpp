@@ -1,6 +1,9 @@
 #include "LinuxSentrySubsystem.h"
 
 #include "SentryDefines.h"
+#include "SentrySettings.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "Misc/Paths.h"
