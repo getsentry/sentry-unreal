@@ -72,7 +72,6 @@ Source/Sentry/Private/Apple/AppleSentryUser.h
 Source/Sentry/Private/Apple/AppleSentryUserFeedback.cpp
 Source/Sentry/Private/Apple/AppleSentryUserFeedback.h
 Source/Sentry/Private/Apple/Convenience/AppleSentryInclude.h
-Source/Sentry/Private/Apple/Convenience/AppleSentryMacro.h
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.cpp
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.h
 Source/Sentry/Private/GenericPlatform/Convenience/GenericPlatformSentryInclude.h
