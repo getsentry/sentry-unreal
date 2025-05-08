@@ -1,6 +1,6 @@
 #include "Mac/MacSentrySubsystem.h"
 
-#include "SentryIdApple.h"
+#include "AppleSentryId.h"
 
 #include "SentryDefines.h"
 #include "SentryModule.h"

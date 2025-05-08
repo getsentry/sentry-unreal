@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryBreadcrumbInterface.h"
 
@@ -31,5 +31,7 @@ public:
 private:
 	sentry_value_t Breadcrumb;
 };
+
+typedef FGenericPlatformSentryBreadcrumb FPlatformSentryBreadcrumb;
 
 #endif

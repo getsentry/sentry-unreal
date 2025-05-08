@@ -11,3 +11,5 @@ public:
 
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override {}
 };
+
+typedef FNullSentryHint FPlatformSentryHint;

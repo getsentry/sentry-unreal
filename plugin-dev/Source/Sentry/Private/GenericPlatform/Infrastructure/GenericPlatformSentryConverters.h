@@ -3,8 +3,8 @@
 #pragma once
 
 #include "SentryDataTypes.h"
-#include "GenericPlatform/Convenience/SentryInclude.h"
 
+#include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 
 #if USE_SENTRY_NATIVE

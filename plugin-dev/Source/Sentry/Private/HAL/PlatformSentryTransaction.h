@@ -1,24 +1,10 @@
 #pragma once
 
-#if PLATFORM_ANDROID
-#include "Android/SentryTransactionAndroid.h"
-#elif PLATFORM_APPLE
-#include "Apple/SentryTransactionApple.h"
-#elif USE_SENTRY_NATIVE
-#include "GenericPlatform/GenericPlatformSentryTransaction.h"
-#else
-#include "Interface/SentryTransactionInterface.h"
-#endif
+#include "Null/NullSentryTransaction.h"
 
 static TSharedPtr<ISentryTransaction> CreateSharedSentryTransaction()
 {
-#if PLATFORM_ANDROID
-	return MakeShareable(new SentryTransactionAndroid);
-#elif PLATFORM_APPLE
-	return MakeShareable(new SentryTransactionApple);
-#elif USE_SENTRY_NATIVE
-	return MakeShareable(new FGenericPlatformSentryTransaction);
-#else
-	return nullptr;
-#endif
+	// Transaction is supposed to be created internally by the SDK using the platform-specific implementations.
+	// Currently, it doesn't provide default constructor for Apple/Android thus we can only return Null-version here.
+	return MakeShareable(new FNullSentryTransaction);
 }

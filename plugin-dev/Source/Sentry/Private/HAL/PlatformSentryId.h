@@ -1,24 +1,16 @@
 #pragma once
 
 #if PLATFORM_ANDROID
-#include "Android/SentryIdAndroid.h"
+#include "Android/AndroidSentryId.h"
 #elif PLATFORM_APPLE
-#include "Apple/SentryIdApple.h"
+#include "Apple/AppleSentryId.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryId.h"
 #else
-#include "Interface/SentryIdInterface.h"
+#include "Null/NullSentryId.h"
 #endif
 
 static TSharedPtr<ISentryId> CreateSharedSentryId(const FString& Id)
 {
-#if PLATFORM_ANDROID
-	return MakeShareable(new SentryIdAndroid(Id));
-#elif PLATFORM_APPLE
-	return MakeShareable(new SentryIdApple(Id));
-#elif USE_SENTRY_NATIVE
-	return MakeShareable(new FGenericPlatformSentryId(Id));
-#else
-	return nullptr;
-#endif
+	return MakeShareable(new FPlatformSentryId(Id));
 }
