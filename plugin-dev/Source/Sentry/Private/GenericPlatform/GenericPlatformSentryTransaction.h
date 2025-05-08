@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "HAL/CriticalSection.h"
 
@@ -37,5 +37,7 @@ private:
 
 	bool isFinished;
 };
+
+typedef FGenericPlatformSentryTransaction FPlatformSentryTransaction;
 
 #endif

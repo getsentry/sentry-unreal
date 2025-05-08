@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "GenericPlatform/Convenience/SentryInclude.h"
+#include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
 
 class FWindowsSentryConverters
 {
