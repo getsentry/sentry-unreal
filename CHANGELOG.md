@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add destination URL for crash envelope ([#905](https://github.com/getsentry/sentry-unreal/pull/905))
+
 ### Fixes
 
 - Windows default crash handling mechanism is no longer disabled if SDK initialization failed ([#901](https://github.com/getsentry/sentry-unreal/pull/901))
