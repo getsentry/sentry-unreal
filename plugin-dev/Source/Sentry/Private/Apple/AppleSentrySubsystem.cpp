@@ -24,7 +24,6 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 #include "Utils/SentryFileUtils.h"
 #include "Utils/SentryLogUtils.h"
@@ -43,12 +42,12 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
 
-	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
+	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.unreal"];
 
 	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
 	dispatch_group_enter(sentryDispatchGroup);
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions *options) {
+		[SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
 			options.dsn = settings->Dsn.GetNSString();
 #if WITH_EDITOR
 			if(!settings->EditorDsn.IsEmpty()) {
@@ -164,24 +163,24 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 
 void FAppleSentrySubsystem::Close()
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) close];
+	[SentrySDK close];
 }
 
 bool FAppleSentrySubsystem::IsEnabled()
 {
-	return [SENTRY_APPLE_CLASS(SentrySDK) isEnabled];
+	return [SentrySDK isEnabled];
 }
 
 ESentryCrashedLastRun FAppleSentrySubsystem::IsCrashedLastRun()
 {
-	return [SENTRY_APPLE_CLASS(SentrySDK) crashedLastRun] ? ESentryCrashedLastRun::Crashed : ESentryCrashedLastRun::NotCrashed;
+	return [SentrySDK crashedLastRun] ? ESentryCrashedLastRun::Crashed : ESentryCrashedLastRun::NotCrashed;
 }
 
 void FAppleSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
 	TSharedPtr<FAppleSentryBreadcrumb> breadcrumbIOS = StaticCastSharedPtr<FAppleSentryBreadcrumb>(breadcrumb);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
+	[SentrySDK addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
 void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
@@ -193,12 +192,12 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	breadcrumbIOS->SetData(Data);
 	breadcrumbIOS->SetLevel(Level);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
+	[SentrySDK addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope clearBreadcrumbs];
 	}];
 }
@@ -211,7 +210,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& messa
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
-	SentryId* nativeId = [SENTRY_APPLE_CLASS(SentrySDK) captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
+	SentryId* nativeId = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
 		[scope setLevel:FAppleSentryConverters::SentryLevelToNative(level)];
 		onConfigureScope.ExecuteIfBound(MakeShareable(new FAppleSentryScope(scope)));
 	}];
@@ -236,7 +235,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 {
 	TSharedPtr<FAppleSentryEvent> eventApple = StaticCastSharedPtr<FAppleSentryEvent>(event);
 
-	SentryId* nativeId = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:eventApple->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
+	SentryId* nativeId = [SentrySDK captureEvent:eventApple->GetNativeObject() withScopeBlock:^(SentryScope* scope) {
 		onConfigureScope.ExecuteIfBound(MakeShareable(new FAppleSentryScope(scope)));
 	}];
 
@@ -252,14 +251,14 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	SentryException *nativeException = [[SENTRY_APPLE_CLASS(SentryException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
+	SentryException *nativeException = [[SentryException alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
 	NSMutableArray *nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
 	[nativeExceptionArray addObject:nativeException];
 
-	SentryEvent *exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
+	SentryEvent *exceptionEvent = [[SentryEvent alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
 
-	SentryId* nativeId = [SENTRY_APPLE_CLASS(SentrySDK) captureEvent:exceptionEvent];
+	SentryId* nativeId = [SentrySDK captureEvent:exceptionEvent];
 
 	TSharedPtr<ISentryId> id = MakeShareable(new FAppleSentryId(nativeId));
 
@@ -276,69 +275,69 @@ void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> 
 {
 	TSharedPtr<FAppleSentryUserFeedback> userFeedbackIOS = StaticCastSharedPtr<FAppleSentryUserFeedback>(userFeedback);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) captureFeedback:userFeedbackIOS->GetNativeObject()];
+	[SentrySDK captureFeedback:userFeedbackIOS->GetNativeObject()];
 }
 
 void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
 {
 	TSharedPtr<FAppleSentryUser> userIOS = StaticCastSharedPtr<FAppleSentryUser>(user);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) setUser:userIOS->GetNativeObject()];
+	[SentrySDK setUser:userIOS->GetNativeObject()];
 }
 
 void FAppleSentrySubsystem::RemoveUser()
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) setUser:nil];
+	[SentrySDK setUser:nil];
 }
 
 void FAppleSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+	[SentrySDK configureScope:^(SentryScope* scope) {
 		onConfigureScope.ExecuteIfBound(MakeShareable(new FAppleSentryScope(scope)));
 	}];
 }
 
 void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope setContextValue:FAppleSentryConverters::StringMapToNative(values) forKey:key.GetNSString()];
 	}];
 }
 
 void FAppleSentrySubsystem::SetTag(const FString& key, const FString& value)
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope setTagValue:value.GetNSString() forKey:key.GetNSString()];
 	}];
 }
 
 void FAppleSentrySubsystem::RemoveTag(const FString& key)
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope removeTagForKey:key.GetNSString()];
 	}];
 }
 
 void FAppleSentrySubsystem::SetLevel(ESentryLevel level)
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope setLevel:FAppleSentryConverters::SentryLevelToNative(level)];
 	}];
 }
 
 void FAppleSentrySubsystem::StartSession()
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) startSession];
+	[SentrySDK startSession];
 }
 
 void FAppleSentrySubsystem::EndSession()
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) endSession];
+	[SentrySDK endSession];
 }
 
 TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransaction(const FString& name, const FString& operation)
 {
-	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
+	id<SentrySpan> transaction = [SentrySDK startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
@@ -347,7 +346,7 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 {
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
-	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()];
+	id<SentrySpan> transaction = [SentrySDK startTransactionWithContext:transactionContextIOS->GetNativeObject()];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
@@ -362,7 +361,7 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 {
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
-	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
+	id<SentrySpan> transaction = [SentrySDK startTransactionWithContext:transactionContextIOS->GetNativeObject()
 		customSamplingContext:FAppleSentryConverters::StringMapToNative(options)];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
@@ -383,20 +382,13 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	{
 		sampleDecision = traceParts[2].Equals(TEXT("1")) ? kSentrySampleDecisionYes : kSentrySampleDecisionNo;
 	}
+	
+	SentryId* traceId = [[SentryId alloc] initWithUUIDString:traceParts[0].GetNSString()];
 
-	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
-
-#if PLATFORM_MAC
-	//SentryId* traceId = [[SENTRY_APPLE_CLASS(_TtC6Sentry8SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
-	SentryId* traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
-#elif PLATFORM_IOS
-	SentryId* traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
-#endif
-
-	SentryTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
+	SentryTransactionContext* transactionContext = [[SentryTransactionContext alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
 		traceId:traceId
-		spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
-		parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
+		spanId:[[SentrySpanId alloc] init]
+		parentSpanId:[[SentrySpanId alloc] initWithValue:traceParts[1].GetNSString()]
 		parentSampled:sampleDecision
 		parentSampleRate:nil
 		parentSampleRand:nil];
@@ -417,18 +409,18 @@ void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> event
 
 	const FString& filePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*filePath);
 
-	SentryAttachment* attachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
+	SentryAttachment* attachment = [[SentryAttachment alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
 
-	SentryOptions* options = [SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) options];
+	SentryOptions* options = [PrivateSentrySDKOnly options];
 	int32 size = options.maxAttachmentSize;
 
-	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:attachment maxAttachmentSize:size];
+	SentryEnvelopeItem* envelopeItem = [[SentryEnvelopeItem alloc] initWithAttachment:attachment maxAttachmentSize:size];
 
 	SentryId* id = StaticCastSharedPtr<FAppleSentryId>(eventId)->GetNativeObject();
 
-	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
+	SentryEnvelope* envelope = [[SentryEnvelope alloc] initWithId:id singleItem:envelopeItem];
 
-	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
+	[PrivateSentrySDKOnly captureEnvelope:envelope];
 
 	if (deleteAfterUpload)
 	{

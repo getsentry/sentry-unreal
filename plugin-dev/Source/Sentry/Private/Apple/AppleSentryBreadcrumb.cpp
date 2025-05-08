@@ -5,11 +5,10 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryBreadcrumb::FAppleSentryBreadcrumb()
 {
-	BreadcrumbApple = [[SENTRY_APPLE_CLASS(SentryBreadcrumb) alloc] init];
+	BreadcrumbApple = [[SentryBreadcrumb alloc] init];
 }
 
 FAppleSentryBreadcrumb::FAppleSentryBreadcrumb(SentryBreadcrumb* breadcrumb)

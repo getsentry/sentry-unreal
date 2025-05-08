@@ -45,7 +45,7 @@ public class Sentry : ModuleRules
 
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
-		
+
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
@@ -68,7 +68,7 @@ public class Sentry : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
-			
+
 			string XcodeRoot = Utils.RunLocalProcessAndReturnStdOut("/usr/bin/xcode-select", "--print-path");
 			string SwiftStandardLibrariesPath = Path.Combine(XcodeRoot, "Toolchains", "XcodeDefault.xctoolchain", "usr", "lib", "swift", "macosx");
 

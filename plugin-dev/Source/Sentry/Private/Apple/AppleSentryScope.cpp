@@ -8,11 +8,10 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryScope::FAppleSentryScope()
 {
-	ScopeApple = [[SENTRY_APPLE_CLASS(SentryScope) alloc] init];
+	ScopeApple = [[SentryScope alloc] init];
 }
 
 FAppleSentryScope::FAppleSentryScope(SentryScope* scope)

@@ -3,28 +3,15 @@
 #include "AppleSentryId.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryId::FAppleSentryId()
 {
-	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
-#if PLATFORM_MAC
-	//IdApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry8SentryId) alloc] init];
-	IdApple = [[SENTRY_APPLE_CLASS(SentryId) alloc] init];
-#elif PLATFORM_IOS
-	IdApple = [[SENTRY_APPLE_CLASS(SentryId) alloc] init];
-#endif
+	IdApple = [[SentryId alloc] init];
 }
 
 FAppleSentryId::FAppleSentryId(const FString& id)
 {
-	// `SentryId` definition was moved to Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
-#if PLATFORM_MAC
-	//IdApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry8SentryId) alloc] initWithUUIDString:id.GetNSString()];
-	IdApple = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:id.GetNSString()];
-#elif PLATFORM_IOS
-	IdApple = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:id.GetNSString()];
-#endif
+	IdApple = [[SentryId alloc] initWithUUIDString:id.GetNSString()];
 }
 
 FAppleSentryId::FAppleSentryId(SentryId* id)

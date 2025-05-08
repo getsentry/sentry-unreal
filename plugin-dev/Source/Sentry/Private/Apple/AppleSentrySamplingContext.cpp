@@ -6,7 +6,6 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentrySamplingContext::FAppleSentrySamplingContext(SentrySamplingContext* context)
 {
