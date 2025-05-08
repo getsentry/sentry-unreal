@@ -200,16 +200,16 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 	if (USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr))
 	{
-		if (SentryEventUrl.EndsWith(TEXT("=")))
+		if (EventDestinationUrl.EndsWith(TEXT("=")))
 		{
 			sentry_value_t EventId = sentry_value_get_by_key(event, "event_id");
 			const char* EventIdString = sentry_value_as_string(EventId);
 
 			// AppendChars takes into consideration slack space in order to avoid growing the array
-			SentryEventUrl.AppendChars(EventIdString, FCStringAnsi::Strlen(EventIdString));
+			EventDestinationUrl.AppendChars(EventIdString, FCStringAnsi::Strlen(EventIdString));
 		}
 
-		UE_LOG(LogSentrySdk, Error, TEXT("%s"), *SentryEventUrl);
+		UE_LOG(LogSentrySdk, Error, TEXT("%s"), *EventDestinationUrl);
 
 		return event;
 	}
@@ -316,13 +316,17 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	// Allocate large enough buffer to hold the URL base plus event ID to avoid memory allocations
 	// during crash handling
-	constexpr int32 SentryEventUrlSlack = 64;
-	SentryEventUrl = FString::ConstructWithSlack(
+	constexpr int32 EventDestinationUrlSlack = 64;
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+	EventDestinationUrl = FString(
+#else
+	EventDestinationUrl = FString::ConstructWithSlack(
+#endif
 		*FString::Printf(
 			TEXT("http://sentry.io/organizations/riotgames/issues/?project=%s&statsPeriod=1h&query="),
 			*ProjectId
 		),
-		SentryEventUrlSlack
+		EventDestinationUrlSlack
 	);
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*Dsn));
