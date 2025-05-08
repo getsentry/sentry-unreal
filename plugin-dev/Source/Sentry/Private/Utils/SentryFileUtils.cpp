@@ -17,6 +17,11 @@ struct FSentrySortFileByDatePredicate
 	}
 };
 
+FString SentryFileUtils::GetGameLogName()
+{
+	return FPaths::GetCleanFilename(FGenericPlatformOutputDevices::GetAbsoluteLogFilename());
+}
+
 FString SentryFileUtils::GetGameLogPath()
 {
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*FGenericPlatformOutputDevices::GetAbsoluteLogFilename());

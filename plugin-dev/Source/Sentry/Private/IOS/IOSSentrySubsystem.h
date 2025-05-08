@@ -13,6 +13,13 @@ public:
 	) override;
 
 	virtual FString TryCaptureScreenshot() const override;
+
+protected:
+	virtual FString GetGameLogPath() const override;
+	virtual FString GetLatestGameLog() const override;
+
+private:
+	FString NormalizeToPublicIOSPath(const FString& logFilePath) const;
 };
 
 typedef FIOSSentrySubsystem FPlatformSentrySubsystem;

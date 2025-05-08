@@ -5,10 +5,13 @@
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
+#include "Utils/SentryScreenshotUtils.h"
+#include "Utils/SentryFileUtils.h"
+
+#include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-#include "Utils/SentryScreenshotUtils.h"
 
 static FIOSSentrySubsystem* GIOSSentrySubsystem = nullptr;
 
@@ -102,4 +105,32 @@ FString FIOSSentrySubsystem::TryCaptureScreenshot() const
 	});
 
 	return ScreenshotPath;
+}
+
+FString FIOSSentrySubsystem::GetGameLogPath() const
+{
+	const FString& logFilePath = SentryFileUtils::GetGameLogPath();
+	return IFileManager::Get().FileExists(*logFilePath) ? logFilePath : NormalizeToPublicIOSPath(logFilePath);
+}
+
+FString FIOSSentrySubsystem::GetLatestGameLog() const
+{
+	const FString logFilePath = SentryFileUtils::GetGameLogBackupPath();
+	return IFileManager::Get().FileExists(*logFilePath) ? logFilePath : NormalizeToPublicIOSPath(logFilePath);
+}
+
+FString FIOSSentrySubsystem::NormalizeToPublicIOSPath(const FString& logFilePath) const
+{
+	// This is a workaround for iOS log file not being accessible via the path returned by engine's API.
+	// See https://github.com/getsentry/sentry-unreal/pull/732
+
+	static FString PublicWritePathBase = FString([NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]);
+	static FString PrivateWritePathBase = FString([NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0]);
+
+	if (logFilePath.StartsWith(PrivateWritePathBase))
+	{
+		return logFilePath.Replace(*PrivateWritePathBase, *PublicWritePathBase);
+	}
+
+	return logFilePath;
 }

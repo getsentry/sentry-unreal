@@ -65,4 +65,6 @@ private:
 	FCriticalSection CriticalSection;
 };
 
+typedef FGenericPlatformSentryScope FPlatformSentryScope;
+
 #endif

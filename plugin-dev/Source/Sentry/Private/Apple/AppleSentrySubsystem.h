@@ -38,8 +38,17 @@ public:
 	virtual FString TryCaptureScreenshot() const { return FString(); };
 
 protected:
+	void UploadAttachmentForEvent(TSharedPtr<ISentryId> eventId, const FString& filePath, const FString& name, bool deleteAfterUpload = false) const;
+
 	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const;
+	void UploadGameLogForEvent(TSharedPtr<ISentryId> eventId, const FString& logFilePath) const;
 
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;
+	virtual FString GetGameLogPath() const { return FString(); };
+	virtual FString GetLatestGameLog() const { return FString(); };
+
+protected:
+	bool isScreenshotAttachmentEnabled = false;
+	bool isGameLogAttachmentEnabled = false;
 };
