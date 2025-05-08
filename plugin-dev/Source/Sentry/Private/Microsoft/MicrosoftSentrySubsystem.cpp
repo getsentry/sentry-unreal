@@ -9,8 +9,11 @@
 #include "SentrySettings.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
-#include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/EngineVersionComparison.h"
+
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "GenericPlatform/GenericPlatformMisc.h"
+#endif
 
 void FMicrosoftSentrySubsystem::InitWithSettings(
 	const USentrySettings* Settings,
