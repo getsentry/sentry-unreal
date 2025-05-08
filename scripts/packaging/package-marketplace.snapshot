@@ -329,7 +329,6 @@ Source/ThirdParty/LinuxArm64/lib/libcrashpad_tools.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_util.a
 Source/ThirdParty/LinuxArm64/lib/libmini_chromium.a
 Source/ThirdParty/LinuxArm64/lib/libsentry.a
-Source/ThirdParty/Mac/bin/sentry.dylib
 Source/ThirdParty/Mac/include/Sentry/PrivateSentrySDKOnly.h
 Source/ThirdParty/Mac/include/Sentry/PrivatesHeader.h
 Source/ThirdParty/Mac/include/Sentry/Sentry-Swift.h
@@ -410,6 +409,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryUser.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryUserFeedback.h
 Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
+Source/ThirdParty/Mac/lib/libsentry.a
 Source/ThirdParty/Win64/Breakpad/include/sentry.h
 Source/ThirdParty/Win64/Breakpad/lib/breakpad_client.lib
 Source/ThirdParty/Win64/Breakpad/lib/sentry.lib

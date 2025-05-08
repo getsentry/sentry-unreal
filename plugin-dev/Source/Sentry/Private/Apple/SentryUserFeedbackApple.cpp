@@ -14,8 +14,11 @@ SentryUserFeedbackApple::SentryUserFeedbackApple(TSharedPtr<ISentryId> eventId)
 
 	// `SentryFeedback` is defined in Swift so its name that can be recognized by UE should be taken from "Sentry-Swift.h" to successfully load class on Mac
 #if PLATFORM_MAC
-	UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:@""
-		name:nil email:nil source:SentryFeedbackSourceCustom associatedEventId:id attachments:nil];
+	//UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:@""
+	//	name:nil email:nil source:SentryFeedbackSourceCustom associatedEventId:id attachments:nil];
+	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:@""
+			name:nil email:nil source:SentryFeedbackSourceCustom associatedEventId:id attachments:nil];
+
 #elif PLATFORM_IOS
 	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:@""
 		name:nil email:nil source:SentryFeedbackSourceCustom associatedEventId:id attachments:nil];

@@ -30,15 +30,6 @@ void FSentryModule::StartupModule()
 			LOCTEXT("RuntimeSettingsDescription", "Configure Sentry"),
 			SentrySettings);
 	}
-
-#if PLATFORM_MAC
-	const FString SentryLibName = TEXT("sentry.dylib");
-	const FString BinariesDirPath = GIsEditor ? FPaths::Combine(GetThirdPartyPath(), TEXT("bin")) : GetBinariesPath();
-
-	FPlatformProcess::PushDllDirectory(*BinariesDirPath);
-	mDllHandleSentry = FPlatformProcess::GetDllHandle(*FPaths::Combine(BinariesDirPath, SentryLibName));
-	FPlatformProcess::PopDllDirectory(*BinariesDirPath);
-#endif
 }
 
 void FSentryModule::ShutdownModule()
@@ -60,14 +51,6 @@ void FSentryModule::ShutdownModule()
 	{
 		SentrySettings = nullptr;
 	}
-
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
-	if (mDllHandleSentry)
-	{
-		FPlatformProcess::FreeDllHandle(mDllHandleSentry);
-		mDllHandleSentry = nullptr;
-	}
-#endif
 }
 
 FSentryModule& FSentryModule::Get()
@@ -78,11 +61,6 @@ FSentryModule& FSentryModule::Get()
 bool FSentryModule::IsAvailable()
 {
 	return FModuleManager::Get().IsModuleLoaded(ModuleName);
-}
-
-void* FSentryModule::GetSentryLibHandle() const
-{
-	return mDllHandleSentry;
 }
 
 USentrySettings* FSentryModule::GetSettings() const

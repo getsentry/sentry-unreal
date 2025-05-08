@@ -15,13 +15,13 @@ fi
 cocoaRepo=$(getProperty 'repo')
 cocoaVersion=$(getProperty 'version')
 
-cocoaFrameworkUrl="${cocoaRepo}/releases/download/${cocoaVersion}/Sentry-Dynamic.xcframework.zip"
+# Prepare iOS artifacts
 
-curl -L "${cocoaFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip"
+cocoaDynamicFrameworkUrl="${cocoaRepo}/releases/download/${cocoaVersion}/Sentry-Dynamic.xcframework.zip"
+
+curl -L "${cocoaDynamicFrameworkUrl}" -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip"
 
 unzip -o "${sentryCocoaCache}/Sentry-Dynamic.xcframework.zip" -d "${sentryCocoaCache}/"
-
-# Prepare iOS artifacts
 
 if ! [ -d "$(dirname $sentryArtifactsDestination)/IOS" ]; then
     mkdir "$(dirname $sentryArtifactsDestination)/IOS"
@@ -42,16 +42,22 @@ rm "Sentry.embeddedframework.zip"
 
 # Prepare Mac artifacts
 
+cocoaStaticFrameworkUrl="${cocoaRepo}/releases/download/${cocoaVersion}/Sentry.xcframework.zip"
+
+curl -L "${cocoaStaticFrameworkUrl}" -o "${sentryCocoaCache}/Sentry.xcframework.zip"
+
+unzip -o "${sentryCocoaCache}/Sentry.xcframework.zip" -d "${sentryCocoaCache}/"
+
 if ! [ -d "$(dirname $sentryArtifactsDestination)/Mac" ]; then
     mkdir "$(dirname $sentryArtifactsDestination)/Mac"
 else
     rm -rf "$(dirname $sentryArtifactsDestination)/Mac/"*
 fi
 
-mkdir "$(dirname $sentryArtifactsDestination)/Mac/bin"
+mkdir "$(dirname $sentryArtifactsDestination)/Mac/lib"
 mkdir "$(dirname $sentryArtifactsDestination)/Mac/include"
 
-cp "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" "$(dirname $sentryArtifactsDestination)/Mac/bin/sentry.dylib"
+cp "${sentryCocoaCache}/Sentry.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" "$(dirname $sentryArtifactsDestination)/Mac/lib/libsentry.a"
 
-cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
-cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/PrivateHeaders/." "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
+cp -rL "${sentryCocoaCache}/Sentry.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
+cp -rL "${sentryCocoaCache}/Sentry.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/PrivateHeaders/." "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
