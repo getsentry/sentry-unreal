@@ -98,6 +98,11 @@ private:
 	FCriticalSection CriticalSection;
 
 	FString databaseParentPath;
+
+	/**
+	 * The expected destination URL of the crash envelope.
+	 */
+	FString EventDestinationUrl;
 };
 
 #endif
