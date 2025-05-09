@@ -112,13 +112,13 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 	if (FSentryModule::Get().IsMarketplaceVersion())
 	{
 		TSharedRef<SWidget> LinuxBinariesMissingWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Sentry Linux pre-compiled binaries are missing.")), FText::FromString(TEXT("Compile")));
+			FText::FromString(TEXT("Sentry Linux pre-compiled binaries are missing.")), FText::FromString(TEXT("Compile")));
 
 		TSharedRef<SWidget> LinuxBinariesCompilingWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Compiling Sentry for Linux...")), FText());
+			FText::FromString(TEXT("Compiling Sentry for Linux...")), FText());
 
 		TSharedRef<SWidget> LinuxBinariesConfiguredWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
-		FText::FromString(TEXT("Sentry Linux pre-compiled binaries are ready.")), FText());
+			FText::FromString(TEXT("Sentry Linux pre-compiled binaries are ready.")), FText());
 
 		// clang-format off
 		GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)

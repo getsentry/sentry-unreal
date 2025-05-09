@@ -47,10 +47,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
 	dispatch_group_enter(sentryDispatchGroup);
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
+		[SentrySDK startWithConfigureOptions:^(SentryOptions* options) {
 			options.dsn = settings->Dsn.GetNSString();
 #if WITH_EDITOR
-			if(!settings->EditorDsn.IsEmpty()) {
+			if (!settings->EditorDsn.IsEmpty())
+			{
 				options.dsn = settings->EditorDsn.GetNSString();
 			}
 #endif
@@ -210,7 +211,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& messa
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
 {
-	SentryId* nativeId = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
+	SentryId* nativeId = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope) {
 		[scope setLevel:FAppleSentryConverters::SentryLevelToNative(level)];
 		onConfigureScope.ExecuteIfBound(MakeShareable(new FAppleSentryScope(scope)));
 	}];

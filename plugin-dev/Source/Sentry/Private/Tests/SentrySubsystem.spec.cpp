@@ -27,7 +27,7 @@ void SentrySubsystemSpec::Define()
 	{
 		SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
-		if(SentrySubsystem && !SentrySubsystem->IsEnabled())
+		if (SentrySubsystem && !SentrySubsystem->IsEnabled())
 		{
 			SentrySubsystem->Initialize();
 		}

@@ -622,7 +622,7 @@ FString FGenericPlatformSentrySubsystem::GetGpuDumpBackupPath() const
 {
 	static const FString DateTimeString = FDateTime::Now().ToString();
 
-	const FString GpuDumpPath = FPaths::Combine(GetDatabasePath(), TEXT("gpudumps"), *FString::Printf(TEXT("UEAftermath-%s.nv-gpudmp"), *DateTimeString));;
+	const FString GpuDumpPath = FPaths::Combine(GetDatabasePath(), TEXT("gpudumps"), *FString::Printf(TEXT("UEAftermath-%s.nv-gpudmp"), *DateTimeString));
 	const FString GpuDumpFullPath = FPaths::ConvertRelativePathToFull(GpuDumpPath);
 
 	return GpuDumpFullPath;
