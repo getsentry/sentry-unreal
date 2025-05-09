@@ -171,11 +171,12 @@ template<>
 bool FSentryJavaObjectWrapper::CallMethodInternal<bool>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	bool RetVal = !Method.IsStatic
-		? JEnv->CallBooleanMethodV(Object, Method.Method, Params)
-		: JEnv->CallStaticBooleanMethodV(Class, Method.Method, Params);
+	bool RetVal =
+		!Method.IsStatic
+			? JEnv->CallBooleanMethodV(Object, Method.Method, Params)
+			: JEnv->CallStaticBooleanMethodV(Class, Method.Method, Params);
 
 	VerifyException();
 	return RetVal;
@@ -185,11 +186,12 @@ template<>
 int FSentryJavaObjectWrapper::CallMethodInternal<int>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	int RetVal = !Method.IsStatic
-		? JEnv->CallIntMethodV(Object, Method.Method, Params)
-		: JEnv->CallStaticIntMethodV(Class, Method.Method, Params);
+	int RetVal =
+		!Method.IsStatic
+			? JEnv->CallIntMethodV(Object, Method.Method, Params)
+			: JEnv->CallStaticIntMethodV(Class, Method.Method, Params);
 
 	VerifyException();
 	return RetVal;
@@ -199,11 +201,12 @@ template<>
 int64 FSentryJavaObjectWrapper::CallMethodInternal<int64>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	int64 RetVal = !Method.IsStatic
-		? JEnv->CallLongMethodV(Object, Method.Method, Params)
-		: JEnv->CallStaticLongMethodV(Class, Method.Method, Params);
+	int64 RetVal =
+		!Method.IsStatic
+			? JEnv->CallLongMethodV(Object, Method.Method, Params)
+			: JEnv->CallStaticLongMethodV(Class, Method.Method, Params);
 
 	VerifyException();
 	return RetVal;
@@ -213,11 +216,12 @@ template<>
 FString FSentryJavaObjectWrapper::CallMethodInternal<FString>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	jstring RetVal = !Method.IsStatic
-		? static_cast<jstring>(JEnv->CallObjectMethodV(Object, Method.Method, Params))
-		: static_cast<jstring>(JEnv->CallStaticObjectMethodV(Class, Method.Method, Params));
+	jstring RetVal =
+		!Method.IsStatic
+			? static_cast<jstring>(JEnv->CallObjectMethodV(Object, Method.Method, Params))
+			: static_cast<jstring>(JEnv->CallStaticObjectMethodV(Class, Method.Method, Params));
 
 	VerifyException();
 	auto Result = FJavaHelper::FStringFromLocalRef(JEnv, RetVal);
@@ -228,11 +232,12 @@ template<>
 FScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobject>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	jobject RetVal = !Method.IsStatic
-		? JEnv->CallObjectMethodV(Object, Method.Method, Params)
-		: JEnv->CallStaticObjectMethodV(Class, Method.Method, Params);
+	jobject RetVal =
+		!Method.IsStatic
+			? JEnv->CallObjectMethodV(Object, Method.Method, Params)
+			: JEnv->CallStaticObjectMethodV(Class, Method.Method, Params);
 
 	VerifyException();
 	return NewScopedJavaObject(JEnv, RetVal);
@@ -242,11 +247,12 @@ template<>
 FScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobjectArray>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	jobject RetVal = !Method.IsStatic
-		? JEnv->CallObjectMethodV(Object, Method.Method, Params)
-		: JEnv->CallStaticObjectMethodV(Class, Method.Method, Params);
+	jobject RetVal =
+		!Method.IsStatic
+			? JEnv->CallObjectMethodV(Object, Method.Method, Params)
+			: JEnv->CallStaticObjectMethodV(Class, Method.Method, Params);
 
 	VerifyException();
 	return NewScopedJavaObject(JEnv, (jobjectArray)RetVal);

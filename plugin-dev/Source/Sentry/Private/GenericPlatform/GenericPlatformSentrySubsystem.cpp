@@ -282,9 +282,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureDatabasePath(options);
 	ConfigureCertsPath(options);
 
-	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName
-		? *settings->Release
-		: *settings->GetFormattedReleaseName()));
+	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName ? *settings->Release : *settings->GetFormattedReleaseName()));
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->Dsn));
 #if WITH_EDITOR

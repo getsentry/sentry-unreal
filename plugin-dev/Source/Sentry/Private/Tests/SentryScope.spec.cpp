@@ -46,7 +46,9 @@ void SentryScopeSpec::Define()
 		TestContext.Add(TEXT("ContextKey1"), TEXT("ContextVal1"));
 		TestContext.Add(TEXT("ContextKey2"), TEXT("ContextVal2"));
 
-		TestFingerprint = { TEXT("F1"), TEXT("F2"), TEXT("F3") };
+		TestFingerprint.Add(TEXT("F1"));
+		TestFingerprint.Add(TEXT("F2"));
+		TestFingerprint.Add(TEXT("F3"));
 	});
 
 	Describe("Scope tags", [this]()

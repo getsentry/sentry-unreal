@@ -58,9 +58,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.environment = settings->Environment.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
-			options.releaseName = settings->OverrideReleaseName
-				? settings->Release.GetNSString()
-				: settings->GetFormattedReleaseName().GetNSString();
+			options.releaseName = settings->OverrideReleaseName ? settings->Release.GetNSString() : settings->GetFormattedReleaseName().GetNSString();
 			options.attachStacktrace = settings->AttachStacktrace;
 			options.debug = settings->Debug;
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];

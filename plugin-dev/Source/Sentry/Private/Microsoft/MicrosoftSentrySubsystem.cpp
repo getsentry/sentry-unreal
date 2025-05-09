@@ -22,9 +22,7 @@ void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)
 	if (IsEnabled())
 	{
-		FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing
-			? ECrashHandlingType::Disabled
-			: ECrashHandlingType::Default);
+		FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing ? ECrashHandlingType::Disabled : ECrashHandlingType::Default);
 	}
 
 	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default)
@@ -44,8 +42,7 @@ void FMicrosoftSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 		if (!FPaths::FileExists(HandlerPath))
 		{
-			UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. "
-				"Please make sure that the plugin was rebuilt to avoid initialization failure."));
+			UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. Please make sure that the plugin was rebuilt to avoid initialization failure."));
 		}
 
 		sentry_options_set_handler_pathw(Options, *HandlerPath);
