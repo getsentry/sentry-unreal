@@ -4,21 +4,21 @@
 
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
+#include "AppleSentryId.h"
+#include "AppleSentrySamplingContext.h"
 #include "AppleSentryScope.h"
-#include "AppleSentryUser.h"
-#include "AppleSentryUserFeedback.h"
 #include "AppleSentryTransaction.h"
 #include "AppleSentryTransactionContext.h"
-#include "AppleSentrySamplingContext.h"
-#include "AppleSentryId.h"
+#include "AppleSentryUser.h"
+#include "AppleSentryUserFeedback.h"
 
-#include "SentryBreadcrumb.h"
-#include "SentryEvent.h"
-#include "SentrySettings.h"
-#include "SentryBeforeSendHandler.h"
 #include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
+#include "SentryEvent.h"
 #include "SentrySamplingContext.h"
+#include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
@@ -76,7 +76,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					// find the most recent one and upload it to Sentry.
 					UploadScreenshotForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestScreenshot());
 				}
-				if(settings->EnableAutoLogAttachment)
+				if (settings->EnableAutoLogAttachment)
 				{
 					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
 					// find the most recent one and upload it to Sentry.
@@ -228,7 +228,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FStri
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEvent(TSharedPtr<ISentryEvent> event)
 {
 	FSentryScopeDelegate onConfigureScope;
-	return CaptureEventWithScope(event,	onConfigureScope);
+	return CaptureEventWithScope(event, onConfigureScope);
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
@@ -251,11 +251,11 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	SentryException *nativeException = [[SentryException alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
-	NSMutableArray *nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
+	SentryException* nativeException = [[SentryException alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
+	NSMutableArray* nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
 	[nativeExceptionArray addObject:nativeException];
 
-	SentryEvent *exceptionEvent = [[SentryEvent alloc] init];
+	SentryEvent* exceptionEvent = [[SentryEvent alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
 
 	SentryId* nativeId = [SentrySDK captureEvent:exceptionEvent];
@@ -269,7 +269,6 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 
 	return id;
 }
-
 
 void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
@@ -464,7 +463,7 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 	TArray<FString> Screenshots;
 	IFileManager::Get().FindFiles(Screenshots, *ScreenshotsDir, TEXT("*.png"));
 
-	if(Screenshots.Num() == 0)
+	if (Screenshots.Num() == 0)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("There are no screenshots found."));
 		return FString("");

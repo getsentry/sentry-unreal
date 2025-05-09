@@ -1,19 +1,19 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryTests.h"
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
+#include "SentrySpan.h"
+#include "SentryTests.h"
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
-#include "SentrySpan.h"
 
 #include "HAL/PlatformSentryEvent.h"
 #include "HAL/PlatformSentryTransactionContext.h"
 
-#include "UObject/UObjectGlobals.h"
+#include "Engine/Engine.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/DateTime.h"
-#include "Engine/Engine.h"
+#include "UObject/UObjectGlobals.h"
 
 #if WITH_AUTOMATION_TESTS
 

@@ -7,7 +7,7 @@
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
 
 class FMicrosoftSentrySubsystem : public FGenericPlatformSentrySubsystem
-{	
+{
 public:
 	virtual void InitWithSettings(
 		const USentrySettings* Settings,

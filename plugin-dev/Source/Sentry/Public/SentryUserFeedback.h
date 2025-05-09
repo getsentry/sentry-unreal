@@ -20,7 +20,7 @@ class SENTRY_API USentryUserFeedback : public UObject, public TSentryImplWrapper
 public:
 	/**
 	 * Initializes the user feedback with the event identifier to which it is associated.
-	 * 
+	 *
 	 * @param EventId The associated event identifier.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

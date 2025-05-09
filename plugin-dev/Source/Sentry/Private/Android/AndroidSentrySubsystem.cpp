@@ -2,17 +2,17 @@
 
 #include "AndroidSentrySubsystem.h"
 
-#include "AndroidSentryEvent.h"
 #include "AndroidSentryBreadcrumb.h"
-#include "AndroidSentryUserFeedback.h"
-#include "AndroidSentryUser.h"
+#include "AndroidSentryEvent.h"
+#include "AndroidSentryId.h"
 #include "AndroidSentryTransaction.h"
 #include "AndroidSentryTransactionContext.h"
 #include "AndroidSentryTransactionOptions.h"
-#include "AndroidSentryId.h"
+#include "AndroidSentryUser.h"
+#include "AndroidSentryUserFeedback.h"
 
-#include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryDefines.h"
 #include "SentryTraceSampler.h"
 
 #include "SentrySettings.h"
@@ -46,15 +46,15 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppExclude));
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
-	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);
 	}
-	if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)traceSampler);
 	}
-	if(beforeBreadcrumbHandler != nullptr)
+	if (beforeBreadcrumbHandler != nullptr)
 	{
 		SettingsJson->SetNumberField(TEXT("beforeBreadcrumb"), (jlong)beforeBreadcrumbHandler);
 	}
@@ -63,7 +63,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&SettingsJsonStr);
 	FJsonSerializer::Serialize(SettingsJson.ToSharedRef(), JsonWriter);
 
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, 
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava,
 		"init", "(Landroid/app/Activity;Ljava/lang/String;J)V",
 		FJavaWrapper::GameActivityThis,
 		*FSentryJavaObjectWrapper::GetJString(SettingsJsonStr),

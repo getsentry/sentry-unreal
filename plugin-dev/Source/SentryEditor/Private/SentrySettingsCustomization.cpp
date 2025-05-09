@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySettingsCustomization.h"
-#include "SentrySettings.h"
 #include "SentryModule.h"
+#include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentrySymToolsDownloader.h"
 
@@ -12,23 +12,23 @@
 #include "IUATHelperModule.h"
 
 #include "Engine/Engine.h"
-#include "Misc/Paths.h"
-#include "Misc/ConfigCacheIni.h"
-#include "Misc/EngineVersionComparison.h"
-#include "PropertyHandle.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "HAL/FileManager.h"
+#include "Misc/ConfigCacheIni.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Misc/Paths.h"
+#include "PropertyHandle.h"
 
 #include "Interfaces/IPluginManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
-#include "Widgets/Text/SRichTextBlock.h"
-#include "Widgets/Text/STextBlock.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
-#include "Widgets/Input/SButton.h"
 #include "Widgets/Notifications/SNotificationList.h"
-#include "Widgets/Images/SImage.h"
+#include "Widgets/Text/SRichTextBlock.h"
+#include "Widgets/Text/STextBlock.h"
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "EditorStyleSet.h"

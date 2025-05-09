@@ -2,12 +2,12 @@
 
 #include "SentryBeforeSendHandler.h"
 
+#include "SentryAttachment.h"
+#include "SentryEvent.h"
+#include "SentryHint.h"
 #include "SentryLibrary.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
-#include "SentryEvent.h"
-#include "SentryHint.h"
-#include "SentryAttachment.h"
 
 #include "Utils/SentryFileUtils.h"
 

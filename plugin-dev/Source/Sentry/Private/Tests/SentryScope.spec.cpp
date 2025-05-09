@@ -1,18 +1,18 @@
 ﻿// Copyright (c) 2022 Sentry. All Rights Reserved.
 
-#include "SentryTests.h"
 #include "SentryScope.h"
 #include "SentryEvent.h"
+#include "SentryTests.h"
 
 #include "SentryDataTypes.h"
 
-#include "Interface/SentryScopeInterface.h"
 #include "Interface/SentryEventInterface.h"
+#include "Interface/SentryScopeInterface.h"
 
 #include "Misc/AutomationTest.h"
 
-#include "HAL/PlatformSentryScope.h"
 #include "HAL/PlatformSentryEvent.h"
+#include "HAL/PlatformSentryScope.h"
 
 #include "GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h"
 

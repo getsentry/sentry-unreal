@@ -2,8 +2,8 @@
 
 #include "AndroidSentryScope.h"
 
-#include "AndroidSentryBreadcrumb.h"
 #include "AndroidSentryAttachment.h"
+#include "AndroidSentryBreadcrumb.h"
 
 #include "Infrastructure/AndroidSentryConverters.h"
 #include "Infrastructure/AndroidSentryJavaClasses.h"

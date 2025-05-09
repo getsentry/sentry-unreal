@@ -5,8 +5,8 @@
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
-#include "Utils/SentryScreenshotUtils.h"
 #include "Utils/SentryFileUtils.h"
+#include "Utils/SentryScreenshotUtils.h"
 
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
@@ -42,7 +42,7 @@ void RestoreDefaultSignalHandlers()
 	sigaction(SIGSYS, &DefaultSigSysHandler, NULL);
 }
 
-static void IOSSentrySignalHandler(int Signal, siginfo_t *Info, void *Context)
+static void IOSSentrySignalHandler(int Signal, siginfo_t* Info, void* Context)
 {
 	if (GIOSSentrySubsystem && GIOSSentrySubsystem->IsEnabled())
 	{
@@ -88,10 +88,10 @@ FString FIOSSentrySubsystem::TryCaptureScreenshot() const
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		UIGraphicsBeginImageContextWithOptions([IOSAppDelegate GetDelegate].RootView.bounds.size, NO, 2.0f);
 		[[IOSAppDelegate GetDelegate].RootView drawViewHierarchyInRect:[IOSAppDelegate GetDelegate].RootView.bounds afterScreenUpdates:YES];
-		UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+		UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
 
-		NSData *ImageData = UIImagePNGRepresentation(image);
+		NSData* ImageData = UIImagePNGRepresentation(image);
 
 		TArray<uint8> ImageBytes;
 		uint32 SavedSize = ImageData.length;

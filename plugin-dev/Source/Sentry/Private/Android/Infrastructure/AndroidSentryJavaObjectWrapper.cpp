@@ -8,14 +8,14 @@ FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData)
 	: Object(nullptr)
 	, Class(nullptr)
 {
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
 	ANSICHAR AnsiClassName[NAME_SIZE];
 	ClassData.Name.GetPlainANSIString(AnsiClassName);
 
-	if(ClassData.Type == ESentryJavaClassType::System)
+	if (ClassData.Type == ESentryJavaClassType::System)
 		Class = FJavaWrapper::FindClassGlobalRef(JEnv, AnsiClassName, false);
-	if(ClassData.Type == ESentryJavaClassType::External)
+	if (ClassData.Type == ESentryJavaClassType::External)
 		Class = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
 
 	check(Class);
@@ -24,7 +24,7 @@ FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData)
 FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, const char* CtorSignature, ...)
 	: FSentryJavaObjectWrapper(ClassData)
 {
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
 	jmethodID Constructor = JEnv->GetMethodID(Class, "<init>", CtorSignature);
 	check(Constructor);
@@ -39,13 +39,12 @@ FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, c
 	Object = JEnv->NewGlobalRef(*LocalObject);
 }
 
-
 FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, jobject JavaClassInstance)
 	: FSentryJavaObjectWrapper(ClassData)
 {
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	if(!JEnv->IsInstanceOf(JavaClassInstance, Class))
+	if (!JEnv->IsInstanceOf(JavaClassInstance, Class))
 	{
 		verify(false && "Java class instance type doesn't match the specified class.");
 	}
@@ -55,17 +54,17 @@ FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, j
 
 FSentryJavaObjectWrapper::~FSentryJavaObjectWrapper()
 {
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
-	if(Object)
+	if (Object)
 		JEnv->DeleteGlobalRef(Object);
-	if(Class)
+	if (Class)
 		JEnv->DeleteGlobalRef(Class);
 }
 
 FSentryJavaMethod FSentryJavaObjectWrapper::GetMethod(const char* MethodName, const char* FunctionSignature)
 {
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 	FSentryJavaMethod Method;
 	Method.Method = JEnv->GetMethodID(Class, MethodName, FunctionSignature);
 	Method.Name = MethodName;
@@ -79,7 +78,7 @@ FSentryJavaMethod FSentryJavaObjectWrapper::GetStaticMethod(FSentryJavaClass Cla
 {
 	FSentryJavaObjectWrapper StaticClass(ClassData);
 
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 	FSentryJavaMethod Method;
 	Method.Method = JEnv->GetStaticMethodID(StaticClass.Class, MethodName, FunctionSignature);
 	Method.Name = MethodName;
@@ -97,18 +96,18 @@ jobject FSentryJavaObjectWrapper::GetJObject() const
 
 FScopedJavaObject<jstring> FSentryJavaObjectWrapper::GetJString(const FString& String)
 {
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 	return FJavaHelper::ToJavaString(JEnv, String);
 }
 
 void FSentryJavaObjectWrapper::VerifyMethodCall(FSentryJavaMethod Method) const
 {
-	if(Method.IsStatic && Object)
+	if (Method.IsStatic && Object)
 	{
 		verify(false && "Calling static method using class instance is not allowed. Try CallStaticMethod/CallStaticObjectMethod instead.");
 	}
 
-	if(!Method.IsStatic && !Object)
+	if (!Method.IsStatic && !Object)
 	{
 		verify(false && "Calling instance method in static context is not allowed. Check method config or try CallMethod/CallObjectMethod instead.");
 	}
@@ -116,7 +115,7 @@ void FSentryJavaObjectWrapper::VerifyMethodCall(FSentryJavaMethod Method) const
 
 void FSentryJavaObjectWrapper::VerifyException() const
 {
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 	if (JEnv->ExceptionCheck())
 	{
 		JEnv->ExceptionDescribe();
@@ -159,7 +158,7 @@ template<>
 void FSentryJavaObjectWrapper::CallMethodInternal<void>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
-	JNIEnv*	JEnv = AndroidJavaEnv::GetJavaEnv();
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 
 	!Method.IsStatic
 		? JEnv->CallVoidMethodV(Object, Method.Method, Params)

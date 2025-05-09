@@ -1,22 +1,22 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentrySubsystem.h"
-#include "GenericPlatformSentryEvent.h"
 #include "GenericPlatformSentryBreadcrumb.h"
-#include "GenericPlatformSentryUser.h"
-#include "GenericPlatformSentryUserFeedback.h"
+#include "GenericPlatformSentryEvent.h"
+#include "GenericPlatformSentryId.h"
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryTransaction.h"
 #include "GenericPlatformSentryTransactionContext.h"
-#include "GenericPlatformSentryId.h"
+#include "GenericPlatformSentryUser.h"
+#include "GenericPlatformSentryUserFeedback.h"
 
+#include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
-#include "SentrySettings.h"
 #include "SentryEvent.h"
 #include "SentryModule.h"
-#include "SentryBeforeSendHandler.h"
-#include "SentryBeforeBreadcrumbHandler.h"
-#include "SentryBreadcrumb.h"
+#include "SentrySettings.h"
 
 #include "SentryTraceSampler.h"
 
@@ -26,16 +26,16 @@
 
 #include "Infrastructure/GenericPlatformSentryConverters.h"
 
-#include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
+#include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 
-#include "Misc/Paths.h"
-#include "Misc/ScopeLock.h"
-#include "Misc/CoreDelegates.h"
-#include "HAL/FileManager.h"
-#include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
+#include "HAL/FileManager.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Misc/Paths.h"
+#include "Misc/ScopeLock.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
@@ -130,7 +130,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 // Currently this handler is not set anywhere since the Unreal SDK doesn't use `sentry_add_breadcrumb` directly and relies on
 // custom scope implementation to store breadcrumbs instead.
-// The support for it will be enabled with https://github.com/getsentry/sentry-native/pull/1166 
+// The support for it will be enabled with https://github.com/getsentry/sentry-native/pull/1166
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure)
 {
 	if (!closure || this != closure)
@@ -201,7 +201,6 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
 
 	return ProcessedEvent ? event : sentry_value_new_null();
-
 }
 
 void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
