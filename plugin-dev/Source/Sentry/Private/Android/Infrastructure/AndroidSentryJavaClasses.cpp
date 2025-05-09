@@ -2,6 +2,8 @@
 
 #include "AndroidSentryJavaClasses.h"
 
+// clang-format off
+
 // External Java classes definitions
 const FSentryJavaClass SentryJavaClasses::SentryBridgeJava		= FSentryJavaClass { "io/sentry/unreal/SentryBridgeJava", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::Sentry				= FSentryJavaClass { "io/sentry/Sentry", ESentryJavaClassType::External };
@@ -32,3 +34,5 @@ const FSentryJavaClass SentryJavaClasses::Iterator				= FSentryJavaClass { "java
 const FSentryJavaClass SentryJavaClasses::MapEntry				= FSentryJavaClass { "java/util/Map$Entry", ESentryJavaClassType::System };
 const FSentryJavaClass SentryJavaClasses::List					= FSentryJavaClass { "java/util/List", ESentryJavaClassType::System };
 const FSentryJavaClass SentryJavaClasses::Double				= FSentryJavaClass { "java/lang/Double", ESentryJavaClassType::System };
+
+// clang-format on

@@ -27,11 +27,7 @@ USentryEvent* USentryBeforeSendHandler::HandleBeforeSend_Implementation(USentryE
 
 		Hint->AddAttachment(
 			USentryLibrary::CreateSentryAttachmentWithPath(
-				LogFilePath,
-				FPaths::GetCleanFilename(LogFilePath),
-				TEXT("text/plain")
-			)
-		);
+				LogFilePath, FPaths::GetCleanFilename(LogFilePath), TEXT("text/plain")));
 	}
 
 	return Event;

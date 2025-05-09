@@ -102,8 +102,7 @@ void SentrySubsystemSpec::Define()
 		{
 			USentryTransactionContext* transactionContext =
 				USentryTransactionContext::Create(
-					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation"))
-				);
+					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")));
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContext(transactionContext);
 			TestNotNull("Transaction is non-null", transaction);
@@ -117,8 +116,7 @@ void SentrySubsystemSpec::Define()
 		{
 			USentryTransactionContext* transactionContext =
 				USentryTransactionContext::Create(
-					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation"))
-				);
+					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")));
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContextAndTimestamp(transactionContext, FDateTime::UtcNow().ToUnixTimestamp());
 			TestNotNull("Transaction is non-null", transaction);

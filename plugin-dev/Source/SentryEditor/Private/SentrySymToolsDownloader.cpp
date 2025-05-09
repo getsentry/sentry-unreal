@@ -49,8 +49,8 @@ void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnComplete
 
 ESentrySymToolsStatus FSentrySymToolsDownloader::GetStatus()
 {
-	if((SentryCliDownloadRequest.IsValid() && SentryCliDownloadRequest->GetStatus() == EHttpRequestStatus::Processing)
-		|| (SentryScriptDownloadRequest.IsValid() && SentryScriptDownloadRequest->GetStatus() == EHttpRequestStatus::Processing))
+	if ((SentryCliDownloadRequest.IsValid() && SentryCliDownloadRequest->GetStatus() == EHttpRequestStatus::Processing) ||
+		(SentryScriptDownloadRequest.IsValid() && SentryScriptDownloadRequest->GetStatus() == EHttpRequestStatus::Processing))
 	{
 		return ESentrySymToolsStatus::Downloading;
 	}
