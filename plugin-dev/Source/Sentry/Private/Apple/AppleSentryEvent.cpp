@@ -6,11 +6,10 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryEvent::FAppleSentryEvent()
 {
-	EventApple = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
+	EventApple = [[SentryEvent alloc] init];
 }
 
 FAppleSentryEvent::FAppleSentryEvent(SentryEvent* event)
@@ -36,7 +35,7 @@ TSharedPtr<ISentryId> FAppleSentryEvent::GetId() const
 
 void FAppleSentryEvent::SetMessage(const FString& message)
 {
-	SentryMessage* msg = [SENTRY_APPLE_CLASS(SentryMessage) alloc];
+	SentryMessage* msg = [SentryMessage alloc];
 	msg.message = message.GetNSString();
 	EventApple.message = msg;
 }

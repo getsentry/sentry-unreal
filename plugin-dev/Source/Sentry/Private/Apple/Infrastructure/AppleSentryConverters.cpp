@@ -6,8 +6,6 @@
 
 #include "Apple/AppleSentryScope.h"
 
-#include "Convenience/AppleSentryMacro.h"
-
 SentryLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 {
 	SentryLevel nativeLevel = kSentryLevelDebug;
@@ -73,12 +71,12 @@ SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgra
 
 	for (int i = 0; i < framesCount; ++i)
 	{
-		SentryFrame *frame = [[SENTRY_APPLE_CLASS(SentryFrame) alloc] init];
+		SentryFrame *frame = [[SentryFrame alloc] init];
 		frame.instructionAddress = FString::Printf(TEXT("0x%llx"), callstack[framesCount - i - 1].ProgramCounter).GetNSString();
 		[arr addObject:frame];
 	}
 
-	SentryStacktrace *trace = [[SENTRY_APPLE_CLASS(SentryStacktrace) alloc] initWithFrames:arr registers:@{}];
+	SentryStacktrace *trace = [[SentryStacktrace alloc] initWithFrames:arr registers:@{}];
 
 	return trace;
 }

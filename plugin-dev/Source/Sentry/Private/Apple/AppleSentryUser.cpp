@@ -5,11 +5,10 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryUser::FAppleSentryUser()
 {
-	UserApple = [[SENTRY_APPLE_CLASS(SentryUser) alloc] init];
+	UserApple = [[SentryUser alloc] init];
 }
 
 FAppleSentryUser::FAppleSentryUser(SentryUser* user)
