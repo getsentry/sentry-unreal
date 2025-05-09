@@ -10,11 +10,7 @@
 
 #if USE_SENTRY_NATIVE
 
-void FLinuxSentrySubsystem::InitWithSettings(
-	const USentrySettings* Settings,
-	USentryBeforeSendHandler* BeforeSendHandler,
-	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
-	USentryTraceSampler* TraceSampler)
+void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryTraceSampler* TraceSampler)
 {
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 

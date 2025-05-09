@@ -70,8 +70,7 @@ void InstallSentrySignalHandler()
 	sigaction(SIGSYS, &Action, NULL);
 }
 
-void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
-	USentryTraceSampler* TraceSampler)
+void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryTraceSampler* TraceSampler)
 {
 	GIOSSentrySubsystem = this;
 

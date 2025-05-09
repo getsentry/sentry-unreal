@@ -15,11 +15,7 @@
 #include "GenericPlatform/GenericPlatformMisc.h"
 #endif
 
-void FMicrosoftSentrySubsystem::InitWithSettings(
-	const USentrySettings* Settings,
-	USentryBeforeSendHandler* BeforeSendHandler,
-	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
-	USentryTraceSampler* TraceSampler)
+void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryTraceSampler* TraceSampler)
 {
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 

@@ -5,12 +5,7 @@
 class FIOSSentrySubsystem : public FAppleSentrySubsystem
 {
 public:
-	virtual void InitWithSettings(
-		const USentrySettings* Settings,
-		USentryBeforeSendHandler* BeforeSendHandler,
-		USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
-		USentryTraceSampler* TraceSampler
-	) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
 
 	virtual FString TryCaptureScreenshot() const override;
 
