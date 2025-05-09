@@ -402,7 +402,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FStr
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
-TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onScopeConfigure, ESentryLevel level)
+virtual TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
 {
 	FScopeLock Lock(&CriticalSection);
 

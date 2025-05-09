@@ -134,7 +134,7 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureMessage(const FString& mes
 	return MakeShareable(new FAndroidSentryId(*id));
 }
 
-TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
 {
 	int64 scopeCallbackId = AndroidSentryScopeCallback::SaveDelegate(onConfigureScope);
 

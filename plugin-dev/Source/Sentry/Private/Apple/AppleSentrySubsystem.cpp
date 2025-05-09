@@ -82,7 +82,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
 				}
 			};
-			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
+			options.beforeSend = ^SentryEvent*(SentryEvent* event) {
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 				{
 					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
@@ -113,13 +113,13 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				[options addInAppExclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
-			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{
 				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
 			}
-			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 			{
-				options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
+				options.tracesSampler = ^NSNumber*(SentrySamplingContext* samplingContext) {
 					FGCScopeGuard GCScopeGuard;
 					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new FAppleSentrySamplingContext(samplingContext)));
 					float samplingValue;
@@ -128,7 +128,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			}
 			if (beforeBreadcrumbHandler != nullptr)
 			{
-				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* breadcrumb) {
+				options.beforeBreadcrumb = ^SentryBreadcrumb*(SentryBreadcrumb* breadcrumb) {
 					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 					{
 						// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
@@ -204,10 +204,10 @@ void FAppleSentrySubsystem::ClearBreadcrumbs()
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	FSentryScopeDelegate onConfigureScope;
-	return CaptureMessageWithScope(message, onConfigureScope, level);
+	return CaptureMessageWithScope(message, level, onConfigureScope);
 }
 
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
+TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
 {
 	SentryId* nativeId = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope) {
 		[scope setLevel:FAppleSentryConverters::SentryLevelToNative(level)];
@@ -360,7 +360,7 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
 	id<SentrySpan> transaction = [SentrySDK startTransactionWithContext:transactionContextIOS->GetNativeObject()
-		customSamplingContext:FAppleSentryConverters::StringMapToNative(options)];
+												  customSamplingContext:FAppleSentryConverters::StringMapToNative(options)];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
@@ -380,16 +380,16 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	{
 		sampleDecision = traceParts[2].Equals(TEXT("1")) ? kSentrySampleDecisionYes : kSentrySampleDecisionNo;
 	}
-	
+
 	SentryId* traceId = [[SentryId alloc] initWithUUIDString:traceParts[0].GetNSString()];
 
 	SentryTransactionContext* transactionContext = [[SentryTransactionContext alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
-		traceId:traceId
-		spanId:[[SentrySpanId alloc] init]
-		parentSpanId:[[SentrySpanId alloc] initWithValue:traceParts[1].GetNSString()]
-		parentSampled:sampleDecision
-		parentSampleRate:nil
-		parentSampleRand:nil];
+																						  traceId:traceId
+																						   spanId:[[SentrySpanId alloc] init]
+																					 parentSpanId:[[SentrySpanId alloc] initWithValue:traceParts[1].GetNSString()]
+																					parentSampled:sampleDecision
+																				 parentSampleRate:nil
+																				 parentSampleRand:nil];
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
