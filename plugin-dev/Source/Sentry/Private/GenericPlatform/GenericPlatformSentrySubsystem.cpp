@@ -215,11 +215,11 @@ void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
+	, crashReporter(nullptr)
 	, isEnabled(false)
 	, isStackTraceEnabled(true)
 	, isPiiAttachmentEnabled(false)
 	, isScreenshotAttachmentEnabled(false)
-	, crashReporter(nullptr)
 {
 }
 
