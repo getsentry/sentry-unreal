@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryTransactionContextInterface.h"
 
@@ -25,5 +25,7 @@ public:
 private:
 	sentry_transaction_context_t* TransactionContext;
 };
+
+typedef FGenericPlatformSentryTransactionContext FPlatformSentryTransactionContext;
 
 #endif

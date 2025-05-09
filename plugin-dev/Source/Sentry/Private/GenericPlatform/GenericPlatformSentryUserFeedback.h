@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryUserFeedbackInterface.h"
 
@@ -29,5 +29,7 @@ public:
 private:
 	sentry_value_t UserFeedback;
 };
+
+typedef FGenericPlatformSentryUserFeedback FPlatformSentryUserFeedback;
 
 #endif

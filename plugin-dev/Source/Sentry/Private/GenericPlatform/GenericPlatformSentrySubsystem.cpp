@@ -204,10 +204,18 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 }
 
+void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
+{
+	crashReporter = MakeShareable(new FGenericPlatformSentryCrashReporter);
+
+	crashReporter->SetRelease(release);
+	crashReporter->SetEnvironment(environment);
+}
+
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
-	, crashReporter(MakeShareable(new FGenericPlatformSentryCrashReporter))
+	, crashReporter(nullptr)
 	, isEnabled(false)
 	, isStackTraceEnabled(true)
 	, isPiiAttachmentEnabled(false)
@@ -306,9 +314,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	isStackTraceEnabled = settings->AttachStacktrace;
 	isPiiAttachmentEnabled = settings->SendDefaultPii;
-
-	crashReporter->SetRelease(settings->Release);
-	crashReporter->SetEnvironment(settings->Environment);
 }
 
 void FGenericPlatformSentrySubsystem::Close()
@@ -477,14 +482,20 @@ void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
 
 	sentry_set_user(user->GetNativeObject());
 
-	crashReporter->SetUser(user);
+	if (crashReporter)
+	{
+		crashReporter->SetUser(user);
+	}
 }
 
 void FGenericPlatformSentrySubsystem::RemoveUser()
 {
 	sentry_remove_user();
 
-	crashReporter->RemoveUser();
+	if (crashReporter)
+	{
+		crashReporter->RemoveUser();
+	}
 }
 
 void FGenericPlatformSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
@@ -496,21 +507,30 @@ void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<
 {
 	GetCurrentScope()->SetContext(key, values);
 
-	crashReporter->SetContext(key, values);
+	if (crashReporter)
+	{
+		crashReporter->SetContext(key, values);
+	}
 }
 
 void FGenericPlatformSentrySubsystem::SetTag(const FString& key, const FString& value)
 {
 	GetCurrentScope()->SetTagValue(key, value);
 
-	crashReporter->SetTag(key, value);
+	if (crashReporter)
+	{
+		crashReporter->SetTag(key, value);
+	}
 }
 
 void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
 {
 	GetCurrentScope()->RemoveTag(key);
 
-	crashReporter->RemoveTag(key);
+	if (crashReporter)
+	{
+		crashReporter->RemoveTag(key);
+	}
 }
 
 void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)

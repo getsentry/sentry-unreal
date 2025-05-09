@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "HAL/CriticalSection.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentrySubsystemInterface.h"
+
+#include "HAL/CriticalSection.h"
 
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
 
 #if USE_SENTRY_NATIVE
-
-#include "GenericPlatform/Convenience/SentryInclude.h"
 
 class FGenericPlatformSentrySubsystem : public ISentrySubsystem
 {
@@ -71,6 +71,8 @@ protected:
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
+
+	void InitCrashReporter(const FString& release, const FString& environment);
 
 private:
 	/**

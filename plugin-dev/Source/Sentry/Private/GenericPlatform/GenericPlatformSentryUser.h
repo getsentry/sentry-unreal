@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryUserInterface.h"
 
@@ -31,5 +31,7 @@ public:
 private:
 	sentry_value_t User;
 };
+
+typedef FGenericPlatformSentryUser FPlatformSentryUser;
 
 #endif

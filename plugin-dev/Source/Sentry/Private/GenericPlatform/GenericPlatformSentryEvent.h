@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryEventInterface.h"
 
@@ -30,5 +30,7 @@ private:
 
 	bool IsCrashEvent;
 };
+
+typedef FGenericPlatformSentryEvent FPlatformSentryEvent;
 
 #endif

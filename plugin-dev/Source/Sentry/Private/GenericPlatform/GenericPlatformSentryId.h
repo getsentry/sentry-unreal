@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Convenience/SentryInclude.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryIdInterface.h"
 
@@ -23,5 +23,7 @@ public:
 private:
 	sentry_uuid_t Id;
 };
+
+typedef FGenericPlatformSentryId FPlatformSentryId;
 
 #endif

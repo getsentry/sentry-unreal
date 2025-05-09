@@ -1,28 +1,20 @@
 #pragma once
 
 #if PLATFORM_ANDROID
-#include "Android/SentryUserFeedbackAndroid.h"
+#include "Android/AndroidSentryUserFeedback.h"
 #elif PLATFORM_APPLE
-#include "Apple/SentryUserFeedbackApple.h"
+#include "Apple/AppleSentryUserFeedback.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryUserFeedback.h"
 #else
-#include "Interface/SentryUserFeedbackInterface.h"
+#include "Null/NullSentryUserFeedback.h"
 #endif
 
 #include "PlatformSentryId.h"
 
 static TSharedPtr<ISentryUserFeedback> CreateSharedSentryUserFeedback(const FString& EventId)
 {
-	TSharedPtr<ISentryId> Id = CreateSharedSentryId(EventId);
+	TSharedPtr<ISentryId> Id = MakeShareable(new FPlatformSentryId(EventId));
 
-#if PLATFORM_ANDROID
-	return MakeShareable(new SentryUserFeedbackAndroid(Id));
-#elif PLATFORM_APPLE
-	return MakeShareable(new SentryUserFeedbackApple(Id));
-#elif USE_SENTRY_NATIVE
-	return MakeShareable(new FGenericPlatformSentryUserFeedback(Id));
-#else
-	return nullptr;
-#endif
+	return MakeShareable(new FPlatformSentryUserFeedback(Id));
 }

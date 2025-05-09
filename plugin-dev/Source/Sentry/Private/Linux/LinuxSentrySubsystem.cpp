@@ -1,11 +1,25 @@
 #include "LinuxSentrySubsystem.h"
 
 #include "SentryDefines.h"
+#include "SentrySettings.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryBeforeBreadcrumbHandler.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "Misc/Paths.h"
 
 #if USE_SENTRY_NATIVE
+
+void FLinuxSentrySubsystem::InitWithSettings(
+	const USentrySettings* Settings,
+	USentryBeforeSendHandler* BeforeSendHandler,
+	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
+	USentryTraceSampler* TraceSampler)
+{
+	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
+
+	InitCrashReporter(Settings->Release, Settings->Environment);
+}
 
 void FLinuxSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 {
