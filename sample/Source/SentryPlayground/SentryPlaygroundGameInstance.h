@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "TestGameInstance.generated.h"
+#include "SentryPlaygroundGameInstance.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SENTRYPLAYGROUND_API UTestGameInstance : public UGameInstance
+class SENTRYPLAYGROUND_API USentryPlaygroundGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 

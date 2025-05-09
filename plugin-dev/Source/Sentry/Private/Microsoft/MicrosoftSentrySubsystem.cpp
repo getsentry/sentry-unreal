@@ -9,6 +9,11 @@
 #include "SentrySettings.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "Misc/EngineVersionComparison.h"
+
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "GenericPlatform/GenericPlatformMisc.h"
+#endif
 
 void FMicrosoftSentrySubsystem::InitWithSettings(
 	const USentrySettings* Settings,
@@ -25,12 +30,14 @@ void FMicrosoftSentrySubsystem::InitWithSettings(
 			? ECrashHandlingType::Disabled
 			: ECrashHandlingType::Default);
 	}
-#endif // !UE_VERSION_OLDER_THAN(5, 2, 0)
 
 	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default)
 	{
 		InitCrashReporter(Settings->Release, Settings->Environment);
 	}
+#else
+	InitCrashReporter(Settings->Release, Settings->Environment);
+#endif
 }
 
 void FMicrosoftSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
