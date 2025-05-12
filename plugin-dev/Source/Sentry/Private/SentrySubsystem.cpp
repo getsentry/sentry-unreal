@@ -270,10 +270,10 @@ FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const 
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
-		{
-			USentryScope* UnrealScope = USentryScope::Create(NativeScope);
-			OnConfigureScope.ExecuteIfBound(UnrealScope);
-		}));
+	{
+		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
+		OnConfigureScope.ExecuteIfBound(UnrealScope);
+	}));
 
 	return SentryId->ToString();
 }
