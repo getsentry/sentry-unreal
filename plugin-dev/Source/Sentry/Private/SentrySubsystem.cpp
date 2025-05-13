@@ -666,7 +666,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		PreLoadMapDelegate = FCoreUObjectDelegates::PreLoadMap.AddWeakLambda(this, [this](const FString& MapName)
 		{
-			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Map"), MapName}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), MapName } }, ESentryLevel::Info);
 		});
 	}
 
@@ -676,11 +676,11 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 		{
 			if (World)
 			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Map"), World->GetMapName()}}, ESentryLevel::Info);
+				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), World->GetMapName() } }, ESentryLevel::Info);
 			}
 			else
 			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Error"), TEXT("Map load failed")}}, ESentryLevel::Error);
+				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Error"), TEXT("Map load failed") } }, ESentryLevel::Error);
 			}
 		});
 	}
@@ -689,7 +689,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		GameStateChangedDelegate = FCoreDelegates::GameStateClassChanged.AddWeakLambda(this, [this](const FString& GameState)
 		{
-			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"), {{TEXT("GameState"), GameState}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("GameState"), GameState } }, ESentryLevel::Info);
 		});
 	}
 
@@ -697,7 +697,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		UserActivityChangedDelegate = FCoreDelegates::UserActivityStringChanged.AddWeakLambda(this, [this](const FString& Activity)
 		{
-			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Activity"), Activity}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Activity"), Activity } }, ESentryLevel::Info);
 		});
 	}
 
@@ -705,7 +705,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		GameSessionIDChangedDelegate = FCoreDelegates::GameSessionIDChanged.AddWeakLambda(this, [this](const FString& SessionId)
 		{
-			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Session ID"), SessionId}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Session ID"), SessionId } }, ESentryLevel::Info);
 		});
 	}
 }

@@ -31,8 +31,7 @@ void FLinuxSentrySubsystem::ConfigureCertsPath(sentry_options_t* Options)
 {
 	// In order to use CURL transport for sentry-native we have to manually specify path to a valid CA certificates on Linux.
 	// Unreal Engine itself follows a similar approach (see `CertBundlePath` implementation in CurlHttp.cpp for extra details)
-	static const char* KnownCertPaths[] =
-	{
+	static const char* KnownCertPaths[] = {
 		"/etc/pki/tls/certs/ca-bundle.crt",
 		"/etc/ssl/certs/ca-certificates.crt",
 		"/etc/ssl/ca-bundle.pem"
