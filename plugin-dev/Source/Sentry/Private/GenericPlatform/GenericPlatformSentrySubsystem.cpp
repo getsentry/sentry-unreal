@@ -402,13 +402,13 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FStr
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
-virtual TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
 {
 	FScopeLock Lock(&CriticalSection);
 
 	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope(*GetCurrentScope()));
 
-	onScopeConfigure.ExecuteIfBound(NewLocalScope);
+	onConfigureScope.ExecuteIfBound(NewLocalScope);
 
 	scopeStack.Push(NewLocalScope);
 	TSharedPtr<ISentryId> Id = CaptureMessage(message, level);
