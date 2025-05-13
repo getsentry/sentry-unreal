@@ -61,7 +61,8 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
 {
-	if(closure) {
+	if (closure)
+	{
 		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSend(event, hint, closure);
 	}
 	else
