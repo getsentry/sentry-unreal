@@ -60,16 +60,16 @@ USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(const FString& Eve
 	return UserFeedback;
 }
 
-USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
+FSentryBreadcrumb USentryLibrary::CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
 	const TMap<FString, FString>& Data, ESentryLevel Level)
 {
-	USentryBreadcrumb* Breadcrumb = USentryBreadcrumb::Create(CreateSharedSentryBreadcrumb());
+	FSentryBreadcrumb Breadcrumb;
 
-	Breadcrumb->SetMessage(Message);
-	Breadcrumb->SetCategory(Category);
-	Breadcrumb->SetType(Type);
-	Breadcrumb->SetData(Data);
-	Breadcrumb->SetLevel(Level);
+	Breadcrumb.SetMessage(Message);
+	Breadcrumb.SetCategory(Category);
+	Breadcrumb.SetType(Type);
+	Breadcrumb.SetData(Data);
+	Breadcrumb.SetLevel(Level);
 
 	return Breadcrumb;
 }
