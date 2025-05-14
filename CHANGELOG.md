@@ -12,6 +12,7 @@
 
 ### Fixes
 
+- The image buffer is now allocated on the heap to prevent stack overflow during screenshot capture on Windows ([#900](https://github.com/getsentry/sentry-unreal/pull/900))
 - Windows default crash handling mechanism is no longer disabled if SDK initialization failed ([#901](https://github.com/getsentry/sentry-unreal/pull/901))
 
 ### Dependencies
