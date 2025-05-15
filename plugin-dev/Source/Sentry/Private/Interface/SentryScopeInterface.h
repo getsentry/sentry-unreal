@@ -22,7 +22,7 @@ public:
 	virtual FString GetTagValue(const FString& key) const = 0;
 	virtual void RemoveTag(const FString& key) = 0;
 	virtual void SetTags(const TMap<FString, FString>& tags) = 0;
-	virtual TMap<FString, FString> GetTags() const = 0;	
+	virtual TMap<FString, FString> GetTags() const = 0;
 	virtual void SetDist(const FString& dist) = 0;
 	virtual FString GetDist() const = 0;
 	virtual void SetEnvironment(const FString& environment) = 0;

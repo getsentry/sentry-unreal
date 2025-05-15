@@ -2,8 +2,8 @@
 
 #include "SentrySpan.h"
 
-#include "SentryDefines.h"
 #include "Interface/SentrySpanInterface.h"
+#include "SentryDefines.h"
 
 USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
 {

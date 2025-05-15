@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "Engine/EngineTypes.h"
+#include "UObject/NoExportTypes.h"
 #include "SentrySettings.generated.h"
 
 class USentryBeforeSendHandler;

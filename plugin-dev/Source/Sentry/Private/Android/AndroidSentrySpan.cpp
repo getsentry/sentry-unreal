@@ -48,7 +48,7 @@ void FAndroidSentrySpan::FinishWithTimestamp(int64 timestamp)
 
 bool FAndroidSentrySpan::IsFinished() const
 {
-	return CallMethod<bool>(IsFinishedMethod);;
+	return CallMethod<bool>(IsFinishedMethod);
 }
 
 void FAndroidSentrySpan::SetTag(const FString& key, const FString& value)

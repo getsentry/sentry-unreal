@@ -6,12 +6,12 @@
 #include "SentryDefines.h"
 
 #include "Engine/Engine.h"
-#include "ImageUtils.h"
-#include "UnrealClient.h"
-#include "Misc/FileHelper.h"
 #include "Engine/GameViewportClient.h"
 #include "Framework/Application/SlateApplication.h"
+#include "ImageUtils.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/FileHelper.h"
+#include "UnrealClient.h"
 
 bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 {

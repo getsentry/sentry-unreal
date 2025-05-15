@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 
-#include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
+#include "Misc/EngineVersionComparison.h"
 
 #if USE_SENTRY_NATIVE
 

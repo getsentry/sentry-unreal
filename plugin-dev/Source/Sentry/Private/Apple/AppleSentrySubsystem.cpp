@@ -4,21 +4,21 @@
 
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
+#include "AppleSentryId.h"
+#include "AppleSentrySamplingContext.h"
 #include "AppleSentryScope.h"
-#include "AppleSentryUser.h"
-#include "AppleSentryUserFeedback.h"
 #include "AppleSentryTransaction.h"
 #include "AppleSentryTransactionContext.h"
-#include "AppleSentrySamplingContext.h"
-#include "AppleSentryId.h"
+#include "AppleSentryUser.h"
+#include "AppleSentryUserFeedback.h"
 
-#include "SentryBreadcrumb.h"
-#include "SentryEvent.h"
-#include "SentrySettings.h"
-#include "SentryBeforeSendHandler.h"
 #include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
+#include "SentryEvent.h"
 #include "SentrySamplingContext.h"
+#include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
@@ -47,19 +47,18 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
 	dispatch_group_enter(sentryDispatchGroup);
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
+		[SentrySDK startWithConfigureOptions:^(SentryOptions* options) {
 			options.dsn = settings->Dsn.GetNSString();
 #if WITH_EDITOR
-			if(!settings->EditorDsn.IsEmpty()) {
+			if (!settings->EditorDsn.IsEmpty())
+			{
 				options.dsn = settings->EditorDsn.GetNSString();
 			}
 #endif
 			options.environment = settings->Environment.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
-			options.releaseName = settings->OverrideReleaseName
-				? settings->Release.GetNSString()
-				: settings->GetFormattedReleaseName().GetNSString();
+			options.releaseName = settings->OverrideReleaseName ? settings->Release.GetNSString() : settings->GetFormattedReleaseName().GetNSString();
 			options.attachStacktrace = settings->AttachStacktrace;
 			options.debug = settings->Debug;
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
@@ -76,14 +75,14 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					// find the most recent one and upload it to Sentry.
 					UploadScreenshotForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestScreenshot());
 				}
-				if(settings->EnableAutoLogAttachment)
+				if (settings->EnableAutoLogAttachment)
 				{
 					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
 					// find the most recent one and upload it to Sentry.
 					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
 				}
 			};
-			options.beforeSend = ^SentryEvent* (SentryEvent* event) {
+			options.beforeSend = ^SentryEvent*(SentryEvent* event) {
 				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 				{
 					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
@@ -114,13 +113,13 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				[options addInAppExclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
-			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{
 				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
 			}
-			if(settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 			{
-				options.tracesSampler = ^NSNumber* (SentrySamplingContext* samplingContext) {
+				options.tracesSampler = ^NSNumber*(SentrySamplingContext* samplingContext) {
 					FGCScopeGuard GCScopeGuard;
 					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new FAppleSentrySamplingContext(samplingContext)));
 					float samplingValue;
@@ -129,7 +128,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			}
 			if (beforeBreadcrumbHandler != nullptr)
 			{
-				options.beforeBreadcrumb = ^SentryBreadcrumb* (SentryBreadcrumb* breadcrumb) {
+				options.beforeBreadcrumb = ^SentryBreadcrumb*(SentryBreadcrumb* breadcrumb) {
 					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 					{
 						// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
@@ -205,12 +204,12 @@ void FAppleSentrySubsystem::ClearBreadcrumbs()
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	FSentryScopeDelegate onConfigureScope;
-	return CaptureMessageWithScope(message, onConfigureScope, level);
+	return CaptureMessageWithScope(message, level, onConfigureScope);
 }
 
-TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level)
+TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
 {
-	SentryId* nativeId = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope){
+	SentryId* nativeId = [SentrySDK captureMessage:message.GetNSString() withScopeBlock:^(SentryScope* scope) {
 		[scope setLevel:FAppleSentryConverters::SentryLevelToNative(level)];
 		onConfigureScope.ExecuteIfBound(MakeShareable(new FAppleSentryScope(scope)));
 	}];
@@ -228,7 +227,7 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessageWithScope(const FStri
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEvent(TSharedPtr<ISentryEvent> event)
 {
 	FSentryScopeDelegate onConfigureScope;
-	return CaptureEventWithScope(event,	onConfigureScope);
+	return CaptureEventWithScope(event, onConfigureScope);
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope)
@@ -251,11 +250,11 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	SentryException *nativeException = [[SentryException alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
-	NSMutableArray *nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
+	SentryException* nativeException = [[SentryException alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
+	NSMutableArray* nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
 	[nativeExceptionArray addObject:nativeException];
 
-	SentryEvent *exceptionEvent = [[SentryEvent alloc] init];
+	SentryEvent* exceptionEvent = [[SentryEvent alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
 
 	SentryId* nativeId = [SentrySDK captureEvent:exceptionEvent];
@@ -269,7 +268,6 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 
 	return id;
 }
-
 
 void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
@@ -362,7 +360,7 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
 	id<SentrySpan> transaction = [SentrySDK startTransactionWithContext:transactionContextIOS->GetNativeObject()
-		customSamplingContext:FAppleSentryConverters::StringMapToNative(options)];
+												  customSamplingContext:FAppleSentryConverters::StringMapToNative(options)];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
@@ -382,16 +380,16 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	{
 		sampleDecision = traceParts[2].Equals(TEXT("1")) ? kSentrySampleDecisionYes : kSentrySampleDecisionNo;
 	}
-	
+
 	SentryId* traceId = [[SentryId alloc] initWithUUIDString:traceParts[0].GetNSString()];
 
 	SentryTransactionContext* transactionContext = [[SentryTransactionContext alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
-		traceId:traceId
-		spanId:[[SentrySpanId alloc] init]
-		parentSpanId:[[SentrySpanId alloc] initWithValue:traceParts[1].GetNSString()]
-		parentSampled:sampleDecision
-		parentSampleRate:nil
-		parentSampleRand:nil];
+																						  traceId:traceId
+																						   spanId:[[SentrySpanId alloc] init]
+																					 parentSpanId:[[SentrySpanId alloc] initWithValue:traceParts[1].GetNSString()]
+																					parentSampled:sampleDecision
+																				 parentSampleRate:nil
+																				 parentSampleRand:nil];
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
@@ -464,7 +462,7 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 	TArray<FString> Screenshots;
 	IFileManager::Get().FindFiles(Screenshots, *ScreenshotsDir, TEXT("*.png"));
 
-	if(Screenshots.Num() == 0)
+	if (Screenshots.Num() == 0)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("There are no screenshots found."));
 		return FString("");

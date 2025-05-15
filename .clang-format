@@ -1,0 +1,34 @@
+AccessModifierOffset:                           -4
+AlignAfterOpenBracket:                          DontAlign
+AllowShortLambdasOnASingleLine:                 None
+LambdaBodyIndentation:                          OuterScope
+AllowAllParametersOfDeclarationOnNextLine:      false
+AllowAllArgumentsOnNextLine:                    false
+BreakBeforeBraces:                              Allman
+BreakConstructorInitializersBeforeComma:        true
+BreakStringLiterals:                            false
+ColumnLimit:                                    0
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+IncludeCategories:
+  - Regex:           '.*\.generated\.h'
+    Priority:        100
+  - Regex:           '.*(PCH).*'
+    Priority:        -1
+  - Regex:           '".*"'
+    Priority:        1
+  - Regex:           '^<.*\.(h)>'
+    Priority:        3
+  - Regex:           '^<.*>'
+    Priority:        4
+IndentWidth:                                    4
+ObjCBlockIndentWidth:                           4
+ObjCBreakBeforeNestedBlockParam:                false
+PointerAlignment:                               Left
+SpacesInContainerLiterals:                      true
+SpaceAfterTemplateKeyword:                      false
+Standard:                                       c++11
+TabWidth:                                       4
+UseTab:                                         Always
+MacroBlockBegin:                                '^BEGIN_DEFINE_SPEC'
+MacroBlockEnd:                                  '^END_DEFINE_SPEC'
+Cpp11BracedListStyle:                           false

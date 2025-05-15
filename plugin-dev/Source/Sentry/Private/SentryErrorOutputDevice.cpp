@@ -11,7 +11,7 @@ FSentryErrorOutputDevice::FSentryErrorOutputDevice(FOutputDeviceError* Parent)
 
 void FSentryErrorOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
-	if(FDebug::HasAsserted())
+	if (FDebug::HasAsserted())
 	{
 		OnAssert.Broadcast(V);
 	}

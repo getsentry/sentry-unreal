@@ -12,8 +12,8 @@ public:
 	virtual FString GetMessage() const override { return TEXT(""); }
 	virtual void SetLevel(ESentryLevel level) override {}
 	virtual ESentryLevel GetLevel() const override { return ESentryLevel::Debug; }
-	virtual bool IsCrash() const override { return false;}
-	virtual bool IsAnr() const override { return false;}
+	virtual bool IsCrash() const override { return false; }
+	virtual bool IsAnr() const override { return false; }
 };
 
 typedef FNullSentryEvent FPlatformSentryEvent;

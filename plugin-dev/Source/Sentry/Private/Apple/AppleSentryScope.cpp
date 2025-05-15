@@ -2,8 +2,8 @@
 
 #include "AppleSentryScope.h"
 
-#include "AppleSentryBreadcrumb.h"
 #include "AppleSentryAttachment.h"
+#include "AppleSentryBreadcrumb.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
 

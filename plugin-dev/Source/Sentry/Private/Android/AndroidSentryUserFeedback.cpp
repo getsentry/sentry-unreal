@@ -8,7 +8,7 @@
 
 FAndroidSentryUserFeedback::FAndroidSentryUserFeedback(TSharedPtr<ISentryId> eventId)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::UserFeedback, "(Lio/sentry/protocol/SentryId;)V",
-		StaticCastSharedPtr<FAndroidSentryId>(eventId)->GetJObject())
+		  StaticCastSharedPtr<FAndroidSentryId>(eventId)->GetJObject())
 {
 	SetupClassMethods();
 }

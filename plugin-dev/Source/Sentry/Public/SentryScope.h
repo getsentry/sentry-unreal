@@ -58,7 +58,7 @@ public:
 
 	/** Gets a global tags. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	TMap<FString, FString> GetTags() const;	
+	TMap<FString, FString> GetTags() const;
 
 	/** Sets dist in the scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

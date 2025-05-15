@@ -18,7 +18,6 @@ public:
 	virtual FString GetOperation() const override;
 
 private:
-
 	FSentryJavaMethod GetNameMethod;
 	FSentryJavaMethod GetOperationMethod;
 };

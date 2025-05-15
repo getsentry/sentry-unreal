@@ -1,13 +1,13 @@
 // Copyright (c) 2022 Sentry. All Rights Reserved.
 
 #include "SentrySettings.h"
-#include "SentryDefines.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryDefines.h"
 #include "SentryTraceSampler.h"
 
-#include "Misc/Paths.h"
-#include "Misc/ConfigCacheIni.h"
 #include "Misc/App.h"
+#include "Misc/ConfigCacheIni.h"
+#include "Misc/Paths.h"
 
 USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -23,7 +23,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, AttachScreenshot(false)
 	, AttachGpuDump(true)
 	, MaxAttachmentSize(20 * 1024 * 1024)
-	, MaxBreadcrumbs(100) 
+	, MaxBreadcrumbs(100)
 	, EnableAutoSessionTracking(true)
 	, SessionTimeout(30000)
 	, OverrideReleaseName(false)
@@ -89,7 +89,7 @@ FString USentrySettings::GetFormattedReleaseName()
 
 	FString Version = TEXT("");
 	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
-	if(!Version.IsEmpty())
+	if (!Version.IsEmpty())
 	{
 		FormattedReleaseName = FString::Printf(TEXT("%s@%s"), *FormattedReleaseName, *Version);
 	}
@@ -115,7 +115,7 @@ FString USentrySettings::GetDefaultEnvironmentName()
 	}
 
 	// Check Shipping configuration separately for backward compatibility
-	if(FApp::GetBuildConfiguration() == EBuildConfiguration::Shipping)
+	if (FApp::GetBuildConfiguration() == EBuildConfiguration::Shipping)
 	{
 		return TEXT("Release");
 	}
@@ -158,7 +158,7 @@ void USentrySettings::CheckLegacySettings()
 
 	const FString DsnLegacyKey = TEXT("DsnUrl");
 	FString DsnLegacyValue = TEXT("");
-	if(GConfig->GetString(*SentrySection, *DsnLegacyKey, DsnLegacyValue, *ConfigFilename))
+	if (GConfig->GetString(*SentrySection, *DsnLegacyKey, DsnLegacyValue, *ConfigFilename))
 	{
 		Dsn = DsnLegacyValue;
 		GConfig->SetString(*SentrySection, TEXT("Dsn"), *Dsn, *ConfigFilename);
@@ -168,7 +168,7 @@ void USentrySettings::CheckLegacySettings()
 
 	const FString DebugLegacyKey = TEXT("EnableVerboseLogging");
 	bool DebugLegacyValue;
-	if(GConfig->GetBool(*SentrySection, *DebugLegacyKey, DebugLegacyValue, *ConfigFilename))
+	if (GConfig->GetBool(*SentrySection, *DebugLegacyKey, DebugLegacyValue, *ConfigFilename))
 	{
 		Debug = DebugLegacyValue;
 		GConfig->SetBool(*SentrySection, TEXT("Debug"), Debug, *ConfigFilename);
@@ -178,7 +178,7 @@ void USentrySettings::CheckLegacySettings()
 
 	const FString AttachStacktraceLegacyKey = TEXT("EnableStackTrace");
 	bool AttachStacktraceLegacyValue;
-	if(GConfig->GetBool(*SentrySection, *AttachStacktraceLegacyKey, AttachStacktraceLegacyValue, *ConfigFilename))
+	if (GConfig->GetBool(*SentrySection, *AttachStacktraceLegacyKey, AttachStacktraceLegacyValue, *ConfigFilename))
 	{
 		AttachStacktrace = AttachStacktraceLegacyValue;
 		GConfig->SetBool(*SentrySection, TEXT("AttachStacktrace"), AttachStacktrace, *ConfigFilename);
