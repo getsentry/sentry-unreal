@@ -1,7 +1,7 @@
 #pragma once
 
-#include "UObject/UObjectGlobals.h"
 #include "Templates/SharedPointer.h"
+#include "UObject/UObjectGlobals.h"
 
 /**
  * A templatized wrapper to simplify the Unreal <-> Sentry bridging layer.
@@ -15,7 +15,7 @@ public:
 
 	/**
 	 * Method to instantiate an object with a native implementation.
-	 * 
+	 *
 	 * @param InObject The native implementation.
 	 * @return Returns an instance of the Unreal object if instantiation is valid; otherwise nullptr.
 	 */

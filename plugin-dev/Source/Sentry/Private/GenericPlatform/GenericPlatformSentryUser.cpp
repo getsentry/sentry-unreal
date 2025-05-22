@@ -61,7 +61,7 @@ FString FGenericPlatformSentryUser::GetUsername() const
 
 void FGenericPlatformSentryUser::SetIpAddress(const FString& ipAddress)
 {
-	if(!ipAddress.IsEmpty())
+	if (!ipAddress.IsEmpty())
 	{
 		sentry_value_set_by_key(User, "ip_address", sentry_value_new_string(TCHAR_TO_ANSI(*ipAddress)));
 	}

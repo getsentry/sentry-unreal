@@ -19,7 +19,7 @@ class SENTRY_API USentryAttachment : public UObject, public TSentryImplWrapper<I
 	GENERATED_BODY()
 
 public:
-	/** 
+	/**
 	 * Initializes an attachment with bytes and a filename.
 	 *
 	 * @param Data The data for the attachment.

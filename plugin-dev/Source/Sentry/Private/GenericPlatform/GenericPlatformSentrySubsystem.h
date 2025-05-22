@@ -26,7 +26,7 @@ public:
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) override;
-	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onScopeConfigure, ESentryLevel level) override;
+	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
@@ -61,7 +61,7 @@ protected:
 	virtual void ConfigureCertsPath(sentry_options_t* Options) {}
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) {}
 	virtual void ConfigureScreenshotAttachment(sentry_options_t* Options) {}
-	virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) {}	
+	virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) {}
 
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
