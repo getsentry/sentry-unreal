@@ -2,29 +2,29 @@
 
 #include "SentrySubsystem.h"
 
-#include "SentryModule.h"
-#include "SentrySettings.h"
+#include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
+#include "SentryErrorOutputDevice.h"
 #include "SentryEvent.h"
-#include "SentryUser.h"
-#include "SentryUserFeedback.h"
-#include "SentryBeforeSendHandler.h"
-#include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryModule.h"
+#include "SentryOutputDevice.h"
+#include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
-#include "SentryOutputDevice.h"
-#include "SentryErrorOutputDevice.h"
+#include "SentryUser.h"
+#include "SentryUserFeedback.h"
 
 #include "CoreGlobals.h"
 #include "Engine/World.h"
-#include "Misc/EngineVersion.h"
-#include "Misc/CoreDelegates.h"
-#include "Misc/App.h"
-#include "Misc/AssertionMacros.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
+#include "Misc/App.h"
+#include "Misc/AssertionMacros.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/EngineVersion.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -94,20 +94,23 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	const UClass* BeforeSendHandlerClass = Settings->BeforeSendHandler != nullptr
-		? static_cast<UClass*>(Settings->BeforeSendHandler)
-		: USentryBeforeSendHandler::StaticClass();
+	const UClass* BeforeSendHandlerClass =
+		Settings->BeforeSendHandler != nullptr
+			? static_cast<UClass*>(Settings->BeforeSendHandler)
+			: USentryBeforeSendHandler::StaticClass();
 
 	BeforeSendHandler = NewObject<USentryBeforeSendHandler>(this, BeforeSendHandlerClass);
 	check(BeforeSendHandler);
 
-	BeforeBreadcrumbHandler = Settings->BeforeBreadcrumbHandler != nullptr
-		? NewObject<USentryBeforeBreadcrumbHandler>(this, static_cast<UClass*>(Settings->BeforeBreadcrumbHandler))
-		: nullptr;
+	BeforeBreadcrumbHandler =
+		Settings->BeforeBreadcrumbHandler != nullptr
+			? NewObject<USentryBeforeBreadcrumbHandler>(this, static_cast<UClass*>(Settings->BeforeBreadcrumbHandler))
+			: nullptr;
 
-	const UClass* TraceSamplerClass = Settings->TracesSampler != nullptr
-		? static_cast<UClass*>(Settings->TracesSampler)
-		: USentryTraceSampler::StaticClass();
+	const UClass* TraceSamplerClass =
+		Settings->TracesSampler != nullptr
+			? static_cast<UClass*>(Settings->TracesSampler)
+			: USentryTraceSampler::StaticClass();
 
 	TraceSampler = NewObject<USentryTraceSampler>(this, TraceSamplerClass);
 	check(TraceSampler);
@@ -266,11 +269,11 @@ FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const 
 		return FString();
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
 	{
 		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
 		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}), Level);
+	}));
 
 	return SentryId->ToString();
 }
@@ -663,7 +666,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		PreLoadMapDelegate = FCoreUObjectDelegates::PreLoadMap.AddWeakLambda(this, [this](const FString& MapName)
 		{
-			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Map"), MapName}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), MapName } }, ESentryLevel::Info);
 		});
 	}
 
@@ -673,11 +676,11 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 		{
 			if (World)
 			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Map"), World->GetMapName()}}, ESentryLevel::Info);
+				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), World->GetMapName() } }, ESentryLevel::Info);
 			}
 			else
 			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Error"), TEXT("Map load failed")}}, ESentryLevel::Error);
+				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Error"), TEXT("Map load failed") } }, ESentryLevel::Error);
 			}
 		});
 	}
@@ -686,7 +689,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		GameStateChangedDelegate = FCoreDelegates::GameStateClassChanged.AddWeakLambda(this, [this](const FString& GameState)
 		{
-			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"), {{TEXT("GameState"), GameState}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("GameState"), GameState } }, ESentryLevel::Info);
 		});
 	}
 
@@ -694,7 +697,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		UserActivityChangedDelegate = FCoreDelegates::UserActivityStringChanged.AddWeakLambda(this, [this](const FString& Activity)
 		{
-			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Activity"), Activity}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Activity"), Activity } }, ESentryLevel::Info);
 		});
 	}
 
@@ -702,7 +705,7 @@ void USentrySubsystem::ConfigureBreadcrumbs()
 	{
 		GameSessionIDChangedDelegate = FCoreDelegates::GameSessionIDChanged.AddWeakLambda(this, [this](const FString& SessionId)
 		{
-			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"), {{TEXT("Session ID"), SessionId}}, ESentryLevel::Info);
+			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Session ID"), SessionId } }, ESentryLevel::Info);
 		});
 	}
 }

@@ -2,8 +2,8 @@
 
 #include "SentryHint.h"
 
-#include "SentryAttachment.h"
 #include "HAL/PlatformSentryHint.h"
+#include "SentryAttachment.h"
 
 void USentryHint::Initialize()
 {
@@ -12,7 +12,7 @@ void USentryHint::Initialize()
 
 void USentryHint::AddAttachment(USentryAttachment* Attachment)
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return;
 
 	NativeImpl->AddAttachment(Attachment->GetNativeObject());

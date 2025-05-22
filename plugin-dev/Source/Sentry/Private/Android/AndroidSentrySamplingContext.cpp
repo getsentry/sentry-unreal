@@ -27,7 +27,7 @@ TSharedPtr<ISentryTransactionContext> FAndroidSentrySamplingContext::GetTransact
 TMap<FString, FString> FAndroidSentrySamplingContext::GetCustomSamplingContext() const
 {
 	auto customSamplingContext = CallObjectMethod<jobject>(GetCustomSamplingContextMethod);
-	if(!customSamplingContext)
+	if (!customSamplingContext)
 		return TMap<FString, FString>();
 
 	FSentryJavaObjectWrapper NativeCustomSamplingContext(SentryJavaClasses::CustomSamplingContext, *customSamplingContext);
