@@ -66,7 +66,7 @@ ESentryLevel FGenericPlatformSentryEvent::GetLevel() const
 
 void FGenericPlatformSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	sentry_value_set_by_key(Event, "fingerprint", FGenericPlatformSentryConverters::StringArrayToNative(Fingerprint));
+	sentry_value_set_by_key(Event, "fingerprint", FGenericPlatformSentryConverters::StringArrayToNative(fingerprint));
 }
 
 TArray<FString> FGenericPlatformSentryEvent::GetFingerprint()
