@@ -2,15 +2,15 @@
 
 #include "AndroidSentryScope.h"
 
-#include "AndroidSentryBreadcrumb.h"
 #include "AndroidSentryAttachment.h"
+#include "AndroidSentryBreadcrumb.h"
 
 #include "Infrastructure/AndroidSentryConverters.h"
 #include "Infrastructure/AndroidSentryJavaClasses.h"
 
 FAndroidSentryScope::FAndroidSentryScope()
-	: FSentryJavaObjectWrapper(FSentryJavaClass { "io/sentry/Scope", ESentryJavaClassType::External }, "(Lio/sentry/SentryOptions;)V",
-		*FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getOptions", "()Lio/sentry/SentryOptions;"))
+	: FSentryJavaObjectWrapper(SentryJavaClasses::ScopeImpl, "(Lio/sentry/SentryOptions;)V",
+		  *FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getOptions", "()Lio/sentry/SentryOptions;"))
 {
 	SetupClassMethods();
 }

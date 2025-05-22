@@ -50,7 +50,7 @@ void FAndroidSentryTransaction::FinishWithTimestamp(int64 timestamp)
 
 bool FAndroidSentryTransaction::IsFinished() const
 {
-	return CallMethod<bool>(IsFinishedMethod);;
+	return CallMethod<bool>(IsFinishedMethod);
 }
 
 void FAndroidSentryTransaction::SetName(const FString& name)

@@ -80,7 +80,7 @@ bool FAppleSentryEvent::IsAnr() const
 
 	if (EventApple.exceptions != nil && EventApple.exceptions.count == 1)
 	{
-		SentryException *exception = EventApple.exceptions[0];
+		SentryException* exception = EventApple.exceptions[0];
 		isAppHangException = [exception.type isEqualToString:@"App Hanging"];
 		isAppHangMechanism = exception.mechanism != nil && [exception.mechanism.type isEqualToString:@"AppHang"];
 		isAppHangMessage = [exception.value hasPrefix:@"App hanging for at least"];

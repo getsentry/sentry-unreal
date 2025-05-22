@@ -36,7 +36,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 	}
 
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-	if(!SentrySubsystem || !SentrySubsystem->IsEnabled())
+	if (!SentrySubsystem || !SentrySubsystem->IsEnabled())
 	{
 		return;
 	}

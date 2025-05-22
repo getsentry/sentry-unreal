@@ -1,0 +1,16 @@
+name: "Lint"
+on:
+  push:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Clang Format
+        run: find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format --dry-run --Werror
