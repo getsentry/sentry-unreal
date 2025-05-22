@@ -10,6 +10,9 @@ public class SentryPlaygroundTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
+		MacPlatform.bUseDSYMFiles = true;
+		IOSPlatform.bGeneratedSYM = true;
+
 #if UE_5_1_OR_LATER
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 #endif
