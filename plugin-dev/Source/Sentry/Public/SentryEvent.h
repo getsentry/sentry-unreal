@@ -43,6 +43,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	ESentryLevel GetLevel() const;
 
+	/** Sets fingerprint of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetFingerprint(const TArray<FString>& Fingerprint);
+
+	/** Gets fingerprint of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	TArray<FString> GetFingerprint() const;
+
 	/** Gets flag indicating whether the event is a crash. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	bool IsCrash() const;

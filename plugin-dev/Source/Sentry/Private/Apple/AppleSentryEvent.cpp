@@ -56,6 +56,16 @@ ESentryLevel FAppleSentryEvent::GetLevel() const
 	return FAppleSentryConverters::SentryLevelToUnreal(EventApple.level);
 }
 
+void FAppleSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
+{
+	EventApple.fingerprint = FAppleSentryConverters::StringArrayToNative(fingerprint);
+}
+
+TArray<FString> FAppleSentryEvent::GetFingerprint()
+{
+	return FAppleSentryConverters::StringArrayToUnreal(EventApple.fingerprint);
+}
+
 bool FAppleSentryEvent::IsCrash() const
 {
 	return EventApple.error != nullptr;

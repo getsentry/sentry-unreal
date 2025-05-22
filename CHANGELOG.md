@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add API allowing to get/set event fingerprint ([#920](https://github.com/getsentry/sentry-unreal/pull/920))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.11.1 to v8.12.0 ([#911](https://github.com/getsentry/sentry-unreal/pull/911))
