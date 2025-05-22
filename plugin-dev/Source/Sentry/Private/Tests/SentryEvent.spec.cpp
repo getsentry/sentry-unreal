@@ -58,7 +58,7 @@ void SentryEventSpec::Define()
 			TArray<FString> OutFingerprint = SentryEvent->GetFingerprint();
 
 			TestEqual("Fingerprint elements count", OutFingerprint.Num(), InFingerprint.Num());
-			TestTrue("Fingerprint is empty", OutFingerprint.IsEmpty());
+			TestEqual("Fingerprint is empty", OutFingerprint.Num(), 0);
 		});
 	});
 }
