@@ -52,7 +52,7 @@ void SentryEventSpec::Define()
 
 		It("can be emptry", [this]()
 		{
-			TArray<FString> InFingerprint = { };
+			TArray<FString> InFingerprint = {};
 
 			SentryEvent->SetFingerprint(InFingerprint);
 			TArray<FString> OutFingerprint = SentryEvent->GetFingerprint();
