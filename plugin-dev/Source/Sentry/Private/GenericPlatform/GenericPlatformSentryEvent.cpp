@@ -64,6 +64,17 @@ ESentryLevel FGenericPlatformSentryEvent::GetLevel() const
 	return FGenericPlatformSentryConverters::SentryLevelToUnreal(level);
 }
 
+void FGenericPlatformSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
+{
+	sentry_value_set_by_key(Event, "fingerprint", FGenericPlatformSentryConverters::StringArrayToNative(Fingerprint));
+}
+
+TArray<FString> FGenericPlatformSentryEvent::GetFingerprint()
+{
+	sentry_value_t fingerprint = sentry_value_get_by_key(Event, "fingerprint");
+	return FGenericPlatformSentryConverters::StringArrayToUnreal(fingerprint);
+}
+
 bool FGenericPlatformSentryEvent::IsCrash() const
 {
 	return IsCrashEvent;

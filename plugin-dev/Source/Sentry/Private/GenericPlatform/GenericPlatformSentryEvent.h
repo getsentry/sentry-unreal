@@ -22,6 +22,8 @@ public:
 	virtual FString GetMessage() const override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
+	virtual void SetFingerprint(const TArray<FString>& fingerprint) override;
+	virtual TArray<FString> GetFingerprint() override;
 	virtual bool IsCrash() const override;
 	virtual bool IsAnr() const override;
 

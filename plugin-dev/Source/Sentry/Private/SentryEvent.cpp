@@ -2,6 +2,7 @@
 
 #include "SentryEvent.h"
 
+#include "Algo/Find.h"
 #include "HAL/PlatformSentryEvent.h"
 #include "Interface/SentryIdInterface.h"
 
@@ -52,6 +53,22 @@ ESentryLevel USentryEvent::GetLevel() const
 		return ESentryLevel::Debug;
 
 	return NativeImpl->GetLevel();
+}
+
+void USentryEvent::SetFingerprint(const TArray<FString>& Fingerprint)
+{
+	if (!NativeImpl)
+		return;
+
+	return NativeImpl->SetFingerprint(Fingerprint);
+}
+
+TArray<FString> USentryEvent::GetFingerprint() const
+{
+	if (!NativeImpl)
+		return TArray<FString>();
+
+	return NativeImpl->GetFingerprint();
 }
 
 bool USentryEvent::IsCrash() const
