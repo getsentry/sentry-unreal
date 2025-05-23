@@ -47,3 +47,21 @@ In order to run automation tests navigate to `Settings -> Plugins -> Testing` an
 There is a demo level (`SentryDemo.umap`) in project's Content folder which presents a simple UI allowing to send some test events to Sentry. `W_SentryDemo` blueprint implementation shows how to call the plugin API and can be used as a reference.
 
 In order to run the demo level navigate to `Content Browser -> Content -> Maps` and open `SentryDemo` map. Hit play to launch the demo.
+
+## Modifying plugin content
+
+All files that belong to the plugin are listed in the snapshot files:
+
+- `/scripts/packaging/package-github.snapshot` (for the GitHub package)
+- `/scripts/packaging/package-marketplace.snapshot` (for the Marketplace package)
+
+If you add, delete or move files within the `plugin-dev` directory these snapshot files must be updated to reflect the changes. To do that, run:
+
+```bash
+pwsh ./scripts/packaging/pack.ps1
+pwsh ./scripts/packaging/test-contents.ps1 accept
+```
+
+Once completed, make sure to commit the updated snapshot files to Git.
+
+CI will run a separate check to compare the actual plugin package contents against the snapshot files.
