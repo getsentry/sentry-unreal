@@ -5,7 +5,7 @@ For big feature it's advised to raise an issue to discuss it first.
 
 ## Getting started
 
-### Dependencies
+### Prerequisites
 
 - [GitHub CLI](https://cli.github.com/)
 
@@ -21,6 +21,8 @@ To be able to build for Android, make sure to configure the SDK & NDK according 
 ### First setup
 
 > Currently this method is available only for C++ UE projects! Blueprint project can be converted to a C++ one simply by adding an empty class via Editor.
+
+> When working with a `sentry-unreal` fork, run `gh repo set-default` to select the default remote repository used for GitHub API queries (required for pulling plugin dependencies from CI). If you don't plan to configure the CI pipeline for your fork, it's recommended to set `getsentry/sentry-unreal` as the default remote.
 
 To get started, we recommend running the init script:
 
