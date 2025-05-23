@@ -63,8 +63,3 @@ pwsh ./scripts/packaging/test-contents.ps1 accept
 Once completed, make sure to commit the updated snapshot files to Git.
 
 CI will run a separate check to compare the actual plugin package contents against the snapshot files.
-
-
-
-
-
