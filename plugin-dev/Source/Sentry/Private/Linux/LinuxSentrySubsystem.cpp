@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "LinuxSentrySubsystem.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"

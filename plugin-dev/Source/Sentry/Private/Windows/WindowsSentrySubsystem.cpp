@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "WindowsSentrySubsystem.h"
 
 #if USE_SENTRY_NATIVE
