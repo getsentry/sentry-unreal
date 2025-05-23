@@ -1,5 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryPlaygroundGameModeBase.h"
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "Mac/MacSentrySubsystem.h"
 
 #include "AppleSentryId.h"
