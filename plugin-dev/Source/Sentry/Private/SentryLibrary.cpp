@@ -29,7 +29,7 @@ USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryL
 
 USentryUser* USentryLibrary::CreateSentryUser(const FString& Email, const FString& Id, const FString& Username, const FString& IpAddress, const TMap<FString, FString>& Data)
 {
-	USentryUser* User = USentryUser::Create(CreateSharedSentryUser());
+	USentryUser* User = USentryUser::Create(MakeShareable(new FPlatformSentryUser));
 
 	if (!Email.IsEmpty())
 		User->SetEmail(Email);
