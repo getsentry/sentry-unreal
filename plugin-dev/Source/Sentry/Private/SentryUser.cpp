@@ -6,7 +6,7 @@
 
 void USentryUser::Initialize()
 {
-	NativeImpl = CreateSharedSentryUser();
+	NativeImpl = MakeShareable(new FPlatformSentryUser);
 }
 
 void USentryUser::SetEmail(const FString& Email)
