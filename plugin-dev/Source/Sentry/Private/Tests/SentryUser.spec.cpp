@@ -17,7 +17,7 @@ void SentryUserSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryUser = USentryUser::Create(CreateSharedSentryUser());
+		SentryUser = USentryUser::Create(new FPlatformSentryUser);
 	});
 
 	Describe("User params", [this]()
