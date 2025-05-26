@@ -5,6 +5,7 @@
 ### Features
 
 - Add API allowing to get/set event fingerprint ([#920](https://github.com/getsentry/sentry-unreal/pull/920))
+- Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
 
 ### Dependencies
 
