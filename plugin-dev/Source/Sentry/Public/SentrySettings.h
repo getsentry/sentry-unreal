@@ -1,10 +1,10 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "Engine/EngineTypes.h"
+#include "UObject/NoExportTypes.h"
 #include "SentrySettings.generated.h"
 
 class USentryBeforeSendHandler;

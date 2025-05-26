@@ -1,22 +1,23 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryAttachment.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryAttachment::FAppleSentryAttachment(const TArray<uint8>& data, const FString& filename, const FString& contentType)
 {
-	AttachmentApple = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithData:FAppleSentryConverters::ByteDataToNative(data)
-		filename:filename.GetNSString() contentType:contentType.GetNSString()];
+	AttachmentApple = [[SentryAttachment alloc] initWithData:FAppleSentryConverters::ByteDataToNative(data)
+													filename:filename.GetNSString()
+												 contentType:contentType.GetNSString()];
 }
 
 FAppleSentryAttachment::FAppleSentryAttachment(const FString& path, const FString& filename, const FString& contentType)
 {
-	AttachmentApple = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:path.GetNSString()
-		filename:filename.GetNSString() contentType:contentType.GetNSString()];
+	AttachmentApple = [[SentryAttachment alloc] initWithPath:path.GetNSString()
+													filename:filename.GetNSString()
+												 contentType:contentType.GetNSString()];
 }
 
 FAppleSentryAttachment::~FAppleSentryAttachment()

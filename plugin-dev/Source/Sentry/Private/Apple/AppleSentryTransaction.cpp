@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryTransaction.h"
 #include "AppleSentrySpan.h"
@@ -6,7 +6,6 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 #include "SentryDefines.h"
 

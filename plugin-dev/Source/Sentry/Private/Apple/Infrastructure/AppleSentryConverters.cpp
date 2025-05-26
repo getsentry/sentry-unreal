@@ -1,12 +1,10 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryConverters.h"
 
 #include "SentryDefines.h"
 
 #include "Apple/AppleSentryScope.h"
-
-#include "Convenience/AppleSentryMacro.h"
 
 SentryLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 {
@@ -50,7 +48,7 @@ NSDictionary* FAppleSentryConverters::StringMapToNative(const TMap<FString, FStr
 
 NSArray* FAppleSentryConverters::StringArrayToNative(const TArray<FString>& array)
 {
-	NSMutableArray *arr = [NSMutableArray arrayWithCapacity:array.Num()];
+	NSMutableArray* arr = [NSMutableArray arrayWithCapacity:array.Num()];
 
 	for (auto it = array.CreateConstIterator(); it; ++it)
 	{
@@ -69,16 +67,16 @@ SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgra
 {
 	int32 framesCount = callstack.Num();
 
-	NSMutableArray *arr = [NSMutableArray arrayWithCapacity:framesCount];
+	NSMutableArray* arr = [NSMutableArray arrayWithCapacity:framesCount];
 
 	for (int i = 0; i < framesCount; ++i)
 	{
-		SentryFrame *frame = [[SENTRY_APPLE_CLASS(SentryFrame) alloc] init];
+		SentryFrame* frame = [[SentryFrame alloc] init];
 		frame.instructionAddress = FString::Printf(TEXT("0x%llx"), callstack[framesCount - i - 1].ProgramCounter).GetNSString();
 		[arr addObject:frame];
 	}
 
-	SentryStacktrace *trace = [[SENTRY_APPLE_CLASS(SentryStacktrace) alloc] initWithFrames:arr registers:@{}];
+	SentryStacktrace* trace = [[SentryStacktrace alloc] initWithFrames:arr registers:@{}];
 
 	return trace;
 }
@@ -115,7 +113,7 @@ TMap<FString, FString> FAppleSentryConverters::StringMapToUnreal(NSDictionary* d
 {
 	TMap<FString, FString> map;
 
-	for(id key in dict)
+	for (id key in dict)
 	{
 		map.Add(FString(key), FString(dict[key]));
 	}
@@ -153,22 +151,28 @@ SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 {
 	SentryLevel nativeLevel = kSentryLevelDebug;
 
-	if ([string isEqualToString:@"debug"]) {
+	if ([string isEqualToString:@"debug"])
+	{
 		nativeLevel = kSentryLevelDebug;
 	}
-	else if ([string isEqualToString:@"info"]) {
+	else if ([string isEqualToString:@"info"])
+	{
 		nativeLevel = kSentryLevelInfo;
 	}
-	else if ([string isEqualToString:@"warning"]) {
+	else if ([string isEqualToString:@"warning"])
+	{
 		nativeLevel = kSentryLevelWarning;
 	}
-	else if ([string isEqualToString:@"error"]) {
+	else if ([string isEqualToString:@"error"])
+	{
 		nativeLevel = kSentryLevelError;
 	}
-	else if ([string isEqualToString:@"fatal"]) {
+	else if ([string isEqualToString:@"fatal"])
+	{
 		nativeLevel = kSentryLevelFatal;
 	}
-	else {
+	else
+	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
 	}
 

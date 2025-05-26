@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryTests.h"
 #include "SentryEvent.h"
+#include "SentryTests.h"
 
 #include "Misc/AutomationTest.h"
 
@@ -32,6 +32,33 @@ void SentryEventSpec::Define()
 			TestEqual("Event level", SentryEvent->GetLevel(), ESentryLevel::Fatal);
 			TestEqual("Event message", SentryEvent->GetMessage(), TestMessage);
 			TestFalse("Event ID is non-empty", SentryEvent->GetId().IsEmpty());
+		});
+	});
+
+	Describe("Event fingerprint", [this]()
+	{
+		It("should persist its value", [this]()
+		{
+			TArray<FString> InFingerprint = { TEXT("F1"), TEXT("F2"), TEXT("F3") };
+
+			SentryEvent->SetFingerprint(InFingerprint);
+			TArray<FString> OutFingerprint = SentryEvent->GetFingerprint();
+
+			TestEqual("Fingerprint elements count", OutFingerprint.Num(), InFingerprint.Num());
+			TestEqual("Fingerprint first element", OutFingerprint[0], InFingerprint[0]);
+			TestEqual("Fingerprint second element", OutFingerprint[1], InFingerprint[1]);
+			TestEqual("Fingerprint third element", OutFingerprint[2], InFingerprint[2]);
+		});
+
+		It("can be emptry", [this]()
+		{
+			TArray<FString> InFingerprint = {};
+
+			SentryEvent->SetFingerprint(InFingerprint);
+			TArray<FString> OutFingerprint = SentryEvent->GetFingerprint();
+
+			TestEqual("Fingerprint elements count", OutFingerprint.Num(), InFingerprint.Num());
+			TestEqual("Fingerprint is empty", OutFingerprint.Num(), 0);
 		});
 	});
 }

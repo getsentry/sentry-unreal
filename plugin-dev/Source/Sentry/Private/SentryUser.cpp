@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryUser.h"
 
@@ -19,7 +19,7 @@ void USentryUser::SetEmail(const FString& Email)
 
 FString USentryUser::GetEmail() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetEmail();
@@ -35,7 +35,7 @@ void USentryUser::SetId(const FString& Id)
 
 FString USentryUser::GetId() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetId();
@@ -51,7 +51,7 @@ void USentryUser::SetUsername(const FString& Username)
 
 FString USentryUser::GetUsername() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetUsername();
@@ -67,7 +67,7 @@ void USentryUser::SetIpAddress(const FString& IpAddress)
 
 FString USentryUser::GetIpAddress() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetIpAddress();
@@ -83,7 +83,7 @@ void USentryUser::SetData(const TMap<FString, FString>& Data)
 
 TMap<FString, FString> USentryUser::GetData() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return TMap<FString, FString>();
 
 	return NativeImpl->GetData();

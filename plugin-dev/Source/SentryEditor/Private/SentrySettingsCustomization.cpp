@@ -1,8 +1,8 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentrySettingsCustomization.h"
-#include "SentrySettings.h"
 #include "SentryModule.h"
+#include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentrySymToolsDownloader.h"
 
@@ -12,23 +12,23 @@
 #include "IUATHelperModule.h"
 
 #include "Engine/Engine.h"
-#include "Misc/Paths.h"
-#include "Misc/ConfigCacheIni.h"
-#include "Misc/EngineVersionComparison.h"
-#include "PropertyHandle.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "HAL/FileManager.h"
+#include "Misc/ConfigCacheIni.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Misc/Paths.h"
+#include "PropertyHandle.h"
 
 #include "Interfaces/IPluginManager.h"
 #include "Runtime/Launch/Resources/Version.h"
 
-#include "Widgets/Text/SRichTextBlock.h"
-#include "Widgets/Text/STextBlock.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
-#include "Widgets/Input/SButton.h"
 #include "Widgets/Notifications/SNotificationList.h"
-#include "Widgets/Images/SImage.h"
+#include "Widgets/Text/SRichTextBlock.h"
+#include "Widgets/Text/STextBlock.h"
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "EditorStyleSet.h"
@@ -83,6 +83,7 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 	TSharedRef<SWidget> GeneralConfiguredWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
 		FText::FromString(TEXT("Sentry is configured.")), FText());
 
+	// clang-format off
 	GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
 		.WholeRowWidget
 		[
@@ -105,19 +106,21 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 				]
 			]
 		];
+	// clang-format on
 
 #if PLATFORM_WINDOWS
 	if (FSentryModule::Get().IsMarketplaceVersion())
 	{
 		TSharedRef<SWidget> LinuxBinariesMissingWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Sentry Linux pre-compiled binaries are missing.")), FText::FromString(TEXT("Compile")));
+			FText::FromString(TEXT("Sentry Linux pre-compiled binaries are missing.")), FText::FromString(TEXT("Compile")));
 
 		TSharedRef<SWidget> LinuxBinariesCompilingWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Compiling Sentry for Linux...")), FText());
+			FText::FromString(TEXT("Compiling Sentry for Linux...")), FText());
 
 		TSharedRef<SWidget> LinuxBinariesConfiguredWidget = MakeLinuxBinariesStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
-		FText::FromString(TEXT("Sentry Linux pre-compiled binaries are ready.")), FText());
+			FText::FromString(TEXT("Sentry Linux pre-compiled binaries are ready.")), FText());
 
+		// clang-format off
 		GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
 			.WholeRowWidget
 			[
@@ -140,6 +143,7 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 					]
 				]
 			];
+		// clang-format on
 	}
 #endif
 }
@@ -156,6 +160,7 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 	const ISlateStyle& Style = FAppStyle::Get();
 #endif
 
+	// clang-format off
 	CrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporter")), false)
 		.WholeRowWidget
 		[
@@ -234,6 +239,7 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 				]
 			]
 		];
+	// clang-format on
 }
 
 void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder)
@@ -255,6 +261,7 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 	const ISlateStyle& Style = FAppStyle::Get();
 #endif
 
+	// clang-format off
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
 		.WholeRowWidget
 		[
@@ -277,7 +284,9 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 				]
 			]
 		];
+	// clang-format on
 
+	// clang-format off
 	DebugSymbolsCategory.AddCustomRow(FText::FromString(TEXT("DebugSymbols")), false)
 		.WholeRowWidget
 		[
@@ -303,6 +312,7 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 				]
 			]
 		];
+	// clang-format on
 }
 
 void FSentrySettingsCustomization::SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder)
@@ -322,6 +332,7 @@ void FSentrySettingsCustomization::SetPropertiesUpdateHandler(IDetailLayoutBuild
 
 TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(FName IconName, FText Message, FText ButtonMessage)
 {
+	// clang-format off
 	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
 		+SHorizontalBox::Slot()
 		.AutoWidth()
@@ -346,9 +357,11 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(F
 			.ShadowOffset(FVector2D::UnitVector)
 			.Text(Message)
 		];
+	// clang-format on
 
 	if (!ButtonMessage.IsEmpty())
 	{
+		// clang-format off
 		Result->AddSlot()
 			.AutoWidth()
 			.VAlign(VAlign_Center)
@@ -367,6 +380,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(F
 				})
 				.Text(ButtonMessage)
 			];
+		// clang-format on
 	}
 
 	return Result;
@@ -374,6 +388,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeGeneralSettingsStatusRow(F
 
 TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FName IconName, FText Message, FText ButtonMessage)
 {
+	// clang-format off
 	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
 		+SHorizontalBox::Slot()
 		.AutoWidth()
@@ -398,9 +413,11 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FNa
 			.ShadowOffset(FVector2D::UnitVector)
 			.Text(Message)
 		];
+	// clang-format on
 
 	if (!ButtonMessage.IsEmpty())
 	{
+		// clang-format off
 		Result->AddSlot()
 			.AutoWidth()
 			.VAlign(VAlign_Center)
@@ -441,6 +458,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FNa
 				})
 				.Text(ButtonMessage)
 			];
+		// clang-format on
 	}
 
 	return Result;
@@ -448,6 +466,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FNa
 
 TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage)
 {
+	// clang-format off
 	TSharedRef<SHorizontalBox> Result = SNew(SHorizontalBox)
 		+SHorizontalBox::Slot()
 		.AutoWidth()
@@ -472,9 +491,11 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 			.ShadowOffset(FVector2D::UnitVector)
 			.Text(Message)
 		];
+	// clang-format on
 
 	if (!ButtonMessage.IsEmpty())
 	{
+		// clang-format off
 		Result->AddSlot()
 			.AutoWidth()
 			.VAlign(VAlign_Center)
@@ -501,6 +522,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 				})
 				.Text(ButtonMessage)
 			];
+		// clang-format on
 	}
 
 	return Result;

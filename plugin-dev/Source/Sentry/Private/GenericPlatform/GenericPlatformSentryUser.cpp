@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryUser.h"
 
@@ -61,7 +61,7 @@ FString FGenericPlatformSentryUser::GetUsername() const
 
 void FGenericPlatformSentryUser::SetIpAddress(const FString& ipAddress)
 {
-	if(!ipAddress.IsEmpty())
+	if (!ipAddress.IsEmpty())
 	{
 		sentry_value_set_by_key(User, "ip_address", sentry_value_new_string(TCHAR_TO_ANSI(*ipAddress)));
 	}

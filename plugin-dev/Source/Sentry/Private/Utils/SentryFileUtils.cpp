@@ -1,10 +1,10 @@
-// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryFileUtils.h"
 #include "SentryDefines.h"
 
-#include "HAL/FileManager.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 
 struct FSentrySortFileByDatePredicate
@@ -32,7 +32,7 @@ FString SentryFileUtils::GetGameLogBackupPath()
 	TArray<FString> GameLogBackupFiles;
 	IFileManager::Get().FindFiles(GameLogBackupFiles, *FString::Printf(TEXT("%s*-backup-*.*"), *FPaths::ProjectLogDir()), true, false);
 
-	if(GameLogBackupFiles.Num() == 0)
+	if (GameLogBackupFiles.Num() == 0)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("There are no game log backups available."));
 		return FString("");

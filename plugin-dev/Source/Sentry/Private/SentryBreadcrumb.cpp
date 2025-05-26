@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryBreadcrumb.h"
 
@@ -9,7 +9,7 @@ void USentryBreadcrumb::Initialize()
 	NativeImpl = CreateSharedSentryBreadcrumb();
 }
 
-void USentryBreadcrumb::SetMessage(const FString &Message)
+void USentryBreadcrumb::SetMessage(const FString& Message)
 {
 	if (!NativeImpl)
 		return;
@@ -19,7 +19,7 @@ void USentryBreadcrumb::SetMessage(const FString &Message)
 
 FString USentryBreadcrumb::GetMessage() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetMessage();
@@ -35,7 +35,7 @@ void USentryBreadcrumb::SetType(const FString& Type)
 
 FString USentryBreadcrumb::GetType() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetType();
@@ -51,7 +51,7 @@ void USentryBreadcrumb::SetCategory(const FString& Category)
 
 FString USentryBreadcrumb::GetCategory() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetCategory();
@@ -67,12 +67,12 @@ void USentryBreadcrumb::SetData(const TMap<FString, FString>& Data)
 
 TMap<FString, FString> USentryBreadcrumb::GetData() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return TMap<FString, FString>();
 
 	return NativeImpl->GetData();
 }
-	
+
 void USentryBreadcrumb::SetLevel(ESentryLevel Level)
 {
 	if (!NativeImpl)
@@ -83,7 +83,7 @@ void USentryBreadcrumb::SetLevel(ESentryLevel Level)
 
 ESentryLevel USentryBreadcrumb::GetLevel() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return ESentryLevel::Debug;
 
 	return NativeImpl->GetLevel();

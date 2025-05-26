@@ -1,8 +1,8 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryScope.h"
-#include "SentryBreadcrumb.h"
 #include "SentryAttachment.h"
+#include "SentryBreadcrumb.h"
 
 #include "HAL/PlatformSentryScope.h"
 

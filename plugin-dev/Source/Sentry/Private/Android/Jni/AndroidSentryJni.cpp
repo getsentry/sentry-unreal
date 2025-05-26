@@ -1,25 +1,25 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "Android/Callbacks/AndroidSentryScopeCallback.h"
-#include "Android/Infrastructure/AndroidSentryConverters.h"
-#include "Android/Infrastructure/AndroidSentryJavaClasses.h"
-#include "Android/AndroidSentrySubsystem.h"
-#include "Android/AndroidSentryScope.h"
 #include "Android/AndroidSentryBreadcrumb.h"
 #include "Android/AndroidSentryEvent.h"
 #include "Android/AndroidSentryHint.h"
 #include "Android/AndroidSentrySamplingContext.h"
+#include "Android/AndroidSentryScope.h"
+#include "Android/AndroidSentrySubsystem.h"
+#include "Android/Callbacks/AndroidSentryScopeCallback.h"
+#include "Android/Infrastructure/AndroidSentryConverters.h"
+#include "Android/Infrastructure/AndroidSentryJavaClasses.h"
 
 #include "Android/AndroidJNI.h"
 
-#include "SentryDefines.h"
+#include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
+#include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
-#include "SentryBeforeSendHandler.h"
-#include "SentryBeforeBreadcrumbHandler.h"
-#include "SentryTraceSampler.h"
 #include "SentrySamplingContext.h"
+#include "SentryTraceSampler.h"
 
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
@@ -105,7 +105,7 @@ JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv*
 	USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new FAndroidSentrySamplingContext(samplingContext)));
 
 	float samplingValue;
-	if(sampler->Sample(Context, samplingValue))
+	if (sampler->Sample(Context, samplingValue))
 	{
 		return (jfloat)samplingValue;
 	}

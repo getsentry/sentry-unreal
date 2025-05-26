@@ -1,18 +1,18 @@
-﻿// Copyright (c) 2022 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryTests.h"
 #include "SentryScope.h"
 #include "SentryEvent.h"
+#include "SentryTests.h"
 
 #include "SentryDataTypes.h"
 
-#include "Interface/SentryScopeInterface.h"
 #include "Interface/SentryEventInterface.h"
+#include "Interface/SentryScopeInterface.h"
 
 #include "Misc/AutomationTest.h"
 
-#include "HAL/PlatformSentryScope.h"
 #include "HAL/PlatformSentryEvent.h"
+#include "HAL/PlatformSentryScope.h"
 
 #include "GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h"
 
@@ -46,7 +46,9 @@ void SentryScopeSpec::Define()
 		TestContext.Add(TEXT("ContextKey1"), TEXT("ContextVal1"));
 		TestContext.Add(TEXT("ContextKey2"), TEXT("ContextVal2"));
 
-		TestFingerprint = { TEXT("F1"), TEXT("F2"), TEXT("F3") };
+		TestFingerprint.Add(TEXT("F1"));
+		TestFingerprint.Add(TEXT("F2"));
+		TestFingerprint.Add(TEXT("F3"));
 	});
 
 	Describe("Scope tags", [this]()

@@ -1,9 +1,9 @@
-﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #pragma once
 
-#include "Misc/OutputDevice.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/OutputDevice.h"
 
 #include "SentryDataTypes.h"
 
@@ -12,7 +12,7 @@ class FSentryOutputDevice : public FOutputDevice
 public:
 	FSentryOutputDevice();
 
-	virtual void Serialize( const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category) override;
+	virtual void Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category) override;
 
 	virtual bool CanBeUsedOnAnyThread() const override;
 	virtual bool CanBeUsedOnMultipleThreads() const override;

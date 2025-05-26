@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.Collections.Generic;
@@ -9,6 +9,11 @@ public class SentryPlaygroundTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
+
+#if UE_5_0_OR_LATER
+		MacPlatform.bUseDSYMFiles = true;
+		IOSPlatform.bGeneratedSYM = true;
+#endif
 
 #if UE_5_1_OR_LATER
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;

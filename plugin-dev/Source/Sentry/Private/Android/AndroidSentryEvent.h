@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -19,6 +19,8 @@ public:
 	virtual FString GetMessage() const override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
+	virtual void SetFingerprint(const TArray<FString>& fingerprint) override;
+	virtual TArray<FString> GetFingerprint() override;
 	virtual bool IsCrash() const override;
 	virtual bool IsAnr() const override;
 
@@ -28,6 +30,8 @@ private:
 	FSentryJavaMethod GetMessageMethod;
 	FSentryJavaMethod SetLevelMethod;
 	FSentryJavaMethod GetLevelMethod;
+	FSentryJavaMethod SetFingerprintMethod;
+	FSentryJavaMethod GetFingerprintMethod;
 	FSentryJavaMethod IsCrashMethod;
 };
 

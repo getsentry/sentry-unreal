@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryCrashReporter.h"
 
@@ -17,7 +17,7 @@ FGenericPlatformSentryCrashReporter::FGenericPlatformSentryCrashReporter()
 	crashReporterConfig = MakeShareable(new FJsonObject);
 
 	const FString sentryData = FGenericPlatformSentryCrashContext::Get()->GetGameData(TEXT("__sentry"));
-	if(!sentryData.IsEmpty())
+	if (!sentryData.IsEmpty())
 	{
 		const TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(*sentryData);
 		if (!FJsonSerializer::Deserialize(jsonReader, crashReporterConfig) && crashReporterConfig.IsValid())
@@ -81,7 +81,7 @@ void FGenericPlatformSentryCrashReporter::SetContext(const FString& key, const T
 
 	TSharedPtr<FJsonObject> contextConfig;
 
-	if(crashReporterConfig->HasField(TEXT("contexts")))
+	if (crashReporterConfig->HasField(TEXT("contexts")))
 	{
 		contextConfig = crashReporterConfig->GetObjectField(TEXT("contexts"));
 		contextConfig->SetObjectField(key, valuesConfig);
@@ -102,7 +102,7 @@ void FGenericPlatformSentryCrashReporter::SetTag(const FString& key, const FStri
 {
 	TSharedPtr<FJsonObject> tagsConfig;
 
-	if(crashReporterConfig->HasField(TEXT("tags")))
+	if (crashReporterConfig->HasField(TEXT("tags")))
 	{
 		tagsConfig = crashReporterConfig->GetObjectField(TEXT("tags"));
 		tagsConfig->SetStringField(key, value);
@@ -121,7 +121,7 @@ void FGenericPlatformSentryCrashReporter::RemoveTag(const FString& key)
 {
 	TSharedPtr<FJsonObject> tagsConfig;
 
-	if(crashReporterConfig->HasField(TEXT("tags")))
+	if (crashReporterConfig->HasField(TEXT("tags")))
 	{
 		tagsConfig = crashReporterConfig->GetObjectField(TEXT("tags"));
 		tagsConfig->RemoveField(key);

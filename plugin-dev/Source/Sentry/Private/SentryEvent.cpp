@@ -1,7 +1,8 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryEvent.h"
 
+#include "Algo/Find.h"
 #include "HAL/PlatformSentryEvent.h"
 #include "Interface/SentryIdInterface.h"
 
@@ -22,7 +23,7 @@ FString USentryEvent::GetId() const
 	return idNativeImpl->ToString();
 }
 
-void USentryEvent::SetMessage(const FString &Message)
+void USentryEvent::SetMessage(const FString& Message)
 {
 	if (!NativeImpl)
 		return;
@@ -32,7 +33,7 @@ void USentryEvent::SetMessage(const FString &Message)
 
 FString USentryEvent::GetMessage() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetMessage();
@@ -48,15 +49,31 @@ void USentryEvent::SetLevel(ESentryLevel Level)
 
 ESentryLevel USentryEvent::GetLevel() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return ESentryLevel::Debug;
 
 	return NativeImpl->GetLevel();
 }
 
+void USentryEvent::SetFingerprint(const TArray<FString>& Fingerprint)
+{
+	if (!NativeImpl)
+		return;
+
+	return NativeImpl->SetFingerprint(Fingerprint);
+}
+
+TArray<FString> USentryEvent::GetFingerprint() const
+{
+	if (!NativeImpl)
+		return TArray<FString>();
+
+	return NativeImpl->GetFingerprint();
+}
+
 bool USentryEvent::IsCrash() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return false;
 
 	return NativeImpl->IsCrash();
@@ -64,7 +81,7 @@ bool USentryEvent::IsCrash() const
 
 bool USentryEvent::IsAnr() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return false;
 
 	return NativeImpl->IsAnr();

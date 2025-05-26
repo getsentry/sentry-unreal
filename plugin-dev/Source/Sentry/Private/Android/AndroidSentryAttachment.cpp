@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryAttachment.h"
 
@@ -7,14 +7,14 @@
 
 FAndroidSentryAttachment::FAndroidSentryAttachment(const TArray<uint8>& data, const FString& filename, const FString& contentType)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::Attachment, "([BLjava/lang/String;Ljava/lang/String;)V",
-		FAndroidSentryConverters::ByteArrayToNative(data), *GetJString(filename), *GetJString(contentType))
+		  FAndroidSentryConverters::ByteArrayToNative(data), *GetJString(filename), *GetJString(contentType))
 {
 	SetupClassMethods();
 }
 
 FAndroidSentryAttachment::FAndroidSentryAttachment(const FString& path, const FString& filename, const FString& contentType)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::Attachment, "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-		*GetJString(path), *GetJString(filename), *GetJString(contentType))
+		  *GetJString(path), *GetJString(filename), *GetJString(contentType))
 {
 	SetupClassMethods();
 }

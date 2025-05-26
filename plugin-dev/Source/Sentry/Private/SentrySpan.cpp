@@ -1,9 +1,9 @@
-// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentrySpan.h"
 
-#include "SentryDefines.h"
 #include "Interface/SentrySpanInterface.h"
+#include "SentryDefines.h"
 
 USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
 {

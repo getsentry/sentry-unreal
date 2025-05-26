@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryAttachment.h"
 
@@ -16,7 +16,7 @@ void USentryAttachment::InitializeWithPath(const FString& Path, const FString& F
 
 TArray<uint8> USentryAttachment::GetData() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return TArray<uint8>();
 
 	return NativeImpl->GetData();
@@ -24,7 +24,7 @@ TArray<uint8> USentryAttachment::GetData() const
 
 FString USentryAttachment::GetPath() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetPath();
@@ -32,7 +32,7 @@ FString USentryAttachment::GetPath() const
 
 FString USentryAttachment::GetFilename() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetFilename();
@@ -40,7 +40,7 @@ FString USentryAttachment::GetFilename() const
 
 FString USentryAttachment::GetContentType() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetContentType();

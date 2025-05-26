@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -15,7 +15,7 @@ public:
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) override;
-	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, const FSentryScopeDelegate& onConfigureScope, ESentryLevel level) override;
+	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;

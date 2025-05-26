@@ -1,15 +1,14 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryBreadcrumb.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryBreadcrumb::FAppleSentryBreadcrumb()
 {
-	BreadcrumbApple = [[SENTRY_APPLE_CLASS(SentryBreadcrumb) alloc] init];
+	BreadcrumbApple = [[SentryBreadcrumb alloc] init];
 }
 
 FAppleSentryBreadcrumb::FAppleSentryBreadcrumb(SentryBreadcrumb* breadcrumb)

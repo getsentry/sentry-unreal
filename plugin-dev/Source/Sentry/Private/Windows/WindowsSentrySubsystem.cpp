@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "WindowsSentrySubsystem.h"
 
 #if USE_SENTRY_NATIVE
@@ -5,15 +7,15 @@
 #include "SentryDefines.h"
 
 #include "Misc/OutputDeviceRedirector.h"
-#include "Windows/WindowsPlatformStackWalk.h"
 #include "Windows/Infrastructure/WindowsSentryConverters.h"
+#include "Windows/WindowsPlatformStackWalk.h"
 
-void FWindowsSentrySubsystem::ConfigureGpuDumpAttachment(sentry_options_t *Options)
+void FWindowsSentrySubsystem::ConfigureGpuDumpAttachment(sentry_options_t* Options)
 {
 	sentry_options_add_attachmentw(Options, *GetGpuDumpBackupPath());
 }
 
-static void PrintCrashLog(const sentry_ucontext_t *uctx)
+static void PrintCrashLog(const sentry_ucontext_t* uctx)
 {
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	FWindowsSentryConverters::SentryCrashContextToString(uctx, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorExceptionDescription));
@@ -43,7 +45,7 @@ static void PrintCrashLog(const sentry_ucontext_t *uctx)
 #endif // !UE_VERSION_OLDER_THAN(5, 0, 0)
 }
 
-sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure)
+sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
 	// Ensures that error message and corresponding callstack flushed to a log file (if available)
 	// before it's attached to the captured crash event and uploaded to Sentry.

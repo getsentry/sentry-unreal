@@ -1,15 +1,14 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryUser.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryUser::FAppleSentryUser()
 {
-	UserApple = [[SENTRY_APPLE_CLASS(SentryUser) alloc] init];
+	UserApple = [[SentryUser alloc] init];
 }
 
 FAppleSentryUser::FAppleSentryUser(SentryUser* user)

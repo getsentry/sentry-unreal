@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "SentryPlaygroundUtils.h"
 
 #include "HAL/FileManager.h"

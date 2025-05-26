@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryBreadcrumb.h"
@@ -38,7 +38,7 @@ void FGenericPlatformSentryScope::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> br
 {
 	FScopeLock Lock(&CriticalSection);
 
-	if(Breadcrumbs.Num() >= FSentryModule::Get().GetSettings()->MaxBreadcrumbs)
+	if (Breadcrumbs.Num() >= FSentryModule::Get().GetSettings()->MaxBreadcrumbs)
 	{
 		Breadcrumbs.PopFront();
 	}
@@ -70,7 +70,7 @@ void FGenericPlatformSentryScope::SetTagValue(const FString& key, const FString&
 
 FString FGenericPlatformSentryScope::GetTagValue(const FString& key) const
 {
-	if(!Tags.Contains(key))
+	if (!Tags.Contains(key))
 		return FString();
 
 	return Tags[key];
@@ -139,7 +139,7 @@ void FGenericPlatformSentryScope::SetContext(const FString& key, const TMap<FStr
 
 void FGenericPlatformSentryScope::RemoveContext(const FString& key)
 {
-	if(!Contexts.Contains(key))
+	if (!Contexts.Contains(key))
 		return;
 
 	Contexts.Remove(key);
@@ -152,7 +152,7 @@ void FGenericPlatformSentryScope::SetExtraValue(const FString& key, const FStrin
 
 FString FGenericPlatformSentryScope::GetExtraValue(const FString& key) const
 {
-	if(!Extra.Contains(key))
+	if (!Extra.Contains(key))
 		return FString();
 
 	return Extra[key];
@@ -160,7 +160,7 @@ FString FGenericPlatformSentryScope::GetExtraValue(const FString& key) const
 
 void FGenericPlatformSentryScope::RemoveExtra(const FString& key)
 {
-	if(!Extra.Contains(key))
+	if (!Extra.Contains(key))
 		return;
 
 	Extra.Remove(key);
@@ -200,25 +200,25 @@ void FGenericPlatformSentryScope::Apply(TSharedPtr<FGenericPlatformSentryEvent> 
 		sentry_value_set_by_key(nativeEvent, "level", sentry_value_new_string(TCHAR_TO_ANSI(*scopeLevelStr)));
 	}
 
-	if(!Dist.IsEmpty())
+	if (!Dist.IsEmpty())
 	{
 		sentry_value_set_by_key(nativeEvent, "dist", sentry_value_new_string(TCHAR_TO_ANSI(*Dist)));
 	}
 
-	if(!Environment.IsEmpty())
+	if (!Environment.IsEmpty())
 	{
 		sentry_value_set_by_key(nativeEvent, "environment", sentry_value_new_string(TCHAR_TO_ANSI(*Environment)));
 	}
 
-	if(Fingerprint.Num() > 0)
+	if (Fingerprint.Num() > 0)
 	{
 		sentry_value_set_by_key(nativeEvent, "fingerprint", FGenericPlatformSentryConverters::StringArrayToNative(Fingerprint));
 	}
 
-	if(Tags.Num() > 0)
+	if (Tags.Num() > 0)
 	{
 		sentry_value_t tagsExtra = sentry_value_get_by_key(nativeEvent, "tags");
-		if(sentry_value_is_null(tagsExtra))
+		if (sentry_value_is_null(tagsExtra))
 		{
 			sentry_value_set_by_key(nativeEvent, "tags", FGenericPlatformSentryConverters::StringMapToNative(Tags));
 		}
@@ -231,10 +231,10 @@ void FGenericPlatformSentryScope::Apply(TSharedPtr<FGenericPlatformSentryEvent> 
 		}
 	}
 
-	if(Extra.Num() > 0)
+	if (Extra.Num() > 0)
 	{
 		sentry_value_t eventExtra = sentry_value_get_by_key(nativeEvent, "extra");
-		if(sentry_value_is_null(eventExtra))
+		if (sentry_value_is_null(eventExtra))
 		{
 			sentry_value_set_by_key(nativeEvent, "extra", FGenericPlatformSentryConverters::StringMapToNative(Extra));
 		}
@@ -245,13 +245,12 @@ void FGenericPlatformSentryScope::Apply(TSharedPtr<FGenericPlatformSentryEvent> 
 				sentry_value_set_by_key(eventExtra, TCHAR_TO_ANSI(*ExtraItem.Key), sentry_value_new_string(TCHAR_TO_ANSI(*ExtraItem.Value)));
 			}
 		}
-		
 	}
 
-	if(Contexts.Num() > 0)
+	if (Contexts.Num() > 0)
 	{
 		sentry_value_t eventContexts = sentry_value_get_by_key(nativeEvent, "contexts");
-		if(sentry_value_is_null(eventContexts))
+		if (sentry_value_is_null(eventContexts))
 		{
 			eventContexts = sentry_value_new_object();
 
@@ -271,10 +270,10 @@ void FGenericPlatformSentryScope::Apply(TSharedPtr<FGenericPlatformSentryEvent> 
 		}
 	}
 
-	if(!Breadcrumbs.IsEmpty())
+	if (!Breadcrumbs.IsEmpty())
 	{
 		sentry_value_t eventBreadcrumbs = sentry_value_get_by_key(nativeEvent, "breadcrumbs");
-		if(sentry_value_is_null(eventBreadcrumbs))
+		if (sentry_value_is_null(eventBreadcrumbs))
 		{
 			eventBreadcrumbs = sentry_value_new_list();
 

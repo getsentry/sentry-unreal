@@ -1,15 +1,15 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryModule.h"
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
+#include "Developer/Settings/Public/ISettingsModule.h"
+#include "Interfaces/IPluginManager.h"
+#include "Misc/Paths.h"
+#include "Modules/ModuleManager.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
-#include "Interfaces/IPluginManager.h"
-#include "Modules/ModuleManager.h"
-#include "Developer/Settings/Public/ISettingsModule.h"
-#include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "FSentryModule"
 
@@ -30,15 +30,6 @@ void FSentryModule::StartupModule()
 			LOCTEXT("RuntimeSettingsDescription", "Configure Sentry"),
 			SentrySettings);
 	}
-
-#if PLATFORM_MAC
-	const FString SentryLibName = TEXT("sentry.dylib");
-	const FString BinariesDirPath = GIsEditor ? FPaths::Combine(GetThirdPartyPath(), TEXT("bin")) : GetBinariesPath();
-
-	FPlatformProcess::PushDllDirectory(*BinariesDirPath);
-	mDllHandleSentry = FPlatformProcess::GetDllHandle(*FPaths::Combine(BinariesDirPath, SentryLibName));
-	FPlatformProcess::PopDllDirectory(*BinariesDirPath);
-#endif
 }
 
 void FSentryModule::ShutdownModule()
@@ -60,14 +51,6 @@ void FSentryModule::ShutdownModule()
 	{
 		SentrySettings = nullptr;
 	}
-
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
-	if (mDllHandleSentry)
-	{
-		FPlatformProcess::FreeDllHandle(mDllHandleSentry);
-		mDllHandleSentry = nullptr;
-	}
-#endif
 }
 
 FSentryModule& FSentryModule::Get()
@@ -78,11 +61,6 @@ FSentryModule& FSentryModule::Get()
 bool FSentryModule::IsAvailable()
 {
 	return FModuleManager::Get().IsModuleLoaded(ModuleName);
-}
-
-void* FSentryModule::GetSentryLibHandle() const
-{
-	return mDllHandleSentry;
 }
 
 USentrySettings* FSentryModule::GetSettings() const
@@ -108,7 +86,7 @@ FString FSentryModule::GetPluginVersion()
 {
 	TSharedPtr<IPlugin> plugin = IPluginManager::Get().FindPlugin(TEXT("Sentry"));
 
-	if(!plugin)
+	if (!plugin)
 	{
 		return FString();
 	}

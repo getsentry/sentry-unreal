@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryEvent.h"
 #include "GenericPlatformSentryId.h"
@@ -62,6 +62,17 @@ ESentryLevel FGenericPlatformSentryEvent::GetLevel() const
 {
 	sentry_value_t level = sentry_value_get_by_key(Event, "level");
 	return FGenericPlatformSentryConverters::SentryLevelToUnreal(level);
+}
+
+void FGenericPlatformSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
+{
+	sentry_value_set_by_key(Event, "fingerprint", FGenericPlatformSentryConverters::StringArrayToNative(fingerprint));
+}
+
+TArray<FString> FGenericPlatformSentryEvent::GetFingerprint()
+{
+	sentry_value_t fingerprint = sentry_value_get_by_key(Event, "fingerprint");
+	return FGenericPlatformSentryConverters::StringArrayToUnreal(fingerprint);
 }
 
 bool FGenericPlatformSentryEvent::IsCrash() const

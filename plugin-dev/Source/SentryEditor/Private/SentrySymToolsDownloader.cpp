@@ -1,18 +1,18 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentrySymToolsDownloader.h"
 #include "SentryModule.h"
 
-#include "Runtime/Launch/Resources/Version.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Interfaces/IPluginManager.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 #include "GenericPlatform/GenericPlatformFile.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-#include "Misc/EngineVersionComparison.h"
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "HAL/PlatformFilemanager.h"
@@ -49,8 +49,8 @@ void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnComplete
 
 ESentrySymToolsStatus FSentrySymToolsDownloader::GetStatus()
 {
-	if((SentryCliDownloadRequest.IsValid() && SentryCliDownloadRequest->GetStatus() == EHttpRequestStatus::Processing)
-		|| (SentryScriptDownloadRequest.IsValid() && SentryScriptDownloadRequest->GetStatus() == EHttpRequestStatus::Processing))
+	if ((SentryCliDownloadRequest.IsValid() && SentryCliDownloadRequest->GetStatus() == EHttpRequestStatus::Processing) ||
+		(SentryScriptDownloadRequest.IsValid() && SentryScriptDownloadRequest->GetStatus() == EHttpRequestStatus::Processing))
 	{
 		return ESentrySymToolsStatus::Downloading;
 	}
@@ -88,7 +88,7 @@ void FSentrySymToolsDownloader::Download(TSharedPtr<IHttpRequest, ESPMode::Threa
 			}
 		}
 
-		if(PlatformFile.FileExists(*SavePath))
+		if (PlatformFile.FileExists(*SavePath))
 		{
 			if (!PlatformFile.DeleteFile(*SavePath))
 			{
@@ -107,7 +107,7 @@ void FSentrySymToolsDownloader::Download(TSharedPtr<IHttpRequest, ESPMode::Threa
 		}
 #endif
 
-		if(GetStatus() == ESentrySymToolsStatus::Configured)
+		if (GetStatus() == ESentrySymToolsStatus::Configured)
 		{
 			OnCompleted(true);
 		}

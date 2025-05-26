@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryTransaction.h"
 #include "AndroidSentrySpan.h"
@@ -50,7 +50,7 @@ void FAndroidSentryTransaction::FinishWithTimestamp(int64 timestamp)
 
 bool FAndroidSentryTransaction::IsFinished() const
 {
-	return CallMethod<bool>(IsFinishedMethod);;
+	return CallMethod<bool>(IsFinishedMethod);
 }
 
 void FAndroidSentryTransaction::SetName(const FString& name)

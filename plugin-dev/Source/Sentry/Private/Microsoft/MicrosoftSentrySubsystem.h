@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #pragma once
 
 #if USE_SENTRY_NATIVE
@@ -7,14 +9,9 @@
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
 
 class FMicrosoftSentrySubsystem : public FGenericPlatformSentrySubsystem
-{	
+{
 public:
-	virtual void InitWithSettings(
-		const USentrySettings* Settings,
-		USentryBeforeSendHandler* BeforeSendHandler,
-		USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
-		USentryTraceSampler* TraceSampler
-	) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;

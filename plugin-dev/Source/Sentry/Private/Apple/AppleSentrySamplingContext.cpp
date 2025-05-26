@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentrySamplingContext.h"
 #include "AppleSentryTransactionContext.h"
@@ -6,7 +6,6 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentrySamplingContext::FAppleSentrySamplingContext(SentrySamplingContext* context)
 {

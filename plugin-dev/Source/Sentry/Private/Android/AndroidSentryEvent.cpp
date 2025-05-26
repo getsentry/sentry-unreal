@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryEvent.h"
 #include "AndroidSentryId.h"
@@ -26,6 +26,8 @@ void FAndroidSentryEvent::SetupClassMethods()
 	GetMessageMethod = GetMethod("getMessage", "()Lio/sentry/protocol/Message;");
 	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
 	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
+	SetFingerprintMethod = GetMethod("setFingerprints", "(Ljava/util/List;)V");
+	GetFingerprintMethod = GetMethod("getFingerprints()", "()Ljava/util/List;");
 	IsCrashMethod = GetMethod("isCrashed", "()Z");
 }
 
@@ -55,6 +57,17 @@ ESentryLevel FAndroidSentryEvent::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
 	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
+}
+
+void FAndroidSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
+{
+	CallMethod<void>(SetFingerprintMethod, FAndroidSentryConverters::StringArrayToNative(fingerprint)->GetJObject());
+}
+
+TArray<FString> FAndroidSentryEvent::GetFingerprint()
+{
+	auto fingerprint = CallObjectMethod<jobject>(GetFingerprintMethod);
+	return FAndroidSentryConverters::StringListToUnreal(*fingerprint);
 }
 
 bool FAndroidSentryEvent::IsCrash() const

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -13,7 +13,7 @@ class ISentrySpan;
 
 /**
  * Unit of work within a transaction.
- * 
+ *
  * NOTE: USentrySpan should not be constructed with NewObject<...>() etc., and should instead
  *       only be created by calling methods like StartChild(...) on this object or USentryTransaction.
  */

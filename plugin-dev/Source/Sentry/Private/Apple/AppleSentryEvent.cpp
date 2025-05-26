@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryEvent.h"
 #include "AppleSentryId.h"
@@ -6,11 +6,10 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryEvent::FAppleSentryEvent()
 {
-	EventApple = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
+	EventApple = [[SentryEvent alloc] init];
 }
 
 FAppleSentryEvent::FAppleSentryEvent(SentryEvent* event)
@@ -36,7 +35,7 @@ TSharedPtr<ISentryId> FAppleSentryEvent::GetId() const
 
 void FAppleSentryEvent::SetMessage(const FString& message)
 {
-	SentryMessage* msg = [SENTRY_APPLE_CLASS(SentryMessage) alloc];
+	SentryMessage* msg = [SentryMessage alloc];
 	msg.message = message.GetNSString();
 	EventApple.message = msg;
 }
@@ -57,6 +56,16 @@ ESentryLevel FAppleSentryEvent::GetLevel() const
 	return FAppleSentryConverters::SentryLevelToUnreal(EventApple.level);
 }
 
+void FAppleSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
+{
+	EventApple.fingerprint = FAppleSentryConverters::StringArrayToNative(fingerprint);
+}
+
+TArray<FString> FAppleSentryEvent::GetFingerprint()
+{
+	return FAppleSentryConverters::StringArrayToUnreal(EventApple.fingerprint);
+}
+
 bool FAppleSentryEvent::IsCrash() const
 {
 	return EventApple.error != nullptr;
@@ -71,7 +80,7 @@ bool FAppleSentryEvent::IsAnr() const
 
 	if (EventApple.exceptions != nil && EventApple.exceptions.count == 1)
 	{
-		SentryException *exception = EventApple.exceptions[0];
+		SentryException* exception = EventApple.exceptions[0];
 		isAppHangException = [exception.type isEqualToString:@"App Hanging"];
 		isAppHangMechanism = exception.mechanism != nil && [exception.mechanism.type isEqualToString:@"AppHang"];
 		isAppHangMessage = [exception.value hasPrefix:@"App hanging for at least"];

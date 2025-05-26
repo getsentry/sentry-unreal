@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryUserFeedback.h"
 
@@ -8,7 +8,7 @@
 
 FAndroidSentryUserFeedback::FAndroidSentryUserFeedback(TSharedPtr<ISentryId> eventId)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::UserFeedback, "(Lio/sentry/protocol/SentryId;)V",
-		StaticCastSharedPtr<FAndroidSentryId>(eventId)->GetJObject())
+		  StaticCastSharedPtr<FAndroidSentryId>(eventId)->GetJObject())
 {
 	SetupClassMethods();
 }

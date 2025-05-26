@@ -1,18 +1,17 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryScope.h"
 
-#include "AppleSentryBreadcrumb.h"
 #include "AppleSentryAttachment.h"
+#include "AppleSentryBreadcrumb.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryScope::FAppleSentryScope()
 {
-	ScopeApple = [[SENTRY_APPLE_CLASS(SentryScope) alloc] init];
+	ScopeApple = [[SentryScope alloc] init];
 }
 
 FAppleSentryScope::FAppleSentryScope(SentryScope* scope)

@@ -1,19 +1,19 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryTests.h"
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
+#include "SentrySpan.h"
+#include "SentryTests.h"
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
-#include "SentrySpan.h"
 
 #include "HAL/PlatformSentryEvent.h"
 #include "HAL/PlatformSentryTransactionContext.h"
 
-#include "UObject/UObjectGlobals.h"
+#include "Engine/Engine.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/DateTime.h"
-#include "Engine/Engine.h"
+#include "UObject/UObjectGlobals.h"
 
 #if WITH_AUTOMATION_TESTS
 
@@ -27,7 +27,7 @@ void SentrySubsystemSpec::Define()
 	{
 		SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
-		if(SentrySubsystem && !SentrySubsystem->IsEnabled())
+		if (SentrySubsystem && !SentrySubsystem->IsEnabled())
 		{
 			SentrySubsystem->Initialize();
 		}
@@ -102,8 +102,7 @@ void SentrySubsystemSpec::Define()
 		{
 			USentryTransactionContext* transactionContext =
 				USentryTransactionContext::Create(
-					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation"))
-				);
+					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")));
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContext(transactionContext);
 			TestNotNull("Transaction is non-null", transaction);
@@ -117,8 +116,7 @@ void SentrySubsystemSpec::Define()
 		{
 			USentryTransactionContext* transactionContext =
 				USentryTransactionContext::Create(
-					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation"))
-				);
+					CreateSharedSentryTransactionContext(TEXT("Automation transaction"), TEXT("Automation operation")));
 
 			USentryTransaction* transaction = SentrySubsystem->StartTransactionWithContextAndTimestamp(transactionContext, FDateTime::UtcNow().ToUnixTimestamp());
 			TestNotNull("Transaction is non-null", transaction);

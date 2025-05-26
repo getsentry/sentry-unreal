@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryTests.h"
 #include "SentryBreadcrumb.h"
+#include "SentryTests.h"
 
 #include "Misc/AutomationTest.h"
 

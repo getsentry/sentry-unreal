@@ -1,9 +1,9 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryCrashContext.h"
 
-#include "SentrySettings.h"
 #include "SentryModule.h"
+#include "SentrySettings.h"
 
 #if USE_SENTRY_NATIVE
 

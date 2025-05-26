@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -17,7 +17,7 @@ public:
 	virtual ~FSentryJavaObjectWrapper();
 
 	FSentryJavaObjectWrapper(const FSentryJavaObjectWrapper& rhs) = delete;
-	FSentryJavaObjectWrapper& operator = (const FSentryJavaObjectWrapper& rhs) = delete;
+	FSentryJavaObjectWrapper& operator=(const FSentryJavaObjectWrapper& rhs) = delete;
 
 	FSentryJavaMethod GetMethod(const char* MethodName, const char* FunctionSignature);
 	static FSentryJavaMethod GetStaticMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature);
@@ -54,7 +54,7 @@ protected:
 	jclass Class;
 };
 
-template <typename ReturnType>
+template<typename ReturnType>
 ReturnType FSentryJavaObjectWrapper::CallMethod(FSentryJavaMethod Method, ...) const
 {
 	va_list Params;
@@ -64,7 +64,7 @@ ReturnType FSentryJavaObjectWrapper::CallMethod(FSentryJavaMethod Method, ...) c
 	return RetVal;
 }
 
-template <typename ReturnType>
+template<typename ReturnType>
 FScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallObjectMethod(FSentryJavaMethod Method, ...) const
 {
 	va_list Params;
@@ -88,7 +88,7 @@ ReturnType FSentryJavaObjectWrapper::CallStaticMethod(FSentryJavaClass ClassData
 	return RetVal;
 }
 
-template <typename ReturnType>
+template<typename ReturnType>
 ReturnType FSentryJavaObjectWrapper::CallStaticMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...)
 {
 	FSentryJavaObjectWrapper StaticInst(ClassData);
@@ -111,7 +111,7 @@ FScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallStaticObjectMethod(F
 	return RetVal;
 }
 
-template <typename ReturnType>
+template<typename ReturnType>
 FScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallStaticObjectMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...)
 {
 	FSentryJavaObjectWrapper StaticInst(ClassData);

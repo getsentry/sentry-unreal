@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryOutputDevice.h"
 
@@ -36,7 +36,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 	}
 
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-	if(!SentrySubsystem || !SentrySubsystem->IsEnabled())
+	if (!SentrySubsystem || !SentrySubsystem->IsEnabled())
 	{
 		return;
 	}

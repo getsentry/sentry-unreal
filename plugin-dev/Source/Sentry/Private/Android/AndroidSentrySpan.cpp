@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Sentry. All Rights Reserved.
+﻿// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentrySpan.h"
 
@@ -48,7 +48,7 @@ void FAndroidSentrySpan::FinishWithTimestamp(int64 timestamp)
 
 bool FAndroidSentrySpan::IsFinished() const
 {
-	return CallMethod<bool>(IsFinishedMethod);;
+	return CallMethod<bool>(IsFinishedMethod);
 }
 
 void FAndroidSentrySpan::SetTag(const FString& key, const FString& value)

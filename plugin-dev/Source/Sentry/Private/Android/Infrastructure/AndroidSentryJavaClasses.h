@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #pragma once
 
@@ -14,6 +14,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass SentryEvent;
 	const static FSentryJavaClass SentryId;
 	const static FSentryJavaClass Scope;
+	const static FSentryJavaClass ScopeImpl;
 	const static FSentryJavaClass User;
 	const static FSentryJavaClass UserFeedback;
 	const static FSentryJavaClass Message;

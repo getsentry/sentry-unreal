@@ -1,13 +1,12 @@
-// Copyright (c) 2024 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryTransactionContext.h"
 
 #include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryTransactionContext::FAppleSentryTransactionContext(const FString& name, const FString& operation)
 {
-	TransactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:name.GetNSString() operation:operation.GetNSString()];
+	TransactionContext = [[SentryTransactionContext alloc] initWithName:name.GetNSString() operation:operation.GetNSString()];
 }
 
 FAppleSentryTransactionContext::FAppleSentryTransactionContext(SentryTransactionContext* context)

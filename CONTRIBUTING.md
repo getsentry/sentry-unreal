@@ -5,7 +5,7 @@ For big feature it's advised to raise an issue to discuss it first.
 
 ## Getting started
 
-### Dependencies
+### Prerequisites
 
 - [GitHub CLI](https://cli.github.com/)
 
@@ -21,6 +21,8 @@ To be able to build for Android, make sure to configure the SDK & NDK according 
 ### First setup
 
 > Currently this method is available only for C++ UE projects! Blueprint project can be converted to a C++ one simply by adding an empty class via Editor.
+
+> When working with a `sentry-unreal` fork, run `gh repo set-default` to select the default remote repository used for GitHub API queries (required for pulling plugin dependencies from CI). If you don't plan to configure the CI pipeline for your fork, it's recommended to set `getsentry/sentry-unreal` as the default remote.
 
 To get started, we recommend running the init script:
 
@@ -45,3 +47,21 @@ In order to run automation tests navigate to `Settings -> Plugins -> Testing` an
 There is a demo level (`SentryDemo.umap`) in project's Content folder which presents a simple UI allowing to send some test events to Sentry. `W_SentryDemo` blueprint implementation shows how to call the plugin API and can be used as a reference.
 
 In order to run the demo level navigate to `Content Browser -> Content -> Maps` and open `SentryDemo` map. Hit play to launch the demo.
+
+## Modifying plugin content
+
+All files that belong to the plugin are listed in the snapshot files:
+
+- `/scripts/packaging/package-github.snapshot` (for the GitHub package)
+- `/scripts/packaging/package-marketplace.snapshot` (for the Marketplace package)
+
+If you add, delete or move files within the `plugin-dev` directory these snapshot files must be updated to reflect the changes. To do that, run:
+
+```bash
+pwsh ./scripts/packaging/pack.ps1
+pwsh ./scripts/packaging/test-contents.ps1 accept
+```
+
+Once completed, make sure to commit the updated snapshot files to Git.
+
+CI will run a separate check to compare the actual plugin package contents against the snapshot files.

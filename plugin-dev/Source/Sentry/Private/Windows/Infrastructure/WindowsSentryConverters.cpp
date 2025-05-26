@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "WindowsSentryConverters.h"
 
 #if USE_SENTRY_NATIVE
@@ -8,7 +10,10 @@
 
 	FString ErrorString = TEXT("Unhandled Exception: ");
 
-#define HANDLE_CASE(x) case x: ErrorString += TEXT(#x); break;
+#define HANDLE_CASE(x)           \
+	case x:                      \
+		ErrorString += TEXT(#x); \
+		break;
 
 	switch (ExceptionRecord->ExceptionCode)
 	{
@@ -24,11 +29,11 @@
 		}
 		ErrorString += FString::Printf(
 #if PLATFORM_64BITS
-			TEXT("0x%016llx")
+			TEXT("0x%016llx"),
 #else
-			TEXT("0x%08x")
+			TEXT("0x%08x"),
 #endif
-			, ExceptionRecord->ExceptionInformation[1]);
+			ExceptionRecord->ExceptionInformation[1]);
 		break;
 		HANDLE_CASE(EXCEPTION_ARRAY_BOUNDS_EXCEEDED)
 		HANDLE_CASE(EXCEPTION_DATATYPE_MISALIGNMENT)
@@ -39,8 +44,8 @@
 		HANDLE_CASE(EXCEPTION_INT_DIVIDE_BY_ZERO)
 		HANDLE_CASE(EXCEPTION_PRIV_INSTRUCTION)
 		HANDLE_CASE(EXCEPTION_STACK_OVERFLOW)
-		default:
-			ErrorString += FString::Printf(TEXT("0x%08x"), (uint32)ExceptionRecord->ExceptionCode);
+	default:
+		ErrorString += FString::Printf(TEXT("0x%08x"), (uint32)ExceptionRecord->ExceptionCode);
 	}
 
 	FCString::Strncpy(outErrorString, *ErrorString, errorStringBufSize);

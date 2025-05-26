@@ -1,13 +1,13 @@
-// Copyright (c) 2023 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryBeforeSendHandler.h"
 
+#include "SentryAttachment.h"
+#include "SentryEvent.h"
+#include "SentryHint.h"
 #include "SentryLibrary.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
-#include "SentryEvent.h"
-#include "SentryHint.h"
-#include "SentryAttachment.h"
 
 #include "Utils/SentryFileUtils.h"
 
@@ -27,11 +27,7 @@ USentryEvent* USentryBeforeSendHandler::HandleBeforeSend_Implementation(USentryE
 
 		Hint->AddAttachment(
 			USentryLibrary::CreateSentryAttachmentWithPath(
-				LogFilePath,
-				FPaths::GetCleanFilename(LogFilePath),
-				TEXT("text/plain")
-			)
-		);
+				LogFilePath, FPaths::GetCleanFilename(LogFilePath), TEXT("text/plain")));
 	}
 
 	return Event;

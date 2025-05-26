@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryUserFeedback.h"
 
@@ -22,7 +22,7 @@ void USentryUserFeedback::SetName(const FString& Name)
 
 FString USentryUserFeedback::GetName() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetName();
@@ -38,7 +38,7 @@ void USentryUserFeedback::SetEmail(const FString& Email)
 
 FString USentryUserFeedback::GetEmail() const
 {
-	if(!NativeImpl)
+	if (!NativeImpl)
 		return FString();
 
 	return NativeImpl->GetEmail();

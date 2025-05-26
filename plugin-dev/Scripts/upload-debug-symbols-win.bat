@@ -72,16 +72,7 @@ if not "%EnabledConfigurations%"=="" (
   )
 )
 
-if "%TargetPlatform%"=="Win64" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="Linux" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else if "%TargetPlatform%"=="LinuxArm64" (
-    set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
-) else (
-    echo Warning: Sentry: Unexpected platform %TargetPlatform%. Skipping...
-    exit /B 0
-)
+set CliExec=%PluginPath:"=%\Source\ThirdParty\CLI\sentry-cli-Windows-x86_64.exe
 
 if not exist "%CliExec%" (
     echo Error: Sentry: Sentry CLI is missing. Skipping...

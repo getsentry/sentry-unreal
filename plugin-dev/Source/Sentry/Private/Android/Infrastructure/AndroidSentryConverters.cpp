@@ -1,8 +1,8 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryConverters.h"
-#include "AndroidSentryJavaObjectWrapper.h"
 #include "AndroidSentryJavaClasses.h"
+#include "AndroidSentryJavaObjectWrapper.h"
 
 #include "SentryDefines.h"
 
@@ -142,7 +142,7 @@ TMap<FString, FString> FAndroidSentryConverters::StringMapToUnreal(jobject map)
 	FSentryJavaMethod HasNextMethod = NativeIterator.GetMethod("hasNext", "()Z");
 	FSentryJavaMethod NextMethod = NativeIterator.GetMethod("next", "()Ljava/lang/Object;");
 
-	while(NativeIterator.CallMethod<bool>(HasNextMethod))
+	while (NativeIterator.CallMethod<bool>(HasNextMethod))
 	{
 		FSentryJavaObjectWrapper NativeMapEntry(SentryJavaClasses::MapEntry, *NativeIterator.CallObjectMethod<jobject>(NextMethod));
 		FSentryJavaMethod GetKeyMethod = NativeMapEntry.GetMethod("getKey", "()Ljava/lang/Object;");

@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "Mac/MacSentrySubsystem.h"
 
 #include "AppleSentryId.h"
@@ -12,8 +14,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
-	USentryTraceSampler* TraceSampler)
+void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryTraceSampler* TraceSampler)
 {
 	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 

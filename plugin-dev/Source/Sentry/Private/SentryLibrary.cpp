@@ -1,12 +1,12 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryLibrary.h"
-#include "SentryEvent.h"
+#include "SentryAttachment.h"
 #include "SentryBreadcrumb.h"
+#include "SentryEvent.h"
+#include "SentryTransactionContext.h"
 #include "SentryUser.h"
 #include "SentryUserFeedback.h"
-#include "SentryAttachment.h"
-#include "SentryTransactionContext.h"
 
 #include "HAL/PlatformSentryAttachment.h"
 #include "HAL/PlatformSentryBreadcrumb.h"

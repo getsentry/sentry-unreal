@@ -1,6 +1,8 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryJavaClasses.h"
+
+// clang-format off
 
 // External Java classes definitions
 const FSentryJavaClass SentryJavaClasses::SentryBridgeJava		= FSentryJavaClass { "io/sentry/unreal/SentryBridgeJava", ESentryJavaClassType::External };
@@ -10,6 +12,7 @@ const FSentryJavaClass SentryJavaClasses::Breadcrumb			= FSentryJavaClass { "io/
 const FSentryJavaClass SentryJavaClasses::SentryEvent			= FSentryJavaClass { "io/sentry/SentryEvent", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::SentryId				= FSentryJavaClass { "io/sentry/protocol/SentryId", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::Scope					= FSentryJavaClass { "io/sentry/IScope", ESentryJavaClassType::External };
+const FSentryJavaClass SentryJavaClasses::ScopeImpl				= FSentryJavaClass { "io/sentry/Scope", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::User					= FSentryJavaClass { "io/sentry/protocol/User", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::UserFeedback			= FSentryJavaClass { "io/sentry/UserFeedback", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::Message				= FSentryJavaClass { "io/sentry/protocol/Message", ESentryJavaClassType::External };
@@ -32,3 +35,5 @@ const FSentryJavaClass SentryJavaClasses::Iterator				= FSentryJavaClass { "java
 const FSentryJavaClass SentryJavaClasses::MapEntry				= FSentryJavaClass { "java/util/Map$Entry", ESentryJavaClassType::System };
 const FSentryJavaClass SentryJavaClasses::List					= FSentryJavaClass { "java/util/List", ESentryJavaClassType::System };
 const FSentryJavaClass SentryJavaClasses::Double				= FSentryJavaClass { "java/lang/Double", ESentryJavaClassType::System };
+
+// clang-format on

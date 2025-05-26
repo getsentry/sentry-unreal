@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryErrorOutputDevice.h"
 
@@ -11,7 +11,7 @@ FSentryErrorOutputDevice::FSentryErrorOutputDevice(FOutputDeviceError* Parent)
 
 void FSentryErrorOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
-	if(FDebug::HasAsserted())
+	if (FDebug::HasAsserted())
 	{
 		OnAssert.Broadcast(V);
 	}

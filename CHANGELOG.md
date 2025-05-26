@@ -2,20 +2,38 @@
 
 ## Unreleased
 
+### Features
+
+- Add API allowing to get/set event fingerprint ([#920](https://github.com/getsentry/sentry-unreal/pull/920))
 - Add destination URL for crash envelope ([#905](https://github.com/getsentry/sentry-unreal/pull/905))
+
+### Dependencies
+
+- Bump Java SDK (Android) from v8.11.1 to v8.12.0 ([#911](https://github.com/getsentry/sentry-unreal/pull/911))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8120)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.12.0)
+- Bump Native SDK from v0.8.4 to v0.8.5 ([#912](https://github.com/getsentry/sentry-unreal/pull/912))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#085)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.4...0.8.5)
+- Bump Cocoa SDK (iOS and Mac) from v8.50.1 to v8.51.1 ([#913](https://github.com/getsentry/sentry-unreal/pull/913), [#916](https://github.com/getsentry/sentry-unreal/pull/916), [#925](https://github.com/getsentry/sentry-unreal/pull/925))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8511)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.50.1...8.51.1)
+
+## 1.0.0-beta.1
 
 ### Fixes
 
+- The image buffer is now allocated on the heap to prevent stack overflow during screenshot capture on Windows ([#900](https://github.com/getsentry/sentry-unreal/pull/900))
 - Windows default crash handling mechanism is no longer disabled if SDK initialization failed ([#901](https://github.com/getsentry/sentry-unreal/pull/901))
 
 ### Dependencies
 
-- Bump CLI from v2.43.1 to v2.44.0 ([#896](https://github.com/getsentry/sentry-unreal/pull/896))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2440)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.1...2.44.0)
-- Bump Cocoa SDK (iOS and Mac) from v8.49.2 to v8.50.0 ([#897](https://github.com/getsentry/sentry-unreal/pull/897))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8500)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.49.2...8.50.0)
+- Bump CLI from v2.43.1 to v2.45.0 ([#896](https://github.com/getsentry/sentry-unreal/pull/896), [#906](https://github.com/getsentry/sentry-unreal/pull/906))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2450)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.1...2.45.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.49.2 to v8.50.1 ([#897](https://github.com/getsentry/sentry-unreal/pull/897), [#907](https://github.com/getsentry/sentry-unreal/pull/907))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8501)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.49.2...8.50.1)
 
 ## 1.0.0-alpha.6
 

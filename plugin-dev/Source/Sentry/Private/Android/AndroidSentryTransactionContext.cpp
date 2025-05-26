@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryTransactionContext.h"
 
@@ -7,7 +7,7 @@
 
 FAndroidSentryTransactionContext::FAndroidSentryTransactionContext(const FString& name, const FString& operation)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::TransactionContext, "(Ljava/lang/String;Ljava/lang/String;)V",
-		*GetJString(name), *GetJString(operation))
+		  *GetJString(name), *GetJString(operation))
 {
 	SetupClassMethods();
 }

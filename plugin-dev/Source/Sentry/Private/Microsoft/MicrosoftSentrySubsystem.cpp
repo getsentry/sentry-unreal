@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
 #include "MicrosoftSentrySubsystem.h"
 
 #if USE_SENTRY_NATIVE
@@ -9,28 +11,29 @@
 #include "SentrySettings.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "Misc/EngineVersionComparison.h"
 
-void FMicrosoftSentrySubsystem::InitWithSettings(
-	const USentrySettings* Settings,
-	USentryBeforeSendHandler* BeforeSendHandler,
-	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler,
-	USentryTraceSampler* TraceSampler)
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "GenericPlatform/GenericPlatformMisc.h"
+#endif
+
+void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryTraceSampler* TraceSampler)
 {
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)
 	if (IsEnabled())
 	{
-		FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing
-			? ECrashHandlingType::Disabled
-			: ECrashHandlingType::Default);
+		FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing ? ECrashHandlingType::Disabled : ECrashHandlingType::Default);
 	}
-#endif // !UE_VERSION_OLDER_THAN(5, 2, 0)
 
 	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default)
 	{
 		InitCrashReporter(Settings->Release, Settings->Environment);
 	}
+#else
+	InitCrashReporter(Settings->Release, Settings->Environment);
+#endif
 }
 
 void FMicrosoftSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
@@ -41,8 +44,7 @@ void FMicrosoftSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 		if (!FPaths::FileExists(HandlerPath))
 		{
-			UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. "
-				"Please make sure that the plugin was rebuilt to avoid initialization failure."));
+			UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. Please make sure that the plugin was rebuilt to avoid initialization failure."));
 		}
 
 		sentry_options_set_handler_pathw(Options, *HandlerPath);

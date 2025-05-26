@@ -1,7 +1,11 @@
 name: package-plugin-workflow
 
-on: 
+on:
   push:
+    branches:
+      - main
+      - release/*
+  pull_request:
     paths-ignore:
       - "**.md"
 
@@ -29,12 +33,14 @@ jobs:
     with:
       target: Linux
       runsOn: ubuntu-22.04
+      container: ubuntu:20.04
 
   linux-arm64-sdk:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: LinuxArm64
       runsOn: ubuntu-22.04-arm
+      container: arm64v8/ubuntu:20.04
 
   windows-crashpad-sdk:
     uses: ./.github/workflows/sdk-build.yml

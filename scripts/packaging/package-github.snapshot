@@ -73,7 +73,6 @@ Source/Sentry/Private/Apple/AppleSentryUser.h
 Source/Sentry/Private/Apple/AppleSentryUserFeedback.cpp
 Source/Sentry/Private/Apple/AppleSentryUserFeedback.h
 Source/Sentry/Private/Apple/Convenience/AppleSentryInclude.h
-Source/Sentry/Private/Apple/Convenience/AppleSentryMacro.h
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.cpp
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.h
 Source/Sentry/Private/GenericPlatform/Convenience/GenericPlatformSentryInclude.h
@@ -241,10 +240,12 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryEnvelopeItemHeader.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryError.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryEvent.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryException.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryFeedbackAPI.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryFrame.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryGeo.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryHub.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/SentryIntegrationProtocol.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMeasurementUnit.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMechanism.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryMechanismMeta.h
@@ -340,7 +341,6 @@ Source/ThirdParty/LinuxArm64/lib/libcrashpad_tools.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_util.a
 Source/ThirdParty/LinuxArm64/lib/libmini_chromium.a
 Source/ThirdParty/LinuxArm64/lib/libsentry.a
-Source/ThirdParty/Mac/bin/sentry.dylib
 Source/ThirdParty/Mac/include/Sentry/PrivateSentrySDKOnly.h
 Source/ThirdParty/Mac/include/Sentry/PrivatesHeader.h
 Source/ThirdParty/Mac/include/Sentry/Sentry-Swift.h
@@ -373,12 +373,14 @@ Source/ThirdParty/Mac/include/Sentry/SentryError.h
 Source/ThirdParty/Mac/include/Sentry/SentryEvent.h
 Source/ThirdParty/Mac/include/Sentry/SentryException.h
 Source/ThirdParty/Mac/include/Sentry/SentryExtraPackages.h
+Source/ThirdParty/Mac/include/Sentry/SentryFeedbackAPI.h
 Source/ThirdParty/Mac/include/Sentry/SentryFormatter.h
 Source/ThirdParty/Mac/include/Sentry/SentryFrame.h
 Source/ThirdParty/Mac/include/Sentry/SentryFramesTracker.h
 Source/ThirdParty/Mac/include/Sentry/SentryGeo.h
 Source/ThirdParty/Mac/include/Sentry/SentryHttpStatusCodeRange.h
 Source/ThirdParty/Mac/include/Sentry/SentryHub.h
+Source/ThirdParty/Mac/include/Sentry/SentryIntegrationProtocol.h
 Source/ThirdParty/Mac/include/Sentry/SentryInternalSerializable.h
 Source/ThirdParty/Mac/include/Sentry/SentryLog.h
 Source/ThirdParty/Mac/include/Sentry/SentryMeasurementUnit.h
@@ -421,6 +423,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryUser.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryUserFeedback.h
 Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
+Source/ThirdParty/Mac/lib/libsentry.a
 Source/ThirdParty/Win64/Breakpad/include/sentry.h
 Source/ThirdParty/Win64/Breakpad/lib/breakpad_client.lib
 Source/ThirdParty/Win64/Breakpad/lib/sentry.lib

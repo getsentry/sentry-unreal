@@ -1,15 +1,15 @@
-// Copyright (c) 2022 Sentry. All Rights Reserved.
+// Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryConverters.h"
 
 #include "SentryDefines.h"
 
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "UObject/Class.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
-#include "Dom/JsonObject.h"
-#include "Serialization/JsonSerializer.h"
-#include "Serialization/JsonReader.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -131,7 +131,7 @@ ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_level_
 		Level = ESentryLevel::Fatal;
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));;
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
 	}
 
 	return Level;
@@ -142,7 +142,7 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 	TMap<FString, FString> unrealMap;
 
 	FString mapJsonString = FString(sentry_value_to_json(map));
-	if(mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
+	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
 	{
 		return unrealMap;
 	}
@@ -150,7 +150,8 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 	TSharedPtr<FJsonObject> jsonObject;
 	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
 	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonObject);
-	if (!bDeserializeSuccess) {
+	if (!bDeserializeSuccess)
+	{
 		UE_LOG(LogSentrySdk, Error, TEXT("StringMapToUnreal failed to deserialize map Json."));
 		return unrealMap;
 	}
@@ -171,7 +172,7 @@ TArray<FString> FGenericPlatformSentryConverters::StringArrayToUnreal(sentry_val
 	TArray<FString> unrealArray;
 
 	FString arrayJsonString = FString(sentry_value_to_json(array));
-	if(arrayJsonString.IsEmpty() || arrayJsonString.Equals(TEXT("null")))
+	if (arrayJsonString.IsEmpty() || arrayJsonString.Equals(TEXT("null")))
 	{
 		return unrealArray;
 	}
@@ -179,7 +180,8 @@ TArray<FString> FGenericPlatformSentryConverters::StringArrayToUnreal(sentry_val
 	TArray<TSharedPtr<FJsonValue>> jsonArray;
 	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(arrayJsonString);
 	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonArray);
-	if (!bDeserializeSuccess) {
+	if (!bDeserializeSuccess)
+	{
 		UE_LOG(LogSentrySdk, Error, TEXT("StringArrayToUnreal failed to deserialize array Json."));
 		return unrealArray;
 	}
