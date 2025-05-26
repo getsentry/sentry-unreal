@@ -130,10 +130,12 @@ Source/Sentry/Private/Interface/SentryUserFeedbackInterface.h
 Source/Sentry/Private/Interface/SentryUserInterface.h
 Source/Sentry/Private/IOS/IOSSentrySubsystem.cpp
 Source/Sentry/Private/IOS/IOSSentrySubsystem.h
+Source/Sentry/Private/IOS/IOSSentryUser.h
 Source/Sentry/Private/Linux/LinuxSentrySubsystem.cpp
 Source/Sentry/Private/Linux/LinuxSentrySubsystem.h
 Source/Sentry/Private/Mac/MacSentrySubsystem.cpp
 Source/Sentry/Private/Mac/MacSentrySubsystem.h
+Source/Sentry/Private/Mac/MacSentryUser.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryAttachment.h
