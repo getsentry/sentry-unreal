@@ -129,10 +129,13 @@ Source/Sentry/Private/Interface/SentryUserFeedbackInterface.h
 Source/Sentry/Private/Interface/SentryUserInterface.h
 Source/Sentry/Private/IOS/IOSSentrySubsystem.cpp
 Source/Sentry/Private/IOS/IOSSentrySubsystem.h
+Source/Sentry/Private/IOS/IOSSentryUser.h
 Source/Sentry/Private/Linux/LinuxSentrySubsystem.cpp
 Source/Sentry/Private/Linux/LinuxSentrySubsystem.h
+Source/Sentry/Private/Linux/LinuxSentryUser.h
 Source/Sentry/Private/Mac/MacSentrySubsystem.cpp
 Source/Sentry/Private/Mac/MacSentrySubsystem.h
+Source/Sentry/Private/Mac/MacSentryUser.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryAttachment.h
@@ -184,6 +187,7 @@ Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.cpp
 Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.h
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.cpp
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.h
+Source/Sentry/Private/Windows/WindowsSentryUser.h
 Source/Sentry/Public/SentryAttachment.h
 Source/Sentry/Public/SentryBeforeBreadcrumbHandler.h
 Source/Sentry/Public/SentryBeforeSendHandler.h
