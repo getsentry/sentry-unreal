@@ -198,9 +198,25 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 	USentryEvent* EventToProcess = USentryEvent::Create(Event);
 
-	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+	if (USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr))
+	{
+		if (EventDestinationUrl.EndsWith(TEXT("=")))
+		{
+			sentry_value_t EventId = sentry_value_get_by_key(event, "event_id");
+			const char* EventIdString = sentry_value_as_string(EventId);
 
-	return ProcessedEvent ? event : sentry_value_new_null();
+			// AppendChars takes into consideration slack space in order to avoid growing the array
+			EventDestinationUrl.AppendChars(EventIdString, FCStringAnsi::Strlen(EventIdString));
+		}
+
+		UE_LOG(LogSentrySdk, Error, TEXT("%s"), *EventDestinationUrl);
+
+		return event;
+	}
+	else
+	{
+		return sentry_value_new_null();
+	}
 }
 
 void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
@@ -284,13 +300,34 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName ? *settings->Release : *settings->GetFormattedReleaseName()));
 
-	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->Dsn));
+	const FString& Dsn = 
 #if WITH_EDITOR
-	if (!settings->EditorDsn.IsEmpty())
-	{
-		sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->EditorDsn));
-	}
+		!settings->EditorDsn.IsEmpty() ? settings->EditorDsn :
 #endif // WITH_EDITOR
+		settings->Dsn;
+
+	FString Ignored;
+	FString ProjectId;
+
+	// Grab the project ID at the end of the DSN - after the last forward-slash
+	Dsn.Split(TEXT("/"), &Ignored, &ProjectId, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+
+	// Allocate large enough buffer to hold the URL base plus event ID to avoid memory allocations
+	// during crash handling
+	constexpr int32 EventDestinationUrlSlack = 64;
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+	EventDestinationUrl = FString(
+#else
+	EventDestinationUrl = FString::ConstructWithSlack(
+#endif
+		*FString::Printf(
+			TEXT("http://sentry.io/organizations/riotgames/issues/?project=%s&statsPeriod=1h&query="),
+			*ProjectId
+		),
+		EventDestinationUrlSlack
+	);
+
+	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*Dsn));
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);

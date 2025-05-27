@@ -5,6 +5,7 @@
 ### Features
 
 - Add API allowing to get/set event fingerprint ([#920](https://github.com/getsentry/sentry-unreal/pull/920))
+- Add destination URL for crash envelope ([#905](https://github.com/getsentry/sentry-unreal/pull/905))
 
 ### Dependencies
 
