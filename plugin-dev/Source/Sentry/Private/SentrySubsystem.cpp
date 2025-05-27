@@ -147,6 +147,11 @@ void USentrySubsystem::Initialize()
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
 {
+	return InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureSettings.GetUObject()), OnConfigureSettings.GetFunctionName()));
+}
+
+void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsNativeDelegate& OnConfigureSettings)
+{
 	USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 

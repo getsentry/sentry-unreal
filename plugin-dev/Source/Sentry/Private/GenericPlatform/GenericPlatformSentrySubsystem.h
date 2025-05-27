@@ -53,8 +53,6 @@ public:
 
 	FString GetGpuDumpBackupPath() const;
 
-	TSharedPtr<FGenericPlatformSentryScope> GetCurrentScope();
-
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) {}
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) {}
@@ -87,15 +85,11 @@ private:
 
 	TSharedPtr<FGenericPlatformSentryCrashReporter> crashReporter;
 
-	TArray<TSharedPtr<FGenericPlatformSentryScope>> scopeStack;
-
 	bool isEnabled;
 
 	bool isStackTraceEnabled;
 	bool isPiiAttachmentEnabled;
 	bool isScreenshotAttachmentEnabled;
-
-	FCriticalSection CriticalSection;
 
 	FString databaseParentPath;
 };

@@ -104,8 +104,6 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	TSharedPtr<FGenericPlatformSentryEvent> Event = MakeShareable(new FGenericPlatformSentryEvent(event));
 
-	GetCurrentScope()->Apply(Event);
-
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
@@ -175,11 +173,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		IFileManager::Get().Copy(*GetGpuDumpBackupPath(), *SentryFileUtils::GetGpuDumpPath());
 	}
 
-	FGenericPlatformSentryCrashContext::Get()->Apply(GetCurrentScope());
-
 	TSharedPtr<FGenericPlatformSentryEvent> Event = MakeShareable(new FGenericPlatformSentryEvent(event, true));
-
-	GetCurrentScope()->Apply(Event);
 
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
@@ -226,8 +220,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 {
 	beforeSend = beforeSendHandler;
 	beforeBreadcrumb = beforeBreadcrumbHandler;
-
-	scopeStack.Push(MakeShareable(new FGenericPlatformSentryScope()));
 
 	sentry_options_t* options = sentry_options_new();
 
@@ -318,8 +310,6 @@ void FGenericPlatformSentrySubsystem::Close()
 	isEnabled = false;
 
 	sentry_close();
-
-	scopeStack.Empty();
 }
 
 bool FGenericPlatformSentrySubsystem::IsEnabled()
@@ -353,14 +343,14 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb
 {
 	if (beforeBreadcrumb != nullptr)
 	{
-		sentry_value_t processdBreadcrumb = HandleBeforeBreadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject(), nullptr, this);
-		if (sentry_value_is_null(processdBreadcrumb))
+		sentry_value_t processedBreadcrumb = HandleBeforeBreadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject(), nullptr, this);
+		if (sentry_value_is_null(processedBreadcrumb))
 		{
 			return;
 		}
 	}
 
-	GetCurrentScope()->AddBreadcrumb(breadcrumb);
+	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject());
 }
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
@@ -381,40 +371,43 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 		}
 	}
 
-	GetCurrentScope()->AddBreadcrumb(Breadcrumb);
+	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
 }
 
 void FGenericPlatformSentrySubsystem::ClearBreadcrumbs()
 {
-	GetCurrentScope()->ClearBreadcrumbs();
+	// Not implemented in sentry-native
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
 {
-	sentry_value_t sentryEvent = sentry_value_new_message_event(FGenericPlatformSentryConverters::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
+	sentry_value_t nativeEvent = sentry_value_new_message_event(FGenericPlatformSentryConverters::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
 
 	if (isStackTraceEnabled)
 	{
-		sentry_value_set_stacktrace(sentryEvent, nullptr, 0);
+		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
 	}
 
-	sentry_uuid_t id = sentry_capture_event(sentryEvent);
+	sentry_uuid_t id = sentry_capture_event(nativeEvent);
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
 {
-	FScopeLock Lock(&CriticalSection);
+	sentry_value_t nativeEvent = sentry_value_new_message_event(FGenericPlatformSentryConverters::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
 
-	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope(*GetCurrentScope()));
+	if (isStackTraceEnabled)
+	{
+		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
+	}
 
+	sentry_scope_t *scope =  sentry_local_scope_new();
+
+	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope(scope));
 	onConfigureScope.ExecuteIfBound(NewLocalScope);
 
-	scopeStack.Push(NewLocalScope);
-	TSharedPtr<ISentryId> Id = CaptureMessage(message, level);
-	scopeStack.Pop();
-
-	return Id;
+	sentry_uuid_t id = sentry_capture_event_with_scope(nativeEvent, scope);
+	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEvent(TSharedPtr<ISentryEvent> event)
@@ -434,17 +427,22 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEvent(TSharedPtr<I
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure)
 {
-	FScopeLock Lock(&CriticalSection);
+	TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(event);
 
-	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope(*GetCurrentScope()));
+	sentry_value_t nativeEvent = Event->GetNativeObject();
 
+	if (isStackTraceEnabled)
+	{
+		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
+	}
+
+	sentry_scope_t *scope =  sentry_local_scope_new();
+
+	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope(scope));
 	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 
-	scopeStack.Push(NewLocalScope);
-	TSharedPtr<ISentryId> Id = CaptureEvent(event);
-	scopeStack.Pop();
-
-	return Id;
+	sentry_uuid_t id = sentry_capture_event_with_scope(nativeEvent, scope);
+	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
@@ -497,12 +495,12 @@ void FGenericPlatformSentrySubsystem::RemoveUser()
 
 void FGenericPlatformSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
 {
-	onConfigureScope.ExecuteIfBound(GetCurrentScope());
+	// Not implemented in sentry-native
 }
 
 void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
-	GetCurrentScope()->SetContext(key, values);
+	sentry_set_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::StringMapToNative(values));
 
 	if (crashReporter)
 	{
@@ -512,7 +510,7 @@ void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<
 
 void FGenericPlatformSentrySubsystem::SetTag(const FString& key, const FString& value)
 {
-	GetCurrentScope()->SetTagValue(key, value);
+	sentry_set_tag(TCHAR_TO_UTF8(*key), TCHAR_TO_UTF8(*value));
 
 	if (crashReporter)
 	{
@@ -522,7 +520,7 @@ void FGenericPlatformSentrySubsystem::SetTag(const FString& key, const FString& 
 
 void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
 {
-	GetCurrentScope()->RemoveTag(key);
+	sentry_remove_tag(TCHAR_TO_UTF8(*key));
 
 	if (crashReporter)
 	{
@@ -532,7 +530,7 @@ void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
 
 void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)
 {
-	GetCurrentScope()->SetLevel(level);
+	sentry_set_level(FGenericPlatformSentryConverters::SentryLevelToNative(level));
 }
 
 void FGenericPlatformSentrySubsystem::StartSession()
@@ -624,17 +622,6 @@ FString FGenericPlatformSentrySubsystem::GetGpuDumpBackupPath() const
 	const FString GpuDumpFullPath = FPaths::ConvertRelativePathToFull(GpuDumpPath);
 
 	return GpuDumpFullPath;
-}
-
-TSharedPtr<FGenericPlatformSentryScope> FGenericPlatformSentrySubsystem::GetCurrentScope()
-{
-	if (scopeStack.Num() == 0)
-	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Scope stack is empty."));
-		return nullptr;
-	}
-
-	return scopeStack.Top();
 }
 
 FString FGenericPlatformSentrySubsystem::GetHandlerPath() const

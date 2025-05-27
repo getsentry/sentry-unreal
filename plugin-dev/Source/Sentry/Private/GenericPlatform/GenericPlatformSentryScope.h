@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "Containers/RingBuffer.h"
-#include "HAL/CriticalSection.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryScopeInterface.h"
 
@@ -16,7 +15,7 @@ class FGenericPlatformSentryScope : public ISentryScope
 {
 public:
 	FGenericPlatformSentryScope();
-	FGenericPlatformSentryScope(const FGenericPlatformSentryScope& Scope);
+	FGenericPlatformSentryScope(sentry_scope_t* scope);
 	virtual ~FGenericPlatformSentryScope() override;
 
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
@@ -45,24 +44,8 @@ public:
 	virtual TMap<FString, FString> GetExtras() const override;
 	virtual void Clear() override;
 
-	void Apply(TSharedPtr<FGenericPlatformSentryEvent> event);
-
 private:
-	FString Dist;
-	FString Environment;
-
-	TArray<FString> Fingerprint;
-
-	TMap<FString, FString> Tags;
-	TMap<FString, FString> Extra;
-
-	TMap<FString, TMap<FString, FString>> Contexts;
-
-	TRingBuffer<TSharedPtr<FGenericPlatformSentryBreadcrumb>> Breadcrumbs;
-
-	ESentryLevel Level;
-
-	FCriticalSection CriticalSection;
+	sentry_scope_t* Scope;
 };
 
 typedef FGenericPlatformSentryScope FPlatformSentryScope;

@@ -25,6 +25,7 @@ class ISentrySubsystem;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
 
+DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
 /**
@@ -48,6 +49,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings);
+	void InitializeWithSettings(const FConfigureSettingsNativeDelegate& OnConfigureSettings);
 
 	/** Closes the Sentry SDK. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
