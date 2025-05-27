@@ -7,7 +7,7 @@
 class FNullSentryId final : public ISentryId
 {
 public:
-	FNullSentryId(const FString& Id) = default;
+	FNullSentryId(const FString& Id) {};
 
 	virtual ~FNullSentryId() override = default;
 
