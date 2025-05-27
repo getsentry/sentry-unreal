@@ -2,13 +2,13 @@
 
 #include "SentryScope.h"
 #include "SentryEvent.h"
-#include "SentryTests.h"
 #include "SentryScopeBeforeSendHandler.h"
+#include "SentryTests.h"
 
+#include "Engine/Engine.h"
 #include "SentryDataTypes.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
-#include "Engine/Engine.h"
 
 #include "Misc/AutomationTest.h"
 
