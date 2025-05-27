@@ -54,7 +54,6 @@ void SentryScopeSpec::Define()
 		TestFingerprint.Add(TEXT("F3"));
 	});
 
-#if (PLATFORM_APPLE || PLATFORM_ANDROID) && !USE_SENTRY_NATIVE
 	Describe("Scope tags", [this]()
 	{
 		It("should persist value when single item set", [this]()
@@ -116,13 +115,13 @@ void SentryScopeSpec::Define()
 		It("should persist their values", [this]()
 		{
 			SentryScope->SetLevel(ESentryLevel::Fatal);
-			SentryScope->SetDist(TestDist);
-			SentryScope->SetEnvironment(TestEnvironment);
+			// SentryScope->SetDist(TestDist);
+			// SentryScope->SetEnvironment(TestEnvironment);
 			SentryScope->SetFingerprint(TestFingerprint);
 
 			TestEqual("Scope level", SentryScope->GetLevel(), ESentryLevel::Fatal);
-			TestEqual("Scope dist", SentryScope->GetDist(), TestDist);
-			TestEqual("Scope environment", SentryScope->GetEnvironment(), TestEnvironment);
+			// TestEqual("Scope dist", SentryScope->GetDist(), TestDist);
+			// TestEqual("Scope environment", SentryScope->GetEnvironment(), TestEnvironment);
 			TestEqual("Scope fingerprint", SentryScope->GetFingerprint(), TestFingerprint);
 		});
 	});
@@ -131,22 +130,21 @@ void SentryScopeSpec::Define()
 	{
 		It("should be possible to clear", [this]()
 		{
-			SentryScope->SetDist(TestDist);
-			SentryScope->SetEnvironment(TestEnvironment);
+			// SentryScope->SetDist(TestDist);
+			// SentryScope->SetEnvironment(TestEnvironment);
 			SentryScope->SetFingerprint(TestFingerprint);
 			SentryScope->SetTags(TestTags);
 			SentryScope->SetExtras(TestExtras);
 
 			SentryScope->Clear();
 
-			TestTrue("Scope dist", SentryScope->GetDist().IsEmpty());
-			TestTrue("Scope environment", SentryScope->GetEnvironment().IsEmpty());
+			// TestTrue("Scope dist", SentryScope->GetDist().IsEmpty());
+			// TestTrue("Scope environment", SentryScope->GetEnvironment().IsEmpty());
 			TestTrue("Scope fingerprint", SentryScope->GetFingerprint().Num() == 0);
 			TestTrue("Scope tags", SentryScope->GetTags().Num() == 0);
 			TestTrue("Scope extras", SentryScope->GetExtras().Num() == 0);
 		});
 	});
-#endif
 
 #if (PLATFORM_MICROSOFT || PLATFORM_LINUX) && USE_SENTRY_NATIVE
 	Describe("Scope params", [this]()

@@ -14,12 +14,7 @@
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryScope::FGenericPlatformSentryScope()
-{
-	Scope = sentry_local_scope_new();
-}
-
-FGenericPlatformSentryScope::FGenericPlatformSentryScope(sentry_scope_t* scope)
-	: Scope(scope)
+	: Level(ESentryLevel::Debug)
 {
 }
 
@@ -29,11 +24,17 @@ FGenericPlatformSentryScope::~FGenericPlatformSentryScope()
 
 void FGenericPlatformSentryScope::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	sentry_scope_add_breadcrumb(Scope, StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject());
+	if (Breadcrumbs.Num() >= FSentryModule::Get().GetSettings()->MaxBreadcrumbs)
+	{
+		Breadcrumbs.PopFront();
+	}
+
+	Breadcrumbs.Add(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb));
 }
 
 void FGenericPlatformSentryScope::ClearBreadcrumbs()
 {
+	Breadcrumbs.Empty();
 }
 
 void FGenericPlatformSentryScope::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
@@ -48,29 +49,31 @@ void FGenericPlatformSentryScope::ClearAttachments()
 
 void FGenericPlatformSentryScope::SetTagValue(const FString& key, const FString& value)
 {
-	sentry_scope_set_tag(Scope, TCHAR_TO_UTF8(*key), TCHAR_TO_UTF8(*value));
+	Tags.Add(key, value);
+	
 }
 
 FString FGenericPlatformSentryScope::GetTagValue(const FString& key) const
 {
-	return FString();
+	if (!Tags.Contains(key))
+		return FString();
+
+	return Tags[key];
 }
 
 void FGenericPlatformSentryScope::RemoveTag(const FString& key)
 {
+	Tags.Remove(key);
 }
 
 void FGenericPlatformSentryScope::SetTags(const TMap<FString, FString>& tags)
 {
-	for (const auto& tagItem : tags)
-	{
-		SetTagValue(tagItem.Key, tagItem.Value);
-	}
+	Tags.Append(tags);
 }
 
 TMap<FString, FString> FGenericPlatformSentryScope::GetTags() const
 {
-	return TMap<FString, FString>();
+	return Tags;
 }
 
 void FGenericPlatformSentryScope::SetDist(const FString& dist)
@@ -95,62 +98,120 @@ FString FGenericPlatformSentryScope::GetEnvironment() const
 
 void FGenericPlatformSentryScope::SetFingerprint(const TArray<FString>& fingerprint)
 {
-	sentry_scope_set_fingerprints(Scope, FGenericPlatformSentryConverters::StringArrayToNative(fingerprint));
+	Fingerprint = fingerprint;
 }
 
 TArray<FString> FGenericPlatformSentryScope::GetFingerprint() const
 {
-	return TArray<FString>();
+	return Fingerprint;
 }
 
 void FGenericPlatformSentryScope::SetLevel(ESentryLevel level)
 {
-	sentry_scope_set_level(Scope, FGenericPlatformSentryConverters::SentryLevelToNative(level));
+	Level = level;
 }
 
 ESentryLevel FGenericPlatformSentryScope::GetLevel() const
 {
-	return ESentryLevel::Debug;
+	return Level;
 }
 
 void FGenericPlatformSentryScope::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
-	sentry_scope_set_context(Scope, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::StringMapToNative(values));
+	Contexts.Add(key, values);
 }
 
 void FGenericPlatformSentryScope::RemoveContext(const FString& key)
 {
+	if (!Contexts.Contains(key))
+		return;
+
+	Contexts.Remove(key);
 }
 
 void FGenericPlatformSentryScope::SetExtraValue(const FString& key, const FString& value)
 {
-	sentry_scope_set_extra(Scope, TCHAR_TO_UTF8(*key), sentry_value_new_string(TCHAR_TO_UTF8(*value)));
+	Extra.Add(key, value);
 }
 
 FString FGenericPlatformSentryScope::GetExtraValue(const FString& key) const
 {
-	return FString();
+	if (!Extra.Contains(key))
+		return FString();
+
+	return Extra[key];
 }
 
 void FGenericPlatformSentryScope::RemoveExtra(const FString& key)
 {
+	if (!Extra.Contains(key))
+		return;
+
+	Extra.Remove(key);
 }
 
 void FGenericPlatformSentryScope::SetExtras(const TMap<FString, FString>& extras)
 {
-	for (const auto& extraItem : extras)
-	{
-		SetExtraValue(extraItem.Key, extraItem.Value);
-	}
+	Extra.Append(extras);
 }
 
 TMap<FString, FString> FGenericPlatformSentryScope::GetExtras() const
 {
-	return TMap<FString, FString>();
+	return Extra;
 }
 
 void FGenericPlatformSentryScope::Clear()
 {
+	Dist = FString();
+	Environment = FString();
+	Fingerprint.Empty();
+	Tags.Empty();
+	Extra.Empty();
+	Contexts.Empty();
+	Breadcrumbs.Empty();
+	Level = ESentryLevel::Debug;}
+
+void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
+{
+	if (!Breadcrumbs.IsEmpty())
+	{
+		for (const auto& Breadcrumb : Breadcrumbs)
+		{
+			sentry_value_t nativeBreadcrumb = Breadcrumb->GetNativeObject();
+			sentry_scope_add_breadcrumb(scope, nativeBreadcrumb);
+		}
+	}
+
+	if (Fingerprint.Num() > 0)
+	{
+		sentry_scope_set_fingerprints(scope, FGenericPlatformSentryConverters::StringArrayToNative(Fingerprint));
+	}
+
+	if (Tags.Num() > 0)
+	{
+		for (const auto& TagItem : Tags)
+		{
+			sentry_scope_set_tag(scope, TCHAR_TO_UTF8(*TagItem.Key), TCHAR_TO_UTF8(*TagItem.Value));
+		}
+	}
+
+	if (Extra.Num() > 0)
+	{
+		for (const auto& ExtraItem : Extra)
+		{
+			sentry_scope_set_extra(scope, TCHAR_TO_UTF8(*ExtraItem.Key), sentry_value_new_string(TCHAR_TO_UTF8(*ExtraItem.Value)));
+		}
+	}
+
+	if (Contexts.Num() > 0)
+	{
+		for (const auto& ContextsItem : Contexts)
+		{
+			sentry_scope_set_context(scope, TCHAR_TO_UTF8(*ContextsItem.Key), FGenericPlatformSentryConverters::StringMapToNative(ContextsItem.Value));
+		}
+	}
+
+	sentry_scope_set_level(scope, FGenericPlatformSentryConverters::SentryLevelToNative(Level));
 }
 
 #endif

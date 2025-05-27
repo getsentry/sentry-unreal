@@ -403,8 +403,9 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(c
 
 	sentry_scope_t* scope = sentry_local_scope_new();
 
-	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope(scope));
+	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope());
 	onConfigureScope.ExecuteIfBound(NewLocalScope);
+	NewLocalScope->Apply(scope);
 
 	sentry_uuid_t id = sentry_capture_event_with_scope(nativeEvent, scope);
 	return MakeShareable(new FGenericPlatformSentryId(id));
@@ -438,8 +439,9 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 
 	sentry_scope_t* scope = sentry_local_scope_new();
 
-	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope(scope));
+	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope());
 	onScopeConfigure.ExecuteIfBound(NewLocalScope);
+	NewLocalScope->Apply(scope);
 
 	sentry_uuid_t id = sentry_capture_event_with_scope(nativeEvent, scope);
 	return MakeShareable(new FGenericPlatformSentryId(id));
