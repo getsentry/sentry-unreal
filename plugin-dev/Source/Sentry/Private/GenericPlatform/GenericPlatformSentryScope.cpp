@@ -76,26 +76,6 @@ TMap<FString, FString> FGenericPlatformSentryScope::GetTags() const
 	return Tags;
 }
 
-void FGenericPlatformSentryScope::SetDist(const FString& dist)
-{
-	// Set via options during initialization
-}
-
-FString FGenericPlatformSentryScope::GetDist() const
-{
-	return FString();
-}
-
-void FGenericPlatformSentryScope::SetEnvironment(const FString& environment)
-{
-	// Set via options during initialization
-}
-
-FString FGenericPlatformSentryScope::GetEnvironment() const
-{
-	return FString();
-}
-
 void FGenericPlatformSentryScope::SetFingerprint(const TArray<FString>& fingerprint)
 {
 	Fingerprint = fingerprint;

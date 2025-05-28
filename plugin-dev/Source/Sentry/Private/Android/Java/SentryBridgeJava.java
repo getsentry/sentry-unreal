@@ -46,6 +46,7 @@ public class SentryBridgeJava {
 					options.setDsn(settingJson.getString("dsn"));
 					options.setRelease(settingJson.getString("release"));
 					options.setEnvironment(settingJson.getString("environment"));
+					options.setDist(settingJson.getString("dist"));
 					options.setEnableAutoSessionTracking(settingJson.getBoolean("autoSessionTracking"));
 					options.setSessionTrackingIntervalMillis(settingJson.getLong("sessionTimeout"));
 					options.setAttachStacktrace(settingJson.getBoolean("enableStackTrace"));

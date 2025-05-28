@@ -284,6 +284,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	}
 #endif // WITH_EDITOR
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
+	sentry_options_set_dist(options, TCHAR_TO_ANSI(*settings->Dist));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);

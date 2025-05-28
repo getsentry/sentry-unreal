@@ -56,6 +56,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			}
 #endif
 			options.environment = settings->Environment.GetNSString();
+			options.dist = settings->Dist.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
 			options.releaseName = settings->OverrideReleaseName ? settings->Release.GetNSString() : settings->GetFormattedReleaseName().GetNSString();

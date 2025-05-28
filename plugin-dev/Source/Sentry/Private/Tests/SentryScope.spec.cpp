@@ -37,9 +37,6 @@ void SentryScopeSpec::Define()
 	{
 		SentryScope = USentryScope::Create(CreateSharedSentryScope());
 
-		TestDist = TEXT("dist_str");
-		TestEnvironment = TEXT("env_str");
-
 		TestTags.Add(TEXT("TagsKey1"), TEXT("TagsVal1"));
 		TestTags.Add(TEXT("TagsKey2"), TEXT("TagsVal2"));
 
@@ -115,13 +112,9 @@ void SentryScopeSpec::Define()
 		It("should persist their values", [this]()
 		{
 			SentryScope->SetLevel(ESentryLevel::Fatal);
-			// SentryScope->SetDist(TestDist);
-			// SentryScope->SetEnvironment(TestEnvironment);
 			SentryScope->SetFingerprint(TestFingerprint);
 
 			TestEqual("Scope level", SentryScope->GetLevel(), ESentryLevel::Fatal);
-			// TestEqual("Scope dist", SentryScope->GetDist(), TestDist);
-			// TestEqual("Scope environment", SentryScope->GetEnvironment(), TestEnvironment);
 			TestEqual("Scope fingerprint", SentryScope->GetFingerprint(), TestFingerprint);
 		});
 	});
@@ -130,16 +123,12 @@ void SentryScopeSpec::Define()
 	{
 		It("should be possible to clear", [this]()
 		{
-			// SentryScope->SetDist(TestDist);
-			// SentryScope->SetEnvironment(TestEnvironment);
 			SentryScope->SetFingerprint(TestFingerprint);
 			SentryScope->SetTags(TestTags);
 			SentryScope->SetExtras(TestExtras);
 
 			SentryScope->Clear();
 
-			// TestTrue("Scope dist", SentryScope->GetDist().IsEmpty());
-			// TestTrue("Scope environment", SentryScope->GetEnvironment().IsEmpty());
 			TestTrue("Scope fingerprint", SentryScope->GetFingerprint().Num() == 0);
 			TestTrue("Scope tags", SentryScope->GetTags().Num() == 0);
 			TestTrue("Scope extras", SentryScope->GetExtras().Num() == 0);
