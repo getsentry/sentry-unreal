@@ -50,7 +50,6 @@ void FGenericPlatformSentryScope::ClearAttachments()
 void FGenericPlatformSentryScope::SetTagValue(const FString& key, const FString& value)
 {
 	Tags.Add(key, value);
-	
 }
 
 FString FGenericPlatformSentryScope::GetTagValue(const FString& key) const
@@ -149,7 +148,8 @@ void FGenericPlatformSentryScope::Clear()
 	Extra.Empty();
 	Contexts.Empty();
 	Breadcrumbs.Empty();
-	Level = ESentryLevel::Debug;}
+	Level = ESentryLevel::Debug;
+}
 
 void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 {
