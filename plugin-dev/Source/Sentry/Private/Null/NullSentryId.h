@@ -7,6 +7,8 @@
 class FNullSentryId final : public ISentryId
 {
 public:
+	FNullSentryId(const FString& Id) {}
+
 	virtual ~FNullSentryId() override = default;
 
 	virtual FString ToString() const override { return TEXT(""); }
