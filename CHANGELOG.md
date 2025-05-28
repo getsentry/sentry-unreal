@@ -4,14 +4,29 @@
 
 ### Features
 
-- Add API allowing to get/set event fingerprint ([#920](https://github.com/getsentry/sentry-unreal/pull/920))
 - Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
 
 ### Dependencies
 
-- Bump Java SDK (Android) from v8.11.1 to v8.12.0 ([#911](https://github.com/getsentry/sentry-unreal/pull/911))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8120)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.12.0)
+- Bump Java SDK (Android) from v8.13.1 to v8.13.2 ([#932](https://github.com/getsentry/sentry-unreal/pull/932))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8132)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.13.1...8.13.2)
+- Bump CLI from v2.45.0 to v2.46.0 ([#931](https://github.com/getsentry/sentry-unreal/pull/931))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2460)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.45.0...2.46.0)
+
+## 1.0.0-beta.2
+
+### Features
+
+- Add API allowing to get/set event fingerprint ([#920](https://github.com/getsentry/sentry-unreal/pull/920))
+- The image buffer is now allocated on the heap to prevent stack overflow during screenshot capture on Windows ([#900](https://github.com/getsentry/sentry-unreal/pull/900))
+
+### Dependencies
+
+- Bump Java SDK (Android) from v8.11.1 to v8.13.1 ([#911](https://github.com/getsentry/sentry-unreal/pull/911), [#929](https://github.com/getsentry/sentry-unreal/pull/929))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8131)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.13.1)
 - Bump Native SDK from v0.8.4 to v0.8.5 ([#912](https://github.com/getsentry/sentry-unreal/pull/912))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#085)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.8.4...0.8.5)
@@ -23,7 +38,6 @@
 
 ### Fixes
 
-- The image buffer is now allocated on the heap to prevent stack overflow during screenshot capture on Windows ([#900](https://github.com/getsentry/sentry-unreal/pull/900))
 - Windows default crash handling mechanism is no longer disabled if SDK initialization failed ([#901](https://github.com/getsentry/sentry-unreal/pull/901))
 
 ### Dependencies
