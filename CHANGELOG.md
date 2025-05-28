@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- `Environment` and `Dist` get/set functions were removed from the `Scope` class and now these properties have to be set in plugin settings instead.
+
 ### Features
 
 - Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
