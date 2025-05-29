@@ -183,18 +183,6 @@ public:
 	void RemoveUser();
 
 	/**
-	 * Configures the scope through the callback.
-	 * Sentry SDK uses the Scope to attach contextual data to events.
-	 *
-	 * @param OnConfigureScope The callback to configure the scope.
-	 *
-	 * @note: Not supported for Windows/Linux.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
-	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
-	void ConfigureScope(const FConfigureScopeNativeDelegate& OnConfigureScope);
-
-	/**
 	 * Sets context values which will be used for enriching events.
 	 *
 	 * @param Key Context key.

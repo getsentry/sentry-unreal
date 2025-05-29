@@ -496,11 +496,6 @@ void FGenericPlatformSentrySubsystem::RemoveUser()
 	}
 }
 
-void FGenericPlatformSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
-{
-	// Not implemented in sentry-native
-}
-
 void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	sentry_set_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::StringMapToNative(values));

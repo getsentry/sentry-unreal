@@ -147,15 +147,6 @@ public class SentryBridgeJava {
 		return eventId;
 	}
 
-	public static void configureScope(final long callback) {
-		Sentry.configureScope(new ScopeCallback() {
-			@Override
-			public void run(@NonNull IScope scope) {
-				onConfigureScope(callback, scope);
-			}
-		});
-	}
-
 	public static void setContext(final String key, final HashMap<String, String> values) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override

@@ -33,7 +33,6 @@ public:
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
 	virtual void RemoveUser() override;
-	virtual void ConfigureScope(const FSentryScopeDelegate& onConfigureScope) override;
 	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) override;
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;

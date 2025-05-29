@@ -196,13 +196,6 @@ void FAndroidSentrySubsystem::RemoveUser()
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
 }
 
-void FAndroidSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
-{
-	int64 scopeCallbackId = AndroidSentryScopeCallback::SaveDelegate(onConfigureScope);
-
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "configureScope", "(J)V", scopeCallbackId);
-}
-
 void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",

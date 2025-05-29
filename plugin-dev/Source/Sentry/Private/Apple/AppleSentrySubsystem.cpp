@@ -289,13 +289,6 @@ void FAppleSentrySubsystem::RemoveUser()
 	[SentrySDK setUser:nil];
 }
 
-void FAppleSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
-{
-	[SentrySDK configureScope:^(SentryScope* scope) {
-		onConfigureScope.ExecuteIfBound(MakeShareable(new FAppleSentryScope(scope)));
-	}];
-}
-
 void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 	[SentrySDK configureScope:^(SentryScope* scope) {
