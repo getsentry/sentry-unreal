@@ -153,13 +153,11 @@ void FGenericPlatformSentryScope::Clear()
 
 void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 {
-	if (!Breadcrumbs.IsEmpty())
+
+	for (const auto& Breadcrumb : Breadcrumbs)
 	{
-		for (const auto& Breadcrumb : Breadcrumbs)
-		{
-			sentry_value_t nativeBreadcrumb = Breadcrumb->GetNativeObject();
-			sentry_scope_add_breadcrumb(scope, nativeBreadcrumb);
-		}
+		sentry_value_t nativeBreadcrumb = Breadcrumb->GetNativeObject();
+		sentry_scope_add_breadcrumb(scope, nativeBreadcrumb);
 	}
 
 	if (Fingerprint.Num() > 0)
@@ -167,28 +165,19 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 		sentry_scope_set_fingerprints(scope, FGenericPlatformSentryConverters::StringArrayToNative(Fingerprint));
 	}
 
-	if (Tags.Num() > 0)
+	for (const auto& TagItem : Tags)
 	{
-		for (const auto& TagItem : Tags)
-		{
-			sentry_scope_set_tag(scope, TCHAR_TO_UTF8(*TagItem.Key), TCHAR_TO_UTF8(*TagItem.Value));
-		}
+		sentry_scope_set_tag(scope, TCHAR_TO_UTF8(*TagItem.Key), TCHAR_TO_UTF8(*TagItem.Value));
 	}
 
-	if (Extra.Num() > 0)
+	for (const auto& ExtraItem : Extra)
 	{
-		for (const auto& ExtraItem : Extra)
-		{
-			sentry_scope_set_extra(scope, TCHAR_TO_UTF8(*ExtraItem.Key), sentry_value_new_string(TCHAR_TO_UTF8(*ExtraItem.Value)));
-		}
+		sentry_scope_set_extra(scope, TCHAR_TO_UTF8(*ExtraItem.Key), sentry_value_new_string(TCHAR_TO_UTF8(*ExtraItem.Value)));
 	}
 
-	if (Contexts.Num() > 0)
+	for (const auto& ContextsItem : Contexts)
 	{
-		for (const auto& ContextsItem : Contexts)
-		{
-			sentry_scope_set_context(scope, TCHAR_TO_UTF8(*ContextsItem.Key), FGenericPlatformSentryConverters::StringMapToNative(ContextsItem.Value));
-		}
+		sentry_scope_set_context(scope, TCHAR_TO_UTF8(*ContextsItem.Key), FGenericPlatformSentryConverters::StringMapToNative(ContextsItem.Value));
 	}
 
 	sentry_scope_set_level(scope, FGenericPlatformSentryConverters::SentryLevelToNative(Level));
