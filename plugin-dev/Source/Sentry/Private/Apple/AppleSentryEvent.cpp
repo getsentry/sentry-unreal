@@ -92,6 +92,11 @@ void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FStri
 {
 }
 
+TMap<FString, FString> FAppleSentryEvent::GetContext(const FString& key) const
+{
+	return TMap<FString, FString>();
+}
+
 void FAppleSentryEvent::RemoveContext(const FString& key)
 {
 }

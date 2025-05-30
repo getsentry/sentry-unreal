@@ -138,6 +138,18 @@ void FGenericPlatformSentryEvent::SetContext(const FString& key, const TMap<FStr
 	}
 }
 
+TMap<FString, FString> FGenericPlatformSentryEvent::GetContext(const FString& key) const
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		return TMap<FString, FString>();
+	}
+
+	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_ANSI(*key));
+	return FGenericPlatformSentryConverters::StringMapToUnreal(context);
+}
+
 void FGenericPlatformSentryEvent::RemoveContext(const FString& key)
 {
 	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");

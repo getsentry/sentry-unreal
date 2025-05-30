@@ -107,37 +107,24 @@ void SentryEventSpec::Define()
 	{
 		It("can be added and removed", [this]()
 		{
-#if (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
-			TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(SentryEvent->GetNativeObject());
+			TMap<FString, FString> InTestContext;
+			InTestContext.Add(TEXT("ContextKey1"), TEXT("ContextVal1"));
+			InTestContext.Add(TEXT("ContextKey2"), TEXT("ContextVal2"));
 
-			sentry_value_t NativeEvent = Event->GetNativeObject();
+			SentryEvent->SetContext(TEXT("TestContext1"), InTestContext);
 
-			sentry_value_t EventContexts = sentry_value_get_by_key(NativeEvent, "contexts");
+			TMap<FString, FString> OutTestContext = SentryEvent->GetContext(TEXT("TestContext1"));
 
-			TestEqual("Contexts are empty by default", sentry_value_is_null(EventContexts), 1);
+			TestEqual("Context exist after it was added", OutTestContext.Num(), 2);
 
-			TMap<FString, FString> TestContextVals;
-			TestContextVals.Add(TEXT("ContextKey1"), TEXT("ContextVal1"));
-			TestContextVals.Add(TEXT("ContextKey2"), TEXT("ContextVal2"));
-
-			SentryEvent->SetContext(TEXT("TestContext1"), TestContextVals);
-
-			EventContexts = sentry_value_get_by_key(NativeEvent, "contexts");
-			TestEqual("Contexts aren't empty by default", sentry_value_is_null(EventContexts), 0);
-
-			sentry_value_t TestContext = sentry_value_get_by_key(EventContexts, "TestContext1");
-			sentry_value_t TestContextItem1 = sentry_value_get_by_key(TestContext, "ContextKey1");
-			sentry_value_t TestContextItem2 = sentry_value_get_by_key(TestContext, "ContextKey2");
-
-			TestEqual("Contex persist its first value", sentry_value_is_null(TestContextItem1), 0);
-			TestEqual("Contex persist its second value", sentry_value_is_null(TestContextItem2), 0);
+			TestEqual("Context persist its first value", OutTestContext[TEXT("ContextKey1")], InTestContext[TEXT("ContextKey1")]);
+			TestEqual("Context persist its second value", OutTestContext[TEXT("ContextKey2")], InTestContext[TEXT("ContextKey2")]);
 
 			SentryEvent->RemoveContext(TEXT("TestContext1"));
 
-			TestContext = sentry_value_get_by_key(EventContexts, "TestContext1");
+			TMap<FString, FString> TestContextAfterRemove = SentryEvent->GetContext(TEXT("TestContext1"));
 
-			TestEqual("No context with given key available after it was removed", sentry_value_is_null(TestContext), 1);
-#endif
+			TestEqual("No context with given key available after it was removed", TestContextAfterRemove.Num(), 0);
 		});
 	});
 

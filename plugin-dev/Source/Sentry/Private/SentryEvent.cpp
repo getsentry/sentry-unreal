@@ -119,6 +119,14 @@ void USentryEvent::SetContext(const FString& Key, const TMap<FString, FString>& 
 	NativeImpl->SetContext(Key, Values);
 }
 
+TMap<FString, FString> USentryEvent::GetContext(const FString& Key) const
+{
+	if (!NativeImpl)
+		return TMap<FString, FString>();
+
+	return NativeImpl->GetContext(Key);
+}
+
 void USentryEvent::RemoveContext(const FString& Key)
 {
 	if (!NativeImpl)

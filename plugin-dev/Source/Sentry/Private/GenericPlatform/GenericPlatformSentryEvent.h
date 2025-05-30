@@ -30,6 +30,7 @@ public:
 	virtual void SetTags(const TMap<FString, FString>& tags) override;
 	virtual TMap<FString, FString> GetTags() const override;
 	virtual void SetContext(const FString& key, const TMap<FString, FString>& Values) override;
+	virtual TMap<FString, FString> GetContext(const FString& key) const override;
 	virtual void RemoveContext(const FString& key) override;
 	virtual void SetExtraValue(const FString& key, const FString& value) override;
 	virtual FString GetExtraValue(const FString& key) const override;

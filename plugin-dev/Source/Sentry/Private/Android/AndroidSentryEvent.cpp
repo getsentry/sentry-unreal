@@ -96,6 +96,11 @@ void FAndroidSentryEvent::SetContext(const FString& key, const TMap<FString, FSt
 {
 }
 
+TMap<FString, FString> FAndroidSentryEvent::GetContext(const FString& key) const
+{
+	return TMap<FString, FString>();
+}
+
 void FAndroidSentryEvent::RemoveContext(const FString& key)
 {
 }
