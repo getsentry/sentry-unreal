@@ -75,6 +75,126 @@ TArray<FString> FGenericPlatformSentryEvent::GetFingerprint()
 	return FGenericPlatformSentryConverters::StringArrayToUnreal(fingerprint);
 }
 
+void FGenericPlatformSentryEvent::SetTagValue(const FString& key, const FString& value)
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		sentry_value_set_by_key(Event, "tags", FGenericPlatformSentryConverters::StringMapToNative({ { key, value } }));
+	}
+	else
+	{
+		sentry_value_set_by_key(eventTags, TCHAR_TO_ANSI(*key), sentry_value_new_string(TCHAR_TO_ANSI(*value)));
+	}
+}
+
+FString FGenericPlatformSentryEvent::GetTagValue(const FString& key) const
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		return FString();
+	}
+
+	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_ANSI(*key));
+	return FString(sentry_value_as_string(tag));
+}
+
+void FGenericPlatformSentryEvent::RemoveTag(const FString& key)
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		return;
+	}
+
+	sentry_value_remove_by_key(eventTags, TCHAR_TO_ANSI(*key));
+}
+
+void FGenericPlatformSentryEvent::SetTags(const TMap<FString, FString>& tags)
+{
+	sentry_value_set_by_key(Event, "tags", FGenericPlatformSentryConverters::StringMapToNative(tags));
+}
+
+TMap<FString, FString> FGenericPlatformSentryEvent::GetTags() const
+{
+	return FGenericPlatformSentryConverters::StringMapToUnreal(sentry_value_get_by_key(Event, "tags"));
+}
+
+void FGenericPlatformSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& Values)
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		eventContexts = sentry_value_new_object();
+
+		sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::StringMapToNative(Values));
+
+		sentry_value_set_by_key(Event, "contexts", eventContexts);
+	}
+	else
+	{
+		sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::StringMapToNative(Values));
+	}
+}
+
+void FGenericPlatformSentryEvent::RemoveContext(const FString& key)
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		return;
+	}
+
+	sentry_value_remove_by_key(eventContexts, TCHAR_TO_ANSI(*key));
+}
+
+void FGenericPlatformSentryEvent::SetExtraValue(const FString& key, const FString& value)
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::StringMapToNative({ { key, value } }));
+	}
+	else
+	{
+		sentry_value_set_by_key(eventExtra, TCHAR_TO_ANSI(*key), sentry_value_new_string(TCHAR_TO_ANSI(*value)));
+	}
+}
+
+FString FGenericPlatformSentryEvent::GetExtraValue(const FString& key) const
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return FString();
+	}
+
+	sentry_value_t tag = sentry_value_get_by_key(eventExtra, TCHAR_TO_ANSI(*key));
+	return FString(sentry_value_as_string(tag));
+}
+
+void FGenericPlatformSentryEvent::RemoveExtra(const FString& key)
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return;
+	}
+
+	sentry_value_remove_by_key(eventExtra, TCHAR_TO_ANSI(*key));
+}
+
+void FGenericPlatformSentryEvent::SetExtras(const TMap<FString, FString>& extras)
+{
+	sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::StringMapToNative(extras));
+}
+
+TMap<FString, FString> FGenericPlatformSentryEvent::GetExtras() const
+{
+	return FGenericPlatformSentryConverters::StringMapToUnreal(sentry_value_get_by_key(Event, "extra"));
+}
+
 bool FGenericPlatformSentryEvent::IsCrash() const
 {
 	return IsCrashEvent;

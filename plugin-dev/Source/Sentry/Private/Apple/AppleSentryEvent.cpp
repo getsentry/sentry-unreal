@@ -66,6 +66,57 @@ TArray<FString> FAppleSentryEvent::GetFingerprint()
 	return FAppleSentryConverters::StringArrayToUnreal(EventApple.fingerprint);
 }
 
+void FAppleSentryEvent::SetTagValue(const FString& key, const FString& value)
+{
+}
+
+FString FAppleSentryEvent::GetTagValue(const FString& key) const
+{
+	return FString();
+}
+
+void FAppleSentryEvent::RemoveTag(const FString& key)
+{
+}
+
+void FAppleSentryEvent::SetTags(const TMap<FString, FString>& tags)
+{
+}
+
+TMap<FString, FString> FAppleSentryEvent::GetTags() const
+{
+	return TMap<FString, FString>();
+}
+
+void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& Values)
+{
+}
+
+void FAppleSentryEvent::RemoveContext(const FString& key)
+{
+}
+
+void FAppleSentryEvent::SetExtraValue(const FString& key, const FString& value)
+{
+}
+
+FString FAppleSentryEvent::GetExtraValue(const FString& key) const
+{
+	return FString();
+}
+
+void FAppleSentryEvent::RemoveExtra(const FString& key)
+{
+}
+
+void FAppleSentryEvent::SetExtras(const TMap<FString, FString>& extras)
+{
+}
+
+TMap<FString, FString> FAppleSentryEvent::GetExtras() const
+{
+}
+
 bool FAppleSentryEvent::IsCrash() const
 {
 	return EventApple.error != nullptr;

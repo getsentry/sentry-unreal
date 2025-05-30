@@ -71,6 +71,102 @@ TArray<FString> USentryEvent::GetFingerprint() const
 	return NativeImpl->GetFingerprint();
 }
 
+void USentryEvent::SetTagValue(const FString& Key, const FString& Value)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetTagValue(Key, Value);
+}
+
+FString USentryEvent::GetTagValue(const FString& Key) const
+{
+	if (!NativeImpl)
+		return FString();
+
+	return NativeImpl->GetTagValue(Key);
+}
+
+void USentryEvent::RemoveTag(const FString& Key)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->RemoveTag(Key);
+}
+
+void USentryEvent::SetTags(const TMap<FString, FString>& Tags)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetTags(Tags);
+}
+
+TMap<FString, FString> USentryEvent::GetTags() const
+{
+	if (!NativeImpl)
+		return TMap<FString, FString>();
+
+	return NativeImpl->GetTags();
+}
+
+void USentryEvent::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetContext(Key, Values);
+}
+
+void USentryEvent::RemoveContext(const FString& Key)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->RemoveContext(Key);
+}
+
+void USentryEvent::SetExtraValue(const FString& Key, const FString& Value)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetExtraValue(Key, Value);
+}
+
+FString USentryEvent::GetExtraValue(const FString& Key) const
+{
+	if (!NativeImpl)
+		return FString();
+
+	return NativeImpl->GetExtraValue(Key);
+}
+
+void USentryEvent::RemoveExtra(const FString& Key)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->RemoveExtra(Key);
+}
+
+void USentryEvent::SetExtras(const TMap<FString, FString>& Extras)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetExtras(Extras);
+}
+
+TMap<FString, FString> USentryEvent::GetExtras() const
+{
+	if (!NativeImpl)
+		return TMap<FString, FString>();
+
+	return NativeImpl->GetExtras();
+}
+
 bool USentryEvent::IsCrash() const
 {
 	if (!NativeImpl)

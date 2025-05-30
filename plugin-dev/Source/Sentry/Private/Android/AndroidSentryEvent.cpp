@@ -70,6 +70,58 @@ TArray<FString> FAndroidSentryEvent::GetFingerprint()
 	return FAndroidSentryConverters::StringListToUnreal(*fingerprint);
 }
 
+void FAndroidSentryEvent::SetTagValue(const FString& key, const FString& value)
+{
+}
+
+FString FAndroidSentryEvent::GetTagValue(const FString& key) const
+{
+	return FString();
+}
+
+void FAndroidSentryEvent::RemoveTag(const FString& key)
+{
+}
+
+void FAndroidSentryEvent::SetTags(const TMap<FString, FString>& tags)
+{
+}
+
+TMap<FString, FString> FAndroidSentryEvent::GetTags() const
+{
+	return TMap<FString, FString>();
+}
+
+void FAndroidSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& Values)
+{
+}
+
+void FAndroidSentryEvent::RemoveContext(const FString& key)
+{
+}
+
+void FAndroidSentryEvent::SetExtraValue(const FString& key, const FString& value)
+{
+}
+
+FString FAndroidSentryEvent::GetExtraValue(const FString& key) const
+{
+	return FString();
+}
+
+void FAndroidSentryEvent::RemoveExtra(const FString& key)
+{
+}
+
+void FAndroidSentryEvent::SetExtras(const TMap<FString, FString>& extras)
+{
+}
+
+TMap<FString, FString> FAndroidSentryEvent::GetExtras() const
+{
+	return TMap<FString, FString>();
+}
+
 bool FAndroidSentryEvent::IsCrash() const
 {
 	return CallMethod<bool>(IsCrashMethod);

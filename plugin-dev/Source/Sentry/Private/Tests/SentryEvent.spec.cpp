@@ -61,6 +61,126 @@ void SentryEventSpec::Define()
 			TestEqual("Fingerprint is empty", OutFingerprint.Num(), 0);
 		});
 	});
+
+	Describe("Event tags", [this]()
+	{
+		It("can be added and removed", [this]()
+		{
+			TestEqual("Tags are empty by default", SentryEvent->GetTags().Num(), 0);
+
+			TestEqual("Can't get any tag while these are empty", SentryEvent->GetTagValue(TEXT("TagsKey0")), TEXT(""));
+
+			SentryEvent->SetTagValue(TEXT("TagsKey1"), TEXT("TagsVal1"));
+			SentryEvent->SetTagValue(TEXT("TagsKey2"), TEXT("TagsVal2"));
+
+			TestEqual("There are two tags adding them as individual items", SentryEvent->GetTags().Num(), 2);
+
+			TestEqual("First tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey1")), TEXT("TagsVal1"));
+			TestEqual("Second tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey2")), TEXT("TagsVal2"));
+
+			TestEqual("Can't get non-existent tag", SentryEvent->GetTagValue(TEXT("TagsKey3")), TEXT(""));
+
+			SentryEvent->RemoveTag(TEXT("TagsKey1"));
+			TestEqual("Can't get first tag after it was removed", SentryEvent->GetTagValue(TEXT("TagsKey1")), TEXT(""));
+			TestEqual("One tag left", SentryEvent->GetTags().Num(), 1);
+
+			SentryEvent->RemoveTag(TEXT("TagsKey2"));
+			TestEqual("Can't get second tag after it was removed", SentryEvent->GetTagValue(TEXT("TagsKey2")), TEXT(""));
+			TestEqual("No tags left", SentryEvent->GetTags().Num(), 0);
+
+			TMap<FString, FString> TestTags;
+			TestTags.Add(TEXT("TagsKey3"), TEXT("TagsVal3"));
+			TestTags.Add(TEXT("TagsKey4"), TEXT("TagsVal4"));
+
+			SentryEvent->SetTags(TestTags);
+			TestEqual("There are two tags after adding them as map", SentryEvent->GetTags().Num(), 2);
+
+			TestEqual("Third tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey3")), TEXT("TagsVal3"));
+			TestEqual("Fourth tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey4")), TEXT("TagsVal4"));
+
+			SentryEvent->SetTags(TMap<FString, FString>());
+			TestEqual("There are no tags after setting an empty map", SentryEvent->GetTags().Num(), 0);
+		});
+	});
+
+	Describe("Event contexts", [this]()
+	{
+		It("can be added and removed", [this]()
+		{
+#if (PLATFORM_WINDOWS || PLATFORM_LINUX) && USE_SENTRY_NATIVE
+			TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(SentryEvent->GetNativeObject());
+
+			sentry_value_t NativeEvent = Event->GetNativeObject();
+
+			sentry_value_t EventContexts = sentry_value_get_by_key(NativeEvent, "contexts");
+
+			TestEqual("Contexts are empty by default", sentry_value_is_null(EventContexts), 1);
+
+			TMap<FString, FString> TestContextVals;
+			TestContextVals.Add(TEXT("ContextKey1"), TEXT("ContextVal1"));
+			TestContextVals.Add(TEXT("ContextKey2"), TEXT("ContextVal2"));
+
+			SentryEvent->SetContext(TEXT("TestContext1"), TestContextVals);
+
+			EventContexts = sentry_value_get_by_key(NativeEvent, "contexts");
+			TestEqual("Contexts aren't empty by default", sentry_value_is_null(EventContexts), 0);
+
+			sentry_value_t TestContext = sentry_value_get_by_key(EventContexts, "TestContext1");
+			sentry_value_t TestContextItem1 = sentry_value_get_by_key(TestContext, "ContextKey1");
+			sentry_value_t TestContextItem2 = sentry_value_get_by_key(TestContext, "ContextKey2");
+
+			TestEqual("Contex persist its first value", sentry_value_is_null(TestContextItem1), 0);
+			TestEqual("Contex persist its second value", sentry_value_is_null(TestContextItem2), 0);
+
+			SentryEvent->RemoveContext(TEXT("TestContext1"));
+
+			TestContext = sentry_value_get_by_key(EventContexts, "TestContext1");
+
+			TestEqual("No context with given key available after it was removed", sentry_value_is_null(TestContext), 1);
+#endif
+		});
+	});
+
+	Describe("Event extras", [this]()
+	{
+		It("can be added and removed", [this]()
+		{
+			TestEqual("Extras are empty by default", SentryEvent->GetExtras().Num(), 0);
+
+			TestEqual("Can't get any extra while these are empty", SentryEvent->GetExtraValue(TEXT("ExtraKey0")), TEXT(""));
+
+			SentryEvent->SetExtraValue(TEXT("ExtraKey1"), TEXT("ExtraVal1"));
+			SentryEvent->SetExtraValue(TEXT("ExtraKey2"), TEXT("ExtraVal2"));
+
+			TestEqual("There are two extras after adding them as individual items", SentryEvent->GetExtras().Num(), 2);
+
+			TestEqual("First extra persist its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey1")), TEXT("ExtraVal1"));
+			TestEqual("Second extra persist its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey2")), TEXT("ExtraVal2"));
+
+			TestEqual("Can't get non-existent extra", SentryEvent->GetExtraValue(TEXT("ExtraKey3")), TEXT(""));
+
+			SentryEvent->RemoveExtra(TEXT("ExtraKey1"));
+			TestEqual("Can't get first extra after it was removed", SentryEvent->GetExtraValue(TEXT("ExtraKey1")), TEXT(""));
+			TestEqual("One extra left", SentryEvent->GetExtras().Num(), 1);
+
+			SentryEvent->RemoveExtra(TEXT("ExtraKey2"));
+			TestEqual("Can't get second extra after it was removed", SentryEvent->GetExtraValue(TEXT("TExtraKey2")), TEXT(""));
+			TestEqual("No extras left", SentryEvent->GetExtras().Num(), 0);
+
+			TMap<FString, FString> TestExtra;
+			TestExtra.Add(TEXT("ExtraKey3"), TEXT("ExtraVal3"));
+			TestExtra.Add(TEXT("ExtraKey4"), TEXT("ExtraVal4"));
+
+			SentryEvent->SetExtras(TestExtra);
+			TestEqual("There are two extras after adding them as map", SentryEvent->GetExtras().Num(), 2);
+
+			TestEqual("Third extra persist its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey3")), TEXT("ExtraVal3"));
+			TestEqual("Fourth extra persist its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey4")), TEXT("ExtraVal4"));
+
+			SentryEvent->SetExtras(TMap<FString, FString>());
+			TestEqual("There are no extras after setting an empty map", SentryEvent->GetExtras().Num(), 0);
+		});
+	});
 }
 
 #endif
