@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add API allowing to get/set event's `tag`, `context` and `extra` properties ([#940](https://github.com/getsentry/sentry-unreal/pull/940))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.13.1 to v8.13.2 ([#932](https://github.com/getsentry/sentry-unreal/pull/932))
