@@ -147,6 +147,11 @@ void USentrySubsystem::Initialize()
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
 {
+	return InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureSettings.GetUObject()), OnConfigureSettings.GetFunctionName()));
+}
+
+void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsNativeDelegate& OnConfigureSettings)
+{
 	USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
@@ -368,27 +373,6 @@ void USentrySubsystem::RemoveUser()
 	}
 
 	SubsystemNativeImpl->RemoveUser();
-}
-
-void USentrySubsystem::ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope)
-{
-	ConfigureScope(FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
-}
-
-void USentrySubsystem::ConfigureScope(const FConfigureScopeNativeDelegate& OnConfigureScope)
-{
-	check(SubsystemNativeImpl);
-
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->ConfigureScope(FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
-	{
-		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
-		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}));
 }
 
 void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)

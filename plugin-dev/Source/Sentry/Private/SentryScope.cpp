@@ -83,38 +83,6 @@ TMap<FString, FString> USentryScope::GetTags() const
 	return NativeImpl->GetTags();
 }
 
-void USentryScope::SetDist(const FString& Dist)
-{
-	if (!NativeImpl)
-		return;
-
-	NativeImpl->SetDist(Dist);
-}
-
-FString USentryScope::GetDist() const
-{
-	if (!NativeImpl)
-		return FString();
-
-	return NativeImpl->GetDist();
-}
-
-void USentryScope::SetEnvironment(const FString& Environment)
-{
-	if (!NativeImpl)
-		return;
-
-	NativeImpl->SetEnvironment(Environment);
-}
-
-FString USentryScope::GetEnvironment() const
-{
-	if (!NativeImpl)
-		return FString();
-
-	return NativeImpl->GetEnvironment();
-}
-
 void USentryScope::SetFingerprint(const TArray<FString>& Fingerprint)
 {
 	if (!NativeImpl)

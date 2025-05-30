@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- `Environment` and `Dist` get/set functions were removed from the `Scope` class and now these properties have to be set in plugin settings instead.
+- `ConfigureScope` function was removed from `SentrySubsystem` class.
+
+### Features
+
+- Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.13.1 to v8.13.2 ([#932](https://github.com/getsentry/sentry-unreal/pull/932))

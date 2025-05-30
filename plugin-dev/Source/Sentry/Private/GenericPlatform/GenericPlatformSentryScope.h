@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Containers/RingBuffer.h"
-#include "HAL/CriticalSection.h"
+#include "Convenience/GenericPlatformSentryInclude.h"
 
 #include "Interface/SentryScopeInterface.h"
 
@@ -16,7 +16,6 @@ class FGenericPlatformSentryScope : public ISentryScope
 {
 public:
 	FGenericPlatformSentryScope();
-	FGenericPlatformSentryScope(const FGenericPlatformSentryScope& Scope);
 	virtual ~FGenericPlatformSentryScope() override;
 
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
@@ -28,10 +27,6 @@ public:
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetTags(const TMap<FString, FString>& tags) override;
 	virtual TMap<FString, FString> GetTags() const override;
-	virtual void SetDist(const FString& dist) override;
-	virtual FString GetDist() const override;
-	virtual void SetEnvironment(const FString& environment) override;
-	virtual FString GetEnvironment() const override;
 	virtual void SetFingerprint(const TArray<FString>& fingerprint) override;
 	virtual TArray<FString> GetFingerprint() const override;
 	virtual void SetLevel(ESentryLevel level) override;
@@ -45,7 +40,7 @@ public:
 	virtual TMap<FString, FString> GetExtras() const override;
 	virtual void Clear() override;
 
-	void Apply(TSharedPtr<FGenericPlatformSentryEvent> event);
+	void Apply(sentry_scope_t* scope);
 
 private:
 	FString Dist;
@@ -61,8 +56,6 @@ private:
 	TRingBuffer<TSharedPtr<FGenericPlatformSentryBreadcrumb>> Breadcrumbs;
 
 	ESentryLevel Level;
-
-	FCriticalSection CriticalSection;
 };
 
 typedef FGenericPlatformSentryScope FPlatformSentryScope;

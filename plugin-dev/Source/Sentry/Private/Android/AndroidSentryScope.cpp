@@ -99,26 +99,6 @@ TMap<FString, FString> FAndroidSentryScope::GetTags() const
 	return FAndroidSentryConverters::StringMapToUnreal(*tags);
 }
 
-void FAndroidSentryScope::SetDist(const FString& dist)
-{
-	SetTagValue("dist", dist);
-}
-
-FString FAndroidSentryScope::GetDist() const
-{
-	return GetTagValue("dist");
-}
-
-void FAndroidSentryScope::SetEnvironment(const FString& environment)
-{
-	SetTagValue("environment", environment);
-}
-
-FString FAndroidSentryScope::GetEnvironment() const
-{
-	return GetTagValue("environment");
-}
-
 void FAndroidSentryScope::SetFingerprint(const TArray<FString>& fingerprint)
 {
 	CallMethod<void>(SetFingerprintMethod, FAndroidSentryConverters::StringArrayToNative(fingerprint)->GetJObject());

@@ -33,6 +33,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
 	SettingsJson->SetStringField(TEXT("release"), settings->OverrideReleaseName ? settings->Release : settings->GetFormattedReleaseName());
 	SettingsJson->SetStringField(TEXT("environment"), settings->Environment);
+	SettingsJson->SetStringField(TEXT("dist"), settings->Dist);
 	SettingsJson->SetBoolField(TEXT("autoSessionTracking"), settings->EnableAutoSessionTracking);
 	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);
 	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->AttachStacktrace);
@@ -193,13 +194,6 @@ void FAndroidSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
 void FAndroidSentrySubsystem::RemoveUser()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
-}
-
-void FAndroidSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
-{
-	int64 scopeCallbackId = AndroidSentryScopeCallback::SaveDelegate(onConfigureScope);
-
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "configureScope", "(J)V", scopeCallbackId);
 }
 
 void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
