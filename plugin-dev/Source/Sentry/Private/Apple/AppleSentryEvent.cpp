@@ -68,58 +68,79 @@ TArray<FString> FAppleSentryEvent::GetFingerprint()
 
 void FAppleSentryEvent::SetTagValue(const FString& key, const FString& value)
 {
+	NSMutableDictionary* mutableTags = [EventApple.tags mutableCopy] ?: [NSMutableDictionary dictionary];
+	mutableTags[key.GetNSString()] = value.GetNSString();
+	EventApple.tags = [mutableTags copy];
 }
 
 FString FAppleSentryEvent::GetTagValue(const FString& key) const
 {
-	return FString();
+	return FString(EventApple.tags[key.GetNSString()]);
 }
 
 void FAppleSentryEvent::RemoveTag(const FString& key)
 {
+	NSMutableDictionary *mutableTags = [EventApple.tags mutableCopy] ?: [NSMutableDictionary dictionary];
+	[mutableTags removeObjectForKey:key.GetNSString()];
+	EventApple.tags = [mutableTags copy];
 }
 
 void FAppleSentryEvent::SetTags(const TMap<FString, FString>& tags)
 {
+	EventApple.tags = FAppleSentryConverters::StringMapToNative(tags);
 }
 
 TMap<FString, FString> FAppleSentryEvent::GetTags() const
 {
-	return TMap<FString, FString>();
+	return FAppleSentryConverters::StringMapToUnreal(EventApple.tags);
 }
 
-void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& Values)
+void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
+	NSMutableDictionary* mutableContext = [EventApple.context mutableCopy] ?: [NSMutableDictionary dictionary];
+	mutableContext[key.GetNSString()] = FAppleSentryConverters::StringMapToNative(values);
+	EventApple.context = [mutableContext copy];
 }
 
 TMap<FString, FString> FAppleSentryEvent::GetContext(const FString& key) const
 {
-	return TMap<FString, FString>();
+	return FAppleSentryConverters::StringMapToUnreal(EventApple.context[key.GetNSString()]);
 }
 
 void FAppleSentryEvent::RemoveContext(const FString& key)
 {
+	NSMutableDictionary *mutableContext = [EventApple.context mutableCopy] ?: [NSMutableDictionary dictionary];
+	[mutableContext removeObjectForKey:key.GetNSString()];
+	EventApple.context = [mutableContext copy];
 }
 
 void FAppleSentryEvent::SetExtraValue(const FString& key, const FString& value)
 {
+	NSMutableDictionary* mutableExtra = [EventApple.extra mutableCopy] ?: [NSMutableDictionary dictionary];
+	mutableExtra[key.GetNSString()] = value.GetNSString();
+	EventApple.extra = [mutableExtra copy];
 }
 
 FString FAppleSentryEvent::GetExtraValue(const FString& key) const
 {
-	return FString();
+	return FString(EventApple.extra[key.GetNSString()]);
 }
 
 void FAppleSentryEvent::RemoveExtra(const FString& key)
 {
+	NSMutableDictionary *mutableExtra = [EventApple.extra mutableCopy] ?: [NSMutableDictionary dictionary];
+	[mutableExtra removeObjectForKey:key.GetNSString()];
+	EventApple.extra = [mutableExtra copy];
 }
 
 void FAppleSentryEvent::SetExtras(const TMap<FString, FString>& extras)
 {
+	EventApple.extra = FAppleSentryConverters::StringMapToNative(extras);
 }
 
 TMap<FString, FString> FAppleSentryEvent::GetExtras() const
 {
+	return FAppleSentryConverters::StringMapToUnreal(EventApple.extra);
 }
 
 bool FAppleSentryEvent::IsCrash() const
