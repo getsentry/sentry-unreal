@@ -80,7 +80,7 @@ FString FAppleSentryEvent::GetTagValue(const FString& key) const
 
 void FAppleSentryEvent::RemoveTag(const FString& key)
 {
-	NSMutableDictionary *mutableTags = [EventApple.tags mutableCopy] ?: [NSMutableDictionary dictionary];
+	NSMutableDictionary* mutableTags = [EventApple.tags mutableCopy] ?: [NSMutableDictionary dictionary];
 	[mutableTags removeObjectForKey:key.GetNSString()];
 	EventApple.tags = [mutableTags copy];
 }
@@ -109,7 +109,7 @@ TMap<FString, FString> FAppleSentryEvent::GetContext(const FString& key) const
 
 void FAppleSentryEvent::RemoveContext(const FString& key)
 {
-	NSMutableDictionary *mutableContext = [EventApple.context mutableCopy] ?: [NSMutableDictionary dictionary];
+	NSMutableDictionary* mutableContext = [EventApple.context mutableCopy] ?: [NSMutableDictionary dictionary];
 	[mutableContext removeObjectForKey:key.GetNSString()];
 	EventApple.context = [mutableContext copy];
 }
@@ -128,7 +128,7 @@ FString FAppleSentryEvent::GetExtraValue(const FString& key) const
 
 void FAppleSentryEvent::RemoveExtra(const FString& key)
 {
-	NSMutableDictionary *mutableExtra = [EventApple.extra mutableCopy] ?: [NSMutableDictionary dictionary];
+	NSMutableDictionary* mutableExtra = [EventApple.extra mutableCopy] ?: [NSMutableDictionary dictionary];
 	[mutableExtra removeObjectForKey:key.GetNSString()];
 	EventApple.extra = [mutableExtra copy];
 }
