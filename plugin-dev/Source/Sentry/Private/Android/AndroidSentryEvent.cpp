@@ -92,7 +92,7 @@ TMap<FString, FString> FAndroidSentryEvent::GetTags() const
 	return TMap<FString, FString>();
 }
 
-void FAndroidSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& Values)
+void FAndroidSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& values)
 {
 }
 
