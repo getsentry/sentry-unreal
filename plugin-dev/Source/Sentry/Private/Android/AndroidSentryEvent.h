@@ -45,6 +45,16 @@ private:
 	FSentryJavaMethod GetLevelMethod;
 	FSentryJavaMethod SetFingerprintMethod;
 	FSentryJavaMethod GetFingerprintMethod;
+	FSentryJavaMethod SetTagValueMethod;
+	FSentryJavaMethod GetTagValueMethod;
+	FSentryJavaMethod RemoveTagMethod;
+	FSentryJavaMethod SetTagsMethod;
+	FSentryJavaMethod GetTagsMethod;
+	FSentryJavaMethod SetExtraValueMethod;
+	FSentryJavaMethod GetExtraValueMethod;
+	FSentryJavaMethod RemoveExtraMethod;
+	FSentryJavaMethod SetExtrasMethod;
+	FSentryJavaMethod GetExtrasMethod;
 	FSentryJavaMethod IsCrashMethod;
 };
 
