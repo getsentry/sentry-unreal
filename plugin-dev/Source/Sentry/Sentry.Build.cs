@@ -167,10 +167,9 @@ public class Sentry : ModuleRules
 			// Plugin extensions that add support for more platforms (e.g. consoles) can override this define if needed
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 
-			// TODO: Add a valid link to docs (https://github.com/getsentry/sentry-docs/issues/13861)
 			if (GetType() == typeof(Sentry))
 			{
-				Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/consoles");
+				Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/unreal/game-consoles/");
 			}
 		}
 	}
