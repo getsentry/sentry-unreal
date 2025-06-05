@@ -168,7 +168,10 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 
 			// TODO: Add a valid link to docs (https://github.com/getsentry/sentry-docs/issues/13861)
-			Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/consoles");
+			if (GetType() == typeof(Sentry))
+			{
+				Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/consoles");
+			}
 		}
 	}
 }
