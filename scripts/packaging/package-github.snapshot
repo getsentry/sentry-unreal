@@ -104,6 +104,7 @@ Source/Sentry/Private/GenericPlatform/Infrastructure/GenericPlatformSentryConver
 Source/Sentry/Private/GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h
 Source/Sentry/Private/HAL/PlatformSentryAttachment.h
 Source/Sentry/Private/HAL/PlatformSentryBreadcrumb.h
+Source/Sentry/Private/HAL/PlatformSentryDefines.h
 Source/Sentry/Private/HAL/PlatformSentryEvent.h
 Source/Sentry/Private/HAL/PlatformSentryHint.h
 Source/Sentry/Private/HAL/PlatformSentryId.h
@@ -147,6 +148,7 @@ Source/Sentry/Private/Null/NullSentryId.h
 Source/Sentry/Private/Null/NullSentrySamplingContext.h
 Source/Sentry/Private/Null/NullSentryScope.h
 Source/Sentry/Private/Null/NullSentrySpan.h
+Source/Sentry/Private/Null/NullSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryTransaction.h
 Source/Sentry/Private/Null/NullSentryTransactionContext.h
 Source/Sentry/Private/Null/NullSentryUser.h
