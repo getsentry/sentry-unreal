@@ -21,8 +21,8 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 	virtual void SetFingerprint(const TArray<FString>& fingerprint) override;
 	virtual TArray<FString> GetFingerprint() override;
-	virtual void SetTagValue(const FString& key, const FString& value) override;
-	virtual FString GetTagValue(const FString& key) const override;
+	virtual void SetTag(const FString& key, const FString& value) override;
+	virtual FString GetTag(const FString& key) const override;
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetTags(const TMap<FString, FString>& tags) override;
 	virtual TMap<FString, FString> GetTags() const override;

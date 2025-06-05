@@ -53,11 +53,11 @@ public:
 
 	/** Sets a tag of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetTagValue(const FString& Key, const FString& Value);
+	void SetTag(const FString& Key, const FString& Value);
 
 	/** Gets a tag of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetTagValue(const FString& Key) const;
+	FString GetTag(const FString& Key) const;
 
 	/** Removes a tag of the event with the specified key. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

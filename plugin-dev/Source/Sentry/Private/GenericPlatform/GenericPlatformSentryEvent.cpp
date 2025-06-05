@@ -75,7 +75,7 @@ TArray<FString> FGenericPlatformSentryEvent::GetFingerprint()
 	return FGenericPlatformSentryConverters::StringArrayToUnreal(fingerprint);
 }
 
-void FGenericPlatformSentryEvent::SetTagValue(const FString& key, const FString& value)
+void FGenericPlatformSentryEvent::SetTag(const FString& key, const FString& value)
 {
 	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
 	if (sentry_value_is_null(eventTags))
@@ -88,7 +88,7 @@ void FGenericPlatformSentryEvent::SetTagValue(const FString& key, const FString&
 	}
 }
 
-FString FGenericPlatformSentryEvent::GetTagValue(const FString& key) const
+FString FGenericPlatformSentryEvent::GetTag(const FString& key) const
 {
 	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
 	if (sentry_value_is_null(eventTags))

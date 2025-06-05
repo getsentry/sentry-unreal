@@ -80,12 +80,12 @@ TArray<FString> FAndroidSentryEvent::GetFingerprint()
 	return FAndroidSentryConverters::StringListToUnreal(*fingerprint);
 }
 
-void FAndroidSentryEvent::SetTagValue(const FString& key, const FString& value)
+void FAndroidSentryEvent::SetTag(const FString& key, const FString& value)
 {
 	CallMethod<void>(SetTagValueMethod, *GetJString(key), *GetJString(value));
 }
 
-FString FAndroidSentryEvent::GetTagValue(const FString& key) const
+FString FAndroidSentryEvent::GetTag(const FString& key) const
 {
 	return CallMethod<FString>(GetTagValueMethod, *GetJString(key));
 }

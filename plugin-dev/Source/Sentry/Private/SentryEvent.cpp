@@ -71,20 +71,20 @@ TArray<FString> USentryEvent::GetFingerprint() const
 	return NativeImpl->GetFingerprint();
 }
 
-void USentryEvent::SetTagValue(const FString& Key, const FString& Value)
+void USentryEvent::SetTag(const FString& Key, const FString& Value)
 {
 	if (!NativeImpl)
 		return;
 
-	NativeImpl->SetTagValue(Key, Value);
+	NativeImpl->SetTag(Key, Value);
 }
 
-FString USentryEvent::GetTagValue(const FString& Key) const
+FString USentryEvent::GetTag(const FString& Key) const
 {
 	if (!NativeImpl)
 		return FString();
 
-	return NativeImpl->GetTagValue(Key);
+	return NativeImpl->GetTag(Key);
 }
 
 void USentryEvent::RemoveTag(const FString& Key)

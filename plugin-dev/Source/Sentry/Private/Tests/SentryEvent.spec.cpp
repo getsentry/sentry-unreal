@@ -68,24 +68,24 @@ void SentryEventSpec::Define()
 		{
 			TestEqual("Tags are empty by default", SentryEvent->GetTags().Num(), 0);
 
-			TestEqual("Can't get any tag while these are empty", SentryEvent->GetTagValue(TEXT("TagsKey0")), TEXT(""));
+			TestEqual("Can't get any tag while these are empty", SentryEvent->GetTag(TEXT("TagsKey0")), TEXT(""));
 
-			SentryEvent->SetTagValue(TEXT("TagsKey1"), TEXT("TagsVal1"));
-			SentryEvent->SetTagValue(TEXT("TagsKey2"), TEXT("TagsVal2"));
+			SentryEvent->SetTag(TEXT("TagsKey1"), TEXT("TagsVal1"));
+			SentryEvent->SetTag(TEXT("TagsKey2"), TEXT("TagsVal2"));
 
 			TestEqual("There are two tags adding them as individual items", SentryEvent->GetTags().Num(), 2);
 
-			TestEqual("First tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey1")), TEXT("TagsVal1"));
-			TestEqual("Second tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey2")), TEXT("TagsVal2"));
+			TestEqual("First tag persist its original value", SentryEvent->GetTag(TEXT("TagsKey1")), TEXT("TagsVal1"));
+			TestEqual("Second tag persist its original value", SentryEvent->GetTag(TEXT("TagsKey2")), TEXT("TagsVal2"));
 
-			TestEqual("Can't get non-existent tag", SentryEvent->GetTagValue(TEXT("TagsKey3")), TEXT(""));
+			TestEqual("Can't get non-existent tag", SentryEvent->GetTag(TEXT("TagsKey3")), TEXT(""));
 
 			SentryEvent->RemoveTag(TEXT("TagsKey1"));
-			TestEqual("Can't get first tag after it was removed", SentryEvent->GetTagValue(TEXT("TagsKey1")), TEXT(""));
+			TestEqual("Can't get first tag after it was removed", SentryEvent->GetTag(TEXT("TagsKey1")), TEXT(""));
 			TestEqual("One tag left", SentryEvent->GetTags().Num(), 1);
 
 			SentryEvent->RemoveTag(TEXT("TagsKey2"));
-			TestEqual("Can't get second tag after it was removed", SentryEvent->GetTagValue(TEXT("TagsKey2")), TEXT(""));
+			TestEqual("Can't get second tag after it was removed", SentryEvent->GetTag(TEXT("TagsKey2")), TEXT(""));
 			TestEqual("No tags left", SentryEvent->GetTags().Num(), 0);
 
 			TMap<FString, FString> TestTags;
@@ -95,8 +95,8 @@ void SentryEventSpec::Define()
 			SentryEvent->SetTags(TestTags);
 			TestEqual("There are two tags after adding them as map", SentryEvent->GetTags().Num(), 2);
 
-			TestEqual("Third tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey3")), TEXT("TagsVal3"));
-			TestEqual("Fourth tag persist its original value", SentryEvent->GetTagValue(TEXT("TagsKey4")), TEXT("TagsVal4"));
+			TestEqual("Third tag persist its original value", SentryEvent->GetTag(TEXT("TagsKey3")), TEXT("TagsVal3"));
+			TestEqual("Fourth tag persist its original value", SentryEvent->GetTag(TEXT("TagsKey4")), TEXT("TagsVal4"));
 
 			SentryEvent->SetTags(TMap<FString, FString>());
 			TestEqual("There are no tags after setting an empty map", SentryEvent->GetTags().Num(), 0);

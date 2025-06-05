@@ -66,14 +66,14 @@ TArray<FString> FAppleSentryEvent::GetFingerprint()
 	return FAppleSentryConverters::StringArrayToUnreal(EventApple.fingerprint);
 }
 
-void FAppleSentryEvent::SetTagValue(const FString& key, const FString& value)
+void FAppleSentryEvent::SetTag(const FString& key, const FString& value)
 {
 	NSMutableDictionary* mutableTags = [EventApple.tags mutableCopy] ?: [NSMutableDictionary dictionary];
 	mutableTags[key.GetNSString()] = value.GetNSString();
 	EventApple.tags = [mutableTags copy];
 }
 
-FString FAppleSentryEvent::GetTagValue(const FString& key) const
+FString FAppleSentryEvent::GetTag(const FString& key) const
 {
 	return FString(EventApple.tags[key.GetNSString()]);
 }
