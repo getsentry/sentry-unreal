@@ -2,4 +2,6 @@
 
 #pragma once
 
-#include COMPILED_PLATFORM_HEADER(SentrySubsystem.h)
+#include "PlatformSentryDefines.h"
+
+#include SENTRY_COMPILED_PLATFORM_HEADER(SentrySubsystem.h)
