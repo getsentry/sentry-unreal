@@ -81,28 +81,6 @@ TMap<FString, FString> FAppleSentryScope::GetTags() const
 	return FAppleSentryConverters::StringMapToUnreal(scopeDict[@"tags"]);
 }
 
-void FAppleSentryScope::SetDist(const FString& dist)
-{
-	[ScopeApple setDist:dist.GetNSString()];
-}
-
-FString FAppleSentryScope::GetDist() const
-{
-	NSDictionary* scopeDict = [ScopeApple serialize];
-	return FString(scopeDict[@"dist"]);
-}
-
-void FAppleSentryScope::SetEnvironment(const FString& environment)
-{
-	[ScopeApple setEnvironment:environment.GetNSString()];
-}
-
-FString FAppleSentryScope::GetEnvironment() const
-{
-	NSDictionary* scopeDict = [ScopeApple serialize];
-	return FString(scopeDict[@"environment"]);
-}
-
 void FAppleSentryScope::SetFingerprint(const TArray<FString>& fingerprint)
 {
 	[ScopeApple setFingerprint:FAppleSentryConverters::StringArrayToNative(fingerprint)];
