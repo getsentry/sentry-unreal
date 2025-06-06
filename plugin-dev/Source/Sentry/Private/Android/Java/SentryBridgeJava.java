@@ -46,6 +46,7 @@ public class SentryBridgeJava {
 					options.setDsn(settingJson.getString("dsn"));
 					options.setRelease(settingJson.getString("release"));
 					options.setEnvironment(settingJson.getString("environment"));
+					options.setDist(settingJson.getString("dist"));
 					options.setEnableAutoSessionTracking(settingJson.getBoolean("autoSessionTracking"));
 					options.setSessionTrackingIntervalMillis(settingJson.getLong("sessionTimeout"));
 					options.setAttachStacktrace(settingJson.getBoolean("enableStackTrace"));
@@ -144,15 +145,6 @@ public class SentryBridgeJava {
 		event.setExceptions(Collections.singletonList(exception));
 		SentryId eventId = Sentry.captureEvent(event);
 		return eventId;
-	}
-
-	public static void configureScope(final long callback) {
-		Sentry.configureScope(new ScopeCallback() {
-			@Override
-			public void run(@NonNull IScope scope) {
-				onConfigureScope(callback, scope);
-			}
-		});
 	}
 
 	public static void setContext(final String key, final HashMap<String, String> values) {

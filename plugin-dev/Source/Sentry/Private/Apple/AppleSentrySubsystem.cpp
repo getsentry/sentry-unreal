@@ -56,6 +56,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			}
 #endif
 			options.environment = settings->Environment.GetNSString();
+			options.dist = settings->Dist.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
 			options.releaseName = settings->OverrideReleaseName ? settings->Release.GetNSString() : settings->GetFormattedReleaseName().GetNSString();
@@ -286,13 +287,6 @@ void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
 void FAppleSentrySubsystem::RemoveUser()
 {
 	[SentrySDK setUser:nil];
-}
-
-void FAppleSentrySubsystem::ConfigureScope(const FSentryScopeDelegate& onConfigureScope)
-{
-	[SentrySDK configureScope:^(SentryScope* scope) {
-		onConfigureScope.ExecuteIfBound(MakeShareable(new FAppleSentryScope(scope)));
-	}];
 }
 
 void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)

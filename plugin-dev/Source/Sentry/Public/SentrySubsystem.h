@@ -25,6 +25,7 @@ class ISentrySubsystem;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
 
+DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
 
 /**
@@ -48,6 +49,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings);
+	void InitializeWithSettings(const FConfigureSettingsNativeDelegate& OnConfigureSettings);
 
 	/** Closes the Sentry SDK. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -179,18 +181,6 @@ public:
 	/** Removes a user for the current scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveUser();
-
-	/**
-	 * Configures the scope through the callback.
-	 * Sentry SDK uses the Scope to attach contextual data to events.
-	 *
-	 * @param OnConfigureScope The callback to configure the scope.
-	 *
-	 * @note: Not supported for Windows/Linux.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "OnCofigureScope"))
-	void ConfigureScope(const FConfigureScopeDelegate& OnConfigureScope);
-	void ConfigureScope(const FConfigureScopeNativeDelegate& OnConfigureScope);
 
 	/**
 	 * Sets context values which will be used for enriching events.
