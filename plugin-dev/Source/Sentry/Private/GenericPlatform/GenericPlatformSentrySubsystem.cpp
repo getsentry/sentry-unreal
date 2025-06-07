@@ -293,6 +293,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
+	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 
 	int initResult = sentry_init(options);
 

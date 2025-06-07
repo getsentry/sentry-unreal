@@ -10,6 +10,7 @@
 ### Features
 
 - Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
+- Add option to delay app shutdown until Crashpad completes crash report upload ([#953](https://github.com/getsentry/sentry-unreal/pull/953))
 
 ### Dependencies
 
