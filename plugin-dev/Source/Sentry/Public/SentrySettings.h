@@ -285,6 +285,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Sentry database location", ToolTip = "Location where Sentry stores its internal/temporary files."))
 	ESentryDatabaseLocation DatabaseLocation;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process."))
+	bool CrashpadWaitForUpload;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
 		Meta = (DisplayName = "In-app includes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that belong to the app."))
 	TArray<FString> InAppInclude;
