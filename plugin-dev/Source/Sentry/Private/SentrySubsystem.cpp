@@ -186,12 +186,10 @@ void USentrySubsystem::Close()
 		OnEnsureDelegate.Reset();
 	}
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->Close();
 	}
-
-	SubsystemNativeImpl->Close();
 }
 
 bool USentrySubsystem::IsEnabled() const
@@ -214,50 +212,45 @@ void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 	check(SubsystemNativeImpl);
 	check(Breadcrumb);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && Breadcrumb)
 	{
-		return;
+		SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
 	}
-
-	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
 }
 
 void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->AddBreadcrumbWithParams(Message, Category, Type, Data, Level);
 	}
-
-	SubsystemNativeImpl->AddBreadcrumbWithParams(Message, Category, Type, Data, Level);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->ClearBreadcrumbs();
 	}
-
-	SubsystemNativeImpl->ClearBreadcrumbs();
 }
 
 FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return FString();
+		if (TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessage(Message, Level))
+		{
+			return SentryId->ToString();
+		}
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessage(Message, Level);
-
-	return SentryId->ToString();
+	return FString();
 }
 
 FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const FConfigureScopeDelegate& OnConfigureScope, ESentryLevel Level)
@@ -269,18 +262,21 @@ FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const 
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return FString();
+		const auto Lambda = FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+		{
+			USentryScope* UnrealScope = USentryScope::Create(NativeScope);
+			OnConfigureScope.ExecuteIfBound(UnrealScope);
+		});
+
+		if (TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, Lambda))
+		{
+			return SentryId->ToString();
+		}
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
-	{
-		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
-		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}));
-
-	return SentryId->ToString();
+	return FString();
 }
 
 FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
@@ -288,14 +284,15 @@ FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 	check(SubsystemNativeImpl);
 	check(Event);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && Event)
 	{
-		return FString();
+		if (TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEvent(Event->GetNativeObject()))
+		{
+			return SentryId->ToString();
+		}
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEvent(Event->GetNativeObject());
-
-	return SentryId->ToString();
+	return FString();
 }
 
 FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConfigureScopeDelegate& OnConfigureScope)
@@ -308,18 +305,21 @@ FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConf
 	check(SubsystemNativeImpl);
 	check(Event);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && Event)
 	{
-		return FString();
+		const auto Lambda = FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+		{
+			USentryScope* UnrealScope = USentryScope::Create(NativeScope);
+			OnConfigureScope.ExecuteIfBound(UnrealScope);
+		});
+
+		if (TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), Lambda))
+		{
+			return SentryId->ToString();
+		}
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
-	{
-		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
-		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}));
-
-	return SentryId->ToString();
+	return FString();
 }
 
 void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
@@ -327,12 +327,10 @@ void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
 	check(SubsystemNativeImpl);
 	check(UserFeedback);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && UserFeedback)
 	{
-		return;
+		SubsystemNativeImpl->CaptureUserFeedback(UserFeedback->GetNativeObject());
 	}
-
-	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback->GetNativeObject());
 }
 
 void USentrySubsystem::CaptureUserFeedbackWithParams(const FString& EventId, const FString& Email, const FString& Comments, const FString& Name)
@@ -340,14 +338,14 @@ void USentrySubsystem::CaptureUserFeedbackWithParams(const FString& EventId, con
 	check(SubsystemNativeImpl);
 	check(!EventId.IsEmpty());
 
-	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId));
-	check(UserFeedback);
+	if (USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId)))
+	{
+		UserFeedback->SetEmail(Email);
+		UserFeedback->SetComment(Comments);
+		UserFeedback->SetName(Name);
 
-	UserFeedback->SetEmail(Email);
-	UserFeedback->SetComment(Comments);
-	UserFeedback->SetName(Name);
-
-	CaptureUserFeedback(UserFeedback);
+		CaptureUserFeedback(UserFeedback);
+	}
 }
 
 void USentrySubsystem::SetUser(USentryUser* User)
@@ -355,111 +353,95 @@ void USentrySubsystem::SetUser(USentryUser* User)
 	check(SubsystemNativeImpl);
 	check(User);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && User)
 	{
-		return;
+		SubsystemNativeImpl->SetUser(User->GetNativeObject());
 	}
-
-	SubsystemNativeImpl->SetUser(User->GetNativeObject());
 }
 
 void USentrySubsystem::RemoveUser()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->RemoveUser();
 	}
-
-	SubsystemNativeImpl->RemoveUser();
 }
 
 void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->SetContext(Key, Values);
 	}
-
-	SubsystemNativeImpl->SetContext(Key, Values);
 }
 
 void USentrySubsystem::SetTag(const FString& Key, const FString& Value)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->SetTag(Key, Value);
 	}
-
-	SubsystemNativeImpl->SetTag(Key, Value);
 }
 
 void USentrySubsystem::RemoveTag(const FString& Key)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->RemoveTag(Key);
 	}
-
-	SubsystemNativeImpl->RemoveTag(Key);
 }
 
 void USentrySubsystem::SetLevel(ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->SetLevel(Level);
 	}
-
-	SubsystemNativeImpl->SetLevel(Level);
 }
 
 void USentrySubsystem::StartSession()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->StartSession();
 	}
-
-	SubsystemNativeImpl->StartSession();
 }
 
 void USentrySubsystem::EndSession()
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return;
+		SubsystemNativeImpl->EndSession();
 	}
-
-	SubsystemNativeImpl->EndSession();
 }
 
 USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		if (TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransaction(Name, Operation))
+		{
+			return USentryTransaction::Create(SentryTransaction);
+		}
 	}
 
-	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransaction(Name, Operation);
-	check(SentryTransaction);
-
-	return USentryTransaction::Create(SentryTransaction);
+	return nullptr;
 }
 
 USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransactionContext* Context)
@@ -467,15 +449,15 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 	check(SubsystemNativeImpl);
 	check(Context);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && Context)
 	{
-		return nullptr;
+		if (TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject()))
+		{
+			return USentryTransaction::Create(SentryTransaction);
+		}
 	}
 
-	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject());
-	check(SentryTransaction);
-
-	return USentryTransaction::Create(SentryTransaction);
+	return nullptr;
 }
 
 USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp)
@@ -483,15 +465,15 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 	check(SubsystemNativeImpl);
 	check(Context);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && Context)
 	{
-		return nullptr;
+		if (TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp))
+		{
+			return USentryTransaction::Create(SentryTransaction);
+		}
 	}
 
-	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp);
-	check(SentryTransaction);
-
-	return USentryTransaction::Create(SentryTransaction);
+	return nullptr;
 }
 
 USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options)
@@ -499,30 +481,30 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 	check(SubsystemNativeImpl);
 	check(Context);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled() && Context)
 	{
-		return nullptr;
+		if (TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context->GetNativeObject(), Options))
+		{
+			return USentryTransaction::Create(SentryTransaction);
+		}
 	}
 
-	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context->GetNativeObject(), Options);
-	check(SentryTransaction);
-
-	return USentryTransaction::Create(SentryTransaction);
+	return nullptr;
 }
 
 USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& SentryTrace, const TArray<FString>& BaggageHeaders)
 {
 	check(SubsystemNativeImpl);
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
 	{
-		return nullptr;
+		if (TSharedPtr<ISentryTransactionContext> SentryTransactionContext = SubsystemNativeImpl->ContinueTrace(SentryTrace, BaggageHeaders))
+		{
+			return USentryTransactionContext::Create(SentryTransactionContext);
+		}
 	}
 
-	TSharedPtr<ISentryTransactionContext> SentryTransactionContext = SubsystemNativeImpl->ContinueTrace(SentryTrace, BaggageHeaders);
-	check(SentryTransactionContext);
-
-	return USentryTransactionContext::Create(SentryTransactionContext);
+	return nullptr;
 }
 
 bool USentrySubsystem::IsSupportedForCurrentSettings() const

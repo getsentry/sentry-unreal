@@ -33,6 +33,14 @@ void SentrySubsystemSpec::Define()
 		}
 	});
 
+	Describe("Add Breadcrumb", [this]()
+	{
+		It("should gracefully handle a nullptr argument", [this]()
+		{
+			SentrySubsystem->AddBreadcrumb(nullptr);
+		});
+	});
+
 	Describe("Capture Message", [this]()
 	{
 		It("should return a non-null Event ID if message captured", [this]()
@@ -51,6 +59,12 @@ void SentrySubsystemSpec::Define()
 
 	Describe("Capture Event", [this]()
 	{
+		It("should gracefully handle a nullptr argument", [this]()
+		{
+			FString EventId = SentrySubsystem->CaptureEvent(nullptr);
+			TestTrue("Event ID is empty", EventId.IsEmpty());
+		});
+
 		It("should return a non-null Event ID if event captured", [this]()
 		{
 			USentryEvent* testEvent = USentryEvent::Create(CreateSharedSentryEvent());
@@ -58,6 +72,14 @@ void SentrySubsystemSpec::Define()
 
 			FString eventId = SentrySubsystem->CaptureEvent(testEvent);
 			TestFalse("Event ID is non-empty", eventId.IsEmpty());
+		});
+
+		It("should gracefully handle a nullptr argument if scoped version used", [this]()
+		{
+			const FConfigureScopeNativeDelegate TestDelegate;
+
+			FString EventId = SentrySubsystem->CaptureEventWithScope(nullptr, TestDelegate);
+			TestTrue("Event ID is empty", EventId.IsEmpty());
 		});
 
 		It("should always return non-null Event ID if scoped version used", [this]()
@@ -98,6 +120,12 @@ void SentrySubsystemSpec::Define()
 			TestTrue("Transaction is finished", transaction->IsFinished());
 		});
 
+		It("should gracefully handle a nullptr context argument", [this]()
+		{
+			USentryTransaction* Transaction = SentrySubsystem->StartTransactionWithContext(nullptr);
+			TestNull("Transaction is null", Transaction);
+		});
+
 		It("should be started and finished with specific context", [this]()
 		{
 			USentryTransactionContext* transactionContext =
@@ -112,6 +140,12 @@ void SentrySubsystemSpec::Define()
 			TestTrue("Transaction is finished", transaction->IsFinished());
 		});
 
+		It("should gracefully handle a nullptr context argument with timings", [this]()
+		{
+			USentryTransaction* Transaction = SentrySubsystem->StartTransactionWithContextAndTimestamp(nullptr, FDateTime::UtcNow().ToUnixTimestamp());
+			TestNull("Transaction is null", Transaction);
+		});
+
 		It("should be started and finished with specific context and timings", [this]()
 		{
 			USentryTransactionContext* transactionContext =
@@ -124,6 +158,14 @@ void SentrySubsystemSpec::Define()
 
 			transaction->FinishWithTimestamp(FDateTime::UtcNow().ToUnixTimestamp());
 			TestTrue("Transaction is finished", transaction->IsFinished());
+		});
+
+		It("should gracefully handle a nullptr context argument and options", [this]()
+		{
+			TMap<FString, FString> Options;
+
+			USentryTransaction* Transaction = SentrySubsystem->StartTransactionWithContextAndOptions(nullptr, Options);
+			TestNull("Transaction is null", Transaction);
 		});
 	});
 
@@ -149,6 +191,22 @@ void SentrySubsystemSpec::Define()
 
 			TestEqual("Trace header", outTraceKey, TEXT("sentry-trace"));
 			TestEqual("Trace ID", outTraceParts[0], TEXT("2674eb52d5874b13b560236d6c79ce8a"));
+		});
+	});
+
+	Describe("User", [this]()
+	{
+		It("should gracefully handle a nullptr argument", [this]()
+		{
+			SentrySubsystem->SetUser(nullptr);
+		});
+	});
+
+	Describe("User Feedback", [this]()
+	{
+		It("should gracefully handle a nullptr argument", [this]()
+		{
+			SentrySubsystem->CaptureUserFeedback(nullptr);
 		});
 	});
 
