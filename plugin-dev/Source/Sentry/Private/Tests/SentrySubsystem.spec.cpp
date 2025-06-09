@@ -37,6 +37,9 @@ void SentrySubsystemSpec::Define()
 	{
 		It("should gracefully handle a nullptr argument", [this]()
 		{
+			// We have check(...) for parameters
+			AddExpectedMessage(TEXT("Assertion failed: Breadcrumb"), EAutomationExpectedErrorFlags::Contains);
+
 			SentrySubsystem->AddBreadcrumb(nullptr);
 		});
 	});
