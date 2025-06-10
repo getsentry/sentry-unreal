@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+#include "SentryVariant.h"
 
 #include "SentryEvent.generated.h"
 
@@ -71,9 +72,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TMap<FString, FString> GetTags() const;
 
+	// /** Sets context values of the event. */
+	// UFUNCTION(BlueprintCallable, Category = "Sentry")
+	// void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+
 	/** Sets context values of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+	void SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values);
 
 	/** Gets context of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")

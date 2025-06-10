@@ -111,7 +111,15 @@ TMap<FString, FString> USentryEvent::GetTags() const
 	return NativeImpl->GetTags();
 }
 
-void USentryEvent::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+// void USentryEvent::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+// {
+// 	if (!NativeImpl)
+// 		return;
+//
+// 	NativeImpl->SetContext(Key, Values);
+// }
+
+void USentryEvent::SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values)
 {
 	if (!NativeImpl)
 		return;

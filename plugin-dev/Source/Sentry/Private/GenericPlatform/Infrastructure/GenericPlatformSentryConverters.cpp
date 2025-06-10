@@ -41,6 +41,51 @@ sentry_level_e FGenericPlatformSentryConverters::SentryLevelToNative(ESentryLeve
 	return Level;
 }
 
+sentry_value_t FGenericPlatformSentryConverters::VariantToNative(const FSentryVariant& variant)
+{
+	sentry_value_t nativeValue;
+
+	switch (variant.Type)
+	{
+	case ESentryVariantType::Integer:
+		nativeValue = sentry_value_new_int32(variant.GetValue<int32>());
+		break;
+	case ESentryVariantType::Float:
+		nativeValue = sentry_value_new_double(variant.GetValue<float>());
+		break;
+	case ESentryVariantType::Bool:
+		nativeValue = sentry_value_new_bool(variant.GetValue<bool>());
+		break;
+	case ESentryVariantType::String:
+		nativeValue = sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
+		break;
+	case ESentryVariantType::Array:
+		{
+			nativeValue = sentry_value_new_list();
+			const TArray<FSentryVariant>& variantArray = variant.GetValue<TArray<FSentryVariant>>();
+			for (auto it = variantArray.CreateConstIterator(); it; ++it)
+			{
+				sentry_value_append(nativeValue, VariantToNative(*it));
+			}
+		}
+		break;
+	case ESentryVariantType::Map:
+		{
+			nativeValue = sentry_value_new_object();
+			const TMap<FString, FSentryVariant>& variantMap = variant.GetValue<TMap<FString, FSentryVariant>>();
+			for (auto it = variantMap.CreateConstIterator(); it; ++it)
+			{
+				sentry_value_set_by_key(nativeValue, TCHAR_TO_ANSI(*it.Key()), VariantToNative(it.Value()));
+			}
+		}
+		break;
+	default:
+		nativeValue = sentry_value_new_null();
+	}
+
+	return nativeValue;
+}
+
 sentry_value_t FGenericPlatformSentryConverters::StringMapToNative(const TMap<FString, FString>& map)
 {
 	sentry_value_t sentryObject = sentry_value_new_object();
@@ -48,6 +93,18 @@ sentry_value_t FGenericPlatformSentryConverters::StringMapToNative(const TMap<FS
 	for (auto it = map.CreateConstIterator(); it; ++it)
 	{
 		sentry_value_set_by_key(sentryObject, TCHAR_TO_ANSI(*it.Key()), sentry_value_new_string(TCHAR_TO_ANSI(*it.Value())));
+	}
+
+	return sentryObject;
+}
+
+sentry_value_t FGenericPlatformSentryConverters::VariantMapToNative(const TMap<FString, FSentryVariant>& map)
+{
+	sentry_value_t sentryObject = sentry_value_new_object();
+
+	for (auto it = map.CreateConstIterator(); it; ++it)
+	{
+		sentry_value_set_by_key(sentryObject, TCHAR_TO_ANSI(*it.Key()), VariantToNative(it.Value()));
 	}
 
 	return sentryObject;

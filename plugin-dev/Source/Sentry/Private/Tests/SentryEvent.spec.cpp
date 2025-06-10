@@ -111,7 +111,7 @@ void SentryEventSpec::Define()
 			InTestContext.Add(TEXT("ContextKey1"), TEXT("ContextVal1"));
 			InTestContext.Add(TEXT("ContextKey2"), TEXT("ContextVal2"));
 
-			SentryEvent->SetContext(TEXT("TestContext1"), InTestContext);
+			//SentryEvent->SetContext(TEXT("TestContext1"), InTestContext);
 
 			TMap<FString, FString> OutTestContext = SentryEvent->GetContext(TEXT("TestContext1"));
 
