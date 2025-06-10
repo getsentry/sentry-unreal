@@ -174,6 +174,7 @@ Source/Sentry/Private/SentryTransaction.cpp
 Source/Sentry/Private/SentryTransactionContext.cpp
 Source/Sentry/Private/SentryUser.cpp
 Source/Sentry/Private/SentryUserFeedback.cpp
+Source/Sentry/Private/SentryVariant.cpp
 Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentryScope.spec.cpp
@@ -181,6 +182,7 @@ Source/Sentry/Private/Tests/SentryScopeBeforeSendHandler.h
 Source/Sentry/Private/Tests/SentrySubsystem.spec.cpp
 Source/Sentry/Private/Tests/SentryTests.h
 Source/Sentry/Private/Tests/SentryUser.spec.cpp
+Source/Sentry/Private/Tests/SentryVariant.spec.cpp
 Source/Sentry/Private/Utils/SentryFileUtils.cpp
 Source/Sentry/Private/Utils/SentryFileUtils.h
 Source/Sentry/Private/Utils/SentryLogUtils.cpp
@@ -214,6 +216,7 @@ Source/Sentry/Public/SentryTransaction.h
 Source/Sentry/Public/SentryTransactionContext.h
 Source/Sentry/Public/SentryUser.h
 Source/Sentry/Public/SentryUserFeedback.h
+Source/Sentry/Public/SentryVariant.h
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry_IOS_UPL.xml
 Source/Sentry/Sentry.Build.cs
