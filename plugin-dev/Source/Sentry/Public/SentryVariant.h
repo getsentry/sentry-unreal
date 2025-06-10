@@ -37,7 +37,7 @@ struct TVariantTraits<TMap<FString, FSentryVariant>>
 /**
  * Blueprint-exposed struct that can represent multiple types.
  */
-USTRUCT(BlueprintType, meta = (HasNativeMake = "true"))
+USTRUCT(BlueprintType)
 struct SENTRY_API FSentryVariant
 {
 	GENERATED_BODY()
