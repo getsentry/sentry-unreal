@@ -10,14 +10,22 @@ template FString FSentryVariant::GetValue<FString>() const;
 template TArray<FSentryVariant> FSentryVariant::GetValue<TArray<FSentryVariant>>() const;
 template TMap<FString, FSentryVariant> FSentryVariant::GetValue<TMap<FString, FSentryVariant>>() const;
 
-FSentryVariant::FSentryVariant() : Type(ESentryVariantType::Empty) {}
-FSentryVariant::FSentryVariant(int32 InValue) : Type(ESentryVariantType::Integer), Value(InValue) {}
-FSentryVariant::FSentryVariant(float InValue) : Type(ESentryVariantType::Float), Value(InValue) {}
-FSentryVariant::FSentryVariant(bool InValue) : Type(ESentryVariantType::Bool), Value(InValue) {}
-FSentryVariant::FSentryVariant(const FString& InValue) : Type(ESentryVariantType::String), Value(InValue) {}
-FSentryVariant::FSentryVariant(const TCHAR* InValue) : Type(ESentryVariantType::String), Value(InValue) {}
-FSentryVariant::FSentryVariant(const TArray<FSentryVariant>& InValue): Type(ESentryVariantType::Array), Value(InValue) {}
-FSentryVariant::FSentryVariant(const TMap<FString, FSentryVariant>& InValue): Type(ESentryVariantType::Map), Value(InValue) {}
+FSentryVariant::FSentryVariant()
+	: Type(ESentryVariantType::Empty) {}
+FSentryVariant::FSentryVariant(int32 InValue)
+	: Type(ESentryVariantType::Integer), Value(InValue) {}
+FSentryVariant::FSentryVariant(float InValue)
+	: Type(ESentryVariantType::Float), Value(InValue) {}
+FSentryVariant::FSentryVariant(bool InValue)
+	: Type(ESentryVariantType::Bool), Value(InValue) {}
+FSentryVariant::FSentryVariant(const FString& InValue)
+	: Type(ESentryVariantType::String), Value(InValue) {}
+FSentryVariant::FSentryVariant(const TCHAR* InValue)
+	: Type(ESentryVariantType::String), Value(InValue) {}
+FSentryVariant::FSentryVariant(const TArray<FSentryVariant>& InValue)
+	: Type(ESentryVariantType::Array), Value(InValue) {}
+FSentryVariant::FSentryVariant(const TMap<FString, FSentryVariant>& InValue)
+	: Type(ESentryVariantType::Map), Value(InValue) {}
 
 FSentryVariant USentryVariantHelper::MakeSentryVariantFromInteger(int32 Value)
 {

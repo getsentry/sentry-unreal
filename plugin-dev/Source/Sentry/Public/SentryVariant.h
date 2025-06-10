@@ -22,13 +22,13 @@ enum class ESentryVariantType : uint8
 	Map
 };
 
-template <>
+template<>
 struct TVariantTraits<TArray<FSentryVariant>>
 {
 	static constexpr EVariantTypes GetType() { return EVariantTypes::Custom; }
 };
 
-template <>
+template<>
 struct TVariantTraits<TMap<FString, FSentryVariant>>
 {
 	static constexpr EVariantTypes GetType() { return EVariantTypes::Custom; }
@@ -51,7 +51,7 @@ struct SENTRY_API FSentryVariant
 	FSentryVariant(const TArray<FSentryVariant>& InValue);
 	FSentryVariant(const TMap<FString, FSentryVariant>& InValue);
 
-	template <typename T>
+	template<typename T>
 	T GetValue() const
 	{
 		return Value.GetValue<T>();
@@ -62,7 +62,7 @@ struct SENTRY_API FSentryVariant
 		return ((Type == Other.Type) && (Value == Other.Value));
 	}
 
-	bool operator!=( const FSentryVariant& Other ) const
+	bool operator!=(const FSentryVariant& Other) const
 	{
 		return ((Type != Other.Type) || (Value != Other.Value));
 	}
@@ -85,27 +85,27 @@ class SENTRY_API USentryVariantHelper : public UBlueprintFunctionLibrary
 
 public:
 	/** Makes a new variant from the specified integer. */
-	UFUNCTION(BlueprintPure, Category="Sentry|Variant", meta=(NativeMakeFunc))
+	UFUNCTION(BlueprintPure, Category = "Sentry|Variant", meta = (NativeMakeFunc))
 	static FSentryVariant MakeSentryVariantFromInteger(int32 Value);
 
 	/** Makes a new variant from the specified float. */
-	UFUNCTION(BlueprintPure, Category="Sentry|Variant", meta=(NativeMakeFunc))
+	UFUNCTION(BlueprintPure, Category = "Sentry|Variant", meta = (NativeMakeFunc))
 	static FSentryVariant MakeSentryVariantFromFloat(float Value);
 
 	/** Makes a new variant from the specified bool. */
-	UFUNCTION(BlueprintPure, Category="Sentry|Variant", meta=(NativeMakeFunc))
+	UFUNCTION(BlueprintPure, Category = "Sentry|Variant", meta = (NativeMakeFunc))
 	static FSentryVariant MakeSentryVariantFromBool(bool Value);
 
 	/** Makes a new variant from the specified string. */
-	UFUNCTION(BlueprintPure, Category="Sentry|Variant", meta=(NativeMakeFunc))
+	UFUNCTION(BlueprintPure, Category = "Sentry|Variant", meta = (NativeMakeFunc))
 	static FSentryVariant MakeSentryVariantFromString(const FString& Value);
 
 	/** Makes a new variant from the specified array. */
-	UFUNCTION(BlueprintPure, Category="Sentry|Variant", meta=(NativeMakeFunc))
+	UFUNCTION(BlueprintPure, Category = "Sentry|Variant", meta = (NativeMakeFunc))
 	static FSentryVariant MakeSentryVariantFromArray(const TArray<FSentryVariant>& Value);
 
 	/** Makes a new variant from the specified map. */
-	UFUNCTION(BlueprintPure, Category="Sentry|Variant", meta=(NativeMakeFunc))
+	UFUNCTION(BlueprintPure, Category = "Sentry|Variant", meta = (NativeMakeFunc))
 	static FSentryVariant MakeSentryVariantFromMap(const TMap<FString, FSentryVariant>& Value);
 
 	/**
@@ -240,4 +240,3 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry|Variant")
 	static bool TryGetMap(const FSentryVariant& Variant, TMap<FString, FSentryVariant>& Value);
 };
-
