@@ -59,7 +59,40 @@ void SentryVariantSpec::Define()
 			TestEqual("Map value 4", MapVariant.GetValue<TMap<FString, FSentryVariant>>()[TEXT("Key4")], TestMap[TEXT("Key4")]);
 		});
 
-		It("should support nested arrays", [this]()
+		It("should support nested containers", [this]()
+		{
+			const TArray<FSentryVariant>& NestedArray = {
+				TEXT("Hello nested array")
+			};
+
+			const TMap<FString, FSentryVariant>& NestedMap = {
+				{ TEXT("Key"), TEXT("Hello nested map") }
+			};
+
+			const TArray<FSentryVariant>& ParentArray = {
+				NestedArray,
+				NestedMap
+			};
+
+			const TMap<FString, FSentryVariant>& ParentMap = {
+				{ TEXT("ParentKey1"), NestedArray },
+				{ TEXT("ParentKey2"), NestedMap },
+			};
+
+			FSentryVariant ArrayVariant(ParentArray);
+
+			TestTrue("Is array", ArrayVariant.Type == ESentryVariantType::Array);
+			TestTrue("Has nested array", ArrayVariant.GetValue<TArray<FSentryVariant>>()[0].Type == ESentryVariantType::Array);
+			TestTrue("Has nested map", ArrayVariant.GetValue<TArray<FSentryVariant>>()[1].Type == ESentryVariantType::Map);
+
+			FSentryVariant MapVariant(ParentMap);
+
+			TestTrue("Is array", MapVariant.Type == ESentryVariantType::Map);
+			TestTrue("Has string value", MapVariant.GetValue<TMap<FString, FSentryVariant>>()[TEXT("ParentKey1")].Type == ESentryVariantType::Array);
+			TestTrue("Has nested map", MapVariant.GetValue<TMap<FString, FSentryVariant>>()[TEXT("ParentKey2")].Type == ESentryVariantType::Map);
+		});
+
+		It("should retain nested array values", [this]()
 		{
 			const TArray<FSentryVariant>& Array1 = {
 				TEXT("Hello nested array")
@@ -85,7 +118,7 @@ void SentryVariantSpec::Define()
 			TestEqual("Nested array string value", NestedArray[0].GetValue<FString>(), TEXT("Hello nested array"));
 		});
 
-		It("should support nested maps", [this]()
+		It("should retain nested map values", [this]()
 		{
 			const TMap<FString, FSentryVariant>& Map1 = {
 				{ TEXT("Key1"), TEXT("Hello nested map") }
