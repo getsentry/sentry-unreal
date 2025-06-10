@@ -29,7 +29,7 @@ FSentryVariant::FSentryVariant(const TMap<FString, FSentryVariant>& InValue)
 
 FSentryVariant USentryVariantHelper::MakeSentryVariantFromInteger(int32 Value)
 {
-	return FSentryVariant();
+	return FSentryVariant(Value);
 }
 
 FSentryVariant USentryVariantHelper::MakeSentryVariantFromFloat(float Value)
