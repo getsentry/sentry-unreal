@@ -107,22 +107,38 @@ void SentryEventSpec::Define()
 	{
 		It("can be added and removed", [this]()
 		{
-			TMap<FString, FString> InTestContext;
+			const TArray<FSentryVariant>& VariantArray = {
+				TEXT("Hello nested array")
+			};
+
+			const TMap<FString, FSentryVariant>& VariantMap = {
+				{ TEXT("Key"), TEXT("Hello nested map") }
+			};
+
+			TMap<FString, FSentryVariant> InTestContext;
 			InTestContext.Add(TEXT("ContextKey1"), TEXT("ContextVal1"));
-			InTestContext.Add(TEXT("ContextKey2"), TEXT("ContextVal2"));
+			InTestContext.Add(TEXT("ContextKey2"), 1234);
+			InTestContext.Add(TEXT("ContextKey3"), 222.333f);
+			InTestContext.Add(TEXT("ContextKey4"), true);
+			InTestContext.Add(TEXT("ContextKey5"), VariantArray);
+			InTestContext.Add(TEXT("ContextKey6"), VariantMap);
 
-			//SentryEvent->SetContext(TEXT("TestContext1"), InTestContext);
+			SentryEvent->SetContext(TEXT("TestContext1"), InTestContext);
 
-			TMap<FString, FString> OutTestContext = SentryEvent->GetContext(TEXT("TestContext1"));
+			TMap<FString, FSentryVariant> OutTestContext = SentryEvent->GetContext(TEXT("TestContext1"));
 
-			TestEqual("Context exist after it was added", OutTestContext.Num(), 2);
+			TestEqual("Context exist after it was added", OutTestContext.Num(), 6);
 
-			TestEqual("Context retains its first value", OutTestContext[TEXT("ContextKey1")], InTestContext[TEXT("ContextKey1")]);
-			TestEqual("Context retains its second value", OutTestContext[TEXT("ContextKey2")], InTestContext[TEXT("ContextKey2")]);
+			TestEqual("Context retains its string value", OutTestContext[TEXT("ContextKey1")], InTestContext[TEXT("ContextKey1")]);
+			TestEqual("Context retains its integer value", OutTestContext[TEXT("ContextKey2")], InTestContext[TEXT("ContextKey2")]);
+			TestEqual("Context retains its float value", OutTestContext[TEXT("ContextKey3")], InTestContext[TEXT("ContextKey3")]);
+			TestEqual("Context retains its bool value", OutTestContext[TEXT("ContextKey4")], InTestContext[TEXT("ContextKey4")]);
+			TestEqual("Context retains its array value", OutTestContext[TEXT("ContextKey5")], InTestContext[TEXT("ContextKey5")]);
+			TestEqual("Context retains its map value", OutTestContext[TEXT("ContextKey6")], InTestContext[TEXT("ContextKey6")]);
 
 			SentryEvent->RemoveContext(TEXT("TestContext1"));
 
-			TMap<FString, FString> TestContextAfterRemove = SentryEvent->GetContext(TEXT("TestContext1"));
+			TMap<FString, FSentryVariant> TestContextAfterRemove = SentryEvent->GetContext(TEXT("TestContext1"));
 
 			TestEqual("No context with given key available after it was removed", TestContextAfterRemove.Num(), 0);
 		});

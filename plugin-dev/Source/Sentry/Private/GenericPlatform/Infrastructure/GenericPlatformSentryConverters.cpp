@@ -43,47 +43,39 @@ sentry_level_e FGenericPlatformSentryConverters::SentryLevelToNative(ESentryLeve
 
 sentry_value_t FGenericPlatformSentryConverters::VariantToNative(const FSentryVariant& variant)
 {
-	sentry_value_t nativeValue;
-
 	switch (variant.Type)
 	{
 	case ESentryVariantType::Integer:
-		nativeValue = sentry_value_new_int32(variant.GetValue<int32>());
-		break;
+		return sentry_value_new_int32(variant.GetValue<int32>());
 	case ESentryVariantType::Float:
-		nativeValue = sentry_value_new_double(variant.GetValue<float>());
-		break;
+		return sentry_value_new_double(variant.GetValue<float>());
 	case ESentryVariantType::Bool:
-		nativeValue = sentry_value_new_bool(variant.GetValue<bool>());
-		break;
+		return sentry_value_new_bool(variant.GetValue<bool>());
 	case ESentryVariantType::String:
-		nativeValue = sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
-		break;
+		return sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
 	case ESentryVariantType::Array:
 		{
-			nativeValue = sentry_value_new_list();
+			sentry_value_t nativeValue = sentry_value_new_list();
 			const TArray<FSentryVariant>& variantArray = variant.GetValue<TArray<FSentryVariant>>();
 			for (auto it = variantArray.CreateConstIterator(); it; ++it)
 			{
 				sentry_value_append(nativeValue, VariantToNative(*it));
 			}
+			return nativeValue;
 		}
-		break;
 	case ESentryVariantType::Map:
 		{
-			nativeValue = sentry_value_new_object();
+			sentry_value_t nativeValue = sentry_value_new_object();
 			const TMap<FString, FSentryVariant>& variantMap = variant.GetValue<TMap<FString, FSentryVariant>>();
 			for (auto it = variantMap.CreateConstIterator(); it; ++it)
 			{
 				sentry_value_set_by_key(nativeValue, TCHAR_TO_ANSI(*it.Key()), VariantToNative(it.Value()));
 			}
+			return nativeValue;
 		}
-		break;
 	default:
-		nativeValue = sentry_value_new_null();
+		return sentry_value_new_null();
 	}
-
-	return nativeValue;
 }
 
 sentry_value_t FGenericPlatformSentryConverters::StringMapToNative(const TMap<FString, FString>& map)
@@ -192,6 +184,67 @@ ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_level_
 	}
 
 	return Level;
+}
+
+FSentryVariant FGenericPlatformSentryConverters::VariantToUnreal(sentry_value_t variant)
+{
+	switch (sentry_value_get_type(variant))
+	{
+	case SENTRY_VALUE_TYPE_NULL:
+		return FSentryVariant();
+	case SENTRY_VALUE_TYPE_BOOL:
+		return FSentryVariant(static_cast<bool>(sentry_value_is_true(variant)));
+	case SENTRY_VALUE_TYPE_INT32:
+		return FSentryVariant(sentry_value_as_int32(variant));
+	case SENTRY_VALUE_TYPE_DOUBLE:
+		return FSentryVariant(static_cast<float>(sentry_value_as_double(variant)));
+	case SENTRY_VALUE_TYPE_STRING:
+		return FSentryVariant(FString(sentry_value_as_string(variant)));
+	case SENTRY_VALUE_TYPE_LIST:
+		{
+			TArray<FSentryVariant> unrealArray;
+
+			int32 len = sentry_value_get_length(variant);
+			for (int32 i = 0; i < len; ++i)
+			{
+				unrealArray.Add(VariantToUnreal(sentry_value_get_by_index(variant, i)));
+			}
+
+			return FSentryVariant(unrealArray);
+		}
+	case SENTRY_VALUE_TYPE_OBJECT:
+		{
+			TMap<FString, FSentryVariant> unrealMap;
+
+			FString mapJsonString = FString(sentry_value_to_json(variant));
+			if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
+			{
+				return unrealMap;
+			}
+
+			TSharedPtr<FJsonObject> jsonObject;
+			TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
+			bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonObject);
+			if (!bDeserializeSuccess)
+			{
+				UE_LOG(LogSentrySdk, Error, TEXT("VariantToUnreal failed to deserialize map Json."));
+				return unrealMap;
+			}
+
+			TArray<FString> keysArr;
+			jsonObject->Values.GetKeys(keysArr);
+
+			for (auto it = keysArr.CreateConstIterator(); it; ++it)
+			{
+				unrealMap.Add(*it, VariantToUnreal(sentry_value_get_by_key(variant, TCHAR_TO_ANSI(**it))));
+			}
+
+			return FSentryVariant(unrealMap);
+		}
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry variant type used - an empty one will be returned."));
+		return FSentryVariant();
+	}
 }
 
 TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentry_value_t map)

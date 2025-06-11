@@ -95,17 +95,26 @@ TMap<FString, FString> FAppleSentryEvent::GetTags() const
 	return FAppleSentryConverters::StringMapToUnreal(EventApple.tags);
 }
 
-void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	NSMutableDictionary* mutableContext = [EventApple.context mutableCopy] ?: [NSMutableDictionary dictionary];
-	mutableContext[key.GetNSString()] = FAppleSentryConverters::StringMapToNative(values);
-	EventApple.context = mutableContext;
 }
 
-TMap<FString, FString> FAppleSentryEvent::GetContext(const FString& key) const
+// void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FString>& values)
+// {
+// 	NSMutableDictionary* mutableContext = [EventApple.context mutableCopy] ?: [NSMutableDictionary dictionary];
+// 	mutableContext[key.GetNSString()] = FAppleSentryConverters::StringMapToNative(values);
+// 	EventApple.context = mutableContext;
+// }
+
+TMap<FString, FSentryVariant> FAppleSentryEvent::GetContext(const FString& key) const
 {
-	return FAppleSentryConverters::StringMapToUnreal(EventApple.context[key.GetNSString()]);
+	return TMap<FString, FSentryVariant>();
 }
+
+// TMap<FString, FString> FAppleSentryEvent::FAppleSentryEvent::GetContext(const FString& key) const
+// {
+// 	return FAppleSentryConverters::StringMapToUnreal(EventApple.context[key.GetNSString()]);
+// }
 
 void FAppleSentryEvent::RemoveContext(const FString& key)
 {

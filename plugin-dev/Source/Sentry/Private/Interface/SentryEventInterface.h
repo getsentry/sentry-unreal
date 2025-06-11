@@ -26,9 +26,8 @@ public:
 	virtual void RemoveTag(const FString& key) = 0;
 	virtual void SetTags(const TMap<FString, FString>& tags) = 0;
 	virtual TMap<FString, FString> GetTags() const = 0;
-	// virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) = 0;
-	virtual TMap<FString, FString> GetContext(const FString& key) const = 0;
+	virtual TMap<FString, FSentryVariant> GetContext(const FString& key) const = 0;
 	virtual void RemoveContext(const FString& key) = 0;
 	virtual void SetExtraValue(const FString& key, const FString& value) = 0;
 	virtual FString GetExtraValue(const FString& key) const = 0;
