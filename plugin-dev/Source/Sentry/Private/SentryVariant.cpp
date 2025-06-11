@@ -87,9 +87,14 @@ FSentryVariant USentryVariantHelper::Conv_MapToFSentryVariant(const TMap<FString
 	return FSentryVariant(Value);
 }
 
+ESentryVariantType USentryVariantHelper::GetType(const FSentryVariant& Variant)
+{
+	return Variant.GetType();
+}
+
 int32 USentryVariantHelper::GetInteger(const FSentryVariant& Variant)
 {
-	if (Variant.Type != ESentryVariantType::Integer)
+	if (Variant.GetType() != ESentryVariantType::Integer)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Variant does not contain an integer value. Returning default value."));
 		return 0;
@@ -100,7 +105,7 @@ int32 USentryVariantHelper::GetInteger(const FSentryVariant& Variant)
 
 bool USentryVariantHelper::TryGetInteger(const FSentryVariant& Variant, int32& Value)
 {
-	if (Variant.Type != ESentryVariantType::Integer)
+	if (Variant.GetType() != ESentryVariantType::Integer)
 	{
 		Value = 0;
 		return false;
@@ -112,7 +117,7 @@ bool USentryVariantHelper::TryGetInteger(const FSentryVariant& Variant, int32& V
 
 float USentryVariantHelper::GetFloat(const FSentryVariant& Variant)
 {
-	if (Variant.Type != ESentryVariantType::Float)
+	if (Variant.GetType() != ESentryVariantType::Float)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Variant does not contain a float value. Returning default value."));
 		return 0.0f;
@@ -123,7 +128,7 @@ float USentryVariantHelper::GetFloat(const FSentryVariant& Variant)
 
 bool USentryVariantHelper::TryGetFloat(const FSentryVariant& Variant, float& Value)
 {
-	if (Variant.Type != ESentryVariantType::Float)
+	if (Variant.GetType() != ESentryVariantType::Float)
 	{
 		Value = 0.0f;
 		return false;
@@ -135,7 +140,7 @@ bool USentryVariantHelper::TryGetFloat(const FSentryVariant& Variant, float& Val
 
 bool USentryVariantHelper::GetBool(const FSentryVariant& Variant)
 {
-	if (Variant.Type != ESentryVariantType::Bool)
+	if (Variant.GetType() != ESentryVariantType::Bool)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Variant does not contain a bool value. Returning default value."));
 		return false;
@@ -146,7 +151,7 @@ bool USentryVariantHelper::GetBool(const FSentryVariant& Variant)
 
 bool USentryVariantHelper::TryGetBool(const FSentryVariant& Variant, bool& Value)
 {
-	if (Variant.Type != ESentryVariantType::Bool)
+	if (Variant.GetType() != ESentryVariantType::Bool)
 	{
 		Value = false;
 		return false;
@@ -158,7 +163,7 @@ bool USentryVariantHelper::TryGetBool(const FSentryVariant& Variant, bool& Value
 
 FString USentryVariantHelper::GetString(const FSentryVariant& Variant)
 {
-	if (Variant.Type != ESentryVariantType::String)
+	if (Variant.GetType() != ESentryVariantType::String)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Variant does not contain a string value. Returning default value."));
 		return FString("");
@@ -169,7 +174,7 @@ FString USentryVariantHelper::GetString(const FSentryVariant& Variant)
 
 bool USentryVariantHelper::TryGetString(const FSentryVariant& Variant, FString& Value)
 {
-	if (Variant.Type != ESentryVariantType::String)
+	if (Variant.GetType() != ESentryVariantType::String)
 	{
 		Value = FString("");
 		return false;
@@ -181,7 +186,7 @@ bool USentryVariantHelper::TryGetString(const FSentryVariant& Variant, FString& 
 
 TArray<FSentryVariant> USentryVariantHelper::GetArray(const FSentryVariant& Variant)
 {
-	if (Variant.Type != ESentryVariantType::Array)
+	if (Variant.GetType() != ESentryVariantType::Array)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Variant does not contain an array value. Returning default value."));
 		return TArray<FSentryVariant>();
@@ -192,7 +197,7 @@ TArray<FSentryVariant> USentryVariantHelper::GetArray(const FSentryVariant& Vari
 
 bool USentryVariantHelper::TryGetArray(const FSentryVariant& Variant, TArray<FSentryVariant>& Value)
 {
-	if (Variant.Type != ESentryVariantType::Array)
+	if (Variant.GetType() != ESentryVariantType::Array)
 	{
 		Value = TArray<FSentryVariant>();
 		return false;
@@ -204,7 +209,7 @@ bool USentryVariantHelper::TryGetArray(const FSentryVariant& Variant, TArray<FSe
 
 TMap<FString, FSentryVariant> USentryVariantHelper::GetMap(const FSentryVariant& Variant)
 {
-	if (Variant.Type != ESentryVariantType::Map)
+	if (Variant.GetType() != ESentryVariantType::Map)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Variant does not contain a map value. Returning default value."));
 		return TMap<FString, FSentryVariant>();
@@ -215,7 +220,7 @@ TMap<FString, FSentryVariant> USentryVariantHelper::GetMap(const FSentryVariant&
 
 bool USentryVariantHelper::TryGetMap(const FSentryVariant& Variant, TMap<FString, FSentryVariant>& Value)
 {
-	if (Variant.Type != ESentryVariantType::Map)
+	if (Variant.GetType() != ESentryVariantType::Map)
 	{
 		Value = TMap<FString, FSentryVariant>();
 		return false;

@@ -43,7 +43,7 @@ sentry_level_e FGenericPlatformSentryConverters::SentryLevelToNative(ESentryLeve
 
 sentry_value_t FGenericPlatformSentryConverters::VariantToNative(const FSentryVariant& variant)
 {
-	switch (variant.Type)
+	switch (variant.GetType())
 	{
 	case ESentryVariantType::Integer:
 		return sentry_value_new_int32(variant.GetValue<int32>());

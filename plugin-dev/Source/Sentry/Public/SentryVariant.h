@@ -57,6 +57,11 @@ struct SENTRY_API FSentryVariant
 		return Value.GetValue<T>();
 	}
 
+	ESentryVariantType GetType() const
+	{
+		return Type;
+	}
+
 	bool operator==(const FSentryVariant& Other) const
 	{
 		return ((Type == Other.Type) && (Value == Other.Value));
@@ -72,9 +77,8 @@ struct SENTRY_API FSentryVariant
 		return Ar << Variant.Type << Variant.Value;
 	}
 
-	UPROPERTY(BlueprintReadOnly)
+private:
 	ESentryVariantType Type;
-
 	FVariant Value;
 };
 
@@ -143,6 +147,14 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Map To Sentry Variant", CompactNodeTitle = "->", BlueprintAutocast), Category = "Sentry|Variant")
 	static FSentryVariant Conv_MapToFSentryVariant(const TMap<FString, FSentryVariant>& Value);
+
+	/**
+	 * Get variant value type
+	 *
+	 * @return - Value type.
+	 */
+	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "Type"), Category = "Sentry|Variant")
+	static ESentryVariantType GetType(const FSentryVariant& Variant);
 
 	/**
 	 * Get variant value
