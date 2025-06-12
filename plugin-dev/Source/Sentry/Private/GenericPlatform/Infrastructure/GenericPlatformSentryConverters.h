@@ -15,10 +15,11 @@ class FGenericPlatformSentryConverters
 public:
 	/** Conversions to native types */
 	static sentry_level_e SentryLevelToNative(ESentryLevel level);
-	static sentry_value_t VariantToNative(const FSentryVariant& variant);
 	static sentry_value_t StringMapToNative(const TMap<FString, FString>& map);
-	static sentry_value_t VariantMapToNative(const TMap<FString, FSentryVariant>& map);
 	static sentry_value_t StringArrayToNative(const TArray<FString>& array);
+	static sentry_value_t VariantToNative(const FSentryVariant& variant);
+	static sentry_value_t VariantArrayToNative(const TArray<FSentryVariant>& array);
+	static sentry_value_t VariantMapToNative(const TMap<FString, FSentryVariant>& map);
 	static sentry_value_t AddressToNative(uint64 address);
 	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 

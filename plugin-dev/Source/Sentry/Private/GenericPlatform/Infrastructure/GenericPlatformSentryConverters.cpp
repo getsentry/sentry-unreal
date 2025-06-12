@@ -41,65 +41,16 @@ sentry_level_e FGenericPlatformSentryConverters::SentryLevelToNative(ESentryLeve
 	return Level;
 }
 
-sentry_value_t FGenericPlatformSentryConverters::VariantToNative(const FSentryVariant& variant)
-{
-	switch (variant.GetType())
-	{
-	case ESentryVariantType::Integer:
-		return sentry_value_new_int32(variant.GetValue<int32>());
-	case ESentryVariantType::Float:
-		return sentry_value_new_double(variant.GetValue<float>());
-	case ESentryVariantType::Bool:
-		return sentry_value_new_bool(variant.GetValue<bool>());
-	case ESentryVariantType::String:
-		return sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
-	case ESentryVariantType::Array:
-	{
-		sentry_value_t nativeValue = sentry_value_new_list();
-		const TArray<FSentryVariant>& variantArray = variant.GetValue<TArray<FSentryVariant>>();
-		for (auto it = variantArray.CreateConstIterator(); it; ++it)
-		{
-			sentry_value_append(nativeValue, VariantToNative(*it));
-		}
-		return nativeValue;
-	}
-	case ESentryVariantType::Map:
-	{
-		sentry_value_t nativeValue = sentry_value_new_object();
-		const TMap<FString, FSentryVariant>& variantMap = variant.GetValue<TMap<FString, FSentryVariant>>();
-		for (auto it = variantMap.CreateConstIterator(); it; ++it)
-		{
-			sentry_value_set_by_key(nativeValue, TCHAR_TO_ANSI(*it.Key()), VariantToNative(it.Value()));
-		}
-		return nativeValue;
-	}
-	default:
-		return sentry_value_new_null();
-	}
-}
-
 sentry_value_t FGenericPlatformSentryConverters::StringMapToNative(const TMap<FString, FString>& map)
 {
-	sentry_value_t sentryObject = sentry_value_new_object();
+	sentry_value_t nativeValue = sentry_value_new_object();
 
 	for (auto it = map.CreateConstIterator(); it; ++it)
 	{
-		sentry_value_set_by_key(sentryObject, TCHAR_TO_ANSI(*it.Key()), sentry_value_new_string(TCHAR_TO_ANSI(*it.Value())));
+		sentry_value_set_by_key(nativeValue, TCHAR_TO_ANSI(*it.Key()), sentry_value_new_string(TCHAR_TO_ANSI(*it.Value())));
 	}
 
-	return sentryObject;
-}
-
-sentry_value_t FGenericPlatformSentryConverters::VariantMapToNative(const TMap<FString, FSentryVariant>& map)
-{
-	sentry_value_t sentryObject = sentry_value_new_object();
-
-	for (auto it = map.CreateConstIterator(); it; ++it)
-	{
-		sentry_value_set_by_key(sentryObject, TCHAR_TO_ANSI(*it.Key()), VariantToNative(it.Value()));
-	}
-
-	return sentryObject;
+	return nativeValue;
 }
 
 sentry_value_t FGenericPlatformSentryConverters::StringArrayToNative(const TArray<FString>& array)
@@ -113,6 +64,51 @@ sentry_value_t FGenericPlatformSentryConverters::StringArrayToNative(const TArra
 	}
 
 	return sentryArray;
+}
+
+sentry_value_t FGenericPlatformSentryConverters::VariantToNative(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return sentry_value_new_int32(variant.GetValue<int32>());
+	case ESentryVariantType::Float:
+		return sentry_value_new_double(variant.GetValue<float>());
+	case ESentryVariantType::Bool:
+		return sentry_value_new_bool(variant.GetValue<bool>());
+	case ESentryVariantType::String:
+		return sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
+	case ESentryVariantType::Array:
+		return VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
+	case ESentryVariantType::Map:
+		return VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+	default:
+		return sentry_value_new_null();
+	}
+}
+
+sentry_value_t FGenericPlatformSentryConverters::VariantArrayToNative(const TArray<FSentryVariant>& array)
+{
+	sentry_value_t sentryArray = sentry_value_new_list();
+
+	for (auto it = array.CreateConstIterator(); it; ++it)
+	{
+		sentry_value_append(sentryArray, VariantToNative(*it));
+	}
+
+	return sentryArray;
+}
+
+sentry_value_t FGenericPlatformSentryConverters::VariantMapToNative(const TMap<FString, FSentryVariant>& map)
+{
+	sentry_value_t sentryObject = sentry_value_new_object();
+
+	for (auto it = map.CreateConstIterator(); it; ++it)
+	{
+		sentry_value_set_by_key(sentryObject, TCHAR_TO_ANSI(*it.Key()), VariantToNative(it.Value()));
+	}
+
+	return sentryObject;
 }
 
 sentry_value_t FGenericPlatformSentryConverters::AddressToNative(uint64 address)
