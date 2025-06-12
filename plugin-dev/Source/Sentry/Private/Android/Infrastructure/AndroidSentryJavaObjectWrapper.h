@@ -40,6 +40,8 @@ public:
 
 	static FScopedJavaObject<jstring> GetJString(const FString& String);
 
+	static bool IsInstanceOf(FSentryJavaClass ClassData, jobject JavaClassInstance);
+
 private:
 	void VerifyMethodCall(FSentryJavaMethod Method) const;
 	void VerifyException() const;
@@ -137,6 +139,9 @@ bool FSentryJavaObjectWrapper::CallMethodInternal<bool>(FSentryJavaMethod Method
 
 template<>
 int FSentryJavaObjectWrapper::CallMethodInternal<int>(FSentryJavaMethod Method, va_list Params) const;
+
+template<>
+float FSentryJavaObjectWrapper::CallMethodInternal<float>(FSentryJavaMethod Method, va_list Params) const;
 
 template<>
 int64 FSentryJavaObjectWrapper::CallMethodInternal<int64>(FSentryJavaMethod Method, va_list Params) const;

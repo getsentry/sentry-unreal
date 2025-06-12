@@ -108,16 +108,15 @@ TMap<FString, FString> FAndroidSentryEvent::GetTags() const
 
 void FAndroidSentryEvent::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	// FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setContext", "(Lio/sentry/SentryEvent;Ljava/lang/String;Ljava/lang/Object;)V",
-	// 	GetJObject(), *FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::StringMapToNative(values)->GetJObject());
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setContext", "(Lio/sentry/SentryEvent;Ljava/lang/String;Ljava/lang/Object;)V",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantMapToNative(values)->GetJObject());
 }
 
 TMap<FString, FSentryVariant> FAndroidSentryEvent::GetContext(const FString& key) const
 {
-	// auto context = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getContext", "(Lio/sentry/SentryEvent;Ljava/lang/String;)Ljava/lang/Object;",
-	// 	GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
-	// return FAndroidSentryConverters::StringMapToUnreal(*context);
-	return TMap<FString, FSentryVariant>();
+	auto context = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getContext", "(Lio/sentry/SentryEvent;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
+	return FAndroidSentryConverters::VariantMapToUnreal(*context);
 }
 
 void FAndroidSentryEvent::RemoveContext(const FString& key)

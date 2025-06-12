@@ -35,5 +35,9 @@ const FSentryJavaClass SentryJavaClasses::Iterator				= FSentryJavaClass { "java
 const FSentryJavaClass SentryJavaClasses::MapEntry				= FSentryJavaClass { "java/util/Map$Entry", ESentryJavaClassType::System };
 const FSentryJavaClass SentryJavaClasses::List					= FSentryJavaClass { "java/util/List", ESentryJavaClassType::System };
 const FSentryJavaClass SentryJavaClasses::Double				= FSentryJavaClass { "java/lang/Double", ESentryJavaClassType::System };
+const FSentryJavaClass SentryJavaClasses::Integer				= FSentryJavaClass { "java/lang/Integer", ESentryJavaClassType::System };
+const FSentryJavaClass SentryJavaClasses::Float					= FSentryJavaClass { "java/lang/Float", ESentryJavaClassType::System };
+const FSentryJavaClass SentryJavaClasses::Boolean				= FSentryJavaClass { "java/lang/Boolean", ESentryJavaClassType::System };
+const FSentryJavaClass SentryJavaClasses::String				= FSentryJavaClass { "java/lang/String", ESentryJavaClassType::System };
 
 // clang-format on
