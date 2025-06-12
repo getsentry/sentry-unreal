@@ -63,6 +63,51 @@ NSData* FAppleSentryConverters::ByteDataToNative(const TArray<uint8>& array)
 	return [NSData dataWithBytes:array.GetData() length:array.Num()];
 }
 
+id FAppleSentryConverters::VariantToNative(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return [NSNumber numberWithInt:variant.GetValue<int32>()];
+	case ESentryVariantType::Float:
+		return [NSNumber numberWithFloat:variant.GetValue<float>()];
+	case ESentryVariantType::Bool:
+		return [NSNumber numberWithBool:variant.GetValue<bool>()];
+	case ESentryVariantType::String:
+		return variant.GetValue<FString>().GetNSString();
+	case ESentryVariantType::Array:
+		return VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
+	case ESentryVariantType::Map:
+		return VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+	default:
+		return nullptr;
+	}
+}
+
+NSArray* FAppleSentryConverters::VariantArrayToNative(const TArray<FSentryVariant>& variantArray)
+{
+	NSMutableArray* arr = [NSMutableArray arrayWithCapacity:variantArray.Num()];
+
+	for (auto it = variantArray.CreateConstIterator(); it; ++it)
+	{
+		[arr addObject:VariantToNative(*it)];
+	}
+
+	return arr;
+}
+
+NSDictionary* FAppleSentryConverters::VariantMapToNative(const TMap<FString, FSentryVariant>& variantMap)
+{
+	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:variantMap.Num()];
+
+	for (auto it = variantMap.CreateConstIterator(); it; ++it)
+	{
+		[dict setValue:VariantToNative(it.Value()) forKey:it.Key().GetNSString()];
+	}
+
+	return dict;
+}
+
 SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
 {
 	int32 framesCount = callstack.Num();
@@ -145,6 +190,67 @@ TArray<uint8> FAppleSentryConverters::ByteDataToUnreal(NSData* data)
 	}
 
 	return ByteData;
+}
+
+FSentryVariant FAppleSentryConverters::VariantToUnreal(id variant)
+{
+	if ([variant isKindOfClass:[NSNumber class]])
+	{
+		NSNumber* number = (NSNumber*)variant;
+
+		const char* objCType = [number objCType];
+
+		if (strcmp(objCType, @encode(bool)) == 0)
+		{
+			return FSentryVariant([number boolValue]);
+		}
+		if (strcmp(objCType, @encode(float)) == 0)
+		{
+			return FSentryVariant([number floatValue]);
+		}
+		if (strcmp(objCType, @encode(int)) == 0)
+		{
+			return FSentryVariant([number intValue]);
+		}
+	}
+	if ([variant isKindOfClass:[NSString class]])
+	{
+		return FSentryVariant(FString(variant));
+	}
+	if ([variant isKindOfClass:[NSArray class]])
+	{
+		return VariantArrayToUnreal((NSArray*)variant);
+	}
+	if ([variant isKindOfClass:[NSDictionary class]])
+	{
+		return VariantMapToUnreal((NSDictionary*)variant);
+	}
+
+	return FSentryVariant();
+}
+
+TArray<FSentryVariant> FAppleSentryConverters::VariantArrayToUnreal(NSArray* variantArray)
+{
+	TArray<FSentryVariant> arr;
+
+	for (id object in variantArray)
+	{
+		arr.Add(VariantToUnreal(object));
+	}
+
+	return arr;
+}
+
+TMap<FString, FSentryVariant> FAppleSentryConverters::VariantMapToUnreal(NSDictionary* variantMap)
+{
+	TMap<FString, FSentryVariant> map;
+
+	for (id key in variantMap)
+	{
+		map.Add(FString(key), VariantToUnreal(variantMap[key]));
+	}
+
+	return map;
 }
 
 SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
