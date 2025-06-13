@@ -18,14 +18,17 @@ public:
 	virtual TArray<FString> GetFingerprint() override { return TArray<FString>(); }
 	virtual void SetTag(const FString& key, const FString& value) override {}
 	virtual FString GetTag(const FString& key) const override { return TEXT(""); }
+	virtual bool TryGetTag(const FString& key, FString& value) const override { return false; }
 	virtual void RemoveTag(const FString& key) override {}
 	virtual void SetTags(const TMap<FString, FString>& tags) override {}
 	virtual TMap<FString, FString> GetTags() const override { return TMap<FString, FString>(); }
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override {};
 	virtual TMap<FString, FSentryVariant> GetContext(const FString& key) const override { return TMap<FString, FSentryVariant>(); }
+	virtual bool TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const override { return false; }
 	virtual void RemoveContext(const FString& key) override {}
 	virtual void SetExtraValue(const FString& key, const FString& value) override {}
 	virtual FString GetExtraValue(const FString& key) const override { return TEXT(""); }
+	virtual bool TryGetExtraValue(const FString& key, FString& value) const override { return false; }
 	virtual void RemoveExtra(const FString& key) override {}
 	virtual void SetExtras(const TMap<FString, FString>& extras) override {}
 	virtual TMap<FString, FString> GetExtras() const override { return TMap<FString, FString>(); }

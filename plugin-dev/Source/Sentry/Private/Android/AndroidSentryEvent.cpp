@@ -90,6 +90,23 @@ FString FAndroidSentryEvent::GetTag(const FString& key) const
 	return CallMethod<FString>(GetTagValueMethod, *GetJString(key));
 }
 
+bool FAndroidSentryEvent::TryGetTag(const FString& key, FString& value) const
+{
+	jobject tag = CallObjectMethod<jobject>(GetTagValueMethod, *GetJString(key));
+
+	if (!tag)
+	{
+		return false;
+	}
+
+	FSentryJavaObjectWrapper tagString(SentryJavaClasses::String, tag);
+	FSentryJavaMethod ToStringMethod = tagString.GetMethod("toString", "()Ljava/lang/String;");
+
+	value = tagString.CallMethod<FString>(ToStringMethod);
+
+	return true;
+}
+
 void FAndroidSentryEvent::RemoveTag(const FString& key)
 {
 	CallMethod<void>(RemoveTagMethod, *GetJString(key));
@@ -119,6 +136,27 @@ TMap<FString, FSentryVariant> FAndroidSentryEvent::GetContext(const FString& key
 	return FAndroidSentryConverters::VariantMapToUnreal(*context);
 }
 
+bool FAndroidSentryEvent::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	auto context = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getContext", "(Lio/sentry/SentryEvent;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
+
+	if (!context)
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FAndroidSentryConverters::VariantToUnreal(*context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
+}
+
 void FAndroidSentryEvent::RemoveContext(const FString& key)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "removeContext", "(Lio/sentry/SentryEvent;Ljava/lang/String;)V",
@@ -133,6 +171,23 @@ void FAndroidSentryEvent::SetExtraValue(const FString& key, const FString& value
 FString FAndroidSentryEvent::GetExtraValue(const FString& key) const
 {
 	return CallMethod<FString>(GetExtraValueMethod, *GetJString(key));
+}
+
+bool FAndroidSentryEvent::TryGetExtraValue(const FString& key, FString& value) const
+{
+	jobject extra = CallObjectMethod<jobject>(GetExtraValueMethod, *GetJString(key));
+
+	if (!extra)
+	{
+		return false;
+	}
+
+	FSentryJavaObjectWrapper tagString(SentryJavaClasses::String, extra);
+	FSentryJavaMethod ToStringMethod = tagString.GetMethod("toString", "()Ljava/lang/String;");
+
+	value = tagString.CallMethod<FString>(ToStringMethod);
+
+	return true;
 }
 
 void FAndroidSentryEvent::RemoveExtra(const FString& key)

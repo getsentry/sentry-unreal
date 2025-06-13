@@ -23,14 +23,17 @@ public:
 	virtual TArray<FString> GetFingerprint() = 0;
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual FString GetTag(const FString& key) const = 0;
+	virtual bool TryGetTag(const FString& key, FString& value) const = 0;
 	virtual void RemoveTag(const FString& key) = 0;
 	virtual void SetTags(const TMap<FString, FString>& tags) = 0;
 	virtual TMap<FString, FString> GetTags() const = 0;
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) = 0;
 	virtual TMap<FString, FSentryVariant> GetContext(const FString& key) const = 0;
+	virtual bool TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const = 0;
 	virtual void RemoveContext(const FString& key) = 0;
 	virtual void SetExtraValue(const FString& key, const FString& value) = 0;
 	virtual FString GetExtraValue(const FString& key) const = 0;
+	virtual bool TryGetExtraValue(const FString& key, FString& value) const = 0;
 	virtual void RemoveExtra(const FString& key) = 0;
 	virtual void SetExtras(const TMap<FString, FString>& extras) = 0;
 	virtual TMap<FString, FString> GetExtras() const = 0;

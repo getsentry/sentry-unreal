@@ -60,6 +60,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetTag(const FString& Key) const;
 
+	/** Tries to get a tag of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetTag(const FString& Key, FString& Value) const;
+
 	/** Removes a tag of the event with the specified key. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveTag(const FString& Key);
@@ -80,6 +84,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TMap<FString, FSentryVariant> GetContext(const FString& Key) const;
 
+	/** Tries to get context of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetContext(const FString& Key, TMap<FString, FSentryVariant>& Value) const;
+
 	/** Sets context values of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveContext(const FString& Key);
@@ -91,6 +99,10 @@ public:
 	/** Gets an extra of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetExtraValue(const FString& Key) const;
+
+	/** Tries to get an extra of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetExtraValue(const FString& Key, FString& Value) const;
 
 	/** Removes the extra of the event with the specified key. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

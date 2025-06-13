@@ -2,7 +2,6 @@
 
 #include "SentryEvent.h"
 
-#include "Algo/Find.h"
 #include "HAL/PlatformSentryEvent.h"
 #include "Interface/SentryIdInterface.h"
 
@@ -87,6 +86,14 @@ FString USentryEvent::GetTag(const FString& Key) const
 	return NativeImpl->GetTag(Key);
 }
 
+bool USentryEvent::TryGetTag(const FString& Key, FString& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetTag(Key, Value);
+}
+
 void USentryEvent::RemoveTag(const FString& Key)
 {
 	if (!NativeImpl)
@@ -127,6 +134,14 @@ TMap<FString, FSentryVariant> USentryEvent::GetContext(const FString& Key) const
 	return NativeImpl->GetContext(Key);
 }
 
+bool USentryEvent::TryGetContext(const FString& Key, TMap<FString, FSentryVariant>& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetContext(Key, Value);
+}
+
 void USentryEvent::RemoveContext(const FString& Key)
 {
 	if (!NativeImpl)
@@ -149,6 +164,14 @@ FString USentryEvent::GetExtraValue(const FString& Key) const
 		return FString();
 
 	return NativeImpl->GetExtraValue(Key);
+}
+
+bool USentryEvent::TryGetExtraValue(const FString& Key, FString& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetExtraValue(Key, Value);
 }
 
 void USentryEvent::RemoveExtra(const FString& Key)

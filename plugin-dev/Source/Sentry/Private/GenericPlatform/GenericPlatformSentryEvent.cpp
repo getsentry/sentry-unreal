@@ -100,6 +100,25 @@ FString FGenericPlatformSentryEvent::GetTag(const FString& key) const
 	return FString(sentry_value_as_string(tag));
 }
 
+bool FGenericPlatformSentryEvent::TryGetTag(const FString& key, FString& value) const
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		return false;
+	}
+
+	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_ANSI(*key));
+	if (sentry_value_is_null(tag))
+	{
+		return false;
+	}
+
+	value = FString(sentry_value_as_string(tag));
+
+	return true;
+}
+
 void FGenericPlatformSentryEvent::RemoveTag(const FString& key)
 {
 	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
@@ -157,6 +176,31 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryEvent::GetContext(const FStr
 	return contextVariant.GetValue<TMap<FString, FSentryVariant>>();
 }
 
+bool FGenericPlatformSentryEvent::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		return false;
+	}
+
+	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_ANSI(*key));
+	if (sentry_value_is_null(context))
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FGenericPlatformSentryConverters::VariantToUnreal(context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
+}
+
 void FGenericPlatformSentryEvent::RemoveContext(const FString& key)
 {
 	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
@@ -191,6 +235,25 @@ FString FGenericPlatformSentryEvent::GetExtraValue(const FString& key) const
 
 	sentry_value_t tag = sentry_value_get_by_key(eventExtra, TCHAR_TO_ANSI(*key));
 	return FString(sentry_value_as_string(tag));
+}
+
+bool FGenericPlatformSentryEvent::TryGetExtraValue(const FString& key, FString& value) const
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return false;
+	}
+
+	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_ANSI(*key));
+	if (sentry_value_is_null(extra))
+	{
+		return false;
+	}
+
+	value = FString(sentry_value_as_string(extra));
+
+	return true;
 }
 
 void FGenericPlatformSentryEvent::RemoveExtra(const FString& key)

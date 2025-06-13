@@ -68,7 +68,8 @@ void SentryEventSpec::Define()
 		{
 			TestEqual("Tags are empty by default", SentryEvent->GetTags().Num(), 0);
 
-			TestEqual("Can't get any tag while these are empty", SentryEvent->GetTag(TEXT("TagsKey0")), TEXT(""));
+			FString NonExistingTag;
+			TestFalse("Can't get any tag while these are empty (Try)", SentryEvent->TryGetTag(TEXT("TagsKey0"), NonExistingTag));
 
 			SentryEvent->SetTag(TEXT("TagsKey1"), TEXT("TagsVal1"));
 			SentryEvent->SetTag(TEXT("TagsKey2"), TEXT("TagsVal2"));
@@ -81,10 +82,12 @@ void SentryEventSpec::Define()
 			TestEqual("Can't get non-existent tag", SentryEvent->GetTag(TEXT("TagsKey3")), TEXT(""));
 
 			SentryEvent->RemoveTag(TEXT("TagsKey1"));
+			TestFalse("Can't get first tag after it was removed (Try)", SentryEvent->TryGetTag(TEXT("TagsKey1"), NonExistingTag));
 			TestEqual("Can't get first tag after it was removed", SentryEvent->GetTag(TEXT("TagsKey1")), TEXT(""));
 			TestEqual("One tag left", SentryEvent->GetTags().Num(), 1);
 
 			SentryEvent->RemoveTag(TEXT("TagsKey2"));
+			TestFalse("Can't get second tag after it was removed (Try)", SentryEvent->TryGetTag(TEXT("TagsKey2"), NonExistingTag));
 			TestEqual("Can't get second tag after it was removed", SentryEvent->GetTag(TEXT("TagsKey2")), TEXT(""));
 			TestEqual("No tags left", SentryEvent->GetTags().Num(), 0);
 
@@ -138,9 +141,9 @@ void SentryEventSpec::Define()
 
 			SentryEvent->RemoveContext(TEXT("TestContext1"));
 
-			TMap<FString, FSentryVariant> TestContextAfterRemove = SentryEvent->GetContext(TEXT("TestContext1"));
-
-			TestEqual("No context with given key available after it was removed", TestContextAfterRemove.Num(), 0);
+			TMap<FString, FSentryVariant> NonExistingContext;
+			TestFalse("No context with given key available after it was removed (Try)", SentryEvent->TryGetContext(TEXT("TestContext1"), NonExistingContext));
+			TestEqual("No context with given key available after it was removed", SentryEvent->GetContext(TEXT("TestContext1")).Num(), 0);
 		});
 	});
 
@@ -150,6 +153,7 @@ void SentryEventSpec::Define()
 		{
 			TestEqual("Extras are empty by default", SentryEvent->GetExtras().Num(), 0);
 
+			FString NonExistingExtra;
 			TestEqual("Can't get any extra while these are empty", SentryEvent->GetExtraValue(TEXT("ExtraKey0")), TEXT(""));
 
 			SentryEvent->SetExtraValue(TEXT("ExtraKey1"), TEXT("ExtraVal1"));
@@ -163,10 +167,12 @@ void SentryEventSpec::Define()
 			TestEqual("Can't get non-existent extra", SentryEvent->GetExtraValue(TEXT("ExtraKey3")), TEXT(""));
 
 			SentryEvent->RemoveExtra(TEXT("ExtraKey1"));
+			TestFalse("Can't get first extra after it was removed (Try)", SentryEvent->TryGetExtraValue(TEXT("ExtraKey1"), NonExistingExtra));
 			TestEqual("Can't get first extra after it was removed", SentryEvent->GetExtraValue(TEXT("ExtraKey1")), TEXT(""));
 			TestEqual("One extra left", SentryEvent->GetExtras().Num(), 1);
 
 			SentryEvent->RemoveExtra(TEXT("ExtraKey2"));
+			TestFalse("Can't get second extra after it was removed (Try)", SentryEvent->TryGetExtraValue(TEXT("TExtraKey2"), NonExistingExtra));
 			TestEqual("Can't get second extra after it was removed", SentryEvent->GetExtraValue(TEXT("TExtraKey2")), TEXT(""));
 			TestEqual("No extras left", SentryEvent->GetExtras().Num(), 0);
 
