@@ -2,11 +2,12 @@
 
 #pragma once
 
+#if PLATFORM_ANDROID
+#include "Android/AndroidSentrySpan.h"
+#elif PLATFORM_APPLE
+#include "Apple/AppleSentrySpan.h"
+#elif USE_SENTRY_NATIVE
+#include "GenericPlatform/GenericPlatformSentrySpan.h"
+#else
 #include "Null/NullSentrySpan.h"
-
-static TSharedPtr<ISentrySpan> CreateSharedSentrySpan()
-{
-	// Span is supposed to be created internally by the SDK using the platform-specific implementations.
-	// Currently, it doesn't provide default constructor for Apple/Android thus we can only return Null-version here.
-	return MakeShareable(new FPlatformSentrySpan);
-}
+#endif

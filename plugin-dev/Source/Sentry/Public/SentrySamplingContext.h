@@ -11,16 +11,18 @@
 class ISentrySamplingContext;
 class USentryTransactionContext;
 
+/**
+ * Context used by trace sampler to determine if transaction is going to be sampled.
+ *
+ * NOTE: USentrySamplingContext should not be constructed with NewObject<...>() etc., and should instead
+ *       only be created internally by the SDK using the platform-specific implementations.
+ */
 UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentrySamplingContext : public UObject, public TSentryImplWrapper<ISentrySamplingContext, USentrySamplingContext>
 {
 	GENERATED_BODY()
 
 public:
-	/** Initializes the sampling context. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize();
-
 	/** Gets transaction context used for sampling. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	USentryTransactionContext* GetTransactionContext() const;

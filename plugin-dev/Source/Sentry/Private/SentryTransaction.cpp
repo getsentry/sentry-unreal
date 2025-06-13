@@ -1,11 +1,10 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryTransaction.h"
-
 #include "SentryDefines.h"
 #include "SentrySpan.h"
 
-#include "Interface/SentryTransactionInterface.h"
+#include "HAL/PlatformSentryTransaction.h"
 
 USentrySpan* USentryTransaction::StartChildSpan(const FString& Operation, const FString& Description)
 {
