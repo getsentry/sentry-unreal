@@ -200,7 +200,8 @@ FSentryVariant FAppleSentryConverters::VariantToUnreal(id variant)
 
 		const char* objCType = [number objCType];
 
-		if (strcmp(objCType, @encode(bool)) == 0)
+		// NSNumber created from bool can be encoded as char
+		if (strcmp(objCType, @encode(bool)) == 0 || strcmp(objCType, @encode(char)) == 0)
 		{
 			return FSentryVariant([number boolValue]);
 		}
