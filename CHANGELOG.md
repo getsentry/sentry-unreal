@@ -12,6 +12,7 @@
 
 - Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
 - Add option to delay app shutdown until Crashpad completes crash report upload ([#953](https://github.com/getsentry/sentry-unreal/pull/953))
+- Add API allowing to get/set event's `tag`, `context` and `extra` properties ([#940](https://github.com/getsentry/sentry-unreal/pull/940))
 
 ### Fixes
 

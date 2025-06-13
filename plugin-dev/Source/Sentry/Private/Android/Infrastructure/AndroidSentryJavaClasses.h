@@ -37,4 +37,8 @@ struct SentryJavaClasses
 	const static FSentryJavaClass MapEntry;
 	const static FSentryJavaClass List;
 	const static FSentryJavaClass Double;
+	const static FSentryJavaClass Integer;
+	const static FSentryJavaClass Float;
+	const static FSentryJavaClass Boolean;
+	const static FSentryJavaClass String;
 };

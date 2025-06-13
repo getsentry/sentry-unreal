@@ -138,7 +138,7 @@ void FAndroidSentryScope::SetExtraValue(const FString& key, const FString& value
 
 FString FAndroidSentryScope::GetExtraValue(const FString& key) const
 {
-	TMap<FString, FString> extras = GetTags();
+	TMap<FString, FString> extras = GetExtras();
 	FString* extraValue = extras.Find(key);
 
 	if (!extraValue)
