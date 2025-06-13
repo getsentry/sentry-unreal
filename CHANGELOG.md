@@ -12,6 +12,10 @@
 - Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
 - Add option to delay app shutdown until Crashpad completes crash report upload ([#953](https://github.com/getsentry/sentry-unreal/pull/953))
 
+### Fixes
+
+- Sampling context, span and transaction classes are no longer re-defined when packaging for Android ([#959](https://github.com/getsentry/sentry-unreal/pull/959))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.13.1 to v8.13.2 ([#932](https://github.com/getsentry/sentry-unreal/pull/932))
