@@ -80,6 +80,14 @@ FString FAppleSentryEvent::GetTag(const FString& key) const
 
 bool FAppleSentryEvent::TryGetTag(const FString& key, FString& value) const
 {
+	NSString* tag = [EventApple.tags objectForKey:key.GetNSString()];
+
+	if (!tag)
+	{
+		return false;
+	}
+
+	value = FString(tag);
 	return true;
 }
 
@@ -114,6 +122,21 @@ TMap<FString, FSentryVariant> FAppleSentryEvent::GetContext(const FString& key) 
 
 bool FAppleSentryEvent::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
 {
+	NSDictionary* context = [EventApple.context objectForKey:key.GetNSString()];
+
+	if (!context)
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FAppleSentryConverters::VariantToUnreal(context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
 	return true;
 }
 
@@ -138,6 +161,14 @@ FString FAppleSentryEvent::GetExtraValue(const FString& key) const
 
 bool FAppleSentryEvent::TryGetExtraValue(const FString& key, FString& value) const
 {
+	NSString* extra = [EventApple.extra objectForKey:key.GetNSString()];
+
+	if (!extra)
+	{
+		return false;
+	}
+
+	value = FString(extra);
 	return true;
 }
 
