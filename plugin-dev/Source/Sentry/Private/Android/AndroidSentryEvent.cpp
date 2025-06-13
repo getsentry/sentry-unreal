@@ -92,14 +92,14 @@ FString FAndroidSentryEvent::GetTag(const FString& key) const
 
 bool FAndroidSentryEvent::TryGetTag(const FString& key, FString& value) const
 {
-	jobject tag = CallObjectMethod<jobject>(GetTagValueMethod, *GetJString(key));
+	auto tag = CallObjectMethod<jobject>(GetTagValueMethod, *GetJString(key));
 
 	if (!tag)
 	{
 		return false;
 	}
 
-	FSentryJavaObjectWrapper tagString(SentryJavaClasses::String, tag);
+	FSentryJavaObjectWrapper tagString(SentryJavaClasses::String, *tag);
 	FSentryJavaMethod ToStringMethod = tagString.GetMethod("toString", "()Ljava/lang/String;");
 
 	value = tagString.CallMethod<FString>(ToStringMethod);
@@ -175,14 +175,14 @@ FString FAndroidSentryEvent::GetExtraValue(const FString& key) const
 
 bool FAndroidSentryEvent::TryGetExtraValue(const FString& key, FString& value) const
 {
-	jobject extra = CallObjectMethod<jobject>(GetExtraValueMethod, *GetJString(key));
+	auto extra = CallObjectMethod<jobject>(GetExtraValueMethod, *GetJString(key));
 
 	if (!extra)
 	{
 		return false;
 	}
 
-	FSentryJavaObjectWrapper tagString(SentryJavaClasses::String, extra);
+	FSentryJavaObjectWrapper tagString(SentryJavaClasses::String, *extra);
 	FSentryJavaMethod ToStringMethod = tagString.GetMethod("toString", "()Ljava/lang/String;");
 
 	value = tagString.CallMethod<FString>(ToStringMethod);
