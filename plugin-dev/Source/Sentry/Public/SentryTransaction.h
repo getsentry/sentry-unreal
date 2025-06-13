@@ -14,6 +14,9 @@ class USentrySpan;
 
 /**
  * Representation of an activity to measure or track.
+ *
+ * NOTE: USentryTransaction should not be constructed with NewObject<...>() etc., and should instead
+ *       only be created by calling methods like StartTransaction(...) on USentrySubsystem.
  */
 UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
 class SENTRY_API USentryTransaction : public UObject, public TSentryImplWrapper<ISentryTransaction, USentryTransaction>

@@ -6,12 +6,17 @@
 
 - `Environment` and `Dist` get/set functions were removed from the `Scope` class and now these properties have to be set in plugin settings instead. This unifies their usage across all platforms supported by the Unreal SDK.
 - `ConfigureScope` function was removed from `SentrySubsystem` class following the [Hub & Scope refactoring guidelines](https://develop.sentry.dev/sdk/miscellaneous/hub_and_scope_refactoring/) which recommend deprecating this API.
-- Add API allowing to get/set event's `tag`, `context` and `extra` properties ([#940](https://github.com/getsentry/sentry-unreal/pull/940))
+- `Initialize` function was removed from `SamplingContext` class which is supposed to be created internally by the SDK.
 
 ### Features
 
 - Add native local scope for Windows/Linux ([#928](https://github.com/getsentry/sentry-unreal/pull/928))
 - Add option to delay app shutdown until Crashpad completes crash report upload ([#953](https://github.com/getsentry/sentry-unreal/pull/953))
+- Add API allowing to get/set event's `tag`, `context` and `extra` properties ([#940](https://github.com/getsentry/sentry-unreal/pull/940))
+
+### Fixes
+
+- Sampling context, span and transaction classes are no longer re-defined when packaging for Android ([#959](https://github.com/getsentry/sentry-unreal/pull/959))
 
 ### Dependencies
 
