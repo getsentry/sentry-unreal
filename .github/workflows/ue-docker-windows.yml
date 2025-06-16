@@ -75,7 +75,7 @@ jobs:
             cd ue4-docker-master
 
             # Patch install-prerequisites.ps1
-            $file = ".src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
+            $file = "src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
             (Get-Content $file) -replace 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64' | Set-Content $file
 
             # Install the patched ue4-docker package
