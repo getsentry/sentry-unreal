@@ -27,7 +27,7 @@ void FAndroidSentryEvent::SetupClassMethods()
 	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
 	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
 	SetFingerprintMethod = GetMethod("setFingerprints", "(Ljava/util/List;)V");
-	GetFingerprintMethod = GetMethod("getFingerprints()", "()Ljava/util/List;");
+	GetFingerprintMethod = GetMethod("getFingerprints", "()Ljava/util/List;");
 	IsCrashMethod = GetMethod("isCrashed", "()Z");
 }
 
