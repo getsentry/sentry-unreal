@@ -150,7 +150,7 @@ void FAppleSentryEvent::RemoveContext(const FString& key)
 void FAppleSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
 {
 	NSMutableDictionary* mutableExtra = [EventApple.extra mutableCopy] ?: [NSMutableDictionary dictionary];
-	mutableExtra[key.GetNSString()] = value.GetNSString();
+	mutableExtra[key.GetNSString()] = FAppleSentryConverters::VariantToNative(value);
 	EventApple.extra = mutableExtra;
 }
 
