@@ -19,9 +19,9 @@
 
 ### Dependencies
 
-- Bump Java SDK (Android) from v8.13.1 to v8.13.2 ([#932](https://github.com/getsentry/sentry-unreal/pull/932))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8132)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.13.1...8.13.2)
+- Bump Java SDK (Android) from v8.13.1 to v8.14.0 ([#932](https://github.com/getsentry/sentry-unreal/pull/932), [#965](https://github.com/getsentry/sentry-unreal/pull/965))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8140)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.13.1...8.14.0)
 - Bump CLI from v2.45.0 to v2.46.0 ([#931](https://github.com/getsentry/sentry-unreal/pull/931))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2460)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.45.0...2.46.0)
