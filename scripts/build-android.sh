@@ -33,6 +33,8 @@ if [[ ! -f "$configFile" ]]; then
 fi
 echo "Test 5"
 nativeNdkVersion=$(grep 'sentryNativeNdk' "$configFile" | sed -E 's/.*sentryNativeNdk\s*=\s*"[^"]+:([^"]+)".*/\1/')
+echo "Test 6 $configFile"
+echo "Test 6 $nativeNdkVersion"
 if [[ -z "$nativeNdkVersion" ]]; then
   echo "Error: Failed to extract Native SDK NDK version."
   exit 1
