@@ -68,6 +68,14 @@ jobs:
           sudo ./llvm.sh 16
           sudo apt-get -y install libc++-16-dev libc++abi-16-dev libstdc++-11-dev zlib1g-dev libcurl4-openssl-dev
 
+      - name: Install Windows Dependencies
+        if: ${{ (inputs.target == 'Win64-Crashpad' || inputs.target == 'Win64-Breakpad') && steps.cache.outputs.cache-hit != 'true' }}
+        shell: pwsh
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri 'https://aka.ms/vs/16/release/vs_buildtools.exe' -OutFile 'vs_buildtools.exe'
+          Start-Process -Wait -FilePath './vs_buildtools.exe' -ArgumentList '--quiet', '--wait', '--add', 'Microsoft.VisualStudio.Workload.VCTools', '--add', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '--add', 'Microsoft.VisualStudio.Component.Windows10SDK.19041'
+
       - uses: actions/setup-java@v4
         if: ${{ inputs.target == 'Android' }}
         with:

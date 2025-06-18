@@ -46,13 +46,13 @@ jobs:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: Win64-Crashpad
-      runsOn: windows-2019
+      runsOn: windows-2022
 
   windows-breakpad-sdk:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: Win64-Breakpad
-      runsOn: windows-2019
+      runsOn: windows-2022
 
   package-preparation:
     needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
