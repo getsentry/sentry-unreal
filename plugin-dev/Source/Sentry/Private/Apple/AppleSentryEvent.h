@@ -32,12 +32,12 @@ public:
 	virtual TMap<FString, FSentryVariant> GetContext(const FString& key) const override;
 	virtual bool TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const override;
 	virtual void RemoveContext(const FString& key) override;
-	virtual void SetExtraValue(const FString& key, const FString& value) override;
-	virtual FString GetExtraValue(const FString& key) const override;
-	virtual bool TryGetExtraValue(const FString& key, FString& value) const override;
+	virtual void SetExtra(const FString& key, const FSentryVariant& value) override;
+	virtual FSentryVariant GetExtra(const FString& key) const override;
+	virtual bool TryGetExtra(const FString& key, FSentryVariant& value) const override;
 	virtual void RemoveExtra(const FString& key) override;
-	virtual void SetExtras(const TMap<FString, FString>& extras) override;
-	virtual TMap<FString, FString> GetExtras() const override;
+	virtual void SetExtras(const TMap<FString, FSentryVariant>& extras) override;
+	virtual TMap<FString, FSentryVariant> GetExtras() const override;
 	virtual bool IsCrash() const override;
 	virtual bool IsAnr() const override;
 

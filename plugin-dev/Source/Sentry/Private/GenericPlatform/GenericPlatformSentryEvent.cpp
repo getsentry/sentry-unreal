@@ -212,32 +212,32 @@ void FGenericPlatformSentryEvent::RemoveContext(const FString& key)
 	sentry_value_remove_by_key(eventContexts, TCHAR_TO_ANSI(*key));
 }
 
-void FGenericPlatformSentryEvent::SetExtraValue(const FString& key, const FString& value)
+void FGenericPlatformSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
 {
 	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
 	if (sentry_value_is_null(eventExtra))
 	{
-		sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::StringMapToNative({ { key, value } }));
+		sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::VariantMapToNative({ { key, value } }));
 	}
 	else
 	{
-		sentry_value_set_by_key(eventExtra, TCHAR_TO_ANSI(*key), sentry_value_new_string(TCHAR_TO_ANSI(*value)));
+		sentry_value_set_by_key(eventExtra, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::VariantToNative(value));
 	}
 }
 
-FString FGenericPlatformSentryEvent::GetExtraValue(const FString& key) const
+FSentryVariant FGenericPlatformSentryEvent::GetExtra(const FString& key) const
 {
 	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
 	if (sentry_value_is_null(eventExtra))
 	{
-		return FString();
+		return FSentryVariant();
 	}
 
-	sentry_value_t tag = sentry_value_get_by_key(eventExtra, TCHAR_TO_ANSI(*key));
-	return FString(sentry_value_as_string(tag));
+	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_ANSI(*key));
+	return FGenericPlatformSentryConverters::VariantToUnreal(extra);
 }
 
-bool FGenericPlatformSentryEvent::TryGetExtraValue(const FString& key, FString& value) const
+bool FGenericPlatformSentryEvent::TryGetExtra(const FString& key, FSentryVariant& value) const
 {
 	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
 	if (sentry_value_is_null(eventExtra))
@@ -251,7 +251,7 @@ bool FGenericPlatformSentryEvent::TryGetExtraValue(const FString& key, FString& 
 		return false;
 	}
 
-	value = FString(sentry_value_as_string(extra));
+	value = FGenericPlatformSentryConverters::VariantToUnreal(extra);
 
 	return true;
 }
@@ -267,14 +267,26 @@ void FGenericPlatformSentryEvent::RemoveExtra(const FString& key)
 	sentry_value_remove_by_key(eventExtra, TCHAR_TO_ANSI(*key));
 }
 
-void FGenericPlatformSentryEvent::SetExtras(const TMap<FString, FString>& extras)
+void FGenericPlatformSentryEvent::SetExtras(const TMap<FString, FSentryVariant>& extras)
 {
-	sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::StringMapToNative(extras));
+	sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::VariantMapToNative(extras));
 }
 
-TMap<FString, FString> FGenericPlatformSentryEvent::GetExtras() const
+TMap<FString, FSentryVariant> FGenericPlatformSentryEvent::GetExtras() const
 {
-	return FGenericPlatformSentryConverters::StringMapToUnreal(sentry_value_get_by_key(Event, "extra"));
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	const FSentryVariant& extrasVariant = FGenericPlatformSentryConverters::VariantToUnreal(eventExtra);
+	if (extrasVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	return extrasVariant.GetValue<TMap<FString, FSentryVariant>>();
 }
 
 bool FGenericPlatformSentryEvent::IsCrash() const

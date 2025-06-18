@@ -147,28 +147,28 @@ void FAppleSentryEvent::RemoveContext(const FString& key)
 	EventApple.context = mutableContext;
 }
 
-void FAppleSentryEvent::SetExtraValue(const FString& key, const FString& value)
+void FAppleSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
 {
 	NSMutableDictionary* mutableExtra = [EventApple.extra mutableCopy] ?: [NSMutableDictionary dictionary];
 	mutableExtra[key.GetNSString()] = value.GetNSString();
 	EventApple.extra = mutableExtra;
 }
 
-FString FAppleSentryEvent::GetExtraValue(const FString& key) const
+FSentryVariant FAppleSentryEvent::GetExtra(const FString& key) const
 {
-	return FString(EventApple.extra[key.GetNSString()]);
+	return FAppleSentryConverters::VariantToUnreal(EventApple.extra[key.GetNSString()]);
 }
 
-bool FAppleSentryEvent::TryGetExtraValue(const FString& key, FString& value) const
+bool FAppleSentryEvent::TryGetExtra(const FString& key, FSentryVariant& value) const
 {
-	NSString* extra = [EventApple.extra objectForKey:key.GetNSString()];
+	id extra = [EventApple.extra objectForKey:key.GetNSString()];
 
 	if (!extra)
 	{
 		return false;
 	}
 
-	value = FString(extra);
+	value = FAppleSentryConverters::VariantToUnreal(extra);
 	return true;
 }
 
@@ -179,14 +179,14 @@ void FAppleSentryEvent::RemoveExtra(const FString& key)
 	EventApple.extra = mutableExtra;
 }
 
-void FAppleSentryEvent::SetExtras(const TMap<FString, FString>& extras)
+void FAppleSentryEvent::SetExtras(const TMap<FString, FSentryVariant>& extras)
 {
-	EventApple.extra = FAppleSentryConverters::StringMapToNative(extras);
+	EventApple.extra = FAppleSentryConverters::VariantMapToNative(extras);
 }
 
-TMap<FString, FString> FAppleSentryEvent::GetExtras() const
+TMap<FString, FSentryVariant> FAppleSentryEvent::GetExtras() const
 {
-	return FAppleSentryConverters::StringMapToUnreal(EventApple.extra);
+	return FAppleSentryConverters::VariantMapToUnreal(EventApple.extra);
 }
 
 bool FAppleSentryEvent::IsCrash() const

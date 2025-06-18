@@ -153,40 +153,41 @@ void SentryEventSpec::Define()
 		{
 			TestEqual("Extras are empty by default", SentryEvent->GetExtras().Num(), 0);
 
-			FString NonExistingExtra;
-			TestEqual("Can't get any extra while these are empty", SentryEvent->GetExtraValue(TEXT("ExtraKey0")), TEXT(""));
+			FSentryVariant NonExistingExtra;
+			TestFalse("Can't get any extra while these are empty (Try)", SentryEvent->TryGetExtra(TEXT("ExtraKey0"), NonExistingExtra));
+			TestEqual("Can't get any extra while these are empty", SentryEvent->GetExtra(TEXT("ExtraKey0")).GetType(), ESentryVariantType::Empty);
 
-			SentryEvent->SetExtraValue(TEXT("ExtraKey1"), TEXT("ExtraVal1"));
-			SentryEvent->SetExtraValue(TEXT("ExtraKey2"), TEXT("ExtraVal2"));
+			SentryEvent->SetExtra(TEXT("ExtraKey1"), TEXT("ExtraVal1"));
+			SentryEvent->SetExtra(TEXT("ExtraKey2"), TEXT("ExtraVal2"));
 
 			TestEqual("There are two extras after adding them as individual items", SentryEvent->GetExtras().Num(), 2);
 
-			TestEqual("First extra retains its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey1")), TEXT("ExtraVal1"));
-			TestEqual("Second extra retains its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey2")), TEXT("ExtraVal2"));
+			TestEqual("First extra retains its original value", SentryEvent->GetExtra(TEXT("ExtraKey1")).GetValue<FString>(), TEXT("ExtraVal1"));
+			TestEqual("Second extra retains its original value", SentryEvent->GetExtra(TEXT("ExtraKey2")).GetValue<FString>(), TEXT("ExtraVal2"));
 
-			TestEqual("Can't get non-existent extra", SentryEvent->GetExtraValue(TEXT("ExtraKey3")), TEXT(""));
+			TestEqual("Can't get non-existent extra", SentryEvent->GetExtra(TEXT("ExtraKey3")).GetType(), ESentryVariantType::Empty);
 
 			SentryEvent->RemoveExtra(TEXT("ExtraKey1"));
-			TestFalse("Can't get first extra after it was removed (Try)", SentryEvent->TryGetExtraValue(TEXT("ExtraKey1"), NonExistingExtra));
-			TestEqual("Can't get first extra after it was removed", SentryEvent->GetExtraValue(TEXT("ExtraKey1")), TEXT(""));
+			TestFalse("Can't get first extra after it was removed (Try)", SentryEvent->TryGetExtra(TEXT("ExtraKey1"), NonExistingExtra));
+			TestEqual("Can't get first extra after it was removed", SentryEvent->GetExtra(TEXT("ExtraKey1")).GetType(), ESentryVariantType::Empty);
 			TestEqual("One extra left", SentryEvent->GetExtras().Num(), 1);
 
 			SentryEvent->RemoveExtra(TEXT("ExtraKey2"));
-			TestFalse("Can't get second extra after it was removed (Try)", SentryEvent->TryGetExtraValue(TEXT("TExtraKey2"), NonExistingExtra));
-			TestEqual("Can't get second extra after it was removed", SentryEvent->GetExtraValue(TEXT("TExtraKey2")), TEXT(""));
+			TestFalse("Can't get second extra after it was removed (Try)", SentryEvent->TryGetExtra(TEXT("TExtraKey2"), NonExistingExtra));
+			TestEqual("Can't get second extra after it was removed", SentryEvent->GetExtra(TEXT("TExtraKey2")).GetType(), ESentryVariantType::Empty);
 			TestEqual("No extras left", SentryEvent->GetExtras().Num(), 0);
 
-			TMap<FString, FString> TestExtra;
+			TMap<FString, FSentryVariant> TestExtra;
 			TestExtra.Add(TEXT("ExtraKey3"), TEXT("ExtraVal3"));
 			TestExtra.Add(TEXT("ExtraKey4"), TEXT("ExtraVal4"));
 
 			SentryEvent->SetExtras(TestExtra);
 			TestEqual("There are two extras after adding them as map", SentryEvent->GetExtras().Num(), 2);
 
-			TestEqual("Third extra retains its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey3")), TEXT("ExtraVal3"));
-			TestEqual("Fourth extra retains its original value", SentryEvent->GetExtraValue(TEXT("ExtraKey4")), TEXT("ExtraVal4"));
+			TestEqual("Third extra retains its original value", SentryEvent->GetExtra(TEXT("ExtraKey3")).GetValue<FString>(), TEXT("ExtraVal3"));
+			TestEqual("Fourth extra retains its original value", SentryEvent->GetExtra(TEXT("ExtraKey4")).GetValue<FString>(), TEXT("ExtraVal4"));
 
-			SentryEvent->SetExtras(TMap<FString, FString>());
+			SentryEvent->SetExtras(TMap<FString, FSentryVariant>());
 			TestEqual("There are no extras after setting an empty map", SentryEvent->GetExtras().Num(), 0);
 		});
 	});

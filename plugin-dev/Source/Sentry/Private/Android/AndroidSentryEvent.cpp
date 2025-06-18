@@ -33,8 +33,8 @@ void FAndroidSentryEvent::SetupClassMethods()
 	RemoveTagMethod = GetMethod("removeTag", "(Ljava/lang/String;)V");
 	SetTagsMethod = GetMethod("setTags", "(Ljava/util/Map;)V");
 	GetTagsMethod = GetMethod("getTags", "()Ljava/util/Map;");
-	SetExtraValueMethod = GetMethod("setExtra", "(Ljava/lang/String;Ljava/lang/Object;)V");
-	GetExtraValueMethod = GetMethod("getExtra", "(Ljava/lang/String;)Ljava/lang/Object;");
+	SetExtraMethod = GetMethod("setExtra", "(Ljava/lang/String;Ljava/lang/Object;)V");
+	GetExtraMethod = GetMethod("getExtra", "(Ljava/lang/String;)Ljava/lang/Object;");
 	RemoveExtraMethod = GetMethod("removeExtra", "(Ljava/lang/String;)V");
 	SetExtrasMethod = GetMethod("setExtras", "(Ljava/util/Map;)V");
 	GetExtrasMethod = GetMethod("getExtras", "()Ljava/util/Map;");
@@ -163,29 +163,32 @@ void FAndroidSentryEvent::RemoveContext(const FString& key)
 		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
 }
 
-void FAndroidSentryEvent::SetExtraValue(const FString& key, const FString& value)
+void FAndroidSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
 {
-	CallMethod<void>(SetExtraValueMethod, *GetJString(key), *GetJString(value));
+	CallMethod<void>(SetExtraMethod, *GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
 }
 
-FString FAndroidSentryEvent::GetExtraValue(const FString& key) const
+FSentryVariant FAndroidSentryEvent::GetExtra(const FString& key) const
 {
-	return CallMethod<FString>(GetExtraValueMethod, *GetJString(key));
+	auto extra = CallObjectMethod<jobject>(GetExtraMethod, *GetJString(key));
+	return FAndroidSentryConverters::VariantToUnreal(*extra);
 }
 
-bool FAndroidSentryEvent::TryGetExtraValue(const FString& key, FString& value) const
+bool FAndroidSentryEvent::TryGetExtra(const FString& key, FSentryVariant& value) const
 {
-	auto extra = CallObjectMethod<jobject>(GetExtraValueMethod, *GetJString(key));
-
+	auto extra = CallObjectMethod<jobject>(GetExtraMethod, *GetJString(key));
 	if (!extra)
 	{
 		return false;
 	}
 
-	FSentryJavaObjectWrapper tagString(SentryJavaClasses::String, *extra);
-	FSentryJavaMethod ToStringMethod = tagString.GetMethod("toString", "()Ljava/lang/String;");
+	const FSentryVariant& extraVariant = FAndroidSentryConverters::VariantToUnreal(*extra);
+	if (extraVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
 
-	value = tagString.CallMethod<FString>(ToStringMethod);
+	value = extraVariant;
 
 	return true;
 }
@@ -195,15 +198,15 @@ void FAndroidSentryEvent::RemoveExtra(const FString& key)
 	CallMethod<void>(RemoveExtraMethod, *GetJString(key));
 }
 
-void FAndroidSentryEvent::SetExtras(const TMap<FString, FString>& extras)
+void FAndroidSentryEvent::SetExtras(const TMap<FString, FSentryVariant>& extras)
 {
-	CallMethod<void>(SetExtrasMethod, FAndroidSentryConverters::StringMapToNative(extras)->GetJObject());
+	CallMethod<void>(SetExtrasMethod, FAndroidSentryConverters::VariantMapToNative(extras)->GetJObject());
 }
 
-TMap<FString, FString> FAndroidSentryEvent::GetExtras() const
+TMap<FString, FSentryVariant> FAndroidSentryEvent::GetExtras() const
 {
 	auto extras = CallObjectMethod<jobject>(GetExtrasMethod);
-	return FAndroidSentryConverters::StringMapToUnreal(*extras);
+	return FAndroidSentryConverters::VariantMapToUnreal(*extras);
 }
 
 bool FAndroidSentryEvent::IsCrash() const

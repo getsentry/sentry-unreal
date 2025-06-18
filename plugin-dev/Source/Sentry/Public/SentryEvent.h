@@ -94,15 +94,15 @@ public:
 
 	/** Sets an extra of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetExtraValue(const FString& Key, const FString& Value);
+	void SetExtra(const FString& Key, const FSentryVariant& Value);
 
 	/** Gets an extra of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetExtraValue(const FString& Key) const;
+	FSentryVariant GetExtra(const FString& Key) const;
 
 	/** Tries to get an extra of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	bool TryGetExtraValue(const FString& Key, FString& Value) const;
+	bool TryGetExtra(const FString& Key, FSentryVariant& Value) const;
 
 	/** Removes the extra of the event with the specified key. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -110,11 +110,11 @@ public:
 
 	/** Sets extras of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetExtras(const TMap<FString, FString>& Extras);
+	void SetExtras(const TMap<FString, FSentryVariant>& Extras);
 
 	/** Gets extras of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	TMap<FString, FString> GetExtras() const;
+	TMap<FString, FSentryVariant> GetExtras() const;
 
 	/** Gets flag indicating whether the event is a crash. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")

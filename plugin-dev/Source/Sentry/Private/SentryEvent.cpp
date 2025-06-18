@@ -150,28 +150,28 @@ void USentryEvent::RemoveContext(const FString& Key)
 	NativeImpl->RemoveContext(Key);
 }
 
-void USentryEvent::SetExtraValue(const FString& Key, const FString& Value)
+void USentryEvent::SetExtra(const FString& Key, const FSentryVariant& Value)
 {
 	if (!NativeImpl)
 		return;
 
-	NativeImpl->SetExtraValue(Key, Value);
+	NativeImpl->SetExtra(Key, Value);
 }
 
-FString USentryEvent::GetExtraValue(const FString& Key) const
+FSentryVariant USentryEvent::GetExtra(const FString& Key) const
 {
 	if (!NativeImpl)
 		return FString();
 
-	return NativeImpl->GetExtraValue(Key);
+	return NativeImpl->GetExtra(Key);
 }
 
-bool USentryEvent::TryGetExtraValue(const FString& Key, FString& Value) const
+bool USentryEvent::TryGetExtra(const FString& Key, FSentryVariant& Value) const
 {
 	if (!NativeImpl)
 		return false;
 
-	return NativeImpl->TryGetExtraValue(Key, Value);
+	return NativeImpl->TryGetExtra(Key, Value);
 }
 
 void USentryEvent::RemoveExtra(const FString& Key)
@@ -182,7 +182,7 @@ void USentryEvent::RemoveExtra(const FString& Key)
 	NativeImpl->RemoveExtra(Key);
 }
 
-void USentryEvent::SetExtras(const TMap<FString, FString>& Extras)
+void USentryEvent::SetExtras(const TMap<FString, FSentryVariant>& Extras)
 {
 	if (!NativeImpl)
 		return;
@@ -190,10 +190,10 @@ void USentryEvent::SetExtras(const TMap<FString, FString>& Extras)
 	NativeImpl->SetExtras(Extras);
 }
 
-TMap<FString, FString> USentryEvent::GetExtras() const
+TMap<FString, FSentryVariant> USentryEvent::GetExtras() const
 {
 	if (!NativeImpl)
-		return TMap<FString, FString>();
+		return TMap<FString, FSentryVariant>();
 
 	return NativeImpl->GetExtras();
 }
