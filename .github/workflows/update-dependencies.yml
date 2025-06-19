@@ -1,8 +1,6 @@
 name: update-dependencies
 
 on:
-  # Allow manual triggering.
-  workflow_dispatch:
   # Run every day.
   schedule:
     - cron: '0 3 * * *'
