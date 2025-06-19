@@ -292,6 +292,7 @@ FSentryVariant FAndroidSentryConverters::VariantToUnreal(jobject variant)
 		return FSentryVariant(FAndroidSentryConverters::VariantMapToUnreal(variant));
 	}
 
+	UE_LOG(LogSentrySdk, Warning, TEXT("Couldn't convert Java object to variant. Empty one will be returned."));
 	return FSentryVariant();
 }
 
