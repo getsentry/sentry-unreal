@@ -20,18 +20,28 @@ void SentryVariantSpec::Define()
 			FSentryVariant IntegerVariant(1234);
 			TestTrue("Is integer", IntegerVariant.GetType() == ESentryVariantType::Integer);
 			TestEqual("Integer value", IntegerVariant.GetValue<int32>(), 1234);
+			int32 IntegerValue = IntegerVariant;
+			TestEqual("Integer value", IntegerValue, 1234);
 
 			FSentryVariant FloatVariant(222.333f);
 			TestTrue("Is float", FloatVariant.GetType() == ESentryVariantType::Float);
 			TestEqual("Float value", FloatVariant.GetValue<float>(), 222.333f);
+			TestEqual("Float value", FloatVariant, 222.333f);
+			float FloatValue = FloatVariant;
+			TestEqual("Float value", FloatValue, 222.333f);
 
 			FSentryVariant BoolVariant(true);
 			TestTrue("Is bool", BoolVariant.GetType() == ESentryVariantType::Bool);
 			TestEqual("Bool value", BoolVariant.GetValue<bool>(), true);
+			TestEqual("Bool value", BoolVariant, true);
+			bool BoolValue = BoolVariant;
+			TestEqual("Bool value", BoolValue, true);
 
 			FSentryVariant StringVariant(TEXT("Hello variant"));
 			TestTrue("Is string", StringVariant.GetType() == ESentryVariantType::String);
 			TestEqual("String value", StringVariant.GetValue<FString>(), TEXT("Hello variant"));
+			FString StringValue = StringVariant;
+			TestEqual("String value", StringValue, TEXT("Hello variant"));
 
 			const TArray<FSentryVariant>& TestArray = {
 				1234,
@@ -43,6 +53,8 @@ void SentryVariantSpec::Define()
 			FSentryVariant ArrayVariant(TestArray);
 			TestTrue("Is array", ArrayVariant.GetType() == ESentryVariantType::Array);
 			TestEqual("Array values", ArrayVariant.GetValue<TArray<FSentryVariant>>(), TestArray);
+			TArray<FSentryVariant> ArrayValue = ArrayVariant;
+			TestEqual("Array values", ArrayValue, TestArray);
 
 			const TMap<FString, FSentryVariant>& TestMap = {
 				{ TEXT("Key1"), 1234 },
@@ -57,6 +69,11 @@ void SentryVariantSpec::Define()
 			TestEqual("Map value 2", MapVariant.GetValue<TMap<FString, FSentryVariant>>()[TEXT("Key2")], TestMap[TEXT("Key2")]);
 			TestEqual("Map value 3", MapVariant.GetValue<TMap<FString, FSentryVariant>>()[TEXT("Key3")], TestMap[TEXT("Key3")]);
 			TestEqual("Map value 4", MapVariant.GetValue<TMap<FString, FSentryVariant>>()[TEXT("Key4")], TestMap[TEXT("Key4")]);
+			TMap<FString, FSentryVariant> MapValue = MapVariant;
+			TestEqual("Map value 1", MapValue[TEXT("Key1")], TestMap[TEXT("Key1")]);
+			TestEqual("Map value 2", MapValue[TEXT("Key2")], TestMap[TEXT("Key2")]);
+			TestEqual("Map value 3", MapValue[TEXT("Key3")], TestMap[TEXT("Key3")]);
+			TestEqual("Map value 4", MapValue[TEXT("Key4")], TestMap[TEXT("Key4")]);
 		});
 
 		It("should support copy operations", [this]()

@@ -57,6 +57,36 @@ struct SENTRY_API FSentryVariant
 		return Value.GetValue<T>();
 	}
 
+	operator int32() const
+	{
+		return GetValue<int32>();
+	}
+
+	operator float() const
+	{
+		return GetValue<float>();
+	}
+
+	operator bool() const
+	{
+		return GetValue<bool>();
+	}
+
+	operator FString() const
+	{
+		return GetValue<FString>();
+	}
+
+	operator TArray<FSentryVariant>() const
+	{
+		return GetValue<TArray<FSentryVariant>>();
+	}
+
+	operator TMap<FString, FSentryVariant>() const
+	{
+		return GetValue<TMap<FString, FSentryVariant>>();
+	}
+
 	ESentryVariantType GetType() const
 	{
 		return Type;
