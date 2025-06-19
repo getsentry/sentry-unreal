@@ -26,14 +26,12 @@ void SentryVariantSpec::Define()
 			FSentryVariant FloatVariant(222.333f);
 			TestTrue("Is float", FloatVariant.GetType() == ESentryVariantType::Float);
 			TestEqual("Float value", FloatVariant.GetValue<float>(), 222.333f);
-			TestEqual("Float value", FloatVariant, 222.333f);
 			float FloatValue = FloatVariant;
 			TestEqual("Float value", FloatValue, 222.333f);
 
 			FSentryVariant BoolVariant(true);
 			TestTrue("Is bool", BoolVariant.GetType() == ESentryVariantType::Bool);
 			TestEqual("Bool value", BoolVariant.GetValue<bool>(), true);
-			TestEqual("Bool value", BoolVariant, true);
 			bool BoolValue = BoolVariant;
 			TestEqual("Bool value", BoolValue, true);
 
