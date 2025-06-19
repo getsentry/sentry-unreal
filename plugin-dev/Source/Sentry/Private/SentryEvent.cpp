@@ -2,7 +2,6 @@
 
 #include "SentryEvent.h"
 
-#include "Algo/Find.h"
 #include "HAL/PlatformSentryEvent.h"
 #include "Interface/SentryIdInterface.h"
 
@@ -69,6 +68,134 @@ TArray<FString> USentryEvent::GetFingerprint() const
 		return TArray<FString>();
 
 	return NativeImpl->GetFingerprint();
+}
+
+void USentryEvent::SetTag(const FString& Key, const FString& Value)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetTag(Key, Value);
+}
+
+FString USentryEvent::GetTag(const FString& Key) const
+{
+	if (!NativeImpl)
+		return FString();
+
+	return NativeImpl->GetTag(Key);
+}
+
+bool USentryEvent::TryGetTag(const FString& Key, FString& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetTag(Key, Value);
+}
+
+void USentryEvent::RemoveTag(const FString& Key)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->RemoveTag(Key);
+}
+
+void USentryEvent::SetTags(const TMap<FString, FString>& Tags)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetTags(Tags);
+}
+
+TMap<FString, FString> USentryEvent::GetTags() const
+{
+	if (!NativeImpl)
+		return TMap<FString, FString>();
+
+	return NativeImpl->GetTags();
+}
+
+void USentryEvent::SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetContext(Key, Values);
+}
+
+TMap<FString, FSentryVariant> USentryEvent::GetContext(const FString& Key) const
+{
+	if (!NativeImpl)
+		return TMap<FString, FSentryVariant>();
+
+	return NativeImpl->GetContext(Key);
+}
+
+bool USentryEvent::TryGetContext(const FString& Key, TMap<FString, FSentryVariant>& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetContext(Key, Value);
+}
+
+void USentryEvent::RemoveContext(const FString& Key)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->RemoveContext(Key);
+}
+
+void USentryEvent::SetExtra(const FString& Key, const FSentryVariant& Value)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetExtra(Key, Value);
+}
+
+FSentryVariant USentryEvent::GetExtra(const FString& Key) const
+{
+	if (!NativeImpl)
+		return FString();
+
+	return NativeImpl->GetExtra(Key);
+}
+
+bool USentryEvent::TryGetExtra(const FString& Key, FSentryVariant& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetExtra(Key, Value);
+}
+
+void USentryEvent::RemoveExtra(const FString& Key)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->RemoveExtra(Key);
+}
+
+void USentryEvent::SetExtras(const TMap<FString, FSentryVariant>& Extras)
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetExtras(Extras);
+}
+
+TMap<FString, FSentryVariant> USentryEvent::GetExtras() const
+{
+	if (!NativeImpl)
+		return TMap<FString, FSentryVariant>();
+
+	return NativeImpl->GetExtras();
 }
 
 bool USentryEvent::IsCrash() const

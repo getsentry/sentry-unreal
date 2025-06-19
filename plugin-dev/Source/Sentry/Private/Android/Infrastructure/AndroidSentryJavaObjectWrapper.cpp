@@ -100,6 +100,25 @@ FScopedJavaObject<jstring> FSentryJavaObjectWrapper::GetJString(const FString& S
 	return FJavaHelper::ToJavaString(JEnv, String);
 }
 
+bool FSentryJavaObjectWrapper::IsInstanceOf(FSentryJavaClass ClassData, jobject JavaClassInstance)
+{
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
+
+	ANSICHAR AnsiClassName[NAME_SIZE];
+	ClassData.Name.GetPlainANSIString(AnsiClassName);
+
+	jclass ClassGlobalRef;
+
+	if (ClassData.Type == ESentryJavaClassType::System)
+		ClassGlobalRef = FJavaWrapper::FindClassGlobalRef(JEnv, AnsiClassName, false);
+	if (ClassData.Type == ESentryJavaClassType::External)
+		ClassGlobalRef = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
+
+	check(ClassGlobalRef);
+
+	return JEnv->IsInstanceOf(JavaClassInstance, ClassGlobalRef);
+}
+
 void FSentryJavaObjectWrapper::VerifyMethodCall(FSentryJavaMethod Method) const
 {
 	if (Method.IsStatic && Object)
@@ -192,6 +211,21 @@ int FSentryJavaObjectWrapper::CallMethodInternal<int>(FSentryJavaMethod Method, 
 		!Method.IsStatic
 			? JEnv->CallIntMethodV(Object, Method.Method, Params)
 			: JEnv->CallStaticIntMethodV(Class, Method.Method, Params);
+
+	VerifyException();
+	return RetVal;
+}
+
+template<>
+float FSentryJavaObjectWrapper::CallMethodInternal<float>(FSentryJavaMethod Method, va_list Params) const
+{
+	VerifyMethodCall(Method);
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
+
+	float RetVal =
+		!Method.IsStatic
+			? JEnv->CallFloatMethodV(Object, Method.Method, Params)
+			: JEnv->CallStaticFloatMethodV(Class, Method.Method, Params);
 
 	VerifyException();
 	return RetVal;

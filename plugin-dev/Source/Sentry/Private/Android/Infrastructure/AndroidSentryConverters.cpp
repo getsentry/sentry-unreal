@@ -75,6 +75,61 @@ TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::StringMapToNative
 	return NativeHashMap;
 }
 
+TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::VariantToNative(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::Integer, "(I)V", variant.GetValue<int32>()));
+	case ESentryVariantType::Float:
+		return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::Float, "(F)V", variant.GetValue<float>()));
+	case ESentryVariantType::Bool:
+		return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::Boolean, "(Z)V", variant.GetValue<bool>()));
+	case ESentryVariantType::String:
+		return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::String, "(Ljava/lang/String;)V", *FSentryJavaObjectWrapper::GetJString(variant.GetValue<FString>())));
+	case ESentryVariantType::Array:
+		return VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
+	case ESentryVariantType::Map:
+		return VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+	default:
+		return nullptr;
+	}
+}
+
+TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::VariantArrayToNative(const TArray<FSentryVariant>& variantArray)
+{
+	TSharedPtr<FSentryJavaObjectWrapper> NativeArrayList = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::ArrayList, "()V"));
+	FSentryJavaMethod AddMethod = NativeArrayList->GetMethod("add", "(Ljava/lang/Object;)Z");
+
+	for (const FSentryVariant& Elem : variantArray)
+	{
+		TSharedPtr<FSentryJavaObjectWrapper> NativeVariant = VariantToNative(Elem);
+		if (NativeVariant.IsValid())
+		{
+			NativeArrayList->CallMethod<bool>(AddMethod, NativeVariant->GetJObject());
+		}
+	}
+
+	return NativeArrayList;
+}
+
+TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::VariantMapToNative(const TMap<FString, FSentryVariant>& variantMap)
+{
+	TSharedPtr<FSentryJavaObjectWrapper> NativeHashMap = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::HashMap, "()V"));
+	FSentryJavaMethod PutMethod = NativeHashMap->GetMethod("put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+	for (const auto& dataPair : variantMap)
+	{
+		TSharedPtr<FSentryJavaObjectWrapper> NativeVariant = VariantToNative(dataPair.Value);
+		if (NativeVariant.IsValid())
+		{
+			NativeHashMap->CallObjectMethod<jobject>(PutMethod, *FSentryJavaObjectWrapper::GetJString(dataPair.Key), NativeVariant->GetJObject());
+		}
+	}
+
+	return NativeHashMap;
+}
+
 jbyteArray FAndroidSentryConverters::ByteArrayToNative(const TArray<uint8>& byteArray)
 {
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
@@ -197,6 +252,96 @@ TArray<uint8> FAndroidSentryConverters::ByteArrayToUnreal(jbyteArray byteArray)
 	for (int i = 0; i < length; i++)
 	{
 		result.Add(javaByte[i]);
+	}
+
+	return result;
+}
+
+FSentryVariant FAndroidSentryConverters::VariantToUnreal(jobject variant)
+{
+	if (FSentryJavaObjectWrapper::IsInstanceOf(SentryJavaClasses::Integer, variant))
+	{
+		FSentryJavaObjectWrapper NativeIntVariant(SentryJavaClasses::Integer, variant);
+		FSentryJavaMethod IntValueMethod = NativeIntVariant.GetMethod("intValue", "()I");
+		return FSentryVariant(NativeIntVariant.CallMethod<int>(IntValueMethod));
+	}
+	if (FSentryJavaObjectWrapper::IsInstanceOf(SentryJavaClasses::Float, variant))
+	{
+		FSentryJavaObjectWrapper NativeFloatVariant(SentryJavaClasses::Float, variant);
+		FSentryJavaMethod FloatValueMethod = NativeFloatVariant.GetMethod("floatValue", "()F");
+		return FSentryVariant(NativeFloatVariant.CallMethod<float>(FloatValueMethod));
+	}
+	if (FSentryJavaObjectWrapper::IsInstanceOf(SentryJavaClasses::Boolean, variant))
+	{
+		FSentryJavaObjectWrapper NativeBoolVariant(SentryJavaClasses::Boolean, variant);
+		FSentryJavaMethod BoolValueMethod = NativeBoolVariant.GetMethod("booleanValue", "()Z");
+		return FSentryVariant(NativeBoolVariant.CallMethod<bool>(BoolValueMethod));
+	}
+	if (FSentryJavaObjectWrapper::IsInstanceOf(SentryJavaClasses::String, variant))
+	{
+		FSentryJavaObjectWrapper NativeStringVariant(SentryJavaClasses::String, variant);
+		FSentryJavaMethod ToStringMethod = NativeStringVariant.GetMethod("toString", "()Ljava/lang/String;");
+		return FSentryVariant(NativeStringVariant.CallMethod<FString>(ToStringMethod));
+	}
+	if (FSentryJavaObjectWrapper::IsInstanceOf(SentryJavaClasses::List, variant))
+	{
+		return FSentryVariant(FAndroidSentryConverters::VariantArrayToUnreal(variant));
+	}
+	if (FSentryJavaObjectWrapper::IsInstanceOf(SentryJavaClasses::Map, variant))
+	{
+		return FSentryVariant(FAndroidSentryConverters::VariantMapToUnreal(variant));
+	}
+
+	UE_LOG(LogSentrySdk, Warning, TEXT("Couldn't convert Java object to variant. Empty one will be returned."));
+	return FSentryVariant();
+}
+
+TArray<FSentryVariant> FAndroidSentryConverters::VariantArrayToUnreal(jobject variantArray)
+{
+	TArray<FSentryVariant> result;
+
+	FSentryJavaObjectWrapper NativeList(SentryJavaClasses::List, variantArray);
+	FSentryJavaMethod ToArrayMethod = NativeList.GetMethod("toArray", "()[Ljava/lang/Object;");
+	FSentryJavaMethod SizeMethod = NativeList.GetMethod("size", "()I");
+
+	auto objectArray = NativeList.CallObjectMethod<jobjectArray>(ToArrayMethod);
+
+	int length = NativeList.CallMethod<int>(SizeMethod);
+
+	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
+
+	for (int i = 0; i < length; i++)
+	{
+		result.Add(FSentryVariant(VariantToUnreal(Env->GetObjectArrayElement(*objectArray, i))));
+	}
+
+	return result;
+}
+
+TMap<FString, FSentryVariant> FAndroidSentryConverters::VariantMapToUnreal(jobject variantMap)
+{
+	TMap<FString, FSentryVariant> result;
+
+	FSentryJavaObjectWrapper NativeMap(SentryJavaClasses::Map, variantMap);
+	FSentryJavaMethod EntrySetMethod = NativeMap.GetMethod("entrySet", "()Ljava/util/Set;");
+
+	FSentryJavaObjectWrapper NativeSet(SentryJavaClasses::Set, *NativeMap.CallObjectMethod<jobject>(EntrySetMethod));
+	FSentryJavaMethod IteratorMethod = NativeSet.GetMethod("iterator", "()Ljava/util/Iterator;");
+
+	FSentryJavaObjectWrapper NativeIterator(SentryJavaClasses::Iterator, *NativeSet.CallObjectMethod<jobject>(IteratorMethod));
+	FSentryJavaMethod HasNextMethod = NativeIterator.GetMethod("hasNext", "()Z");
+	FSentryJavaMethod NextMethod = NativeIterator.GetMethod("next", "()Ljava/lang/Object;");
+
+	while (NativeIterator.CallMethod<bool>(HasNextMethod))
+	{
+		FSentryJavaObjectWrapper NativeMapEntry(SentryJavaClasses::MapEntry, *NativeIterator.CallObjectMethod<jobject>(NextMethod));
+		FSentryJavaMethod GetKeyMethod = NativeMapEntry.GetMethod("getKey", "()Ljava/lang/Object;");
+		FSentryJavaMethod GetValueMethod = NativeMapEntry.GetMethod("getValue", "()Ljava/lang/Object;");
+
+		FString Key = NativeMapEntry.CallMethod<FString>(GetKeyMethod);
+		FSentryVariant Value = VariantToUnreal(*NativeMapEntry.CallObjectMethod<jobject>(GetValueMethod));
+
+		result.Add(Key, Value);
 	}
 
 	return result;

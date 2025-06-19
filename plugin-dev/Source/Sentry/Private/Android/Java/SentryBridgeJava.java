@@ -205,4 +205,16 @@ public class SentryBridgeJava {
 			return false;
 		}
 	}
+
+	public static void setContext(final SentryEvent event, final String key, final Object values) {
+		event.getContexts().put(key, values);
+	}
+
+	public static Object getContext(final SentryEvent event, final String key) {
+		return event.getContexts().get(key);
+	}
+
+	public static void removeContext(final SentryEvent event, final String key) {
+		event.getContexts().remove(key);
+	}
 }

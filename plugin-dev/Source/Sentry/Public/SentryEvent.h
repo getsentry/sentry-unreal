@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+#include "SentryVariant.h"
 
 #include "SentryEvent.generated.h"
 
@@ -50,6 +51,70 @@ public:
 	/** Gets fingerprint of the event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	TArray<FString> GetFingerprint() const;
+
+	/** Sets a tag of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetTag(const FString& Key, const FString& Value);
+
+	/** Gets a tag of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetTag(const FString& Key) const;
+
+	/** Tries to get a tag of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetTag(const FString& Key, FString& Value) const;
+
+	/** Removes a tag of the event with the specified key. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveTag(const FString& Key);
+
+	/** Sets tags of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetTags(const TMap<FString, FString>& Tags);
+
+	/** Gets tags of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	TMap<FString, FString> GetTags() const;
+
+	/** Sets context values of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values);
+
+	/** Gets context of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	TMap<FString, FSentryVariant> GetContext(const FString& Key) const;
+
+	/** Tries to get context of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetContext(const FString& Key, TMap<FString, FSentryVariant>& Value) const;
+
+	/** Sets context values of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveContext(const FString& Key);
+
+	/** Sets an extra of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetExtra(const FString& Key, const FSentryVariant& Value);
+
+	/** Gets an extra of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FSentryVariant GetExtra(const FString& Key) const;
+
+	/** Tries to get an extra of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetExtra(const FString& Key, FSentryVariant& Value) const;
+
+	/** Removes the extra of the event with the specified key. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveExtra(const FString& Key);
+
+	/** Sets extras of the event. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetExtras(const TMap<FString, FSentryVariant>& Extras);
+
+	/** Gets extras of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	TMap<FString, FSentryVariant> GetExtras() const;
 
 	/** Gets flag indicating whether the event is a crash. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "SentryDataTypes.h"
+#include "SentryVariant.h"
 
 #include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
 #include "GenericPlatform/GenericPlatformStackWalk.h"
@@ -16,12 +17,16 @@ public:
 	static sentry_level_e SentryLevelToNative(ESentryLevel level);
 	static sentry_value_t StringMapToNative(const TMap<FString, FString>& map);
 	static sentry_value_t StringArrayToNative(const TArray<FString>& array);
+	static sentry_value_t VariantToNative(const FSentryVariant& variant);
+	static sentry_value_t VariantArrayToNative(const TArray<FSentryVariant>& array);
+	static sentry_value_t VariantMapToNative(const TMap<FString, FSentryVariant>& map);
 	static sentry_value_t AddressToNative(uint64 address);
 	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 
 	/** Conversions from native types */
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);
 	static ESentryLevel SentryLevelToUnreal(sentry_level_t level);
+	static FSentryVariant VariantToUnreal(sentry_value_t variant);
 	static TMap<FString, FString> StringMapToUnreal(sentry_value_t map);
 	static TArray<FString> StringArrayToUnreal(sentry_value_t array);
 
