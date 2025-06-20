@@ -2,8 +2,9 @@
 
 ### Breaking Changes
 
-- In `SentryScope` class the "Value" suffix has been removed from the get/set functions for tags and extras.
-- The get/set functions for tags, contexts, and extras in `SentryScope` now accept a variant type instead of string for the value.
+- The "Value" suffix has been removed from the get/set function names for tags and extras in `SentryScope`.
+- The get/set functions for contexts and extras in `SentryScope` now accept a variant type instead of string for the value.
+- The get/set functions for arbitrary data in `SentryBreadcrumb` now accept a variant type instead of string for the value.
 
 ## 1.0.0-beta.3
 

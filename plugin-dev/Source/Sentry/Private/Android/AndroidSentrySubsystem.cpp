@@ -109,7 +109,7 @@ void FAndroidSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadc
 		breadcrumbAndroid->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
 {
 	TSharedPtr<FAndroidSentryBreadcrumb> breadcrumbAndroid = MakeShareable(new FAndroidSentryBreadcrumb());
 	breadcrumbAndroid->SetMessage(Message);

@@ -197,50 +197,56 @@ FSentryVariant FGenericPlatformSentryConverters::VariantToUnreal(sentry_value_t 
 	case SENTRY_VALUE_TYPE_STRING:
 		return FSentryVariant(FString(sentry_value_as_string(variant)));
 	case SENTRY_VALUE_TYPE_LIST:
-	{
-		TArray<FSentryVariant> unrealArray;
-
-		int32 len = sentry_value_get_length(variant);
-		for (int32 i = 0; i < len; ++i)
-		{
-			unrealArray.Add(VariantToUnreal(sentry_value_get_by_index(variant, i)));
-		}
-
-		return FSentryVariant(unrealArray);
-	}
+		return VariantArrayToUnreal(variant);
 	case SENTRY_VALUE_TYPE_OBJECT:
-	{
-		TMap<FString, FSentryVariant> unrealMap;
-
-		FString mapJsonString = FString(sentry_value_to_json(variant));
-		if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
-		{
-			return unrealMap;
-		}
-
-		TSharedPtr<FJsonObject> jsonObject;
-		TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
-		bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonObject);
-		if (!bDeserializeSuccess)
-		{
-			UE_LOG(LogSentrySdk, Error, TEXT("VariantToUnreal failed to deserialize map Json."));
-			return unrealMap;
-		}
-
-		TArray<FString> keysArr;
-		jsonObject->Values.GetKeys(keysArr);
-
-		for (auto it = keysArr.CreateConstIterator(); it; ++it)
-		{
-			unrealMap.Add(*it, VariantToUnreal(sentry_value_get_by_key(variant, TCHAR_TO_ANSI(**it))));
-		}
-
-		return FSentryVariant(unrealMap);
-	}
+		return VariantMapToUnreal(variant);
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry variant type used - an empty one will be returned."));
 		return FSentryVariant();
 	}
+}
+
+TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnreal(sentry_value_t map)
+{
+	TMap<FString, FSentryVariant> unrealMap;
+
+	FString mapJsonString = FString(sentry_value_to_json(map));
+	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
+	{
+		return unrealMap;
+	}
+
+	TSharedPtr<FJsonObject> jsonObject;
+	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
+	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonObject);
+	if (!bDeserializeSuccess)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("VariantToUnreal failed to deserialize map Json."));
+		return unrealMap;
+	}
+
+	TArray<FString> keysArr;
+	jsonObject->Values.GetKeys(keysArr);
+
+	for (auto it = keysArr.CreateConstIterator(); it; ++it)
+	{
+		unrealMap.Add(*it, VariantToUnreal(sentry_value_get_by_key(map, TCHAR_TO_ANSI(**it))));
+	}
+
+	return unrealMap;
+}
+
+TArray<FSentryVariant> FGenericPlatformSentryConverters::VariantArrayToUnreal(sentry_value_t array)
+{
+	TArray<FSentryVariant> unrealArray;
+
+	int32 len = sentry_value_get_length(array);
+	for (int32 i = 0; i < len; ++i)
+	{
+		unrealArray.Add(VariantToUnreal(sentry_value_get_by_index(array, i)));
+	}
+
+	return unrealArray;
 }
 
 TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentry_value_t map)

@@ -27,6 +27,8 @@ public:
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);
 	static ESentryLevel SentryLevelToUnreal(sentry_level_t level);
 	static FSentryVariant VariantToUnreal(sentry_value_t variant);
+	static TMap<FString, FSentryVariant> VariantMapToUnreal(sentry_value_t map);
+	static TArray<FSentryVariant> VariantArrayToUnreal(sentry_value_t array);
 	static TMap<FString, FString> StringMapToUnreal(sentry_value_t map);
 	static TArray<FString> StringArrayToUnreal(sentry_value_t array);
 

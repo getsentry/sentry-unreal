@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "SentryDataTypes.h"
+#include "SentryVariant.h"
 
 class ISentryBreadcrumb
 {
@@ -18,8 +19,8 @@ public:
 	virtual FString GetType() const = 0;
 	virtual void SetCategory(const FString& category) = 0;
 	virtual FString GetCategory() const = 0;
-	virtual void SetData(const TMap<FString, FString>& data) = 0;
-	virtual TMap<FString, FString> GetData() const = 0;
+	virtual void SetData(const TMap<FString, FSentryVariant>& data) = 0;
+	virtual TMap<FString, FSentryVariant> GetData() const = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual ESentryLevel GetLevel() const = 0;
 };

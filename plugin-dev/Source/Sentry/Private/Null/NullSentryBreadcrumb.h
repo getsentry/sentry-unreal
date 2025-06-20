@@ -17,8 +17,8 @@ public:
 	virtual FString GetType() const override { return TEXT(""); }
 	virtual void SetCategory(const FString& category) override {}
 	virtual FString GetCategory() const override { return TEXT(""); }
-	virtual void SetData(const TMap<FString, FString>& data) override {}
-	virtual TMap<FString, FString> GetData() const override { return {}; }
+	virtual void SetData(const TMap<FString, FSentryVariant>& data) override {}
+	virtual TMap<FString, FSentryVariant> GetData() const override { return {}; }
 	virtual void SetLevel(ESentryLevel level) override {}
 	virtual ESentryLevel GetLevel() const override { return ESentryLevel::Debug; }
 };
