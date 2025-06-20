@@ -189,7 +189,7 @@ public:
 	 * @param Values Context values.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+	void SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values);
 
 	/**
 	 * Sets global tag - key/value string pair which will be attached to every event.

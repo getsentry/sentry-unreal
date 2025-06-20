@@ -499,9 +499,9 @@ void FGenericPlatformSentrySubsystem::RemoveUser()
 	}
 }
 
-void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	sentry_set_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::StringMapToNative(values));
+	sentry_set_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
 
 	if (crashReporter)
 	{

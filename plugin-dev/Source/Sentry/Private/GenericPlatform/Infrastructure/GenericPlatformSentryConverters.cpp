@@ -361,4 +361,66 @@ ELogVerbosity::Type FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(
 	return LogVerbosity;
 }
 
+TSharedPtr<FJsonValue> FGenericPlatformSentryConverters::VariantToJsonValue(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return MakeShareable(new FJsonValueNumber(variant.GetValue<int32>()));
+	case ESentryVariantType::Float:
+		return MakeShareable(new FJsonValueNumber(variant.GetValue<float>()));
+	case ESentryVariantType::Bool:
+		return MakeShareable(new FJsonValueBoolean(variant.GetValue<bool>()));
+	case ESentryVariantType::String:
+		return MakeShareable(new FJsonValueString(variant.GetValue<FString>()));
+	case ESentryVariantType::Array:
+		return VariantArrayToJsonValue(variant.GetValue<TArray<FSentryVariant>>());
+	case ESentryVariantType::Map:
+		return VariantMapToJsonValue(variant.GetValue<TMap<FString, FSentryVariant>>());
+	default:
+		return MakeShareable(new FJsonValueNull());
+	}
+}
+
+TSharedPtr<FJsonValue> FGenericPlatformSentryConverters::VariantArrayToJsonValue(const TArray<FSentryVariant>& array)
+{
+	TArray<TSharedPtr<FJsonValue>> jsonArray;
+
+	for (auto it = array.CreateConstIterator(); it; ++it)
+	{
+		const FSentryVariant& variant = *it;
+		TSharedPtr<FJsonValue> jsonValue = VariantToJsonValue(variant);
+		if (jsonValue.IsValid())
+		{
+			jsonArray.Add(jsonValue);
+		}
+	}
+
+	return MakeShareable(new FJsonValueArray(jsonArray));
+}
+
+TSharedPtr<FJsonValue> FGenericPlatformSentryConverters::VariantMapToJsonValue(const TMap<FString, FSentryVariant>& map)
+{
+	TSharedPtr<FJsonObject> jsonObject = MakeShareable(new FJsonObject);
+
+	for (auto it = map.CreateConstIterator(); it; ++it)
+	{
+		const FString& key = it.Key();
+		const FSentryVariant& variant = it.Value();
+
+		if (variant.GetType() == ESentryVariantType::Empty)
+		{
+			continue;
+		}
+
+		TSharedPtr<FJsonValue> jsonValue = VariantToJsonValue(variant);
+		if (jsonValue.IsValid())
+		{
+			jsonObject->SetField(key, jsonValue);
+		}
+	}
+
+	return MakeShareable(new FJsonValueObject(jsonObject));
+}
+
 #endif

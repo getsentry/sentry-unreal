@@ -289,10 +289,10 @@ void FAppleSentrySubsystem::RemoveUser()
 	[SentrySDK setUser:nil];
 }
 
-void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	[SentrySDK configureScope:^(SentryScope* scope) {
-		[scope setContextValue:FAppleSentryConverters::StringMapToNative(values) forKey:key.GetNSString()];
+		[scope setContextValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
 	}];
 }
 

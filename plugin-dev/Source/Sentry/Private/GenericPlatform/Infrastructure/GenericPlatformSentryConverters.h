@@ -10,6 +10,8 @@
 
 #if USE_SENTRY_NATIVE
 
+class FJsonValue;
+
 class FGenericPlatformSentryConverters
 {
 public:
@@ -36,6 +38,9 @@ public:
 	static FString SentryLevelToString(ESentryLevel level);
 	static TArray<uint8> SentryEnvelopeToByteArray(sentry_envelope_t* envelope);
 	static ELogVerbosity::Type SentryLevelToLogVerbosity(sentry_level_t level);
+	static TSharedPtr<FJsonValue> VariantToJsonValue(const FSentryVariant& variant);
+	static TSharedPtr<FJsonValue> VariantArrayToJsonValue(const TArray<FSentryVariant>& array);
+	static TSharedPtr<FJsonValue> VariantMapToJsonValue(const TMap<FString, FSentryVariant>& map);
 };
 
 #endif

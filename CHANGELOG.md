@@ -2,9 +2,12 @@
 
 ### Breaking Changes
 
-- The "Value" suffix has been removed from the get/set function names for tags and extras in `SentryScope`.
-- The get/set functions for contexts and extras in `SentryScope` now accept a variant type instead of string for the value.
-- The get/set functions for arbitrary data in `SentryBreadcrumb` now accept a variant type instead of string for the value.
+- "Value" suffix has been removed from the get/set function names for tags and extras in `SentryScope`.
+- Type of input parameters in certain public API functions was changed from `FString` to `FSentryVariant`:
+  - Get/Set functions for contexts and extras in `SentryScope`
+  - Get/Set functions for arbitrary data in `SentryBreadcrumb`
+  - `AddBreadcrumbWithParams` and `SentContext` functions in `SentrySubsystem`
+  - `CreateSentryBreadcrumb` function in `SentryLibrary`
 
 ## 1.0.0-beta.3
 

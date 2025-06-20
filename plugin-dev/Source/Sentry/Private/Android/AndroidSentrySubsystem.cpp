@@ -196,10 +196,10 @@ void FAndroidSentrySubsystem::RemoveUser()
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
 }
 
-void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",
-		*FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::StringMapToNative(values)->GetJObject());
+		*FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantMapToNative(values)->GetJObject());
 }
 
 void FAndroidSentrySubsystem::SetTag(const FString& key, const FString& value)
