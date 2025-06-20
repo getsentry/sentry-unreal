@@ -6,8 +6,8 @@
 #include "Subsystems/EngineSubsystem.h"
 
 #include "SentryDataTypes.h"
-#include "SentryVariant.h"
 #include "SentryScope.h"
+#include "SentryVariant.h"
 
 #include "SentrySubsystem.generated.h"
 

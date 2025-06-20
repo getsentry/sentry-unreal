@@ -3,8 +3,8 @@
 #pragma once
 
 #include "SentryDataTypes.h"
-#include "SentryVariant.h"
 #include "SentryImplWrapper.h"
+#include "SentryVariant.h"
 
 #include "SentryBreadcrumb.generated.h"
 
