@@ -91,11 +91,11 @@ public:
 
 	/** Sets extra. These will be sent with every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetExtra(const FString& Key, const FString& Value);
+	void SetExtra(const FString& Key, const FSentryVariant& Value);
 
 	/** Gets extra. These will be sent with every event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetExtra(const FString& Key) const;
+	FSentryVariant GetExtra(const FString& Key) const;
 
 	/** Tries to get an extra of the event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
@@ -107,11 +107,11 @@ public:
 
 	/** Sets extras. These will be sent with every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetExtras(const TMap<FString, FString>& Extras);
+	void SetExtras(const TMap<FString, FSentryVariant>& Extras);
 
 	/** Gets extras. These will be sent with every event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	TMap<FString, FString> GetExtras() const;
+	TMap<FString, FSentryVariant> GetExtras() const;
 
 	/** Clears the current scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

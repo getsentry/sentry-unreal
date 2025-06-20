@@ -31,11 +31,11 @@ public:
 	virtual ESentryLevel GetLevel() const = 0;
 	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
 	virtual void RemoveContext(const FString& key) = 0;
-	virtual void SetExtra(const FString& key, const FString& value) = 0;
-	virtual FString GetExtra(const FString& key) const = 0;
+	virtual void SetExtra(const FString& key, const FSentryVariant& value) = 0;
+	virtual FSentryVariant GetExtra(const FString& key) const = 0;
 	virtual bool TryGetExtra(const FString& key, FSentryVariant& value) const = 0;
 	virtual void RemoveExtra(const FString& key) = 0;
-	virtual void SetExtras(const TMap<FString, FString>& extras) = 0;
-	virtual TMap<FString, FString> GetExtras() const = 0;
+	virtual void SetExtras(const TMap<FString, FSentryVariant>& extras) = 0;
+	virtual TMap<FString, FSentryVariant> GetExtras() const = 0;
 	virtual void Clear() = 0;
 };

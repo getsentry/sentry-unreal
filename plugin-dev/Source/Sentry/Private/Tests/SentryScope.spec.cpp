@@ -26,7 +26,7 @@ BEGIN_DEFINE_SPEC(SentryScopeSpec, "Sentry.SentryScope", EAutomationTestFlags::P
 	FString TestDist;
 	FString TestEnvironment;
 	TMap<FString, FString> TestTags;
-	TMap<FString, FString> TestExtras;
+	TMap<FString, FSentryVariant> TestExtras;
 	TMap<FString, FString> TestContext;
 	TArray<FString> TestFingerprint;
 END_DEFINE_SPEC(SentryScopeSpec)
@@ -92,7 +92,7 @@ void SentryScopeSpec::Define()
 		{
 			SentryScope->SetExtras(TestExtras);
 
-			TMap<FString, FString> ReceivedExtras = SentryScope->GetExtras();
+			TMap<FString, FSentryVariant> ReceivedExtras = SentryScope->GetExtras();
 			TestEqual("Extra 1 exists", ReceivedExtras[TEXT("ExtrasKey1")], TestExtras[TEXT("ExtrasKey1")]);
 			TestEqual("Extra 2 exists", ReceivedExtras[TEXT("ExtrasKey2")], TestExtras[TEXT("ExtrasKey2")]);
 		});

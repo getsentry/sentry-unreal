@@ -117,15 +117,15 @@ void FGenericPlatformSentryScope::RemoveContext(const FString& key)
 	Contexts.Remove(key);
 }
 
-void FGenericPlatformSentryScope::SetExtra(const FString& key, const FString& value)
+void FGenericPlatformSentryScope::SetExtra(const FString& key, const FSentryVariant& value)
 {
 	Extra.Add(key, value);
 }
 
-FString FGenericPlatformSentryScope::GetExtra(const FString& key) const
+FSentryVariant FGenericPlatformSentryScope::GetExtra(const FString& key) const
 {
 	if (!Extra.Contains(key))
-		return FString();
+		return FSentryVariant();
 
 	return Extra[key];
 }
@@ -147,12 +147,12 @@ void FGenericPlatformSentryScope::RemoveExtra(const FString& key)
 	Extra.Remove(key);
 }
 
-void FGenericPlatformSentryScope::SetExtras(const TMap<FString, FString>& extras)
+void FGenericPlatformSentryScope::SetExtras(const TMap<FString, FSentryVariant>& extras)
 {
 	Extra.Append(extras);
 }
 
-TMap<FString, FString> FGenericPlatformSentryScope::GetExtras() const
+TMap<FString, FSentryVariant> FGenericPlatformSentryScope::GetExtras() const
 {
 	return Extra;
 }
@@ -190,7 +190,7 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 
 	for (const auto& ExtraItem : Extra)
 	{
-		sentry_scope_set_extra(scope, TCHAR_TO_UTF8(*ExtraItem.Key), sentry_value_new_string(TCHAR_TO_UTF8(*ExtraItem.Value)));
+		sentry_scope_set_extra(scope, TCHAR_TO_UTF8(*ExtraItem.Key), FGenericPlatformSentryConverters::VariantToNative(ExtraItem.Value));
 	}
 
 	for (const auto& ContextsItem : Contexts)

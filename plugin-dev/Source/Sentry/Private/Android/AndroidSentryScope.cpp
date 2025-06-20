@@ -144,26 +144,27 @@ void FAndroidSentryScope::RemoveContext(const FString& key)
 	CallMethod<void>(RemoveContextMethod, *GetJString(key));
 }
 
-void FAndroidSentryScope::SetExtra(const FString& key, const FString& value)
+void FAndroidSentryScope::SetExtra(const FString& key, const FSentryVariant& value)
 {
-	CallMethod<void>(SetExtraValueMethod, *GetJString(key), *GetJString(value));
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setScopeExtra", "(Lio/sentry/IScope;Ljava/lang/String;Ljava/lang/Object;)V",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
 }
 
-FString FAndroidSentryScope::GetExtra(const FString& key) const
+FSentryVariant FAndroidSentryScope::GetExtra(const FString& key) const
 {
-	TMap<FString, FString> extras = GetExtras();
-	FString* extraValue = extras.Find(key);
+	TMap<FString, FSentryVariant> extras = GetExtras();
+	FSentryVariant* extraValue = extras.Find(key);
 
 	if (!extraValue)
-		return FString();
+		return FSentryVariant();
 
 	return *extraValue;
 }
 
 bool FAndroidSentryScope::TryGetExtra(const FString& key, FSentryVariant& value) const
 {
-	TMap<FString, FString> extras = GetExtras();
-	FString* extraValue = extras.Find(key);
+	TMap<FString, FSentryVariant> extras = GetExtras();
+	FSentryVariant* extraValue = extras.Find(key);
 
 	if (!extraValue)
 		return false;
@@ -177,7 +178,7 @@ void FAndroidSentryScope::RemoveExtra(const FString& key)
 	CallMethod<void>(RemoveExtraMethod, *GetJString(key));
 }
 
-void FAndroidSentryScope::SetExtras(const TMap<FString, FString>& extras)
+void FAndroidSentryScope::SetExtras(const TMap<FString, FSentryVariant>& extras)
 {
 	for (const auto& extra : extras)
 	{
@@ -185,10 +186,10 @@ void FAndroidSentryScope::SetExtras(const TMap<FString, FString>& extras)
 	}
 }
 
-TMap<FString, FString> FAndroidSentryScope::GetExtras() const
+TMap<FString, FSentryVariant> FAndroidSentryScope::GetExtras() const
 {
 	auto extras = CallObjectMethod<jobject>(GetExtrasMethod);
-	return FAndroidSentryConverters::StringMapToUnreal(*extras);
+	return FAndroidSentryConverters::VariantMapToUnreal(*extras);
 }
 
 void FAndroidSentryScope::Clear()

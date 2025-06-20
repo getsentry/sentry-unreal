@@ -31,12 +31,12 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) override;
 	virtual void RemoveContext(const FString& key) override;
-	virtual void SetExtra(const FString& key, const FString& value) override;
-	virtual FString GetExtra(const FString& key) const override;
+	virtual void SetExtra(const FString& key, const FSentryVariant& value) override;
+	virtual FSentryVariant GetExtra(const FString& key) const override;
 	virtual bool TryGetExtra(const FString& key, FSentryVariant& value) const override;
 	virtual void RemoveExtra(const FString& key) override;
-	virtual void SetExtras(const TMap<FString, FString>& extras) override;
-	virtual TMap<FString, FString> GetExtras() const override;
+	virtual void SetExtras(const TMap<FString, FSentryVariant>& extras) override;
+	virtual TMap<FString, FSentryVariant> GetExtras() const override;
 	virtual void Clear() override;
 
 private:
