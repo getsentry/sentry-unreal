@@ -110,5 +110,5 @@ jobs:
         env:
           UE_VERSION: ${{ inputs.ue_version }}
         run: |
-          docker tag adamrehn/ue4-minimal:custom-"$UE_VERSION" "$REGISTRY"/getsentry/unreal-docker:"$UE_VERSION"-linux
-          docker push "$REGISTRY"/getsentry/unreal-docker:"$UE_VERSION"-linux
+          docker tag "adamrehn/ue4-minimal:custom-$UE_VERSION" "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-linux"
+          docker push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-linux"
