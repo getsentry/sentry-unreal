@@ -104,9 +104,26 @@ ESentryLevel FGenericPlatformSentryScope::GetLevel() const
 	return Level;
 }
 
-void FGenericPlatformSentryScope::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FGenericPlatformSentryScope::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	Contexts.Add(key, values);
+}
+
+TMap<FString, FSentryVariant> FGenericPlatformSentryScope::GetContext(const FString& key) const
+{
+	if (!Contexts.Contains(key))
+		return TMap<FString, FSentryVariant>();
+
+	return Contexts[key];
+}
+
+bool FGenericPlatformSentryScope::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	if (!Contexts.Contains(key))
+		return false;
+
+	value = Contexts[key];
+	return true;
 }
 
 void FGenericPlatformSentryScope::RemoveContext(const FString& key)
@@ -195,7 +212,7 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 
 	for (const auto& ContextsItem : Contexts)
 	{
-		sentry_scope_set_context(scope, TCHAR_TO_UTF8(*ContextsItem.Key), FGenericPlatformSentryConverters::StringMapToNative(ContextsItem.Value));
+		sentry_scope_set_context(scope, TCHAR_TO_UTF8(*ContextsItem.Key), FGenericPlatformSentryConverters::VariantMapToNative(ContextsItem.Value));
 	}
 
 	sentry_scope_set_level(scope, FGenericPlatformSentryConverters::SentryLevelToNative(Level));

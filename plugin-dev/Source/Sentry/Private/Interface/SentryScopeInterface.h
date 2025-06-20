@@ -29,7 +29,9 @@ public:
 	virtual TArray<FString> GetFingerprint() const = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual ESentryLevel GetLevel() const = 0;
-	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
+	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) = 0;
+	virtual TMap<FString, FSentryVariant> GetContext(const FString& key) const = 0;
+	virtual bool TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const = 0;
 	virtual void RemoveContext(const FString& key) = 0;
 	virtual void SetExtra(const FString& key, const FSentryVariant& value) = 0;
 	virtual FSentryVariant GetExtra(const FString& key) const = 0;

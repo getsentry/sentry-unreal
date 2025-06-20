@@ -33,7 +33,7 @@ void FGenericPlatformSentryCrashContext::Apply(TSharedPtr<ISentryScope> Scope)
 
 	const FSessionContext& SessionContext = CrashContext->SessionContext;
 
-	TMap<FString, FString> ContextValues;
+	TMap<FString, FSentryVariant> ContextValues;
 
 	ContextValues.Add("Crash Type", FGenericCrashContext::GetCrashTypeString(CrashContext->CrashType));
 	ContextValues.Add("IsEnsure", CrashContext->CrashType == ECrashContextType::Ensure ? TEXT("true") : TEXT("false"));

@@ -134,9 +134,37 @@ ESentryLevel FAndroidSentryScope::GetLevel() const
 	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
 }
 
-void FAndroidSentryScope::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAndroidSentryScope::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	CallMethod<void>(SetContextMethod, *GetJString(key), FAndroidSentryConverters::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetContextMethod, *GetJString(key), FAndroidSentryConverters::VariantMapToNative(values)->GetJObject());
+}
+
+TMap<FString, FSentryVariant> FAndroidSentryScope::GetContext(const FString& key) const
+{
+	auto context = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getScopeContext", "(Lio/sentry/IScope;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
+	return FAndroidSentryConverters::VariantMapToUnreal(*context);
+}
+
+bool FAndroidSentryScope::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	auto context = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getScopeContext", "(Lio/sentry/IScope;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
+
+	if (!context)
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FAndroidSentryConverters::VariantToUnreal(*context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
 }
 
 void FAndroidSentryScope::RemoveContext(const FString& key)

@@ -81,11 +81,19 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	ESentryLevel GetLevel() const;
 
-	/** Sets context values which will be used for enriching events. */
+	/** Sets context which will be used for enriching events. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+	void SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values);
 
-	/** Sets context values which will be used for enriching events. */
+	/** Gets context which will be used for enriching events. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	TMap<FString, FSentryVariant> GetContext(const FString& Key) const;
+
+	/** Tries to get context which will be used for enriching events. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetContext(const FString& Key, TMap<FString, FSentryVariant>& Value) const;
+
+	/** Removes context which will be used for enriching events. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveContext(const FString& Key);
 

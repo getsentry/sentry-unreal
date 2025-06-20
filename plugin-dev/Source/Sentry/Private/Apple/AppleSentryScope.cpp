@@ -121,9 +121,47 @@ ESentryLevel FAppleSentryScope::GetLevel() const
 	return FAppleSentryConverters::SentryLevelToUnreal(level);
 }
 
-void FAppleSentryScope::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAppleSentryScope::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	[ScopeApple setContextValue:FAppleSentryConverters::StringMapToNative(values) forKey:key.GetNSString()];
+	[ScopeApple setContextValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
+}
+
+TMap<FString, FSentryVariant> FAppleSentryScope::GetContext(const FString& key) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* contexts = scopeDict[@"context"];
+
+	NSDictionary* context = [contexts objectForKey:key.GetNSString()];
+
+	if (!context)
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	return FAppleSentryConverters::VariantMapToUnreal(context);
+}
+
+bool FAppleSentryScope::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* contexts = scopeDict[@"context"];
+
+	NSDictionary* context = [contexts objectForKey:key.GetNSString()];
+
+	if (!context)
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FAppleSentryConverters::VariantToUnreal(context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
 }
 
 void FAppleSentryScope::RemoveContext(const FString& key)

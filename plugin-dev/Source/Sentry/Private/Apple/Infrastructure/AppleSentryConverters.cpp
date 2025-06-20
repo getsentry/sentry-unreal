@@ -227,6 +227,7 @@ FSentryVariant FAppleSentryConverters::VariantToUnreal(id variant)
 		return VariantMapToUnreal((NSDictionary*)variant);
 	}
 
+	UE_LOG(LogSentrySdk, Warning, TEXT("Couldn't convert Objective-C object to variant. Empty one will be returned."));
 	return FSentryVariant();
 }
 

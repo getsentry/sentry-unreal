@@ -123,12 +123,28 @@ ESentryLevel USentryScope::GetLevel() const
 	return NativeImpl->GetLevel();
 }
 
-void USentryScope::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+void USentryScope::SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values)
 {
 	if (!NativeImpl)
 		return;
 
 	NativeImpl->SetContext(Key, Values);
+}
+
+TMap<FString, FSentryVariant> USentryScope::GetContext(const FString& Key) const
+{
+	if (!NativeImpl)
+		return TMap<FString, FSentryVariant>();
+
+	return NativeImpl->GetContext(Key);
+}
+
+bool USentryScope::TryGetContext(const FString& Key, TMap<FString, FSentryVariant>& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetContext(Key, Value);
 }
 
 void USentryScope::RemoveContext(const FString& Key)
