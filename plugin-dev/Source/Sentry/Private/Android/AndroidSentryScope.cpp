@@ -64,12 +64,12 @@ void FAndroidSentryScope::ClearAttachments()
 	CallMethod<void>(ClearAttachmentsMethod);
 }
 
-void FAndroidSentryScope::SetTagValue(const FString& key, const FString& value)
+void FAndroidSentryScope::SetTag(const FString& key, const FString& value)
 {
 	CallMethod<void>(SetTagValueMethod, *GetJString(key), *GetJString(value));
 }
 
-FString FAndroidSentryScope::GetTagValue(const FString& key) const
+FString FAndroidSentryScope::GetTag(const FString& key) const
 {
 	TMap<FString, FString> tags = GetTags();
 	FString* tagValue = tags.Find(key);
@@ -78,6 +78,19 @@ FString FAndroidSentryScope::GetTagValue(const FString& key) const
 		return FString();
 
 	return *tagValue;
+}
+
+bool FAndroidSentryScope::TryGetTag(const FString& key, FString& value) const
+{
+	TMap<FString, FString> tags = GetTags();
+	FString* tagValue = tags.Find(key);
+
+	if (!tagValue)
+		return false;
+
+	value = *tagValue;
+
+	return true;
 }
 
 void FAndroidSentryScope::RemoveTag(const FString& key)
@@ -89,7 +102,7 @@ void FAndroidSentryScope::SetTags(const TMap<FString, FString>& tags)
 {
 	for (const auto& tag : tags)
 	{
-		SetTagValue(tag.Key, tag.Value);
+		SetTag(tag.Key, tag.Value);
 	}
 }
 
@@ -131,12 +144,12 @@ void FAndroidSentryScope::RemoveContext(const FString& key)
 	CallMethod<void>(RemoveContextMethod, *GetJString(key));
 }
 
-void FAndroidSentryScope::SetExtraValue(const FString& key, const FString& value)
+void FAndroidSentryScope::SetExtra(const FString& key, const FString& value)
 {
 	CallMethod<void>(SetExtraValueMethod, *GetJString(key), *GetJString(value));
 }
 
-FString FAndroidSentryScope::GetExtraValue(const FString& key) const
+FString FAndroidSentryScope::GetExtra(const FString& key) const
 {
 	TMap<FString, FString> extras = GetExtras();
 	FString* extraValue = extras.Find(key);
@@ -145,6 +158,18 @@ FString FAndroidSentryScope::GetExtraValue(const FString& key) const
 		return FString();
 
 	return *extraValue;
+}
+
+bool FAndroidSentryScope::TryGetExtra(const FString& key, FSentryVariant& value) const
+{
+	TMap<FString, FString> extras = GetExtras();
+	FString* extraValue = extras.Find(key);
+
+	if (!extraValue)
+		return false;
+
+	value = *extraValue;
+	return true;
 }
 
 void FAndroidSentryScope::RemoveExtra(const FString& key)
@@ -156,7 +181,7 @@ void FAndroidSentryScope::SetExtras(const TMap<FString, FString>& extras)
 {
 	for (const auto& extra : extras)
 	{
-		SetExtraValue(extra.Key, extra.Value);
+		SetExtra(extra.Key, extra.Value);
 	}
 }
 

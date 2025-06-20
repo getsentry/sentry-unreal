@@ -1,5 +1,9 @@
 # Changelog
 
+### Breaking Changes
+
+- In `SentryScope` class the "Value" suffix was dropped for tags and extras get/set functions.
+
 ## 1.0.0-beta.3
 
 ### Breaking Changes

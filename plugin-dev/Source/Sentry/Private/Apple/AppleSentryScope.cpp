@@ -53,16 +53,32 @@ void FAppleSentryScope::ClearAttachments()
 	[ScopeApple clearAttachments];
 }
 
-void FAppleSentryScope::SetTagValue(const FString& key, const FString& value)
+void FAppleSentryScope::SetTag(const FString& key, const FString& value)
 {
 	[ScopeApple setTagValue:value.GetNSString() forKey:key.GetNSString()];
 }
 
-FString FAppleSentryScope::GetTagValue(const FString& key) const
+FString FAppleSentryScope::GetTag(const FString& key) const
 {
 	NSDictionary* scopeDict = [ScopeApple serialize];
 	NSDictionary* tags = scopeDict[@"tags"];
 	return FString(tags[key.GetNSString()]);
+}
+
+bool FAppleSentryScope::TryGetTag(const FString& key, FString& value) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* tags = scopeDict[@"tags"];
+
+	NSString* tag = [tags objectForKey:key.GetNSString()];
+
+	if (!tag)
+	{
+		return false;
+	}
+
+	value = FString(tag);
+	return true;
 }
 
 void FAppleSentryScope::RemoveTag(const FString& key)
@@ -115,16 +131,32 @@ void FAppleSentryScope::RemoveContext(const FString& key)
 	[ScopeApple removeContextForKey:key.GetNSString()];
 }
 
-void FAppleSentryScope::SetExtraValue(const FString& key, const FString& value)
+void FAppleSentryScope::SetExtra(const FString& key, const FString& value)
 {
 	[ScopeApple setExtraValue:value.GetNSString() forKey:key.GetNSString()];
 }
 
-FString FAppleSentryScope::GetExtraValue(const FString& key) const
+FString FAppleSentryScope::GetExtra(const FString& key) const
 {
 	NSDictionary* scopeDict = [ScopeApple serialize];
 	NSDictionary* extras = scopeDict[@"extra"];
 	return FString(extras[key.GetNSString()]);
+}
+
+bool FAppleSentryScope::TryGetExtra(const FString& key, FSentryVariant& value) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* extras = scopeDict[@"extra"];
+
+	id extra = [extras objectForKey:key.GetNSString()];
+
+	if (!extra)
+	{
+		return false;
+	}
+
+	value = FAppleSentryConverters::VariantToUnreal(extra);
+	return true;
 }
 
 void FAppleSentryScope::RemoveExtra(const FString& key)

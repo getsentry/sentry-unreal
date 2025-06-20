@@ -55,9 +55,9 @@ void SentryScopeSpec::Define()
 	{
 		It("should persist value when single item set", [this]()
 		{
-			SentryScope->SetTagValue(TEXT("Key1"), TEXT("Val1"));
+			SentryScope->SetTag(TEXT("Key1"), TEXT("Val1"));
 
-			TestEqual("Tag exists", SentryScope->GetTagValue(TEXT("Key1")), TEXT("Val1"));
+			TestEqual("Tag exists", SentryScope->GetTag(TEXT("Key1")), TEXT("Val1"));
 		});
 
 		It("should persist value when multiple items set", [this]()
@@ -71,11 +71,11 @@ void SentryScopeSpec::Define()
 
 		It("should be removable", [this]()
 		{
-			SentryScope->SetTagValue(TEXT("Key1"), TEXT("Val1"));
+			SentryScope->SetTag(TEXT("Key1"), TEXT("Val1"));
 
 			SentryScope->RemoveTag(TEXT("Key1"));
 
-			TestEqual("Tag removed", SentryScope->GetTagValue(TEXT("Key1")), TEXT(""));
+			TestEqual("Tag removed", SentryScope->GetTag(TEXT("Key1")), TEXT(""));
 		});
 	});
 
@@ -83,9 +83,9 @@ void SentryScopeSpec::Define()
 	{
 		It("should persist value when single item set", [this]()
 		{
-			SentryScope->SetExtraValue(TEXT("Key1"), TEXT("Val1"));
+			SentryScope->SetExtra(TEXT("Key1"), TEXT("Val1"));
 
-			TestEqual("Extra value exists", SentryScope->GetExtraValue(TEXT("Key1")), TEXT("Val1"));
+			TestEqual("Extra value exists", SentryScope->GetExtra(TEXT("Key1")), TEXT("Val1"));
 		});
 
 		It("should persist value when multiple items set", [this]()
@@ -99,11 +99,11 @@ void SentryScopeSpec::Define()
 
 		It("should be removable", [this]()
 		{
-			SentryScope->SetTagValue(TEXT("Key1"), TEXT("Val1"));
+			SentryScope->SetTag(TEXT("Key1"), TEXT("Val1"));
 
 			SentryScope->RemoveTag(TEXT("Key1"));
 
-			TestEqual("Extra value removed", SentryScope->GetTagValue(TEXT("Key1")), TEXT(""));
+			TestEqual("Extra value removed", SentryScope->GetTag(TEXT("Key1")), TEXT(""));
 		});
 	});
 

@@ -47,17 +47,26 @@ void FGenericPlatformSentryScope::ClearAttachments()
 	// Not available for generic platform
 }
 
-void FGenericPlatformSentryScope::SetTagValue(const FString& key, const FString& value)
+void FGenericPlatformSentryScope::SetTag(const FString& key, const FString& value)
 {
 	Tags.Add(key, value);
 }
 
-FString FGenericPlatformSentryScope::GetTagValue(const FString& key) const
+FString FGenericPlatformSentryScope::GetTag(const FString& key) const
 {
 	if (!Tags.Contains(key))
 		return FString();
 
 	return Tags[key];
+}
+
+bool FGenericPlatformSentryScope::TryGetTag(const FString& key, FString& value) const
+{
+	if (!Tags.Contains(key))
+		return false;
+
+	value = Tags[key];
+	return true;
 }
 
 void FGenericPlatformSentryScope::RemoveTag(const FString& key)
@@ -108,17 +117,26 @@ void FGenericPlatformSentryScope::RemoveContext(const FString& key)
 	Contexts.Remove(key);
 }
 
-void FGenericPlatformSentryScope::SetExtraValue(const FString& key, const FString& value)
+void FGenericPlatformSentryScope::SetExtra(const FString& key, const FString& value)
 {
 	Extra.Add(key, value);
 }
 
-FString FGenericPlatformSentryScope::GetExtraValue(const FString& key) const
+FString FGenericPlatformSentryScope::GetExtra(const FString& key) const
 {
 	if (!Extra.Contains(key))
 		return FString();
 
 	return Extra[key];
+}
+
+bool FGenericPlatformSentryScope::TryGetExtra(const FString& key, FSentryVariant& value) const
+{
+	if (!Extra.Contains(key))
+		return false;
+
+	value = Extra[key];
+	return true;
 }
 
 void FGenericPlatformSentryScope::RemoveExtra(const FString& key)

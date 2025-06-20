@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+#include "SentryVariant.h"
 
 #include "SentryScope.generated.h"
 
@@ -40,23 +41,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void ClearAttachments();
 
-	/** Sets a global tag. Tags are searchable key/value string pairs attached to every event. */
+	/** Sets a tag. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetTagValue(const FString& Key, const FString& Value);
+	void SetTag(const FString& Key, const FString& Value);
 
-	/** Gets a global tag. Tags are searchable key/value string pairs attached to every event. */
+	/** Gets a tag. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetTagValue(const FString& Key) const;
+	FString GetTag(const FString& Key) const;
+
+	/** Tries to get a tag. Tags are searchable key/value string pairs attached to every event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetTag(const FString& Key, FString& Value) const;
 
 	/** Removes the tag for the specified key. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveTag(const FString& Key);
 
-	/** Sets global tags. Tags are searchable key/value string pairs attached to every event. */
+	/** Sets tags. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetTags(const TMap<FString, FString>& Tags);
 
-	/** Gets a global tags. Tags are searchable key/value string pairs attached to every event. */
+	/** Gets tags. Tags are searchable key/value string pairs attached to every event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TMap<FString, FString> GetTags() const;
 
@@ -84,23 +89,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveContext(const FString& Key);
 
-	/** Sets a global extra. These will be sent with every event. */
+	/** Sets extra. These will be sent with every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetExtraValue(const FString& Key, const FString& Value);
+	void SetExtra(const FString& Key, const FString& Value);
 
-	/** Gets a global extra. These will be sent with every event. */
+	/** Gets extra. These will be sent with every event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetExtraValue(const FString& Key) const;
+	FString GetExtra(const FString& Key) const;
+
+	/** Tries to get an extra of the event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetExtra(const FString& Key, FSentryVariant& Value) const;
 
 	/** Removes the extra for the specified key. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveExtra(const FString& Key);
 
-	/** Sets global extras. These will be sent with every event. */
+	/** Sets extras. These will be sent with every event. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetExtras(const TMap<FString, FString>& Extras);
 
-	/** Gets global extras. These will be sent with every event. */
+	/** Gets extras. These will be sent with every event. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	TMap<FString, FString> GetExtras() const;
 
