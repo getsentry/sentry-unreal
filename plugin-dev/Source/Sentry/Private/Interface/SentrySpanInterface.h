@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SentryVariant.h"
 
 class ISentrySpan
 {
@@ -16,7 +17,7 @@ public:
 	virtual bool IsFinished() const = 0;
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual void RemoveTag(const FString& key) = 0;
-	virtual void SetData(const FString& key, const TMap<FString, FString>& values) = 0;
+	virtual void SetData(const FString& key, const TMap<FString, FSentryVariant>& values) = 0;
 	virtual void RemoveData(const FString& key) = 0;
 	virtual void GetTrace(FString& name, FString& value) = 0;
 };

@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 
 #include "SentryImplWrapper.h"
+#include "SentryVariant.h"
 
 #include "SentrySpan.generated.h"
 
@@ -53,7 +54,7 @@ public:
 
 	/** Sets data associated with the span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetData(const FString& key, const TMap<FString, FString>& values);
+	void SetData(const FString& key, const TMap<FString, FSentryVariant>& values);
 
 	/** Removes data associated with the span. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

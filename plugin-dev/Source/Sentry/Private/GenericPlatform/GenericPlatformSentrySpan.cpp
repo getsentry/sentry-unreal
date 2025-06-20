@@ -80,11 +80,11 @@ void FGenericPlatformSentrySpan::RemoveTag(const FString& key)
 	sentry_span_remove_tag(Span, TCHAR_TO_ANSI(*key));
 }
 
-void FGenericPlatformSentrySpan::SetData(const FString& key, const TMap<FString, FString>& values)
+void FGenericPlatformSentrySpan::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_set_data(Span, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::StringMapToNative(values));
+	sentry_span_set_data(Span, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
 }
 
 void FGenericPlatformSentrySpan::RemoveData(const FString& key)
