@@ -30,6 +30,9 @@ The SDK currently supports and is tested on the following platforms:
 - Linux 
 - Android
 - iOS
+- PlayStation
+- Xbox
+- Nintendo Switch
 
 The SDK compiles with three latest engine versions.
 
