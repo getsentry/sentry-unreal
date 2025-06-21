@@ -28,7 +28,7 @@ jobs:
         run: |
           docker run -td `
             --name unreal `
-            --volume "$WORKSPACE_PATH:C:\workspace" `
+            --volume "$env:WORKSPACE_PATH:C:\workspace" `
             --workdir C:\workspace `
             ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
 
@@ -47,8 +47,8 @@ jobs:
           WORKSPACE_PATH: ${{ github.workspace }}
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: |
-          New-Item -ItemType Directory -Path "$WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
-          Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION-github.zip" -DestinationPath "$WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
+          New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
+          Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION-github.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
 
       - name: Run tests
         id: run-tests
