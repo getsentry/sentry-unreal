@@ -54,15 +54,15 @@ FString FGenericPlatformSentryBreadcrumb::GetCategory() const
 	return FString(sentry_value_as_string(category));
 }
 
-void FGenericPlatformSentryBreadcrumb::SetData(const TMap<FString, FString>& data)
+void FGenericPlatformSentryBreadcrumb::SetData(const ::TMap<FString, FSentryVariant>& data)
 {
-	sentry_value_set_by_key(Breadcrumb, "data", FGenericPlatformSentryConverters::StringMapToNative(data));
+	sentry_value_set_by_key(Breadcrumb, "data", FGenericPlatformSentryConverters::VariantMapToNative(data));
 }
 
-TMap<FString, FString> FGenericPlatformSentryBreadcrumb::GetData() const
+TMap<FString, FSentryVariant> FGenericPlatformSentryBreadcrumb::GetData() const
 {
 	sentry_value_t data = sentry_value_get_by_key(Breadcrumb, "data");
-	return FGenericPlatformSentryConverters::StringMapToUnreal(data);
+	return FGenericPlatformSentryConverters::VariantMapToUnreal(data);
 }
 
 void FGenericPlatformSentryBreadcrumb::SetLevel(ESentryLevel level)

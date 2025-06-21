@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SentryVariant.h"
 
 #if USE_SENTRY_NATIVE
 
@@ -19,7 +20,7 @@ public:
 	void SetEnvironment(const FString& environment);
 	void SetUser(TSharedPtr<FGenericPlatformSentryUser> user);
 	void RemoveUser();
-	void SetContext(const FString& key, const TMap<FString, FString>& values);
+	void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values);
 	void SetTag(const FString& key, const FString& value);
 	void RemoveTag(const FString& key);
 

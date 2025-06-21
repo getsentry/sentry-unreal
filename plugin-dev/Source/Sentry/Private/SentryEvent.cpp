@@ -161,7 +161,7 @@ void USentryEvent::SetExtra(const FString& Key, const FSentryVariant& Value)
 FSentryVariant USentryEvent::GetExtra(const FString& Key) const
 {
 	if (!NativeImpl)
-		return FString();
+		return FSentryVariant();
 
 	return NativeImpl->GetExtra(Key);
 }

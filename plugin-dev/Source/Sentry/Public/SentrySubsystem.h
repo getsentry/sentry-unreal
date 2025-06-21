@@ -7,6 +7,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
+#include "SentryVariant.h"
 
 #include "SentrySubsystem.generated.h"
 
@@ -92,7 +93,7 @@ public:
 	 * @param Level Breadcrumb level.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
-	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data,
+	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data,
 		ESentryLevel Level = ESentryLevel::Info);
 
 	/**
@@ -189,7 +190,7 @@ public:
 	 * @param Values Context values.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetContext(const FString& Key, const TMap<FString, FString>& Values);
+	void SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values);
 
 	/**
 	 * Sets global tag - key/value string pair which will be attached to every event.

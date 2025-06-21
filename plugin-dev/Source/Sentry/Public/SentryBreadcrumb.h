@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+#include "SentryVariant.h"
 
 #include "SentryBreadcrumb.generated.h"
 
@@ -48,11 +49,11 @@ public:
 
 	/** Sets data associated with the breadcrumb. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetData(const TMap<FString, FString>& Data);
+	void SetData(const TMap<FString, FSentryVariant>& Data);
 
 	/** Gets data associated with the breadcrumb. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	TMap<FString, FString> GetData() const;
+	TMap<FString, FSentryVariant> GetData() const;
 
 	/** Sets the level of the breadcrumb. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

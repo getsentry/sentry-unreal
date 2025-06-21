@@ -109,7 +109,7 @@ void FAndroidSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadc
 		breadcrumbAndroid->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
 {
 	TSharedPtr<FAndroidSentryBreadcrumb> breadcrumbAndroid = MakeShareable(new FAndroidSentryBreadcrumb());
 	breadcrumbAndroid->SetMessage(Message);
@@ -196,10 +196,10 @@ void FAndroidSentrySubsystem::RemoveUser()
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "setUser", "(Lio/sentry/protocol/User;)V", nullptr);
 }
 
-void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",
-		*FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::StringMapToNative(values)->GetJObject());
+		*FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantMapToNative(values)->GetJObject());
 }
 
 void FAndroidSentrySubsystem::SetTag(const FString& key, const FString& value)

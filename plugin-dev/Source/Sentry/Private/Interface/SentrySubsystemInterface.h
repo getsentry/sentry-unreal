@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "SentryDataTypes.h"
+#include "SentryVariant.h"
 
 class ISentryBreadcrumb;
 class ISentryEvent;
@@ -32,7 +33,7 @@ public:
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) = 0;
-	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level) = 0;
+	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) = 0;
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) = 0;
@@ -42,7 +43,7 @@ public:
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) = 0;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) = 0;
 	virtual void RemoveUser() = 0;
-	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) = 0;
+	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) = 0;
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual void RemoveTag(const FString& key) = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;

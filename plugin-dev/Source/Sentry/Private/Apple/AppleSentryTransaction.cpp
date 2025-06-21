@@ -69,9 +69,9 @@ void FAppleSentryTransaction::RemoveTag(const FString& key)
 	[TransactionApple removeTagForKey:key.GetNSString()];
 }
 
-void FAppleSentryTransaction::SetData(const FString& key, const TMap<FString, FString>& values)
+void FAppleSentryTransaction::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	[TransactionApple setDataValue:FAppleSentryConverters::StringMapToNative(values) forKey:key.GetNSString()];
+	[TransactionApple setDataValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
 }
 
 void FAppleSentryTransaction::RemoveData(const FString& key)

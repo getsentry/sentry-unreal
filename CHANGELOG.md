@@ -1,5 +1,15 @@
 # Changelog
 
+### Breaking Changes
+
+- "Value" suffix has been removed from the get/set function names for tags and extras in `SentryScope`.
+- Type of input parameters in certain public API functions was changed from `FString` to `FSentryVariant`:
+  - Get/Set functions for contexts and extras in `SentryScope`
+  - Get/Set functions for arbitrary data in `SentryBreadcrumb`
+  - Get/Set functions for arbitrary data in `SentryTransaction` and `SentrySpan`
+  - `AddBreadcrumbWithParams` and `SentContext` functions in `SentrySubsystem`
+  - `CreateSentryBreadcrumb` function in `SentryLibrary`
+
 ## 1.0.0-beta.3
 
 ### Breaking Changes

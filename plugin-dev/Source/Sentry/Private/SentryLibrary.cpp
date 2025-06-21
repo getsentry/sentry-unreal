@@ -61,7 +61,7 @@ USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(const FString& Eve
 }
 
 USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
-	const TMap<FString, FString>& Data, ESentryLevel Level)
+	const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
 {
 	USentryBreadcrumb* Breadcrumb = USentryBreadcrumb::Create(CreateSharedSentryBreadcrumb());
 

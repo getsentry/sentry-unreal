@@ -86,7 +86,7 @@ void USentryTransaction::RemoveTag(const FString& key)
 	NativeImpl->RemoveTag(key);
 }
 
-void USentryTransaction::SetData(const FString& key, const TMap<FString, FString>& values)
+void USentryTransaction::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
