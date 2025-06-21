@@ -20,13 +20,15 @@ jobs:
 
       - name: Select properties file
         id: env
+        env:
+          TARGET: ${{ inputs.target }}
         run: |
-          if [[ "${{ inputs.target }}" == "IOS" || "${{ inputs.target }}" == "Mac" ]]; then
+          if [[ "$TARGET" == "IOS" || "$TARGET" == "Mac" ]]; then
             echo "cacheLocation=modules/sentry-cocoa" >> $GITHUB_OUTPUT
             echo "propertiesFile=modules/sentry-cocoa.properties"  >> $GITHUB_OUTPUT
             echo "downloadScript=scripts/download-cocoa.sh" >> $GITHUB_OUTPUT
           fi
-          echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
+          echo "path=plugin-dev/Source/ThirdParty/$TARGET" >> $GITHUB_OUTPUT
 
       - uses: actions/cache@v4
         id: cache
@@ -37,9 +39,13 @@ jobs:
 
       - name: Download
         if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          DOWNLOAD_PATH: ${{ steps.env.outputs.path }}
+          DOWNLOAD_SCRIPT: ${{ steps.env.outputs.downloadScript }}
+          CACHE_LOCATION: ${{ steps.env.outputs.cacheLocation }}
         run: |
-          mkdir -p '${{ steps.env.outputs.path }}'
-          ${{ steps.env.outputs.downloadScript }} '${{ steps.env.outputs.cacheLocation }}' '${{ steps.env.outputs.path }}'
+          mkdir -p "$DOWNLOAD_PATH"
+          "$DOWNLOAD_SCRIPT" "$CACHE_LOCATION" "$DOWNLOAD_PATH"
 
       - uses: actions/upload-artifact@v4
         with:

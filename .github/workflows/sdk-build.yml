@@ -36,19 +36,23 @@ jobs:
 
       - name: Select submodule
         id: env
+        env:
+          TARGET: ${{ inputs.target }}
         run: |
-          if [[ "${{ inputs.target }}" == "Android" ]]; then
+          if [[ "$TARGET" == "Android" ]]; then
             submodule="modules/sentry-java"
           else
             submodule="modules/sentry-native"
           fi
           echo "submodule=$submodule" >> $GITHUB_OUTPUT
-          echo "path=plugin-dev/Source/ThirdParty/${{ inputs.target }}" >> $GITHUB_OUTPUT
-          echo "buildScript=scripts/build-$(echo '${{ inputs.target }}' | tr '[:upper:]' '[:lower:]').sh" >> $GITHUB_OUTPUT
+          echo "path=plugin-dev/Source/ThirdParty/$TARGET" >> $GITHUB_OUTPUT
+          echo "buildScript=scripts/build-$(echo "$TARGET" | tr '[:upper:]' '[:lower:]').sh" >> $GITHUB_OUTPUT
 
       - name: Get submodule status
+        env:
+          SUBMODULE: ${{ steps.env.outputs.submodule }}
         run: |          
-          git submodule status --cached ${{ steps.env.outputs.submodule }} | tee submodule-status
+          git submodule status --cached "$SUBMODULE" | tee submodule-status
 
       - uses: actions/cache@v4
         id: cache
@@ -84,10 +88,14 @@ jobs:
 
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          SUBMODULE: ${{ steps.env.outputs.submodule }}
+          BUILD_PATH: ${{ steps.env.outputs.path }}
+          BUILD_SCRIPT: ${{ steps.env.outputs.buildScript }}
         run: |
-          git submodule update --init --recursive ${{ steps.env.outputs.submodule }}
-          mkdir -p '${{ steps.env.outputs.path }}'
-          ${{ steps.env.outputs.buildScript }} '${{ steps.env.outputs.submodule }}' '${{ steps.env.outputs.path }}'
+          git submodule update --init --recursive "$SUBMODULE"
+          mkdir -p "$BUILD_PATH"
+          "$BUILD_SCRIPT" "$SUBMODULE" "$BUILD_PATH"
 
       - uses: actions/upload-artifact@v4
         with:
