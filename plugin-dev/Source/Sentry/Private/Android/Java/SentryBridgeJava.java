@@ -223,6 +223,6 @@ public class SentryBridgeJava {
 	}
 
 	public static void setScopeExtra(final IScope scope, final String key, final Object values) {
-		scope.getExtras().put(key, values);
+		scope.setExtra(key, values.toString());
 	}
 }

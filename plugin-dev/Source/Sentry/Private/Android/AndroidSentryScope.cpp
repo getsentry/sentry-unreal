@@ -174,6 +174,9 @@ void FAndroidSentryScope::RemoveContext(const FString& key)
 
 void FAndroidSentryScope::SetExtra(const FString& key, const FSentryVariant& value)
 {
+	// Sentry's Android SDK currently supports only string type for extras (see https://github.com/getsentry/sentry-java/issues/2032)
+	// Variants with array/map values will be set as strings
+	// When retrieving such values using `GetExtra`, `TryGetExtra` or `GetExtras` they have to be interpreted as strings
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setScopeExtra", "(Lio/sentry/IScope;Ljava/lang/String;Ljava/lang/Object;)V",
 		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
 }

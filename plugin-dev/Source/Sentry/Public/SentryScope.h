@@ -97,7 +97,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveContext(const FString& Key);
 
-	/** Sets extra. These will be sent with every event. */
+	/**
+	 * Sets extra. These will be sent with every event.
+	 *
+	 * @note: On Android, variants with array/map values will be set as strings.
+	 * Such values have to be interpreted as strings as well when retrieving using `GetExtra`, `TryGetExtra` or `GetExtras`
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetExtra(const FString& Key, const FSentryVariant& Value);
 
@@ -113,7 +118,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RemoveExtra(const FString& Key);
 
-	/** Sets extras. These will be sent with every event. */
+	/**
+	 * Sets extras. These will be sent with every event.
+	 *
+	 * @note: On Android, variants with array/map values will be set as strings.
+	 * Such values have to be interpreted as strings as well when retrieving using `GetExtra`, `TryGetExtra` or `GetExtras`
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetExtras(const TMap<FString, FSentryVariant>& Extras);
 
