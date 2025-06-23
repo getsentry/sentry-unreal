@@ -103,7 +103,7 @@ void SentryScopeSpec::Define()
 		{
 			SentryScope->SetExtra(TEXT("Key1"), TEXT("Val1"));
 
-			TestEqual("Extra value exists", SentryScope->GetExtra(TEXT("Key1")), TEXT("Val1"));
+			TestEqual("Extra value exists", SentryScope->GetExtra(TEXT("Key1")).GetValue<FString>(), TEXT("Val1"));
 		});
 
 		It("should persist value when multiple items set", [this]()
