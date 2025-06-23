@@ -10,6 +10,10 @@
   - `AddBreadcrumbWithParams` and `SentContext` functions in `SentrySubsystem`
   - `CreateSentryBreadcrumb` function in `SentryLibrary`
 
+### Features
+
+- Adopt generic variant type in public APIs ([#971](https://github.com/getsentry/sentry-unreal/pull/971))
+
 ## 1.0.0-beta.3
 
 ### Breaking Changes
