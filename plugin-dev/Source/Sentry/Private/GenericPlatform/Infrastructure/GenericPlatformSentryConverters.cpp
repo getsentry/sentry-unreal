@@ -210,9 +210,16 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 {
 	TMap<FString, FSentryVariant> unrealMap;
 
-	FString mapJsonString = FString(sentry_value_to_json(map));
+	char* jsonString = sentry_value_to_json(map);
+	if (!jsonString)
+	{
+		return unrealMap;
+	}
+
+	FString mapJsonString = FString(jsonString);
 	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
 	{
+		sentry_string_free(jsonString);
 		return unrealMap;
 	}
 
@@ -222,6 +229,7 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 	if (!bDeserializeSuccess)
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("VariantToUnreal failed to deserialize map Json."));
+		sentry_string_free(jsonString);
 		return unrealMap;
 	}
 
@@ -233,6 +241,7 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 		unrealMap.Add(*it, VariantToUnreal(sentry_value_get_by_key(map, TCHAR_TO_ANSI(**it))));
 	}
 
+	sentry_string_free(jsonString);
 	return unrealMap;
 }
 
@@ -253,9 +262,16 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 {
 	TMap<FString, FString> unrealMap;
 
-	FString mapJsonString = FString(sentry_value_to_json(map));
+	char* jsonString = sentry_value_to_json(map);
+	if (!jsonString)
+	{
+		return unrealMap;
+	}
+
+	FString mapJsonString = FString(jsonString);
 	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
 	{
+		sentry_string_free(jsonString);
 		return unrealMap;
 	}
 
@@ -265,6 +281,7 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 	if (!bDeserializeSuccess)
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("StringMapToUnreal failed to deserialize map Json."));
+		sentry_string_free(jsonString);
 		return unrealMap;
 	}
 
@@ -276,6 +293,7 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 		unrealMap.Add(*it, jsonObject->GetStringField(*it));
 	}
 
+	sentry_string_free(jsonString);
 	return unrealMap;
 }
 
@@ -283,24 +301,10 @@ TArray<FString> FGenericPlatformSentryConverters::StringArrayToUnreal(sentry_val
 {
 	TArray<FString> unrealArray;
 
-	FString arrayJsonString = FString(sentry_value_to_json(array));
-	if (arrayJsonString.IsEmpty() || arrayJsonString.Equals(TEXT("null")))
+	int32 len = sentry_value_get_length(array);
+	for (int32 i = 0; i < len; ++i)
 	{
-		return unrealArray;
-	}
-
-	TArray<TSharedPtr<FJsonValue>> jsonArray;
-	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(arrayJsonString);
-	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonArray);
-	if (!bDeserializeSuccess)
-	{
-		UE_LOG(LogSentrySdk, Error, TEXT("StringArrayToUnreal failed to deserialize array Json."));
-		return unrealArray;
-	}
-
-	for (auto it = jsonArray.CreateConstIterator(); it; ++it)
-	{
-		unrealArray.Add(it->Get()->AsString());
+		unrealArray.Add(sentry_value_as_string(sentry_value_get_by_index(array, i)));
 	}
 
 	return unrealArray;
