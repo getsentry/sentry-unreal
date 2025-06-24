@@ -4,6 +4,7 @@
 
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
 #include "GenericPlatform/GenericPlatformSentryUser.h"
+#include "GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h"
 
 #include "SentryDefines.h"
 
@@ -70,13 +71,13 @@ void FGenericPlatformSentryCrashReporter::RemoveUser()
 	UpdateCrashReporterConfig();
 }
 
-void FGenericPlatformSentryCrashReporter::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FGenericPlatformSentryCrashReporter::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	TSharedPtr<FJsonObject> valuesConfig = MakeShareable(new FJsonObject);
 
 	for (auto it = values.CreateConstIterator(); it; ++it)
 	{
-		valuesConfig->SetStringField(it.Key(), it.Value());
+		valuesConfig->Values.Add(it.Key(), FGenericPlatformSentryConverters::VariantToJsonValue(it.Value()));
 	}
 
 	TSharedPtr<FJsonObject> contextConfig;

@@ -222,7 +222,7 @@ void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
 }
 
-void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
 
@@ -375,7 +375,7 @@ void USentrySubsystem::RemoveUser()
 	SubsystemNativeImpl->RemoveUser();
 }
 
-void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+void USentrySubsystem::SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values)
 {
 	check(SubsystemNativeImpl);
 
@@ -549,7 +549,7 @@ void USentrySubsystem::AddDefaultContext()
 		return;
 	}
 
-	TMap<FString, FString> DefaultContext;
+	TMap<FString, FSentryVariant> DefaultContext;
 	DefaultContext.Add(TEXT("Engine version"), FEngineVersion::Current().ToString(EVersionComponent::Changelist));
 	DefaultContext.Add(TEXT("Plugin version"), FSentryModule::Get().GetPluginVersion());
 	DefaultContext.Add(TEXT("Is Marketplace version"), LexToString(FSentryModule::Get().IsMarketplaceVersion()));
@@ -575,7 +575,7 @@ void USentrySubsystem::AddGpuContext()
 
 	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
 
-	TMap<FString, FString> GpuContext;
+	TMap<FString, FSentryVariant> GpuContext;
 	GpuContext.Add(TEXT("name"), GpuDriverInfo.DeviceDescription);
 	GpuContext.Add(TEXT("vendor_name"), GpuDriverInfo.ProviderName);
 	GpuContext.Add(TEXT("driver_version"), GpuDriverInfo.UserDriverVersion);
@@ -594,7 +594,7 @@ void USentrySubsystem::AddDeviceContext()
 
 	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();
 
-	TMap<FString, FString> DeviceContext;
+	TMap<FString, FSentryVariant> DeviceContext;
 	DeviceContext.Add(TEXT("cpu_description"), FPlatformMisc::GetCPUBrand());
 	DeviceContext.Add(TEXT("number_of_cores"), FString::FromInt(FPlatformMisc::NumberOfCores()));
 	DeviceContext.Add(TEXT("number_of_cores_including_hyperthreads"), FString::FromInt(FPlatformMisc::NumberOfCoresIncludingHyperthreads()));

@@ -77,7 +77,7 @@ void USentrySpan::RemoveTag(const FString& key)
 	NativeImpl->RemoveTag(key);
 }
 
-void USentrySpan::SetData(const FString& key, const TMap<FString, FString>& values)
+void USentrySpan::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return;

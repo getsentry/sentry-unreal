@@ -88,11 +88,11 @@ void FGenericPlatformSentryTransaction::RemoveTag(const FString& key)
 	sentry_transaction_remove_tag(Transaction, TCHAR_TO_ANSI(*key));
 }
 
-void FGenericPlatformSentryTransaction::SetData(const FString& key, const TMap<FString, FString>& values)
+void FGenericPlatformSentryTransaction::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_transaction_set_data(Transaction, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::StringMapToNative(values));
+	sentry_transaction_set_data(Transaction, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
 }
 
 void FGenericPlatformSentryTransaction::RemoveData(const FString& key)

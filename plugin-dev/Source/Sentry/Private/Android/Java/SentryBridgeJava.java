@@ -217,4 +217,12 @@ public class SentryBridgeJava {
 	public static void removeContext(final SentryEvent event, final String key) {
 		event.getContexts().remove(key);
 	}
+
+	public static Object getScopeContext(final IScope scope, final String key) {
+		return scope.getContexts().get(key);
+	}
+
+	public static void setScopeExtra(final IScope scope, final String key, final Object values) {
+		scope.setExtra(key, values.toString());
+	}
 }

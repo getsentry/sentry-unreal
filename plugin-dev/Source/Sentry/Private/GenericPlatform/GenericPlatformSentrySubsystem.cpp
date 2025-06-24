@@ -355,7 +355,7 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject());
 }
 
-void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
 {
 	TSharedPtr<FGenericPlatformSentryBreadcrumb> Breadcrumb = MakeShareable(new FGenericPlatformSentryBreadcrumb());
 	Breadcrumb->SetMessage(Message);
@@ -499,9 +499,9 @@ void FGenericPlatformSentrySubsystem::RemoveUser()
 	}
 }
 
-void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	sentry_set_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::StringMapToNative(values));
+	sentry_set_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
 
 	if (crashReporter)
 	{

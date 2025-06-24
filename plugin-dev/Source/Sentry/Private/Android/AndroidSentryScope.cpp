@@ -64,12 +64,12 @@ void FAndroidSentryScope::ClearAttachments()
 	CallMethod<void>(ClearAttachmentsMethod);
 }
 
-void FAndroidSentryScope::SetTagValue(const FString& key, const FString& value)
+void FAndroidSentryScope::SetTag(const FString& key, const FString& value)
 {
 	CallMethod<void>(SetTagValueMethod, *GetJString(key), *GetJString(value));
 }
 
-FString FAndroidSentryScope::GetTagValue(const FString& key) const
+FString FAndroidSentryScope::GetTag(const FString& key) const
 {
 	TMap<FString, FString> tags = GetTags();
 	FString* tagValue = tags.Find(key);
@@ -78,6 +78,19 @@ FString FAndroidSentryScope::GetTagValue(const FString& key) const
 		return FString();
 
 	return *tagValue;
+}
+
+bool FAndroidSentryScope::TryGetTag(const FString& key, FString& value) const
+{
+	TMap<FString, FString> tags = GetTags();
+	FString* tagValue = tags.Find(key);
+
+	if (!tagValue)
+		return false;
+
+	value = *tagValue;
+
+	return true;
 }
 
 void FAndroidSentryScope::RemoveTag(const FString& key)
@@ -89,7 +102,7 @@ void FAndroidSentryScope::SetTags(const TMap<FString, FString>& tags)
 {
 	for (const auto& tag : tags)
 	{
-		SetTagValue(tag.Key, tag.Value);
+		SetTag(tag.Key, tag.Value);
 	}
 }
 
@@ -121,9 +134,37 @@ ESentryLevel FAndroidSentryScope::GetLevel() const
 	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
 }
 
-void FAndroidSentryScope::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAndroidSentryScope::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	CallMethod<void>(SetContextMethod, *GetJString(key), FAndroidSentryConverters::StringMapToNative(values)->GetJObject());
+	CallMethod<void>(SetContextMethod, *GetJString(key), FAndroidSentryConverters::VariantMapToNative(values)->GetJObject());
+}
+
+TMap<FString, FSentryVariant> FAndroidSentryScope::GetContext(const FString& key) const
+{
+	auto context = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getScopeContext", "(Lio/sentry/IScope;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
+	return FAndroidSentryConverters::VariantMapToUnreal(*context);
+}
+
+bool FAndroidSentryScope::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	auto context = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getScopeContext", "(Lio/sentry/IScope;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key));
+
+	if (!context)
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FAndroidSentryConverters::VariantToUnreal(*context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
 }
 
 void FAndroidSentryScope::RemoveContext(const FString& key)
@@ -131,20 +172,36 @@ void FAndroidSentryScope::RemoveContext(const FString& key)
 	CallMethod<void>(RemoveContextMethod, *GetJString(key));
 }
 
-void FAndroidSentryScope::SetExtraValue(const FString& key, const FString& value)
+void FAndroidSentryScope::SetExtra(const FString& key, const FSentryVariant& value)
 {
-	CallMethod<void>(SetExtraValueMethod, *GetJString(key), *GetJString(value));
+	// Sentry's Android SDK currently supports only string type for extras (see https://github.com/getsentry/sentry-java/issues/2032)
+	// Variants with array/map values will be set as strings
+	// When retrieving such values using `GetExtra`, `TryGetExtra` or `GetExtras` they have to be interpreted as strings
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setScopeExtra", "(Lio/sentry/IScope;Ljava/lang/String;Ljava/lang/Object;)V",
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
 }
 
-FString FAndroidSentryScope::GetExtraValue(const FString& key) const
+FSentryVariant FAndroidSentryScope::GetExtra(const FString& key) const
 {
-	TMap<FString, FString> extras = GetExtras();
-	FString* extraValue = extras.Find(key);
+	TMap<FString, FSentryVariant> extras = GetExtras();
+	FSentryVariant* extraValue = extras.Find(key);
 
 	if (!extraValue)
-		return FString();
+		return FSentryVariant();
 
 	return *extraValue;
+}
+
+bool FAndroidSentryScope::TryGetExtra(const FString& key, FSentryVariant& value) const
+{
+	TMap<FString, FSentryVariant> extras = GetExtras();
+	FSentryVariant* extraValue = extras.Find(key);
+
+	if (!extraValue)
+		return false;
+
+	value = *extraValue;
+	return true;
 }
 
 void FAndroidSentryScope::RemoveExtra(const FString& key)
@@ -152,18 +209,18 @@ void FAndroidSentryScope::RemoveExtra(const FString& key)
 	CallMethod<void>(RemoveExtraMethod, *GetJString(key));
 }
 
-void FAndroidSentryScope::SetExtras(const TMap<FString, FString>& extras)
+void FAndroidSentryScope::SetExtras(const TMap<FString, FSentryVariant>& extras)
 {
 	for (const auto& extra : extras)
 	{
-		SetExtraValue(extra.Key, extra.Value);
+		SetExtra(extra.Key, extra.Value);
 	}
 }
 
-TMap<FString, FString> FAndroidSentryScope::GetExtras() const
+TMap<FString, FSentryVariant> FAndroidSentryScope::GetExtras() const
 {
 	auto extras = CallObjectMethod<jobject>(GetExtrasMethod);
-	return FAndroidSentryConverters::StringMapToUnreal(*extras);
+	return FAndroidSentryConverters::VariantMapToUnreal(*extras);
 }
 
 void FAndroidSentryScope::Clear()

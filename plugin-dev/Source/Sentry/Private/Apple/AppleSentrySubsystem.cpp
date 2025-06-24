@@ -183,7 +183,7 @@ void FAppleSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcru
 	[SentrySDK addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
-void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level)
+void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
 {
 	TSharedPtr<FAppleSentryBreadcrumb> breadcrumbIOS = MakeShareable(new FAppleSentryBreadcrumb());
 	breadcrumbIOS->SetMessage(Message);
@@ -289,10 +289,10 @@ void FAppleSentrySubsystem::RemoveUser()
 	[SentrySDK setUser:nil];
 }
 
-void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	[SentrySDK configureScope:^(SentryScope* scope) {
-		[scope setContextValue:FAppleSentryConverters::StringMapToNative(values) forKey:key.GetNSString()];
+		[scope setContextValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
 	}];
 }
 

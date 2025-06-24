@@ -21,8 +21,8 @@ public:
 	virtual FString GetType() const override;
 	virtual void SetCategory(const FString& category) override;
 	virtual FString GetCategory() const override;
-	virtual void SetData(const TMap<FString, FString>& data) override;
-	virtual TMap<FString, FString> GetData() const override;
+	virtual void SetData(const TMap<FString, FSentryVariant>& data) override;
+	virtual TMap<FString, FSentryVariant> GetData() const override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
 

@@ -62,9 +62,9 @@ void FAppleSentrySpan::RemoveTag(const FString& key)
 	[SpanApple removeTagForKey:key.GetNSString()];
 }
 
-void FAppleSentrySpan::SetData(const FString& key, const TMap<FString, FString>& values)
+void FAppleSentrySpan::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	[SpanApple setDataValue:FAppleSentryConverters::StringMapToNative(values) forKey:key.GetNSString()];
+	[SpanApple setDataValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
 }
 
 void FAppleSentrySpan::RemoveData(const FString& key)

@@ -57,7 +57,7 @@ FString USentryBreadcrumb::GetCategory() const
 	return NativeImpl->GetCategory();
 }
 
-void USentryBreadcrumb::SetData(const TMap<FString, FString>& Data)
+void USentryBreadcrumb::SetData(const TMap<FString, FSentryVariant>& Data)
 {
 	if (!NativeImpl)
 		return;
@@ -65,10 +65,10 @@ void USentryBreadcrumb::SetData(const TMap<FString, FString>& Data)
 	NativeImpl->SetData(Data);
 }
 
-TMap<FString, FString> USentryBreadcrumb::GetData() const
+TMap<FString, FSentryVariant> USentryBreadcrumb::GetData() const
 {
 	if (!NativeImpl)
-		return TMap<FString, FString>();
+		return TMap<FString, FSentryVariant>();
 
 	return NativeImpl->GetData();
 }

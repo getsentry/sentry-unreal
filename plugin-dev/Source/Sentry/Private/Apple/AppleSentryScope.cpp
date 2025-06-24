@@ -53,16 +53,32 @@ void FAppleSentryScope::ClearAttachments()
 	[ScopeApple clearAttachments];
 }
 
-void FAppleSentryScope::SetTagValue(const FString& key, const FString& value)
+void FAppleSentryScope::SetTag(const FString& key, const FString& value)
 {
 	[ScopeApple setTagValue:value.GetNSString() forKey:key.GetNSString()];
 }
 
-FString FAppleSentryScope::GetTagValue(const FString& key) const
+FString FAppleSentryScope::GetTag(const FString& key) const
 {
 	NSDictionary* scopeDict = [ScopeApple serialize];
 	NSDictionary* tags = scopeDict[@"tags"];
 	return FString(tags[key.GetNSString()]);
+}
+
+bool FAppleSentryScope::TryGetTag(const FString& key, FString& value) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* tags = scopeDict[@"tags"];
+
+	NSString* tag = [tags objectForKey:key.GetNSString()];
+
+	if (!tag)
+	{
+		return false;
+	}
+
+	value = FString(tag);
+	return true;
 }
 
 void FAppleSentryScope::RemoveTag(const FString& key)
@@ -105,9 +121,47 @@ ESentryLevel FAppleSentryScope::GetLevel() const
 	return FAppleSentryConverters::SentryLevelToUnreal(level);
 }
 
-void FAppleSentryScope::SetContext(const FString& key, const TMap<FString, FString>& values)
+void FAppleSentryScope::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
-	[ScopeApple setContextValue:FAppleSentryConverters::StringMapToNative(values) forKey:key.GetNSString()];
+	[ScopeApple setContextValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
+}
+
+TMap<FString, FSentryVariant> FAppleSentryScope::GetContext(const FString& key) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* contexts = scopeDict[@"context"];
+
+	NSDictionary* context = [contexts objectForKey:key.GetNSString()];
+
+	if (!context)
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	return FAppleSentryConverters::VariantMapToUnreal(context);
+}
+
+bool FAppleSentryScope::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* contexts = scopeDict[@"context"];
+
+	NSDictionary* context = [contexts objectForKey:key.GetNSString()];
+
+	if (!context)
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FAppleSentryConverters::VariantToUnreal(context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
 }
 
 void FAppleSentryScope::RemoveContext(const FString& key)
@@ -115,16 +169,40 @@ void FAppleSentryScope::RemoveContext(const FString& key)
 	[ScopeApple removeContextForKey:key.GetNSString()];
 }
 
-void FAppleSentryScope::SetExtraValue(const FString& key, const FString& value)
+void FAppleSentryScope::SetExtra(const FString& key, const FSentryVariant& value)
 {
-	[ScopeApple setExtraValue:value.GetNSString() forKey:key.GetNSString()];
+	[ScopeApple setExtraValue:FAppleSentryConverters::VariantToNative(value) forKey:key.GetNSString()];
 }
 
-FString FAppleSentryScope::GetExtraValue(const FString& key) const
+FSentryVariant FAppleSentryScope::GetExtra(const FString& key) const
 {
 	NSDictionary* scopeDict = [ScopeApple serialize];
 	NSDictionary* extras = scopeDict[@"extra"];
-	return FString(extras[key.GetNSString()]);
+
+	id extra = [extras objectForKey:key.GetNSString()];
+
+	if (!extra)
+	{
+		return FSentryVariant();
+	}
+
+	return FAppleSentryConverters::VariantToUnreal(extra);
+}
+
+bool FAppleSentryScope::TryGetExtra(const FString& key, FSentryVariant& value) const
+{
+	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* extras = scopeDict[@"extra"];
+
+	id extra = [extras objectForKey:key.GetNSString()];
+
+	if (!extra)
+	{
+		return false;
+	}
+
+	value = FAppleSentryConverters::VariantToUnreal(extra);
+	return true;
 }
 
 void FAppleSentryScope::RemoveExtra(const FString& key)
@@ -132,15 +210,15 @@ void FAppleSentryScope::RemoveExtra(const FString& key)
 	[ScopeApple removeExtraForKey:key.GetNSString()];
 }
 
-void FAppleSentryScope::SetExtras(const TMap<FString, FString>& extras)
+void FAppleSentryScope::SetExtras(const TMap<FString, FSentryVariant>& extras)
 {
-	[ScopeApple setExtras:FAppleSentryConverters::StringMapToNative(extras)];
+	[ScopeApple setExtras:FAppleSentryConverters::VariantMapToNative(extras)];
 }
 
-TMap<FString, FString> FAppleSentryScope::GetExtras() const
+TMap<FString, FSentryVariant> FAppleSentryScope::GetExtras() const
 {
 	NSDictionary* scopeDict = [ScopeApple serialize];
-	return FAppleSentryConverters::StringMapToUnreal(scopeDict[@"extra"]);
+	return FAppleSentryConverters::VariantMapToUnreal(scopeDict[@"extra"]);
 }
 
 void FAppleSentryScope::Clear()

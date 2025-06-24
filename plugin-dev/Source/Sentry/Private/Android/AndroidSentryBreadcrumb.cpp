@@ -61,18 +61,18 @@ FString FAndroidSentryBreadcrumb::GetCategory() const
 	return CallMethod<FString>(GetCategoryMethod);
 }
 
-void FAndroidSentryBreadcrumb::SetData(const TMap<FString, FString>& data)
+void FAndroidSentryBreadcrumb::SetData(const TMap<FString, FSentryVariant>& data)
 {
 	for (const auto& dataItem : data)
 	{
-		CallMethod<void>(SetDataMethod, *GetJString(dataItem.Key), *GetJString(dataItem.Value));
+		CallMethod<void>(SetDataMethod, *GetJString(dataItem.Key), FAndroidSentryConverters::VariantToNative(dataItem.Value)->GetJObject());
 	}
 }
 
-TMap<FString, FString> FAndroidSentryBreadcrumb::GetData() const
+TMap<FString, FSentryVariant> FAndroidSentryBreadcrumb::GetData() const
 {
 	auto data = CallObjectMethod<jobject>(GetDataMethod);
-	return FAndroidSentryConverters::StringMapToUnreal(*data);
+	return FAndroidSentryConverters::VariantMapToUnreal(*data);
 }
 
 void FAndroidSentryBreadcrumb::SetLevel(ESentryLevel level)

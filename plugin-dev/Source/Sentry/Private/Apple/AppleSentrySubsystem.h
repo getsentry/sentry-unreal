@@ -12,7 +12,7 @@ public:
 	virtual bool IsEnabled() override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
-	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FString>& Data, ESentryLevel Level) override;
+	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) override;
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) override;
@@ -22,7 +22,7 @@ public:
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
 	virtual void RemoveUser() override;
-	virtual void SetContext(const FString& key, const TMap<FString, FString>& values) override;
+	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetLevel(ESentryLevel level) override;

@@ -43,20 +43,28 @@ void USentryScope::ClearAttachments()
 	NativeImpl->ClearAttachments();
 }
 
-void USentryScope::SetTagValue(const FString& Key, const FString& Value)
+void USentryScope::SetTag(const FString& Key, const FString& Value)
 {
 	if (!NativeImpl)
 		return;
 
-	NativeImpl->SetTagValue(Key, Value);
+	NativeImpl->SetTag(Key, Value);
 }
 
-FString USentryScope::GetTagValue(const FString& Key) const
+FString USentryScope::GetTag(const FString& Key) const
 {
 	if (!NativeImpl)
 		return FString();
 
-	return NativeImpl->GetTagValue(Key);
+	return NativeImpl->GetTag(Key);
+}
+
+bool USentryScope::TryGetTag(const FString& Key, FString& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetTag(Key, Value);
 }
 
 void USentryScope::RemoveTag(const FString& Key)
@@ -115,12 +123,28 @@ ESentryLevel USentryScope::GetLevel() const
 	return NativeImpl->GetLevel();
 }
 
-void USentryScope::SetContext(const FString& Key, const TMap<FString, FString>& Values)
+void USentryScope::SetContext(const FString& Key, const TMap<FString, FSentryVariant>& Values)
 {
 	if (!NativeImpl)
 		return;
 
 	NativeImpl->SetContext(Key, Values);
+}
+
+TMap<FString, FSentryVariant> USentryScope::GetContext(const FString& Key) const
+{
+	if (!NativeImpl)
+		return TMap<FString, FSentryVariant>();
+
+	return NativeImpl->GetContext(Key);
+}
+
+bool USentryScope::TryGetContext(const FString& Key, TMap<FString, FSentryVariant>& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetContext(Key, Value);
 }
 
 void USentryScope::RemoveContext(const FString& Key)
@@ -131,20 +155,28 @@ void USentryScope::RemoveContext(const FString& Key)
 	NativeImpl->RemoveContext(Key);
 }
 
-void USentryScope::SetExtraValue(const FString& Key, const FString& Value)
+void USentryScope::SetExtra(const FString& Key, const FSentryVariant& Value)
 {
 	if (!NativeImpl)
 		return;
 
-	NativeImpl->SetExtraValue(Key, Value);
+	NativeImpl->SetExtra(Key, Value);
 }
 
-FString USentryScope::GetExtraValue(const FString& Key) const
+FSentryVariant USentryScope::GetExtra(const FString& Key) const
 {
 	if (!NativeImpl)
-		return FString();
+		return FSentryVariant();
 
-	return NativeImpl->GetExtraValue(Key);
+	return NativeImpl->GetExtra(Key);
+}
+
+bool USentryScope::TryGetExtra(const FString& Key, FSentryVariant& Value) const
+{
+	if (!NativeImpl)
+		return false;
+
+	return NativeImpl->TryGetExtra(Key, Value);
 }
 
 void USentryScope::RemoveExtra(const FString& Key)
@@ -155,7 +187,7 @@ void USentryScope::RemoveExtra(const FString& Key)
 	NativeImpl->RemoveExtra(Key);
 }
 
-void USentryScope::SetExtras(const TMap<FString, FString>& Extras)
+void USentryScope::SetExtras(const TMap<FString, FSentryVariant>& Extras)
 {
 	if (!NativeImpl)
 		return;
@@ -163,10 +195,10 @@ void USentryScope::SetExtras(const TMap<FString, FString>& Extras)
 	NativeImpl->SetExtras(Extras);
 }
 
-TMap<FString, FString> USentryScope::GetExtras() const
+TMap<FString, FSentryVariant> USentryScope::GetExtras() const
 {
 	if (!NativeImpl)
-		return TMap<FString, FString>();
+		return TMap<FString, FSentryVariant>();
 
 	return NativeImpl->GetExtras();
 }

@@ -5,6 +5,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "SentryDataTypes.h"
+#include "SentryVariant.h"
 
 #include "SentryLibrary.generated.h"
 
@@ -68,7 +69,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", Meta = (AutoCreateRefTerm = "Data"))
 	static USentryBreadcrumb* CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
-		const TMap<FString, FString>& Data, ESentryLevel Level = ESentryLevel::Info);
+		const TMap<FString, FSentryVariant>& Data, ESentryLevel Level = ESentryLevel::Info);
 
 	/**
 	 * Creates attachment with bytes and a filename.
