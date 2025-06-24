@@ -82,12 +82,17 @@ jobs:
           ue4-docker setup
 
       - name: Build Unreal Engine Docker image
+        env:
+          UE_REPO: ${{ inputs.ue_repo }}
+          UE_VERSION: ${{ inputs.ue_version }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
         run: |
-          ue4-docker build custom -repo="${{ inputs.ue_repo }}" -branch="${{ inputs.ue_version }}" \
+          ue4-docker build custom -repo="$UE_REPO" -branch="$UE_VERSION" \
           -basetag ubuntu22.04 \
-          -suffix "${{ inputs.ue_version }}" \
-          -username=${{ secrets.DOCKER_USERNAME }} \
-          -password=${{ secrets.DOCKER_TOKEN }} \
+          -suffix "$UE_VERSION" \
+          -username="$DOCKER_USERNAME" \
+          -password="$DOCKER_TOKEN" \
           --linux \
           --target minimal \
           --exclude debug \
@@ -102,6 +107,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tag and push Docker image with pre-built Unreal Engine
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
         run: |
-          docker tag adamrehn/ue4-minimal:custom-${{ inputs.ue_version }} ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-linux
-          docker push ${{ env.REGISTRY }}/getsentry/unreal-docker:${{ inputs.ue_version }}-linux
+          docker tag "adamrehn/ue4-minimal:custom-$UE_VERSION" "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-linux"
+          docker push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-linux"

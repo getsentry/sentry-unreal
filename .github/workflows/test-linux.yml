@@ -45,6 +45,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start Docker container
+        env:
+          WORKSPACE_PATH: ${{ github.workspace }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: |
           # We start the container with the user ID of the parent GH action user to avoid permission issues on volume.
           # For UE 5.4 we have to enable ipv6 to fix container startup issues. See https://github.com/adamrehn/ue4-docker/issues/357
@@ -55,13 +58,13 @@ jobs:
           docker network create --ipv6 --subnet 2001:0DB8::/112 ip6net
           docker run -td \
             --name unreal \
-            --volume ${{ github.workspace }}:/workspace \
+            --volume "$WORKSPACE_PATH:/workspace" \
             --workdir /workspace \
             --user $uid:$gid \
             --env HOME="/home/$user" \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --network ip6net -p 80:80 \
-            ghcr.io/getsentry/unreal-docker:${{ inputs.unreal-version }}-linux
+            ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-linux
           docker logout ghcr.io
           # Add the user so it has a home directory (needed to run tests later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
@@ -73,11 +76,13 @@ jobs:
       # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
       # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
       - name: Chown Docker container paths
+        env:
+          ENGINE_PATH: ${{ inputs.unreal-version == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }}
         run: |
           uid=$(id -u) # the GH action user ID
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
-            chown -R $uid /home/ue4/UnrealEngine/Engine/${{ inputs.unreal-version == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }} ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/\"$ENGINE_PATH\" ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/USD/UsdResources/Linux ;
             mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
@@ -94,7 +99,9 @@ jobs:
           submodules: recursive
 
       - name: Extract package to sample/Plugins
-        run: unzip sentry-unreal-*-engine${{ inputs.unreal-version }}-github.zip -d checkout/sample/Plugins/sentry
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: unzip sentry-unreal-*-engine"$UNREAL_VERSION"-github.zip -d checkout/sample/Plugins/sentry
 
       - name: Set permissions for sample
         # sentry-native requires write access to sample project directory in order to initialize itself properly
@@ -102,6 +109,8 @@ jobs:
 
       - name: Run tests
         id: run-tests
+        env:
+          EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
         run: |
           docker exec -w /workspace/checkout/sample unreal bash -c "
             ls -al /workspace/checkout/sample/Plugins/sentry "
@@ -118,7 +127,7 @@ jobs:
             -archive
           docker exec -w /workspace/checkout/sample unreal bash -c "
             cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
-          docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }} \
+          docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \
             /workspace/checkout/sample/SentryPlayground.uproject \
             -ReportExportPath=/workspace/checkout/sample/Saved/Automation \
             -ExecCmds="Automation RunTests Sentry;quit" \
