@@ -25,8 +25,8 @@
 #include "Utils/SentryFileUtils.h"
 
 #include "Dom/JsonObject.h"
-#include "Serialization/JsonSerializer.h"
 #include "Misc/OutputDeviceError.h"
+#include "Serialization/JsonSerializer.h"
 
 void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
