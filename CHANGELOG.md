@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ### Breaking Changes
 
 - "Value" suffix has been removed from the get/set function names for tags and extras in `SentryScope`.
@@ -13,6 +15,12 @@
 ### Features
 
 - Adopt generic variant type in public APIs ([#971](https://github.com/getsentry/sentry-unreal/pull/971))
+
+### Dependencies
+
+- Bump Native SDK from v0.9.0 to v0.9.1 ([#976](https://github.com/getsentry/sentry-unreal/pull/976))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#091)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.9.0...0.9.1)
 
 ## 1.0.0-beta.3
 
