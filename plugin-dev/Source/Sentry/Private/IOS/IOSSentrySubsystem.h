@@ -9,7 +9,11 @@ class FIOSSentrySubsystem : public FAppleSentrySubsystem
 public:
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
 
+	virtual void HandleAssert() override;
+
 	virtual FString TryCaptureScreenshot() const override;
+
+	bool IsScreenshotEnabled() const { return isScreenshotAttachmentEnabled; }
 
 protected:
 	virtual FString GetGameLogPath() const override;

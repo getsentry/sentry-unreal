@@ -26,6 +26,7 @@
 
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
+#include "Misc/OutputDeviceError.h"
 
 void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
@@ -273,4 +274,10 @@ TSharedPtr<ISentryTransactionContext> FAndroidSentrySubsystem::ContinueTrace(con
 		*FSentryJavaObjectWrapper::GetJString(sentryTrace), FAndroidSentryConverters::StringArrayToNative(baggageHeaders)->GetJObject());
 
 	return MakeShareable(new FAndroidSentryTransactionContext(*transactionContext));
+}
+
+void FAndroidSentrySubsystem::HandleAssert()
+{
+	GError->HandleError();
+	PLATFORM_BREAK();
 }

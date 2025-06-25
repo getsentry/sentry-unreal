@@ -789,19 +789,11 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 	OutputDeviceError = MakeShareable(new FSentryErrorOutputDevice(GError));
 	if (OutputDeviceError)
 	{
-#if PLATFORM_ANDROID
-		OnAssertDelegate = OutputDeviceError->OnAssert.AddWeakLambda(this, [this](const FString& Message)
-		{
-			GError->HandleError();
-			PLATFORM_BREAK();
-		});
-#elif PLATFORM_IOS
 		OnAssertDelegate = OutputDeviceError->OnAssert.AddWeakLambda(this, [this](const FString& Message)
 		{
 			check(SubsystemNativeImpl);
-			StaticCastSharedPtr<FIOSSentrySubsystem>(SubsystemNativeImpl)->TryCaptureScreenshot();
+			SubsystemNativeImpl->HandleAssert();
 		});
-#endif
 		GError = OutputDeviceError.Get();
 	}
 }
