@@ -80,6 +80,8 @@ Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashCo
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.cpp
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryAttachment.cpp
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryAttachment.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryBreadcrumb.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryBreadcrumb.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryEvent.cpp
@@ -138,6 +140,8 @@ Source/Sentry/Private/Linux/LinuxSentryUser.h
 Source/Sentry/Private/Mac/MacSentrySubsystem.cpp
 Source/Sentry/Private/Mac/MacSentrySubsystem.h
 Source/Sentry/Private/Mac/MacSentryUser.h
+Source/Sentry/Private/Microsoft/MicrosoftSentryScope.cpp
+Source/Sentry/Private/Microsoft/MicrosoftSentryScope.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryAttachment.h
