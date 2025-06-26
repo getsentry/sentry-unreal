@@ -214,11 +214,7 @@ void FAppleSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachme
 
 void FAppleSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	TSharedPtr<FAppleSentryAttachment> attachmentApple = StaticCastSharedPtr<FAppleSentryAttachment>(attachment);
-
-	[SentrySDK configureScope:^(SentryScope* scope) {
-		[scope.attachmentArray removeObject:attachmentApple->GetNativeObject()];
-	}];
+	// CUrrently, Cocoa SDK doesn't have API allowing to remove individual attachments
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
