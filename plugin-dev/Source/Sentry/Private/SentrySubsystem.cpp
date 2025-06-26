@@ -18,6 +18,7 @@
 #include "SentryUserFeedback.h"
 
 #include "CoreGlobals.h"
+#include "SentryAttachment.h"
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
@@ -244,6 +245,30 @@ void USentrySubsystem::ClearBreadcrumbs()
 	}
 
 	SubsystemNativeImpl->ClearBreadcrumbs();
+}
+
+void USentrySubsystem::AddAttachment(USentryAttachment* Attachment)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddAttachment(Attachment->GetNativeObject());
+}
+
+void USentrySubsystem::RemoveAttachment(USentryAttachment* Attachment)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->RemoveAttachment(Attachment->GetNativeObject());
 }
 
 FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)

@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.sentry.Attachment;
 import io.sentry.Breadcrumb;
 import io.sentry.Hint;
 import io.sentry.IScopes;
@@ -224,5 +225,13 @@ public class SentryBridgeJava {
 
 	public static void setScopeExtra(final IScope scope, final String key, final Object values) {
 		scope.setExtra(key, values.toString());
+	}
+
+	public static void addAttachment(final Attachment attachment) {
+		Sentry.getGlobalScope().addAttachment(attachment);
+	}
+
+	public static void removeAttachment(final Attachment attachment) {
+		Sentry.getGlobalScope().getAttachments().remove(attachment);
 	}
 }

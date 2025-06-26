@@ -2,6 +2,7 @@
 
 #include "AppleSentrySubsystem.h"
 
+#include "AppleSentryAttachment.h"
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
 #include "AppleSentryId.h"
@@ -199,6 +200,24 @@ void FAppleSentrySubsystem::ClearBreadcrumbs()
 {
 	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope clearBreadcrumbs];
+	}];
+}
+
+void FAppleSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FAppleSentryAttachment> attachmentApple = StaticCastSharedPtr<FAppleSentryAttachment>(attachment);
+
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope addAttachment:attachmentApple->GetNativeObject()];
+	}];
+}
+
+void FAppleSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FAppleSentryAttachment> attachmentApple = StaticCastSharedPtr<FAppleSentryAttachment>(attachment);
+
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope.attachmentArray removeObject:attachmentApple->GetNativeObject()];
 	}];
 }
 

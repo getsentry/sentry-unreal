@@ -14,6 +14,8 @@ public:
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override;
 	virtual void ClearBreadcrumbs() override;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) override;
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;

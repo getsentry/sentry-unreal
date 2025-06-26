@@ -250,7 +250,7 @@ void FGenericPlatformSentryScope::AddByteAttachment(TSharedPtr<FGenericPlatformS
 	const TArray<uint8>& byteBuf = attachment->GetData();
 
 	sentry_attachment_t* nativeAttachment =
-		sentry_scope_attach_bytes(scope,  reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
+		sentry_scope_attach_bytes(scope, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
 
 	if (!attachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
