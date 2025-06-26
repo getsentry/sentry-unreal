@@ -232,6 +232,6 @@ public class SentryBridgeJava {
 	}
 
 	public static void removeAttachment(final Attachment attachment) {
-		Sentry.getGlobalScope().getAttachments().remove(attachment);
+		// Currently, Android SDK doesn't have API allowing to remove individual attachments
 	}
 }

@@ -214,7 +214,7 @@ void FAppleSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachme
 
 void FAppleSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	// CUrrently, Cocoa SDK doesn't have API allowing to remove individual attachments
+	// Currently, Cocoa SDK doesn't have API allowing to remove individual attachments
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
