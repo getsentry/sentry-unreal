@@ -18,7 +18,6 @@
 #include "SentryUserFeedback.h"
 
 #include "CoreGlobals.h"
-#include "SentryAttachment.h"
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
@@ -26,6 +25,7 @@
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
+#include "SentryAttachment.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 

@@ -74,7 +74,7 @@ void FMicrosoftSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> 
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
 	sentry_attachment_t* nativeAttachment =
-	sentry_attach_filew(*platformAttachment->GetPath());
+		sentry_attach_filew(*platformAttachment->GetPath());
 
 	if (!platformAttachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filenamew(nativeAttachment, *platformAttachment->GetFilename());
