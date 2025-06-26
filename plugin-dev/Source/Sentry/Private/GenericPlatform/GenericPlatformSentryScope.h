@@ -69,6 +69,8 @@ private:
 	ESentryLevel Level;
 };
 
+#if !PLATFORM_MICROSOFT
 typedef FGenericPlatformSentryScope FPlatformSentryScope;
+#endif
 
 #endif
