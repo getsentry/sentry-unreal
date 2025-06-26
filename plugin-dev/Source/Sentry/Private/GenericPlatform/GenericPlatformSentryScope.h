@@ -9,6 +9,7 @@
 
 #if USE_SENTRY_NATIVE
 
+class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryBreadcrumb;
 class FGenericPlatformSentryEvent;
 
@@ -46,6 +47,10 @@ public:
 
 	void Apply(sentry_scope_t* scope);
 
+protected:
+	virtual void AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope);
+	virtual void AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope);
+
 private:
 	FString Dist;
 	FString Environment;
@@ -58,6 +63,8 @@ private:
 	TMap<FString, TMap<FString, FSentryVariant>> Contexts;
 
 	TRingBuffer<TSharedPtr<FGenericPlatformSentryBreadcrumb>> Breadcrumbs;
+
+	TArray<TSharedPtr<FGenericPlatformSentryAttachment>> Attachments;
 
 	ESentryLevel Level;
 };

@@ -14,6 +14,21 @@ FGenericPlatformSentryAttachment::FGenericPlatformSentryAttachment(const FString
 {
 }
 
+FGenericPlatformSentryAttachment::~FGenericPlatformSentryAttachment()
+{
+	// Put custom destructor logic here if needed
+}
+
+void FGenericPlatformSentryAttachment::SetNativeObject(sentry_attachment_t* attachment)
+{
+	Attachment = attachment;
+}
+
+sentry_attachment_t* FGenericPlatformSentryAttachment::GetNativeObject()
+{
+	return Attachment;
+}
+
 TArray<uint8> FGenericPlatformSentryAttachment::GetData() const
 {
 	return Data;
