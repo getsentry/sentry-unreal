@@ -6,6 +6,8 @@
 #include "Android/AndroidSentryScope.h"
 #elif PLATFORM_APPLE
 #include "Apple/AppleSentryScope.h"
+#elif PLATFORM_MICROSOFT
+#include "Microsoft/MicrosoftSentryScope.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryScope.h"
 #else

@@ -6,6 +6,8 @@
 #include "Android/AndroidSentryAttachment.h"
 #elif PLATFORM_APPLE
 #include "Apple/AppleSentryAttachment.h"
+#elif USE_SENTRY_NATIVE
+#include "GenericPlatform/GenericPlatformSentryAttachment.h"
 #else
 #include "Null/NullSentryAttachment.h"
 #endif

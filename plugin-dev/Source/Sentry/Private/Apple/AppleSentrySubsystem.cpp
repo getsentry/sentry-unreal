@@ -2,6 +2,7 @@
 
 #include "AppleSentrySubsystem.h"
 
+#include "AppleSentryAttachment.h"
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
 #include "AppleSentryId.h"
@@ -200,6 +201,20 @@ void FAppleSentrySubsystem::ClearBreadcrumbs()
 	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope clearBreadcrumbs];
 	}];
+}
+
+void FAppleSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FAppleSentryAttachment> attachmentApple = StaticCastSharedPtr<FAppleSentryAttachment>(attachment);
+
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope addAttachment:attachmentApple->GetNativeObject()];
+	}];
+}
+
+void FAppleSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	// Currently, Cocoa SDK doesn't have API allowing to remove individual attachments
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
