@@ -5,12 +5,12 @@
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryAttachment::FGenericPlatformSentryAttachment(const TArray<uint8>& data, const FString& filename, const FString& contentType)
-	: Data(data), Filename(filename), ContentType(contentType)
+	: Data(data), Filename(filename), ContentType(contentType), Attachment(nullptr)
 {
 }
 
 FGenericPlatformSentryAttachment::FGenericPlatformSentryAttachment(const FString& path, const FString& filename, const FString& contentType)
-	: Path(path), Filename(filename), ContentType(contentType)
+	: Path(path), Filename(filename), ContentType(contentType), Attachment(nullptr)
 {
 }
 

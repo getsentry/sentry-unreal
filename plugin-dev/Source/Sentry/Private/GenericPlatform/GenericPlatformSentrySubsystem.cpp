@@ -431,7 +431,12 @@ void FGenericPlatformSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachm
 
 	sentry_attachment_t* nativeAttachment = platformAttachment->GetNativeObject();
 
+	if (!nativeAttachment)
+		return;
+
 	sentry_remove_attachment(nativeAttachment);
+
+	platformAttachment->SetNativeObject(nullptr);
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
