@@ -49,4 +49,9 @@ FString FGenericPlatformSentryAttachment::GetContentType() const
 	return ContentType;
 }
 
+const TArray<uint8>& FGenericPlatformSentryAttachment::GetDataByRef() const
+{
+	return Data;
+}
+
 #endif

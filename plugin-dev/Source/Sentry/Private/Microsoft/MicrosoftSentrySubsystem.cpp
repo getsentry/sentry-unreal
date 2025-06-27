@@ -89,7 +89,7 @@ void FMicrosoftSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> 
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
-	const TArray<uint8>& byteBuf = platformAttachment->GetData();
+	const TArray<uint8>& byteBuf = platformAttachment->GetDataByRef();
 
 	sentry_attachment_t* nativeAttachment =
 		sentry_attach_bytesw(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), *platformAttachment->GetFilename());

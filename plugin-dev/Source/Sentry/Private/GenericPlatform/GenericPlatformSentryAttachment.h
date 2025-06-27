@@ -23,6 +23,8 @@ public:
 	virtual FString GetFilename() const override;
 	virtual FString GetContentType() const override;
 
+	const TArray<uint8>& GetDataByRef() const;
+
 private:
 	TArray<uint8> Data;
 	FString Path;

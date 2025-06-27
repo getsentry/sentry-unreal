@@ -247,7 +247,7 @@ void FGenericPlatformSentryScope::AddFileAttachment(TSharedPtr<FGenericPlatformS
 
 void FGenericPlatformSentryScope::AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope)
 {
-	TArray<uint8> byteBuf = attachment->GetData();
+	const TArray<uint8>& byteBuf = attachment->GetDataByRef();
 
 	sentry_attachment_t* nativeAttachment =
 		sentry_scope_attach_bytes(scope, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));

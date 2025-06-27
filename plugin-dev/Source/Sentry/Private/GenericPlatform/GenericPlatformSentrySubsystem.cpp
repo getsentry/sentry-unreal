@@ -226,7 +226,7 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
-	const TArray<uint8>& byteBuf = platformAttachment->GetData();
+	const TArray<uint8>& byteBuf = platformAttachment->GetDataByRef();
 
 	sentry_attachment_t* nativeAttachment =
 		sentry_attach_bytes(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
