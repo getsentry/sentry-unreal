@@ -46,7 +46,7 @@ void RestoreDefaultSignalHandlers()
 
 static void IOSSentrySignalHandler(int Signal, siginfo_t* Info, void* Context)
 {
-	if (GIOSSentrySubsystem && GIOSSentrySubsystem->IsEnabled())
+	if (GIOSSentrySubsystem && GIOSSentrySubsystem->IsEnabled() && GIOSSentrySubsystem->IsScreenshotEnabled())
 	{
 		GIOSSentrySubsystem->TryCaptureScreenshot();
 	}
@@ -72,14 +72,22 @@ void InstallSentrySignalHandler()
 	sigaction(SIGSYS, &Action, NULL);
 }
 
-void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryTraceSampler* TraceSampler)
+void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
 	GIOSSentrySubsystem = this;
 
 	SaveDefaultSignalHandlers();
 	InstallSentrySignalHandler();
 
-	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
+	FAppleSentrySubsystem::InitWithSettings(settings, beforeSendHandler, beforeBreadcrumbHandler, traceSampler);
+}
+
+void FIOSSentrySubsystem::HandleAssert()
+{
+	if (isScreenshotAttachmentEnabled)
+	{
+		TryCaptureScreenshot();
+	}
 }
 
 FString FIOSSentrySubsystem::TryCaptureScreenshot() const
