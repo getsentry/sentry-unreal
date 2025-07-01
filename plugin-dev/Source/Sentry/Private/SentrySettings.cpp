@@ -84,6 +84,11 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 
 #endif
 
+FString USentrySettings::GetEffectiveDsn() const
+{
+	return GIsEditor && !EditorDsn.IsEmpty() ? EditorDsn : Dsn;
+}
+
 FString USentrySettings::GetFormattedReleaseName()
 {
 	FString FormattedReleaseName = FApp::GetProjectName();
