@@ -374,7 +374,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	/**
 	 * Gets the effective DSN based on current execution context.
-	 * 
+	 *
 	 * @return Editor DSN when running in the editor and one is set; otherwise, falls back to the default DSN.
 	 */
 	FString GetEffectiveDsn() const;
