@@ -15,6 +15,7 @@
 ### Features
 
 - Adopt generic variant type in public APIs ([#971](https://github.com/getsentry/sentry-unreal/pull/971))
+- Add runtime attachments support for Windows/Linux ([#982](https://github.com/getsentry/sentry-unreal/pull/982))
 
 ### Dependencies
 

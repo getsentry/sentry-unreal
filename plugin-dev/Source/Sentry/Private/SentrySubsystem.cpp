@@ -25,6 +25,7 @@
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
+#include "SentryAttachment.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -244,6 +245,30 @@ void USentrySubsystem::ClearBreadcrumbs()
 	}
 
 	SubsystemNativeImpl->ClearBreadcrumbs();
+}
+
+void USentrySubsystem::AddAttachment(USentryAttachment* Attachment)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddAttachment(Attachment->GetNativeObject());
+}
+
+void USentrySubsystem::ClearAttachments()
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->ClearAttachments();
 }
 
 FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)

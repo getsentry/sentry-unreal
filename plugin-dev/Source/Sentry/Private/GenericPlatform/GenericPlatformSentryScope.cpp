@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryScope.h"
+#include "GenericPlatformSentryAttachment.h"
 #include "GenericPlatformSentryBreadcrumb.h"
 #include "GenericPlatformSentryEvent.h"
 
@@ -39,12 +40,12 @@ void FGenericPlatformSentryScope::ClearBreadcrumbs()
 
 void FGenericPlatformSentryScope::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	// Not available for generic platform
+	Attachments.Add(StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment));
 }
 
 void FGenericPlatformSentryScope::ClearAttachments()
 {
-	// Not available for generic platform
+	Attachments.Empty();
 }
 
 void FGenericPlatformSentryScope::SetTag(const FString& key, const FString& value)
@@ -195,6 +196,18 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 		sentry_scope_add_breadcrumb(scope, nativeBreadcrumb);
 	}
 
+	for (auto& Attachment : Attachments)
+	{
+		if (!Attachment->GetPath().IsEmpty())
+		{
+			AddFileAttachment(Attachment, scope);
+		}
+		else
+		{
+			AddByteAttachment(Attachment, scope);
+		}
+	}
+
 	if (Fingerprint.Num() > 0)
 	{
 		sentry_scope_set_fingerprints(scope, FGenericPlatformSentryConverters::StringArrayToNative(Fingerprint));
@@ -216,6 +229,33 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 	}
 
 	sentry_scope_set_level(scope, FGenericPlatformSentryConverters::SentryLevelToNative(Level));
+}
+
+void FGenericPlatformSentryScope::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope)
+{
+	sentry_attachment_t* nativeAttachment =
+		sentry_scope_attach_file(scope, TCHAR_TO_UTF8(*attachment->GetPath()));
+
+	if (!attachment->GetFilename().IsEmpty())
+		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetFilename()));
+
+	if (!attachment->GetContentType().IsEmpty())
+		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
+
+	attachment->SetNativeObject(nativeAttachment);
+}
+
+void FGenericPlatformSentryScope::AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope)
+{
+	const TArray<uint8>& byteBuf = attachment->GetDataByRef();
+
+	sentry_attachment_t* nativeAttachment =
+		sentry_scope_attach_bytes(scope, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
+
+	if (!attachment->GetContentType().IsEmpty())
+		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
+
+	attachment->SetNativeObject(nativeAttachment);
 }
 
 #endif

@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentrySubsystem.h"
+#include "GenericPlatformSentryAttachment.h"
 #include "GenericPlatformSentryBreadcrumb.h"
 #include "GenericPlatformSentryEvent.h"
 #include "GenericPlatformSentryId.h"
@@ -205,6 +206,41 @@ void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, 
 	crashReporter->SetEnvironment(environment);
 }
 
+void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
+
+	sentry_attachment_t* nativeAttachment =
+		sentry_attach_file(TCHAR_TO_UTF8(*platformAttachment->GetPath()));
+
+	if (!platformAttachment->GetFilename().IsEmpty())
+		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
+
+	if (!platformAttachment->GetContentType().IsEmpty())
+		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
+
+	platformAttachment->SetNativeObject(nativeAttachment);
+
+	attachments.Add(platformAttachment);
+}
+
+void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
+
+	const TArray<uint8>& byteBuf = platformAttachment->GetDataByRef();
+
+	sentry_attachment_t* nativeAttachment =
+		sentry_attach_bytes(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
+
+	if (!platformAttachment->GetContentType().IsEmpty())
+		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
+
+	platformAttachment->SetNativeObject(nativeAttachment);
+
+	attachments.Add(platformAttachment);
+}
+
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
@@ -374,6 +410,42 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 void FGenericPlatformSentrySubsystem::ClearBreadcrumbs()
 {
 	// Not implemented in sentry-native
+}
+
+void FGenericPlatformSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	if (!attachment->GetPath().IsEmpty())
+	{
+		AddFileAttachment(attachment);
+	}
+	else
+	{
+		AddByteAttachment(attachment);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
+
+	sentry_attachment_t* nativeAttachment = platformAttachment->GetNativeObject();
+
+	if (!nativeAttachment)
+		return;
+
+	sentry_remove_attachment(nativeAttachment);
+
+	platformAttachment->SetNativeObject(nullptr);
+}
+
+void FGenericPlatformSentrySubsystem::ClearAttachments()
+{
+	for (auto& attachment : attachments)
+	{
+		RemoveAttachment(attachment);
+	}
+
+	attachments.Empty();
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
