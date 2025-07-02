@@ -259,7 +259,7 @@ void USentrySubsystem::AddAttachment(USentryAttachment* Attachment)
 	SubsystemNativeImpl->AddAttachment(Attachment->GetNativeObject());
 }
 
-void USentrySubsystem::RemoveAttachment(USentryAttachment* Attachment)
+void USentrySubsystem::ClearAttachments()
 {
 	check(SubsystemNativeImpl);
 
@@ -268,7 +268,7 @@ void USentrySubsystem::RemoveAttachment(USentryAttachment* Attachment)
 		return;
 	}
 
-	SubsystemNativeImpl->RemoveAttachment(Attachment->GetNativeObject());
+	SubsystemNativeImpl->ClearAttachments();
 }
 
 FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Level)

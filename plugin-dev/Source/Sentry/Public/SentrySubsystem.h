@@ -112,13 +112,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void AddAttachment(USentryAttachment* Attachment);
 
-	/**
-	 * Removes an attachment from the current Scope.
-	 *
-	 * @param Attachment The attachment that will be removed.
-	 */
+	/** Clears all previously added attachments from the current scope. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void RemoveAttachment(USentryAttachment* Attachment);
+	void ClearAttachments();
 
 	/**
 	 * Captures the message.

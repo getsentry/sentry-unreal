@@ -83,6 +83,8 @@ void FMicrosoftSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> 
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
 	platformAttachment->SetNativeObject(nativeAttachment);
+
+	attachments.Add(platformAttachment);
 }
 
 void FMicrosoftSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> attachment)
@@ -98,6 +100,8 @@ void FMicrosoftSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> 
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
 	platformAttachment->SetNativeObject(nativeAttachment);
+
+	attachments.Add(platformAttachment);
 }
 
 #endif // USE_SENTRY_NATIVE

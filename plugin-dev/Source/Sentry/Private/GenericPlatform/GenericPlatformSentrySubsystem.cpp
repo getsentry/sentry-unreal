@@ -220,6 +220,8 @@ void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttach
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
 	platformAttachment->SetNativeObject(nativeAttachment);
+
+	attachments.Add(platformAttachment);
 }
 
 void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> attachment)
@@ -235,6 +237,8 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
 	platformAttachment->SetNativeObject(nativeAttachment);
+
+	attachments.Add(platformAttachment);
 }
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
@@ -437,6 +441,16 @@ void FGenericPlatformSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachm
 	sentry_remove_attachment(nativeAttachment);
 
 	platformAttachment->SetNativeObject(nullptr);
+}
+
+void FGenericPlatformSentrySubsystem::ClearAttachments()
+{
+	for (auto& attachment : attachments)
+	{
+		RemoveAttachment(attachment);
+	}
+
+	attachments.Empty();
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)

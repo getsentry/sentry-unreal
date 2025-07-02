@@ -28,6 +28,7 @@ public:
 	virtual void ClearBreadcrumbs() override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+	virtual void ClearAttachments() override;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) override;
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;
@@ -76,6 +77,8 @@ protected:
 
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment);
 	virtual void AddByteAttachment(TSharedPtr<ISentryAttachment> attachment);
+
+	TArray<TSharedPtr<FGenericPlatformSentryAttachment>> attachments;
 
 private:
 	/**

@@ -144,6 +144,11 @@ void FAndroidSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> att
 		attachmentAndroid->GetJObject());
 }
 
+void FAndroidSentrySubsystem::ClearAttachments()
+{
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "clearAttachments", "()V");
+}
+
 TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
 {
 	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureMessage", "(Ljava/lang/String;Lio/sentry/SentryLevel;)Lio/sentry/protocol/SentryId;",

@@ -38,6 +38,7 @@ public:
 	virtual void ClearBreadcrumbs() = 0;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
+	virtual void ClearAttachments() = 0;
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) = 0;
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) = 0;
