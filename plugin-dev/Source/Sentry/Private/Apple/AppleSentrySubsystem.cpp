@@ -48,13 +48,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 	dispatch_group_enter(sentryDispatchGroup);
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[SentrySDK startWithConfigureOptions:^(SentryOptions* options) {
-			options.dsn = settings->Dsn.GetNSString();
-#if WITH_EDITOR
-			if (!settings->EditorDsn.IsEmpty())
-			{
-				options.dsn = settings->EditorDsn.GetNSString();
-			}
-#endif
+			options.dsn = settings->GetEffectiveDsn().GetNSString();
 			options.environment = settings->Environment.GetNSString();
 			options.dist = settings->Dist.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;

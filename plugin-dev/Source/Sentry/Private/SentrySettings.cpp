@@ -13,7 +13,6 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, InitAutomatically(true)
 	, Dsn()
-	, EditorDsn()
 	, Debug(true)
 	, Environment(GetDefaultEnvironmentName())
 	, SampleRate(1.0f)
@@ -39,6 +38,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, SamplingType(ESentryTracesSamplingType::UniformSampleRate)
 	, TracesSampleRate(0.0f)
 	, TracesSampler(USentryTraceSampler::StaticClass())
+	, EditorDsn()
 	, EnableForPromotedBuildsOnly(false)
 	, UploadSymbolsAutomatically(false)
 	, IncludeSources(false)
@@ -83,6 +83,11 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 }
 
 #endif
+
+FString USentrySettings::GetEffectiveDsn() const
+{
+	return GIsEditor && !EditorDsn.IsEmpty() ? EditorDsn : Dsn;
+}
 
 FString USentrySettings::GetFormattedReleaseName()
 {
