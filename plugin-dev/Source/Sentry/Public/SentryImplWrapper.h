@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Templates/SharedPointer.h"
 #include "UObject/UObjectGlobals.h"
