@@ -12,17 +12,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Check Line Endings
-        run: |
-          echo "Checking for consistent line endings (LF) in source files..."          
-          files_with_crlf=$(find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name "*.h" -o -name "*.cpp" | xargs grep -l $'\r' 2>/dev/null || true)
-          if [ -n "$files_with_crlf" ]; then
-            echo "ERROR: Found files with CRLF line endings. Please convert all source files to use LF line endings."
-            echo "$files_with_crlf"
-            exit 1          
-          fi          
-          echo "✓ All source files have consistent LF line endings."
-
       - name: Check BOM
         run: |
           echo "Checking for BOM (Byte Order Mark) in source files..."
@@ -35,4 +24,9 @@ jobs:
           echo "✓ All source files have no BOM."
 
       - name: Clang Format
-        run: find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format --dry-run --Werror
+        run: find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format -i --Werror
+
+      - name: Commit Formatted Code
+        env:
+          GITHUB_BRANCH: ${{ github.head_ref }}
+        run: ./scripts/commit-formatted-code.sh $GITHUB_BRANCH

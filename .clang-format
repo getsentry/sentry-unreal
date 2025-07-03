@@ -32,3 +32,4 @@ UseTab:                                         Always
 MacroBlockBegin:                                '^BEGIN_DEFINE_SPEC'
 MacroBlockEnd:                                  '^END_DEFINE_SPEC'
 Cpp11BracedListStyle:                           false
+LineEnding:                                     LF
