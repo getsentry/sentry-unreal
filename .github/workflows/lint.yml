@@ -10,16 +10,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # - name: Check BOM
-      #   run: |
-      #     echo "Checking for BOM (Byte Order Mark) in source files..."
-      #     files_with_bom=$(find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name "*.h" -o -name "*.cpp" | xargs grep -l $'\xef\xbb\xbf' 2>/dev/null || true)          
-      #     if [ -n "$files_with_bom" ]; then
-      #       echo "ERROR: Found files with BOM (Byte Order Mark). Please remove BOM from source files."
-      #       echo "$files_with_bom"
-      #       exit 1
-      #     fi          
-      #     echo "✓ All source files have no BOM."
+      - name: Check BOM
+        run: |
+          echo "Checking for BOM (Byte Order Mark) in source files..."
+          files_with_bom=$(find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name "*.h" -o -name "*.cpp" | xargs grep -l $'\xef\xbb\xbf' 2>/dev/null || true)          
+          if [ -n "$files_with_bom" ]; then
+            echo "ERROR: Found files with BOM (Byte Order Mark). Please remove BOM from source files."
+            echo "$files_with_bom"
+            exit 1
+          fi          
+          echo "✓ All source files have no BOM."
 
       - name: Clang Format
         id: clang-format
