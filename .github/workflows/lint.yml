@@ -28,5 +28,5 @@ jobs:
 
       - name: Commit Formatted Code
         env:
-          GITHUB_BRANCH: ${{ github.head_ref }}
+          GITHUB_BRANCH: ${{ github.ref }}
         run: ./scripts/commit-formatted-code.sh $GITHUB_BRANCH
