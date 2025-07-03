@@ -2,6 +2,7 @@
 
 #include "AndroidSentrySubsystem.h"
 
+#include "AndroidSentryAttachment.h"
 #include "AndroidSentryBreadcrumb.h"
 #include "AndroidSentryEvent.h"
 #include "AndroidSentryId.h"
@@ -125,6 +126,27 @@ void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, co
 void FAndroidSentrySubsystem::ClearBreadcrumbs()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "clearBreadcrumbs", "()V");
+}
+
+void FAndroidSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FAndroidSentryAttachment> attachmentAndroid = StaticCastSharedPtr<FAndroidSentryAttachment>(attachment);
+
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addAttachment", "(Lio/sentry/Attachment;)V",
+		attachmentAndroid->GetJObject());
+}
+
+void FAndroidSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FAndroidSentryAttachment> attachmentAndroid = StaticCastSharedPtr<FAndroidSentryAttachment>(attachment);
+
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "removeAttachment", "(Lio/sentry/Attachment;)V",
+		attachmentAndroid->GetJObject());
+}
+
+void FAndroidSentrySubsystem::ClearAttachments()
+{
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "clearAttachments", "()V");
 }
 
 TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)

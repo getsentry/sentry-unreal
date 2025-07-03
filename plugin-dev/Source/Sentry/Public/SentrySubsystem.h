@@ -105,6 +105,18 @@ public:
 	void ClearBreadcrumbs();
 
 	/**
+	 * Adds an attachment to the current Scope.
+	 *
+	 * @param Attachment The attachment that will be added to every event.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddAttachment(USentryAttachment* Attachment);
+
+	/** Clears all previously added attachments from the current scope. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void ClearAttachments();
+
+	/**
 	 * Captures the message.
 	 *
 	 * @param Message The message to send.
