@@ -29,6 +29,7 @@ class ISentrySubsystem
 public:
 	virtual ~ISentrySubsystem() = default;
 
+	/** Methods that map directly to the platform's Sentry SDK API */
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
@@ -58,4 +59,7 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) = 0;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) = 0;
+
+	/** Unreal-specific methods that are not part of the platform's Sentry SDK API */
+	virtual void HandleAssert() = 0;
 };

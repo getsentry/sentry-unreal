@@ -14,9 +14,9 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryTraceSampler* TraceSampler)
+void FMacSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
-	FAppleSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
+	FAppleSentrySubsystem::InitWithSettings(settings, beforeSendHandler, beforeBreadcrumbHandler, traceSampler);
 
 	if (IsEnabled() && isScreenshotAttachmentEnabled)
 	{
