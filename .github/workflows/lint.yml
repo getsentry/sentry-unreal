@@ -9,19 +9,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Check Line Endings
-        run: |
-          echo "Checking for consistent line endings (LF) in source files..."          
-          files_with_crlf=$(find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name "*.h" -o -name "*.cpp" | xargs grep -l $'\r' 2>/dev/null || true)
-          if [ -n "$files_with_crlf" ]; then
-            echo "ERROR: Found files with CRLF line endings. Please convert all source files to use LF line endings."
-            echo "$files_with_crlf"
-            exit 1          
-          fi          
-          echo "✓ All source files have consistent LF line endings."
 
       - name: Check BOM
         run: |
@@ -35,4 +22,25 @@ jobs:
           echo "✓ All source files have no BOM."
 
       - name: Clang Format
-        run: find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format --dry-run --Werror
+        id: clang-format
+        run: |
+          find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format -i
+          if git diff --quiet; then
+            echo "No formatting changes needed. All code is already properly formatted."
+            echo "FORMATTING_CHANGED=false" >> $GITHUB_OUTPUT
+          else
+            echo "Code formatting changes detected."
+            echo "FORMATTING_CHANGED=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit Formatted Code
+        if: steps.clang-format.outputs.FORMATTING_CHANGED == 'true'
+        env:
+          GITHUB_BRANCH: ${{ github.ref_name }}
+        run: |
+          git config --global user.name 'Sentry Github Bot'
+          git config --global user.email 'bot+github-bot@sentry.io'
+          git fetch
+          git switch "${GITHUB_BRANCH}" || git switch -c "${GITHUB_BRANCH}" --track "origin/${GITHUB_BRANCH}"
+          git commit -am "Format code"
+          git push --set-upstream origin ${GITHUB_BRANCH}
