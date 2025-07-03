@@ -9,8 +9,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Check BOM
+        run: |
+          echo "Checking for BOM (Byte Order Mark) in source files..."
+          files_with_bom=$(find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name "*.h" -o -name "*.cpp" | xargs grep -l $'\xef\xbb\xbf' 2>/dev/null || true)          
+          if [ -n "$files_with_bom" ]; then
+            echo "ERROR: Found files with BOM (Byte Order Mark). Please remove BOM from source files."
+            echo "$files_with_bom"
+            exit 1
+          fi          
+          echo "✓ All source files have no BOM."
 
       - name: Clang Format
-        run: find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format --dry-run --Werror
+        id: clang-format
+        run: |
+          find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format -i
+          if git diff --quiet; then
+            echo "No formatting changes needed. All code is already properly formatted."
+            echo "FORMATTING_CHANGED=false" >> $GITHUB_OUTPUT
+          else
+            echo "Code formatting changes detected."
+            echo "FORMATTING_CHANGED=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit Formatted Code
+        if: steps.clang-format.outputs.FORMATTING_CHANGED == 'true' && github.ref_name != 'main'
+        env:
+          GITHUB_BRANCH: ${{ github.ref_name }}
+        run: |
+          git config --global user.name 'Sentry Github Bot'
+          git config --global user.email 'bot+github-bot@sentry.io'
+          git fetch
+          git switch "${GITHUB_BRANCH}" || git switch -c "${GITHUB_BRANCH}" --track "origin/${GITHUB_BRANCH}"
+          git commit -am "Format code"
+          git push --set-upstream origin ${GITHUB_BRANCH}

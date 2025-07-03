@@ -312,8 +312,13 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName ? *settings->Release : *settings->GetFormattedReleaseName()));
 
-	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->GetEffectiveDsn()));
-
+	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->Dsn));
+#if WITH_EDITOR
+	if (!settings->EditorDsn.IsEmpty())
+	{
+		sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->EditorDsn));
+	}
+#endif // WITH_EDITOR
 	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
 	sentry_options_set_dist(options, TCHAR_TO_ANSI(*settings->Dist));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
