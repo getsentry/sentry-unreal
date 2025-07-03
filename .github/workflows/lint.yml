@@ -24,7 +24,7 @@ jobs:
       - name: Clang Format
         id: clang-format
         run: |
-          find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format -i -style=file
+          find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name '*.h' -o -name '*.cpp' | xargs /usr/bin/clang-format -i
           if git diff --quiet; then
             echo "No formatting changes needed. All code is already properly formatted."
             echo "FORMATTING_CHANGED=false" >> $GITHUB_OUTPUT
