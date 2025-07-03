@@ -34,7 +34,7 @@ jobs:
           fi
 
       - name: Commit Formatted Code
-        if: steps.clang-format.outputs.FORMATTING_CHANGED == 'true'
+        if: steps.clang-format.outputs.FORMATTING_CHANGED == 'true' && github.ref_name != 'main'
         env:
           GITHUB_BRANCH: ${{ github.ref_name }}
         run: |
