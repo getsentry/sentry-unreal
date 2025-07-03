@@ -79,6 +79,8 @@ Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashCo
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.cpp
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryAttachment.cpp
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryAttachment.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryBreadcrumb.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryBreadcrumb.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryEvent.cpp
@@ -137,6 +139,8 @@ Source/Sentry/Private/Linux/LinuxSentryUser.h
 Source/Sentry/Private/Mac/MacSentrySubsystem.cpp
 Source/Sentry/Private/Mac/MacSentrySubsystem.h
 Source/Sentry/Private/Mac/MacSentryUser.h
+Source/Sentry/Private/Microsoft/MicrosoftSentryScope.cpp
+Source/Sentry/Private/Microsoft/MicrosoftSentryScope.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryAttachment.h
@@ -278,7 +282,6 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTraceContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTraceHeader.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTransactionContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryUser.h
-Source/ThirdParty/IOS/Sentry.framework/Headers/SentryUserFeedback.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryWithoutUIKit.h
 Source/ThirdParty/IOS/Sentry.framework/Info.plist
 Source/ThirdParty/IOS/Sentry.framework/Modules/module.modulemap
@@ -307,7 +310,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDebugImageProvider+H
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDependencyContainer.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryEnvelope.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryEnvelopeItemType.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryExtraPackages.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFormatter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFramesTracker.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
@@ -320,7 +322,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryScreenFrames.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySdkInfo.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySdkPackage.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
@@ -380,7 +381,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryEnvelopeItemType.h
 Source/ThirdParty/Mac/include/Sentry/SentryError.h
 Source/ThirdParty/Mac/include/Sentry/SentryEvent.h
 Source/ThirdParty/Mac/include/Sentry/SentryException.h
-Source/ThirdParty/Mac/include/Sentry/SentryExtraPackages.h
 Source/ThirdParty/Mac/include/Sentry/SentryFeedbackAPI.h
 Source/ThirdParty/Mac/include/Sentry/SentryFormatter.h
 Source/ThirdParty/Mac/include/Sentry/SentryFrame.h
@@ -412,7 +412,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryScreenFrames.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentrySdkInfo.h
-Source/ThirdParty/Mac/include/Sentry/SentrySdkPackage.h
 Source/ThirdParty/Mac/include/Sentry/SentrySerializable.h
 Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration.h
@@ -429,7 +428,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryTraceHeader.h
 Source/ThirdParty/Mac/include/Sentry/SentryTransactionContext.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser+Private.h
-Source/ThirdParty/Mac/include/Sentry/SentryUserFeedback.h
 Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
 Source/ThirdParty/Mac/lib/libsentry.a
 Source/ThirdParty/Win64/Breakpad/include/sentry.h

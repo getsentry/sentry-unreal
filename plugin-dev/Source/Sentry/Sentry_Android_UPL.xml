@@ -175,7 +175,7 @@
                         <insert>
                             dependencies {
                                 classpath 'com.android.tools.build:gradle:3.5.4'
-                                classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5'
+                                classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5' // legacy
                             }
                         </insert>
                     </true>
@@ -185,7 +185,7 @@
                         <insert>
                             dependencies {
                                 classpath 'com.android.tools.build:gradle:7.4.2'
-                                classpath 'io.sentry:sentry-android-gradle-plugin:4.11.0'
+                                classpath 'io.sentry:sentry-android-gradle-plugin:5.8.0' // current
                             }
                         </insert>
                     </false>

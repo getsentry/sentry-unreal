@@ -2,6 +2,7 @@
 
 #include "AppleSentrySubsystem.h"
 
+#include "AppleSentryAttachment.h"
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
 #include "AppleSentryId.h"
@@ -48,13 +49,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 	dispatch_group_enter(sentryDispatchGroup);
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[SentrySDK startWithConfigureOptions:^(SentryOptions* options) {
-			options.dsn = settings->Dsn.GetNSString();
-#if WITH_EDITOR
-			if (!settings->EditorDsn.IsEmpty())
-			{
-				options.dsn = settings->EditorDsn.GetNSString();
-			}
-#endif
+			options.dsn = settings->GetEffectiveDsn().GetNSString();
 			options.environment = settings->Environment.GetNSString();
 			options.dist = settings->Dist.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
@@ -199,6 +194,27 @@ void FAppleSentrySubsystem::ClearBreadcrumbs()
 {
 	[SentrySDK configureScope:^(SentryScope* scope) {
 		[scope clearBreadcrumbs];
+	}];
+}
+
+void FAppleSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FAppleSentryAttachment> attachmentApple = StaticCastSharedPtr<FAppleSentryAttachment>(attachment);
+
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope addAttachment:attachmentApple->GetNativeObject()];
+	}];
+}
+
+void FAppleSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	// Currently, Cocoa SDK doesn't have API allowing to remove individual attachments
+}
+
+void FAppleSentrySubsystem::ClearAttachments()
+{
+	[SentrySDK configureScope:^(SentryScope* scope) {
+		[scope clearAttachments];
 	}];
 }
 

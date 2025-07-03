@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ### Breaking Changes
 
 - "Value" suffix has been removed from the get/set function names for tags and extras in `SentryScope`.
@@ -13,6 +15,22 @@
 ### Features
 
 - Adopt generic variant type in public APIs ([#971](https://github.com/getsentry/sentry-unreal/pull/971))
+- Add runtime attachments support for Windows/Linux ([#982](https://github.com/getsentry/sentry-unreal/pull/982))
+
+### Dependencies
+
+- Bump Native SDK from v0.9.0 to v0.9.1 ([#976](https://github.com/getsentry/sentry-unreal/pull/976))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#091)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.9.0...0.9.1)
+- Bump Java SDK (Android) from v8.14.0 to v8.16.0 ([#980](https://github.com/getsentry/sentry-unreal/pull/980), [#983](https://github.com/getsentry/sentry-unreal/pull/983), [#984](https://github.com/getsentry/sentry-unreal/pull/984))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8160)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.14.0...8.16.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.52.1 to v8.53.1 ([#981](https://github.com/getsentry/sentry-unreal/pull/981))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8531)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.52.1...8.53.1)
+- Bump Android Gradle Plugin from v4.11.0 to v5.8.0 ([#975](https://github.com/getsentry/sentry-unreal/pull/975))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#580)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/4.11.0...5.8.0)
 
 ## 1.0.0-beta.3
 
