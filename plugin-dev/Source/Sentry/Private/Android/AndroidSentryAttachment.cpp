@@ -30,7 +30,7 @@ void FAndroidSentryAttachment::SetupClassMethods()
 TArray<uint8> FAndroidSentryAttachment::GetData() const
 {
 	auto data = CallObjectMethod<jobject>(GetDataMethod);
-	return FAndroidSentryConverters::ByteArrayToUnreal(static_cast<jbyteArray>(*data));
+	return FAndroidSentryConverters::ByteArrayToUnreal(static_cast<jbyteArray>(*data)); 
 }
 
 FString FAndroidSentryAttachment::GetPath() const
