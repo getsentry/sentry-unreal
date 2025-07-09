@@ -77,7 +77,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					// find the most recent one and upload it to Sentry.
 					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
 				}
-			};			
+			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
