@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- On mobile platforms, the default traces sampler will no longer be created automatically if one is not explicitly configured in the plugin settings (`General -> Performance Monitoring`)
+
 ### Dependencies
 
 - Bump CLI from v2.46.0 to v2.47.0 ([#989](https://github.com/getsentry/sentry-unreal/pull/989))
