@@ -21,8 +21,11 @@
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
 
+#include "HAL/FileManager.h"
+#include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
+#include "Utils/SentryFileUtils.h"
 
 JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong callbackId, jobject scope)
 {
@@ -113,4 +116,17 @@ JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv*
 	// to avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
 	// which should be interpreted as `null` in Java code to fallback to fixed sample rate value
 	return -1.0f;
+}
+
+JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getLogFilePath(JNIEnv* env, jclass clazz, jboolean isCrash)
+{
+	const FString LogFilePath = isCrash ? SentryFileUtils::GetGameLogBackupPath() : SentryFileUtils::GetGameLogPath();
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*LogFilePath))
+	{
+		return *FSentryJavaObjectWrapper::GetJString(FString(""));
+	}
+
+	return *FSentryJavaObjectWrapper::GetJString(LogFilePath);
 }

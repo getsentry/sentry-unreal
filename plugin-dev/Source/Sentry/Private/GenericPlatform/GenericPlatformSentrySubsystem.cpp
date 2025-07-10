@@ -64,7 +64,7 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 {
 	if (closure)
 	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSend(event, hint, closure);
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSend(event, hint, closure, false);
 	}
 	else
 	{
@@ -96,14 +96,19 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 	}
 }
 
-sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure)
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
 {
 	if (!closure || this != closure)
 	{
 		return event;
 	}
 
-	TSharedPtr<FGenericPlatformSentryEvent> Event = MakeShareable(new FGenericPlatformSentryEvent(event));
+	USentryBeforeSendHandler* Handler = GetBeforeSendHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return event;
+	}
 
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
@@ -120,9 +125,9 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	USentryEvent* EventToProcess = USentryEvent::Create(Event);
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
 
-	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
+	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, nullptr);
 
 	return ProcessedEvent ? event : sentry_value_new_null();
 }
@@ -134,6 +139,13 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 {
 	if (!closure || this != closure)
 	{
+		return breadcrumb;
+	}
+
+	USentryBeforeBreadcrumbHandler* Handler = GetBeforeBreadcrumbHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
 		return breadcrumb;
 	}
 
@@ -151,22 +163,15 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 		return breadcrumb;
 	}
 
-	TSharedPtr<FGenericPlatformSentryBreadcrumb> Breadcrumb = MakeShareable(new FGenericPlatformSentryBreadcrumb(breadcrumb));
+	USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new FGenericPlatformSentryBreadcrumb(breadcrumb)));
 
-	USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(Breadcrumb);
-
-	USentryBreadcrumb* ProcessedBreadcrumb = GetBeforeBreadcrumbHandler()->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
+	USentryBreadcrumb* ProcessedBreadcrumb = Handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
 
 	return ProcessedBreadcrumb ? breadcrumb : sentry_value_new_null();
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	if (!closure || this != closure)
-	{
-		return event;
-	}
-
 	TryCaptureScreenshot();
 
 	if (GIsGPUCrashed)
@@ -174,28 +179,9 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		IFileManager::Get().Copy(*GetGpuDumpBackupPath(), *SentryFileUtils::GetGpuDumpPath());
 	}
 
-	TSharedPtr<FGenericPlatformSentryEvent> Event = MakeShareable(new FGenericPlatformSentryEvent(event, true));
-
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
-		return event;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If crash occurred during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since there is no guarantee it will be ever freed.
-		// In this case crash event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
-		return event;
-	}
-
-	USentryEvent* EventToProcess = USentryEvent::Create(Event);
-
-	USentryEvent* ProcessedEvent = GetBeforeSendHandler()->HandleBeforeSend(EventToProcess, nullptr);
-
-	return ProcessedEvent ? event : sentry_value_new_null();
+	// At this point crash events are handled the same way as non-fatal ones,
+	// so we defer to `OnBeforeSend` to invoke the custom `beforeSend` handler (if configured)
+	return OnBeforeSend(event, nullptr, closure, true);
 }
 
 void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)

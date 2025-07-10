@@ -16,7 +16,7 @@ enum class ESentryTracesSamplingType : uint8
 {
 	// Use uniform sample rate for all transactions
 	UniformSampleRate,
-	// Control the sample rate based on the transaction itself and the context in which it's captured (not implemented)
+	// Control the sample rate based on the transaction itself and the context in which it's captured
 	TracesSampler
 };
 
@@ -311,7 +311,7 @@ class SENTRY_API USentrySettings : public UObject
 	float TracesSampleRate;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
-		Meta = (DisplayName = "Traces sampler", ToolTip = "Custom handler for determining traces sample rate based on the sampling context.",
+		Meta = (DisplayName = "Traces sampler (for Android/Apple only)", ToolTip = "Custom handler for determining traces sample rate based on the sampling context.",
 			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
 	TSubclassOf<USentryTraceSampler> TracesSampler;
 

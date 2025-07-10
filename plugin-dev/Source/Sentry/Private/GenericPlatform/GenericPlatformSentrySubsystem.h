@@ -71,7 +71,7 @@ protected:
 	FString GetScreenshotPath() const;
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
 
-	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure);
+	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 

@@ -95,26 +95,20 @@ void USentrySubsystem::Initialize()
 		return;
 	}
 
-	const UClass* BeforeSendHandlerClass =
+	BeforeSendHandler =
 		Settings->BeforeSendHandler != nullptr
-			? static_cast<UClass*>(Settings->BeforeSendHandler)
-			: USentryBeforeSendHandler::StaticClass();
-
-	BeforeSendHandler = NewObject<USentryBeforeSendHandler>(this, BeforeSendHandlerClass);
-	check(BeforeSendHandler);
+			? NewObject<USentryBeforeSendHandler>(this, static_cast<UClass*>(Settings->BeforeSendHandler))
+			: nullptr;
 
 	BeforeBreadcrumbHandler =
 		Settings->BeforeBreadcrumbHandler != nullptr
 			? NewObject<USentryBeforeBreadcrumbHandler>(this, static_cast<UClass*>(Settings->BeforeBreadcrumbHandler))
 			: nullptr;
 
-	const UClass* TraceSamplerClass =
+	TraceSampler =
 		Settings->TracesSampler != nullptr
-			? static_cast<UClass*>(Settings->TracesSampler)
-			: USentryTraceSampler::StaticClass();
-
-	TraceSampler = NewObject<USentryTraceSampler>(this, TraceSamplerClass);
-	check(TraceSampler);
+			? NewObject<USentryTraceSampler>(this, static_cast<UClass*>(Settings->TracesSampler))
+			: nullptr;
 
 	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 

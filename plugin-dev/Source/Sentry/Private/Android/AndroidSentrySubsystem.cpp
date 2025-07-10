@@ -47,11 +47,12 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppExclude));
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
+	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);
 	}
-	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler && traceSampler != nullptr)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampler"), (jlong)traceSampler);
 	}
@@ -59,16 +60,17 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	{
 		SettingsJson->SetNumberField(TEXT("beforeBreadcrumb"), (jlong)beforeBreadcrumbHandler);
 	}
+	if (beforeSendHandler != nullptr)
+	{
+		SettingsJson->SetNumberField(TEXT("beforeSendHandler"), (jlong)beforeSendHandler);
+	}
 
 	FString SettingsJsonStr;
 	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&SettingsJsonStr);
 	FJsonSerializer::Serialize(SettingsJson.ToSharedRef(), JsonWriter);
 
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava,
-		"init", "(Landroid/app/Activity;Ljava/lang/String;J)V",
-		FJavaWrapper::GameActivityThis,
-		*FSentryJavaObjectWrapper::GetJString(SettingsJsonStr),
-		(jlong)beforeSendHandler);
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "init", "(Landroid/app/Activity;Ljava/lang/String;)V",
+		FJavaWrapper::GameActivityThis, *FSentryJavaObjectWrapper::GetJString(SettingsJsonStr));
 }
 
 void FAndroidSentrySubsystem::Close()

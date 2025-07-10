@@ -78,28 +78,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
 				}
 			};
-			options.beforeSend = ^SentryEvent*(SentryEvent* event) {
-				if (FUObjectThreadContext::Get().IsRoutingPostLoad)
-				{
-					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed when post-loading."));
-					return event;
-				}
-
-				if (IsGarbageCollecting())
-				{
-					// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-					// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-					// In this case event will be reported without calling a `beforeSend` handler.
-					UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
-					return event;
-				}
-
-				USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAppleSentryEvent(event)));
-
-				USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
-
-				return ProcessedEvent ? event : nullptr;
-			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
@@ -113,7 +91,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			{
 				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
 			}
-			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler && traceSampler != nullptr)
 			{
 				options.tracesSampler = ^NSNumber*(SentrySamplingContext* samplingContext) {
 					FGCScopeGuard GCScopeGuard;
@@ -144,6 +122,31 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
 
 					return ProcessedBreadcrumb ? breadcrumb : nullptr;
+				};
+			}
+			if (beforeSendHandler != nullptr)
+			{
+				options.beforeSend = ^SentryEvent*(SentryEvent* event) {
+					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					{
+						UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
+						return event;
+					}
+
+					if (IsGarbageCollecting())
+					{
+						// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+						// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
+						// In this case event will be reported without calling a `beforeSend` handler.
+						UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
+						return event;
+					}
+
+					USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAppleSentryEvent(event)));
+
+					USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+
+					return ProcessedEvent ? event : nullptr;
 				};
 			}
 		}];

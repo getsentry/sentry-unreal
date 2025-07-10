@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +38,9 @@ public class SentryBridgeJava {
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
 	public static native Breadcrumb onBeforeBreadcrumb(long handlerAddr, Breadcrumb breadcrumb, Hint hint);
 	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
+	public static native String getLogFilePath(boolean isCrash);
 
-	public static void init(Activity activity, final String settingsJsonStr, final long beforeSendHandler) {
+	public static void init(Activity activity, final String settingsJsonStr) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
 			@Override
 			public void configure(SentryAndroidOptions options) {
@@ -56,12 +58,6 @@ public class SentryBridgeJava {
 					options.setMaxBreadcrumbs(settingJson.getInt("maxBreadcrumbs"));
 					options.setAttachScreenshot(settingJson.getBoolean("attachScreenshot"));
 					options.setSendDefaultPii(settingJson.getBoolean("sendDefaultPii"));
-					options.setBeforeSend(new SentryOptions.BeforeSendCallback() {
-						@Override
-						public SentryEvent execute(SentryEvent event, Hint hint) {
-							return onBeforeSend(beforeSendHandler, event, hint);
-						}
-					});
 					JSONArray Includes = settingJson.getJSONArray("inAppInclude");
 					for (int i = 0; i < Includes.length(); i++) {
 						options.addInAppInclude(Includes.getString(i));
@@ -79,12 +75,12 @@ public class SentryBridgeJava {
 						options.setTracesSampler(new SentryOptions.TracesSamplerCallback() {
 							@Override
 							public Double sample(SamplingContext samplingContext) {
-							float sampleRate = onTracesSampler(samplerAddr, samplingContext);
-							if(sampleRate >= 0.0f) {
-								return (double) sampleRate;
-							} else {
-								return null;
-							}
+								float sampleRate = onTracesSampler(samplerAddr, samplingContext);
+								if(sampleRate >= 0.0f) {
+									return (double) sampleRate;
+								} else {
+									return null;
+								}
 							}
 						});
 					}
@@ -96,6 +92,12 @@ public class SentryBridgeJava {
 								return onBeforeBreadcrumb(beforeBreadcrumbAddr, breadcrumb, hint);
 							}
 						});
+					}
+                    if (settingJson.has("beforeSendHandler")) {
+						options.setBeforeSend(new SentryUnrealBeforeSendCallback(settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getLong("beforeSendHandler")));
+					}
+                    else {
+						options.setBeforeSend(new SentryUnrealBeforeSendCallback(settingJson.getBoolean("enableAutoLogAttachment")));
 					}
 				} catch (JSONException e) {
 					throw new RuntimeException(e);
@@ -239,4 +241,32 @@ public class SentryBridgeJava {
 		Sentry.getGlobalScope().clearAttachments();
 	}
 
+	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
+		private final boolean attachLog;
+		private final long beforeSendAddr;
+
+		public SentryUnrealBeforeSendCallback(boolean attachLog) {
+			this.attachLog = attachLog;
+			this.beforeSendAddr = 0;
+		}
+
+		public SentryUnrealBeforeSendCallback(boolean attachLog, long beforeSendAddr) {
+			this.attachLog = attachLog;
+			this.beforeSendAddr = beforeSendAddr;
+		}
+
+		@Override
+		public SentryEvent execute(SentryEvent event, Hint hint) {
+			if(attachLog) {
+				String logFilePath = getLogFilePath(event.isCrashed());
+				if(!logFilePath.isEmpty()) {
+					hint.addAttachment(new Attachment(logFilePath, new File(logFilePath).getName(), "text/plain"));
+				}
+			}
+            if (beforeSendAddr != 0) {
+				return onBeforeSend(beforeSendAddr, event, hint);
+			}
+            return event;
+        }
+	}
 }
