@@ -38,6 +38,12 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 				*addrPtr = 10;
 			}
 			break;
+		case ESentryAppTerminationType::StackOverflow:
+			char buffer[4096];
+			FMemory::Memset((void*)buffer, 0xAA, sizeof(buffer));
+			UE_LOG(LogTemp, VeryVerbose, TEXT("Stack addr: %p"), &buffer);
+			Terminate(Type);
+			break;
 		case ESentryAppTerminationType::FastFail:
 			{
 #if PLATFORM_MICROSOFT
