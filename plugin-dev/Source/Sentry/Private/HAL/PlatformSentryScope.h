@@ -2,6 +2,9 @@
 
 #pragma once
 
+#ifdef SENTRY_PLATFORM_NULL
+#include "Null/NullSentryScope.h"
+#else
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryScope.h"
 #elif PLATFORM_APPLE
@@ -13,8 +16,4 @@
 #else
 #include "Null/NullSentryScope.h"
 #endif
-
-static TSharedPtr<ISentryScope> CreateSharedSentryScope()
-{
-	return MakeShareable(new FPlatformSentryScope);
-}
+#endif

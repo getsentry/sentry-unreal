@@ -8,7 +8,7 @@
 
 void USentryScope::Initialize()
 {
-	NativeImpl = CreateSharedSentryScope();
+	NativeImpl = MakeShareable(new FPlatformSentryScope);
 }
 
 void USentryScope::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)

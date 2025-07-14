@@ -4,6 +4,8 @@
 
 #include "GenericPlatform/GenericPlatformSentryAttachment.h"
 
+#if USE_SENTRY_NATIVE
+
 void FMicrosoftSentryScope::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope)
 {
 	sentry_attachment_t* nativeAttachment =
@@ -30,3 +32,5 @@ void FMicrosoftSentryScope::AddByteAttachment(TSharedPtr<FGenericPlatformSentryA
 
 	attachment->SetNativeObject(nativeAttachment);
 }
+
+#endif
