@@ -295,6 +295,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureHandlerPath(options);
 	ConfigureDatabasePath(options);
 	ConfigureCertsPath(options);
+	ConfigureNetworkConnectFunc(options);
 
 	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName ? *settings->Release : *settings->GetFormattedReleaseName()));
 
