@@ -16,6 +16,9 @@ public:
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override {}
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override {}
 	virtual void ClearBreadcrumbs() override {}
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override {}
+	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override {}
+	virtual void ClearAttachments() override {}
 	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override { return nullptr; }
@@ -24,7 +27,6 @@ public:
 	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) override {}
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override {}
 	virtual void RemoveUser() override {}
-	virtual void ConfigureScope(const FSentryScopeDelegate& onConfigureScope) override {}
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override {}
 	virtual void SetTag(const FString& key, const FString& value) override {}
 	virtual void RemoveTag(const FString& key) override {}

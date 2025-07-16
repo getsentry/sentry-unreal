@@ -33,7 +33,7 @@ void SentryScopeSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		SentryScope = USentryScope::Create(CreateSharedSentryScope());
+		SentryScope = USentryScope::Create(MakeShareable(new FPlatformSentryScope));
 
 		TestTags.Add(TEXT("TagsKey1"), TEXT("TagsVal1"));
 		TestTags.Add(TEXT("TagsKey2"), TEXT("TagsVal2"));
