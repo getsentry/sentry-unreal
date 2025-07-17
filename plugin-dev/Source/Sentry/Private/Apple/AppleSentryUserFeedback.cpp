@@ -13,7 +13,7 @@ FAppleSentryUserFeedback::FAppleSentryUserFeedback(TSharedPtr<ISentryId> eventId
 	SentryId* id = idIOS->GetNativeObject();
 
 #if PLATFORM_MAC
-	UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry12SentryFeedback) alloc] initWithMessage:@""
+	UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:@""
 																							name:nil
 																						   email:nil
 																						  source:SentryFeedbackSourceCustom
