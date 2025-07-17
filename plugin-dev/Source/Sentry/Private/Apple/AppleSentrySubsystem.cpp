@@ -8,11 +8,11 @@
 #include "AppleSentryId.h"
 #include "AppleSentrySamplingContext.h"
 #include "AppleSentryScope.h"
-#include "Convenience/AppleSentryMacro.h"
 #include "AppleSentryTransaction.h"
 #include "AppleSentryTransactionContext.h"
 #include "AppleSentryUser.h"
 #include "AppleSentryUserFeedback.h"
+#include "Convenience/AppleSentryMacro.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeSendHandler.h"
@@ -402,12 +402,12 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 #endif
 
 	SentryTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
-																						  traceId:traceId
-																						   spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
-																					 parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
-																					parentSampled:sampleDecision
-																				 parentSampleRate:nil
-																				 parentSampleRand:nil];
+																											  traceId:traceId
+																											   spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
+																										 parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
+																										parentSampled:sampleDecision
+																									 parentSampleRate:nil
+																									 parentSampleRand:nil];
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 

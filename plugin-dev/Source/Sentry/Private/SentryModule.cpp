@@ -5,12 +5,12 @@
 #include "SentrySettings.h"
 
 #include "Developer/Settings/Public/ISettingsModule.h"
+#include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
-#include "HAL/PlatformProcess.h"
 
 #define LOCTEXT_NAMESPACE "FSentryModule"
 

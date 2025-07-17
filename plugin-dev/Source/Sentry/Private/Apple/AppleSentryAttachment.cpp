@@ -10,15 +10,15 @@
 FAppleSentryAttachment::FAppleSentryAttachment(const TArray<uint8>& data, const FString& filename, const FString& contentType)
 {
 	AttachmentApple = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithData:FAppleSentryConverters::ByteDataToNative(data)
-													filename:filename.GetNSString()
-												 contentType:contentType.GetNSString()];
+																		filename:filename.GetNSString()
+																	 contentType:contentType.GetNSString()];
 }
 
 FAppleSentryAttachment::FAppleSentryAttachment(const FString& path, const FString& filename, const FString& contentType)
 {
 	AttachmentApple = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:path.GetNSString()
-													filename:filename.GetNSString()
-												 contentType:contentType.GetNSString()];
+																		filename:filename.GetNSString()
+																	 contentType:contentType.GetNSString()];
 }
 
 FAppleSentryAttachment::~FAppleSentryAttachment()

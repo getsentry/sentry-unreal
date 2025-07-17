@@ -14,18 +14,18 @@ FAppleSentryUserFeedback::FAppleSentryUserFeedback(TSharedPtr<ISentryId> eventId
 
 #if PLATFORM_MAC
 	UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry12SentryFeedback) alloc] initWithMessage:@""
-														   name:nil
-														  email:nil
-														 source:SentryFeedbackSourceCustom
-											  associatedEventId:id
-													attachments:nil];
+																							name:nil
+																						   email:nil
+																						  source:SentryFeedbackSourceCustom
+																			   associatedEventId:id
+																					 attachments:nil];
 #elif PLATFORM_IOS
 	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:@""
-														   name:nil
-														  email:nil
-														 source:SentryFeedbackSourceCustom
-											  associatedEventId:id
-													attachments:nil];
+																			   name:nil
+																			  email:nil
+																			 source:SentryFeedbackSourceCustom
+																  associatedEventId:id
+																		attachments:nil];
 #endif
 }
 
