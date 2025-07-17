@@ -374,7 +374,7 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
-												  customSamplingContext:FAppleSentryConverters::StringMapToNative(options)];
+																	  customSamplingContext:FAppleSentryConverters::StringMapToNative(options)];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
