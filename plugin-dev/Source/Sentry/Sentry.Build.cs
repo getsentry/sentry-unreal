@@ -67,17 +67,7 @@ public class Sentry : ModuleRules
 
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
-
-			string XcodeRoot = Utils.RunLocalProcessAndReturnStdOut("/usr/bin/xcode-select", "--print-path");
-			string SwiftStandardLibrariesPath = Path.Combine(XcodeRoot, "Toolchains", "XcodeDefault.xctoolchain", "usr", "lib", "swift", "macosx");
-
-			PublicSystemLibraries.Add(Path.Combine(SwiftStandardLibrariesPath, "libswiftCompatibility50.a"));
-			PublicSystemLibraries.Add(Path.Combine(SwiftStandardLibrariesPath, "libswiftCompatibility51.a"));
-			PublicSystemLibraries.Add(Path.Combine(SwiftStandardLibrariesPath, "libswiftCompatibility56.a"));
-			PublicSystemLibraries.Add(Path.Combine(SwiftStandardLibrariesPath, "libswiftCompatibilityConcurrency.a"));
-			PublicSystemLibraries.Add(Path.Combine(SwiftStandardLibrariesPath, "libswiftCompatibilityDynamicReplacements.a"));
-			PublicSystemLibraries.Add(Path.Combine(SwiftStandardLibrariesPath, "libswiftCompatibilityPacks.a"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");

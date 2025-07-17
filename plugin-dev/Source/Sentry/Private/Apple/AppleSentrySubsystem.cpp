@@ -8,6 +8,7 @@
 #include "AppleSentryId.h"
 #include "AppleSentrySamplingContext.h"
 #include "AppleSentryScope.h"
+#include "Convenience/AppleSentryMacro.h"
 #include "AppleSentryTransaction.h"
 #include "AppleSentryTransactionContext.h"
 #include "AppleSentryUser.h"
@@ -270,11 +271,11 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	SentryException* nativeException = [[SentryException alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
+	SentryException* nativeException = [[SENTRY_APPLE_CLASS(SentryException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
 	NSMutableArray* nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
 	[nativeExceptionArray addObject:nativeException];
 
-	SentryEvent* exceptionEvent = [[SentryEvent alloc] init];
+	SentryEvent* exceptionEvent = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
 
 	SentryId* nativeId = [SentrySDK captureEvent:exceptionEvent];
@@ -394,12 +395,16 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 		sampleDecision = traceParts[2].Equals(TEXT("1")) ? kSentrySampleDecisionYes : kSentrySampleDecisionNo;
 	}
 
-	SentryId* traceId = [[SentryId alloc] initWithUUIDString:traceParts[0].GetNSString()];
+#if PLATFORM_MAC
+	SentryId* traceId = [[SENTRY_APPLE_CLASS(_TtC6Sentry8SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
+#elif PLATFORM_IOS
+	SentryId* traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
+#endif
 
-	SentryTransactionContext* transactionContext = [[SentryTransactionContext alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
+	SentryTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
 																						  traceId:traceId
-																						   spanId:[[SentrySpanId alloc] init]
-																					 parentSpanId:[[SentrySpanId alloc] initWithValue:traceParts[1].GetNSString()]
+																						   spanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] init]
+																					 parentSpanId:[[SENTRY_APPLE_CLASS(SentrySpanId) alloc] initWithValue:traceParts[1].GetNSString()]
 																					parentSampled:sampleDecision
 																				 parentSampleRate:nil
 																				 parentSampleRand:nil];
@@ -420,16 +425,16 @@ void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> event
 
 	const FString& filePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*filePath);
 
-	SentryAttachment* attachment = [[SentryAttachment alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
+	SentryAttachment* attachment = [[SENTRY_APPLE_CLASS(SentryAttachment) alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
 
 	SentryOptions* options = [PrivateSentrySDKOnly options];
 	int32 size = options.maxAttachmentSize;
 
-	SentryEnvelopeItem* envelopeItem = [[SentryEnvelopeItem alloc] initWithAttachment:attachment maxAttachmentSize:size];
+	SentryEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryEnvelopeItem) alloc] initWithAttachment:attachment maxAttachmentSize:size];
 
 	SentryId* id = StaticCastSharedPtr<FAppleSentryId>(eventId)->GetNativeObject();
 
-	SentryEnvelope* envelope = [[SentryEnvelope alloc] initWithId:id singleItem:envelopeItem];
+	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
 
 	[PrivateSentrySDKOnly captureEnvelope:envelope];
 

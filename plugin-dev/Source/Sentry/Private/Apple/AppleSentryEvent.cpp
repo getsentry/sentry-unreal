@@ -6,10 +6,11 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryEvent::FAppleSentryEvent()
 {
-	EventApple = [[SentryEvent alloc] init];
+	EventApple = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
 }
 
 FAppleSentryEvent::FAppleSentryEvent(SentryEvent* event)
