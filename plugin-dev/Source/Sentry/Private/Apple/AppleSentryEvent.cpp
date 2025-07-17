@@ -36,7 +36,7 @@ TSharedPtr<ISentryId> FAppleSentryEvent::GetId() const
 
 void FAppleSentryEvent::SetMessage(const FString& message)
 {
-	SentryMessage* msg = [SentryMessage alloc];
+	SentryMessage* msg = [SENTRY_APPLE_CLASS(SentryMessage) alloc];
 	msg.message = message.GetNSString();
 	EventApple.message = msg;
 }
