@@ -41,6 +41,8 @@ jobs:
         run: |
           if [[ "$TARGET" == "Android" ]]; then
             submodule="modules/sentry-java"
+          else if [[ "$TARGET" == "Mac" ]]; then
+            submodule="modules/sentry-cocoa"
           else
             submodule="modules/sentry-native"
           fi
