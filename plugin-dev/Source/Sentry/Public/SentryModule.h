@@ -44,10 +44,19 @@ public:
 	/** Gets flag indicating whether plugin was downloaded from UE Marketplace. */
 	static bool IsMarketplaceVersion();
 
+#if PLATFORM_MAC
+	/** Gets handle to dynamically loaded sentry library. */
+	void* GetSentryLibHandle() const;
+#endif
+
 	static const FName ModuleName;
 
 	static const bool IsMarketplace;
 
 private:
 	USentrySettings* SentrySettings = nullptr;
+
+#if PLATFORM_MAC
+	void* mDllHandleSentry = nullptr;
+#endif
 };

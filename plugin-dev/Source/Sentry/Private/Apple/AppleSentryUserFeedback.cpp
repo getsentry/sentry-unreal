@@ -5,18 +5,28 @@
 #include "AppleSentryId.h"
 
 #include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryUserFeedback::FAppleSentryUserFeedback(TSharedPtr<ISentryId> eventId)
 {
 	TSharedPtr<FAppleSentryId> idIOS = StaticCastSharedPtr<FAppleSentryId>(eventId);
 	SentryId* id = idIOS->GetNativeObject();
 
-	UserFeedbackApple = [[SentryFeedback alloc] initWithMessage:@""
-														   name:nil
-														  email:nil
-														 source:SentryFeedbackSourceCustom
-											  associatedEventId:id
-													attachments:nil];
+#if PLATFORM_MAC
+	UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:@""
+																							name:nil
+																						   email:nil
+																						  source:SentryFeedbackSourceCustom
+																			   associatedEventId:id
+																					 attachments:nil];
+#elif PLATFORM_IOS
+	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:@""
+																			   name:nil
+																			  email:nil
+																			 source:SentryFeedbackSourceCustom
+																  associatedEventId:id
+																		attachments:nil];
+#endif
 }
 
 FAppleSentryUserFeedback::~FAppleSentryUserFeedback()
