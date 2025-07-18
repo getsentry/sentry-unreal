@@ -85,7 +85,7 @@ jobs:
       - name: Install Mac Dependencies
         if: ${{ inputs.target == 'Mac' && steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          xcodes select 15.0.1
+          xcodes select 14.2
           swiftc --version
 
       - uses: actions/setup-java@v4
