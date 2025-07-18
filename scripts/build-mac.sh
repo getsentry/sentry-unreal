@@ -8,23 +8,28 @@ rm -rf "${sentryArtifactsDestination}/"*
 
 pushd "${sentryCocoaRoot}"
 
-xcodebuild archive \
-    -project Sentry.xcodeproj/ \
-    -scheme "Sentry" \
-    -configuration "ReleaseWithoutUIKit" \
-    -sdk "macosx" \
-    -archivePath "./Carthage/archive/Sentry/macosx.xcarchive" \
-    CODE_SIGNING_REQUIRED=NO \
-    SKIP_INSTALL=NO \
-    CODE_SIGN_IDENTITY= \
-    CARTHAGE=YES \
-    MACH_O_TYPE="staticlib" \
-    ENABLE_CODE_COVERAGE=NO \
-    GCC_GENERATE_DEBUGGING_SYMBOLS="YES" \
-    SENTRY_NO_UIKIT=1 \
-    OTHER_LDFLAGS=""
+# xcodebuild archive \
+#     -project Sentry.xcodeproj/ \
+#     -scheme "Sentry" \
+#     -configuration "ReleaseWithoutUIKit" \
+#     -sdk "macosx" \
+#     -archivePath "./Carthage/archive/Sentry/macosx.xcarchive" \
+#     CODE_SIGNING_REQUIRED=NO \
+#     SKIP_INSTALL=NO \
+#     CODE_SIGN_IDENTITY= \
+#     CARTHAGE=YES \
+#     MACH_O_TYPE="staticlib" \
+#     ENABLE_CODE_COVERAGE=NO \
+#     GCC_GENERATE_DEBUGGING_SYMBOLS="YES" \
+#     OTHER_LDFLAGS=""
 
 # ./scripts/build-xcframework-local.sh macOSOnly StaticOnly
+
+./scripts/sentry-xcodebuild.sh \
+            --platform macOS \
+            --os latest \
+            --command build \
+            --configuration ReleaseWithoutUIKit
 
 xcodebuild -create-xcframework -framework Carthage/archive/Sentry/macosx.xcarchive/Products/Library/Frameworks/Sentry.framework -output Carthage/Sentry.xcframework
 
