@@ -21,6 +21,7 @@ xcodebuild archive \
     MACH_O_TYPE="staticlib" \
     ENABLE_CODE_COVERAGE=NO \
     GCC_GENERATE_DEBUGGING_SYMBOLS="YES" \
+    SENTRY_NO_UIKIT=1 \
     OTHER_LDFLAGS=""
 
 # ./scripts/build-xcframework-local.sh macOSOnly StaticOnly
