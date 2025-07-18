@@ -21,6 +21,17 @@ jobs:
           fi          
           echo "✓ All source files have no BOM."
 
+      - name: Check Copyright Notice
+        run: |
+          echo "Checking for copyright notice in source files..."
+          files_without_copyright=$(find plugin-dev/Source/Sentry plugin-dev/Source/SentryEditor -name "*.h" -o -name "*.cpp" | xargs grep -L "Copyright (c) 2025 Sentry. All Rights Reserved." 2>/dev/null || true)
+          if [ -n "$files_without_copyright" ]; then
+            echo "ERROR: Found files without proper copyright notice:"
+            echo "$files_without_copyright"
+            exit 1
+          fi
+          echo "✓ All source files have proper copyright notice."
+
       - name: Clang Format
         id: clang-format
         run: |
