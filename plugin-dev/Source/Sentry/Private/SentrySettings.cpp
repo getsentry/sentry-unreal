@@ -51,8 +51,6 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	{
 		LoadDebugSymbolsProperties();
 	}
-
-	CheckLegacySettings();
 }
 
 #if WITH_EDITOR
@@ -150,53 +148,5 @@ void USentrySettings::LoadDebugSymbolsProperties()
 		{
 			UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin can't find sentry.properties file"));
 		}
-	}
-}
-
-void USentrySettings::CheckLegacySettings()
-{
-	bool IsSettingsDirty = false;
-
-	const FString SentrySection = TEXT("/Script/Sentry.SentrySettings");
-	const FString ConfigFilename = GetDefaultConfigFilename();
-
-	// Settings renamed in 0.9.0
-
-	const FString DsnLegacyKey = TEXT("DsnUrl");
-	FString DsnLegacyValue = TEXT("");
-	if (GConfig->GetString(*SentrySection, *DsnLegacyKey, DsnLegacyValue, *ConfigFilename))
-	{
-		Dsn = DsnLegacyValue;
-		GConfig->SetString(*SentrySection, TEXT("Dsn"), *Dsn, *ConfigFilename);
-		GConfig->RemoveKey(*SentrySection, *DsnLegacyKey, *ConfigFilename);
-		IsSettingsDirty = true;
-	}
-
-	const FString DebugLegacyKey = TEXT("EnableVerboseLogging");
-	bool DebugLegacyValue;
-	if (GConfig->GetBool(*SentrySection, *DebugLegacyKey, DebugLegacyValue, *ConfigFilename))
-	{
-		Debug = DebugLegacyValue;
-		GConfig->SetBool(*SentrySection, TEXT("Debug"), Debug, *ConfigFilename);
-		GConfig->RemoveKey(*SentrySection, *DebugLegacyKey, *ConfigFilename);
-		IsSettingsDirty = true;
-	}
-
-	const FString AttachStacktraceLegacyKey = TEXT("EnableStackTrace");
-	bool AttachStacktraceLegacyValue;
-	if (GConfig->GetBool(*SentrySection, *AttachStacktraceLegacyKey, AttachStacktraceLegacyValue, *ConfigFilename))
-	{
-		AttachStacktrace = AttachStacktraceLegacyValue;
-		GConfig->SetBool(*SentrySection, TEXT("AttachStacktrace"), AttachStacktrace, *ConfigFilename);
-		GConfig->RemoveKey(*SentrySection, *AttachStacktraceLegacyKey, *ConfigFilename);
-		IsSettingsDirty = true;
-	}
-
-	// Place newly renamed settings here specifying the release for which changes take place
-
-	if (IsSettingsDirty)
-	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry settings were marked as dirty (if not checked out in Perforce these need to be updated manually)"));
-		GConfig->Flush(false, *ConfigFilename);
 	}
 }
