@@ -5,6 +5,7 @@
 #include "SentrySettings.h"
 
 #include "Developer/Settings/Public/ISettingsModule.h"
+#include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
@@ -23,6 +24,17 @@ void FSentryModule::StartupModule()
 	SentrySettings = NewObject<USentrySettings>(GetTransientPackage(), "SentrySettings", RF_Standalone);
 	SentrySettings->AddToRoot();
 
+#if PLATFORM_MAC
+	// Load Sentry Cocoa dynamic library
+	FString LibraryPath = FPaths::Combine(GetBinariesPath(), TEXT("sentry.dylib"));
+	mDllHandleSentry = FPlatformProcess::GetDllHandle(*LibraryPath);
+
+	if (!mDllHandleSentry)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to load sentry.dylib from %s"), *LibraryPath);
+	}
+#endif
+
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings("Project", "Plugins", "Sentry",
@@ -36,6 +48,15 @@ void FSentryModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+
+#if PLATFORM_MAC
+	// Free sentry dynamic library
+	if (mDllHandleSentry)
+	{
+		FPlatformProcess::FreeDllHandle(mDllHandleSentry);
+		mDllHandleSentry = nullptr;
+	}
+#endif
 
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
@@ -98,6 +119,13 @@ bool FSentryModule::IsMarketplaceVersion()
 {
 	return IsMarketplace;
 }
+
+#if PLATFORM_MAC
+void* FSentryModule::GetSentryLibHandle() const
+{
+	return mDllHandleSentry;
+}
+#endif
 
 #undef LOCTEXT_NAMESPACE
 
