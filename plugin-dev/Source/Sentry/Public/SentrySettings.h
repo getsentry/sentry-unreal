@@ -388,7 +388,6 @@ private:
 	FString GetDefaultEnvironmentName();
 
 	void LoadDebugSymbolsProperties();
-	void CheckLegacySettings();
 
 	bool bIsDirty;
 };

@@ -4,7 +4,8 @@
 
 ### Breaking Changes
 
-- On mobile platforms, the default traces sampler will no longer be created automatically if one is not explicitly configured in the plugin settings (`General -> Performance Monitoring`)
+- On mobile platforms, the default traces sampler will no longer be created automatically if one is not explicitly configured in the plugin settings (`General -> Performance Monitoring`).
+- If upgrading from a version prior to 0.9.0 legacy settings `DsnUrl`, `EnableVerboseLogging` and `EnableStackTrace` will no longer be read from the project configuration file automatically. Instead, you must re-set them in plugin settings to adopt the new format.
 
 ### Dependencies
 
