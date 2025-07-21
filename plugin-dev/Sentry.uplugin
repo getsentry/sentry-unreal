@@ -28,6 +28,12 @@
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
 		}
 	],
+	"PreBuildSteps":
+	{
+		"Mac": [
+			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n chmod +x \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" \nfi"
+		]
+	},
 	"PostBuildSteps":
 	{
 		"Mac": [
