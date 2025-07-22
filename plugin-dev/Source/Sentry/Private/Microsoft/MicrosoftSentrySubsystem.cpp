@@ -64,11 +64,6 @@ void FMicrosoftSentrySubsystem::ConfigureLogFileAttachment(sentry_options_t* Opt
 	sentry_options_add_attachmentw(Options, *FPaths::ConvertRelativePathToFull(LogFilePath));
 }
 
-void FMicrosoftSentrySubsystem::ConfigureScreenshotAttachment(sentry_options_t* Options)
-{
-	sentry_options_add_attachmentw(Options, *GetScreenshotPath());
-}
-
 void FMicrosoftSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);

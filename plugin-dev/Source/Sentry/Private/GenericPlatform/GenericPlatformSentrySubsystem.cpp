@@ -172,7 +172,10 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	TryCaptureScreenshot();
+	if (isScreenshotAttachmentEnabled)
+	{
+		TryCaptureScreenshot();
+	}
 
 	if (GIsGPUCrashed)
 	{
@@ -270,7 +273,8 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	{
 		isScreenshotAttachmentEnabled = true;
 
-		ConfigureScreenshotAttachment(options);
+		// Clear screenshot captured during previous session if any
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("screenshots")), false, true);
 	}
 
 	if (settings->AttachGpuDump)
@@ -663,15 +667,20 @@ USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadc
 	return beforeBreadcrumb;
 }
 
-void FGenericPlatformSentrySubsystem::TryCaptureScreenshot() const
+void FGenericPlatformSentrySubsystem::TryCaptureScreenshot()
 {
-	if (!isScreenshotAttachmentEnabled)
+	const FString& ScreenshotPath = GetScreenshotPath();
+
+	if (!SentryScreenshotUtils::CaptureScreenshot(ScreenshotPath))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Screenshot attachment is disabled in plugin settings."));
+		// Screenshot capturing is a best-effort solution so if one wasn't captured skip the attachment
 		return;
 	}
 
-	SentryScreenshotUtils::CaptureScreenshot(GetScreenshotPath());
+	TSharedPtr<ISentryAttachment> ScreenshotAttachment =
+		MakeShareable(new FGenericPlatformSentryAttachment(ScreenshotPath, TEXT("screenshot.png"), TEXT("image/png")));
+
+	AddFileAttachment(ScreenshotAttachment);
 }
 
 FString FGenericPlatformSentrySubsystem::GetGpuDumpBackupPath() const
@@ -702,7 +711,7 @@ FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
 
 FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 {
-	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), TEXT("screenshot.png"));
+	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
 	const FString ScreenshotFullPath = FPaths::ConvertRelativePathToFull(ScreenshotPath);
 
 	return ScreenshotFullPath;
