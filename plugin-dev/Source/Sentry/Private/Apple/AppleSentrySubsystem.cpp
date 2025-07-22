@@ -292,9 +292,9 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 
 void FAppleSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
 {
-	TSharedPtr<FAppleSentryUserFeedback> userFeedbackIOS = StaticCastSharedPtr<FAppleSentryUserFeedback>(userFeedback);
+	TSharedPtr<FAppleSentryUserFeedback> userFeedbackApple = StaticCastSharedPtr<FAppleSentryUserFeedback>(userFeedback);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) captureFeedback:userFeedbackIOS->GetNativeObject()];
+	[SENTRY_APPLE_CLASS(SentrySDK) captureFeedback:FAppleSentryUserFeedback::CreateSentryFeedback(userFeedbackApple)];
 }
 
 void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)

@@ -310,7 +310,7 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryEnvelopeItemType.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFormatter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFramesTracker.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryLog.h
+Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryLogC.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryNSDictionarySanitize.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryOptions+HybridSDKs.h
@@ -388,7 +388,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryHttpStatusCodeRange.h
 Source/ThirdParty/Mac/include/Sentry/SentryHub.h
 Source/ThirdParty/Mac/include/Sentry/SentryIntegrationProtocol.h
 Source/ThirdParty/Mac/include/Sentry/SentryInternalSerializable.h
-Source/ThirdParty/Mac/include/Sentry/SentryLog.h
+Source/ThirdParty/Mac/include/Sentry/SentryLogC.h
 Source/ThirdParty/Mac/include/Sentry/SentryMeasurementUnit.h
 Source/ThirdParty/Mac/include/Sentry/SentryMechanism.h
 Source/ThirdParty/Mac/include/Sentry/SentryMechanismMeta.h

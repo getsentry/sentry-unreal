@@ -14,6 +14,7 @@ public:
 	FAppleSentryUserFeedback(TSharedPtr<ISentryId> eventId);
 	virtual ~FAppleSentryUserFeedback() override;
 
+	void SetNativeObject(SentryFeedback* feedback);
 	SentryFeedback* GetNativeObject();
 
 	virtual void SetName(const FString& name) override;
@@ -23,7 +24,14 @@ public:
 	virtual void SetComment(const FString& comment) override;
 	virtual FString GetComment() const override;
 
+	static SentryFeedback* CreateSentryFeedback(TSharedPtr<FAppleSentryUserFeedback> feedback);
+
 private:
+	TSharedPtr<ISentryId> EventId;
+	FString Name;
+	FString Email;
+	FString Comment;
+
 	SentryFeedback* UserFeedbackApple;
 };
 

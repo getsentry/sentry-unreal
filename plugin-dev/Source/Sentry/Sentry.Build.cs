@@ -60,6 +60,8 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=0");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
+			PublicDefinitions.Add("SDK_V9=0");
+			PublicDefinitions.Add("SDK_v9=0");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
@@ -73,6 +75,8 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("COCOAPODS=0");
 			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
+			PublicDefinitions.Add("SDK_V9=0");
+			PublicDefinitions.Add("SDK_v9=0");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
