@@ -4,9 +4,9 @@
 
 ### Dependencies
 
-- Bump CLI from v2.50.0 to v2.50.1 ([#1020](https://github.com/getsentry/sentry-unreal/pull/1020))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2501)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.0...2.50.1)
+- Bump CLI from v2.50.0 to v2.50.2 ([#1020](https://github.com/getsentry/sentry-unreal/pull/1020), [#1021](https://github.com/getsentry/sentry-unreal/pull/1021))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2502)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.0...2.50.2)
 
 ## 1.0.0-beta.5
 
