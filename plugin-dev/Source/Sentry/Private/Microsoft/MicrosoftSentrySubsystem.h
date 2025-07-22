@@ -17,7 +17,6 @@ protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) override;
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
-	virtual void ConfigureScreenshotAttachment(sentry_options_t* Options) override;
 
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void AddByteAttachment(TSharedPtr<ISentryAttachment> attachment) override;

@@ -60,11 +60,6 @@ void FLinuxSentrySubsystem::ConfigureLogFileAttachment(sentry_options_t* Options
 	sentry_options_add_attachment(Options, TCHAR_TO_UTF8(*FPaths::ConvertRelativePathToFull(LogFilePath)));
 }
 
-void FLinuxSentrySubsystem::ConfigureScreenshotAttachment(sentry_options_t* Options)
-{
-	sentry_options_add_attachment(Options, TCHAR_TO_UTF8(*GetScreenshotPath()));
-}
-
 void FLinuxSentrySubsystem::ConfigureGpuDumpAttachment(sentry_options_t* Options)
 {
 	sentry_options_add_attachment(Options, TCHAR_TO_UTF8(*GetGpuDumpBackupPath()));

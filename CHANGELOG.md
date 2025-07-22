@@ -7,6 +7,10 @@
 - On mobile platforms, the default traces sampler will no longer be created automatically if one is not explicitly configured in the plugin settings (`General -> Performance Monitoring`).
 - If upgrading from a version prior to 0.9.0 legacy settings `DsnUrl`, `EnableVerboseLogging` and `EnableStackTrace` will no longer be read from the project configuration file automatically. Instead, you must re-set them in plugin settings to adopt the new format.
 
+### Fixes
+
+- Avoid irrelevant screenshot being attached to captured crash event ([#1019](https://github.com/getsentry/sentry-unreal/pull/1019))
+
 ### Dependencies
 
 - Bump CLI from v2.46.0 to v2.50.0 ([#989](https://github.com/getsentry/sentry-unreal/pull/989), [#1001](https://github.com/getsentry/sentry-unreal/pull/1001), [#1015](https://github.com/getsentry/sentry-unreal/pull/1015), [#1016](https://github.com/getsentry/sentry-unreal/pull/1016))
