@@ -82,17 +82,17 @@ SentryFeedback* FAppleSentryUserFeedback::CreateSentryFeedback(TSharedPtr<FApple
 
 #if PLATFORM_MAC
 	return [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:feedback->Comment.GetNSString()
-																							name:feedback->Name.GetNSString()
-																						   email:feedback->Email.GetNSString()
-																						  source:SentryFeedbackSourceCustom
-																			   associatedEventId:id
-																					 attachments:nil];
-#elif PLATFORM_IOS
-	return [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:feedback->Comment.GetNSString()
 																			   name:feedback->Name.GetNSString()
 																			  email:feedback->Email.GetNSString()
 																			 source:SentryFeedbackSourceCustom
 																  associatedEventId:id
 																		attachments:nil];
+#elif PLATFORM_IOS
+	return [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:feedback->Comment.GetNSString()
+																  name:feedback->Name.GetNSString()
+																 email:feedback->Email.GetNSString()
+																source:SentryFeedbackSourceCustom
+													 associatedEventId:id
+														   attachments:nil];
 #endif
 }
