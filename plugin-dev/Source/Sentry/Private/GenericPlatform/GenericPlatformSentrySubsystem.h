@@ -55,15 +55,13 @@ public:
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler();
 
 	void TryCaptureScreenshot();
-
-	FString GetGpuDumpBackupPath() const;
+	void TryCaptureGpuDump();
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) {}
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) {}
 	virtual void ConfigureCertsPath(sentry_options_t* Options) {}
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) {}
-	virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) {}
 	virtual void ConfigureNetworkConnectFunc(sentry_options_t* Options) {}
 
 	FString GetHandlerPath() const;
@@ -100,6 +98,7 @@ private:
 	bool isStackTraceEnabled;
 	bool isPiiAttachmentEnabled;
 	bool isScreenshotAttachmentEnabled;
+	bool isGpuDumpAttachmentEnabled;
 
 	FString databaseParentPath;
 };

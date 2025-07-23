@@ -16,7 +16,6 @@ protected:
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) override;
 	virtual void ConfigureCertsPath(sentry_options_t* Options) override;
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
-	virtual void ConfigureGpuDumpAttachment(sentry_options_t* Options) override;
 
 	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler"); }
 };
