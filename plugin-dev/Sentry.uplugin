@@ -31,7 +31,8 @@
 	"PreBuildSteps":
 	{
 		"Mac": [
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n chmod +x \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" \nfi"
+			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n chmod +x \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" \nfi",
+			"if [ -f \"$(PluginDir)/Source/ThirdParty/CLI/sentry-cli-Darwin-universal\" ]; then\n chmod +x \"$(PluginDir)/Source/ThirdParty/CLI/sentry-cli-Darwin-universal\" \nfi"
 		]
 	},
 	"PostBuildSteps":
@@ -44,9 +45,11 @@
 			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
 		],
 		"Win64": [
-			"setlocal enabledelayedexpansion",
-			"set \"CRASHPAD_HANDLER=$(PluginDir)/Binaries/Linux/crashpad_handler\"",
-			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%CRASHPAD_HANDLER%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Linux/bin/*\" \"$(PluginDir)/Binaries/Linux/\" /F /R /Y /I)\n)",
+			"setlocal enabledelayedexpansion", 
+			"set \"CRASHPAD_HANDLER_LINUX=$(PluginDir)/Binaries/Linux/crashpad_handler\"",
+			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%CRASHPAD_HANDLER_LINUX%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Linux/bin/*\" \"$(PluginDir)/Binaries/Linux/\" /F /R /Y /I)\n)",
+			"set \"CRASHPAD_HANDLER_WIN=$(PluginDir)/Binaries/Win64/crashpad_handler.exe\"",
+			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%CRASHPAD_HANDLER_WIN%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Win64/Crashpad/bin/*\" \"$(PluginDir)/Binaries/Win64/\" /F /R /Y /I)\n)",
 			"set \"SYM_UPLOAD_SCRIPT=$(PluginDir)/Scripts/upload-debug-symbols-win.bat\"",
 			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Warning: Sentry: Symbol upload script is missing. Skipping post build step.\n)",
 			"endlocal"

@@ -32,24 +32,6 @@ function packFiles([string] $publishingPlatform)
     Copy-Item "CHANGELOG.md" -Destination "package-release-$publishingPlatform/CHANGELOG.md"
     Copy-Item "LICENSE" -Destination "package-release-$publishingPlatform/LICENSE"
 
-    if ($publishingPlatform -eq "marketplace")
-    {
-        # Workaround for PowerShell 5.1 writing UTF8-BOM
-        # ======
-        # Set current directory so that ::WriteAllLines can accept a relative path
-        [System.Environment]::CurrentDirectory = (Get-Location).Path
-
-        # Find the specific package version of the SentryModule.cpp file
-        $sentryModuleCppPath = "package-release-$publishingPlatform/Source/Sentry/Private/SentryModule.cpp"
-
-        # We know the file is meant to be UTF8, so let's be explicit
-        $sentryModuleCppContents = Get-Content $sentryModuleCppPath -Encoding UTF8
-        $replacedCppContents = $sentryModuleCppContents -replace 'FSentryModule::IsMarketplace = false', 'FSentryModule::IsMarketplace = true'
-
-        # PowerShell 5.1 will write UT8-BOM if we use Out-File, so bypass this issue and use ::WriteAllLines
-        [System.IO.File]::WriteAllLines($sentryModuleCppPath, $replacedCppContents)
-    }
-
     $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
     $version = [regex]::Match("$pluginSpec", '"VersionName": "([^"]+)"').Groups[1].Value
     $engineVersions = Get-Content $PSScriptRoot/engine-versions.txt
