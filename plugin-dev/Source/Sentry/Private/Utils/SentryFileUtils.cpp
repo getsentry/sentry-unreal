@@ -59,12 +59,15 @@ FString SentryFileUtils::GetGpuDumpPath()
 		return FString("");
 	}
 
-	if (GpuDumpFiles.Num() > 1)
+	// By default, engine cleans up GPU dumps from the previous runs however this doesn't seem to be the case
+	// if https://github.com/EpicGames/UnrealEngine/pull/12648 patch is applied so we just return the newest one
+
+	for (int i = 0; i < GpuDumpFiles.Num(); ++i)
 	{
-		// By default, engine should handle clean up of GPU dumps  from the previous runs
-		UE_LOG(LogSentrySdk, Log, TEXT("There are multiple GPU dump files, can't determine reliably which one to pick."));
-		return FString("");
+		GpuDumpFiles[i] = FPaths::ProjectLogDir() / GpuDumpFiles[i];
 	}
 
-	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectLogDir() / GpuDumpFiles[0]));
+	GpuDumpFiles.Sort(FSentrySortFileByDatePredicate());
+
+	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GpuDumpFiles[0]);
 }

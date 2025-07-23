@@ -14,7 +14,10 @@ enum class ESentryAppTerminationType : uint8
 	BadFunctionPtr,
 	InvalidMemoryAccess,
 	StackOverflow,
+	OutOfMemory,
 	FastFail,
+	RenderThreadCrash,
+	GpuDebugCrash,
 	Assert,
 	Ensure
 };

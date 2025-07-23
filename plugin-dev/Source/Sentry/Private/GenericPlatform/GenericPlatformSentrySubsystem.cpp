@@ -177,9 +177,9 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		TryCaptureScreenshot();
 	}
 
-	if (GIsGPUCrashed)
+	if (GIsGPUCrashed && isGpuDumpAttachmentEnabled)
 	{
-		IFileManager::Get().Copy(*GetGpuDumpBackupPath(), *SentryFileUtils::GetGpuDumpPath());
+		TryCaptureGpuDump();
 	}
 
 	// At this point crash events are handled the same way as non-fatal ones,
@@ -238,6 +238,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isStackTraceEnabled(true)
 	, isPiiAttachmentEnabled(false)
 	, isScreenshotAttachmentEnabled(false)
+	, isGpuDumpAttachmentEnabled(false)
 {
 }
 
@@ -269,18 +270,14 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		databaseParentPath = FPaths::ProjectUserDir();
 	}
 
-	if (settings->AttachScreenshot)
+	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
+	if (isScreenshotAttachmentEnabled)
 	{
-		isScreenshotAttachmentEnabled = true;
-
 		// Clear screenshot captured during previous session if any
 		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("screenshots")), false, true);
 	}
 
-	if (settings->AttachGpuDump)
-	{
-		ConfigureGpuDumpAttachment(options);
-	}
+	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
 
 	if (settings->UseProxy)
 	{
@@ -683,14 +680,19 @@ void FGenericPlatformSentrySubsystem::TryCaptureScreenshot()
 	AddFileAttachment(ScreenshotAttachment);
 }
 
-FString FGenericPlatformSentrySubsystem::GetGpuDumpBackupPath() const
+void FGenericPlatformSentrySubsystem::TryCaptureGpuDump()
 {
-	static const FString DateTimeString = FDateTime::Now().ToString();
+	const FString& GpuDumpPath = SentryFileUtils::GetGpuDumpPath();
 
-	const FString GpuDumpPath = FPaths::Combine(GetDatabasePath(), TEXT("gpudumps"), *FString::Printf(TEXT("UEAftermath-%s.nv-gpudmp"), *DateTimeString));
-	const FString GpuDumpFullPath = FPaths::ConvertRelativePathToFull(GpuDumpPath);
+	if (!IFileManager::Get().FileExists(*GpuDumpPath))
+	{
+		return;
+	}
 
-	return GpuDumpFullPath;
+	TSharedPtr<ISentryAttachment> GpuDumpAttachment =
+		MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
+
+	AddFileAttachment(GpuDumpAttachment);
 }
 
 FString FGenericPlatformSentrySubsystem::GetHandlerPath() const

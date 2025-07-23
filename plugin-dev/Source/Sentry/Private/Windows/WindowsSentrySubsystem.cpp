@@ -10,11 +10,6 @@
 #include "Windows/Infrastructure/WindowsSentryConverters.h"
 #include "Windows/WindowsPlatformStackWalk.h"
 
-void FWindowsSentrySubsystem::ConfigureGpuDumpAttachment(sentry_options_t* Options)
-{
-	sentry_options_add_attachmentw(Options, *GetGpuDumpBackupPath());
-}
-
 static void PrintCrashLog(const sentry_ucontext_t* uctx)
 {
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
