@@ -2,6 +2,7 @@
 
 #include "SentryPlaygroundUtils.h"
 
+#include "Engine/Engine.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -43,6 +44,22 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			FMemory::Memset((void*)buffer, 0xAA, sizeof(buffer));
 			UE_LOG(LogTemp, VeryVerbose, TEXT("Stack addr: %p"), &buffer);
 			Terminate(Type);
+			break;
+		case ESentryAppTerminationType::OutOfMemory:
+			{
+				size_t Count = 1024;
+				while (true)
+				{
+					void* _ = FMemory::Malloc(Count);
+					Count *= 2;
+				}
+			}
+			break;
+		case ESentryAppTerminationType::RenderThreadCrash:
+			GEngine->Exec(nullptr, TEXT("Debug RenderCrash"));
+			break;
+		case ESentryAppTerminationType::GpuDebugCrash:
+			GEngine->Exec(nullptr, TEXT("GPUDebugCrash platformbreak"));
 			break;
 		case ESentryAppTerminationType::FastFail:
 			{
