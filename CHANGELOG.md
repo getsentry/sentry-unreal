@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- No more warnings about missing GPU crash dump attachment when capturing non-GPU events ([#1022](https://github.com/getsentry/sentry-unreal/pull/1022))
+
 ### Dependencies
 
 - Bump CLI from v2.50.0 to v2.50.2 ([#1020](https://github.com/getsentry/sentry-unreal/pull/1020), [#1021](https://github.com/getsentry/sentry-unreal/pull/1021))
