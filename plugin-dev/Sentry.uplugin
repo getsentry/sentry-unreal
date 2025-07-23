@@ -31,7 +31,8 @@
 	"PreBuildSteps":
 	{
 		"Mac": [
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n chmod +x \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" \nfi"
+			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n chmod +x \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" \nfi",
+			"if [ -f \"$(PluginDir)/Source/ThirdParty/CLI/sentry-cli-Darwin-universal\" ]; then\n chmod +x \"$(PluginDir)/Source/ThirdParty/CLI/sentry-cli-Darwin-universal\" \nfi"
 		]
 	},
 	"PostBuildSteps":
