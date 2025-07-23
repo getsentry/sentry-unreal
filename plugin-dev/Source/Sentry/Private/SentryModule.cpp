@@ -16,8 +16,6 @@
 
 const FName FSentryModule::ModuleName = "Sentry";
 
-const bool FSentryModule::IsMarketplace = false;
-
 void FSentryModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
