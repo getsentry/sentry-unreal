@@ -59,8 +59,8 @@ FString SentryFileUtils::GetGpuDumpPath()
 		return FString("");
 	}
 
-	// By default, engine used to handle clean up of GPU dumps from the previous runs
-	// however this doesn't seem to be the case starting from 5.5 so currently we just return the newest one
+	// By default, engine cleans up GPU dumps from the previous runs however this doesn't seem to be the case
+	// if https://github.com/EpicGames/UnrealEngine/pull/12648 patch is applied so we just return the newest one
 
 	for (int i = 0; i < GpuDumpFiles.Num(); ++i)
 	{
