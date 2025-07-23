@@ -117,7 +117,16 @@ FString FSentryModule::GetPluginVersion()
 
 bool FSentryModule::IsMarketplaceVersion()
 {
-	return IsMarketplace;
+	// Marketplace version check heuristic:
+	// In case the plugin installed via Epic Games launcher path to its base dir supposed to be <EngineDir>/Plugins/Marketplace/Sentry
+	// This approach is not foolproof as users may manually copy plugin to this location
+
+	const FString PluginPath = FPaths::ConvertRelativePathToFull(
+		IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir());
+	const FString MarketplacePrefix = FPaths::ConvertRelativePathToFull(
+		FPaths::Combine(FPaths::EnginePluginsDir(), TEXT("Marketplace")));
+
+	return PluginPath.StartsWith(MarketplacePrefix);
 }
 
 #if PLATFORM_MAC
