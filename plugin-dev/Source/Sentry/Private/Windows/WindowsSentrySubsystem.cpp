@@ -7,6 +7,7 @@
 #include "SentryDefines.h"
 
 #include "Misc/OutputDeviceRedirector.h"
+#include "Misc/Paths.h"
 #include "Windows/Infrastructure/WindowsSentryConverters.h"
 #include "Windows/WindowsPlatformStackWalk.h"
 
@@ -55,6 +56,19 @@ static void PrintCrashLog(const sentry_ucontext_t* uctx)
 #endif // !UE_VERSION_OLDER_THAN(5, 6, 0)
 
 #endif // !UE_VERSION_OLDER_THAN(5, 0, 0)
+}
+
+void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
+{
+	const FString HandlerPath = GetHandlerPath();
+
+	if (!FPaths::FileExists(HandlerPath))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. Please make sure that the plugin was rebuilt to avoid initialization failure."));
+		return;
+	}
+
+	sentry_options_set_handler_pathw(Options, *HandlerPath);
 }
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
