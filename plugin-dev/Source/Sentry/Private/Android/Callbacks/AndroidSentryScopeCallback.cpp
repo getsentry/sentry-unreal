@@ -2,12 +2,9 @@
 
 #include "AndroidSentryScopeCallback.h"
 
-#include "HAL/CriticalSection.h"
-
 int64 AndroidSentryScopeCallback::NextDelegateID;
 TMap<int64, FSentryScopeDelegate> AndroidSentryScopeCallback::ScopeDelegates;
-
-FCriticalSection CriticalSection;
+FCriticalSection AndroidSentryScopeCallback::CriticalSection;
 
 int64 AndroidSentryScopeCallback::SaveDelegate(const FSentryScopeDelegate& onConfigure)
 {
