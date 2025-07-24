@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The FAB plugin version no longer opts out of Crashpad handler configuration ([#1028](https://github.com/getsentry/sentry-unreal/pull/1028))
+
 ## 1.0.0-beta.6
 
 ### Fixes
