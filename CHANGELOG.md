@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The FAB version of the plugin builds successfully on Android and iOS ([#1027](https://github.com/getsentry/sentry-unreal/pull/1027))
+
 ## 1.0.0-beta.6
 
 ### Fixes

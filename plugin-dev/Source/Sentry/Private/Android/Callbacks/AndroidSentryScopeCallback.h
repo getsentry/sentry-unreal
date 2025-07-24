@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HAL/CriticalSection.h"
 
 #include "Android/AndroidSentrySubsystem.h"
 
@@ -16,4 +17,5 @@ public:
 private:
 	static int64 NextDelegateID;
 	static TMap<int64, FSentryScopeDelegate> ScopeDelegates;
+	static FCriticalSection CriticalSection;
 };
