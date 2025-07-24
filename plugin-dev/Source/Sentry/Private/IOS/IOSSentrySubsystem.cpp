@@ -2,8 +2,6 @@
 
 #include "IOS/IOSSentrySubsystem.h"
 
-#include "IOS/IOSAppDelegate.h"
-
 #include "SentryDefines.h"
 #include "SentrySettings.h"
 
@@ -14,6 +12,17 @@
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+
+// In UE 5.5 and newer, PLATFORM_VISIONOS may be incorrectly set to true during iOS packaging
+// causing build errors due to engine's IOSAppDelegate.h including visionOS-specific headers.
+#pragma push_macro("PLATFORM_VISIONOS")
+
+#undef PLATFORM_VISIONOS
+#define PLATFORM_VISIONOS 0
+
+#include "IOS/IOSAppDelegate.h"
+
+#pragma pop_macro("PLATFORM_VISIONOS")
 
 static FIOSSentrySubsystem* GIOSSentrySubsystem = nullptr;
 
