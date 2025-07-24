@@ -428,7 +428,7 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeLinuxBinariesStatusRow(FNa
 					IsCompilingLinuxBinaries = true;
 
 					// In case the plugin installed via Epic Games launcher it's supposed to be <EngineDir>/Plugins/Marketplace/Sentry
-					const FString PluginPath = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
+					const FString PluginPath = FPaths::ConvertRelativePathToFull(IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir());
 
 					const FString TempLinuxBinariesPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT("Intermediate"), TEXT("SentryLinuxBinaries")));
 
