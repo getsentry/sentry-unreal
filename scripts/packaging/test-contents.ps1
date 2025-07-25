@@ -1,5 +1,4 @@
-# Verifies the contents of the plugin package against a snapshot files
-# for two publishing platforms - GitHub and UE Marketplace.
+# Verifies the contents of the plugin package against a snapshot file
 # 'pack.ps1' must have already been run.
 
 # To accept a new snapshot file, run 'pwsh ./test-contents.ps1 accept'
@@ -10,9 +9,9 @@ $projectRoot = "$PSScriptRoot/../.."
 
 $accept = $args.Count -gt 0 -and $args[0] -eq "accept"
 
-function testFiles([string] $publishingPlatform)
+function testFiles()
 {
-    $snapshotFile = "$PSScriptRoot/package-$publishingPlatform.snapshot"
+    $snapshotFile = "$PSScriptRoot/package.snapshot"
 
     if (-not(Test-Path -Path $snapshotFile))
     {
@@ -28,7 +27,7 @@ function testFiles([string] $publishingPlatform)
 
     Write-Host "Searching version $version release packages..."
 
-    $packages = Get-ChildItem -Path "$projectRoot/*" -Include "sentry-unreal-$version-engine*-$publishingPlatform.zip"
+    $packages = Get-ChildItem -Path "$projectRoot/*" -Include "sentry-unreal-$version-engine*.zip"
     $expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
     if ($packages.Length -ne $expectedPackagesCount)
     {
@@ -66,5 +65,4 @@ function testFiles([string] $publishingPlatform)
     }
 }
 
-testFiles("github")
-testFiles("marketplace")
+testFiles()

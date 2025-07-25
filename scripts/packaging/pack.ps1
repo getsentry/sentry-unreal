@@ -1,13 +1,9 @@
-# Packages plugin files for two publishing platforms - GitHub and UE Marketplace.
+# Packages plugin files for publishing to GitHub Releases
 
-# The UE Marketplace version doesn't include `.exe`, `.bat` and `.sh` files due to certain
-# platform restrictions: https://www.unrealengine.com/en-US/marketplace-guidelines#262e
-# Plugin provides tools allowing to download these files manually.
-
-function packFiles([string] $publishingPlatform)
+function packFiles()
 {
-    Remove-Item "package-release-$publishingPlatform" -Force -Recurse -ErrorAction SilentlyContinue
-    New-Item "package-release-$publishingPlatform" -ItemType Directory
+    Remove-Item "package-release" -Force -Recurse -ErrorAction SilentlyContinue
+    New-Item "package-release" -ItemType Directory
 
     $exclude = @(
         'Sentry.uplugin',
@@ -17,37 +13,24 @@ function packFiles([string] $publishingPlatform)
         'Intermediate'
     )
 
-    if ($publishingPlatform -eq "marketplace")
-    {
-        $exclude += @(
-            'sentry-cli-Windows-x86_64.exe',
-            'upload-debug-symbols-win.bat',
-            'upload-debug-symbols.sh',
-            'crashpad_handler.exe'
-            'crashpad_wer.dll'
-        )
-    }
-
-    Copy-Item "plugin-dev/*" "package-release-$publishingPlatform/" -Exclude $exclude -Recurse
-    Copy-Item "CHANGELOG.md" -Destination "package-release-$publishingPlatform/CHANGELOG.md"
-    Copy-Item "LICENSE" -Destination "package-release-$publishingPlatform/LICENSE"
+    Copy-Item "plugin-dev/*" "package-release/" -Exclude $exclude -Recurse
+    Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
+    Copy-Item "LICENSE" -Destination "package-release/LICENSE"
 
     $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
     $version = [regex]::Match("$pluginSpec", '"VersionName": "([^"]+)"').Groups[1].Value
     $engineVersions = Get-Content $PSScriptRoot/engine-versions.txt
     foreach ($engineVersion in $engineVersions)
     {
-        $packageName = "sentry-unreal-$version-engine$engineVersion-$publishingPlatform.zip"
+        $packageName = "sentry-unreal-$version-engine$engineVersion.zip"
         Write-Host "Creating a release package for Unreal $engineVersion as $packageName"
 
         $newPluginSpec = $pluginSpec
 
         # Add EngineVersion key only for marketplace package to avoid warnings in licensee versions of Unreal
         # where github package is used (https://github.com/getsentry/sentry-unreal/issues/811)
-        if ($publishingPlatform -eq "marketplace")
-        {
-            $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '.0",') + @($pluginSpec[1..($pluginSpec.count)])
-        }
+
+        $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '.0",') + @($pluginSpec[1..($pluginSpec.count)])
 
         # Handle platform name difference for UE 4.27
         if ($engineVersion -eq "4.27")
@@ -55,7 +38,7 @@ function packFiles([string] $publishingPlatform)
             $newPluginSpec = $newPluginSpec -replace '"LinuxArm64"', '"LinuxAArch64"'
         }
 
-        $newPluginSpec | Out-File "package-release-$publishingPlatform/Sentry.uplugin"
+        $newPluginSpec | Out-File "package-release/Sentry.uplugin"
 
         Remove-Item -ErrorAction SilentlyContinue $packageName
 
@@ -65,7 +48,7 @@ function packFiles([string] $publishingPlatform)
         # so that we retain file permissions
         # For more information, see https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/36
         # NOTE: This requires .NET 6+: https://github.com/dotnet/runtime/issues/1548
-        Push-Location package-release-$publishingPlatform
+        Push-Location package-release
         try
         {
             $location = Get-Location
@@ -83,5 +66,4 @@ function packFiles([string] $publishingPlatform)
     }
 }
 
-packFiles("github")
-packFiles("marketplace")
+packFiles()
