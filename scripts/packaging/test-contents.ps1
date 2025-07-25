@@ -65,4 +65,4 @@ function testFiles()
     }
 }
 
-testFiles()
+testFiles
