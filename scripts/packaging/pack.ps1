@@ -65,4 +65,4 @@ function packFiles()
     }
 }
 
-packFiles()
+packFiles
