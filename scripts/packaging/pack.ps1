@@ -27,8 +27,7 @@ function packFiles()
 
         $newPluginSpec = $pluginSpec
 
-        # Add EngineVersion key only for marketplace package to avoid warnings in licensee versions of Unreal
-        # where github package is used (https://github.com/getsentry/sentry-unreal/issues/811)
+        # Adding EngineVersion key may cause warnings when using package in licensee engine builds (https://github.com/getsentry/sentry-unreal/issues/811)
 
         $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '.0",') + @($pluginSpec[1..($pluginSpec.count)])
 
