@@ -48,7 +48,7 @@ jobs:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: |
           New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
-          Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION-github.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
+          Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
 
       - name: Run tests
         id: run-tests
