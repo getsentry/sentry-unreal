@@ -64,7 +64,7 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 	if (!FPaths::FileExists(HandlerPath))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found."));
+		UE_LOG(LogSentrySdk, Error, TEXT("Crashpad executable couldn't be found."));
 		return;
 	}
 
