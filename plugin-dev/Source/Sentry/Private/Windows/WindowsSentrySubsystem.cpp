@@ -64,7 +64,7 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 	if (!FPaths::FileExists(HandlerPath))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found so Breakpad will be used instead. Please make sure that the plugin was rebuilt to avoid initialization failure."));
+		UE_LOG(LogSentrySdk, Log, TEXT("Crashpad executable couldn't be found."));
 		return;
 	}
 
