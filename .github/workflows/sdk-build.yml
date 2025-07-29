@@ -73,7 +73,7 @@ jobs:
           sudo apt-get -y install libc++-16-dev libc++abi-16-dev libstdc++-11-dev zlib1g-dev libcurl4-openssl-dev
 
       - name: Install Windows Dependencies
-        if: ${{ (inputs.target == 'Win64-Crashpad' || inputs.target == 'Win64-Breakpad') && steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ inputs.target == 'Win64' && steps.cache.outputs.cache-hit != 'true' }}
         shell: pwsh
         run: |
           $ProgressPreference = 'SilentlyContinue'

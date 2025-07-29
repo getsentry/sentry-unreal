@@ -171,7 +171,7 @@
             <true>
                 <if condition="bUseLegacyGradlePlugin">
                     <true>
-                        <log text="Using legacy Sentry Gradle plugin 2.1.5 for Android debug symbol upload."/>
+                        <log text="Using legacy Sentry Gradle plugin for Android debug symbol upload."/>
                         <insert>
                             dependencies {
                                 classpath 'com.android.tools.build:gradle:3.5.4'
@@ -180,7 +180,7 @@
                         </insert>
                     </true>
                     <false>
-                        <log text="Using Sentry Gradle plugin 4.11.0 for Android debug symbol upload."/>
+                        <log text="Using Sentry Gradle plugin for Android debug symbol upload."/>
                         <log text="Enable legacy Sentry Gradle plugin in project settings in case current version conflicts with other plugins (for UE 5.4 and older)."/>
                         <insert>
                             dependencies {

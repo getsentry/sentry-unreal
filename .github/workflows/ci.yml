@@ -42,20 +42,14 @@ jobs:
       runsOn: ubuntu-22.04-arm
       container: arm64v8/ubuntu:20.04
 
-  windows-crashpad-sdk:
+  windows-sdk:
     uses: ./.github/workflows/sdk-build.yml
     with:
-      target: Win64-Crashpad
-      runsOn: windows-2022
-
-  windows-breakpad-sdk:
-    uses: ./.github/workflows/sdk-build.yml
-    with:
-      target: Win64-Breakpad
+      target: Win64
       runsOn: windows-2022
 
   package-preparation:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-crashpad-sdk, windows-breakpad-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-sdk]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -95,13 +89,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: Win64-Crashpad-sdk
-          path: plugin-dev/Source/ThirdParty/Win64/Crashpad
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: Win64-Breakpad-sdk
-          path: plugin-dev/Source/ThirdParty/Win64/Breakpad
+          name: Win64-sdk
+          path: plugin-dev/Source/ThirdParty/Win64
 
       # Workaround for https://github.com/actions/download-artifact/issues/14
       # Adding execute permission for crashpad before preparing final packages

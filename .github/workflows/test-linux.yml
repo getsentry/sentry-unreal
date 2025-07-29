@@ -101,7 +101,7 @@ jobs:
       - name: Extract package to sample/Plugins
         env:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
-        run: unzip sentry-unreal-*-engine"$UNREAL_VERSION"-github.zip -d checkout/sample/Plugins/sentry
+        run: unzip sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
 
       - name: Set permissions for sample
         # sentry-native requires write access to sample project directory in order to initialize itself properly

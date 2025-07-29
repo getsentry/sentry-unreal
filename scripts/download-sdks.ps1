@@ -34,16 +34,10 @@ if (-not (Test-Path $outDir))
     New-Item $outDir -ItemType Directory > $null
 }
 
-$sdks = @("Android", "IOS", "Linux", "LinuxArm64", "Mac", "Win64-Crashpad", "Win64-Breakpad")
+$sdks = @("Android", "IOS", "Linux", "LinuxArm64", "Mac", "Win64")
 foreach ($sdk in $sdks)
 {
     $sdkDir = "$outDir/$sdk"
-
-    if ($sdk.StartsWith('Win64'))
-    {
-        $winSdk, $crashBackend = $sdk.Split("-")
-        $sdkDir = "$outDir/$winSdk/$crashBackend"
-    }
 
     Write-Host "Downloading $sdk SDK to $sdkDir ..."
     if (Test-Path $sdkDir)
