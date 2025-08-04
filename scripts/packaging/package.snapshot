@@ -269,7 +269,6 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryRequest.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySampleDecision.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySamplingContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryScope.h
-Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySDK.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySerializable.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySpanContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySpanId.h
@@ -315,8 +314,8 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryLogC.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryNSDictionarySanitize.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryOptions+HybridSDKs.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryOptions+Private.h
+Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryOptionsInternal.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryScreenFrames.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
@@ -399,8 +398,8 @@ Source/ThirdParty/Mac/include/Sentry/SentryNSDataUtils.h
 Source/ThirdParty/Mac/include/Sentry/SentryNSDictionarySanitize.h
 Source/ThirdParty/Mac/include/Sentry/SentryNSError.h
 Source/ThirdParty/Mac/include/Sentry/SentryOptions.h
-Source/ThirdParty/Mac/include/Sentry/SentryOptions+HybridSDKs.h
 Source/ThirdParty/Mac/include/Sentry/SentryOptions+Private.h
+Source/ThirdParty/Mac/include/Sentry/SentryOptionsInternal.h
 Source/ThirdParty/Mac/include/Sentry/SentryProfilingConditionals.h
 Source/ThirdParty/Mac/include/Sentry/SentryReplayApi.h
 Source/ThirdParty/Mac/include/Sentry/SentryRequest.h
@@ -409,7 +408,6 @@ Source/ThirdParty/Mac/include/Sentry/SentrySampleDecision.h
 Source/ThirdParty/Mac/include/Sentry/SentrySamplingContext.h
 Source/ThirdParty/Mac/include/Sentry/SentryScope.h
 Source/ThirdParty/Mac/include/Sentry/SentryScreenFrames.h
-Source/ThirdParty/Mac/include/Sentry/SentrySDK.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentrySdkInfo.h
 Source/ThirdParty/Mac/include/Sentry/SentrySerializable.h
