@@ -42,7 +42,7 @@ TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, co
 }
 
 FString FMacSentrySubsystem::TryCaptureScreenshot() const
-{	
+{
 	const FString ScreenshotPath = GetScreenshotPath();
 	SentryScreenshotUtils::CaptureScreenshot(ScreenshotPath);
 	return ScreenshotPath;
