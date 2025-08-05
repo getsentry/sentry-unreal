@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Removed usage of deprecated `CGWindowListCreateImage` function on Mac. Replaced with Sentry Screenshot Utils ([#1034](https://github.com/getsentry/sentry-unreal/pull/1034/))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.17.0 to v8.18.0 ([#1031](https://github.com/getsentry/sentry-unreal/pull/1031))
