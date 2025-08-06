@@ -138,15 +138,15 @@ Class FSentryModule::GetSentryCocoaClass(const ANSICHAR* ClassName)
 {
 	ANSICHAR ClassNamePattern[256];
 	FCStringAnsi::Snprintf(ClassNamePattern, sizeof(ClassNamePattern), "OBJC_CLASS_$_%s", ClassName);
-	Class FoundClass = (__bridge Class) dlsym(GetSentryLibHandle(), ClassNamePattern);
+	Class FoundClass = (__bridge Class)dlsym(GetSentryLibHandle(), ClassNamePattern);
 
-	if (!FoundClass) 
+	if (!FoundClass)
 	{
 		// Try to load with Swift mangled class name
 		ANSICHAR MangledClassNamePattern[256];
 		int32 ClassNameLen = FCStringAnsi::Strlen(ClassName);
 		FCStringAnsi::Snprintf(MangledClassNamePattern, sizeof(MangledClassNamePattern), "OBJC_CLASS_$__TtC6Sentry%d%s", ClassNameLen, ClassName);
-		FoundClass = (__bridge Class) dlsym(GetSentryLibHandle(), MangledClassNamePattern);
+		FoundClass = (__bridge Class)dlsym(GetSentryLibHandle(), MangledClassNamePattern);
 	}
 
 	return FoundClass;
