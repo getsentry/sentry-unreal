@@ -13,21 +13,12 @@ FAppleSentryUserFeedback::FAppleSentryUserFeedback(TSharedPtr<ISentryId> eventId
 	TSharedPtr<FAppleSentryId> idIOS = StaticCastSharedPtr<FAppleSentryId>(eventId);
 	SentryId* id = idIOS->GetNativeObject();
 
-#if PLATFORM_MAC
-	UserFeedbackApple = [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:@""
-																							name:nil
-																						   email:nil
-																						  source:SentryFeedbackSourceCustom
-																			   associatedEventId:id
-																					 attachments:nil];
-#elif PLATFORM_IOS
 	UserFeedbackApple = [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:@""
 																			   name:nil
 																			  email:nil
 																			 source:SentryFeedbackSourceCustom
 																  associatedEventId:id
 																		attachments:nil];
-#endif
 }
 
 FAppleSentryUserFeedback::~FAppleSentryUserFeedback()
@@ -80,19 +71,10 @@ SentryFeedback* FAppleSentryUserFeedback::CreateSentryFeedback(TSharedPtr<FApple
 	TSharedPtr<FAppleSentryId> idIOS = StaticCastSharedPtr<FAppleSentryId>(feedback->EventId);
 	SentryId* id = idIOS->GetNativeObject();
 
-#if PLATFORM_MAC
-	return [[SENTRY_APPLE_CLASS(_TtC6Sentry14SentryFeedback) alloc] initWithMessage:feedback->Comment.GetNSString()
-																			   name:feedback->Name.GetNSString()
-																			  email:feedback->Email.GetNSString()
-																			 source:SentryFeedbackSourceCustom
-																  associatedEventId:id
-																		attachments:nil];
-#elif PLATFORM_IOS
 	return [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:feedback->Comment.GetNSString()
 																  name:feedback->Name.GetNSString()
 																 email:feedback->Email.GetNSString()
 																source:SentryFeedbackSourceCustom
 													 associatedEventId:id
 														   attachments:nil];
-#endif
 }

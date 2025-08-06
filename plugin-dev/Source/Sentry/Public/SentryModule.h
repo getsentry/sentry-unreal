@@ -47,6 +47,19 @@ public:
 #if PLATFORM_MAC
 	/** Gets handle to dynamically loaded sentry library. */
 	void* GetSentryLibHandle() const;
+
+	/** Gets an Objective-C/Swift class from the dynamically loaded sentry library.
+	 *
+	 * @param ClassName The unqualified class name (e.g., "SentrySDK", "SentryId")
+	 * @return The Objective-C/Swift Class object if found, nil otherwise
+	 *
+	 * @note: First tries pattern OBJC_CLASS_$_{ClassName}
+	 * Then tries Swift mangled pattern OBJC_CLASS_$__TtC6Sentry{len}{ClassName} where:
+	 * `_Tt` is Swift type symbol prefix
+	 * `C6Sentry` is a class (`C`) in the Sentry module (`6Sentry` means the module name is 6 characters long)
+	 * {len} is the length of the class name as a decimal string
+	 */
+	Class GetSentryCocoaClass(const ANSICHAR* ClassName);
 #endif
 
 	static const FName ModuleName;
