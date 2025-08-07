@@ -124,7 +124,8 @@ jobs:
             -stage \
             -prereqss \
             -package \
-            -archive
+            -archive \
+            -WarningsAsErrors
           docker exec -w /workspace/checkout/sample unreal bash -c "
             cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
           docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \

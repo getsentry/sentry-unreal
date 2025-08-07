@@ -65,7 +65,8 @@ jobs:
             -stage `
             -prereqss `
             -package `
-            -archive
+            -archive `
+            -WarningsAsErrors
           docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `
             -ReportExportPath=C:/workspace/checkout/sample/Saved/Automation `
             -ExecCmds="Automation RunTests Sentry;quit" `
