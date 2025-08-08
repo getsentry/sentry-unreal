@@ -19,8 +19,7 @@ enum class ESentryAppTerminationType : uint8
 	RenderThreadCrash,
 	GpuDebugCrash,
 	Assert,
-	Ensure,
-	BeforeSendDuringGC
+	Ensure
 };
 
 UCLASS()
@@ -54,5 +53,5 @@ public:
 
 	/** Forces garbage collection and captures Sentry event to test beforeSend hook limitation. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static void TestBeforeSendDuringGC();
+	static void CaptureEventDuringGC();
 };
