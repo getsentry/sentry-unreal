@@ -6,6 +6,12 @@
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "UObject/GarbageCollection.h"
+#include "UObject/GCObject.h"
+#include "UObject/UObjectGlobals.h"
+#include "Async/Async.h"
+#include "SentrySubsystem.h"
+#include "SentryEvent.h"
 
 #if PLATFORM_MICROSOFT
 #include "Microsoft/WindowsHWrapper.h"
@@ -80,6 +86,9 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 				ensure(ensurePtr != nullptr);
 			}
 		break;
+		case ESentryAppTerminationType::BeforeSendDuringGC:
+			TestBeforeSendDuringGC();
+		break;
 		default:
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Uknown app termination type!"));
@@ -120,5 +129,59 @@ FString USentryPlaygroundUtils::SaveStringToFile(const FString& InString, const 
 	FFileHelper::SaveStringToFile(InString, *filePath);
 
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*filePath);
+}
+
+// Custom GC callback class to trigger Sentry capture during GC
+class FTestGCCallback : public FGCObject
+{
+public:
+	virtual void AddReferencedObjects(FReferenceCollector& Collector) override
+	{
+		// This is called during garbage collection - let's try to capture a Sentry event here
+		UE_LOG(LogTemp, Warning, TEXT("Inside garbage collection callback"));
+		
+		bool bIsGC = IsGarbageCollecting();
+		UE_LOG(LogTemp, Warning, TEXT("IsGarbageCollecting() returns: %s"), bIsGC ? TEXT("TRUE") : TEXT("FALSE"));
+		
+		if (USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Attempting Sentry capture from within GC..."));
+			// This should trigger the beforeSend limitation since we're inside GC
+			SentrySubsystem->CaptureMessage(TEXT("Message captured from within GC callback"), ESentryLevel::Error);
+			UE_LOG(LogTemp, Warning, TEXT("Sentry capture attempted from within GC"));
+		}
+	}
+
+	virtual FString GetReferencerName() const override
+	{
+		return TEXT("TestGCCallback");
+	}
+};
+
+void USentryPlaygroundUtils::TestBeforeSendDuringGC()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Starting BeforeSend during GC test with GC callback..."));
+	
+	// Create a GC callback that will execute during garbage collection
+	static FTestGCCallback* GCCallback = new FTestGCCallback();
+	
+	// Create some objects that will need to be garbage collected using Sentry SDK objects
+	TArray<UObject*> ObjectsToGC;
+	for (int32 i = 0; i < 100; ++i)
+	{
+		// Use USentryEvent which is a concrete UObject from the Sentry SDK
+		USentryEvent* TestObj = NewObject<USentryEvent>();
+		ObjectsToGC.Add(TestObj);
+	}
+	
+	// Clear references to make objects eligible for GC
+	ObjectsToGC.Empty();
+	
+	UE_LOG(LogTemp, Warning, TEXT("Forcing garbage collection - callback should trigger during GC..."));
+	
+	// Force garbage collection - this will call our callback's AddReferencedObjects during GC
+	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+	
+	UE_LOG(LogTemp, Warning, TEXT("Garbage collection completed."));
 }
 
