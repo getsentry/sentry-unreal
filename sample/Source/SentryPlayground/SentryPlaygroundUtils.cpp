@@ -6,6 +6,12 @@
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "UObject/GarbageCollection.h"
+#include "UObject/UObjectGlobals.h"
+#include "Async/Async.h"
+#include "SentrySubsystem.h"
+#include "SentryEvent.h"
+#include "SentryGCCallback.h"
 
 #if PLATFORM_MICROSOFT
 #include "Microsoft/WindowsHWrapper.h"
@@ -120,5 +126,29 @@ FString USentryPlaygroundUtils::SaveStringToFile(const FString& InString, const 
 	FFileHelper::SaveStringToFile(InString, *filePath);
 
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*filePath);
+}
+
+
+void USentryPlaygroundUtils::CaptureEventDuringGC()
+{
+	FSentryGCCallback* GCCallback = new FSentryGCCallback();
+
+	TSharedRef<FDelegateHandle> HandlePtr = MakeShared<FDelegateHandle>();
+	*HandlePtr = FCoreUObjectDelegates::GetPostGarbageCollect().AddLambda([GCCallback, HandlePtr]() {
+		delete GCCallback;
+		FCoreUObjectDelegates::GetPostGarbageCollect().Remove(*HandlePtr);
+	});
+
+	TArray<UObject*> ObjectsToGC;
+	for (int32 i = 0; i < 100; ++i)
+	{
+		USentryEvent* TestObj = NewObject<USentryEvent>();
+		ObjectsToGC.Add(TestObj);
+	}
+
+	// Clear references to make objects eligible for GC
+	ObjectsToGC.Empty();
+
+	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
 }
 

@@ -50,4 +50,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static FString SaveStringToFile(const FString& InString, const FString& Filename);
+
+	/** Forces garbage collection and captures Sentry event to test beforeSend hook limitation. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	static void CaptureEventDuringGC();
 };
