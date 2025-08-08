@@ -185,7 +185,7 @@
                         <insert>
                             dependencies {
                                 classpath 'com.android.tools.build:gradle:7.4.2'
-                                classpath 'io.sentry:sentry-android-gradle-plugin:5.8.0' // current
+                                classpath 'io.sentry:sentry-android-gradle-plugin:5.8.1' // current
                             }
                         </insert>
                     </false>
