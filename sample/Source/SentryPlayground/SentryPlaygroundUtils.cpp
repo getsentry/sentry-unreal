@@ -131,7 +131,13 @@ FString USentryPlaygroundUtils::SaveStringToFile(const FString& InString, const 
 
 void USentryPlaygroundUtils::CaptureEventDuringGC()
 {
-	static FSentryGCCallback* GCCallback = new FSentryGCCallback();
+	FSentryGCCallback* GCCallback = new FSentryGCCallback();
+
+	TSharedRef<FDelegateHandle> HandlePtr = MakeShared<FDelegateHandle>();
+	*HandlePtr = FCoreUObjectDelegates::GetPostGarbageCollect().AddLambda([GCCallback, HandlePtr]() {
+		delete GCCallback;
+		FCoreUObjectDelegates::GetPostGarbageCollect().Remove(*HandlePtr);
+	});
 
 	TArray<UObject*> ObjectsToGC;
 	for (int32 i = 0; i < 100; ++i)
