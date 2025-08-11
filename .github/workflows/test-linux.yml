@@ -107,6 +107,12 @@ jobs:
         # sentry-native requires write access to sample project directory in order to initialize itself properly
         run: docker exec -w /workspace/checkout unreal chmod -R +x sample
 
+      - name: Update engine's build configuration
+        run: |
+          docker exec unreal bash -c "
+            mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
+            cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "            
+
       - name: Run tests
         id: run-tests
         env:
@@ -124,8 +130,7 @@ jobs:
             -stage \
             -prereqss \
             -package \
-            -archive \
-            -WarningsAsErrors
+            -archive
           docker exec -w /workspace/checkout/sample unreal bash -c "
             cp -r '/home/gh/Library/Logs/Unreal Engine/LocalBuildLogs' Saved/Logs  "
           docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \
