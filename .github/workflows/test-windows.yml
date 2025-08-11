@@ -52,8 +52,8 @@ jobs:
 
       - name: Update engine's build configuration
         run: |
-          docker exec unreal powershell -Command "New-Item -ItemType Directory -Path '`$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool' -Force" 
-          docker exec unreal powershell -Command "Copy-Item -Path 'C:/workspace/checkout/.github/BuildConfiguration.xml' -Destination '`$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml' -Force"
+          docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
+          docker exec unreal powershell -Command 'Copy-Item -Path "C:/workspace/checkout/.github/BuildConfiguration.xml" -Destination "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml" -Force'
 
       - name: Run tests
         id: run-tests
