@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-beta.8
+
+### Fixes
+
+- No more build warnings in platform extensions caused by deprecated Native SDK API usages
 
 ### Dependencies
 
