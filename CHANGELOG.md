@@ -4,15 +4,15 @@
 
 ### Dependencies
 
-- Bump Java SDK (Android) from v8.17.0 to v8.18.0 ([#1031](https://github.com/getsentry/sentry-unreal/pull/1031))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8180)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.18.0)
+- Bump Java SDK (Android) from v8.17.0 to v8.19.0 ([#1031](https://github.com/getsentry/sentry-unreal/pull/1031), [#1042](https://github.com/getsentry/sentry-unreal/pull/1042))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8190)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.19.0)
 - Bump Cocoa SDK (iOS and Mac) from v8.53.2 to v8.54.0 ([#1032](https://github.com/getsentry/sentry-unreal/pull/1032))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.53.2...8.54.0)
-- Bump CLI from v2.50.2 to v2.51.0 ([#1037](https://github.com/getsentry/sentry-unreal/pull/1037))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2510)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.2...2.51.0)
+- Bump CLI from v2.50.2 to v2.51.1 ([#1037](https://github.com/getsentry/sentry-unreal/pull/1037), [#1041](https://github.com/getsentry/sentry-unreal/pull/1041))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2511)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.2...2.51.1)
 - Bump Android Gradle Plugin from v5.8.0 to v5.8.1 ([#1036](https://github.com/getsentry/sentry-unreal/pull/1036))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#581)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/5.8.0...5.8.1)
