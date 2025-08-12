@@ -2,6 +2,10 @@
 
 ## 1.0.0-beta.8
 
+### Fixes
+
+- No more build warnings in platform extensions caused by deprecated Native SDK API usages
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.17.0 to v8.19.1 ([#1031](https://github.com/getsentry/sentry-unreal/pull/1031), [#1042](https://github.com/getsentry/sentry-unreal/pull/1042), [#1046](https://github.com/getsentry/sentry-unreal/pull/1046))
