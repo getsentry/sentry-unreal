@@ -50,6 +50,11 @@ jobs:
           New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
           Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
 
+      - name: Update engine's build configuration
+        run: |
+          docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
+          docker exec unreal powershell -Command 'Copy-Item -Path "C:/workspace/checkout/.github/BuildConfiguration.xml" -Destination "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml" -Force'
+
       - name: Run tests
         id: run-tests
         env:
@@ -65,8 +70,7 @@ jobs:
             -stage `
             -prereqss `
             -package `
-            -archive `
-            -WarningsAsErrors
+            -archive
           docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `
             -ReportExportPath=C:/workspace/checkout/sample/Saved/Automation `
             -ExecCmds="Automation RunTests Sentry;quit" `
