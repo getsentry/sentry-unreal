@@ -281,7 +281,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	if (settings->UseProxy)
 	{
-		sentry_options_set_http_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
+		sentry_options_set_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
 	}
 
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
@@ -521,7 +521,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 void FGenericPlatformSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> InUserFeedback)
 {
 	TSharedPtr<FGenericPlatformSentryUserFeedback> userFeedback = StaticCastSharedPtr<FGenericPlatformSentryUserFeedback>(InUserFeedback);
-	sentry_capture_user_feedback(userFeedback->GetNativeObject());
+	sentry_capture_feedback(userFeedback->GetNativeObject());
 }
 
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
