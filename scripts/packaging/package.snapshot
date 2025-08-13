@@ -13,6 +13,8 @@ Source/Sentry/Private/Android/AndroidSentryBreadcrumb.cpp
 Source/Sentry/Private/Android/AndroidSentryBreadcrumb.h
 Source/Sentry/Private/Android/AndroidSentryEvent.cpp
 Source/Sentry/Private/Android/AndroidSentryEvent.h
+Source/Sentry/Private/Android/AndroidSentryFeedback.cpp
+Source/Sentry/Private/Android/AndroidSentryFeedback.h
 Source/Sentry/Private/Android/AndroidSentryHint.cpp
 Source/Sentry/Private/Android/AndroidSentryHint.h
 Source/Sentry/Private/Android/AndroidSentryId.cpp
@@ -35,8 +37,6 @@ Source/Sentry/Private/Android/AndroidSentryTransactionOptions.cpp
 Source/Sentry/Private/Android/AndroidSentryTransactionOptions.h
 Source/Sentry/Private/Android/AndroidSentryUser.cpp
 Source/Sentry/Private/Android/AndroidSentryUser.h
-Source/Sentry/Private/Android/AndroidSentryUserFeedback.cpp
-Source/Sentry/Private/Android/AndroidSentryUserFeedback.h
 Source/Sentry/Private/Android/Callbacks/AndroidSentryScopeCallback.cpp
 Source/Sentry/Private/Android/Callbacks/AndroidSentryScopeCallback.h
 Source/Sentry/Private/Android/Infrastructure/AndroidSentryConverters.cpp
@@ -54,6 +54,8 @@ Source/Sentry/Private/Apple/AppleSentryBreadcrumb.cpp
 Source/Sentry/Private/Apple/AppleSentryBreadcrumb.h
 Source/Sentry/Private/Apple/AppleSentryEvent.cpp
 Source/Sentry/Private/Apple/AppleSentryEvent.h
+Source/Sentry/Private/Apple/AppleSentryFeedback.cpp
+Source/Sentry/Private/Apple/AppleSentryFeedback.h
 Source/Sentry/Private/Apple/AppleSentryId.cpp
 Source/Sentry/Private/Apple/AppleSentryId.h
 Source/Sentry/Private/Apple/AppleSentrySamplingContext.cpp
@@ -70,8 +72,6 @@ Source/Sentry/Private/Apple/AppleSentryTransactionContext.cpp
 Source/Sentry/Private/Apple/AppleSentryTransactionContext.h
 Source/Sentry/Private/Apple/AppleSentryUser.cpp
 Source/Sentry/Private/Apple/AppleSentryUser.h
-Source/Sentry/Private/Apple/AppleSentryUserFeedback.cpp
-Source/Sentry/Private/Apple/AppleSentryUserFeedback.h
 Source/Sentry/Private/Apple/Convenience/AppleSentryInclude.h
 Source/Sentry/Private/Apple/Convenience/AppleSentryMacro.h
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.cpp
@@ -87,6 +87,8 @@ Source/Sentry/Private/GenericPlatform/GenericPlatformSentryBreadcrumb.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryBreadcrumb.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryEvent.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryEvent.h
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.cpp
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryScope.cpp
@@ -101,14 +103,13 @@ Source/Sentry/Private/GenericPlatform/GenericPlatformSentryTransactionContext.cp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryTransactionContext.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryUser.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryUser.h
-Source/Sentry/Private/GenericPlatform/GenericPlatformSentryUserFeedback.cpp
-Source/Sentry/Private/GenericPlatform/GenericPlatformSentryUserFeedback.h
 Source/Sentry/Private/GenericPlatform/Infrastructure/GenericPlatformSentryConverters.cpp
 Source/Sentry/Private/GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h
 Source/Sentry/Private/HAL/PlatformSentryAttachment.h
 Source/Sentry/Private/HAL/PlatformSentryBreadcrumb.h
 Source/Sentry/Private/HAL/PlatformSentryDefines.h
 Source/Sentry/Private/HAL/PlatformSentryEvent.h
+Source/Sentry/Private/HAL/PlatformSentryFeedback.h
 Source/Sentry/Private/HAL/PlatformSentryHint.h
 Source/Sentry/Private/HAL/PlatformSentryId.h
 Source/Sentry/Private/HAL/PlatformSentrySamplingContext.h
@@ -118,10 +119,10 @@ Source/Sentry/Private/HAL/PlatformSentrySubsystem.h
 Source/Sentry/Private/HAL/PlatformSentryTransaction.h
 Source/Sentry/Private/HAL/PlatformSentryTransactionContext.h
 Source/Sentry/Private/HAL/PlatformSentryUser.h
-Source/Sentry/Private/HAL/PlatformSentryUserFeedback.h
 Source/Sentry/Private/Interface/SentryAttachmentInterface.h
 Source/Sentry/Private/Interface/SentryBreadcrumbInterface.h
 Source/Sentry/Private/Interface/SentryEventInterface.h
+Source/Sentry/Private/Interface/SentryFeedbackInterface.h
 Source/Sentry/Private/Interface/SentryHintInterface.h
 Source/Sentry/Private/Interface/SentryIdInterface.h
 Source/Sentry/Private/Interface/SentrySamplingContextInterface.h
@@ -130,7 +131,6 @@ Source/Sentry/Private/Interface/SentrySpanInterface.h
 Source/Sentry/Private/Interface/SentrySubsystemInterface.h
 Source/Sentry/Private/Interface/SentryTransactionContextInterface.h
 Source/Sentry/Private/Interface/SentryTransactionInterface.h
-Source/Sentry/Private/Interface/SentryUserFeedbackInterface.h
 Source/Sentry/Private/Interface/SentryUserInterface.h
 Source/Sentry/Private/IOS/IOSSentrySubsystem.cpp
 Source/Sentry/Private/IOS/IOSSentrySubsystem.h
@@ -145,6 +145,7 @@ Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryAttachment.h
 Source/Sentry/Private/Null/NullSentryBreadcrumb.h
 Source/Sentry/Private/Null/NullSentryEvent.h
+Source/Sentry/Private/Null/NullSentryFeedback.h
 Source/Sentry/Private/Null/NullSentryHint.h
 Source/Sentry/Private/Null/NullSentryId.h
 Source/Sentry/Private/Null/NullSentrySamplingContext.h
@@ -154,7 +155,6 @@ Source/Sentry/Private/Null/NullSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryTransaction.h
 Source/Sentry/Private/Null/NullSentryTransactionContext.h
 Source/Sentry/Private/Null/NullSentryUser.h
-Source/Sentry/Private/Null/NullSentryUserFeedback.h
 Source/Sentry/Private/SentryAttachment.cpp
 Source/Sentry/Private/SentryBeforeBreadcrumbHandler.cpp
 Source/Sentry/Private/SentryBeforeSendHandler.cpp
@@ -162,6 +162,7 @@ Source/Sentry/Private/SentryBreadcrumb.cpp
 Source/Sentry/Private/SentryDefines.h
 Source/Sentry/Private/SentryErrorOutputDevice.cpp
 Source/Sentry/Private/SentryEvent.cpp
+Source/Sentry/Private/SentryFeedback.cpp
 Source/Sentry/Private/SentryHint.cpp
 Source/Sentry/Private/SentryLibrary.cpp
 Source/Sentry/Private/SentryModule.cpp
@@ -175,7 +176,6 @@ Source/Sentry/Private/SentryTraceSampler.cpp
 Source/Sentry/Private/SentryTransaction.cpp
 Source/Sentry/Private/SentryTransactionContext.cpp
 Source/Sentry/Private/SentryUser.cpp
-Source/Sentry/Private/SentryUserFeedback.cpp
 Source/Sentry/Private/SentryVariant.cpp
 Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
@@ -202,6 +202,7 @@ Source/Sentry/Public/SentryBreadcrumb.h
 Source/Sentry/Public/SentryDataTypes.h
 Source/Sentry/Public/SentryErrorOutputDevice.h
 Source/Sentry/Public/SentryEvent.h
+Source/Sentry/Public/SentryFeedback.h
 Source/Sentry/Public/SentryHint.h
 Source/Sentry/Public/SentryImplWrapper.h
 Source/Sentry/Public/SentryLibrary.h
@@ -216,7 +217,6 @@ Source/Sentry/Public/SentryTraceSampler.h
 Source/Sentry/Public/SentryTransaction.h
 Source/Sentry/Public/SentryTransactionContext.h
 Source/Sentry/Public/SentryUser.h
-Source/Sentry/Public/SentryUserFeedback.h
 Source/Sentry/Public/SentryVariant.h
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry_IOS_UPL.xml
