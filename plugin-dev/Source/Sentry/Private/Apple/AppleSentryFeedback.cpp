@@ -68,7 +68,7 @@ SentryFeedback* FAppleSentryFeedback::CreateSentryFeedback(TSharedPtr<FAppleSent
 	TSharedPtr<FAppleSentryId> idIOS = MakeShareable(new FAppleSentryId(feedback->EventId));
 	SentryId* id = idIOS->GetNativeObject();
 
-	return [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:feedback->Comment.GetNSString()
+	return [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:feedback->Message.GetNSString()
 																  name:feedback->Name.GetNSString()
 																 email:feedback->Email.GetNSString()
 																source:SentryFeedbackSourceCustom

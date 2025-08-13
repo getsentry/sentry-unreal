@@ -294,7 +294,7 @@ void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback
 {
 	TSharedPtr<FAppleSentryFeedback> feedbackApple = StaticCastSharedPtr<FAppleSentryFeedback>(feedback);
 
-	[SENTRY_APPLE_CLASS(SentrySDK) captureFeedback:FAppleSentryUserFeedback::CreateSentryFeedback(feedbackApple)];
+	[SENTRY_APPLE_CLASS(SentrySDK) captureFeedback:FAppleSentryFeedback::CreateSentryFeedback(feedbackApple)];
 }
 
 void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
