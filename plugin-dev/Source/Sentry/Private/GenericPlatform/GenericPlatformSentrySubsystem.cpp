@@ -4,12 +4,12 @@
 #include "GenericPlatformSentryAttachment.h"
 #include "GenericPlatformSentryBreadcrumb.h"
 #include "GenericPlatformSentryEvent.h"
+#include "GenericPlatformSentryFeedback.h"
 #include "GenericPlatformSentryId.h"
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryTransaction.h"
 #include "GenericPlatformSentryTransactionContext.h"
 #include "GenericPlatformSentryUser.h"
-#include "GenericPlatformSentryFeedback.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeSendHandler.h"

@@ -8,6 +8,7 @@
 #include "SentryDefines.h"
 #include "SentryErrorOutputDevice.h"
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 #include "SentryModule.h"
 #include "SentryOutputDevice.h"
 #include "SentrySettings.h"
@@ -15,7 +16,6 @@
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
-#include "SentryFeedback.h"
 
 #include "CoreGlobals.h"
 #include "Engine/World.h"
@@ -29,9 +29,9 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-#include "HAL/PlatformSentrySubsystem.h"
 #include "HAL/PlatformSentryFeedback.h"
 #include "HAL/PlatformSentryId.h"
+#include "HAL/PlatformSentrySubsystem.h"
 
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
