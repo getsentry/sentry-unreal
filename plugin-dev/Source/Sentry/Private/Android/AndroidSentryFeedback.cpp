@@ -57,6 +57,6 @@ FString FAndroidSentryFeedback::GetAssociatedEvent() const
 		return FString();
 	}
 
-	TSharedPtr<FAndroidSentryId> eventId = MakeShareable(new FAndroidSentryId(idAndroid));
-	return CallMethod<FString>(eventId->ToString());
+	TSharedPtr<FAndroidSentryId> eventId = MakeShareable(new FAndroidSentryId(*idAndroid));
+	return eventId->ToString();
 }
