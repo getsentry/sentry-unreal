@@ -4,27 +4,27 @@
 
 #include "SentryImplWrapper.h"
 
-#include "SentryUserFeedback.generated.h"
+#include "SentryFeedback.generated.h"
 
 class USentryId;
-class ISentryUserFeedback;
+class ISentryFeedback;
 
 /**
- * Additional information about what happened to an event.
+ * Additional information about what happened to be sent to Sentry.
  */
 UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
-class SENTRY_API USentryUserFeedback : public UObject, public TSentryImplWrapper<ISentryUserFeedback, USentryUserFeedback>
+class SENTRY_API USentryFeedback : public UObject, public TSentryImplWrapper<ISentryFeedback, USentryFeedback>
 {
 	GENERATED_BODY()
 
 public:
 	/**
-	 * Initializes the user feedback with the event identifier to which it is associated.
+	 * Initializes the user feedback with the provided message.
 	 *
-	 * @param EventId The associated event identifier.
+	 * @param Message The user feedback message to record.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void Initialize(const FString& EventId);
+	void Initialize(const FString& Message);
 
 	/** Sets the name of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -36,17 +36,17 @@ public:
 
 	/** Sets the email of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetEmail(const FString& Email);
+	void SetContactEmail(const FString& Email);
 
 	/** Gets the email of the user. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetEmail() const;
+	FString GetContactEmail() const;
 
-	/** Sets comments of the user about what happened. */
+	/** Sets associated event identifier. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetComment(const FString& Comments);
+	void SetAssociatedEvent(const FString& EventId);
 
-	/** Gets comments of the user about what happened. */
+	/** Gets associated event identifier. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetComment() const;
+	FString GetAssociatedEvent() const;
 };
