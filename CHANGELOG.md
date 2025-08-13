@@ -6,6 +6,10 @@
 
 - No more build warnings in platform extensions caused by deprecated Native SDK API usages
 
+### Fixes
+
+- Removed usage of deprecated `CGWindowListCreateImage` function on Mac. Replaced with Sentry Screenshot Utils ([#1034](https://github.com/getsentry/sentry-unreal/pull/1034/))
+
 ### Dependencies
 
 - Bump Java SDK (Android) from v8.17.0 to v8.19.1 ([#1031](https://github.com/getsentry/sentry-unreal/pull/1031), [#1042](https://github.com/getsentry/sentry-unreal/pull/1042), [#1046](https://github.com/getsentry/sentry-unreal/pull/1046))
