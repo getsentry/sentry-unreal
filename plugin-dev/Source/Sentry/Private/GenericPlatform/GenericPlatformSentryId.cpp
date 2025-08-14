@@ -33,7 +33,11 @@ FString FGenericPlatformSentryId::ToString() const
 {
 	char IdString[37];
 	sentry_uuid_as_string(&Id, IdString);
-	return FString(IdString);
+
+	FString SanitizedIdString(IdString);
+	SanitizedIdString.ReplaceInline(TEXT("-"), TEXT(""));
+
+	return SanitizedIdString;
 }
 
 #endif

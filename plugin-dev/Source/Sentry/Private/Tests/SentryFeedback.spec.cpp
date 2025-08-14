@@ -89,12 +89,6 @@ void SentryFeedbackSpec::Define()
 			SentryFeedback->SetAssociatedEvent(TestEventId);
 			TestEqual("Event Id", SentryFeedback->GetAssociatedEvent(), TestEventId);
 		});
-
-		It("should be normalized if initialized with string that contains dashes", [this]()
-		{
-			SentryFeedback->SetAssociatedEvent(TEXT("c3829f10-7648-4844-2d81-3c4124cf44a0"));
-			TestEqual("Event Id", SentryFeedback->GetAssociatedEvent(), TEXT("c3829f10764848442d813c4124cf44a0"));
-		});
 	});
 }
 

@@ -57,10 +57,6 @@ FString FGenericPlatformSentryFeedback::GetContactEmail() const
 
 void FGenericPlatformSentryFeedback::SetAssociatedEvent(const FString& eventId)
 {
-	// Remove dashes from `eventId` (produced by `sentry_uuid_as_string`) to correctly associate feedback with the event
-	FString SanitizedEventId = eventId;
-	SanitizedEventId.ReplaceInline(TEXT("-"), TEXT(""));
-
 	sentry_value_set_by_key(Feedback, "associated_event_id", sentry_value_new_string(TCHAR_TO_UTF8(*SanitizedEventId)));
 }
 
