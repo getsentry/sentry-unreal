@@ -16,7 +16,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass Scope;
 	const static FSentryJavaClass ScopeImpl;
 	const static FSentryJavaClass User;
-	const static FSentryJavaClass UserFeedback;
+	const static FSentryJavaClass Feedback;
 	const static FSentryJavaClass Message;
 	const static FSentryJavaClass SentryLevel;
 	const static FSentryJavaClass SentryHint;

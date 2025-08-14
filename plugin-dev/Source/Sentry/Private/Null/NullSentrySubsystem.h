@@ -24,7 +24,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override { return nullptr; }
-	virtual void CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback) override {}
+	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override {}
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override {}
 	virtual void RemoveUser() override {}
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override {}
