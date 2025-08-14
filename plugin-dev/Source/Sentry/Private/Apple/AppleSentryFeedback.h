@@ -12,9 +12,6 @@ public:
 	FAppleSentryFeedback(const FString& message);
 	virtual ~FAppleSentryFeedback() override;
 
-	void SetNativeObject(SentryFeedback* feedback);
-	SentryFeedback* GetNativeObject();
-
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
 	virtual void SetContactEmail(const FString& email) override;
@@ -29,8 +26,6 @@ private:
 	FString Name;
 	FString Email;
 	FString EventId;
-
-	SentryFeedback* UserFeedbackApple;
 };
 
 typedef FAppleSentryFeedback FPlatformSentryFeedback;
