@@ -9,6 +9,52 @@
 
 #include "GenericPlatform/GenericPlatformSentryScope.h"
 
+#if WITH_ADDITIONAL_CRASH_CONTEXTS
+struct FSentryCrashContextExtendedWriter : public FCrashContextExtendedWriter
+{
+public:
+	TMap<FString, FString> Values;
+	
+	void OutputBuffer(const TCHAR* Identifier, const FString& Data)
+	{
+		Values.Add(Identifier, Data);
+	}
+
+	virtual void AddBuffer(const TCHAR* Identifier, const uint8* Data, uint32 DataSize) override
+	{
+		OutputBuffer(Identifier, FBase64::Encode(Data, DataSize));
+	}
+
+	virtual void AddString(const TCHAR* Identifier, const TCHAR* DataStr) override
+	{
+		return OutputBuffer(Identifier, DataStr);
+	}
+
+	static void Apply(TSharedPtr<ISentryScope> Scope)
+	{
+		if (!Scope.IsValid())
+		{
+			return;
+		}
+
+		FSentryCrashContextExtendedWriter Writer;
+		FGenericCrashContext::OnAdditionalCrashContextDelegate().Broadcast(Writer);
+		FAdditionalCrashContextStack::ExecuteProviders(Writer);
+		
+		Scope->SetContext(TEXT("AdditionalCrashContext"), Writer.Values);
+	}
+};
+#else
+struct FSentryCrashContextExtendedWriter
+{
+private:
+	FSentryCrashContextExtendedWriter() {}
+	
+public:
+	static void Apply(TSharedPtr<ISentryScope> Scope) {}
+};
+#endif
+
 FGenericPlatformSentryCrashContext::FGenericPlatformSentryCrashContext(TSharedPtr<FSharedCrashContext> Context)
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	: FGenericCrashContext(Context->CrashType, Context->ErrorMessage)
@@ -56,6 +102,8 @@ void FGenericPlatformSentryCrashContext::Apply(TSharedPtr<ISentryScope> Scope)
 	ContextValues.Add("Memory Stats Total Virtual", FString::Printf(TEXT("%lld"), SessionContext.MemoryStats.TotalVirtual));
 
 	Scope->SetContext(TEXT("Crash Info"), ContextValues);
+
+	FSentryCrashContextExtendedWriter::Apply(Scope);
 }
 
 FString FGenericPlatformSentryCrashContext::GetGameData(const FString& Key)
