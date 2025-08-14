@@ -15,6 +15,7 @@ public:
 
 	void SetupClassMethods();
 
+	virtual FString GetMessage() const override;
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
 	virtual void SetContactEmail(const FString& email) override;
@@ -23,6 +24,7 @@ public:
 	virtual FString GetAssociatedEvent() const override;
 
 private:
+	FSentryJavaMethod GetMessageMethod;
 	FSentryJavaMethod SetNameMethod;
 	FSentryJavaMethod GetNameMethod;
 	FSentryJavaMethod SetContactEmailMethod;

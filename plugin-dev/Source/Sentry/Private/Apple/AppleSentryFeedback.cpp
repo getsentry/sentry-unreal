@@ -17,6 +17,11 @@ FAppleSentryFeedback::~FAppleSentryFeedback()
 	// Put custom destructor logic here if needed
 }
 
+FString FAppleSentryFeedback::GetMessage() const
+{
+	return Message;
+}
+
 void FAppleSentryFeedback::SetName(const FString& name)
 {
 	Name = name;

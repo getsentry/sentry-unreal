@@ -17,6 +17,7 @@ public:
 
 	sentry_value_t GetNativeObject();
 
+	virtual FString GetMessage() const override;
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
 	virtual void SetContactEmail(const FString& email) override;

@@ -27,6 +27,12 @@ sentry_value_t FGenericPlatformSentryFeedback::GetNativeObject()
 	return Feedback;
 }
 
+FString FGenericPlatformSentryFeedback::GetMessage() const
+{
+	sentry_value_t message = sentry_value_get_by_key(Feedback, "message");
+	return FString(sentry_value_as_string(message));
+}
+
 void FGenericPlatformSentryFeedback::SetName(const FString& name)
 {
 	sentry_value_set_by_key(Feedback, "name", sentry_value_new_string(TCHAR_TO_UTF8(*name)));

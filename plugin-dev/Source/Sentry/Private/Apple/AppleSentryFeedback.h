@@ -12,6 +12,7 @@ public:
 	FAppleSentryFeedback(const FString& message);
 	virtual ~FAppleSentryFeedback() override;
 
+	virtual FString GetMessage() const override;
 	virtual void SetName(const FString& name) override;
 	virtual FString GetName() const override;
 	virtual void SetContactEmail(const FString& email) override;

@@ -6,7 +6,6 @@
 
 #include "SentryFeedback.generated.h"
 
-class USentryId;
 class ISentryFeedback;
 
 /**
@@ -25,6 +24,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Initialize(const FString& Message);
+
+	/** Gets the feedback message. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FString GetMessage() const;
 
 	/** Sets the name of the user. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

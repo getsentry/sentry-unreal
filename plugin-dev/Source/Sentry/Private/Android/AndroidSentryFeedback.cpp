@@ -15,12 +15,18 @@ FAndroidSentryFeedback::FAndroidSentryFeedback(const FString& message)
 
 void FAndroidSentryFeedback::SetupClassMethods()
 {
+	GetMessageMethod = GetMethod("getMessage", "()Ljava/lang/String;");
 	SetNameMethod = GetMethod("setName", "(Ljava/lang/String;)V");
 	GetNameMethod = GetMethod("getName", "()Ljava/lang/String;");
 	SetContactEmailMethod = GetMethod("setContactEmail", "(Ljava/lang/String;)V");
 	GetContactEmailMethod = GetMethod("getContactEmail", "()Ljava/lang/String;");
 	SetAssociatedEventMethod = GetMethod("setAssociatedEventId", "(Lio/sentry/protocol/SentryId;)V");
 	GetAssociatedEventMethod = GetMethod("getAssociatedEventId", "()Lio/sentry/protocol/SentryId;");
+}
+
+FString FAndroidSentryFeedback::GetMessage() const
+{
+	return CallMethod<FString>(GetMessageMethod);
 }
 
 void FAndroidSentryFeedback::SetName(const FString& name)

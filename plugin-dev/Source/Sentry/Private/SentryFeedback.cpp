@@ -12,6 +12,14 @@ void USentryFeedback::Initialize(const FString& Message)
 	}
 }
 
+FString USentryFeedback::GetMessage() const
+{
+	if (!NativeImpl)
+		return FString();
+
+	return NativeImpl->GetMessage();
+}
+
 void USentryFeedback::SetName(const FString& Name)
 {
 	if (!NativeImpl)

@@ -9,6 +9,7 @@ class ISentryFeedback
 public:
 	virtual ~ISentryFeedback() = default;
 
+	virtual FString GetMessage() const = 0;
 	virtual void SetName(const FString& name) = 0;
 	virtual FString GetName() const = 0;
 	virtual void SetContactEmail(const FString& email) = 0;

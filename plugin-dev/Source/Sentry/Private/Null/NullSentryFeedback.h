@@ -13,6 +13,7 @@ public:
 
 	virtual ~FNullSentryFeedback() override = default;
 
+	virtual FString GetMessage() const override { return TEXT(""); }
 	virtual void SetName(const FString& name) override {}
 	virtual FString GetName() const override { return TEXT(""); }
 	virtual void SetContactEmail(const FString& email) override {}
