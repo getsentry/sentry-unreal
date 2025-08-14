@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Breaking Changes
+
+- User feedback API reworked:
+  - Feedback no longer needs to be associated with a specific event - the only required parameter is the user message
+  - `SentryUserFeedback` class replaced with `SentryFeedback`
+  - `CaptureUserFeedback` function in `SentrySubsystem` replaced with `CaptureFeedback`
+  - `CreateSentryUserFeedback` function in `SentryLibrary` replaced with `CreateSentryFeedback`
+- On Windows and Linux, `ToString` function of `SentryId` class now returns the ID without dashes
+
+### Features
+
+- Added new API for capturing user feedback ([#1051](https://github.com/getsentry/sentry-unreal/pull/1051))
+
 ## 1.0.0-beta.8
 
 ### Fixes
