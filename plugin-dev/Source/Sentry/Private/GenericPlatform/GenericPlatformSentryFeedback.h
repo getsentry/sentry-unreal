@@ -25,7 +25,7 @@ public:
 	virtual FString GetAssociatedEvent() const override;
 
 private:
-	sentry_value_t UserFeedback;
+	sentry_value_t Feedback;
 };
 
 typedef FGenericPlatformSentryFeedback FPlatformSentryFeedback;

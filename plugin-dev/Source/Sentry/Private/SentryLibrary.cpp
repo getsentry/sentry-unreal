@@ -46,7 +46,7 @@ USentryUser* USentryLibrary::CreateSentryUser(const FString& Email, const FStrin
 	return User;
 }
 
-USentryFeedback* USentryLibrary::CreateSentryUserFeedback(const FString& Message, const FString& Name, const FString& Email, const FString& EventId)
+USentryFeedback* USentryLibrary::CreateSentryFeedback(const FString& Message, const FString& Name, const FString& Email, const FString& EventId)
 {
 	USentryFeedback* Feedback = USentryFeedback::Create(MakeShareable(new FPlatformSentryFeedback(Message)));
 

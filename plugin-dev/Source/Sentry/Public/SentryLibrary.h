@@ -56,7 +56,7 @@ public:
 	 * @param EventId Associated event identifier.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static USentryFeedback* CreateSentryUserFeedback(const FString& Message, const FString& Name, const FString& Email, const FString& EventId);
+	static USentryFeedback* CreateSentryFeedback(const FString& Message, const FString& Name, const FString& Email, const FString& EventId);
 
 	/**
 	 * Creates breadcrumb.
