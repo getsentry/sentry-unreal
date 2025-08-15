@@ -13,7 +13,7 @@
 struct FSentryCrashContextExtendedWriter : public FCrashContextExtendedWriter
 {
 public:
-	TMap<FString, FString> Values;
+	TMap<FString, FSentryVariant> Values;
 	
 	void OutputBuffer(const TCHAR* Identifier, const FString& Data)
 	{
