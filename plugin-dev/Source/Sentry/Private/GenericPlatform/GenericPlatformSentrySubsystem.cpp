@@ -631,12 +631,12 @@ EUserConsent FGenericPlatformSentrySubsystem::GetUserConsent() const
 {
 	switch (sentry_user_consent_get())
 	{
-		case 0:
-			return EUserConsent::Revoked;
-		case 1:
-			return EUserConsent::Given;
-		default:
-			return EUserConsent::Unknown;
+	case 0:
+		return EUserConsent::Revoked;
+	case 1:
+		return EUserConsent::Given;
+	default:
+		return EUserConsent::Unknown;
 	}
 }
 
