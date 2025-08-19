@@ -369,12 +369,12 @@ class SENTRY_API USentrySettings : public UObject
 	FString CrashReporterUrl;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Require User Consent", ToolTip = "Flag indicating whether the user's consent is required before uploading crash data."))
-	bool RequireUserConsent;
+		Meta = (DisplayName = "Require User Consent", ToolTip = "True if user's consent is required before uploading crash data."))
+	bool bRequireUserConsent;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Default User Consent", ToolTip = "Default user consent value if none has been provided previously.", EditCondition = "RequireUserConsent"))
-	EUserConsent DefaultUserConsent;
+		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "RequireUserConsent"))
+	bool bDefaultUserConsentGiven;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
