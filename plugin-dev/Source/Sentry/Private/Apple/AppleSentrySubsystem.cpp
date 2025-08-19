@@ -347,6 +347,21 @@ void FAppleSentrySubsystem::EndSession()
 	[SENTRY_APPLE_CLASS(SentrySDK) endSession];
 }
 
+void FAppleSentrySubsystem::GiveUserConsent()
+{
+	// No-op; feature not implemented for this platform
+}
+
+void FAppleSentrySubsystem::RevokeUserConsent()
+{
+	// No-op; feature not implemented for this platform
+}
+
+EUserConsent FAppleSentrySubsystem::GetUserConsent() const
+{
+	return EUserConsent::Unknown;
+}
+
 TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransaction(const FString& name, const FString& operation)
 {
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];

@@ -255,6 +255,21 @@ void FAndroidSentrySubsystem::EndSession()
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "endSession", "()V", nullptr);
 }
 
+void FAndroidSentrySubsystem::GiveUserConsent()
+{
+	// No-op; feature not implemented for this platform
+}
+
+void FAndroidSentrySubsystem::RevokeUserConsent()
+{
+	// No-op; feature not implemented for this platform
+}
+
+EUserConsent FAndroidSentrySubsystem::GetUserConsent() const
+{
+	return EUserConsent::Unknown;
+}
+
 TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransaction(const FString& name, const FString& operation)
 {
 	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/ITransaction;",
