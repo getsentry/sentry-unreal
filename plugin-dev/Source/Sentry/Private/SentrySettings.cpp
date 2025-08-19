@@ -45,6 +45,8 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, DiagnosticLevel(ESentryCliLogLevel::Info)
 	, UseLegacyGradlePlugin(false)
 	, CrashReporterUrl()
+	, RequireUserConsent(false)
+	, DefaultUserConsent(EUserConsent::Unknown)
 	, bIsDirty(false)
 {
 	if (GIsEditor)

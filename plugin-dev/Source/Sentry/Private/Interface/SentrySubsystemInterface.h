@@ -54,6 +54,9 @@ public:
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual void StartSession() = 0;
 	virtual void EndSession() = 0;
+	virtual void GiveUserConsent() = 0;
+	virtual void RevokeUserConsent() = 0;
+	virtual EUserConsent GetUserConsent() const = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) = 0;
