@@ -373,7 +373,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool bRequireUserConsent;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "RequireUserConsent"))
+		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
 	bool bDefaultUserConsentGiven;
 
 #if WITH_EDITOR
