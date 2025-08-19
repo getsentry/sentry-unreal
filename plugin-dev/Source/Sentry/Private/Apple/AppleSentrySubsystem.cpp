@@ -349,12 +349,12 @@ void FAppleSentrySubsystem::EndSession()
 
 void FAppleSentrySubsystem::GiveUserConsent()
 {
-	// No-op; feature not implemented for this platform
+	// No-op; feature not currently implemented for this platform
 }
 
 void FAppleSentrySubsystem::RevokeUserConsent()
 {
-	// No-op; feature not implemented for this platform
+	// No-op; feature not currently implemented for this platform
 }
 
 EUserConsent FAppleSentrySubsystem::GetUserConsent() const

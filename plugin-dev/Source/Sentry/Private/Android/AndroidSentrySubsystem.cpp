@@ -257,12 +257,12 @@ void FAndroidSentrySubsystem::EndSession()
 
 void FAndroidSentrySubsystem::GiveUserConsent()
 {
-	// No-op; feature not implemented for this platform
+	// No-op; feature not currently implemented for this platform
 }
 
 void FAndroidSentrySubsystem::RevokeUserConsent()
 {
-	// No-op; feature not implemented for this platform
+	// No-op; feature not currently implemented for this platform
 }
 
 EUserConsent FAndroidSentrySubsystem::GetUserConsent() const
