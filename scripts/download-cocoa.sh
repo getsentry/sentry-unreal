@@ -28,7 +28,7 @@ else
     rm -rf "$(dirname $sentryArtifactsDestination)/IOS/"*
 fi
 
-cp -R "${sentryCocoaCache}/Sentry-Dynamic.xcframework/ios-arm64_arm64e/Sentry.framework" "$(dirname $sentryArtifactsDestination)/IOS/Sentry.framework"
+cp -R "${sentryCocoaCache}/Sentry-Dynamic.xcframework/ios-arm64/Sentry.framework" "$(dirname $sentryArtifactsDestination)/IOS/Sentry.framework"
 
 mkdir "Sentry.embeddedframework"
 
@@ -49,7 +49,7 @@ fi
 mkdir "$(dirname $sentryArtifactsDestination)/Mac/bin"
 mkdir "$(dirname $sentryArtifactsDestination)/Mac/include"
 
-cp "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" "$(dirname $sentryArtifactsDestination)/Mac/bin/sentry.dylib"
+cp "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Sentry" "$(dirname $sentryArtifactsDestination)/Mac/bin/sentry.dylib"
 
-cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
-cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/PrivateHeaders/." "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
+cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
+cp -rL "${sentryCocoaCache}/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/PrivateHeaders/." "$(dirname $sentryArtifactsDestination)/Mac/include/Sentry"
