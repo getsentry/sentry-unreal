@@ -51,6 +51,9 @@ FString FAndroidSentryFeedback::GetContactEmail() const
 
 void FAndroidSentryFeedback::SetAssociatedEvent(const FString& eventId)
 {
+	if (eventId.IsEmpty())
+		return;
+
 	TSharedPtr<FAndroidSentryId> idAndroid = MakeShareable(new FAndroidSentryId(eventId));
 	CallMethod<void>(SetAssociatedEventMethod, idAndroid->GetJObject());
 }
