@@ -84,7 +84,25 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 
 FString USentrySettings::GetEffectiveDsn() const
 {
-	return GIsEditor && !EditorDsn.IsEmpty() ? EditorDsn : Dsn;
+	if (GIsEditor && !EditorDsn.IsEmpty())
+	{
+		return EditorDsn;
+	}
+
+	if (!Dsn.IsEmpty())
+	{
+		return Dsn;
+	}
+
+	const FString& EnvironmentDsn = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_DSN"));
+	if (!EnvironmentDsn.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("DSN is not set in plugin settings - using SENTRY_DSN environment variable instead."));
+		return EnvironmentDsn;
+	}
+
+	UE_LOG(LogSentrySdk, Log, TEXT("DSN is not configured."));
+	return FString();
 }
 
 FString USentrySettings::GetFormattedReleaseName()
