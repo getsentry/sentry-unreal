@@ -247,6 +247,26 @@ public:
 	void EndSession();
 
 	/**
+	 * Gives user consent for uploading crash reports.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void GiveUserConsent();
+
+	/**
+	 * Revokes user consent for uploading crash reports.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RevokeUserConsent();
+
+	/** 
+	 * Returns the current user consent value.
+	 * 
+	 * @return Current user consent value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	EUserConsent GetUserConsent() const;
+
+	/**
 	 * Starts a new transaction.
 	 *
 	 * @param Name Transaction name.
