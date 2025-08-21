@@ -313,6 +313,11 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 
+	if (settings->bRequireUserConsent)
+	{
+		sentry_options_set_require_user_consent(options, 1);
+	}
+
 	int initResult = sentry_init(options);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
@@ -323,6 +328,20 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	isStackTraceEnabled = settings->AttachStacktrace;
 	isPiiAttachmentEnabled = settings->SendDefaultPii;
+
+	// Best-effort at writing user consent to disk so that user consent can change at runtime and persist
+	// We should never have a valid user consent state return "Unknown", so assume that no consent value is written if we see this
+	if (settings->bRequireUserConsent && GetUserConsent() == EUserConsent::Unknown)
+	{
+		if (settings->bDefaultUserConsentGiven)
+		{
+			GiveUserConsent();
+		}
+		else
+		{
+			RevokeUserConsent();
+		}
+	}
 }
 
 void FGenericPlatformSentrySubsystem::Close()
@@ -596,6 +615,29 @@ void FGenericPlatformSentrySubsystem::StartSession()
 void FGenericPlatformSentrySubsystem::EndSession()
 {
 	sentry_end_session();
+}
+
+void FGenericPlatformSentrySubsystem::GiveUserConsent()
+{
+	sentry_user_consent_give();
+}
+
+void FGenericPlatformSentrySubsystem::RevokeUserConsent()
+{
+	sentry_user_consent_revoke();
+}
+
+EUserConsent FGenericPlatformSentrySubsystem::GetUserConsent() const
+{
+	switch (sentry_user_consent_get())
+	{
+	case 0:
+		return EUserConsent::Revoked;
+	case 1:
+		return EUserConsent::Given;
+	default:
+		return EUserConsent::Unknown;
+	}
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction(const FString& name, const FString& operation)

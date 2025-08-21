@@ -33,6 +33,9 @@ public:
 	virtual void SetLevel(ESentryLevel level) override {}
 	virtual void StartSession() override {}
 	virtual void EndSession() override {}
+	virtual void GiveUserConsent() override {}
+	virtual void RevokeUserConsent() override {}
+	virtual EUserConsent GetUserConsent() const override { return EUserConsent::Unknown; }
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation) override { return nullptr; }
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context) override { return nullptr; }
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) override { return nullptr; }

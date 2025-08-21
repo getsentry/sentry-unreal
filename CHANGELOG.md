@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add functionality to give/revoke user consent for crash uploads ([#1053](https://github.com/getsentry/sentry-unreal/pull/1053))
+
 ### Dependencies
 
 - Bump CLI from v2.51.1 to v2.52.0 ([#1049](https://github.com/getsentry/sentry-unreal/pull/1049))
