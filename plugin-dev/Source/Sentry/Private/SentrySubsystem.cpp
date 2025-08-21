@@ -470,32 +470,36 @@ void USentrySubsystem::GiveUserConsent()
 {
 	check(SubsystemNativeImpl);
 
-	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		SubsystemNativeImpl->GiveUserConsent();
+		return;
 	}
+
+	SubsystemNativeImpl->GiveUserConsent();
 }
 
 void USentrySubsystem::RevokeUserConsent()
 {
 	check(SubsystemNativeImpl);
 
-	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		SubsystemNativeImpl->RevokeUserConsent();
+		return;
 	}
+
+	SubsystemNativeImpl->RevokeUserConsent();
 }
 
 EUserConsent USentrySubsystem::GetUserConsent() const
 {
 	check(SubsystemNativeImpl);
 
-	if (SubsystemNativeImpl && SubsystemNativeImpl->IsEnabled())
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
-		return SubsystemNativeImpl->GetUserConsent();
+		return EUserConsent::Unknown;
 	}
 
-	return EUserConsent::Unknown;
+	return SubsystemNativeImpl->GetUserConsent();
 }
 
 USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation)
