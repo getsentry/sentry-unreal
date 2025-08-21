@@ -258,9 +258,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RevokeUserConsent();
 
-	/** 
+	/**
 	 * Returns the current user consent value.
-	 * 
+	 *
 	 * @return Current user consent value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
