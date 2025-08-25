@@ -5,12 +5,12 @@
 #include "AndroidSentryAttachment.h"
 #include "AndroidSentryBreadcrumb.h"
 #include "AndroidSentryEvent.h"
+#include "AndroidSentryFeedback.h"
 #include "AndroidSentryId.h"
 #include "AndroidSentryTransaction.h"
 #include "AndroidSentryTransactionContext.h"
 #include "AndroidSentryTransactionOptions.h"
 #include "AndroidSentryUser.h"
-#include "AndroidSentryUserFeedback.h"
 
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
@@ -200,12 +200,12 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEnsure(const FString& type
 	return MakeShareable(new FAndroidSentryId(*id));
 }
 
-void FAndroidSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> userFeedback)
+void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
-	TSharedPtr<FAndroidSentryUserFeedback> userFeedbackAndroid = StaticCastSharedPtr<FAndroidSentryUserFeedback>(userFeedback);
+	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);
 
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "captureUserFeedback", "(Lio/sentry/UserFeedback;)V",
-		userFeedbackAndroid->GetJObject());
+	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureFeedback", "(Lio/sentry/protocol/Feedback;)Lio/sentry/protocol/SentryId;",
+		feedbackAndroid->GetJObject());
 }
 
 void FAndroidSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
@@ -253,6 +253,21 @@ void FAndroidSentrySubsystem::StartSession()
 void FAndroidSentrySubsystem::EndSession()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "endSession", "()V", nullptr);
+}
+
+void FAndroidSentrySubsystem::GiveUserConsent()
+{
+	// No-op; feature not currently implemented for this platform
+}
+
+void FAndroidSentrySubsystem::RevokeUserConsent()
+{
+	// No-op; feature not currently implemented for this platform
+}
+
+EUserConsent FAndroidSentrySubsystem::GetUserConsent() const
+{
+	return EUserConsent::Unknown;
 }
 
 TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransaction(const FString& name, const FString& operation)

@@ -8,6 +8,7 @@
 #include "SentryDefines.h"
 #include "SentryErrorOutputDevice.h"
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 #include "SentryModule.h"
 #include "SentryOutputDevice.h"
 #include "SentrySettings.h"
@@ -15,7 +16,6 @@
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
-#include "SentryUserFeedback.h"
 
 #include "CoreGlobals.h"
 #include "Engine/World.h"
@@ -29,8 +29,9 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
+#include "HAL/PlatformSentryFeedback.h"
+#include "HAL/PlatformSentryId.h"
 #include "HAL/PlatformSentrySubsystem.h"
-#include "HAL/PlatformSentryUserFeedback.h"
 
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -341,32 +342,35 @@ FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConf
 	return SentryId->ToString();
 }
 
-void USentrySubsystem::CaptureUserFeedback(USentryUserFeedback* UserFeedback)
+void USentrySubsystem::CaptureFeedback(USentryFeedback* Feedback)
 {
 	check(SubsystemNativeImpl);
-	check(UserFeedback);
+	check(Feedback);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
 
-	SubsystemNativeImpl->CaptureUserFeedback(UserFeedback->GetNativeObject());
+	SubsystemNativeImpl->CaptureFeedback(Feedback->GetNativeObject());
 }
 
-void USentrySubsystem::CaptureUserFeedbackWithParams(const FString& EventId, const FString& Email, const FString& Comments, const FString& Name)
+void USentrySubsystem::CaptureFeedbackWithParams(const FString& Message, const FString& Name, const FString& Email, const FString& EventId)
 {
 	check(SubsystemNativeImpl);
-	check(!EventId.IsEmpty());
+	check(!Message.IsEmpty());
 
-	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId));
-	check(UserFeedback);
+	USentryFeedback* Feedback = USentryFeedback::Create(MakeShareable(new FPlatformSentryFeedback(Message)));
+	check(Feedback);
 
-	UserFeedback->SetEmail(Email);
-	UserFeedback->SetComment(Comments);
-	UserFeedback->SetName(Name);
+	if (!Name.IsEmpty())
+		Feedback->SetName(Name);
+	if (!Email.IsEmpty())
+		Feedback->SetContactEmail(Email);
+	if (!EventId.IsEmpty())
+		Feedback->SetAssociatedEvent(EventId);
 
-	CaptureUserFeedback(UserFeedback);
+	CaptureFeedback(Feedback);
 }
 
 void USentrySubsystem::SetUser(USentryUser* User)
@@ -464,6 +468,42 @@ void USentrySubsystem::EndSession()
 	}
 
 	SubsystemNativeImpl->EndSession();
+}
+
+void USentrySubsystem::GiveUserConsent()
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->GiveUserConsent();
+}
+
+void USentrySubsystem::RevokeUserConsent()
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->RevokeUserConsent();
+}
+
+EUserConsent USentrySubsystem::GetUserConsent() const
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return EUserConsent::Unknown;
+	}
+
+	return SubsystemNativeImpl->GetUserConsent();
 }
 
 USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation)
