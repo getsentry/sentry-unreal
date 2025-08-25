@@ -16,7 +16,7 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, US
 {
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
 
-	InitCrashReporter(Settings->Release, Settings->Environment);
+	InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
 }
 
 void FLinuxSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)

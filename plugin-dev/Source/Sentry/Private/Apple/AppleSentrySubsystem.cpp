@@ -51,11 +51,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[SENTRY_APPLE_CLASS(SentrySDK) startWithConfigureOptions:^(SentryOptions* options) {
 			options.dsn = settings->GetEffectiveDsn().GetNSString();
-			options.environment = settings->Environment.GetNSString();
+			options.releaseName = settings->GetEffectiveRelease().GetNSString();
+			options.environment = settings->GetEffectiveEnvironment().GetNSString();
 			options.dist = settings->Dist.GetNSString();
 			options.enableAutoSessionTracking = settings->EnableAutoSessionTracking;
 			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
-			options.releaseName = settings->OverrideReleaseName ? settings->Release.GetNSString() : settings->GetFormattedReleaseName().GetNSString();
 			options.attachStacktrace = settings->AttachStacktrace;
 			options.debug = settings->Debug;
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];

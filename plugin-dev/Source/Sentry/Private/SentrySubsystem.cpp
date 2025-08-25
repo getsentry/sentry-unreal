@@ -78,7 +78,7 @@ void USentrySubsystem::Initialize()
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	if (Settings->Dsn.IsEmpty())
+	if (Settings->GetEffectiveDsn().IsEmpty())
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Sentry requires minimal configuration for its initialization - please provide the DSN in plugin settings."));
 		return;

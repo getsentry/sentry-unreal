@@ -15,6 +15,7 @@
 
 - Add functionality to give/revoke user consent for crash uploads ([#1053](https://github.com/getsentry/sentry-unreal/pull/1053))
 - Add new API for capturing user feedback ([#1051](https://github.com/getsentry/sentry-unreal/pull/1051))
+- Read `DSN`, `Environment` and `Release` options from environment variables ([#1054](https://github.com/getsentry/sentry-unreal/pull/1054))
 
 ### Dependencies
 
