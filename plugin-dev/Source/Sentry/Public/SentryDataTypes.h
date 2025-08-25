@@ -23,3 +23,11 @@ enum class ESentryCrashedLastRun : uint8
 	NotCrashed,
 	Crashed
 };
+
+UENUM(BlueprintType)
+enum class EUserConsent : uint8
+{
+	Revoked,
+	Given,
+	Unknown
+};

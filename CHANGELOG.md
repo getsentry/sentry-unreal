@@ -13,13 +13,17 @@
 
 ### Features
 
-- Added new API for capturing user feedback ([#1051](https://github.com/getsentry/sentry-unreal/pull/1051))
+- Add functionality to give/revoke user consent for crash uploads ([#1053](https://github.com/getsentry/sentry-unreal/pull/1053))
+- Add new API for capturing user feedback ([#1051](https://github.com/getsentry/sentry-unreal/pull/1051))
 
 ### Dependencies
 
 - Bump CLI from v2.51.1 to v2.52.0 ([#1049](https://github.com/getsentry/sentry-unreal/pull/1049))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2520)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.51.1...2.52.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.54.0 to v8.55.0 ([#1050](https://github.com/getsentry/sentry-unreal/pull/1050))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8550)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.54.0...8.55.0)
 
 ## 1.0.0-beta.8
 
