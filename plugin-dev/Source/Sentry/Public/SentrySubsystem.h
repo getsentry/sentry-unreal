@@ -14,7 +14,7 @@
 class USentrySettings;
 class USentryBreadcrumb;
 class USentryEvent;
-class USentryUserFeedback;
+class USentryFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
 class USentryBeforeBreadcrumbHandler;
@@ -167,21 +167,21 @@ public:
 	/**
 	 * Captures a user feedback.
 	 *
-	 * @param UserFeedback The user feedback to send to Sentry.
+	 * @param Feedback The feedback to send to Sentry.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void CaptureUserFeedback(USentryUserFeedback* UserFeedback);
+	void CaptureFeedback(USentryFeedback* Feedback);
 
 	/**
 	 * Captures a user feedback.
 	 *
-	 * @param EventId The event Id.
-	 * @param Email The user email.
-	 * @param Comments The user comments.
-	 * @param Name The optional username.
+	 * @param Message User feedback message (required).
+	 * @param Name User name.
+	 * @param Email User email.
+	 * @param EventId Associated event identifier.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void CaptureUserFeedbackWithParams(const FString& EventId, const FString& Email, const FString& Comments, const FString& Name);
+	void CaptureFeedbackWithParams(const FString& Message, const FString& Name, const FString& Email, const FString& EventId);
 
 	/**
 	 * Sets a user for the current scope.

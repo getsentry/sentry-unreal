@@ -13,7 +13,7 @@ class USentryTransactionContext;
 class USentryEvent;
 class USentryBreadcrumb;
 class USentryUser;
-class USentryUserFeedback;
+class USentryFeedback;
 class USentryAttachment;
 
 /**
@@ -48,15 +48,15 @@ public:
 		const TMap<FString, FString>& Data);
 
 	/**
-	 * Creates user feedback for the event.
+	 * Creates user feedback.
 	 *
-	 * @param EventId Id of the event to which user feedback is associated.
-	 * @param Name Name of the user.
-	 * @param Email Email of the user.
-	 * @param Comments Comments of the user about what happened.
+	 * @param Message User feedback message (required).
+	 * @param Name User name.
+	 * @param Email User email.
+	 * @param EventId Associated event identifier.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static USentryUserFeedback* CreateSentryUserFeedback(const FString& EventId, const FString& Name, const FString& Email, const FString& Comments);
+	static USentryFeedback* CreateSentryFeedback(const FString& Message, const FString& Name, const FString& Email, const FString& EventId);
 
 	/**
 	 * Creates breadcrumb.

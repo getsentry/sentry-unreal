@@ -4,12 +4,12 @@
 #include "GenericPlatformSentryAttachment.h"
 #include "GenericPlatformSentryBreadcrumb.h"
 #include "GenericPlatformSentryEvent.h"
+#include "GenericPlatformSentryFeedback.h"
 #include "GenericPlatformSentryId.h"
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryTransaction.h"
 #include "GenericPlatformSentryTransactionContext.h"
 #include "GenericPlatformSentryUser.h"
-#include "GenericPlatformSentryUserFeedback.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeSendHandler.h"
@@ -537,10 +537,10 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
-void FGenericPlatformSentrySubsystem::CaptureUserFeedback(TSharedPtr<ISentryUserFeedback> InUserFeedback)
+void FGenericPlatformSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
-	TSharedPtr<FGenericPlatformSentryUserFeedback> userFeedback = StaticCastSharedPtr<FGenericPlatformSentryUserFeedback>(InUserFeedback);
-	sentry_capture_feedback(userFeedback->GetNativeObject());
+	TSharedPtr<FGenericPlatformSentryFeedback> Feedback = StaticCastSharedPtr<FGenericPlatformSentryFeedback>(feedback);
+	sentry_capture_feedback(Feedback->GetNativeObject());
 }
 
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
