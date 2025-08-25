@@ -4,16 +4,16 @@
 #include "SentryAttachment.h"
 #include "SentryBreadcrumb.h"
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
-#include "SentryUserFeedback.h"
 
 #include "HAL/PlatformSentryAttachment.h"
 #include "HAL/PlatformSentryBreadcrumb.h"
 #include "HAL/PlatformSentryEvent.h"
+#include "HAL/PlatformSentryFeedback.h"
 #include "HAL/PlatformSentryTransactionContext.h"
 #include "HAL/PlatformSentryUser.h"
-#include "HAL/PlatformSentryUserFeedback.h"
 
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
@@ -46,18 +46,18 @@ USentryUser* USentryLibrary::CreateSentryUser(const FString& Email, const FStrin
 	return User;
 }
 
-USentryUserFeedback* USentryLibrary::CreateSentryUserFeedback(const FString& EventId, const FString& Name, const FString& Email, const FString& Comments)
+USentryFeedback* USentryLibrary::CreateSentryFeedback(const FString& Message, const FString& Name, const FString& Email, const FString& EventId)
 {
-	USentryUserFeedback* UserFeedback = USentryUserFeedback::Create(CreateSharedSentryUserFeedback(EventId));
+	USentryFeedback* Feedback = USentryFeedback::Create(MakeShareable(new FPlatformSentryFeedback(Message)));
 
 	if (!Name.IsEmpty())
-		UserFeedback->SetName(Name);
+		Feedback->SetName(Name);
 	if (!Email.IsEmpty())
-		UserFeedback->SetEmail(Email);
-	if (!Comments.IsEmpty())
-		UserFeedback->SetComment(Comments);
+		Feedback->SetContactEmail(Email);
+	if (!EventId.IsEmpty())
+		Feedback->SetAssociatedEvent(EventId);
 
-	return UserFeedback;
+	return Feedback;
 }
 
 USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message, const FString& Type, const FString& Category,
