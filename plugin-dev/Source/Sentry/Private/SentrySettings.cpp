@@ -14,7 +14,6 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, InitAutomatically(true)
 	, Dsn()
 	, Debug(true)
-	, Environment(GetDefaultEnvironmentName())
 	, SampleRate(1.0f)
 	, EnableAutoLogAttachment(false)
 	, AttachStacktrace(true)
@@ -105,7 +104,59 @@ FString USentrySettings::GetEffectiveDsn() const
 	return FString();
 }
 
-FString USentrySettings::GetFormattedReleaseName()
+FString USentrySettings::GetEffectiveEnvironment() const
+{
+	if (!Environment.IsEmpty())
+	{
+		return Environment;
+	}
+
+	const FString& EnvVarEnvironment = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_ENVIRONMENT"));
+	if (!EnvVarEnvironment.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Using SENTRY_ENVIRONMENT variable as Sentry environment."));
+		return EnvVarEnvironment;
+	}
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Using current build configuration as Sentry environment."));
+	return GetEnvironmentFromBuildConfig();
+}
+
+FString USentrySettings::GetEnvironmentFromBuildConfig() const
+{
+	if (GIsEditor)
+	{
+		return TEXT("Editor");
+	}
+
+	// Check Shipping configuration separately for backward compatibility
+	if (FApp::GetBuildConfiguration() == EBuildConfiguration::Shipping)
+	{
+		return TEXT("Release");
+	}
+
+	return LexToString(FApp::GetBuildConfiguration());
+}
+
+FString USentrySettings::GetEffectiveRelease() const
+{
+	if (OverrideReleaseName)
+	{
+		return Release;
+	}
+
+	const FString& EnvVarRelease = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_RELEASE"));
+	if (!EnvVarRelease.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Using SENTRY_RELEASE variable as Sentry release."));
+		return EnvVarRelease;
+	}
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Using current project name and version as Sentry release."));
+	return GetReleaseFromProjectSettings();
+}
+
+FString USentrySettings::GetReleaseFromProjectSettings() const
 {
 	FString FormattedReleaseName = FApp::GetProjectName();
 
@@ -127,22 +178,6 @@ bool USentrySettings::IsDirty() const
 void USentrySettings::ClearDirtyFlag()
 {
 	bIsDirty = false;
-}
-
-FString USentrySettings::GetDefaultEnvironmentName()
-{
-	if (GIsEditor)
-	{
-		return TEXT("Editor");
-	}
-
-	// Check Shipping configuration separately for backward compatibility
-	if (FApp::GetBuildConfiguration() == EBuildConfiguration::Shipping)
-	{
-		return TEXT("Release");
-	}
-
-	return LexToString(FApp::GetBuildConfiguration());
 }
 
 void USentrySettings::LoadDebugSymbolsProperties()
