@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Read `DSN`, `Environment` and `Release` options from environment variables ([#1054](https://github.com/getsentry/sentry-unreal/pull/1054))
+
 ### Dependencies
 
 - Bump CLI from v2.51.1 to v2.52.0 ([#1049](https://github.com/getsentry/sentry-unreal/pull/1049))
