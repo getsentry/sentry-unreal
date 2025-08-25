@@ -94,11 +94,11 @@ FString USentrySettings::GetEffectiveDsn() const
 		return Dsn;
 	}
 
-	const FString& EnvironmentDsn = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_DSN"));
-	if (!EnvironmentDsn.IsEmpty())
+	const FString& EnvVarDsn = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_DSN"));
+	if (!EnvVarDsn.IsEmpty())
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("DSN is not set in plugin settings - using SENTRY_DSN environment variable instead."));
-		return EnvironmentDsn;
+		return EnvVarDsn;
 	}
 
 	UE_LOG(LogSentrySdk, Log, TEXT("DSN is not configured."));
