@@ -9,9 +9,9 @@
 
 #if USE_SENTRY_NATIVE
 
-FGenericPlatformSentrySamplingContext::FGenericPlatformSentrySamplingContext(const sentry_transaction_context_t* transactionContext, sentry_value_t customSamplingContext)
+FGenericPlatformSentrySamplingContext::FGenericPlatformSentrySamplingContext(sentry_transaction_context_t* transactionContext, sentry_value_t customSamplingContext)
 {
-	TransactionContext = const_cast<sentry_transaction_context_t*>(transactionContext);
+	TransactionContext = transactionContext;
 	CustomSamplingContext = customSamplingContext;
 }
 

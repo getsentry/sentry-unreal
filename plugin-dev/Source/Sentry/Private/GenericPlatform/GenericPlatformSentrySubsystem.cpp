@@ -108,7 +108,7 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 	}
 	else
 	{
-		return 0.0;
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 }
 
@@ -227,7 +227,8 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
-	USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new FGenericPlatformSentrySamplingContext(transaction_ctx, custom_sampling_ctx)));
+	USentrySamplingContext* Context = USentrySamplingContext::Create(
+		MakeShareable(new FGenericPlatformSentrySamplingContext(const_cast<sentry_transaction_context_t*>(transaction_ctx), custom_sampling_ctx)));
 
 	float samplingValue;
 	if (Sampler->Sample(Context, samplingValue))

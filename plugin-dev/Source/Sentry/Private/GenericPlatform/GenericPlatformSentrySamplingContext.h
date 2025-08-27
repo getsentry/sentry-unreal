@@ -11,7 +11,7 @@
 class FGenericPlatformSentrySamplingContext : public ISentrySamplingContext
 {
 public:
-	FGenericPlatformSentrySamplingContext(const sentry_transaction_context_t* transactionContext, sentry_value_t customSamplingContext);
+	FGenericPlatformSentrySamplingContext(sentry_transaction_context_t* transactionContext, sentry_value_t customSamplingContext);
 	virtual ~FGenericPlatformSentrySamplingContext() override;
 
 	virtual TSharedPtr<ISentryTransactionContext> GetTransactionContext() const override;
