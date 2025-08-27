@@ -553,7 +553,7 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 	return USentryTransaction::Create(SentryTransaction);
 }
 
-USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options)
+USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const FSentryTransactionOptions& Options)
 {
 	check(SubsystemNativeImpl);
 	check(Context);

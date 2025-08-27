@@ -673,10 +673,17 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 	return nullptr;
 }
 
-TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
+TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not supported (and therefore ignored) on generic platform."));
-	return StartTransactionWithContext(context);
+	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
+	{
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->GetNativeObject(), FGenericPlatformSentryConverters::VariantMapToNative(options.CustomSamplingContext)))
+		{
+			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		}
+	}
+
+	return nullptr;
 }
 
 TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)

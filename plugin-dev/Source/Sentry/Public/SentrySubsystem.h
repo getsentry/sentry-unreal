@@ -8,6 +8,7 @@
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
 #include "SentryVariant.h"
+#include "SentryTransactionOptions.h"
 
 #include "SentrySubsystem.generated.h"
 
@@ -307,7 +308,7 @@ public:
 	 * @param Options Transaction options.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options);
+	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const FSentryTransactionOptions& Options);
 
 	/**
 	 * Creates a transaction context to propagate distributed tracing metadata from upstream

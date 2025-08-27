@@ -6,6 +6,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryVariant.h"
+#include "SentryTransactionOptions.h"
 
 class ISentryAttachment;
 class ISentryBreadcrumb;
@@ -60,7 +61,7 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) = 0;
-	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) = 0;
+	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options) = 0;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) = 0;
 
 	/** Unreal-specific methods that are not part of the platform's Sentry SDK API */

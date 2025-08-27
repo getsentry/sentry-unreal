@@ -16,14 +16,14 @@ void FAndroidSentryTransactionOptions::SetupClassMethods()
 	SetCustomSamplingContextMethod = GetMethod("setCustomSamplingContext", "(Lio/sentry/CustomSamplingContext;)V");
 }
 
-void FAndroidSentryTransactionOptions::SetCustomSamplingContext(const TMap<FString, FString>& data)
+void FAndroidSentryTransactionOptions::SetCustomSamplingContext(const TMap<FString, FSentryVariant>& data)
 {
 	FSentryJavaObjectWrapper NativeCustomSamplingContext(SentryJavaClasses::CustomSamplingContext, "()V");
 	FSentryJavaMethod SetMethod = NativeCustomSamplingContext.GetMethod("set", "(Ljava/lang/String;Ljava/lang/Object;)V");
 
 	for (const auto& dataItem : data)
 	{
-		NativeCustomSamplingContext.CallMethod<void>(SetMethod, *GetJString(dataItem.Key), *GetJString(dataItem.Value));
+		NativeCustomSamplingContext.CallMethod<void>(SetMethod, *GetJString(dataItem.Key), FAndroidSentryConverters::VariantToNative(dataItem.Value)->GetJObject());
 	}
 
 	CallMethod<void>(SetCustomSamplingContextMethod, NativeCustomSamplingContext.GetJObject());
