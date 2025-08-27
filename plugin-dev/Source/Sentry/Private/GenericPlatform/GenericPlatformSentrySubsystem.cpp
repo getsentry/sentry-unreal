@@ -44,9 +44,9 @@
 
 extern CORE_API bool GIsGPUCrashed;
 
-static FGenericPlatformSentrySubsystem* GGenericPlatformSentrySubsystem;
-
 #if USE_SENTRY_NATIVE
+
+static FGenericPlatformSentrySubsystem* GGenericPlatformSentrySubsystem;
 
 void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* userdata)
 {
