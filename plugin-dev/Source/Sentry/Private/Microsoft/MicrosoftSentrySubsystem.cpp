@@ -31,10 +31,10 @@ void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings
 
 	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default)
 	{
-		InitCrashReporter(Settings->Release, Settings->Environment);
+		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
 	}
 #else
-	InitCrashReporter(Settings->Release, Settings->Environment);
+	InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
 #endif
 }
 
