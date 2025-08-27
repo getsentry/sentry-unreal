@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 
 #include "SentryDataTypes.h"
-#include "SentryVariant.h"
 #include "SentryTransactionOptions.h"
+#include "SentryVariant.h"
 
 class ISentryAttachment;
 class ISentryBreadcrumb;

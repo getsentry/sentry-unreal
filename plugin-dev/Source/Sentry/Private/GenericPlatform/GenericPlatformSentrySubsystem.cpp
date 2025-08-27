@@ -6,11 +6,11 @@
 #include "GenericPlatformSentryEvent.h"
 #include "GenericPlatformSentryFeedback.h"
 #include "GenericPlatformSentryId.h"
+#include "GenericPlatformSentrySamplingContext.h"
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryTransaction.h"
 #include "GenericPlatformSentryTransactionContext.h"
 #include "GenericPlatformSentryUser.h"
-#include "GenericPlatformSentrySamplingContext.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeSendHandler.h"
@@ -18,8 +18,8 @@
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryModule.h"
-#include "SentrySettings.h"
 #include "SentrySamplingContext.h"
+#include "SentrySettings.h"
 
 #include "SentryTraceSampler.h"
 

@@ -7,8 +7,8 @@
 
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
-#include "SentryVariant.h"
 #include "SentryTransactionOptions.h"
+#include "SentryVariant.h"
 
 #include "SentrySubsystem.generated.h"
 
