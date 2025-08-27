@@ -22,8 +22,8 @@
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
 
-#include "SentryTraceSampler.h"
 #include "Engine/Engine.h"
+#include "SentryTraceSampler.h"
 
 #include "Utils/SentryFileUtils.h"
 #include "Utils/SentryLogUtils.h"
