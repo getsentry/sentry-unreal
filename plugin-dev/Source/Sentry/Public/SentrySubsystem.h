@@ -324,6 +324,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	bool IsSupportedForCurrentSettings() const;
 
+	/** Retrieves the underlying native implementation. */
+	TSharedPtr<ISentrySubsystem> GetNativeObject() const;
+
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();

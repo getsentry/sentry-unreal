@@ -20,8 +20,10 @@
 #include "SentryModule.h"
 #include "SentrySamplingContext.h"
 #include "SentrySettings.h"
+#include "SentrySubsystem.h"
 
 #include "SentryTraceSampler.h"
+#include "Engine/Engine.h"
 
 #include "Utils/SentryFileUtils.h"
 #include "Utils/SentryLogUtils.h"
@@ -45,8 +47,6 @@
 extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
-
-static FGenericPlatformSentrySubsystem* GGenericPlatformSentrySubsystem;
 
 void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* userdata)
 {
@@ -102,14 +102,17 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 
 /* static */ double FGenericPlatformSentrySubsystem::HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled)
 {
-	if (GGenericPlatformSentrySubsystem)
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+	if (SentrySubsystem)
 	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(GGenericPlatformSentrySubsystem)->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
+		TSharedPtr<FGenericPlatformSentrySubsystem> NativeSubsystem = StaticCastSharedPtr<FGenericPlatformSentrySubsystem>(SentrySubsystem->GetNativeObject());
+		if (NativeSubsystem)
+		{
+			return NativeSubsystem->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
+		}
 	}
-	else
-	{
-		return parent_sampled != nullptr ? *parent_sampled : 0.0;
-	}
+
+	return parent_sampled != nullptr ? *parent_sampled : 0.0;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
@@ -297,8 +300,6 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 
 void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
-	GGenericPlatformSentrySubsystem = this;
-
 	beforeSend = beforeSendHandler;
 	beforeBreadcrumb = beforeBreadcrumbHandler;
 	sampler = traceSampler;
@@ -401,8 +402,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 void FGenericPlatformSentrySubsystem::Close()
 {
-	GGenericPlatformSentrySubsystem = nullptr;
-
 	isEnabled = false;
 
 	sentry_close();

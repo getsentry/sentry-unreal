@@ -599,6 +599,11 @@ bool USentrySubsystem::IsSupportedForCurrentSettings() const
 	return true;
 }
 
+TSharedPtr<ISentrySubsystem> USentrySubsystem::GetNativeObject() const
+{
+	return SubsystemNativeImpl;
+}
+
 void USentrySubsystem::AddDefaultContext()
 {
 	check(SubsystemNativeImpl);
