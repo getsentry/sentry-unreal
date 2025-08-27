@@ -401,6 +401,8 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 void FGenericPlatformSentrySubsystem::Close()
 {
+	GGenericPlatformSentrySubsystem = nullptr;
+
 	isEnabled = false;
 
 	sentry_close();
