@@ -91,6 +91,8 @@ Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.h
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentrySamplingContext.cpp
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentrySamplingContext.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryScope.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryScope.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentrySpan.cpp
@@ -217,6 +219,7 @@ Source/Sentry/Public/SentrySubsystem.h
 Source/Sentry/Public/SentryTraceSampler.h
 Source/Sentry/Public/SentryTransaction.h
 Source/Sentry/Public/SentryTransactionContext.h
+Source/Sentry/Public/SentryTransactionOptions.h
 Source/Sentry/Public/SentryUser.h
 Source/Sentry/Public/SentryVariant.h
 Source/Sentry/Sentry_Android_UPL.xml
