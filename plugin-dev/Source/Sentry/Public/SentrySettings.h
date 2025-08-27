@@ -368,12 +368,12 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Require User Consent", ToolTip = "True if user's consent is required before uploading crash data."))
+	UPROPERTY(Config, EditAnywhere, Category = "General|Consent",
+		Meta = (DisplayName = "Require User Consent (for Windows/Linux only)", ToolTip = "True if user's consent is required before uploading crash data. Currently this feature is supported for Windows and Linux only."))
 	bool bRequireUserConsent;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
+	UPROPERTY(Config, EditAnywhere, Category = "General|Consent",
+		Meta = (DisplayName = "Default User Consent Given (for Windows/Linux only)", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'. Currently this feature is supported for Windows and Linux only.", EditCondition = "bRequireUserConsent"))
 	bool bDefaultUserConsentGiven;
 
 #if WITH_EDITOR

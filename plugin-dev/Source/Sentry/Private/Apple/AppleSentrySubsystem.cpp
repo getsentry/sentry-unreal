@@ -350,15 +350,18 @@ void FAppleSentrySubsystem::EndSession()
 void FAppleSentrySubsystem::GiveUserConsent()
 {
 	// No-op; feature not currently implemented for this platform
+	UE_LOG(LogSentrySdk, Log, TEXT("GiveUserConsent is not supported on Mac/iOS."));
 }
 
 void FAppleSentrySubsystem::RevokeUserConsent()
 {
 	// No-op; feature not currently implemented for this platform
+	UE_LOG(LogSentrySdk, Log, TEXT("RevokeUserConsent is not supported on Mac/iOS."));
 }
 
 EUserConsent FAppleSentrySubsystem::GetUserConsent() const
 {
+	UE_LOG(LogSentrySdk, Log, TEXT("GetUserConsent is not supported on Mac/iOS. Returning default `Unknown` value."));
 	return EUserConsent::Unknown;
 }
 

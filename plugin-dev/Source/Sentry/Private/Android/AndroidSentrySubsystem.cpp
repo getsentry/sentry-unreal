@@ -258,15 +258,18 @@ void FAndroidSentrySubsystem::EndSession()
 void FAndroidSentrySubsystem::GiveUserConsent()
 {
 	// No-op; feature not currently implemented for this platform
+	UE_LOG(LogSentrySdk, Log, TEXT("GiveUserConsent is not supported on Android."));
 }
 
 void FAndroidSentrySubsystem::RevokeUserConsent()
 {
 	// No-op; feature not currently implemented for this platform
+	UE_LOG(LogSentrySdk, Log, TEXT("RevokeUserConsent is not supported on Android."));
 }
 
 EUserConsent FAndroidSentrySubsystem::GetUserConsent() const
 {
+	UE_LOG(LogSentrySdk, Log, TEXT("GetUserConsent is not supported on Android. Returning default `Unknown` value."));
 	return EUserConsent::Unknown;
 }
 

@@ -248,12 +248,16 @@ public:
 
 	/**
 	 * Gives user consent for uploading crash reports.
+	 *
+	 * @note: This method is supported only on Windows and Linux, on other platforms it is a no-op.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void GiveUserConsent();
 
 	/**
 	 * Revokes user consent for uploading crash reports.
+	 *
+	 * @note: This method is supported only on Windows and Linux, on other platforms it is a no-op.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void RevokeUserConsent();
@@ -262,6 +266,8 @@ public:
 	 * Returns the current user consent value.
 	 *
 	 * @return Current user consent value.
+	 *
+	 * @note: This method is supported only on Windows and Linux, on other platforms it returns default `Unknown` value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	EUserConsent GetUserConsent() const;
