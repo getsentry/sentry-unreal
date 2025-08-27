@@ -110,6 +110,7 @@ FString USentrySettings::GetEffectiveEnvironment() const
 {
 	if (!Environment.IsEmpty())
 	{
+		UE_LOG(LogSentrySdk, Verbose, TEXT("Using the value from plugin settings as Sentry environment."));
 		return Environment;
 	}
 
@@ -144,6 +145,7 @@ FString USentrySettings::GetEffectiveRelease() const
 {
 	if (OverrideReleaseName)
 	{
+		UE_LOG(LogSentrySdk, Verbose, TEXT("Using the value from plugin settings as Sentry release."));
 		return Release;
 	}
 
