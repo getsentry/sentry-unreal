@@ -397,6 +397,11 @@ class SENTRY_API USentrySettings : public UObject
 	 */
 	FString GetEffectiveEnvironment() const;
 
+	/**
+	 * Gets the environment from the application's build configuration.
+	 *
+	 * @return Environment string based on build configuration (`Shipping` maps to `Release`, others map directly).
+	 */
 	FString GetEnvironmentFromBuildConfig() const;
 
 	/**
@@ -408,6 +413,11 @@ class SENTRY_API USentrySettings : public UObject
 	 */
 	FString GetEffectiveRelease() const;
 
+	/**
+	 * Gets the release name from the project settings.
+	 *
+	 * @return Release name derived from the current project name and version to match the format `<ProjectName>@<Version>`.
+	 */
 	FString GetReleaseFromProjectSettings() const;
 
 	bool IsDirty() const;
