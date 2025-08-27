@@ -33,8 +33,8 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
-	SettingsJson->SetStringField(TEXT("release"), settings->OverrideReleaseName ? settings->Release : settings->GetFormattedReleaseName());
-	SettingsJson->SetStringField(TEXT("environment"), settings->Environment);
+	SettingsJson->SetStringField(TEXT("release"), settings->GetEffectiveRelease());
+	SettingsJson->SetStringField(TEXT("environment"), settings->GetEffectiveEnvironment());
 	SettingsJson->SetStringField(TEXT("dist"), settings->Dist);
 	SettingsJson->SetBoolField(TEXT("autoSessionTracking"), settings->EnableAutoSessionTracking);
 	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);

@@ -354,10 +354,9 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureCertsPath(options);
 	ConfigureNetworkConnectFunc(options);
 
-	sentry_options_set_release(options, TCHAR_TO_ANSI(settings->OverrideReleaseName ? *settings->Release : *settings->GetFormattedReleaseName()));
-
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->GetEffectiveDsn()));
-	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->Environment));
+	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->GetEffectiveRelease()));
+	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->GetEffectiveEnvironment()));
 	sentry_options_set_dist(options, TCHAR_TO_ANSI(*settings->Dist));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);

@@ -384,17 +384,46 @@ class SENTRY_API USentrySettings : public UObject
 	 * Gets the effective DSN based on current execution context.
 	 *
 	 * @return Editor DSN when running in the editor and one is set; otherwise, falls back to the default DSN.
+	 * If neither is provided, the SDK will attempt to read it from the SENTRY_DSN environment variable.
 	 */
 	FString GetEffectiveDsn() const;
 
-	static FString GetFormattedReleaseName();
+	/**
+	 * Gets the effective environment based on current execution context.
+	 *
+	 * @return By default, the SDK uses the `Environment` value from the plugin settings if set.
+	 * If not, the SDK will attempt to read it from SENTRY_ENVIRONMENT environment variable.
+	 * If that is also not set, the environment is automatically derived from the current build configuration.
+	 */
+	FString GetEffectiveEnvironment() const;
+
+	/**
+	 * Gets the environment from the application's build configuration.
+	 *
+	 * @return Environment string based on build configuration (`Shipping` maps to `Release`, others map directly).
+	 */
+	FString GetEnvironmentFromBuildConfig() const;
+
+	/**
+	 * Gets the effective release name based on current execution context.
+	 *
+	 * @return By default, the SDK uses the `Release` value from the plugin settings if `OverrideReleaseName` flag is set.
+	 * If not, the SDK will attempt to read it from SENTRY_RELEASE environment variable.
+	 * If that is also not set, the release name is automatically derived from the current project name and version.
+	 */
+	FString GetEffectiveRelease() const;
+
+	/**
+	 * Gets the release name from the project settings.
+	 *
+	 * @return Release name derived from the current project name and version to match the format `<ProjectName>@<Version>`.
+	 */
+	FString GetReleaseFromProjectSettings() const;
 
 	bool IsDirty() const;
 	void ClearDirtyFlag();
 
 private:
-	FString GetDefaultEnvironmentName();
-
 	void LoadDebugSymbolsProperties();
 
 	bool bIsDirty;
