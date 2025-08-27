@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "SentryImplWrapper.h"
+#include "SentryVariant.h"
 
 #include "SentrySamplingContext.generated.h"
 
@@ -29,5 +30,5 @@ public:
 
 	/** Gets custom data used for sampling. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	TMap<FString, FString> GetCustomSamplingContext() const;
+	TMap<FString, FSentryVariant> GetCustomSamplingContext() const;
 };

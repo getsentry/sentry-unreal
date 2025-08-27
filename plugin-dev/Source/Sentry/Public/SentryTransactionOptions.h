@@ -17,6 +17,5 @@ struct SENTRY_API FSentryTransactionOptions
 	UPROPERTY(BlueprintReadWrite, Category = "Sentry")
 	TMap<FString, FSentryVariant> CustomSamplingContext;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Sentry")
-	bool IsBindToScope;
+	// TODO: Add other options such as `BindToScope` flag
 };

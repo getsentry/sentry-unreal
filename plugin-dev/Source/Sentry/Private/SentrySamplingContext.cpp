@@ -15,10 +15,10 @@ USentryTransactionContext* USentrySamplingContext::GetTransactionContext() const
 	return USentryTransactionContext::Create(transactionContextNativeImpl);
 }
 
-TMap<FString, FString> USentrySamplingContext::GetCustomSamplingContext() const
+TMap<FString, FSentryVariant> USentrySamplingContext::GetCustomSamplingContext() const
 {
 	if (!NativeImpl)
-		return TMap<FString, FString>();
+		return TMap<FString, FSentryVariant>();
 
 	return NativeImpl->GetCustomSamplingContext();
 }

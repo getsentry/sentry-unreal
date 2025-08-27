@@ -19,16 +19,12 @@ FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionConte
 
 FString FGenericPlatformSentryTransactionContext::GetName() const
 {
-	// no corresponding implementation in sentry-native
-	UE_LOG(LogSentrySdk, Warning, TEXT("The native SDK doesn't currently support transaction's context GetName function"));
-	return FString();
+	return FString(sentry_transaction_context_get_name(TransactionContext));
 }
 
 FString FGenericPlatformSentryTransactionContext::GetOperation() const
 {
-	// no corresponding implementation in sentry-native
-	UE_LOG(LogSentrySdk, Warning, TEXT("The native SDK doesn't currently support transaction's context GetOperation function"));
-	return FString();
+	return FString(sentry_transaction_context_get_operation(TransactionContext));
 }
 
 sentry_transaction_context_t* FGenericPlatformSentryTransactionContext::GetNativeObject()

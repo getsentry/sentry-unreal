@@ -24,15 +24,15 @@ TSharedPtr<ISentryTransactionContext> FAndroidSentrySamplingContext::GetTransact
 	return MakeShareable(new FAndroidSentryTransactionContext(*transactionContext));
 }
 
-TMap<FString, FString> FAndroidSentrySamplingContext::GetCustomSamplingContext() const
+TMap<FString, FSentryVariant> FAndroidSentrySamplingContext::GetCustomSamplingContext() const
 {
 	auto customSamplingContext = CallObjectMethod<jobject>(GetCustomSamplingContextMethod);
 	if (!customSamplingContext)
-		return TMap<FString, FString>();
+		return TMap<FString, FSentryVariant>();
 
 	FSentryJavaObjectWrapper NativeCustomSamplingContext(SentryJavaClasses::CustomSamplingContext, *customSamplingContext);
 	FSentryJavaMethod GetDataMethod = NativeCustomSamplingContext.GetMethod("getData", "()Ljava/util/Map;");
 
 	auto data = NativeCustomSamplingContext.CallObjectMethod<jobject>(GetDataMethod);
-	return FAndroidSentryConverters::StringMapToUnreal(*data);
+	return FAndroidSentryConverters::VariantMapToUnreal(*data);
 }
