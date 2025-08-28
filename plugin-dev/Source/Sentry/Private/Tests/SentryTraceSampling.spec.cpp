@@ -2,10 +2,10 @@
 
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
+#include "SentryTests.h"
+#include "SentryTraceSamplingHandler.h"
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
-#include "SentryTraceSamplingHandler.h"
-#include "SentryTests.h"
 
 #include "HAL/PlatformSentryTransactionContext.h"
 

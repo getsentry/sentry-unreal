@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "SentryTraceSampler.h"
 #include "SentrySamplingContext.h"
+#include "SentryTraceSampler.h"
 
 #include "SentryTraceSamplingHandler.generated.h"
 
