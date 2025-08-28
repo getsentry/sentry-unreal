@@ -30,6 +30,7 @@ void SentryTraceSamplingSpec::Define()
 
 		SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
 		{
+			Settings->EnableTracing = true;
 			Settings->SamplingType = ESentryTracesSamplingType::TracesSampler;
 			Settings->TracesSampler = UTraceSamplingTestHandler::StaticClass();
 		}));
