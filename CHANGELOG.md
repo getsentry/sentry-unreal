@@ -10,11 +10,14 @@
   - `CaptureUserFeedback` function in `SentrySubsystem` replaced with `CaptureFeedback`
   - `CreateSentryUserFeedback` function in `SentryLibrary` replaced with `CreateSentryFeedback`
 - On Windows and Linux, `ToString` function of `SentryId` class now returns the ID without dashes
+- `StartTransactionWithContextAndOptions` function in `SentrySubsystem` now accepts `FSentryTransactionOptions` struct instead of string map
+- `GetCustomSamplingContext` function in `SentrySamplingContext` now returns `TMap<FString, FSentryVariant>` instead of string map
 
 ### Features
 
 - Add functionality to give/revoke user consent for crash uploads ([#1053](https://github.com/getsentry/sentry-unreal/pull/1053))
 - Add new API for capturing user feedback ([#1051](https://github.com/getsentry/sentry-unreal/pull/1051))
+- Add Traces sampling function support for Windows and Linux ([#1057](https://github.com/getsentry/sentry-unreal/pull/1057))
 - Read `DSN`, `Environment` and `Release` options from environment variables ([#1054](https://github.com/getsentry/sentry-unreal/pull/1054))
 
 ### Dependencies

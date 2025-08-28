@@ -297,12 +297,12 @@ TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithCont
 	return StartTransactionWithContext(context);
 }
 
-TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
+TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options)
 {
 	TSharedPtr<FAndroidSentryTransactionContext> transactionContextAndroid = StaticCastSharedPtr<FAndroidSentryTransactionContext>(context);
 
 	TSharedPtr<FAndroidSentryTransactionOptions> transactionOptionsAndroid = MakeShareable(new FAndroidSentryTransactionOptions());
-	transactionOptionsAndroid->SetCustomSamplingContext(options);
+	transactionOptionsAndroid->SetCustomSamplingContext(options.CustomSamplingContext);
 
 	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Lio/sentry/TransactionContext;Lio/sentry/TransactionOptions;)Lio/sentry/ITransaction;",
 		transactionContextAndroid->GetJObject(), transactionOptionsAndroid->GetJObject());

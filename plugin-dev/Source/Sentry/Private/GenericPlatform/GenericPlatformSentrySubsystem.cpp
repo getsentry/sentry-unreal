@@ -6,6 +6,7 @@
 #include "GenericPlatformSentryEvent.h"
 #include "GenericPlatformSentryFeedback.h"
 #include "GenericPlatformSentryId.h"
+#include "GenericPlatformSentrySamplingContext.h"
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryTransaction.h"
 #include "GenericPlatformSentryTransactionContext.h"
@@ -17,8 +18,9 @@
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryModule.h"
+#include "SentrySamplingContext.h"
 #include "SentrySettings.h"
-
+#include "SentrySubsystem.h"
 #include "SentryTraceSampler.h"
 
 #include "Utils/SentryFileUtils.h"
@@ -30,6 +32,7 @@
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 
+#include "Engine/Engine.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
@@ -94,6 +97,24 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	{
 		return event;
 	}
+}
+
+/* static */ double FGenericPlatformSentrySubsystem::HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled)
+{
+	if (GEngine)
+	{
+		USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+		if (SentrySubsystem && SentrySubsystem->IsEnabled())
+		{
+			TSharedPtr<FGenericPlatformSentrySubsystem> NativeSubsystem = StaticCastSharedPtr<FGenericPlatformSentrySubsystem>(SentrySubsystem->GetNativeObject());
+			if (NativeSubsystem)
+			{
+				return NativeSubsystem->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
+			}
+		}
+	}
+
+	return parent_sampled != nullptr ? *parent_sampled : 0.0;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
@@ -187,6 +208,42 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 	return OnBeforeSend(event, nullptr, closure, true);
 }
 
+double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled)
+{
+	USentryTraceSampler* Sampler = GetTraceSampler();
+	if (!Sampler)
+	{
+		// If custom sampler isn't set skip further processing
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing traces sampler is not allowed during object post-loading."));
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If traces sampling happens during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
+		// In this case event will be reported without calling a `beforeSend` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing traces sampler is not allowed during garbage collection."));
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	USentrySamplingContext* Context = USentrySamplingContext::Create(
+		MakeShareable(new FGenericPlatformSentrySamplingContext(const_cast<sentry_transaction_context_t*>(transaction_ctx), custom_sampling_ctx)));
+
+	float samplingValue;
+	if (Sampler->Sample(Context, samplingValue))
+	{
+		return samplingValue;
+	}
+
+	return parent_sampled != nullptr ? *parent_sampled : 0.0;
+}
+
 void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
 {
 	crashReporter = MakeShareable(new FGenericPlatformSentryCrashReporter);
@@ -233,6 +290,7 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
+	, sampler(nullptr)
 	, crashReporter(nullptr)
 	, isEnabled(false)
 	, isStackTraceEnabled(true)
@@ -246,6 +304,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 {
 	beforeSend = beforeSendHandler;
 	beforeBreadcrumb = beforeBreadcrumbHandler;
+	sampler = traceSampler;
 
 	sentry_options_t* options = sentry_options_new();
 
@@ -290,7 +349,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	}
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("The Native SDK doesn't currently support sampling functions"));
+		sentry_options_set_traces_sampler(options, HandleTraceSampling);
 	}
 
 	ConfigureHandlerPath(options);
@@ -673,10 +732,17 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 	return nullptr;
 }
 
-TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options)
+TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Transaction options currently not supported (and therefore ignored) on generic platform."));
-	return StartTransactionWithContext(context);
+	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
+	{
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->GetNativeObject(), FGenericPlatformSentryConverters::VariantMapToNative(options.CustomSamplingContext)))
+		{
+			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		}
+	}
+
+	return nullptr;
 }
 
 TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
@@ -698,6 +764,11 @@ USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler(
 USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler()
 {
 	return beforeBreadcrumb;
+}
+
+USentryTraceSampler* FGenericPlatformSentrySubsystem::GetTraceSampler()
+{
+	return sampler;
 }
 
 void FGenericPlatformSentrySubsystem::TryCaptureScreenshot()

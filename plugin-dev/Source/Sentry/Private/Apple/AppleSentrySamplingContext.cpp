@@ -22,9 +22,9 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySamplingContext::GetTransactio
 	return MakeShareable(new FAppleSentryTransactionContext(SamplingContext.transactionContext));
 }
 
-TMap<FString, FString> FAppleSentrySamplingContext::GetCustomSamplingContext() const
+TMap<FString, FSentryVariant> FAppleSentrySamplingContext::GetCustomSamplingContext() const
 {
-	return FAppleSentryConverters::StringMapToUnreal(SamplingContext.customSamplingContext);
+	return FAppleSentryConverters::VariantMapToUnreal(SamplingContext.customSamplingContext);
 }
 
 SentrySamplingContext* FAppleSentrySamplingContext::GetNativeObject()

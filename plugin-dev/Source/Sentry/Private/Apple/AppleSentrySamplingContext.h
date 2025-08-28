@@ -13,7 +13,7 @@ public:
 	virtual ~FAppleSentrySamplingContext() override;
 
 	virtual TSharedPtr<ISentryTransactionContext> GetTransactionContext() const override;
-	virtual TMap<FString, FString> GetCustomSamplingContext() const override;
+	virtual TMap<FString, FSentryVariant> GetCustomSamplingContext() const override;
 
 	SentrySamplingContext* GetNativeObject();
 

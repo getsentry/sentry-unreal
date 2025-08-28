@@ -49,13 +49,14 @@ public:
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp) override;
-	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const TMap<FString, FString>& options) override;
+	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options) override;
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	virtual void HandleAssert() override {}
 
 	USentryBeforeSendHandler* GetBeforeSendHandler();
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler();
+	USentryTraceSampler* GetTraceSampler();
 
 	void TryCaptureScreenshot();
 	void TryCaptureGpuDump();
@@ -75,6 +76,7 @@ protected:
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
+	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
 	void InitCrashReporter(const FString& release, const FString& environment);
 
@@ -90,9 +92,11 @@ private:
 	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
 	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
+	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
 	USentryBeforeSendHandler* beforeSend;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;
+	USentryTraceSampler* sampler;
 
 	TSharedPtr<FGenericPlatformSentryCrashReporter> crashReporter;
 
