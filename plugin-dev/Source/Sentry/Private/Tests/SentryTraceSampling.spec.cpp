@@ -68,8 +68,11 @@ void SentryTraceSamplingSpec::Define()
 
 			SentrySubsystem->Close();
 		});
+	});
 
-		It("should provide transaction context in sampling context", [this]()
+	Describe("Transaction context", [this]()
+	{
+		It("should retain its name and operation", [this]()
 		{
 			USentryTransactionContext* CapturedTransactionContext = nullptr;
 
@@ -99,8 +102,11 @@ void SentryTraceSamplingSpec::Define()
 
 			SentrySubsystem->Close();
 		});
+	});
 
-		It("should provide custom sampling context data in sampling context", [this]()
+	Describe("Custom sampling context", [this]()
+	{
+		It("should retain its data", [this]()
 		{
 			TMap<FString, FSentryVariant> CapturedCustomData;
 
