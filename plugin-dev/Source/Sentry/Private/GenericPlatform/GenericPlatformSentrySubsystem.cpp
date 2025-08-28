@@ -21,8 +21,6 @@
 #include "SentrySamplingContext.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
-
-#include "Engine/Engine.h"
 #include "SentryTraceSampler.h"
 
 #include "Utils/SentryFileUtils.h"
@@ -35,6 +33,7 @@
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "Engine/Engine.h"
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
@@ -102,13 +101,16 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 
 /* static */ double FGenericPlatformSentrySubsystem::HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled)
 {
-	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-	if (SentrySubsystem)
+	if (GEngine)
 	{
-		TSharedPtr<FGenericPlatformSentrySubsystem> NativeSubsystem = StaticCastSharedPtr<FGenericPlatformSentrySubsystem>(SentrySubsystem->GetNativeObject());
-		if (NativeSubsystem)
+		USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+		if (SentrySubsystem && SentrySubsystem->IsEnabled())
 		{
-			return NativeSubsystem->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
+			TSharedPtr<FGenericPlatformSentrySubsystem> NativeSubsystem = StaticCastSharedPtr<FGenericPlatformSentrySubsystem>(SentrySubsystem->GetNativeObject());
+			if (NativeSubsystem)
+			{
+				return NativeSubsystem->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
+			}
 		}
 	}
 
