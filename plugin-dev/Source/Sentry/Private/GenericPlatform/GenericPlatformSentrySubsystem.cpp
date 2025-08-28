@@ -32,8 +32,8 @@
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 
-#include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "Engine/Engine.h"
+#include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
