@@ -10,7 +10,7 @@ public:
 	virtual ~FNullSentrySamplingContext() override = default;
 
 	virtual TSharedPtr<ISentryTransactionContext> GetTransactionContext() const override { return nullptr; }
-	virtual TMap<FString, FString> GetCustomSamplingContext() const override { return {}; }
+	virtual TMap<FString, FSentryVariant> GetCustomSamplingContext() const override { return {}; }
 };
 
 typedef FNullSentrySamplingContext FPlatformSentrySamplingContext;

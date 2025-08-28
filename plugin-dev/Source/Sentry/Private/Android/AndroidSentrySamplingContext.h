@@ -14,7 +14,7 @@ public:
 	void SetupClassMethods();
 
 	virtual TSharedPtr<ISentryTransactionContext> GetTransactionContext() const override;
-	virtual TMap<FString, FString> GetCustomSamplingContext() const override;
+	virtual TMap<FString, FSentryVariant> GetCustomSamplingContext() const override;
 
 private:
 	FSentryJavaMethod GetTransactionContextMethod;

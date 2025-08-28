@@ -7,6 +7,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
+#include "SentryTransactionOptions.h"
 #include "SentryVariant.h"
 
 #include "SentrySubsystem.generated.h"
@@ -307,7 +308,7 @@ public:
 	 * @param Options Transaction options.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const TMap<FString, FString>& Options);
+	USentryTransaction* StartTransactionWithContextAndOptions(USentryTransactionContext* Context, const FSentryTransactionOptions& Options);
 
 	/**
 	 * Creates a transaction context to propagate distributed tracing metadata from upstream
@@ -322,6 +323,9 @@ public:
 	/** Checks if Sentry event capturing is supported for current settings. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	bool IsSupportedForCurrentSettings() const;
+
+	/** Retrieves the underlying native implementation. */
+	TSharedPtr<ISentrySubsystem> GetNativeObject() const;
 
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
