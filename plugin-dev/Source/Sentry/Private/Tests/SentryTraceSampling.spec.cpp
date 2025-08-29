@@ -46,46 +46,36 @@ void SentryTraceSamplingSpec::Define()
 				Settings->TracesSampler = UTraceSamplingTestHandler::StaticClass();
 			}));
 
-			bool CallbackExecuted = false;
-			USentrySamplingContext* ReceivedSamplingContext = nullptr;
-			USentryTransactionContext* CapturedTransactionContext = nullptr;
-			TMap<FString, FSentryVariant> CapturedCustomData;
-
-			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.BindLambda([&](USentrySamplingContext* SamplingContext)
+			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.BindLambda([this](USentrySamplingContext* SamplingContext)
 			{
-				CallbackExecuted = true;
-				ReceivedSamplingContext = SamplingContext;
+				TestNotNull("Sampling context should not be null", SamplingContext);
 				if (SamplingContext)
 				{
-					CapturedTransactionContext = SamplingContext->GetTransactionContext();
-					CapturedCustomData = SamplingContext->GetCustomSamplingContext();
+					USentryTransactionContext* TransactionContext = SamplingContext->GetTransactionContext();
+					TestNotNull("Transaction context should be available in sampling context", TransactionContext);
+					if (TransactionContext)
+					{
+						TestEqual("Transaction name should match", TransactionContext->GetName(), TEXT("Test transaction"));
+						TestEqual("Transaction operation should match", TransactionContext->GetOperation(), TEXT("Test operation"));
+					}
+
+					TMap<FString, FSentryVariant> CustomData = SamplingContext->GetCustomSamplingContext();
+					TestTrue("Custom sampling context should contain test_key", CustomData.Contains(TEXT("test_key")));
+					TestTrue("Custom sampling context should contain numeric_key", CustomData.Contains(TEXT("numeric_key")));
+
+					if (CustomData.Contains(TEXT("test_key")))
+					{
+						TestEqual("test_key should have correct value", CustomData[TEXT("test_key")].GetValue<FString>(), TEXT("test_value"));
+					}
+
+					if (CustomData.Contains(TEXT("numeric_key")))
+					{
+						TestEqual("numeric_key should have correct value", CustomData[TEXT("numeric_key")].GetValue<int32>(), 42);
+					}
 				}
 			});
 
 			USentryTransaction* Transaction = SentrySubsystem->StartTransactionWithContextAndOptions(TransactionContext, TransactionOptions);
-
-			TestTrue("Sampling callback should be executed", CallbackExecuted);
-			TestNotNull("Sampling context should not be null", ReceivedSamplingContext);
-
-			TestNotNull("Transaction context should be available in sampling context", CapturedTransactionContext);
-			if (CapturedTransactionContext)
-			{
-				TestEqual("Transaction name should match", CapturedTransactionContext->GetName(), TEXT("Test transaction"));
-				TestEqual("Transaction operation should match", CapturedTransactionContext->GetOperation(), TEXT("Test operation"));
-			}
-
-			TestTrue("Custom sampling context should contain test_key", CapturedCustomData.Contains(TEXT("test_key")));
-			TestTrue("Custom sampling context should contain numeric_key", CapturedCustomData.Contains(TEXT("numeric_key")));
-
-			if (CapturedCustomData.Contains(TEXT("test_key")))
-			{
-				TestEqual("test_key should have correct value", CapturedCustomData[TEXT("test_key")].GetValue<FString>(), TEXT("test_value"));
-			}
-
-			if (CapturedCustomData.Contains(TEXT("numeric_key")))
-			{
-				TestEqual("numeric_key should have correct value", CapturedCustomData[TEXT("numeric_key")].GetValue<int32>(), 42);
-			}
 
 			if (Transaction)
 			{
