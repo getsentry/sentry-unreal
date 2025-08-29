@@ -51,12 +51,12 @@ void SentryTraceSamplingSpec::Define()
 				TestNotNull("Sampling context should not be null", SamplingContext);
 				if (SamplingContext)
 				{
-					USentryTransactionContext* TransactionContext = SamplingContext->GetTransactionContext();
+					USentryTransactionContext* CustomContext = SamplingContext->GetTransactionContext();
 					TestNotNull("Transaction context should be available in sampling context", TransactionContext);
-					if (TransactionContext)
+					if (CustomContext)
 					{
-						TestEqual("Transaction name should match", TransactionContext->GetName(), TEXT("Test transaction"));
-						TestEqual("Transaction operation should match", TransactionContext->GetOperation(), TEXT("Test operation"));
+						TestEqual("Transaction name should match", CustomContext->GetName(), TEXT("Test transaction"));
+						TestEqual("Transaction operation should match", CustomContext->GetOperation(), TEXT("Test operation"));
 					}
 
 					TMap<FString, FSentryVariant> CustomData = SamplingContext->GetCustomSamplingContext();
