@@ -39,52 +39,34 @@ void SentryTraceSamplingSpec::Define()
 			MakeShareable(new FPlatformSentryTransactionContext(TEXT("Test transaction"), TEXT("Test operation"))));
 
 		TransactionOptions = FSentryTransactionOptions();
+		TransactionOptions.CustomSamplingContext.Add(TEXT("test_key"), FSentryVariant(TEXT("test_value")));
+		TransactionOptions.CustomSamplingContext.Add(TEXT("numeric_key"), FSentryVariant(42));
 	});
 
-	Describe("Trace sampler", [this]()
+	Describe("Trace sampling", [this]()
 	{
-		It("should be called and provide sampling context", [this]()
+		It("should execute callback and provide a valid sampling context", [this]()
 		{
 			bool CallbackExecuted = false;
-			USentrySamplingContext* ReceivedContext = nullptr;
+			USentrySamplingContext* ReceivedSamplingContext = nullptr;
+			USentryTransactionContext* CapturedTransactionContext = nullptr;
+			TMap<FString, FSentryVariant> CapturedCustomData;
 
 			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.BindLambda([&](USentrySamplingContext* SamplingContext)
 			{
 				CallbackExecuted = true;
-				ReceivedContext = SamplingContext;
+				ReceivedSamplingContext = SamplingContext;
+				if (SamplingContext)
+				{
+					CapturedTransactionContext = SamplingContext->GetTransactionContext();
+					CapturedCustomData = SamplingContext->GetCustomSamplingContext();
+				}
 			});
 
 			USentryTransaction* Transaction = SentrySubsystem->StartTransactionWithContextAndOptions(TransactionContext, TransactionOptions);
 
 			TestTrue("Sampling callback should be executed", CallbackExecuted);
-			TestNotNull("Sampling context should not be null", ReceivedContext);
-
-			if (Transaction)
-			{
-				Transaction->Finish();
-			}
-
-			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.Unbind();
-
-			SentrySubsystem->Close();
-		});
-	});
-
-	Describe("Transaction context", [this]()
-	{
-		It("should retain its name and operation", [this]()
-		{
-			USentryTransactionContext* CapturedTransactionContext = nullptr;
-
-			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.BindLambda([&](USentrySamplingContext* SamplingContext)
-			{
-				if (SamplingContext)
-				{
-					CapturedTransactionContext = SamplingContext->GetTransactionContext();
-				}
-			});
-
-			USentryTransaction* Transaction = SentrySubsystem->StartTransactionWithContextAndOptions(TransactionContext, TransactionOptions);
+			TestNotNull("Sampling context should not be null", ReceivedSamplingContext);
 
 			TestNotNull("Transaction context should be available in sampling context", CapturedTransactionContext);
 			if (CapturedTransactionContext)
@@ -92,36 +74,6 @@ void SentryTraceSamplingSpec::Define()
 				TestEqual("Transaction name should match", CapturedTransactionContext->GetName(), TEXT("Test transaction"));
 				TestEqual("Transaction operation should match", CapturedTransactionContext->GetOperation(), TEXT("Test operation"));
 			}
-
-			if (Transaction)
-			{
-				Transaction->Finish();
-			}
-
-			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.Unbind();
-
-			SentrySubsystem->Close();
-		});
-	});
-
-	Describe("Custom sampling context", [this]()
-	{
-		It("should retain its data", [this]()
-		{
-			TMap<FString, FSentryVariant> CapturedCustomData;
-
-			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.BindLambda([&](USentrySamplingContext* SamplingContext)
-			{
-				if (SamplingContext)
-				{
-					CapturedCustomData = SamplingContext->GetCustomSamplingContext();
-				}
-			});
-
-			TransactionOptions.CustomSamplingContext.Add(TEXT("test_key"), FSentryVariant(TEXT("test_value")));
-			TransactionOptions.CustomSamplingContext.Add(TEXT("numeric_key"), FSentryVariant(42));
-
-			USentryTransaction* Transaction = SentrySubsystem->StartTransactionWithContextAndOptions(TransactionContext, TransactionOptions);
 
 			TestTrue("Custom sampling context should contain test_key", CapturedCustomData.Contains(TEXT("test_key")));
 			TestTrue("Custom sampling context should contain numeric_key", CapturedCustomData.Contains(TEXT("numeric_key")));
