@@ -52,7 +52,7 @@ void SentryTraceSamplingSpec::Define()
 				if (SamplingContext)
 				{
 					USentryTransactionContext* CustomContext = SamplingContext->GetTransactionContext();
-					TestNotNull("Transaction context should be available in sampling context", TransactionContext);
+					TestNotNull("Transaction context should be available in sampling context", CustomContext);
 					if (CustomContext)
 					{
 						TestEqual("Transaction name should match", CustomContext->GetName(), TEXT("Test transaction"));
