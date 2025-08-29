@@ -2,8 +2,18 @@
 
 ## 1.0.0
 
-> [!Important]
-> This is a major version bump with significant public API changes. For a detailed explanation how to upgrade please checkout the [migration guide](https://docs.sentry.io/platforms/unreal/migration/).
+After several months of work we're finally shipping the Sentry SDK for Unreal Engine version 1.0.0.
+If you are upgrading from a version `0.x`, **please refer to the [migration guide on our docs](https://docs.sentry.io/platforms/unreal/migration/)**.
+
+This release also includes compatibility with plugin extensions for [PlayStation](https://docs.sentry.io/platforms/playstation/), [Xbox](https://docs.sentry.io/platforms/xbox/) and [Nintendo Switch](https://docs.sentry.io/platforms/nintendo-switch/).
+Access to the source code of these console extensions require components that exist in private GitHub repositories. Invites are sent to licensed developers after a middleware verification. Please [follow the steps on our docs](https://docs.sentry.io/platforms/unreal/game-consoles/).
+
+Note that [the diff from the latest experimental release 0.22.0 and this 1.0.0](https://github.com/getsentry/sentry-unreal/compare/0.22.0...1.0.0) release include several alpha and beta releases.
+We have not combined all of them in this header but instead, left each incremental change in their own version below.
+
+If you're migrating from 0.22.0 and want to read through all the changes, we recommend starting from [## 1.0.0-alpha.1](#100-alpha1) below.
+
+In case you encounter any issues, please [create a ticket on our GitHub repository](https://github.com/getsentry/sentry-unreal/issues/new/choose).
 
 ### Breaking Changes
 
