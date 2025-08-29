@@ -19,8 +19,6 @@ changelog of every version, or from the [UE Marketplace] page via Epic Games lau
 [releases]: https://github.com/getsentry/sentry-unreal/releases
 [UE Marketplace]: https://www.unrealengine.com/marketplace/en-US/product/sentry-01
 
-If manual download from the [Releases] page is a preferred way for plugin integration using the package with the `github` suffix in its name is recommended.
-
 ## Supported Platforms and Unreal Engine version
 
 The SDK currently supports and is tested on the following platforms:
@@ -67,7 +65,7 @@ sudo apt-get install -y libstdc++6
 
 - Plugin supports Linux arm64 platform for UE 5.0 and newer.
 
-- Fast-fail crash capturing is currently supported only in packaged game builds when using the `github` plugin version. When a fast-fail crash occurs the `HandleBeforeSend` hook will not be invoked and any custom event pre-processing will be skipped. Also, captured fast-fail crash events will not include UE-specific tags or context.
+- Fast-fail crash capturing is currently supported only in packaged game builds. When a fast-fail crash occurs the `HandleBeforeSend` hook will not be invoked and any custom event pre-processing will be skipped.
 
 ## Development
 
