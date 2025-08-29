@@ -19,8 +19,6 @@ changelog of every version, or from the [UE Marketplace] page via Epic Games lau
 [releases]: https://github.com/getsentry/sentry-unreal/releases
 [UE Marketplace]: https://www.unrealengine.com/marketplace/en-US/product/sentry-01
 
-If manual download from the [Releases] page is a preferred way for plugin integration using the package with the `github` suffix in its name is recommended.
-
 ## Supported Platforms and Unreal Engine version
 
 The SDK currently supports and is tested on the following platforms:
