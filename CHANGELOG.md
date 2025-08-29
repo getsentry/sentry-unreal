@@ -2,6 +2,9 @@
 
 ## 1.0.0
 
+> [!Important]
+> This is a major version bump with significant public API changes. For a detailed explanation how to upgrade please checkout the [migration guide](https://docs.sentry.io/platforms/unreal/migration/).
+
 ### Breaking Changes
 
 - User feedback API reworked:
