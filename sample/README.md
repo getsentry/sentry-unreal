@@ -31,27 +31,27 @@ This sample project demonstrates the capabilities of the Sentry Unreal Engine SD
 
 Here's a breakdown of the important sample project files and folders:
 
-```
+```pwsh
 📁 sample
-├── 📄 SentryPlayground.uproject                    (Engine version configuration, supports UE 4.27 and newer)
+├── 📄 SentryPlayground.uproject                    # Engine version configuration, supports UE 4.27 and newer
 ├── 📁 Source/
 │   └── 📁 SentryPlayground/
-│       ├── 📄 SentryPlaygroundGameInstance.cpp/.h  (Logic for running integration tests)
-│       ├── 📄 SentryPlaygroundUtils.cpp/.h         (Utilities for triggering different types of crashes)
-│       ├── 📄 CppBeforeSendHandler.cpp/.h          (Example C++ implementation of `beforeSend` hook handler)
-│       └── 📄 SentryGCCallback.cpp/.h              (Utility for capturing events during garbage collection)
+│       ├── 📄 SentryPlaygroundGameInstance.cpp/.h  # Logic for running integration tests
+│       ├── 📄 SentryPlaygroundUtils.cpp/.h         # Utilities for triggering different types of crashes
+│       ├── 📄 CppBeforeSendHandler.cpp/.h          # Example C++ implementation of `beforeSend` hook handler
+│       └── 📄 SentryGCCallback.cpp/.h              # Utility for capturing events during garbage collection
 ├── 📁 Content/
 │   ├── 📁 Maps/
-│   │   └── 📄 SentryDemo.umap                      (Main demo level)
+│   │   └── 📄 SentryDemo.umap                      # Main demo level)
 │   ├── 📁 UI/
-│   │   └── 📄 W_SentryDemo.uasset                  (Demo UI widget for testing SDK features)
+│   │   └── 📄 W_SentryDemo.uasset                  # Demo UI widget for testing SDK features
 │   └── 📁 Misc/
-│       ├── 📄 BP_BeforeSendHandler.uasset          (Example Blueprint implementation of `beforeSend` hook handler)
-│       ├── 📄 BP_BeforeBreadcrumbHandler.uasset    (Example Blueprint implementation of `beforeBreadcrumb` hook handler)
-│       └── 📄 BP_TraceSampler.uasset               (Example Blueprint implementation of traces sampling function)
+│       ├── 📄 BP_BeforeSendHandler.uasset          # Example Blueprint implementation of `beforeSend` hook handler
+│       ├── 📄 BP_BeforeBreadcrumbHandler.uasset    # Example Blueprint implementation of `beforeBreadcrumb` hook handler
+│       └── 📄 BP_TraceSampler.uasset               # Example Blueprint implementation of traces sampling function
 ├── 📁 Config/
-│   └── 📄 DefaultEngine.ini                        (Configuration file with Sentry plugin settings)
-└── 📁 Plugins/                                     (Location for Sentry SDK sources - copy or symlink here)
+│   └── 📄 DefaultEngine.ini                        # Configuration file with Sentry plugin settings
+└── 📁 Plugins/                                     # Location for Sentry SDK sources - copy or symlink here
 ```
 
 ## Demo Level
@@ -76,7 +76,7 @@ SentryPlayground.exe -nullrhi -unattended -stdout -log -Test -CrashCapture
 SentryPlayground.exe -nullrhi -unattended -stdout -log -Test -MessageCapture
 ```
 
-To run integration tests, ensure the `-Test` argument is passed to the executable and specify which test to run with the appropriate argument. The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
+To run integration tests, ensure the `-Test` argument is passed to the executable and specify which test to run with the following one. The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
 
 ## Example Content
 
