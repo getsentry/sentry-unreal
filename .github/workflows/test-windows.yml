@@ -79,3 +79,20 @@ jobs:
             -NoPause `
             -NoSplash `
             -NullRHI
+
+      - name: Collect sample test info
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample test report (Windows)
+          path: |
+            C:/workspace/checkout/sample/Saved/Automation
+
+      - name: Upload sample build
+        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Windows)
+          path: /checkout/sample/Builds/Windows/
+          retention-days: 1
+      
