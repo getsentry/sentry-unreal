@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Packaging errors in Unreal Engine 5.4 and 5.5 caused by a missing `SWIFT_PACKAGE` define when targeting Mac and iOS
+
 ## 1.0.0
 
 After several months of work we're finally shipping the Sentry SDK for Unreal Engine version 1.0.0.
