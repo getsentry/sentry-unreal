@@ -6,6 +6,12 @@
 
 - Packaging errors in Unreal Engine 5.4 and 5.5 caused by a missing `SWIFT_PACKAGE` define when targeting Mac and iOS ([#1063](https://github.com/getsentry/sentry-unreal/pull/1063))
 
+### Dependencies
+
+- Bump CLI from v2.52.0 to v2.53.0 ([#1062](https://github.com/getsentry/sentry-unreal/pull/1062))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2530)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.52.0...2.53.0)
+
 ## 1.0.0
 
 After several months of work we're finally shipping the Sentry SDK for Unreal Engine version 1.0.0.
