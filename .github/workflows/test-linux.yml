@@ -152,5 +152,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Linux)
-          path: /checkout/sample/Builds/Linux/
+          path: checkout/sample/Builds/Linux/
           retention-days: 1
