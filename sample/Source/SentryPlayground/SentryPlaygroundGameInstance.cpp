@@ -17,9 +17,9 @@ void USentryPlaygroundGameInstance::Init()
 
 	const TCHAR* CommandLine = FCommandLine::Get();
 
-	// Check '-Test' commandline argument to decide between running integration tests
+	// Check '-SentryIntegrationTest' commandline argument to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("Test")))
+	if (FParse::Param(FCommandLine::Get(), TEXT("SentryIntegrationTest")))
 	{
 		RunIntegrationTest(CommandLine);
 	}
