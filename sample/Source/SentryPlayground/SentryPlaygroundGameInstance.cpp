@@ -38,7 +38,12 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 
 	SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
 	{
-		// Override options set in config file
+		// Override options set in config file if needed
+		FString Dsn;
+		if (FParse::Value(CommandLine, TEXT("Dsn="), Dsn))
+		{
+			Settings->Dsn = Dsn;
+		}
 	}));
 
 	if (!SentrySubsystem->IsEnabled())
