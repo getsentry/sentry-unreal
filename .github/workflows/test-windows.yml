@@ -86,7 +86,7 @@ jobs:
         with:
           name: UE ${{ inputs.unreal-version }} sample test report (Windows)
           path: |
-            C:/workspace/checkout/sample/Saved/Automation
+            checkout/sample/Saved/Automation
 
       - name: Upload sample build
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
