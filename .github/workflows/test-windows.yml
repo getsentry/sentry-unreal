@@ -93,6 +93,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Windows)
-          path: checkout/sample/Builds/Windows/
+          path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
           retention-days: 1
       
