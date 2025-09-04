@@ -70,15 +70,15 @@ The `SentryPlaygroundGameInstance.cpp` file contains logic that parses command l
 
 ```pwsh
 # Windows - Crash capture test
-SentryPlayground.exe -nullrhi -unattended -log -SentryIntegrationTest -CrashCapture -Dsn="your-dsn-here"
+SentryPlayground.exe -nullrhi -unattended -log -integration-test -crash-capture -dsn="your-dsn-here"
 
 # Windows - Message capture test  
-SentryPlayground.exe -nullrhi -unattended -log -SentryIntegrationTest -MessageCapture
+SentryPlayground.exe -nullrhi -unattended -log -integration-test -message-capture
 ```
 
-To run integration tests, ensure the `-SentryIntegrationTest` argument is passed to the executable and specify which test to run with the following one. The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
+To run integration tests, ensure the `-integration-test` argument is passed to the executable and specify which test to run with the following one. The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
 
-Optionally, you can override the DSN for integration tests by adding `-Dsn="your-dsn-here"` to the command line. When provided, this DSN will be used instead of the one configured in the project settings.
+Optionally, you can override the DSN for integration tests by adding `-dsn="your-dsn-here"` to the command line. When provided, this DSN will be used instead of the one configured in the project settings.
 
 ## Example Content
 

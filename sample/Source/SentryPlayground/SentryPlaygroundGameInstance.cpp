@@ -17,9 +17,9 @@ void USentryPlaygroundGameInstance::Init()
 
 	const TCHAR* CommandLine = FCommandLine::Get();
 
-	// Check '-SentryIntegrationTest' commandline argument to decide between running integration tests
+	// Check '-integration-test' commandline argument to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("SentryIntegrationTest")))
+	if (FParse::Param(FCommandLine::Get(), TEXT("integration-test")))
 	{
 		RunIntegrationTest(CommandLine);
 	}
@@ -40,7 +40,7 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 	{
 		// Override options set in config file if needed
 		FString Dsn;
-		if (FParse::Value(CommandLine, TEXT("Dsn="), Dsn))
+		if (FParse::Value(CommandLine, TEXT("dsn="), Dsn))
 		{
 			Settings->Dsn = Dsn;
 		}
@@ -60,11 +60,11 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 	SentrySubsystem->AddBreadcrumbWithParams(
 		TEXT("Context configuration finished"), TEXT("Test"), TEXT("info"), TMap<FString, FSentryVariant>(), ESentryLevel::Info);
 
-	if (FParse::Param(CommandLine, TEXT("CrashCapture")))
+	if (FParse::Param(CommandLine, TEXT("crash-capture")))
 	{
 		RunCrashTest();
 	}
-	else if (FParse::Param(CommandLine, TEXT("MessageCapture")))
+	else if (FParse::Param(CommandLine, TEXT("message-capture")))
 	{
 		RunMessageTest();
 	}
