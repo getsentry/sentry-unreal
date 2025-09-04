@@ -69,11 +69,6 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 	{
 		RunMessageTest();
 	}
-	else
-	{
-		// Integration test requested but no action specified
-		CompleteTestWithResult(TEXT("invalid-command"), false, TEXT("Missing command"));
-	}
 }
 
 void USentryPlaygroundGameInstance::RunCrashTest()
