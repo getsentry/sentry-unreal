@@ -66,17 +66,17 @@ To run automation tests, several engine plugins are enabled (see `Settings -> Pl
 
 ## Integration Tests
 
-The `SentryPlaygroundGameInstance.cpp` file contains logic that parses command line input used to launch the sample game build and runs test actions accordingly (e.g., trigger crash, capture message). Here are example commands:
+The `SentryPlaygroundGameInstance.cpp` file contains logic that parses command line input used to launch the sample game build and runs test actions accordingly. Here are example commands:
 
 ```pwsh
 # Windows - Crash capture test
-SentryPlayground.exe -nullrhi -unattended -log -integration-test -crash-capture -dsn="your-dsn-here"
+SentryPlayground.exe -nullrhi -unattended -log -crash-capture -dsn="your-dsn-here"
 
 # Windows - Message capture test  
-SentryPlayground.exe -nullrhi -unattended -log -integration-test -message-capture
+SentryPlayground.exe -nullrhi -unattended -log -message-capture
 ```
 
-To run integration tests, ensure the `-integration-test` argument is passed to the executable and specify which test to run with the following one. The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
+To run integration tests, specify which test to run using the appropriate argument (e.g., `-crash-capture` or `-message-capture`). The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
 
 Optionally, you can override the DSN for integration tests by adding `-dsn="your-dsn-here"` to the command line. When provided, this DSN will be used instead of the one configured in the project settings.
 

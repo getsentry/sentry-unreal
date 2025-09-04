@@ -17,9 +17,10 @@ void USentryPlaygroundGameInstance::Init()
 
 	const TCHAR* CommandLine = FCommandLine::Get();
 
-	// Check '-integration-test' commandline argument to decide between running integration tests
+	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("integration-test")))
+	if (FParse::Param(FCommandLine::Get(), TEXT("crash-capture")) || 
+		FParse::Param(FCommandLine::Get(), TEXT("message-capture")))
 	{
 		RunIntegrationTest(CommandLine);
 	}
@@ -81,7 +82,12 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 
 	// Because we don't get the real crash event ID, create a fake one and set it as a tag
 	// This tag is then used by integration test script in CI to fetch the event
-	SentrySubsystem->SetTag(TEXT("test.crash_id"), FGuid::NewGuid().ToString(EGuidFormats::Digits));
+
+	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::Digits);
+
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+
+	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
 	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
 }
