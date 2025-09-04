@@ -100,7 +100,7 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 
 	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
 
-	CompleteTestWithResult("message-capture", !EventId.IsEmpty(), "Test complete");
+	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::ConfigureTestContext()
