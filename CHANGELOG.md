@@ -5,6 +5,7 @@
 ### Fixes
 
 - Packaging errors in Unreal Engine 5.4 and 5.5 caused by a missing `SWIFT_PACKAGE` define when targeting Mac and iOS ([#1063](https://github.com/getsentry/sentry-unreal/pull/1063))
+- Crash when attaching game log file to captured event on Android ([#1066](https://github.com/getsentry/sentry-unreal/pull/1066))
 
 ### Dependencies
 
