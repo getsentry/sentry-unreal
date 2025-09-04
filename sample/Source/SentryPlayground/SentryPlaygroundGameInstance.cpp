@@ -81,7 +81,7 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 
 	// Because we don't get the real crash event ID, create a fake one and set it as a tag
 	// This tag is then used by integration test script in CI to fetch the event
-	SentrySubsystem->SetTag(TEXT("test.crash_id"), FGuid::NewGuid().ToString(EGuidFormats::DigitsLower));
+	SentrySubsystem->SetTag(TEXT("test.crash_id"), FGuid::NewGuid().ToString(EGuidFormats::Digits));
 
 	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
 }
