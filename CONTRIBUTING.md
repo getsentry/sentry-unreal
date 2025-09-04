@@ -50,10 +50,9 @@ In order to run the demo level navigate to `Content Browser -> Content -> Maps` 
 
 ## Modifying plugin content
 
-All files that belong to the plugin are listed in the snapshot files:
+All files that belong to the plugin are listed in the snapshot file:
 
-- `/scripts/packaging/package-github.snapshot` (for the GitHub package)
-- `/scripts/packaging/package-marketplace.snapshot` (for the Marketplace package)
+- `/scripts/packaging/package.snapshot`
 
 If you add, delete or move files within the `plugin-dev` directory these snapshot files must be updated to reflect the changes. To do that, run:
 
