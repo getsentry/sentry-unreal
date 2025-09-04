@@ -125,8 +125,8 @@ JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getLogFilePath(JNIEnv*
 	IFileManager& FileManager = IFileManager::Get();
 	if (!FileManager.FileExists(*LogFilePath))
 	{
-		return *FSentryJavaObjectWrapper::GetJString(FString(""));
+		return env->NewStringUTF("");
 	}
 
-	return *FSentryJavaObjectWrapper::GetJString(LogFilePath);
+	return env->NewStringUTF(TCHAR_TO_UTF8(*LogFilePath));
 }
