@@ -120,11 +120,8 @@ void USentrySubsystem::Initialize()
 	}
 
 	AddDefaultContext();
-
-#if PLATFORM_WINDOWS || PLATFORM_LINUX || PLATFORM_MAC
 	AddGpuContext();
 	AddDeviceContext();
-#endif
 
 	PromoteTags();
 	ConfigureBreadcrumbs();
@@ -639,12 +636,15 @@ void USentrySubsystem::AddGpuContext()
 
 	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
 
-	TMap<FString, FSentryVariant> GpuContext;
-	GpuContext.Add(TEXT("name"), GpuDriverInfo.DeviceDescription);
-	GpuContext.Add(TEXT("vendor_name"), GpuDriverInfo.ProviderName);
-	GpuContext.Add(TEXT("driver_version"), GpuDriverInfo.UserDriverVersion);
+	if (GpuDriverInfo.IsValid())
+	{
+		TMap<FString, FSentryVariant> GpuContext;
+		GpuContext.Add(TEXT("name"), GpuDriverInfo.DeviceDescription);
+		GpuContext.Add(TEXT("vendor_name"), GpuDriverInfo.ProviderName);
+		GpuContext.Add(TEXT("driver_version"), GpuDriverInfo.UserDriverVersion);
 
-	SubsystemNativeImpl->SetContext(TEXT("gpu"), GpuContext);
+		SubsystemNativeImpl->SetContext(TEXT("gpu"), GpuContext);
+	}
 }
 
 void USentrySubsystem::AddDeviceContext()
