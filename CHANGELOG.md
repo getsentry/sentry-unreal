@@ -11,6 +11,10 @@
 - Packaging errors in Unreal Engine 5.4 and 5.5 caused by a missing `SWIFT_PACKAGE` define when targeting Mac and iOS ([#1063](https://github.com/getsentry/sentry-unreal/pull/1063))
 - Crash when attaching game log file to captured event on Android ([#1066](https://github.com/getsentry/sentry-unreal/pull/1066))
 
+### Fixes
+
+- Removed usage of deprecated `CGWindowListCreateImage` function on Mac. Replaced with Sentry Screenshot Utils ([#1034](https://github.com/getsentry/sentry-unreal/pull/1034/))
+
 ### Dependencies
 
 - Bump CLI from v2.52.0 to v2.53.0 ([#1062](https://github.com/getsentry/sentry-unreal/pull/1062))
