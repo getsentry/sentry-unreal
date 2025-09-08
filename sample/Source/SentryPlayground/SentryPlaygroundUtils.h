@@ -19,7 +19,8 @@ enum class ESentryAppTerminationType : uint8
 	RenderThreadCrash,
 	GpuDebugCrash,
 	Assert,
-	Ensure
+	Ensure,
+	Fatal
 };
 
 UCLASS()
