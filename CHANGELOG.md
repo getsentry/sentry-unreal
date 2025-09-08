@@ -7,6 +7,9 @@
 - Bump Cocoa SDK (iOS and Mac) from v8.55.0 to v8.55.1 ([#1068](https://github.com/getsentry/sentry-unreal/pull/1068))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8551)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.0...8.55.1)
+- Bump Java SDK (Android) from v8.20.0 to v8.21.0 ([#1070](https://github.com/getsentry/sentry-unreal/pull/1070))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8210)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.20.0...8.21.0)
 
 ## 1.1.0
 
