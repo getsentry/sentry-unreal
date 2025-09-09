@@ -73,9 +73,12 @@ static bool GIsOnCrashHandling = false;
 
 /* static */ void FGenericPlatformSentrySubsystem::HandleBeforeCrash(void* closure)
 {
-	if (closure) {
+	if (closure)
+	{
 		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeCrash();
-	} else {
+	}
+	else
+	{
 		return;
 	}
 }
@@ -92,27 +95,30 @@ static bool GIsOnCrashHandling = false;
 	}
 }
 
-void FGenericPlatformSentrySubsystem::OnBeforeCrash() 
+void FGenericPlatformSentrySubsystem::OnBeforeCrash()
 {
 	GIsOnCrashHandling = true;
 }
 
-static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure) 
+static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure)
 {
-	if (!GIsOnCrashHandling) {
+	if (!GIsOnCrashHandling)
+	{
 		char buffer[512];
 		vsnprintf(buffer, 512, message, args);
 
 		FString MessageBuf = FString(buffer);
 
-	#if !NO_LOGGING
+#if !NO_LOGGING
 		const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
-	#else
+#else
 		const FName SentryCategoryName(TEXT("LogSentrySdk"));
-	#endif
+#endif
 
 		GLog->CategorizedLogf(SentryCategoryName, FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
-	} else {
+	}
+	else
+	{
 		// Optionally use Sentry Logs to get the additional data during crash handling.
 	}
 }
