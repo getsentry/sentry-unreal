@@ -278,17 +278,19 @@ public:
 	 *
 	 * @param Name Transaction name.
 	 * @param Operation Short code identifying the type of operation the span is measuring.
+	 * @param BindToScope Flag indicating whether the SDK should bind the new transaction to the scope
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryTransaction* StartTransaction(const FString& Name, const FString& Operation);
+	USentryTransaction* StartTransaction(const FString& Name, const FString& Operation, bool BindToScope = false);
 
 	/**
 	 * Starts a new transaction with given context.
 	 *
 	 * @param Context Transaction context.
+	 * @param BindToScope Flag indicating whether the SDK should bind the new transaction to the scope
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryTransaction* StartTransactionWithContext(USentryTransactionContext* Context);
+	USentryTransaction* StartTransactionWithContext(USentryTransactionContext* Context, bool BindToScope = false);
 
 	/**
 	 * Starts a new transaction with given context and timestamp.
@@ -297,9 +299,10 @@ public:
 	 *
 	 * @param Context Transaction context.
 	 * @param Timestamp Transaction timestamp (microseconds since the Unix epoch).
+	 * @param BindToScope Flag indicating whether the SDK should bind the new transaction to the scope
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentryTransaction* StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp);
+	USentryTransaction* StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp, bool BindToScope = false);
 
 	/**
 	 * Starts a new transaction with given context and options.
