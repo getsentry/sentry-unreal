@@ -75,6 +75,7 @@ protected:
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
+	virtual void OnBeforeCrash();
 
 	void InitCrashReporter(const FString& release, const FString& environment);
 
@@ -90,6 +91,7 @@ private:
 	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
 	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
+	static void HandleBeforeCrash(void* closure);
 
 	USentryBeforeSendHandler* beforeSend;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;

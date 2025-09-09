@@ -44,21 +44,8 @@ extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
 
-void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* userdata)
-{
-	char buffer[512];
-	vsnprintf(buffer, 512, message, args);
-
-	FString MessageBuf = FString(buffer);
-
-#if !NO_LOGGING
-	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
-#else
-	const FName SentryCategoryName(TEXT("LogSentrySdk"));
-#endif
-
-	GLog->CategorizedLogf(SentryCategoryName, FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
-}
+// Global static variable to track if we're currently handling a crash
+static bool GIsOnCrashHandling = false;
 
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
 {
@@ -84,6 +71,15 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 	}
 }
 
+/* static */ void FGenericPlatformSentrySubsystem::HandleBeforeCrash(void* closure)
+{
+	if (closure) {
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeCrash();
+	} else {
+		return;
+	}
+}
+
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
 	if (closure)
@@ -93,6 +89,31 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 	else
 	{
 		return event;
+	}
+}
+
+void FGenericPlatformSentrySubsystem::OnBeforeCrash() 
+{
+	GIsOnCrashHandling = true;
+}
+
+static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure) 
+{
+	if (!GIsOnCrashHandling) {
+		char buffer[512];
+		vsnprintf(buffer, 512, message, args);
+
+		FString MessageBuf = FString(buffer);
+
+	#if !NO_LOGGING
+		const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
+	#else
+		const FName SentryCategoryName(TEXT("LogSentrySdk"));
+	#endif
+
+		GLog->CategorizedLogf(SentryCategoryName, FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
+	} else {
+		// Optionally use Sentry Logs to get the additional data during crash handling.
 	}
 }
 
@@ -309,6 +330,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
+	sentry_options_set_before_crash(options, HandleBeforeCrash, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
@@ -328,6 +350,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	isStackTraceEnabled = settings->AttachStacktrace;
 	isPiiAttachmentEnabled = settings->SendDefaultPii;
+	GIsOnCrashHandling = false;
 
 	// Best-effort at writing user consent to disk so that user consent can change at runtime and persist
 	// We should never have a valid user consent state return "Unknown", so assume that no consent value is written if we see this
