@@ -737,6 +737,11 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 	{
 		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->GetNativeObject(), FGenericPlatformSentryConverters::VariantMapToNative(options.CustomSamplingContext)))
 		{
+			if (options.BindToScope)
+			{
+				sentry_set_transaction_object(nativeTransaction);
+			}
+
 			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
 		}
 	}

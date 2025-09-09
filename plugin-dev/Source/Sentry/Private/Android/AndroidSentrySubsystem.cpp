@@ -303,6 +303,7 @@ TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithCont
 
 	TSharedPtr<FAndroidSentryTransactionOptions> transactionOptionsAndroid = MakeShareable(new FAndroidSentryTransactionOptions());
 	transactionOptionsAndroid->SetCustomSamplingContext(options.CustomSamplingContext);
+	transactionOptionsAndroid->SetBindToScope(options.BindToScope);
 
 	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Lio/sentry/TransactionContext;Lio/sentry/TransactionOptions;)Lio/sentry/ITransaction;",
 		transactionContextAndroid->GetJObject(), transactionOptionsAndroid->GetJObject());
