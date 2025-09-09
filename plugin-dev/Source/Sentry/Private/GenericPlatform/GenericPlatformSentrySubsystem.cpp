@@ -89,9 +89,12 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 
 /* static */ void FGenericPlatformSentrySubsystem::HandleBeforeCrash(void* closure)
 {
-	if (closure) {
+	if (closure)
+	{
 		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeCrash();
-	} else {
+	}
+	else
+	{
 		return;
 	}
 }
