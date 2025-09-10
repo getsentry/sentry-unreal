@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add support for automatic event linking with spans/transactions ([#1075](https://github.com/getsentry/sentry-unreal/pull/1075))
+
 ### Dependencies
 
 - Bump Cocoa SDK (iOS and Mac) from v8.55.0 to v8.55.1 ([#1068](https://github.com/getsentry/sentry-unreal/pull/1068))
