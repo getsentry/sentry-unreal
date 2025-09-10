@@ -26,7 +26,7 @@ class SENTRY_API USentrySpan : public UObject, public TSentryImplWrapper<ISentry
 public:
 	/** Starts a new child span.
 	 *
-	 * @note: On Android, if the span is bound the scope
+	 * @note: On Android, if the span is bound to scope
 	 * the SDK will put the new child span on the scope as well.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
