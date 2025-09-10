@@ -5,8 +5,8 @@
 
 #include "Infrastructure/AppleSentryConverters.h"
 
-#include "Convenience/AppleSentryMacro.h"
 #include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
 #include "SentryDefines.h"
 
