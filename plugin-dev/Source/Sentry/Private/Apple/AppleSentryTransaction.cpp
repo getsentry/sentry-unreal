@@ -5,6 +5,7 @@
 
 #include "Infrastructure/AppleSentryConverters.h"
 
+#include "Convenience/AppleSentryMacro.h"
 #include "Convenience/AppleSentryInclude.h"
 
 #include "SentryDefines.h"
@@ -28,13 +29,21 @@ id<SentrySpan> FAppleSentryTransaction::GetNativeObject()
 TSharedPtr<ISentrySpan> FAppleSentryTransaction::StartChildSpan(const FString& operation, const FString& desctiption, bool bindToScope)
 {
 	id<SentrySpan> span = [TransactionApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
+
+	if (bindToScope)
+	{
+		[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+			scope.span = span;
+		}];
+	}
+
 	return MakeShareable(new FAppleSentrySpan(span));
 }
 
 TSharedPtr<ISentrySpan> FAppleSentryTransaction::StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Mac/iOS."));
-	return StartChildSpan(operation, desctiption, TODO);
+	return StartChildSpan(operation, desctiption, bindToScope);
 }
 
 void FAppleSentryTransaction::Finish()

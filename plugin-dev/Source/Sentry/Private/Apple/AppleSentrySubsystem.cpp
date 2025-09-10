@@ -12,7 +12,6 @@
 #include "AppleSentryTransaction.h"
 #include "AppleSentryTransactionContext.h"
 #include "AppleSentryUser.h"
-#include "Convenience/AppleSentryMacro.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeSendHandler.h"
@@ -25,6 +24,7 @@
 
 #include "Infrastructure/AppleSentryConverters.h"
 
+#include "Convenience/AppleSentryMacro.h"
 #include "Convenience/AppleSentryInclude.h"
 
 #include "Utils/SentryFileUtils.h"
