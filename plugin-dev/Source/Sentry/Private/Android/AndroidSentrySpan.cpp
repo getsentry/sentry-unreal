@@ -23,16 +23,16 @@ void FAndroidSentrySpan::SetupClassMethods()
 	ToSentryTraceMethod = GetMethod("toSentryTrace", "()Lio/sentry/SentryTraceHeader;");
 }
 
-TSharedPtr<ISentrySpan> FAndroidSentrySpan::StartChild(const FString& operation, const FString& desctiption)
+TSharedPtr<ISentrySpan> FAndroidSentrySpan::StartChild(const FString& operation, const FString& desctiption, bool bindToScope)
 {
 	auto span = CallObjectMethod<jobject>(StartChildMethod, *GetJString(operation), *GetJString(desctiption));
 	return MakeShareable(new FAndroidSentrySpan(*span));
 }
 
-TSharedPtr<ISentrySpan> FAndroidSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+TSharedPtr<ISentrySpan> FAndroidSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Android."));
-	return StartChild(operation, desctiption);
+	return StartChild(operation, desctiption, bindToScope);
 }
 
 void FAndroidSentrySpan::Finish()
