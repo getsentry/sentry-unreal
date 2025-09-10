@@ -27,7 +27,7 @@ class SENTRY_API USentryTransaction : public UObject, public TSentryImplWrapper<
 public:
 	/** Starts a new child span.
 	 *
-	 * @note: On Android, if the transaction is bound the scope
+	 * @note: On Android, if the transaction is bound to scope
 	 * the SDK will put the new child span on the scope as well.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
