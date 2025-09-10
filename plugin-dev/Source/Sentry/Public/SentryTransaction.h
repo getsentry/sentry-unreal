@@ -35,7 +35,7 @@ public:
 
 	/** Starts a new child span with timestamp.
 	 *
-	 * @note: On Android, if the transaction is bound the scope
+	 * @note: On Android, if the transaction is bound to scope
 	 * the SDK will put the new child span on the scope as well.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
