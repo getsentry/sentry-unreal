@@ -6,12 +6,12 @@
 
 #include "HAL/PlatformSentryTransaction.h"
 
-USentrySpan* USentryTransaction::StartChildSpan(const FString& Operation, const FString& Description)
+USentrySpan* USentryTransaction::StartChildSpan(const FString& Operation, const FString& Description, bool BindToScope)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpan(Operation, Description))
+	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpan(Operation, Description, BindToScope))
 	{
 		return USentrySpan::Create(spanNativeImpl);
 	}
@@ -22,12 +22,12 @@ USentrySpan* USentryTransaction::StartChildSpan(const FString& Operation, const 
 	}
 }
 
-USentrySpan* USentryTransaction::StartChildSpanWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
+USentrySpan* USentryTransaction::StartChildSpanWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp, bool BindToScope)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpanWithTimestamp(Operation, Description, Timestamp))
+	if (TSharedPtr<ISentrySpan> spanNativeImpl = NativeImpl->StartChildSpanWithTimestamp(Operation, Description, Timestamp, BindToScope))
 	{
 		return USentrySpan::Create(spanNativeImpl);
 	}

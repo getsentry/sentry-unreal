@@ -9,8 +9,8 @@ class FNullSentryTransaction final : public ISentryTransaction
 public:
 	virtual ~FNullSentryTransaction() override = default;
 
-	virtual TSharedPtr<ISentrySpan> StartChildSpan(const FString& operation, const FString& desctiption) override { return nullptr; }
-	virtual TSharedPtr<ISentrySpan> StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp) override { return nullptr; }
+	virtual TSharedPtr<ISentrySpan> StartChildSpan(const FString& operation, const FString& desctiption, bool bindToScope) override { return nullptr; }
+	virtual TSharedPtr<ISentrySpan> StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope) override { return nullptr; }
 	virtual void Finish() override {}
 	virtual void FinishWithTimestamp(int64 timestamp) override {}
 	virtual bool IsFinished() const override { return false; }

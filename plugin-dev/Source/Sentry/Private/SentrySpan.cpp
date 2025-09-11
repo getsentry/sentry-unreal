@@ -5,12 +5,12 @@
 
 #include "HAL/PlatformSentrySpan.h"
 
-USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description)
+USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& Description, bool BindToScope)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	if (TSharedPtr<ISentrySpan> ChildSpan = NativeImpl->StartChild(Operation, Description))
+	if (TSharedPtr<ISentrySpan> ChildSpan = NativeImpl->StartChild(Operation, Description, BindToScope))
 	{
 		return USentrySpan::Create(ChildSpan);
 	}
@@ -21,12 +21,12 @@ USentrySpan* USentrySpan::StartChild(const FString& Operation, const FString& De
 	}
 }
 
-USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp)
+USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp, bool BindToScope)
 {
 	if (!NativeImpl || NativeImpl->IsFinished())
 		return nullptr;
 
-	if (TSharedPtr<ISentrySpan> ChildSpan = NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp))
+	if (TSharedPtr<ISentrySpan> ChildSpan = NativeImpl->StartChildWithTimestamp(Operation, Description, Timestamp, BindToScope))
 	{
 		return USentrySpan::Create(ChildSpan);
 	}

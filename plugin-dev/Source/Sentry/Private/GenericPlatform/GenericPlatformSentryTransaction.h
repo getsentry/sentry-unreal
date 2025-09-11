@@ -18,8 +18,8 @@ public:
 
 	sentry_transaction_t* GetNativeObject();
 
-	virtual TSharedPtr<ISentrySpan> StartChildSpan(const FString& operation, const FString& description) override;
-	virtual TSharedPtr<ISentrySpan> StartChildSpanWithTimestamp(const FString& operation, const FString& description, int64 timestamp) override;
+	virtual TSharedPtr<ISentrySpan> StartChildSpan(const FString& operation, const FString& description, bool bindToScope) override;
+	virtual TSharedPtr<ISentrySpan> StartChildSpanWithTimestamp(const FString& operation, const FString& description, int64 timestamp, bool bindToScope) override;
 	virtual void Finish() override;
 	virtual void FinishWithTimestamp(int64 timestamp) override;
 	virtual bool IsFinished() const override;

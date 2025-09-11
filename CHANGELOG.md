@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.1.1
+
+### Features
+
+- Add support for automatic event linking with spans/transactions ([#1075](https://github.com/getsentry/sentry-unreal/pull/1075))
 
 ### Dependencies
 
