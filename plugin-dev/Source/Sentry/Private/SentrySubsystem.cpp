@@ -503,7 +503,7 @@ EUserConsent USentrySubsystem::GetUserConsent() const
 	return SubsystemNativeImpl->GetUserConsent();
 }
 
-USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation)
+USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation, bool BindToScope)
 {
 	check(SubsystemNativeImpl);
 
@@ -512,13 +512,13 @@ USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, cons
 		return nullptr;
 	}
 
-	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransaction(Name, Operation);
+	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransaction(Name, Operation, BindToScope);
 	check(SentryTransaction);
 
 	return USentryTransaction::Create(SentryTransaction);
 }
 
-USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransactionContext* Context)
+USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransactionContext* Context, bool BindToScope)
 {
 	check(SubsystemNativeImpl);
 	check(Context);
@@ -528,13 +528,13 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 		return nullptr;
 	}
 
-	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject());
+	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject(), BindToScope);
 	check(SentryTransaction);
 
 	return USentryTransaction::Create(SentryTransaction);
 }
 
-USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp)
+USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(USentryTransactionContext* Context, int64 Timestamp, bool BindToScope)
 {
 	check(SubsystemNativeImpl);
 	check(Context);
@@ -544,7 +544,7 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 		return nullptr;
 	}
 
-	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp);
+	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp, BindToScope);
 	check(SentryTransaction);
 
 	return USentryTransaction::Create(SentryTransaction);

@@ -14,9 +14,11 @@ public:
 	void SetupClassMethods();
 
 	void SetCustomSamplingContext(const TMap<FString, FSentryVariant>& data);
+	void SetBindToScope(bool bindToScope);
 
 private:
 	FSentryJavaMethod SetCustomSamplingContextMethod;
+	FSentryJavaMethod SetBindToScopeMethod;
 };
 
 typedef FAndroidSentryTransactionOptions FPlatformSentryTransactionOptions;

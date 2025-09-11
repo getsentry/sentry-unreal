@@ -14,6 +14,7 @@ FAndroidSentryTransactionOptions::FAndroidSentryTransactionOptions()
 void FAndroidSentryTransactionOptions::SetupClassMethods()
 {
 	SetCustomSamplingContextMethod = GetMethod("setCustomSamplingContext", "(Lio/sentry/CustomSamplingContext;)V");
+	SetBindToScopeMethod = GetMethod("setBindToScope", "(Z)V");
 }
 
 void FAndroidSentryTransactionOptions::SetCustomSamplingContext(const TMap<FString, FSentryVariant>& data)
@@ -27,4 +28,9 @@ void FAndroidSentryTransactionOptions::SetCustomSamplingContext(const TMap<FStri
 	}
 
 	CallMethod<void>(SetCustomSamplingContextMethod, NativeCustomSamplingContext.GetJObject());
+}
+
+void FAndroidSentryTransactionOptions::SetBindToScope(bool bindToScope)
+{
+	CallMethod<void>(SetBindToScopeMethod, bindToScope);
 }
