@@ -23,10 +23,15 @@ sentry_span_t* FGenericPlatformSentrySpan::GetNativeObject()
 	return Span;
 }
 
-TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChild(const FString& operation, const FString& description)
+TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChild(const FString& operation, const FString& description, bool bindToScope)
 {
 	if (sentry_span_t* nativeSpan = sentry_span_start_child(Span, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*description)))
 	{
+		if (bindToScope)
+		{
+			sentry_set_span(nativeSpan);
+		}
+
 		return MakeShareable(new FGenericPlatformSentrySpan(nativeSpan));
 	}
 	else
@@ -35,10 +40,15 @@ TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChild(const FString& op
 	}
 }
 
-TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& description, int64 timestamp)
+TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& description, int64 timestamp, bool bindToScope)
 {
 	if (sentry_span_t* nativeSpan = sentry_span_start_child_ts(Span, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*description), timestamp))
 	{
+		if (bindToScope)
+		{
+			sentry_set_span(nativeSpan);
+		}
+
 		return MakeShareable(new FGenericPlatformSentrySpan(nativeSpan));
 	}
 	else

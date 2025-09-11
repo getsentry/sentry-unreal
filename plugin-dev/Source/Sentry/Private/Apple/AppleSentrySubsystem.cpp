@@ -12,7 +12,6 @@
 #include "AppleSentryTransaction.h"
 #include "AppleSentryTransactionContext.h"
 #include "AppleSentryUser.h"
-#include "Convenience/AppleSentryMacro.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeSendHandler.h"
@@ -26,6 +25,7 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
 #include "Utils/SentryFileUtils.h"
 #include "Utils/SentryLogUtils.h"
@@ -365,26 +365,26 @@ EUserConsent FAppleSentrySubsystem::GetUserConsent() const
 	return EUserConsent::Unknown;
 }
 
-TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransaction(const FString& name, const FString& operation)
+TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)
 {
-	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString()];
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString() bindToScope:bindToScope];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
 
-TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context)
+TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context, bool bindToScope)
 {
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
-	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()];
+	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject() bindToScope:bindToScope];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
 
-TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp)
+TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Setting transaction timestamp explicitly not supported on Mac/iOS."));
-	return StartTransactionWithContext(context);
+	return StartTransactionWithContext(context, bindToScope);
 }
 
 TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options)
@@ -392,6 +392,7 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
+																				bindToScope:options.BindToScope
 																	  customSamplingContext:FAppleSentryConverters::VariantMapToNative(options.CustomSamplingContext)];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));

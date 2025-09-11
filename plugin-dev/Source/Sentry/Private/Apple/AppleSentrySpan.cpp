@@ -7,6 +7,7 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
 
 FAppleSentrySpan::FAppleSentrySpan(id<SentrySpan> span)
 {
@@ -24,16 +25,24 @@ id<SentrySpan> FAppleSentrySpan::GetNativeObject()
 	return SpanApple;
 }
 
-TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChild(const FString& operation, const FString& desctiption)
+TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChild(const FString& operation, const FString& desctiption, bool bindToScope)
 {
 	id<SentrySpan> span = [SpanApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
+
+	if (bindToScope)
+	{
+		[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+			scope.span = span;
+		}];
+	}
+
 	return MakeShareable(new FAppleSentrySpan(span));
 }
 
-TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp)
+TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope)
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Mac/iOS."));
-	return StartChild(operation, desctiption);
+	return StartChild(operation, desctiption, bindToScope);
 }
 
 void FAppleSentrySpan::Finish()

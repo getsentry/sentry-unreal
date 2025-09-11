@@ -24,13 +24,21 @@ class SENTRY_API USentrySpan : public UObject, public TSentryImplWrapper<ISentry
 	GENERATED_BODY()
 
 public:
-	/** Starts a new child span. */
+	/** Starts a new child span.
+	 *
+	 * @note: On Android, if the span is bound to scope
+	 * the SDK will put the new child span on the scope as well.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentrySpan* StartChild(const FString& Operation, const FString& Description);
+	USentrySpan* StartChild(const FString& Operation, const FString& Description, bool BindToScope = false);
 
-	/** Starts a new child span with timestamp. */
+	/** Starts a new child span with timestamp.
+	 *
+	 * @note: On Android, if the span is bound to scope
+	 * the SDK will put the new child span on the scope as well.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	USentrySpan* StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp);
+	USentrySpan* StartChildWithTimestamp(const FString& Operation, const FString& Description, int64 Timestamp, bool BindToScope = false);
 
 	/** Finishes and sends a span to Sentry. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
