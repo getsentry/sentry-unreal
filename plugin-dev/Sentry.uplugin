@@ -39,12 +39,16 @@
 	{
 		"Mac": [
 			"if [ $(TargetPlatform) = \"Mac\" ] && [ ! -f \"$(PluginDir)/Binaries/Mac/sentry.dylib\" ]; then\n cp \"$(PluginDir)/Source/ThirdParty/Mac/bin/sentry.dylib\" \"$(PluginDir)/Binaries/Mac/sentry.dylib\"\nfi",
-			"echo \"Sentry: Executing commandlet: $(EngineDir)/Binaries/Mac/UE4Editor $(ProjectFile) -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=$(ProjectDir) -plugin-dir=$(PluginDir) -unattended -nopause -nullrhi\"",
-			"\"$(EngineDir)/Binaries/Mac/UE4Editor\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi"
+			"ENGINE_VERSION=$(grep -o '\"EngineAssociation\": *\"[^\"]*\"' \"$(ProjectFile)\" | cut -d'\"' -f4)",
+			"if [[ \"${ENGINE_VERSION:0:1}\" == \"4\" ]]; then\n EDITOR_EXE=\"$(EngineDir)/Binaries/Mac/UE4Editor\"\nelse\n EDITOR_EXE=\"$(EngineDir)/Binaries/Mac/UnrealEditor\"\nfi",
+			"echo \"Sentry: Executing commandlet: $EDITOR_EXE $(ProjectFile) -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=$(ProjectDir) -plugin-dir=$(PluginDir) -unattended -nopause -nullrhi\"",
+			"\"$EDITOR_EXE\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi"
 		],
 		"Linux": [
-			"echo \"Sentry: Executing commandlet: $(EngineDir)/Binaries/Linux/UE4Editor $(ProjectFile) -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=$(ProjectDir) -plugin-dir=$(PluginDir) -unattended -nopause -nullrhi\"",
-			"\"$(EngineDir)/Binaries/Linux/UE4Editor\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi"
+			"ENGINE_VERSION=$(grep -o '\"EngineAssociation\": *\"[^\"]*\"' \"$(ProjectFile)\" | cut -d'\"' -f4)",
+			"if [[ \"${ENGINE_VERSION:0:1}\" == \"4\" ]]; then\n EDITOR_EXE=\"$(EngineDir)/Binaries/Linux/UE4Editor\"\nelse\n EDITOR_EXE=\"$(EngineDir)/Binaries/Linux/UnrealEditor\"\nfi",
+			"echo \"Sentry: Executing commandlet: $EDITOR_EXE $(ProjectFile) -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=$(ProjectDir) -plugin-dir=$(PluginDir) -unattended -nopause -nullrhi\"",
+			"\"$EDITOR_EXE\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi"
 		],
 		"Win64": [
 			"setlocal enabledelayedexpansion", 
@@ -52,8 +56,11 @@
 			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%CRASHPAD_HANDLER_LINUX%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Linux/bin/*\" \"$(PluginDir)/Binaries/Linux/\" /F /R /Y /I)\n)",
 			"set \"CRASHPAD_HANDLER_WIN=$(PluginDir)/Binaries/Win64/crashpad_handler.exe\"",
 			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%CRASHPAD_HANDLER_WIN%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Win64/Crashpad/bin/*\" \"$(PluginDir)/Binaries/Win64/\" /F /R /Y /I)\n)",
-			"echo Sentry: Executing commandlet: \"$(EngineDir)/Binaries/Win64/UE4Editor-Cmd.exe\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi",
-			"\"$(EngineDir)/Binaries/Win64/UE4Editor-Cmd.exe\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi",
+			"for /f \"tokens=2 delims=:, \" %%i in ('type \"$(ProjectFile)\" ^| findstr /C:\"EngineAssociation\"') do set \"ENGINE_VERSION=%%~i\"",
+			"set \"ENGINE_VERSION=!ENGINE_VERSION:~0,1!\"",
+			"if \"!ENGINE_VERSION!\"==\"4\" (set \"EDITOR_EXE=$(EngineDir)/Binaries/Win64/UE4Editor-Cmd.exe\") else (set \"EDITOR_EXE=$(EngineDir)/Binaries/Win64/UnrealEditor-Cmd.exe\")",
+			"echo Sentry: Executing commandlet: \"!EDITOR_EXE!\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi",
+			"\"!EDITOR_EXE!\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -project-dir=\"$(ProjectDir)\" -plugin-dir=\"$(PluginDir)\" -unattended -nopause -nullrhi",
 			"endlocal"
 		]
 	}
