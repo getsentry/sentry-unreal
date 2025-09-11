@@ -39,10 +39,12 @@
 	{
 		"Mac": [
 			"if [ $(TargetPlatform) = \"Mac\" ] && [ ! -f \"$(PluginDir)/Binaries/Mac/sentry.dylib\" ]; then\n cp \"$(PluginDir)/Source/ThirdParty/Mac/bin/sentry.dylib\" \"$(PluginDir)/Binaries/Mac/sentry.dylib\"\nfi",
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
+			"echo \"Sentry: Executing commandlet: $(EngineDir)/Binaries/Mac/UE4Editor $(ProjectFile) -run=SentrySymbolUpload -SentryTargetPlatform=$(TargetPlatform) -SentryTargetName=$(TargetName) -SentryTargetType=$(TargetType) -SentryTargetConfiguration=$(TargetConfiguration) -SentryProjectDir=$(ProjectDir) -SentryPluginDir=$(PluginDir) -unattended -nopause -nullrhi\"",
+			"\"$(EngineDir)/Binaries/Mac/UE4Editor\" \"$(ProjectFile)\" -run=SentrySymbolUpload -SentryTargetPlatform=$(TargetPlatform) -SentryTargetName=$(TargetName) -SentryTargetType=$(TargetType) -SentryTargetConfiguration=$(TargetConfiguration) -SentryProjectDir=\"$(ProjectDir)\" -SentryPluginDir=\"$(PluginDir)\" -unattended -nopause -nullrhi"
 		],
 		"Linux": [
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
+			"echo \"Sentry: Executing commandlet: $(EngineDir)/Binaries/Linux/UE4Editor $(ProjectFile) -run=SentrySymbolUpload -SentryTargetPlatform=$(TargetPlatform) -SentryTargetName=$(TargetName) -SentryTargetType=$(TargetType) -SentryTargetConfiguration=$(TargetConfiguration) -SentryProjectDir=$(ProjectDir) -SentryPluginDir=$(PluginDir) -unattended -nopause -nullrhi\"",
+			"\"$(EngineDir)/Binaries/Linux/UE4Editor\" \"$(ProjectFile)\" -run=SentrySymbolUpload -SentryTargetPlatform=$(TargetPlatform) -SentryTargetName=$(TargetName) -SentryTargetType=$(TargetType) -SentryTargetConfiguration=$(TargetConfiguration) -SentryProjectDir=\"$(ProjectDir)\" -SentryPluginDir=\"$(PluginDir)\" -unattended -nopause -nullrhi"
 		],
 		"Win64": [
 			"setlocal enabledelayedexpansion", 
@@ -50,8 +52,8 @@
 			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%CRASHPAD_HANDLER_LINUX%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Linux/bin/*\" \"$(PluginDir)/Binaries/Linux/\" /F /R /Y /I)\n)",
 			"set \"CRASHPAD_HANDLER_WIN=$(PluginDir)/Binaries/Win64/crashpad_handler.exe\"",
 			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%CRASHPAD_HANDLER_WIN%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Win64/Crashpad/bin/*\" \"$(PluginDir)/Binaries/Win64/\" /F /R /Y /I)\n)",
-			"set \"SYM_UPLOAD_SCRIPT=$(PluginDir)/Scripts/upload-debug-symbols-win.bat\"",
-			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Warning: Sentry: Symbol upload script is missing. Skipping post build step.\n)",
+			"echo Sentry: Executing commandlet: \"$(EngineDir)/Binaries/Win64/UE4Editor-Cmd.exe\" \"$(ProjectFile)\" -run=SentrySymbolUpload -SentryTargetPlatform=$(TargetPlatform) -SentryTargetName=$(TargetName) -SentryTargetType=$(TargetType) -SentryTargetConfiguration=$(TargetConfiguration) -SentryProjectDir=\"$(ProjectDir)\" -SentryPluginDir=\"$(PluginDir)\" -unattended -nopause -nullrhi",
+			"\"$(EngineDir)/Binaries/Win64/UE4Editor-Cmd.exe\" \"$(ProjectFile)\" -run=SentrySymbolUpload -SentryTargetPlatform=$(TargetPlatform) -SentryTargetName=$(TargetName) -SentryTargetType=$(TargetType) -SentryTargetConfiguration=$(TargetConfiguration) -SentryProjectDir=\"$(ProjectDir)\" -SentryPluginDir=\"$(PluginDir)\" -unattended -nopause -nullrhi",
 			"endlocal"
 		]
 	}
