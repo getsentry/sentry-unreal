@@ -82,7 +82,7 @@ bool USentrySymbolUploadCommandlet::ParseCommandLineParams(const FString& Params
 
 	UE_LOG(LogTemp, Display, TEXT("Sentry: Parsed params - Platform: %s, Name: %s, Type: %s, Config: %s"), *TargetPlatform, *TargetName, *TargetType, *TargetConfiguration);
 
-	if (TargetPlatform.IsEmpty() || TargetName.IsEmpty() || TargetType.IsEmpty() || 
+	if (TargetPlatform.IsEmpty() || TargetName.IsEmpty() || TargetType.IsEmpty() ||
 		TargetConfiguration.IsEmpty() || ProjectDir.IsEmpty() || PluginDir.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Sentry: Missing required command line parameters"));
