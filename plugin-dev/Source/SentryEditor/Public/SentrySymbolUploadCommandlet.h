@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Commandlets/Commandlet.h"
+#include "CoreMinimal.h"
 #include "Engine/Engine.h"
 #include "SentrySymbolUploadCommandlet.generated.h"
 
 /**
  * Commandlet for uploading debug symbols to Sentry.
  * Replaces the shell/batch scripts with a native C++ implementation.
- * 
+ *
  * Usage: UE4Editor-Cmd.exe YourProject -run=SentrySymbolUpload -target-platform=Win64 -target-name=YourGame -target-type=Game -target-configuration=Development -project-dir="C:\Path\To\Project" -plugin-dir="C:\Path\To\Plugin"
  */
 UCLASS()
