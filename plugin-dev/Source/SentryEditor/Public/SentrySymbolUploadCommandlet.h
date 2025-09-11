@@ -42,8 +42,10 @@ private:
 	/** Read configuration from DefaultEngine.ini */
 	FString ReadConfigValue(const FString& Section, const FString& Key, const FString& DefaultValue = TEXT("")) const;
 
-	/** Read configuration from sentry.properties file */
-	bool ReadSentryProperties(FString& ProjectName, FString& OrgName, FString& AuthToken) const;
+	/** Check if there is valid sentry.properties file in project root dir */
+	bool HasValidSentryPropertiesFile() const;
+	/** Check if environment vars required for symbol upload are set */
+	bool HasValidSentryEnvVars() const;
 
 	/** Execute the Sentry CLI upload command */
 	bool ExecuteSentryCliUpload() const;

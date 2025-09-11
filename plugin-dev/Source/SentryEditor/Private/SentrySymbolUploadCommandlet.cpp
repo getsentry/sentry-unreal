@@ -80,10 +80,6 @@ bool USentrySymbolUploadCommandlet::ParseCommandLineParams(const FString& Params
 	FParse::Value(*Params, TEXT("project-dir="), ProjectDir);
 	FParse::Value(*Params, TEXT("plugin-dir="), PluginDir);
 
-	// Remove quotes if present
-	ProjectDir = ProjectDir.TrimQuotes();
-	PluginDir = PluginDir.TrimQuotes();
-
 	UE_LOG(LogTemp, Display, TEXT("Sentry: Parsed params - Platform: %s, Name: %s, Type: %s, Config: %s"), *TargetPlatform, *TargetName, *TargetType, *TargetConfiguration);
 
 	if (TargetPlatform.IsEmpty() || TargetName.IsEmpty() || TargetType.IsEmpty() || 
@@ -117,10 +113,6 @@ bool USentrySymbolUploadCommandlet::IsTargetTypeEnabled(const FString& InTargetT
 		return true; // If not specified, assume enabled
 	}
 
-	// Remove parentheses
-	EnabledTargets = EnabledTargets.TrimStartAndEnd().Mid(1, EnabledTargets.Len() - 2);
-
-	// Check if this target type is disabled
 	FString DisabledPattern = FString::Printf(TEXT("bEnable%s=False"), *InTargetType);
 	return !EnabledTargets.Contains(DisabledPattern);
 }
@@ -133,10 +125,6 @@ bool USentrySymbolUploadCommandlet::IsBuildConfigurationEnabled(const FString& I
 		return true; // If not specified, assume enabled
 	}
 
-	// Remove parentheses
-	EnabledConfigs = EnabledConfigs.TrimStartAndEnd().Mid(1, EnabledConfigs.Len() - 2);
-	
-	// Check if this build configuration is disabled
 	FString DisabledPattern = FString::Printf(TEXT("bEnable%s=False"), *InTargetConfig);
 	return !EnabledConfigs.Contains(DisabledPattern);
 }
@@ -187,7 +175,7 @@ FString USentrySymbolUploadCommandlet::ReadConfigValue(const FString& Section, c
 	return DefaultValue;
 }
 
-bool USentrySymbolUploadCommandlet::ReadSentryProperties(FString& ProjectName, FString& OrgName, FString& AuthToken) const
+bool USentrySymbolUploadCommandlet::HasValidSentryPropertiesFile() const
 {
 	FString PropertiesFilePath = FPaths::Combine(ProjectDir, TEXT("sentry.properties"));
 	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*PropertiesFilePath))
@@ -195,30 +183,41 @@ bool USentrySymbolUploadCommandlet::ReadSentryProperties(FString& ProjectName, F
 		return false;
 	}
 
-	TArray<FString> Lines;
-	if (!FFileHelper::LoadFileToStringArray(Lines, *PropertiesFilePath))
+	FConfigFile PropertiesFile;
+	PropertiesFile.Read(PropertiesFilePath);
+
+	FString ProjectName, OrgName, AuthToken;
+
+	PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.project"), ProjectName);
+	PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.org"), OrgName);
+	PropertiesFile.GetString(TEXT("Sentry"), TEXT("auth.token"), AuthToken);
+
+	return !ProjectName.IsEmpty() && !OrgName.IsEmpty() && !AuthToken.IsEmpty();
+}
+
+bool USentrySymbolUploadCommandlet::HasValidSentryEnvVars() const
+{
+	FString SentryProject = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_PROJECT"));
+	FString SentryOrg = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_ORG"));
+	FString SentryAuthToken = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_AUTH_TOKEN"));
+
+	if (SentryProject.IsEmpty())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Sentry: Failed to read properties file: %s"), *PropertiesFilePath);
+		UE_LOG(LogTemp, Error, TEXT("Error: SENTRY_PROJECT env var is not set."));
+		return false;
+	}
+	if (SentryOrg.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Error: SENTRY_ORG env var is not set."));
+		return false;
+	}
+	if (SentryAuthToken.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Error: SENTRY_AUTH_TOKEN env var is not set."));
 		return false;
 	}
 
-	for (const FString& Line : Lines)
-	{
-		if (Line.StartsWith(TEXT("defaults.project=")))
-		{
-			ProjectName = Line.Mid(17); // Length of "defaults.project="
-		}
-		else if (Line.StartsWith(TEXT("defaults.org=")))
-		{
-			OrgName = Line.Mid(13); // Length of "defaults.org="
-		}
-		else if (Line.StartsWith(TEXT("auth.token=")))
-		{
-			AuthToken = Line.Mid(11); // Length of "auth.token="
-		}
-	}
-
-	return !ProjectName.IsEmpty() && !OrgName.IsEmpty() && !AuthToken.IsEmpty();
+	return true;
 }
 
 bool USentrySymbolUploadCommandlet::ExecuteSentryCliUpload() const
@@ -229,37 +228,17 @@ bool USentrySymbolUploadCommandlet::ExecuteSentryCliUpload() const
 		return false;
 	}
 
-	FString ProjectName, OrgName, AuthToken;
-	FString PropertiesFilePath = FPaths::Combine(ProjectDir, TEXT("sentry.properties"));
-	bool bHasPropertiesFile = ReadSentryProperties(ProjectName, OrgName, AuthToken);
-
-	if (bHasPropertiesFile)
+	if (!HasValidSentryPropertiesFile())
 	{
-		FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_PROPERTIES"), *PropertiesFilePath);
+		UE_LOG(LogTemp, Display, TEXT("Sentry: Properties file not found. Falling back to environment variables."));
+		if (!HasValidSentryEnvVars())
+		{
+			return false;
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Display, TEXT("Sentry: Properties file not found. Falling back to environment variables."));
-
-		FString SentryProject = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_PROJECT"));
-		FString SentryOrg = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_ORG"));
-		FString SentryAuthToken = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_AUTH_TOKEN"));
-
-		if (SentryProject.IsEmpty())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Error: SENTRY_PROJECT env var is not set. Skipping..."));
-			return false;
-		}
-		if (SentryOrg.IsEmpty())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Error: SENTRY_ORG env var is not set. Skipping..."));
-			return false;
-		}
-		if (SentryAuthToken.IsEmpty())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Error: SENTRY_AUTH_TOKEN env var is not set. Skipping..."));
-			return false;
-		}
+		FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_PROPERTIES"), *FPaths::Combine(ProjectDir, TEXT("sentry.properties")));
 	}
 
 	TArray<FString> Arguments;
