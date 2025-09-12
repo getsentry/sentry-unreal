@@ -5,6 +5,7 @@
 #include "HAL/PlatformFilemanager.h"
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformProcess.h"
+#include "Interfaces/IPluginManager.h"
 #include "Misc/CommandLine.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/FileHelper.h"
@@ -17,6 +18,9 @@ USentrySymbolUploadCommandlet::USentrySymbolUploadCommandlet()
 	IsEditor = true;
 	IsServer = false;
 	LogToConsole = true;
+
+	ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+	PluginDir = FPaths::ConvertRelativePathToFull(IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir());
 }
 
 int32 USentrySymbolUploadCommandlet::Main(const FString& Params)
@@ -77,13 +81,10 @@ bool USentrySymbolUploadCommandlet::ParseCommandLineParams(const FString& Params
 	FParse::Value(*Params, TEXT("target-name="), TargetName);
 	FParse::Value(*Params, TEXT("target-type="), TargetType);
 	FParse::Value(*Params, TEXT("target-configuration="), TargetConfiguration);
-	FParse::Value(*Params, TEXT("project-dir="), ProjectDir);
-	FParse::Value(*Params, TEXT("plugin-dir="), PluginDir);
 
 	UE_LOG(LogTemp, Display, TEXT("Sentry: Parsed params - Platform: %s, Name: %s, Type: %s, Config: %s"), *TargetPlatform, *TargetName, *TargetType, *TargetConfiguration);
 
-	if (TargetPlatform.IsEmpty() || TargetName.IsEmpty() || TargetType.IsEmpty() ||
-		TargetConfiguration.IsEmpty() || ProjectDir.IsEmpty() || PluginDir.IsEmpty())
+	if (TargetPlatform.IsEmpty() || TargetName.IsEmpty() || TargetType.IsEmpty() || TargetConfiguration.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Sentry: Missing required command line parameters"));
 		return false;
