@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add commandlet for debug symbols upload ([#1076](https://github.com/getsentry/sentry-unreal/pull/1076))
+
 ## 1.1.1
 
 ### Features
