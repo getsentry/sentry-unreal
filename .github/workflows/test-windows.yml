@@ -42,6 +42,16 @@ jobs:
           path: checkout
           submodules: recursive
 
+      - name: Update associated engine version in sample project descriptor
+        env:
+          WORKSPACE_PATH: ${{ github.workspace }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: |
+          $projectFile = "$env:WORKSPACE_PATH\checkout\sample\SentryPlayground.uproject"
+          $content = Get-Content -Path $projectFile -Raw
+          $content = $content -replace '"EngineAssociation":\s*"[^"]*"', "`"EngineAssociation`": `"$env:UNREAL_VERSION`""
+          Set-Content -Path $projectFile -Value $content
+
       - name: Extract package to sample/Plugins
         env:
           WORKSPACE_PATH: ${{ github.workspace }}
