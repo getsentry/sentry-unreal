@@ -4,9 +4,9 @@
 
 #include "Interfaces/IPluginManager.h"
 
-#include "Misc/EngineVersionComparison.h"
 #include "Misc/CommandLine.h"
 #include "Misc/ConfigCacheIni.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
