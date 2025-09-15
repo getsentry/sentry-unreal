@@ -3,6 +3,9 @@ Config/FilterPlugin.ini
 Gradle/gradle-wrapper.properties
 LICENSE
 Resources/Icon128.png
+Scripts/post-build-steps-linux.sh
+Scripts/post-build-steps-mac.sh
+Scripts/post-build-steps-win.bat
 Scripts/upload-debug-symbols-win.bat
 Scripts/upload-debug-symbols.sh
 sentry-cli.properties
