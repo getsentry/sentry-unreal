@@ -2,15 +2,23 @@
 
 #include "SentrySymbolUploadCommandlet.h"
 
-#include "HAL/PlatformFilemanager.h"
-#include "HAL/PlatformMisc.h"
-#include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
+
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/CommandLine.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#include "HAL/PlatformFilemanager.h"
+#else
+#include "HAL/PlatformFileManager.h"
+#endif
+
+#include "HAL/PlatformMisc.h"
+#include "HAL/PlatformProcess.h"
 
 USentrySymbolUploadCommandlet::USentrySymbolUploadCommandlet()
 {
