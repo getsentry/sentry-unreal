@@ -44,12 +44,13 @@
 			"echo \"Sentry: Executing commandlet: $EDITOR_EXE $(ProjectFile) -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -unattended -nopause -nullrhi\"",
 			"\"$EDITOR_EXE\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -unattended -nopause -nullrhi"
 		],
-		"Linux": [
-			"ENGINE_VERSION=$(grep -o '\"EngineAssociation\": *\"[^\"]*\"' \"$(ProjectFile)\" | cut -d'\"' -f4)",
-			"if [[ \"${ENGINE_VERSION:0:1}\" == \"4\" ]]; then\n EDITOR_EXE=\"$(EngineDir)/Binaries/Linux/UE4Editor\"\nelse\n EDITOR_EXE=\"$(EngineDir)/Binaries/Linux/UnrealEditor\"\nfi",
-			"echo \"Sentry: Executing commandlet: $EDITOR_EXE $(ProjectFile) -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -unattended -nopause -nullrhi\"",
-			"\"$EDITOR_EXE\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -unattended -nopause -nullrhi"
-		],
+        "Linux": [
+          "ENGINE_VERSION=$(grep -o '\"EngineAssociation\": *\"[^\"]*\"' \"$(ProjectFile)\" | cut -d'\"' -f4)",
+          "if [ \"$(printf %.1s \"$ENGINE_VERSION\")\" = \"4\" ]; then EDITOR_EXE=\"$(EngineDir)/Binaries/Linux/UE4Editor\"; else EDITOR_EXE=\"$(EngineDir)/Binaries/Linux/UnrealEditor\"; fi",
+          "echo \"Sentry: Executing commandlet: \\\"$EDITOR_EXE\\\" \\\"$(ProjectFile)\\\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -unattended -nopause -nullrhi\"",
+          "\"$EDITOR_EXE\" \"$(ProjectFile)\" -run=SentrySymbolUpload -target-platform=$(TargetPlatform) -target-name=$(TargetName) -target-type=$(TargetType) -target-configuration=$(TargetConfiguration) -unattended -nopause -nullrhi"
+        ],
+
 		"Win64": [
 			"setlocal enabledelayedexpansion", 
 			"set \"CRASHPAD_HANDLER_LINUX=$(PluginDir)/Binaries/Linux/crashpad_handler\"",
