@@ -40,13 +40,13 @@
 	"PostBuildSteps":
 	{
 		"Mac": [
-			"\"$(PluginDir)/Scripts/post-build-steps-mac.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+			"\"$(PluginDir)/Scripts/post-build-steps-mac.sh\" $(TargetPlatform) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		],
 		"Linux": [
-			"\"$(PluginDir)/Scripts/post-build-steps-linux.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+			"\"$(PluginDir)/Scripts/post-build-steps-linux.sh\" $(TargetPlatform) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		],
 		"Win64": [
-			"\"$(PluginDir)/Scripts/post-build-steps-win.bat\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+			"\"$(PluginDir)/Scripts/post-build-steps-win.bat\" $(TargetPlatform) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		]
 	}
 }

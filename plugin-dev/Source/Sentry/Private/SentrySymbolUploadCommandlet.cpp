@@ -3,6 +3,8 @@
 #include "SentrySymbolUploadCommandlet.h"
 
 #include "Interfaces/IPluginManager.h"
+#include "SentryModule.h"
+#include "SentrySettings.h"
 
 #include "Misc/CommandLine.h"
 #include "Misc/ConfigCacheIni.h"
@@ -16,7 +18,6 @@
 #else
 #include "HAL/PlatformFileManager.h"
 #endif
-
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformProcess.h"
 
@@ -86,13 +87,12 @@ bool USentrySymbolUploadCommandlet::ParseCommandLineParams(const FString& Params
 	UE_LOG(LogTemp, Display, TEXT("Sentry: Commandlet called with params: %s"), *Params);
 
 	FParse::Value(*Params, TEXT("target-platform="), TargetPlatform);
-	FParse::Value(*Params, TEXT("target-name="), TargetName);
 	FParse::Value(*Params, TEXT("target-type="), TargetType);
 	FParse::Value(*Params, TEXT("target-configuration="), TargetConfiguration);
 
-	UE_LOG(LogTemp, Display, TEXT("Sentry: Parsed params - Platform: %s, Name: %s, Type: %s, Config: %s"), *TargetPlatform, *TargetName, *TargetType, *TargetConfiguration);
+	UE_LOG(LogTemp, Display, TEXT("Sentry: Parsed params - Platform: %s, Type: %s, Config: %s"), *TargetPlatform, *TargetType, *TargetConfiguration);
 
-	if (TargetPlatform.IsEmpty() || TargetName.IsEmpty() || TargetType.IsEmpty() || TargetConfiguration.IsEmpty())
+	if (TargetPlatform.IsEmpty() || TargetType.IsEmpty() || TargetConfiguration.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Sentry: Missing required command line parameters"));
 		return false;
@@ -253,6 +253,13 @@ bool USentrySymbolUploadCommandlet::ExecuteSentryCliUpload() const
 	TArray<FString> Arguments;
 	Arguments.Add(TEXT("debug-files"));
 	Arguments.Add(TEXT("upload"));
+
+	USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	if (!Settings)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Sentry: Couldn't retrieve plugin settings."));
+		return false;
+	}
 
 	FString IncludeSources = ReadConfigValue(TEXT("/Script/Sentry.SentrySettings"), TEXT("IncludeSources"));
 	if (IncludeSources.ToBool())

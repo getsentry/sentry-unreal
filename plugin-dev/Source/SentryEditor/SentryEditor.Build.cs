@@ -27,10 +27,7 @@ public class SentryEditor : ModuleRules
                 "PropertyEditor",
                 "Projects",
                 "HTTP",
-                "UATHelper",
-                "ToolMenus",
-                "UnrealEd",
-                "DesktopPlatform"
+                "UATHelper"
             }
         );
     }

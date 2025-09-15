@@ -1,13 +1,13 @@
 @echo off
+
 setlocal enabledelayedexpansion
 
 set "TARGET_PLATFORM=%~1"
-set "TARGET_NAME=%~2"
-set "TARGET_TYPE=%~3"
-set "TARGET_CONFIGURATION=%~4"
-set "PROJECT_FILE=%~5"
-set "PLUGIN_DIR=%~6"
-set "ENGINE_DIR=%~7"
+set "TARGET_TYPE=%~2"
+set "TARGET_CONFIGURATION=%~3"
+set "PROJECT_FILE=%~4"
+set "PLUGIN_DIR=%~5"
+set "ENGINE_DIR=%~6"
 
 :: Copy crashpad handler executable to plugin's Binaries\Linux dir if it doesn't exist there to enable cross-compilation for Linux on Windows with FAB version of the plugin
 set "CRASHPAD_HANDLER_LINUX=%PLUGIN_DIR%\Binaries\Linux\crashpad_handler"
@@ -21,11 +21,19 @@ if "%TARGET_PLATFORM%"=="Win64" (
   if not exist "%CRASHPAD_HANDLER_WIN%" (xcopy "%PLUGIN_DIR%\Source\ThirdParty\Win64\Crashpad\bin\*" "%PLUGIN_DIR%\Binaries\Win64\" /F /R /Y /I)
 )
 
+:: Skip commandlet execution for Editor target type
+if "%TARGET_TYPE%"=="Editor" (
+  echo Sentry: Automatic symbols upload is not required for Editor target. Skipping...
+  exit /B 0
+)
+
 for /f "tokens=2 delims=:, " %%i in ('type "%PROJECT_FILE%" ^| findstr /C:"EngineAssociation"') do set "ENGINE_VERSION=%%~i"
 set "ENGINE_VERSION=!ENGINE_VERSION:~0,1!"
 
 if "!ENGINE_VERSION!"=="4" (set "EDITOR_EXE=%ENGINE_DIR%\Binaries\Win64\UE4Editor-Cmd.exe") else (set "EDITOR_EXE=%ENGINE_DIR%\Binaries\Win64\UnrealEditor-Cmd.exe")
 
-"!EDITOR_EXE!" "%PROJECT_FILE%" -run=SentrySymbolUpload -target-platform=%TARGET_PLATFORM% -target-name=%TARGET_NAME% -target-type=%TARGET_TYPE% -target-configuration=%TARGET_CONFIGURATION% -unattended -nopause -nullrhi
+"!EDITOR_EXE!" "%PROJECT_FILE%" -run=SentrySymbolUpload -target-platform=%TARGET_PLATFORM% -target-type=%TARGET_TYPE% -target-configuration=%TARGET_CONFIGURATION% -unattended -nopause
 
 endlocal
+
+exit /B 0
