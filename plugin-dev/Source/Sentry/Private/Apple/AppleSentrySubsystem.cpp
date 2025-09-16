@@ -449,7 +449,9 @@ void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> event
 
 	SentryId* id = StaticCastSharedPtr<FAppleSentryId>(eventId)->GetNativeObject();
 
-	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithId:id singleItem:envelopeItem];
+	SentryEnvelopeHeader *envelopeHeader = [[SENTRY_APPLE_CLASS(SentryEnvelopeHeader) alloc] initWithId:id sdkInfo:nil traceContext:nil];
+
+	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithHeader:envelopeHeader singleItem:envelopeItem];
 
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) captureEnvelope:envelope];
 
