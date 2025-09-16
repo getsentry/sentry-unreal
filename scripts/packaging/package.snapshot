@@ -304,7 +304,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAppStartMeasurement.
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAsynchronousOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAutoSessionTrackingIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryBaseIntegration.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryBinaryImageCache.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryBreadcrumb+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashInstallationReporter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashReportConverter.h
@@ -312,8 +311,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashReportSink.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDateUtils.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDebugImageProvider+HybridSDKs.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDependencyContainer.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryEnvelope.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryEnvelopeItemType.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFormatter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFramesTracker.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
@@ -325,7 +322,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryOptionsInternal.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryScreenFrames.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySdkInfo.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
@@ -365,7 +361,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryAttachment.h
 Source/ThirdParty/Mac/include/Sentry/SentryAutoSessionTrackingIntegration.h
 Source/ThirdParty/Mac/include/Sentry/SentryBaggage.h
 Source/ThirdParty/Mac/include/Sentry/SentryBaseIntegration.h
-Source/ThirdParty/Mac/include/Sentry/SentryBinaryImageCache.h
 Source/ThirdParty/Mac/include/Sentry/SentryBreadcrumb.h
 Source/ThirdParty/Mac/include/Sentry/SentryBreadcrumb+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryClient.h
@@ -380,9 +375,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryDebugMeta.h
 Source/ThirdParty/Mac/include/Sentry/SentryDefines.h
 Source/ThirdParty/Mac/include/Sentry/SentryDependencyContainer.h
 Source/ThirdParty/Mac/include/Sentry/SentryDsn.h
-Source/ThirdParty/Mac/include/Sentry/SentryEnvelope.h
 Source/ThirdParty/Mac/include/Sentry/SentryEnvelopeItemHeader.h
-Source/ThirdParty/Mac/include/Sentry/SentryEnvelopeItemType.h
 Source/ThirdParty/Mac/include/Sentry/SentryError.h
 Source/ThirdParty/Mac/include/Sentry/SentryEvent.h
 Source/ThirdParty/Mac/include/Sentry/SentryException.h
@@ -415,7 +408,6 @@ Source/ThirdParty/Mac/include/Sentry/SentrySamplingContext.h
 Source/ThirdParty/Mac/include/Sentry/SentryScope.h
 Source/ThirdParty/Mac/include/Sentry/SentryScreenFrames.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK+Private.h
-Source/ThirdParty/Mac/include/Sentry/SentrySdkInfo.h
 Source/ThirdParty/Mac/include/Sentry/SentrySerializable.h
 Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration.h
