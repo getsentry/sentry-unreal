@@ -80,7 +80,7 @@ extern CORE_API bool GIsGPUCrashed;
 	}
 }
 
-static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure) 
+static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure)
 {
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
