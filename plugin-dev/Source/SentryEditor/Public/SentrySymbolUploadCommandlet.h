@@ -14,7 +14,7 @@
  * Usage: UE4Editor-Cmd.exe YourProject -run=SentrySymbolUpload -target-platform=Win64 -target-name=YourGame -target-type=Game -target-configuration=Development -project-dir="C:\Path\To\Project" -plugin-dir="C:\Path\To\Plugin"
  */
 UCLASS()
-class SENTRY_API USentrySymbolUploadCommandlet : public UCommandlet
+class USentrySymbolUploadCommandlet : public UCommandlet
 {
 	GENERATED_BODY()
 
