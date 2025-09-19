@@ -44,6 +44,22 @@ extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
 
+static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure) 
+{
+	char buffer[512];
+	vsnprintf(buffer, 512, message, args);
+
+	FString MessageBuf = FString(buffer);
+
+#if !NO_LOGGING
+	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
+#else
+	const FName SentryCategoryName(TEXT("LogSentrySdk"));
+#endif
+
+	GLog->CategorizedLogf(SentryCategoryName, FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
+}
+
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
 {
 	if (closure)
@@ -78,22 +94,6 @@ extern CORE_API bool GIsGPUCrashed;
 	{
 		return event;
 	}
-}
-
-static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure)
-{
-	char buffer[512];
-	vsnprintf(buffer, 512, message, args);
-
-	FString MessageBuf = FString(buffer);
-
-#if !NO_LOGGING
-	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
-#else
-	const FName SentryCategoryName(TEXT("LogSentrySdk"));
-#endif
-
-	GLog->CategorizedLogf(SentryCategoryName, FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
