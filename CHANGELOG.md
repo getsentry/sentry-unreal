@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Removed usage of deprecated `CGWindowListCreateImage` function on Mac. Replaced with Sentry Screenshot Utils ([#1034](https://github.com/getsentry/sentry-unreal/pull/1034/))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v5.10.0 to v5.11.0 ([#1078](https://github.com/getsentry/sentry-unreal/pull/1078))
