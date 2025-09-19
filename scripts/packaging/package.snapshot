@@ -228,7 +228,9 @@ Source/Sentry/Public/SentryVariant.h
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry_IOS_UPL.xml
 Source/Sentry/Sentry.Build.cs
+Source/SentryCommandlet/Private/SentryCommandletModule.cpp
 Source/SentryCommandlet/Private/SentrySymbolUploadCommandlet.cpp
+Source/SentryCommandlet/Public/SentryCommandletModule.h
 Source/SentryCommandlet/Public/SentrySymbolUploadCommandlet.h
 Source/SentryCommandlet/SentryCommandlet.Build.cs
 Source/SentryEditor/Private/SentryEditorModule.cpp
