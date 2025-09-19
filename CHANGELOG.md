@@ -88,6 +88,10 @@ In case you encounter any issues, please [create a ticket on our GitHub reposito
 - Add Traces sampling function support for Windows and Linux ([#1057](https://github.com/getsentry/sentry-unreal/pull/1057))
 - Read `DSN`, `Environment` and `Release` options from environment variables ([#1054](https://github.com/getsentry/sentry-unreal/pull/1054))
 
+### Fixes
+
+- Prevent usage of internal UE logger during crash handling ([#1073](https://github.com/getsentry/sentry-unreal/pull/1073))
+
 ### Dependencies
 
 - Bump CLI from v2.51.1 to v2.52.0 ([#1049](https://github.com/getsentry/sentry-unreal/pull/1049))
