@@ -98,6 +98,12 @@ jobs:
           path: checkout
           submodules: recursive
 
+      - name: Update associated engine version in sample project descriptor
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: |
+          sed -i 's/"EngineAssociation":[[:space:]]*"[^"]*"/"EngineAssociation": "'"$UNREAL_VERSION"'"/g' checkout/sample/SentryPlayground.uproject
+
       - name: Extract package to sample/Plugins
         env:
           UNREAL_VERSION: ${{ inputs.unreal-version }}

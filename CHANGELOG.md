@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add commandlet for debug symbols upload ([#1076](https://github.com/getsentry/sentry-unreal/pull/1076))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v5.10.0 to v5.11.0 ([#1078](https://github.com/getsentry/sentry-unreal/pull/1078))
