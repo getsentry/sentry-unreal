@@ -23,9 +23,6 @@
 
 USentrySymbolUploadCommandlet::USentrySymbolUploadCommandlet()
 {
-	IsClient = false;
-	IsEditor = true;
-	IsServer = false;
 	LogToConsole = true;
 
 	ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
