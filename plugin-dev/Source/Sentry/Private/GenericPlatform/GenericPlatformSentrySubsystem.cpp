@@ -47,7 +47,7 @@ extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
 
-void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* userdata)
+static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure)
 {
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
@@ -364,6 +364,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
+	sentry_options_set_logger_enabled_when_crashed(options, false);
 
 	if (settings->bRequireUserConsent)
 	{
