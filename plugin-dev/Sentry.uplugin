@@ -25,12 +25,12 @@
 			"Name": "SentryEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux" ]
 		},
 		{
 			"Name": "SentryCommandlet",
-			"Type": "RuntimeAndProgram",
-			"LoadingPhase": "PostDefault",
+			"Type": "Program",
+			"LoadingPhase": "PostEngineInit",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
 		}
 	],
