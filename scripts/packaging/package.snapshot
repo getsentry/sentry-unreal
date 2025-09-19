@@ -346,6 +346,7 @@ Source/ThirdParty/LinuxArm64/lib/libcrashpad_client.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_compat.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_handler_lib.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_minidump.a
+Source/ThirdParty/LinuxArm64/lib/libcrashpad_mpack.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_snapshot.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_tools.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_util.a
