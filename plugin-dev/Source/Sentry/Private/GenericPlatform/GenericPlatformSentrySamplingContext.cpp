@@ -27,7 +27,13 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySamplingContext::Get
 
 TMap<FString, FSentryVariant> FGenericPlatformSentrySamplingContext::GetCustomSamplingContext() const
 {
-	return FGenericPlatformSentryConverters::VariantToUnreal(CustomSamplingContext);
+	const FSentryVariant& samplingContextVariant = FGenericPlatformSentryConverters::VariantToUnreal(CustomSamplingContext);
+	if (samplingContextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	return samplingContextVariant.GetValue<TMap<FString, FSentryVariant>>();
 }
 
 #endif
