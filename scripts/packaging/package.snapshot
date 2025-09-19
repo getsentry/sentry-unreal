@@ -175,7 +175,6 @@ Source/Sentry/Private/SentryScope.cpp
 Source/Sentry/Private/SentrySettings.cpp
 Source/Sentry/Private/SentrySpan.cpp
 Source/Sentry/Private/SentrySubsystem.cpp
-Source/Sentry/Private/SentrySymbolUploadCommandlet.cpp
 Source/Sentry/Private/SentryTraceSampler.cpp
 Source/Sentry/Private/SentryTransaction.cpp
 Source/Sentry/Private/SentryTransactionContext.cpp
@@ -220,7 +219,6 @@ Source/Sentry/Public/SentryScope.h
 Source/Sentry/Public/SentrySettings.h
 Source/Sentry/Public/SentrySpan.h
 Source/Sentry/Public/SentrySubsystem.h
-Source/Sentry/Public/SentrySymbolUploadCommandlet.h
 Source/Sentry/Public/SentryTraceSampler.h
 Source/Sentry/Public/SentryTransaction.h
 Source/Sentry/Public/SentryTransactionContext.h
@@ -230,6 +228,9 @@ Source/Sentry/Public/SentryVariant.h
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry_IOS_UPL.xml
 Source/Sentry/Sentry.Build.cs
+Source/SentryCommandlet/Private/SentrySymbolUploadCommandlet.cpp
+Source/SentryCommandlet/Public/SentrySymbolUploadCommandlet.h
+Source/SentryCommandlet/SentryCommandlet.Build.cs
 Source/SentryEditor/Private/SentryEditorModule.cpp
 Source/SentryEditor/Private/SentrySettingsCustomization.cpp
 Source/SentryEditor/Private/SentrySymToolsDownloader.cpp

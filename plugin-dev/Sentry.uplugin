@@ -26,6 +26,12 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
+		},
+		{
+			"Name": "SentryCommandlet",
+			"Type": "RuntimeAndProgram",
+			"LoadingPhase": "PostEngineInit",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
 		}
 	],
 	"PreBuildSteps":
