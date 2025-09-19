@@ -92,7 +92,7 @@ private:
 	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
 	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
-	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
+	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure);
 
 	USentryBeforeSendHandler* beforeSend;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;
