@@ -24,7 +24,7 @@ USentrySymbolUploadCommandlet::USentrySymbolUploadCommandlet()
 	LogToConsole = true;
 
 	ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-	PluginDir = FPaths::ConvertRelativePathToFull(IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir());
+	//PluginDir = FPaths::ConvertRelativePathToFull(IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir());
 }
 
 int32 USentrySymbolUploadCommandlet::Main(const FString& Params)
