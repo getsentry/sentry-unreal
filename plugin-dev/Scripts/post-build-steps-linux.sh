@@ -28,6 +28,6 @@ fi
 
 echo "Before SentrySymbolUpload..."
 
-"$EDITOR_EXE" "$PROJECT_FILE" -run=SentrySymbolUpload -target-platform="$TARGET_PLATFORM" -target-type="$TARGET_TYPE" -target-configuration="$TARGET_CONFIGURATION" -unattended -nopause
+"$EDITOR_EXE" "$PROJECT_FILE" -run=SentrySymbolUpload -target-platform="$TARGET_PLATFORM" -target-type="$TARGET_TYPE" -target-configuration="$TARGET_CONFIGURATION" -unattended -nopause -NoLogTimes -NoSplash -NullRHI
 
 echo "After SentrySymbolUpload..."
