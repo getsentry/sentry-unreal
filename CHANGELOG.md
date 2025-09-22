@@ -6,6 +6,10 @@
 
 - Add commandlet for debug symbols upload ([#1076](https://github.com/getsentry/sentry-unreal/pull/1076))
 
+### Fixes
+
+- Prevent usage of internal UE logger during crash handling ([#1081](https://github.com/getsentry/sentry-unreal/pull/1081))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v5.10.0 to v5.11.0 ([#1078](https://github.com/getsentry/sentry-unreal/pull/1078))
@@ -14,6 +18,12 @@
 - Bump Cocoa SDK (iOS and Mac) from v8.55.1 to v8.56.0 ([#1077](https://github.com/getsentry/sentry-unreal/pull/1077))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
+- Bump Native SDK from v0.10.1 to v0.11.0 ([#1080](https://github.com/getsentry/sentry-unreal/pull/1080))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0110)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.10.1...0.11.0)
+- Bump CLI from v2.53.0 to v2.54.0 ([#1079](https://github.com/getsentry/sentry-unreal/pull/1079))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2540)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.53.0...2.54.0)
 
 ## 1.1.1
 

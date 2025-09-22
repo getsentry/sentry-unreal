@@ -340,6 +340,7 @@ Source/ThirdParty/Linux/lib/libcrashpad_client.a
 Source/ThirdParty/Linux/lib/libcrashpad_compat.a
 Source/ThirdParty/Linux/lib/libcrashpad_handler_lib.a
 Source/ThirdParty/Linux/lib/libcrashpad_minidump.a
+Source/ThirdParty/Linux/lib/libcrashpad_mpack.a
 Source/ThirdParty/Linux/lib/libcrashpad_snapshot.a
 Source/ThirdParty/Linux/lib/libcrashpad_tools.a
 Source/ThirdParty/Linux/lib/libcrashpad_util.a
@@ -351,6 +352,7 @@ Source/ThirdParty/LinuxArm64/lib/libcrashpad_client.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_compat.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_handler_lib.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_minidump.a
+Source/ThirdParty/LinuxArm64/lib/libcrashpad_mpack.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_snapshot.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_tools.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_util.a
@@ -439,6 +441,7 @@ Source/ThirdParty/Win64/lib/crashpad_compat.lib
 Source/ThirdParty/Win64/lib/crashpad_getopt.lib
 Source/ThirdParty/Win64/lib/crashpad_handler_lib.lib
 Source/ThirdParty/Win64/lib/crashpad_minidump.lib
+Source/ThirdParty/Win64/lib/crashpad_mpack.lib
 Source/ThirdParty/Win64/lib/crashpad_snapshot.lib
 Source/ThirdParty/Win64/lib/crashpad_tools.lib
 Source/ThirdParty/Win64/lib/crashpad_util.lib

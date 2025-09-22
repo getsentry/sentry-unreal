@@ -47,7 +47,7 @@ extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
 
-void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* userdata)
+static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure)
 {
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
@@ -99,22 +99,16 @@ void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, vo
 	}
 }
 
-/* static */ double FGenericPlatformSentrySubsystem::HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled)
+/* static */ double FGenericPlatformSentrySubsystem::HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure)
 {
-	if (GEngine)
+	if (closure)
 	{
-		USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-		if (SentrySubsystem && SentrySubsystem->IsEnabled())
-		{
-			TSharedPtr<FGenericPlatformSentrySubsystem> NativeSubsystem = StaticCastSharedPtr<FGenericPlatformSentrySubsystem>(SentrySubsystem->GetNativeObject());
-			if (NativeSubsystem)
-			{
-				return NativeSubsystem->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
-			}
-		}
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
 	}
-
-	return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	else
+	{
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
@@ -349,7 +343,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	}
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
 	{
-		sentry_options_set_traces_sampler(options, HandleTraceSampling);
+		sentry_options_set_traces_sampler(options, HandleTraceSampling, this);
 	}
 
 	ConfigureHandlerPath(options);
@@ -370,6 +364,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
+	sentry_options_set_logger_enabled_when_crashed(options, false);
 
 	if (settings->bRequireUserConsent)
 	{
