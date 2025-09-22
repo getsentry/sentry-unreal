@@ -20,7 +20,6 @@ public class SentryCommandlet : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-				"Sentry",
 				"Projects"
 			}
 		);

@@ -3,8 +3,6 @@
 #include "SentrySymbolUploadCommandlet.h"
 
 #include "Interfaces/IPluginManager.h"
-#include "SentryModule.h"
-#include "SentrySettings.h"
 
 #include "Misc/CommandLine.h"
 #include "Misc/ConfigCacheIni.h"
@@ -250,13 +248,6 @@ bool USentrySymbolUploadCommandlet::ExecuteSentryCliUpload() const
 	TArray<FString> Arguments;
 	Arguments.Add(TEXT("debug-files"));
 	Arguments.Add(TEXT("upload"));
-
-	USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	if (!Settings)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Sentry: Couldn't retrieve plugin settings."));
-		return false;
-	}
 
 	FString IncludeSources = ReadConfigValue(TEXT("/Script/Sentry.SentrySettings"), TEXT("IncludeSources"));
 	if (IncludeSources.ToBool())
