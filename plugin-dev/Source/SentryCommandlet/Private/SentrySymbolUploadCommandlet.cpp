@@ -24,7 +24,17 @@ USentrySymbolUploadCommandlet::USentrySymbolUploadCommandlet()
 	LogToConsole = true;
 
 	ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-	PluginDir = FPaths::ConvertRelativePathToFull(IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir());
+	
+	TSharedPtr<IPlugin> SentryPlugin = IPluginManager::Get().FindPlugin(TEXT("Sentry"));
+	if (SentryPlugin.IsValid())
+	{
+		PluginDir = FPaths::ConvertRelativePathToFull(SentryPlugin->GetBaseDir());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Sentry: Could not find Sentry plugin"));
+		PluginDir = FString();
+	}
 }
 
 int32 USentrySymbolUploadCommandlet::Main(const FString& Params)
