@@ -15,7 +15,7 @@ fi
 # Skip commandlet execution for Editor target type
 if [ "$TARGET_TYPE" = "Editor" ]; then
   echo "Skipping SentrySymbolUpload commandlet for Editor target type"
-  return 0 2>/dev/null || true
+  return 0 2>/dev/null || exit 0
 fi
 
 ENGINE_VERSION=$(grep -o '"EngineAssociation": *"[^"]*"' "$PROJECT_FILE" | cut -d'"' -f4)
