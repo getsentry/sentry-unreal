@@ -15,7 +15,7 @@ fi
 # Skip commandlet execution for Editor target type
 if [ "$TARGET_TYPE" = "Editor" ]; then
   echo "Skipping SentrySymbolUpload commandlet for Editor target type"
-  return 0 2>/dev/null || exit 0
+  return exit 0
 fi
 
 ENGINE_VERSION=$(grep -o '"EngineAssociation": *"[^"]*"' "$PROJECT_FILE" | cut -d'"' -f4)
@@ -26,8 +26,4 @@ else
   EDITOR_EXE="$ENGINE_DIR/Binaries/Linux/UnrealEditor-Cmd"
 fi
 
-echo "Before SentrySymbolUpload..."
-
 "$EDITOR_EXE" "$PROJECT_FILE" -run=SentrySymbolUpload -target-platform="$TARGET_PLATFORM" -target-type="$TARGET_TYPE" -target-configuration="$TARGET_CONFIGURATION" -unattended -nopause
-
-echo "After SentrySymbolUpload..."
