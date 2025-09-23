@@ -51,7 +51,7 @@
 			"set \"CRASHPAD_HANDLER_WIN=$(PluginDir)/Binaries/Win64/crashpad_handler.exe\"",
 			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%CRASHPAD_HANDLER_WIN%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Win64/Crashpad/bin/*\" \"$(PluginDir)/Binaries/Win64/\" /F /R /Y /I)\n)",
 			"set \"SYM_UPLOAD_SCRIPT=$(PluginDir)/Scripts/upload-debug-symbols-win.bat\"",
-			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Warning: Sentry: Symbol upload script is missing. Skipping post build step.\n)",
+			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Sentry: Symbol upload script is missing. Skipping post build step.\n)",
 			"endlocal"
 		]
 	}
