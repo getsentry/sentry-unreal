@@ -21,61 +21,59 @@
 
 USentrySymbolUploadCommandlet::USentrySymbolUploadCommandlet()
 {
-	LogToConsole = true;
-	UseCommandletResultAsExitCode = true;
-	FastExit = true;
-
-	ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+	// LogToConsole = true;
+	//
+	// ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
 	//PluginDir = FPaths::ConvertRelativePathToFull(IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir());
 }
 
 int32 USentrySymbolUploadCommandlet::Main(const FString& Params)
 {
-	UE_LOG(LogTemp, Display, TEXT("Sentry: Start debug symbols upload"));
-
-	if (!ParseCommandLineParams(Params))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Sentry: Failed to parse command line parameters"));
-		return 1;
-	}
-
-	if (TargetType == TEXT("Editor"))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is not required for Editor target. Skipping..."));
-		return 0;
-	}
-
-	if (TargetPlatform == TEXT("Android"))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Sentry: Debug symbols upload for Android is handled by Sentry's Gradle plugin (if enabled)"));
-		return 0;
-	}
-
-	if (!IsSymbolUploadEnabled())
-	{
-		UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is disabled in plugin settings. Skipping..."));
-		return 0;
-	}
-
-	if (!IsTargetTypeEnabled(TargetType))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is disabled for target type %s. Skipping..."), *TargetType);
-		return 0;
-	}
-
-	if (!IsBuildConfigurationEnabled(TargetConfiguration))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is disabled for build configuration %s. Skipping..."), *TargetConfiguration);
-		return 0;
-	}
-
-	if (!ExecuteSentryCliUpload())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Sentry: Symbol upload failed"));
-		return 1;
-	}
-
-	UE_LOG(LogTemp, Display, TEXT("Sentry: Upload finished"));
+	// UE_LOG(LogTemp, Display, TEXT("Sentry: Start debug symbols upload"));
+	//
+	// if (!ParseCommandLineParams(Params))
+	// {
+	// 	UE_LOG(LogTemp, Error, TEXT("Sentry: Failed to parse command line parameters"));
+	// 	return 1;
+	// }
+	//
+	// if (TargetType == TEXT("Editor"))
+	// {
+	// 	UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is not required for Editor target. Skipping..."));
+	// 	return 0;
+	// }
+	//
+	// if (TargetPlatform == TEXT("Android"))
+	// {
+	// 	UE_LOG(LogTemp, Display, TEXT("Sentry: Debug symbols upload for Android is handled by Sentry's Gradle plugin (if enabled)"));
+	// 	return 0;
+	// }
+	//
+	// if (!IsSymbolUploadEnabled())
+	// {
+	// 	UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is disabled in plugin settings. Skipping..."));
+	// 	return 0;
+	// }
+	//
+	// if (!IsTargetTypeEnabled(TargetType))
+	// {
+	// 	UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is disabled for target type %s. Skipping..."), *TargetType);
+	// 	return 0;
+	// }
+	//
+	// if (!IsBuildConfigurationEnabled(TargetConfiguration))
+	// {
+	// 	UE_LOG(LogTemp, Display, TEXT("Sentry: Automatic symbols upload is disabled for build configuration %s. Skipping..."), *TargetConfiguration);
+	// 	return 0;
+	// }
+	//
+	// if (!ExecuteSentryCliUpload())
+	// {
+	// 	UE_LOG(LogTemp, Error, TEXT("Sentry: Symbol upload failed"));
+	// 	return 1;
+	// }
+	//
+	// UE_LOG(LogTemp, Display, TEXT("Sentry: Upload finished"));
 	return 0;
 }
 
