@@ -34,10 +34,34 @@ function packFiles()
         # Handle platform name difference for UE 4.27
         if ($engineVersion -eq "4.27")
         {
-            $newPluginSpec = $newPluginSpec -replace '"LinuxArm64"', '"LinuxAArch64"'
+            $newPluginSpec = $newPluginSpec -replace '"LinuxArm64"', '"LinuxAArch64"' 
         }
 
         $newPluginSpec | Out-File "package-release/Sentry.uplugin"
+
+        # Replacing raw pointers in UPROPERTY fields with TObjectPtr for UE 5.0+
+        # See https://github.com/getsentry/sentry-unreal/issues/1082
+
+        if ($engineVersion -ne "4.27")
+        {
+            # Workaround for PowerShell 5.1 writing UTF8-BOM
+            # ======
+            # Set current directory so that ::WriteAllLines can accept a relative path
+            [System.Environment]::CurrentDirectory = (Get-Location).Path
+
+            # Find SentrySubsystem.h file
+            $sentrySubsystemHeaderPath = "package-release-$publishingPlatform/Source/Sentry/Public/SentrySubsystem.h"
+
+            # We know the file is meant to be UTF8, so let's be explicit
+            $sentrySubsystemHeaderContents = Get-Content $sentrySubsystemHeaderPath -Encoding UTF8
+
+            $replacedSubsystemHeaderContents = $sentrySubsystemHeaderContents -replace 'USentryBeforeSendHandler* BeforeSendHandler;', 'TObjectPtr<USentryBeforeSendHandler> BeforeSendHandler;'
+            $replacedSubsystemHeaderContents = $replacedSubsystemHeaderContents -replace 'USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler;', 'TObjectPtr<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler'
+            $replacedSubsystemHeaderContents = $replacedSubsystemHeaderContents -replace 'USentryTraceSampler* TraceSampler;', 'TObjectPtr<USentryTraceSampler> TraceSampler;'
+
+            # PowerShell 5.1 will write UT8-BOM if we use Out-File, so bypass this issue and use ::WriteAllLines
+            [System.IO.File]::WriteAllLines($sentrySubsystemHeaderPath, $replacedSubsystemHeaderContents)
+        }
 
         Remove-Item -ErrorAction SilentlyContinue $packageName
 
