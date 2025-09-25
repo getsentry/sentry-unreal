@@ -3,8 +3,9 @@ Config/FilterPlugin.ini
 Gradle/gradle-wrapper.properties
 LICENSE
 Resources/Icon128.png
-Scripts/upload-debug-symbols-win.bat
-Scripts/upload-debug-symbols.sh
+Scripts/post-build-steps-linux.sh
+Scripts/post-build-steps-mac.sh
+Scripts/post-build-steps-win.bat
 sentry-cli.properties
 Sentry.uplugin
 Source/Sentry/Private/Android/AndroidSentryAttachment.cpp
@@ -227,6 +228,11 @@ Source/Sentry/Public/SentryVariant.h
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry_IOS_UPL.xml
 Source/Sentry/Sentry.Build.cs
+Source/SentryCommandlet/Private/SentryCommandletModule.cpp
+Source/SentryCommandlet/Private/SentrySymbolUploadCommandlet.cpp
+Source/SentryCommandlet/Public/SentryCommandletModule.h
+Source/SentryCommandlet/Public/SentrySymbolUploadCommandlet.h
+Source/SentryCommandlet/SentryCommandlet.Build.cs
 Source/SentryEditor/Private/SentryEditorModule.cpp
 Source/SentryEditor/Private/SentrySettingsCustomization.cpp
 Source/SentryEditor/Private/SentrySymToolsDownloader.cpp
