@@ -55,9 +55,10 @@ function packFiles()
             # We know the file is meant to be UTF8, so let's be explicit
             $sentrySubsystemHeaderContents = Get-Content $sentrySubsystemHeaderPath -Encoding UTF8
 
-            $replacedSubsystemHeaderContents = $sentrySubsystemHeaderContents -replace 'USentryBeforeSendHandler* BeforeSendHandler;', 'TObjectPtr<USentryBeforeSendHandler> BeforeSendHandler;'
-            $replacedSubsystemHeaderContents = $replacedSubsystemHeaderContents -replace 'USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler;', 'TObjectPtr<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler'
-            # $replacedSubsystemHeaderContents = $replacedSubsystemHeaderContents -replace 'USentryTraceSampler* TraceSampler;', 'TObjectPtr<USentryTraceSampler> TraceSampler;'
+            $replacedSubsystemHeaderContents = $sentrySubsystemHeaderContents `
+                -replace 'USentryBeforeSendHandler\* BeforeSendHandler;', 'TObjectPtr<USentryBeforeSendHandler> BeforeSendHandler;' `
+                -replace 'USentryBeforeBreadcrumbHandler\* BeforeBreadcrumbHandler;', 'TObjectPtr<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler;' `
+                -replace 'USentryTraceSampler\* TraceSampler;', 'TObjectPtr<USentryTraceSampler> TraceSampler;'
 
             # PowerShell 5.1 will write UT8-BOM if we use Out-File, so bypass this issue and use ::WriteAllLines
             [System.IO.File]::WriteAllLines($sentrySubsystemHeaderPath, $replacedSubsystemHeaderContents)
