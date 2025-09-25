@@ -222,10 +222,11 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const FString& Category)
 {
 	// Ignore Empty Messages
-	if (Message.IsEmpty()) {
+	if (Message.IsEmpty())
+	{
 		return;
 	}
-	
+
 	// Format message with category
 	NSString* FormattedMessage;
 	if (!Category.IsEmpty())

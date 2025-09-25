@@ -114,7 +114,6 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeLog(sentry_value_t log, void* closure)
 {
 	if (closure)
@@ -522,7 +521,8 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const FString& Category)
 {
 	// Ignore Empty Messages
-	if (Message.IsEmpty()) {
+	if (Message.IsEmpty())
+	{
 		return;
 	}
 

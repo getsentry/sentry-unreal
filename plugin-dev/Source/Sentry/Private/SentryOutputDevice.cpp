@@ -56,7 +56,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 	{
 		return;
 	}
-	
+
 	// Send breadcrumb if not sent to structured logging, or if forced to send both
 	if (BreadcrumbFlags.Contains(Level) && BreadcrumbFlags[Level])
 	{

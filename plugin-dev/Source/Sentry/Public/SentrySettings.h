@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
 #include "Logging/LogVerbosity.h"
-#include "UObject/NoExportTypes.h"
 #include "SentryDataTypes.h"
+#include "UObject/NoExportTypes.h"
 #include "SentrySettings.generated.h"
 
 class USentryBeforeSendHandler;
