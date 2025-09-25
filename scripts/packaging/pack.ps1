@@ -57,7 +57,7 @@ function packFiles()
 
             $replacedSubsystemHeaderContents = $sentrySubsystemHeaderContents -replace 'USentryBeforeSendHandler* BeforeSendHandler;', 'TObjectPtr<USentryBeforeSendHandler> BeforeSendHandler;'
             $replacedSubsystemHeaderContents = $replacedSubsystemHeaderContents -replace 'USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler;', 'TObjectPtr<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler'
-            $replacedSubsystemHeaderContents = $replacedSubsystemHeaderContents -replace 'USentryTraceSampler* TraceSampler;', 'TObjectPtr<USentryTraceSampler> TraceSampler;'
+            # $replacedSubsystemHeaderContents = $replacedSubsystemHeaderContents -replace 'USentryTraceSampler* TraceSampler;', 'TObjectPtr<USentryTraceSampler> TraceSampler;'
 
             # PowerShell 5.1 will write UT8-BOM if we use Out-File, so bypass this issue and use ::WriteAllLines
             [System.IO.File]::WriteAllLines($sentrySubsystemHeaderPath, $replacedSubsystemHeaderContents)
