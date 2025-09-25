@@ -50,7 +50,7 @@ function packFiles()
             [System.Environment]::CurrentDirectory = (Get-Location).Path
 
             # Find SentrySubsystem.h file
-            $sentrySubsystemHeaderPath = "package-release-$publishingPlatform/Source/Sentry/Public/SentrySubsystem.h"
+            $sentrySubsystemHeaderPath = "package-release/Source/Sentry/Public/SentrySubsystem.h"
 
             # We know the file is meant to be UTF8, so let's be explicit
             $sentrySubsystemHeaderContents = Get-Content $sentrySubsystemHeaderPath -Encoding UTF8
