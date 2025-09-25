@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
+#include "Logging/LogVerbosity.h"
 #include "UObject/NoExportTypes.h"
+#include "SentryDataTypes.h"
 #include "SentrySettings.generated.h"
 
 class USentryBeforeSendHandler;
 class USentryBeforeBreadcrumbHandler;
+class USentryBeforeLogHandler;
 class USentryTraceSampler;
 
 UENUM(BlueprintType)
@@ -229,6 +232,22 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Max attachment size in bytes", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed but this size is planned to be increased. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/"))
 	int32 MaxAttachmentSize;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
+		Meta = (DisplayName = "Enable structured logging", ToolTip = "Flag indicating whether to enable structured logging that forwards UE_LOG calls to Sentry logger."))
+	bool EnableStructuredLogging;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Structured Logging",
+		Meta = (DisplayName = "Structured logging categories", ToolTip = "List of UE_LOG categories to forward to Sentry structured logging. Leave empty to forward all.", EditCondition = "EnableStructuredLogging"))
+	TArray<FString> StructuredLoggingCategories;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
+		Meta = (DisplayName = "Minimum structured logging level", ToolTip = "Minimum log level to forward to Sentry structured logging.", EditCondition = "EnableStructuredLogging"))
+	ESentryLevel MinStructuredLoggingLevel;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
+		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether to also send breadcrumbs when structured logging is enabled.", EditCondition = "EnableStructuredLogging"))
+	bool bSendBreadcrumbsWithStructuredLogging;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
 	int32 MaxBreadcrumbs;
@@ -272,6 +291,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
 		Meta = (DisplayName = "Custom `beforeBreadcrumb` event handler", ToolTip = "Custom handler for processing breadcrumbs before adding them to the scope."))
 	TSubclassOf<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
+		Meta = (DisplayName = "Custom `beforeLog` event handler", ToolTip = "Custom handler for processing structured logs before sending them to Sentry."))
+	TSubclassOf<USentryBeforeLogHandler> BeforeLogHandler;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Windows",
 		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))

@@ -39,7 +39,7 @@
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
-void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
+void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler)
 {
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
@@ -62,6 +62,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
+			options.enableLogs = settings->EnableStructuredLogging;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
@@ -123,6 +124,30 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
 
 					return ProcessedBreadcrumb ? breadcrumb : nullptr;
+				};
+			}
+			if (beforeLogHandler != nullptr)
+			{
+				options.beforeSendLog = ^SentryLog*(SentryLog* log) {
+					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					{
+						// Don't print to logs within `onBeforeLog` handler as this can lead to creating new log
+						return log;
+					}
+
+					if (IsGarbageCollecting())
+					{
+						// If log is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+						// since there is no guarantee it will be ever freed.
+						// In this case log will be added without calling a `beforeLog` handler.
+						return log;
+					}
+
+					USentryLogData* LogToProcess = USentryLogData::Create(MakeShareable(new FAppleSentryLog(log)));
+
+					USentryLogData* ProcessedLog = beforeLogHandler->HandleBeforeLog(LogToProcess);
+
+					return ProcessedLog ? log : nullptr;
 				};
 			}
 			if (beforeSendHandler != nullptr)
@@ -192,6 +217,46 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	breadcrumbIOS->SetLevel(Level);
 
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
+}
+
+void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const FString& Category)
+{
+	// Ignore Empty Messages
+	if (Message.IsEmpty()) {
+		return;
+	}
+	
+	// Format message with category
+	NSString* FormattedMessage;
+	if (!Category.IsEmpty())
+	{
+		FString FullMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Message);
+		FormattedMessage = FullMessage.GetNSString();
+	}
+	else
+	{
+		FormattedMessage = Message.GetNSString();
+	}
+
+	// Use level-specific Apple Sentry SDK logging functions
+	switch (Log->GetLevel())
+	{
+	case ESentryLevel::Fatal:
+		[SENTRY_APPLE_CLASS(SentrySDK).logger logFatal:FormattedMessage];
+		break;
+	case ESentryLevel::Error:
+		[SENTRY_APPLE_CLASS(SentrySDK).logger logError:FormattedMessage];
+		break;
+	case ESentryLevel::Warning:
+		[SENTRY_APPLE_CLASS(SentrySDK).logger logWarning:FormattedMessage];
+		break;
+	case ESentryLevel::Info:
+		[SENTRY_APPLE_CLASS(SentrySDK).logger logInfo:FormattedMessage];
+		break;
+	case ESentryLevel::Debug:
+		[SENTRY_APPLE_CLASS(SentrySDK).logger logDebug:FormattedMessage];
+		break;
+	}
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()

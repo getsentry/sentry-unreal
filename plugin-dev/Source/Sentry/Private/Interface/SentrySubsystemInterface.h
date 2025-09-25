@@ -20,6 +20,7 @@ class ISentryScope;
 
 class USentrySettings;
 class USentryBeforeSendHandler;
+class USentryBeforeLogHandler;
 class USentryBeforeBreadcrumbHandler;
 class USentryTraceSampler;
 
@@ -31,12 +32,13 @@ public:
 	virtual ~ISentrySubsystem() = default;
 
 	/** Methods that map directly to the platform's Sentry SDK API */
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) = 0;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) = 0;
+	virtual void AddLog(const FString& Message, ESentryLevel Level, const FString& Category) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
