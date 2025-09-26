@@ -37,7 +37,7 @@ function packFiles()
         # Handle platform name difference for UE 4.27
         if ($engineVersion -eq "4.27")
         {
-            $newPluginSpec = $newPluginSpec -replace '"LinuxArm64"', '"LinuxAArch64"' 
+            $newPluginSpec = $newPluginSpec -replace '"LinuxArm64"', '"LinuxAArch64"'
         }
 
         $newPluginSpec | Out-File "package-release/Sentry.uplugin"
