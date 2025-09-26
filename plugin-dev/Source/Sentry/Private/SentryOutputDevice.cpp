@@ -54,12 +54,12 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 	if (bIsStructuredLoggingEnabled && ShouldForwardToStructuredLogging(CategoryString, Level))
 	{
 		SentrySubsystem->AddLog(Message, Level, CategoryString);
-	}
 
-	// If we don't want to also send breadcrumbs when structured logging is enabled, return early
-	if (bIsStructuredLoggingEnabled && !bSendBreadcrumbsWithStructuredLogging)
-	{
-		return;
+		// If we don't want to also send breadcrumbs when structured logging is enabled, return early
+		if (!bSendBreadcrumbsWithStructuredLogging)
+		{
+			return;
+		}
 	}
 
 	// Send breadcrumb if not sent to structured logging, or if forced to send both
