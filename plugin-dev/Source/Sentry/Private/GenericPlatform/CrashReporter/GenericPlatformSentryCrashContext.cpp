@@ -9,7 +9,7 @@
 
 #include "GenericPlatform/GenericPlatformSentryScope.h"
 
-#if WITH_ADDITIONAL_CRASH_CONTEXTS
+#if UE_VERSION_NEWER_THAN(5, 7, 0) && WITH_ADDITIONAL_CRASH_CONTEXTS
 struct FSentryCrashContextExtendedWriter : public FCrashContextExtendedWriter
 {
 public:
