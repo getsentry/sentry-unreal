@@ -333,6 +333,7 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
+	, beforeLog(nullptr)
 	, sampler(nullptr)
 	, crashReporter(nullptr)
 	, isEnabled(false)

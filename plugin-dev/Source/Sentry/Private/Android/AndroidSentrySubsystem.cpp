@@ -161,7 +161,7 @@ void FAndroidSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level,
 	}
 
 	// Use level-specific Android Sentry SDK logging functions via Java bridge
-	switch (Log->GetLevel())
+	switch (Level)
 	{
 	case ESentryLevel::Fatal:
 		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogFatal", "(Ljava/lang/String;)V",

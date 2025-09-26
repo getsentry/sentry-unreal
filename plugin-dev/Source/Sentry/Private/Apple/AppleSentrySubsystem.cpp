@@ -240,7 +240,7 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 	}
 
 	// Use level-specific Apple Sentry SDK logging functions
-	switch (Log->GetLevel())
+	switch (Level)
 	{
 	case ESentryLevel::Fatal:
 		[SENTRY_APPLE_CLASS(SentrySDK).logger logFatal:FormattedMessage];
