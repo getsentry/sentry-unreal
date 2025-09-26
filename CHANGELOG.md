@@ -5,6 +5,7 @@
 ### Fixes
 
 - Prevent usage of internal UE logger during crash handling ([#1081](https://github.com/getsentry/sentry-unreal/pull/1081))
+- Crash when printing to logs from multiple threads on Android ([#1092](https://github.com/getsentry/sentry-unreal/pull/1092))
 
 ### Dependencies
 

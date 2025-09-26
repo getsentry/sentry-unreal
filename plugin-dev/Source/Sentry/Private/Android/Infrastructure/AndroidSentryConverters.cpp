@@ -17,7 +17,7 @@ TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLevelToNati
 
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
-	jclass levelEnumClass = AndroidJavaEnv::FindJavaClassGlobalRef("io/sentry/SentryLevel");
+	jclass levelEnumClass = SentryJavaClasses::GetCachedJavaClassRef(SentryJavaClasses::SentryLevel);
 
 	jfieldID debugEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "DEBUG", "Lio/sentry/SentryLevel;");
 	jfieldID infoEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "INFO", "Lio/sentry/SentryLevel;");

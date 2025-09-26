@@ -7,6 +7,9 @@
 class FAndroidSentrySubsystem : public ISentrySubsystem
 {
 public:
+	FAndroidSentrySubsystem();
+	~FAndroidSentrySubsystem();
+
 	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
