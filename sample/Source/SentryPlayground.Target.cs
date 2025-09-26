@@ -13,6 +13,10 @@ public class SentryPlaygroundTarget : TargetRules
 #if UE_5_0_OR_LATER
 		MacPlatform.bUseDSYMFiles = true;
 		IOSPlatform.bGeneratedSYM = true;
+
+		NativePointerMemberBehaviorOverride = System.Environment.GetEnvironmentVariable("DISALLOW_RAW_POINTERS") == "true"
+			? PointerMemberBehavior.Disallow 
+			: PointerMemberBehavior.AllowAndLog;
 #endif
 
 #if UE_5_1_OR_LATER

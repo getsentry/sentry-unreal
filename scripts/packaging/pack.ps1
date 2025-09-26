@@ -17,6 +17,9 @@ function packFiles()
     Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
     Copy-Item "LICENSE" -Destination "package-release/LICENSE"
 
+    # We know the file is meant to be UTF8, so let's be explicit
+    $sentrySubsystemHeader = Get-Content "plugin-dev/Source/Sentry/Public/SentrySubsystem.h" -Encoding UTF8
+
     $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
     $version = [regex]::Match("$pluginSpec", '"VersionName": "([^"]+)"').Groups[1].Value
     $engineVersions = Get-Content $PSScriptRoot/engine-versions.txt
@@ -38,6 +41,27 @@ function packFiles()
         }
 
         $newPluginSpec | Out-File "package-release/Sentry.uplugin"
+
+        # Replacing raw pointers in UPROPERTY fields with TObjectPtr for UE 5.0+
+        # See https://github.com/getsentry/sentry-unreal/issues/1082
+
+        # Workaround for PowerShell 5.1 writing UTF8-BOM
+        # ======
+        # Set current directory so that ::WriteAllLines can accept a relative path
+        [System.Environment]::CurrentDirectory = (Get-Location).Path
+
+        $newSentrySubsystemHeader = $sentrySubsystemHeader
+
+        if ($engineVersion -ne "4.27")
+        {
+            $newSentrySubsystemHeader = $newSentrySubsystemHeader `
+                -replace 'USentryBeforeSendHandler\* BeforeSendHandler;', 'TObjectPtr<USentryBeforeSendHandler> BeforeSendHandler;' `
+                -replace 'USentryBeforeBreadcrumbHandler\* BeforeBreadcrumbHandler;', 'TObjectPtr<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler;' `
+                -replace 'USentryTraceSampler\* TraceSampler;', 'TObjectPtr<USentryTraceSampler> TraceSampler;'
+        }
+
+        # PowerShell 5.1 will write UT8-BOM if we use Out-File, so bypass this issue and use ::WriteAllLines
+        [System.IO.File]::WriteAllLines("package-release/Source/Sentry/Public/SentrySubsystem.h", $newSentrySubsystemHeader)
 
         Remove-Item -ErrorAction SilentlyContinue $packageName
 
