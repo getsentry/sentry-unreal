@@ -537,7 +537,8 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 		FormattedMessage = Message;
 	}
 
-	const char* MessageCStr = TCHAR_TO_ANSI(*FormattedMessage);
+	auto MessageCStrConverter = StringCast<ANSICHAR>(*FormattedMessage);
+	const char* MessageCStr = MessageCStrConverter.Get();
 
 	// Use level-specific sentry logging functions
 	switch (Level)

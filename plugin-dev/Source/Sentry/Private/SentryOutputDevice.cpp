@@ -83,8 +83,7 @@ bool FSentryOutputDevice::CanBeUsedOnPanicThread() const
 
 bool FSentryOutputDevice::ShouldForwardToStructuredLogging(const FString& Category, ESentryLevel Level) const
 {
-	// Check minimum level (higher enum values mean higher priority in ESentryLevel)
-	if (Level < MinStructuredLoggingLevel)
+	if (Level >= MinStructuredLoggingLevel)
 	{
 		return false;
 	}
