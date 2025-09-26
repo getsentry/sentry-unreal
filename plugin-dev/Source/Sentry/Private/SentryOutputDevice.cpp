@@ -23,9 +23,14 @@ FSentryOutputDevice::FSentryOutputDevice()
 	BreadcrumbFlags.Add(ESentryLevel::Info, Settings->AutomaticBreadcrumbsForLogs.bOnInfoLog);
 	BreadcrumbFlags.Add(ESentryLevel::Debug, Settings->AutomaticBreadcrumbsForLogs.bOnDebugLog);
 
+	StructuredLoggingFlags.Add(ESentryLevel::Fatal, Settings->StructuredLoggingLevels.bOnFatalLog);
+	StructuredLoggingFlags.Add(ESentryLevel::Error, Settings->StructuredLoggingLevels.bOnErrorLog);
+	StructuredLoggingFlags.Add(ESentryLevel::Warning, Settings->StructuredLoggingLevels.bOnWarningLog);
+	StructuredLoggingFlags.Add(ESentryLevel::Info, Settings->StructuredLoggingLevels.bOnInfoLog);
+	StructuredLoggingFlags.Add(ESentryLevel::Debug, Settings->StructuredLoggingLevels.bOnDebugLog);
+
 	bIsStructuredLoggingEnabled = Settings->EnableStructuredLogging;
 	StructuredLoggingCategories = Settings->StructuredLoggingCategories;
-	MinStructuredLoggingLevel = Settings->MinStructuredLoggingLevel;
 	bSendBreadcrumbsWithStructuredLogging = Settings->bSendBreadcrumbsWithStructuredLogging;
 }
 
@@ -83,7 +88,8 @@ bool FSentryOutputDevice::CanBeUsedOnPanicThread() const
 
 bool FSentryOutputDevice::ShouldForwardToStructuredLogging(const FString& Category, ESentryLevel Level) const
 {
-	if (Level >= MinStructuredLoggingLevel)
+	// Check if this log level should be forwarded
+	if (!StructuredLoggingFlags.Contains(Level) || !StructuredLoggingFlags[Level])
 	{
 		return false;
 	}
@@ -103,6 +109,6 @@ bool FSentryOutputDevice::ShouldForwardToStructuredLogging(const FString& Catego
 		return bCategoryFound;
 	}
 
-	// No category filter, forward all logs above minimum level
+	// No category filter, forward all logs that passed the level check
 	return true;
 }

@@ -95,6 +95,32 @@ struct FAutomaticBreadcrumbsForLogs
 };
 
 USTRUCT(BlueprintType)
+struct FStructuredLoggingLevels
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Fatal", ToolTip = "Flag indicating whether to forward Fatal log messages to Sentry structured logging."))
+	bool bOnFatalLog = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Error", ToolTip = "Flag indicating whether to forward Error log messages to Sentry structured logging."))
+	bool bOnErrorLog = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Warning", ToolTip = "Flag indicating whether to forward Warning log messages to Sentry structured logging."))
+	bool bOnWarningLog = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Display/Log", ToolTip = "Flag indicating whether to forward Display/Log messages to Sentry structured logging."))
+	bool bOnInfoLog = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Verbose/VeryVerbose", ToolTip = "Flag indicating whether to forward Verbose/VeryVerbose messages to Sentry structured logging."))
+	bool bOnDebugLog = false;
+};
+
+USTRUCT(BlueprintType)
 struct FTagsPromotion
 {
 	GENERATED_BODY()
@@ -240,9 +266,9 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Structured logging categories", ToolTip = "List of UE_LOG categories to forward to Sentry structured logging. Leave empty to forward all.", EditCondition = "EnableStructuredLogging"))
 	TArray<FString> StructuredLoggingCategories;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
-		Meta = (DisplayName = "Minimum structured logging level", ToolTip = "Minimum log level to forward to Sentry structured logging.", EditCondition = "EnableStructuredLogging"))
-	ESentryLevel MinStructuredLoggingLevel;
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Structured Logging",
+		Meta = (DisplayName = "Forward log messages with verbosity level", EditCondition = "EnableStructuredLogging"))
+	FStructuredLoggingLevels StructuredLoggingLevels;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
 		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether to also send breadcrumbs when structured logging is enabled.", EditCondition = "EnableStructuredLogging"))
