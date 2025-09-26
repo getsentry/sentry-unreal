@@ -3,6 +3,7 @@
 #include "Android/AndroidSentryBreadcrumb.h"
 #include "Android/AndroidSentryEvent.h"
 #include "Android/AndroidSentryHint.h"
+#include "Android/AndroidSentryLog.h"
 #include "Android/AndroidSentrySamplingContext.h"
 #include "Android/AndroidSentryScope.h"
 #include "Android/AndroidSentrySubsystem.h"
@@ -13,11 +14,13 @@
 #include "Android/AndroidJNI.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeLogHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
+#include "SentryLogData.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
 
@@ -97,6 +100,32 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNI
 	USentryBreadcrumb* ProcessedBreadcrumb = handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, HintToProcess);
 
 	return ProcessedBreadcrumb ? breadcrumb : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* env, jclass clazz, jlong objAddr, jobject logEvent, jobject hint)
+{
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeLog` handler is not allowed during object post-loading."));
+		return logEvent;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If log event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since it will cause a deadlock. In this case log event will be reported without calling a `beforeLog` handler.
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeLog` handler is not allowed during garbage collection."));
+		return logEvent;
+	}
+
+	USentryBeforeLogHandler* handler = reinterpret_cast<USentryBeforeLogHandler*>(objAddr);
+
+	USentryLogData* LogDataToProcess = USentryLogData::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
+
+	USentryLogData* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
+
+	return ProcessedLogData ? logEvent : nullptr;
 }
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)

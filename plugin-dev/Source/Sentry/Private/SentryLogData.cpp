@@ -2,28 +2,41 @@
 
 #include "SentryLogData.h"
 
+#include "HAL/PlatformSentryLog.h"
+
 void USentryLogData::Initialize()
 {
-	Message = FString();
-	Level = ESentryLevel::Info;
+	NativeImpl = CreateSharedSentryLog();
 }
 
 void USentryLogData::SetMessage(const FString& InMessage)
 {
-	Message = InMessage;
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetMessage(InMessage);
 }
 
 FString USentryLogData::GetMessage() const
 {
-	return Message;
+	if (!NativeImpl)
+		return FString();
+
+	return NativeImpl->GetMessage();
 }
 
 void USentryLogData::SetLevel(ESentryLevel InLevel)
 {
-	Level = InLevel;
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->SetLevel(InLevel);
 }
 
 ESentryLevel USentryLogData::GetLevel() const
 {
-	return Level;
+	if (!NativeImpl)
+		return ESentryLevel::Info;
+
+	return NativeImpl->GetLevel();
 }
