@@ -3,10 +3,10 @@ Config/FilterPlugin.ini
 Gradle/gradle-wrapper.properties
 LICENSE
 Resources/Icon128.png
-Scripts/upload-debug-symbols-win.bat
 Scripts/upload-debug-symbols.sh
-sentry-cli.properties
+Scripts/upload-debug-symbols-win.bat
 Sentry.uplugin
+sentry-cli.properties
 Source/Sentry/Private/Android/AndroidSentryAttachment.cpp
 Source/Sentry/Private/Android/AndroidSentryAttachment.h
 Source/Sentry/Private/Android/AndroidSentryBreadcrumb.cpp
@@ -19,6 +19,8 @@ Source/Sentry/Private/Android/AndroidSentryHint.cpp
 Source/Sentry/Private/Android/AndroidSentryHint.h
 Source/Sentry/Private/Android/AndroidSentryId.cpp
 Source/Sentry/Private/Android/AndroidSentryId.h
+Source/Sentry/Private/Android/AndroidSentryLog.cpp
+Source/Sentry/Private/Android/AndroidSentryLog.h
 Source/Sentry/Private/Android/AndroidSentryMessage.cpp
 Source/Sentry/Private/Android/AndroidSentryMessage.h
 Source/Sentry/Private/Android/AndroidSentrySamplingContext.cpp
@@ -58,6 +60,8 @@ Source/Sentry/Private/Apple/AppleSentryFeedback.cpp
 Source/Sentry/Private/Apple/AppleSentryFeedback.h
 Source/Sentry/Private/Apple/AppleSentryId.cpp
 Source/Sentry/Private/Apple/AppleSentryId.h
+Source/Sentry/Private/Apple/AppleSentryLog.cpp
+Source/Sentry/Private/Apple/AppleSentryLog.h
 Source/Sentry/Private/Apple/AppleSentrySamplingContext.cpp
 Source/Sentry/Private/Apple/AppleSentrySamplingContext.h
 Source/Sentry/Private/Apple/AppleSentryScope.cpp
@@ -91,6 +95,8 @@ Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.h
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryLog.cpp
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryLog.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentrySamplingContext.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentrySamplingContext.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryScope.cpp
@@ -114,6 +120,7 @@ Source/Sentry/Private/HAL/PlatformSentryEvent.h
 Source/Sentry/Private/HAL/PlatformSentryFeedback.h
 Source/Sentry/Private/HAL/PlatformSentryHint.h
 Source/Sentry/Private/HAL/PlatformSentryId.h
+Source/Sentry/Private/HAL/PlatformSentryLog.h
 Source/Sentry/Private/HAL/PlatformSentrySamplingContext.h
 Source/Sentry/Private/HAL/PlatformSentryScope.h
 Source/Sentry/Private/HAL/PlatformSentrySpan.h
@@ -127,6 +134,7 @@ Source/Sentry/Private/Interface/SentryEventInterface.h
 Source/Sentry/Private/Interface/SentryFeedbackInterface.h
 Source/Sentry/Private/Interface/SentryHintInterface.h
 Source/Sentry/Private/Interface/SentryIdInterface.h
+Source/Sentry/Private/Interface/SentryLogInterface.h
 Source/Sentry/Private/Interface/SentrySamplingContextInterface.h
 Source/Sentry/Private/Interface/SentryScopeInterface.h
 Source/Sentry/Private/Interface/SentrySpanInterface.h
@@ -150,6 +158,7 @@ Source/Sentry/Private/Null/NullSentryEvent.h
 Source/Sentry/Private/Null/NullSentryFeedback.h
 Source/Sentry/Private/Null/NullSentryHint.h
 Source/Sentry/Private/Null/NullSentryId.h
+Source/Sentry/Private/Null/NullSentryLog.h
 Source/Sentry/Private/Null/NullSentrySamplingContext.h
 Source/Sentry/Private/Null/NullSentryScope.h
 Source/Sentry/Private/Null/NullSentrySpan.h
@@ -159,6 +168,7 @@ Source/Sentry/Private/Null/NullSentryTransactionContext.h
 Source/Sentry/Private/Null/NullSentryUser.h
 Source/Sentry/Private/SentryAttachment.cpp
 Source/Sentry/Private/SentryBeforeBreadcrumbHandler.cpp
+Source/Sentry/Private/SentryBeforeLogHandler.cpp
 Source/Sentry/Private/SentryBeforeSendHandler.cpp
 Source/Sentry/Private/SentryBreadcrumb.cpp
 Source/Sentry/Private/SentryDefines.h
@@ -167,6 +177,7 @@ Source/Sentry/Private/SentryEvent.cpp
 Source/Sentry/Private/SentryFeedback.cpp
 Source/Sentry/Private/SentryHint.cpp
 Source/Sentry/Private/SentryLibrary.cpp
+Source/Sentry/Private/SentryLogData.cpp
 Source/Sentry/Private/SentryModule.cpp
 Source/Sentry/Private/SentryOutputDevice.cpp
 Source/Sentry/Private/SentrySamplingContext.cpp
@@ -202,6 +213,7 @@ Source/Sentry/Private/Windows/WindowsSentrySubsystem.cpp
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.h
 Source/Sentry/Public/SentryAttachment.h
 Source/Sentry/Public/SentryBeforeBreadcrumbHandler.h
+Source/Sentry/Public/SentryBeforeLogHandler.h
 Source/Sentry/Public/SentryBeforeSendHandler.h
 Source/Sentry/Public/SentryBreadcrumb.h
 Source/Sentry/Public/SentryDataTypes.h
@@ -211,6 +223,7 @@ Source/Sentry/Public/SentryFeedback.h
 Source/Sentry/Public/SentryHint.h
 Source/Sentry/Public/SentryImplWrapper.h
 Source/Sentry/Public/SentryLibrary.h
+Source/Sentry/Public/SentryLogData.h
 Source/Sentry/Public/SentryModule.h
 Source/Sentry/Public/SentryOutputDevice.h
 Source/Sentry/Public/SentrySamplingContext.h
@@ -224,9 +237,9 @@ Source/Sentry/Public/SentryTransactionContext.h
 Source/Sentry/Public/SentryTransactionOptions.h
 Source/Sentry/Public/SentryUser.h
 Source/Sentry/Public/SentryVariant.h
+Source/Sentry/Sentry.Build.cs
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry_IOS_UPL.xml
-Source/Sentry/Sentry.Build.cs
 Source/SentryEditor/Private/SentryEditorModule.cpp
 Source/SentryEditor/Private/SentrySettingsCustomization.cpp
 Source/SentryEditor/Private/SentrySymToolsDownloader.cpp
@@ -234,15 +247,14 @@ Source/SentryEditor/Public/SentryEditorModule.h
 Source/SentryEditor/Public/SentrySettingsCustomization.h
 Source/SentryEditor/Public/SentrySymToolsDownloader.h
 Source/SentryEditor/SentryEditor.Build.cs
+Source/ThirdParty/Android/sentry.jar
 Source/ThirdParty/Android/sentry-android-core-release.aar
 Source/ThirdParty/Android/sentry-android-ndk-release.aar
 Source/ThirdParty/Android/sentry-native-ndk-release.aar
-Source/ThirdParty/Android/sentry.jar
 Source/ThirdParty/CLI/sentry-cli-Darwin-universal
 Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
 Source/ThirdParty/CLI/sentry-cli-Windows-x86_64.exe
 Source/ThirdParty/IOS/Sentry.embeddedframework.zip
-Source/ThirdParty/IOS/Sentry.framework/Headers/Sentry-Swift.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/Sentry.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryAttachment.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryBaggage.h
@@ -281,6 +293,7 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySpanId.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySpanProtocol.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentrySpanStatus.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryStacktrace.h
+Source/ThirdParty/IOS/Sentry.framework/Headers/Sentry-Swift.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryThread.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTraceContext.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryTraceHeader.h
@@ -322,8 +335,8 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryOptionsInternal.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryScreenFrames.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration.h
+Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwizzle.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryUser+Private.h
@@ -355,7 +368,6 @@ Source/ThirdParty/LinuxArm64/lib/libsentry.a
 Source/ThirdParty/Mac/bin/sentry.dylib
 Source/ThirdParty/Mac/include/Sentry/PrivateSentrySDKOnly.h
 Source/ThirdParty/Mac/include/Sentry/PrivatesHeader.h
-Source/ThirdParty/Mac/include/Sentry/Sentry-Swift.h
 Source/ThirdParty/Mac/include/Sentry/Sentry.h
 Source/ThirdParty/Mac/include/Sentry/SentryAppStartMeasurement.h
 Source/ThirdParty/Mac/include/Sentry/SentryAsynchronousOperation.h
@@ -411,14 +423,15 @@ Source/ThirdParty/Mac/include/Sentry/SentryScope.h
 Source/ThirdParty/Mac/include/Sentry/SentryScreenFrames.h
 Source/ThirdParty/Mac/include/Sentry/SentrySDK+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentrySerializable.h
-Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration.h
+Source/ThirdParty/Mac/include/Sentry/SentrySessionReplayIntegration-Hybrid.h
 Source/ThirdParty/Mac/include/Sentry/SentrySpanContext.h
 Source/ThirdParty/Mac/include/Sentry/SentrySpanId.h
 Source/ThirdParty/Mac/include/Sentry/SentrySpanProtocol.h
 Source/ThirdParty/Mac/include/Sentry/SentrySpanStatus.h
 Source/ThirdParty/Mac/include/Sentry/SentryStacktrace.h
 Source/ThirdParty/Mac/include/Sentry/SentrySwift.h
+Source/ThirdParty/Mac/include/Sentry/Sentry-Swift.h
 Source/ThirdParty/Mac/include/Sentry/SentrySwizzle.h
 Source/ThirdParty/Mac/include/Sentry/SentryThread.h
 Source/ThirdParty/Mac/include/Sentry/SentryTraceContext.h
