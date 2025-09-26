@@ -19,7 +19,7 @@ FAndroidSentryLog::FAndroidSentryLog(jobject logEvent)
 	SetJObject(logEvent);
 }
 
-FAndroidSentryLog::FAndroidSentryLog(const FString& message, ESentryLevel level, const FString& category)
+FAndroidSentryLog::FAndroidSentryLog(const FString& message, ESentryLevel level)
 {
 	SetupClassMethods();
 

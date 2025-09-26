@@ -15,7 +15,7 @@ FGenericPlatformSentryLog::FGenericPlatformSentryLog(sentry_value_t log)
 	Log = log;
 }
 
-FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& message, ESentryLevel level, const FString& category)
+FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& message, ESentryLevel level)
 {
 	Log = sentry_value_new_object();
 	SetMessage(message);

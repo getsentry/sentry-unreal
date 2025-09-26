@@ -17,7 +17,7 @@ FAppleSentryLog::FAppleSentryLog(SentryLog* log)
 	LogApple = log;
 }
 
-FAppleSentryLog::FAppleSentryLog(const FString& message, ESentryLevel level, const FString& category)
+FAppleSentryLog::FAppleSentryLog(const FString& message, ESentryLevel level)
 {
 	LogApple = [[SENTRY_APPLE_CLASS(SentryLog) alloc] init];
 	SetMessage(message);

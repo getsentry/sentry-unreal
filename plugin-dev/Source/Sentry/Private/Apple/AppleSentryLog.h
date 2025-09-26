@@ -11,7 +11,7 @@ class FAppleSentryLog : public ISentryLog
 public:
 	FAppleSentryLog();
 	FAppleSentryLog(SentryLog* log);
-	FAppleSentryLog(const FString& message, ESentryLevel level, const FString& category);
+	FAppleSentryLog(const FString& message, ESentryLevel level);
 	virtual ~FAppleSentryLog() override;
 
 	SentryLog* GetNativeObject();

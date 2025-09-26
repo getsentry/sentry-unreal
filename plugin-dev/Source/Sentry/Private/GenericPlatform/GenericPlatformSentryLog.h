@@ -13,7 +13,7 @@ class FGenericPlatformSentryLog : public ISentryLog
 public:
 	FGenericPlatformSentryLog();
 	FGenericPlatformSentryLog(sentry_value_t log);
-	FGenericPlatformSentryLog(const FString& message, ESentryLevel level, const FString& category);
+	FGenericPlatformSentryLog(const FString& message, ESentryLevel level);
 	virtual ~FGenericPlatformSentryLog() override = default;
 
 	sentry_value_t GetNativeObject();

@@ -11,7 +11,7 @@ class FAndroidSentryLog : public ISentryLog, public FSentryJavaObjectWrapper
 public:
 	FAndroidSentryLog();
 	FAndroidSentryLog(jobject logEvent);
-	FAndroidSentryLog(const FString& message, ESentryLevel level, const FString& category);
+	FAndroidSentryLog(const FString& message, ESentryLevel level);
 
 	void SetupClassMethods();
 
