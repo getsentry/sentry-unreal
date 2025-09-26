@@ -1,24 +1,14 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryJavaObjectWrapper.h"
+#include "AndroidSentryJavaClasses.h"
 
 #include "Android/AndroidJNI.h"
 
 FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData)
 	: Object(nullptr)
-	, Class(nullptr)
+	, Class(SentryJavaClasses::GetCachedJavaClassRef(ClassData))
 {
-	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
-
-	ANSICHAR AnsiClassName[NAME_SIZE];
-	ClassData.Name.GetPlainANSIString(AnsiClassName);
-
-	if (ClassData.Type == ESentryJavaClassType::System)
-		Class = FJavaWrapper::FindClassGlobalRef(JEnv, AnsiClassName, false);
-	if (ClassData.Type == ESentryJavaClassType::External)
-		Class = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
-
-	check(Class);
 }
 
 FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, const char* CtorSignature, ...)
@@ -58,8 +48,6 @@ FSentryJavaObjectWrapper::~FSentryJavaObjectWrapper()
 
 	if (Object)
 		JEnv->DeleteGlobalRef(Object);
-	if (Class)
-		JEnv->DeleteGlobalRef(Class);
 }
 
 FSentryJavaMethod FSentryJavaObjectWrapper::GetMethod(const char* MethodName, const char* FunctionSignature)
@@ -76,11 +64,11 @@ FSentryJavaMethod FSentryJavaObjectWrapper::GetMethod(const char* MethodName, co
 
 FSentryJavaMethod FSentryJavaObjectWrapper::GetStaticMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature)
 {
-	FSentryJavaObjectWrapper StaticClass(ClassData);
+	jclass StaticClass = SentryJavaClasses::GetCachedJavaClassRef(ClassData);
 
 	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
 	FSentryJavaMethod Method;
-	Method.Method = JEnv->GetStaticMethodID(StaticClass.Class, MethodName, FunctionSignature);
+	Method.Method = JEnv->GetStaticMethodID(StaticClass, MethodName, FunctionSignature);
 	Method.Name = MethodName;
 	Method.Signature = FunctionSignature;
 	Method.IsStatic = true;
@@ -103,17 +91,7 @@ FScopedJavaObject<jstring> FSentryJavaObjectWrapper::GetJString(const FString& S
 bool FSentryJavaObjectWrapper::IsInstanceOf(FSentryJavaClass ClassData, jobject JavaClassInstance)
 {
 	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
-
-	ANSICHAR AnsiClassName[NAME_SIZE];
-	ClassData.Name.GetPlainANSIString(AnsiClassName);
-
-	jclass ClassGlobalRef;
-
-	if (ClassData.Type == ESentryJavaClassType::System)
-		ClassGlobalRef = FJavaWrapper::FindClassGlobalRef(JEnv, AnsiClassName, false);
-	if (ClassData.Type == ESentryJavaClassType::External)
-		ClassGlobalRef = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
-
+	jclass ClassGlobalRef = SentryJavaClasses::GetCachedJavaClassRef(ClassData);
 	check(ClassGlobalRef);
 
 	return JEnv->IsInstanceOf(JavaClassInstance, ClassGlobalRef);

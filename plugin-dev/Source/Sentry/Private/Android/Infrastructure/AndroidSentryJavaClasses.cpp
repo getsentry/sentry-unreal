@@ -2,6 +2,8 @@
 
 #include "AndroidSentryJavaClasses.h"
 
+#include "Android/AndroidJavaEnv.h"
+
 // clang-format off
 
 // External Java classes definitions
@@ -41,3 +43,84 @@ const FSentryJavaClass SentryJavaClasses::Boolean				= FSentryJavaClass { "java/
 const FSentryJavaClass SentryJavaClasses::String				= FSentryJavaClass { "java/lang/String", ESentryJavaClassType::System };
 
 // clang-format on
+
+TMap<FName, jclass> SentryJavaClasses::JavaClassRefsCache;
+
+void SentryJavaClasses::InitJavaClassRefsCache()
+{
+	// External Java classes definitions
+	JavaClassRefsCache.Add(SentryBridgeJava.Name, FindJavaClassRef(SentryBridgeJava));
+	JavaClassRefsCache.Add(Sentry.Name, FindJavaClassRef(Sentry));
+	JavaClassRefsCache.Add(Attachment.Name, FindJavaClassRef(Attachment));
+	JavaClassRefsCache.Add(Breadcrumb.Name, FindJavaClassRef(Breadcrumb));
+	JavaClassRefsCache.Add(SentryEvent.Name, FindJavaClassRef(SentryEvent));
+	JavaClassRefsCache.Add(SentryId.Name, FindJavaClassRef(SentryId));
+	JavaClassRefsCache.Add(Scope.Name, FindJavaClassRef(Scope));
+	JavaClassRefsCache.Add(ScopeImpl.Name, FindJavaClassRef(ScopeImpl));
+	JavaClassRefsCache.Add(User.Name, FindJavaClassRef(User));
+	JavaClassRefsCache.Add(Feedback.Name, FindJavaClassRef(Feedback));
+	JavaClassRefsCache.Add(Message.Name, FindJavaClassRef(Message));
+	JavaClassRefsCache.Add(SentryLevel.Name, FindJavaClassRef(SentryLevel));
+	JavaClassRefsCache.Add(SentryHint.Name, FindJavaClassRef(SentryHint));
+	JavaClassRefsCache.Add(Transaction.Name, FindJavaClassRef(Transaction));
+	JavaClassRefsCache.Add(Span.Name, FindJavaClassRef(Span));
+	JavaClassRefsCache.Add(SamplingContext.Name, FindJavaClassRef(SamplingContext));
+	JavaClassRefsCache.Add(CustomSamplingContext.Name, FindJavaClassRef(CustomSamplingContext));
+	JavaClassRefsCache.Add(TransactionContext.Name, FindJavaClassRef(TransactionContext));
+	JavaClassRefsCache.Add(TransactionOptions.Name, FindJavaClassRef(TransactionOptions));
+	JavaClassRefsCache.Add(SentryTraceHeader.Name, FindJavaClassRef(SentryTraceHeader));
+
+	// System Java classes definitions
+	JavaClassRefsCache.Add(ArrayList.Name, FindJavaClassRef(ArrayList));
+	JavaClassRefsCache.Add(HashMap.Name, FindJavaClassRef(HashMap));
+	JavaClassRefsCache.Add(Map.Name, FindJavaClassRef(Map));
+	JavaClassRefsCache.Add(Set.Name, FindJavaClassRef(Set));
+	JavaClassRefsCache.Add(Iterator.Name, FindJavaClassRef(Iterator));
+	JavaClassRefsCache.Add(MapEntry.Name, FindJavaClassRef(MapEntry));
+	JavaClassRefsCache.Add(List.Name, FindJavaClassRef(List));
+	JavaClassRefsCache.Add(Double.Name, FindJavaClassRef(Double));
+	JavaClassRefsCache.Add(Integer.Name, FindJavaClassRef(Integer));
+	JavaClassRefsCache.Add(Float.Name, FindJavaClassRef(Float));
+	JavaClassRefsCache.Add(Boolean.Name, FindJavaClassRef(Boolean));
+	JavaClassRefsCache.Add(String.Name, FindJavaClassRef(String));
+}
+
+void SentryJavaClasses::ClearJavaClassRefsCache()
+{
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
+
+	for (auto& CachedItem : JavaClassRefsCache)
+	{
+		if (CachedItem.Value)
+		{
+			JEnv->DeleteGlobalRef(CachedItem.Value);
+		}
+	}
+
+	JavaClassRefsCache.Empty();
+}
+
+jclass SentryJavaClasses::GetCachedJavaClassRef(const FSentryJavaClass& ClassData)
+{
+	jclass* Class = JavaClassRefsCache.Find(ClassData.Name);
+
+	checkf(Class && *Class, TEXT("Failed to retrieve Java class reference from cache for %s"), *ClassData.Name.ToString());
+	return *Class;
+}
+
+jclass SentryJavaClasses::FindJavaClassRef(const FSentryJavaClass& ClassData)
+{
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
+
+	ANSICHAR AnsiClassName[NAME_SIZE];
+	ClassData.Name.GetPlainANSIString(AnsiClassName);
+
+	jclass Class = nullptr;
+	if (ClassData.Type == ESentryJavaClassType::System)
+		Class = FJavaWrapper::FindClassGlobalRef(JEnv, AnsiClassName, false);
+	else if (ClassData.Type == ESentryJavaClassType::External)
+		Class = AndroidJavaEnv::FindJavaClassGlobalRef(AnsiClassName);
+
+	checkf(Class, TEXT("Failed to obtain Java class reference for %s"), *ClassData.Name.ToString());
+	return Class;
+}

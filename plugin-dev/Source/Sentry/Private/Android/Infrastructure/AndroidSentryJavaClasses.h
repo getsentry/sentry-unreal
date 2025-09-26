@@ -41,4 +41,14 @@ struct SentryJavaClasses
 	const static FSentryJavaClass Float;
 	const static FSentryJavaClass Boolean;
 	const static FSentryJavaClass String;
+
+	// Java class references cache
+	static void InitJavaClassRefsCache();
+	static void ClearJavaClassRefsCache();
+
+	static jclass GetCachedJavaClassRef(const FSentryJavaClass& ClassData);
+	static jclass FindJavaClassRef(const FSentryJavaClass& ClassData);
+
+private:
+	static TMap<FName, jclass> JavaClassRefsCache;
 };

@@ -29,6 +29,16 @@
 #include "Misc/OutputDeviceError.h"
 #include "Serialization/JsonSerializer.h"
 
+FAndroidSentrySubsystem::FAndroidSentrySubsystem()
+{
+	SentryJavaClasses::InitJavaClassRefsCache();
+}
+
+FAndroidSentrySubsystem::~FAndroidSentrySubsystem()
+{
+	SentryJavaClasses::ClearJavaClassRefsCache();
+}
+
 void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
