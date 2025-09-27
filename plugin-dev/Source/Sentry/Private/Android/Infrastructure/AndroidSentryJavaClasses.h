@@ -27,6 +27,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass TransactionContext;
 	const static FSentryJavaClass TransactionOptions;
 	const static FSentryJavaClass SentryTraceHeader;
+	const static FSentryJavaClass SentryLogEvent;
 
 	// System Java classes
 	const static FSentryJavaClass ArrayList;

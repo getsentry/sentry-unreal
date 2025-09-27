@@ -6,25 +6,21 @@
 #include "Infrastructure/AndroidSentryJavaClasses.h"
 
 FAndroidSentryLog::FAndroidSentryLog()
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogEvent, "()V")
 {
 	SetupClassMethods();
-
-	// Create new SentryLogEvent Java object
-	SetJObject(CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryLogEvent, "createLogEvent", "()Lio/sentry/SentryLogEvent;"));
 }
 
 FAndroidSentryLog::FAndroidSentryLog(jobject logEvent)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogEvent, logEvent)
 {
 	SetupClassMethods();
-	SetJObject(logEvent);
 }
 
 FAndroidSentryLog::FAndroidSentryLog(const FString& message, ESentryLevel level)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogEvent, "()V")
 {
 	SetupClassMethods();
-
-	// Create new SentryLogEvent Java object
-	SetJObject(CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryLogEvent, "createLogEvent", "()Lio/sentry/SentryLogEvent;"));
 
 	SetMessage(message);
 	SetLevel(level);
@@ -50,13 +46,12 @@ FString FAndroidSentryLog::GetMessage() const
 
 void FAndroidSentryLog::SetLevel(ESentryLevel level)
 {
-	TSharedPtr<FAndroidSentryLevel> AndroidLevel = FAndroidSentryConverters::SentryLevelToNative(level);
+	TSharedPtr<FSentryJavaObjectWrapper> AndroidLevel = FAndroidSentryConverters::SentryLevelToNative(level);
 	CallMethod<void>(SetLevelMethod, AndroidLevel->GetJObject());
 }
 
 ESentryLevel FAndroidSentryLog::GetLevel() const
 {
 	auto LevelObject = CallObjectMethod<jobject>(GetLevelMethod);
-	TSharedPtr<FAndroidSentryLevel> AndroidLevel = MakeShareable(new FAndroidSentryLevel(LevelObject));
-	return FAndroidSentryConverters::SentryLevelToUnreal(AndroidLevel);
+	return FAndroidSentryConverters::SentryLevelToUnreal(*LevelObject);
 }
