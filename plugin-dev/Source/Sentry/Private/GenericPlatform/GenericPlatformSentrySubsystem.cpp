@@ -395,7 +395,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
-	sentry_options_set_logger_enabled_when_crashed(options, true);
+	sentry_options_set_logger_enabled_when_crashed(options, false);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
 
 	if (settings->bRequireUserConsent)
