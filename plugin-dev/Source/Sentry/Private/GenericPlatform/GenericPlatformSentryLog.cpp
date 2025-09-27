@@ -67,7 +67,8 @@ ESentryLevel FGenericPlatformSentryLog::GetLevel() const
 	sentry_value_t levelValue = sentry_value_get_by_key(Log, "level");
 	const char* levelStr = sentry_value_as_string(levelValue);
 
-	if (!levelStr) {
+	if (!levelStr)
+	{
 		return ESentryLevel::Info; // default
 	}
 
