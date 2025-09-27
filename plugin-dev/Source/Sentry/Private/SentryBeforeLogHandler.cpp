@@ -1,9 +1,9 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryBeforeLogHandler.h"
-#include "SentryLogData.h"
+#include "SentryLog.h"
 
-USentryLogData* USentryBeforeLogHandler::HandleBeforeLog_Implementation(USentryLogData* LogData)
+USentryLog* USentryBeforeLogHandler::HandleBeforeLog_Implementation(USentryLog* LogData)
 {
 	return LogData;
 }

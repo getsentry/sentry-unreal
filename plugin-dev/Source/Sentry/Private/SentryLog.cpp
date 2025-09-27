@@ -1,15 +1,15 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryLogData.h"
+#include "SentryLog.h"
 
 #include "HAL/PlatformSentryLog.h"
 
-void USentryLogData::Initialize()
+void USentryLog::Initialize()
 {
 	NativeImpl = CreateSharedSentryLog();
 }
 
-void USentryLogData::SetMessage(const FString& InMessage)
+void USentryLog::SetMessage(const FString& InMessage)
 {
 	if (!NativeImpl)
 		return;
@@ -17,7 +17,7 @@ void USentryLogData::SetMessage(const FString& InMessage)
 	NativeImpl->SetMessage(InMessage);
 }
 
-FString USentryLogData::GetMessage() const
+FString USentryLog::GetMessage() const
 {
 	if (!NativeImpl)
 		return FString();
@@ -25,7 +25,7 @@ FString USentryLogData::GetMessage() const
 	return NativeImpl->GetMessage();
 }
 
-void USentryLogData::SetLevel(ESentryLevel InLevel)
+void USentryLog::SetLevel(ESentryLevel InLevel)
 {
 	if (!NativeImpl)
 		return;
@@ -33,7 +33,7 @@ void USentryLogData::SetLevel(ESentryLevel InLevel)
 	NativeImpl->SetLevel(InLevel);
 }
 
-ESentryLevel USentryLogData::GetLevel() const
+ESentryLevel USentryLog::GetLevel() const
 {
 	if (!NativeImpl)
 		return ESentryLevel::Info;

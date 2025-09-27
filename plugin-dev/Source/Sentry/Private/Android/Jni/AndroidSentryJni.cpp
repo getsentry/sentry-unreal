@@ -20,7 +20,7 @@
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
-#include "SentryLogData.h"
+#include "SentryLog.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
 
@@ -120,10 +120,10 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* en
 
 	USentryBeforeLogHandler* handler = reinterpret_cast<USentryBeforeLogHandler*>(objAddr);
 
-	USentryLogData* LogDataToProcess = USentryLogData::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
+	USentryLog* LogDataToProcess = USentryLog::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
 	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
 
-	USentryLogData* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
+	USentryLog* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
 
 	return ProcessedLogData ? logEvent : nullptr;
 }

@@ -6,7 +6,7 @@
 #include "SentryImplWrapper.h"
 #include "SentryVariant.h"
 
-#include "SentryLogData.generated.h"
+#include "SentryLog.generated.h"
 
 class ISentryLog;
 
@@ -14,7 +14,7 @@ class ISentryLog;
  * Data structure representing a structured log entry for Sentry.
  */
 UCLASS(BlueprintType, NotBlueprintable, HideDropdown)
-class SENTRY_API USentryLogData : public UObject, public TSentryImplWrapper<ISentryLog, USentryLogData>
+class SENTRY_API USentryLog : public UObject, public TSentryImplWrapper<ISentryLog, USentryLog>
 {
 	GENERATED_BODY()
 

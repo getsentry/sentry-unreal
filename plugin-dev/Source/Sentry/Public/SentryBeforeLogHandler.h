@@ -7,7 +7,7 @@
 
 #include "SentryBeforeLogHandler.generated.h"
 
-class USentryLogData;
+class USentryLog;
 
 UCLASS(Blueprintable)
 class SENTRY_API USentryBeforeLogHandler : public UObject
@@ -16,6 +16,6 @@ class SENTRY_API USentryBeforeLogHandler : public UObject
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	USentryLogData* HandleBeforeLog(USentryLogData* LogData);
-	virtual USentryLogData* HandleBeforeLog_Implementation(USentryLogData* LogData);
+	USentryLog* HandleBeforeLog(USentryLog* LogData);
+	virtual USentryLog* HandleBeforeLog_Implementation(USentryLog* LogData);
 };

@@ -143,9 +143,9 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 						return log;
 					}
 
-					USentryLogData* LogToProcess = USentryLogData::Create(MakeShareable(new FAppleSentryLog(log)));
+					USentryLog* LogToProcess = USentryLog::Create(MakeShareable(new FAppleSentryLog(log)));
 
-					USentryLogData* ProcessedLog = beforeLogHandler->HandleBeforeLog(LogToProcess);
+					USentryLog* ProcessedLog = beforeLogHandler->HandleBeforeLog(LogToProcess);
 
 					return ProcessedLog ? log : nullptr;
 				};

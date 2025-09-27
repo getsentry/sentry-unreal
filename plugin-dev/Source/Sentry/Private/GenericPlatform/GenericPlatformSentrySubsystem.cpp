@@ -19,7 +19,7 @@
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
-#include "SentryLogData.h"
+#include "SentryLog.h"
 #include "SentryModule.h"
 #include "SentrySamplingContext.h"
 #include "SentrySettings.h"
@@ -124,6 +124,23 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	return log;
 }
 
+bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun(const FString& handlerName) const
+{
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `%s` handler is not allowed during object post-loading."), *handlerName);
+		return false;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Executing `%s` handler is not allowed during garbage collection."), *handlerName);
+		return false;
+	}
+
+	return true;
+}
+
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
 {
 	if (!closure || this != closure)
@@ -138,18 +155,8 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!IsCallbackSafeToRun(TEXT("beforeSend")))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
-		return event;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 		return event;
 	}
 
@@ -177,17 +184,8 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 		return breadcrumb;
 	}
 
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!IsCallbackSafeToRun(TEXT("beforeBreadcrumb")))
 	{
-		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
-		return breadcrumb;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since there is no guarantee it will be ever freed.
-		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
 		return breadcrumb;
 	}
 
@@ -212,24 +210,15 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 		return log;
 	}
 
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!IsCallbackSafeToRun(TEXT("beforeLog")))
 	{
-		// Skip log processing during post load to avoid issues
 		return log;
 	}
 
-	if (IsGarbageCollecting())
-	{
-		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since there is no guarantee it will be ever freed.
-		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
-		return log;
-	}
+	// Create USentryLog object using the log wrapper
+	USentryLog* LogData = USentryLog::Create(MakeShareable(new FGenericPlatformSentryLog(log)));
 
-	// Create USentryLogData object using the log wrapper
-	USentryLogData* LogData = USentryLogData::Create(MakeShareable(new FGenericPlatformSentryLog(log)));
-
-	USentryLogData* ProcessedLogData = Handler->HandleBeforeLog(LogData);
+	USentryLog* ProcessedLogData = Handler->HandleBeforeLog(LogData);
 
 	return ProcessedLogData ? log : sentry_value_new_null();
 }
@@ -260,18 +249,8 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!IsCallbackSafeToRun(TEXT("traceSampler")))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing traces sampler is not allowed during object post-loading."));
-		return parent_sampled != nullptr ? *parent_sampled : 0.0;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If traces sampling happens during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing traces sampler is not allowed during garbage collection."));
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
@@ -861,22 +840,22 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 	return transactionContext;
 }
 
-USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler()
+USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler() const
 {
 	return beforeSend;
 }
 
-USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler()
+USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler() const
 {
 	return beforeBreadcrumb;
 }
 
-USentryBeforeLogHandler* FGenericPlatformSentrySubsystem::GetBeforeLogHandler()
+USentryBeforeLogHandler* FGenericPlatformSentrySubsystem::GetBeforeLogHandler() const
 {
 	return beforeLog;
 }
 
-USentryTraceSampler* FGenericPlatformSentrySubsystem::GetTraceSampler()
+USentryTraceSampler* FGenericPlatformSentrySubsystem::GetTraceSampler() const
 {
 	return sampler;
 }
