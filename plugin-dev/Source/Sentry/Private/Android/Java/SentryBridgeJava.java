@@ -32,12 +32,13 @@ import io.sentry.exception.ExceptionMechanismException;
 import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
+import io.sentry.SentryLogEvent;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
 	public static native Breadcrumb onBeforeBreadcrumb(long handlerAddr, Breadcrumb breadcrumb, Hint hint);
-	public static native SentryLogEvent onBeforeLog(long handlerAddr, SentryLogEvent logEvent, Hint hint);
+	public static native SentryLogEvent onBeforeLog(long handlerAddr, SentryLogEvent logEvent);
 	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
 	public static native String getLogFilePath(boolean isCrash);
 
@@ -68,7 +69,7 @@ public class SentryBridgeJava {
 						options.addInAppExclude(Excludes.getString(i));
 					}
 					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
-					options.setEnableLogs(settingJson.getBoolean("enableStructuredLogging"));
+					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));
 					if(settingJson.has("tracesSampleRate")) {
 						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
 					}
@@ -103,7 +104,7 @@ public class SentryBridgeJava {
 					}
 
 					if (settingJson.has("beforeLogHandler")) {
-						options.setBeforeSendLog(new SentryUnrealBeforeLogCallback(settingJson.getLong("beforeLogHandler")));
+						options.getLogs().setBeforeSend(new SentryUnrealBeforeLogCallback(settingJson.getLong("beforeLogHandler")));
 					}
 				} catch (JSONException e) {
 					throw new RuntimeException(e);
@@ -296,7 +297,7 @@ public class SentryBridgeJava {
         }
 	}
 
-	private static class SentryUnrealBeforeLogCallback implements SentryOptions.BeforeSendLogCallback {
+	private static class SentryUnrealBeforeLogCallback implements SentryOptions.Logs.BeforeSendLogCallback {
 		private final long beforeLogAddr;
 
 		public SentryUnrealBeforeLogCallback(long beforeLogAddr) {
@@ -304,9 +305,9 @@ public class SentryBridgeJava {
 		}
 
 		@Override
-		public SentryLogEvent execute(SentryLogEvent logEvent, Hint hint) {
+		public SentryLogEvent execute(SentryLogEvent logEvent) {
 			if (beforeLogAddr != 0) {
-				return onBeforeLog(beforeLogAddr, logEvent, hint);
+				return onBeforeLog(beforeLogAddr, logEvent);
 			}
 			return logEvent;
 		}

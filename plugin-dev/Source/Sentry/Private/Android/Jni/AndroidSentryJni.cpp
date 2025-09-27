@@ -102,7 +102,7 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNI
 	return ProcessedBreadcrumb ? breadcrumb : nullptr;
 }
 
-JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* env, jclass clazz, jlong objAddr, jobject logEvent, jobject hint)
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* env, jclass clazz, jlong objAddr, jobject logEvent)
 {
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
@@ -121,7 +121,6 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* en
 	USentryBeforeLogHandler* handler = reinterpret_cast<USentryBeforeLogHandler*>(objAddr);
 
 	USentryLog* LogDataToProcess = USentryLog::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
-	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
 
 	USentryLog* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
 
