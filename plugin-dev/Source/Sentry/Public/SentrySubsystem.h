@@ -19,6 +19,7 @@ class USentryFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
 class USentryBeforeBreadcrumbHandler;
+class USentryBeforeLogHandler;
 class USentryTransaction;
 class USentryTraceSampler;
 class USentryTransactionContext;
@@ -96,6 +97,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Data"))
 	void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data,
 		ESentryLevel Level = ESentryLevel::Info);
+
+	/**
+	 * Add a structured log message to Sentry.
+	 *
+	 * @param Message Log message to add.
+	 * @param Level Log level.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddLog(const FString& Message, ESentryLevel Level, const FString& Category);
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.
@@ -330,6 +341,9 @@ public:
 	/** Retrieves the underlying native implementation. */
 	TSharedPtr<ISentrySubsystem> GetNativeObject() const;
 
+	/** Gets the before log handler instance. */
+	USentryBeforeLogHandler* GetBeforeLogHandler() const;
+
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
@@ -374,6 +388,9 @@ private:
 	USentryBeforeSendHandler* BeforeSendHandler;
 	UPROPERTY()
 	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler;
+
+	UPROPERTY()
+	USentryBeforeLogHandler* BeforeLogHandler;
 
 	UPROPERTY()
 	USentryTraceSampler* TraceSampler;

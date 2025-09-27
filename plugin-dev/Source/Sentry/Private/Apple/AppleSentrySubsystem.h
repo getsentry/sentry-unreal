@@ -7,12 +7,13 @@
 class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override;
+	virtual void AddLog(const FString& Message, ESentryLevel Level, const FString& Category) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override;
@@ -58,4 +59,5 @@ protected:
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
+	USentryBeforeLogHandler* beforeLogHandler = nullptr;
 };
