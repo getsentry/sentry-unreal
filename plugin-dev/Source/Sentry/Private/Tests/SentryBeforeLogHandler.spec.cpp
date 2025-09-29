@@ -1,12 +1,12 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryBeforeLogHandler.h"
-#include "SentryTestBeforeLogHandler.h"
-#include "SentryLog.h"
-#include "SentryTests.h"
-#include "SentrySubsystem.h"
-#include "SentrySettings.h"
 #include "Engine/Engine.h"
+#include "SentryLog.h"
+#include "SentrySettings.h"
+#include "SentrySubsystem.h"
+#include "SentryTestBeforeLogHandler.h"
+#include "SentryTests.h"
 
 #include "Misc/AutomationTest.h"
 
