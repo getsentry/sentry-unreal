@@ -59,5 +59,4 @@ protected:
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
-	USentryBeforeLogHandler* beforeLogHandler = nullptr;
 };

@@ -36,20 +36,20 @@ SentryLog* FAppleSentryLog::GetNativeObject()
 
 void FAppleSentryLog::SetMessage(const FString& message)
 {
-	LogApple.message = message.GetNSString();
+	LogApple.body = message.GetNSString();
 }
 
 FString FAppleSentryLog::GetMessage() const
 {
-	return FString(LogApple.message);
+	return FString(LogApple.body);
 }
 
 void FAppleSentryLog::SetLevel(ESentryLevel level)
 {
-	LogApple.level = FAppleSentryConverters::SentryLevelToNative(level);
+	LogApple.level = FAppleSentryConverters::SentryStructuredLogLevelToNative(level);
 }
 
 ESentryLevel FAppleSentryLog::GetLevel() const
 {
-	return FAppleSentryConverters::SentryLevelToUnreal(LogApple.level);
+	return FAppleSentryConverters::SentryStructuredLogLevelToUnreal(LogApple.level);
 }

@@ -4,6 +4,7 @@
 
 #include "AppleSentryAttachment.h"
 #include "AppleSentryBreadcrumb.h"
+#include "AppleSentryLog.h"
 #include "AppleSentryEvent.h"
 #include "AppleSentryFeedback.h"
 #include "AppleSentryId.h"
@@ -15,7 +16,9 @@
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeSendHandler.h"
+#include "SentryBeforeLogHandler.h"
 #include "SentryBreadcrumb.h"
+#include "SentryLog.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentrySamplingContext.h"
@@ -62,7 +65,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
-			options.enableLogs = settings->EnableStructuredLogging;
+			options.experimental.enableLogs = settings->EnableStructuredLogging;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
@@ -243,19 +246,19 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		[SENTRY_APPLE_CLASS(SentrySDK).logger logFatal:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] fatal:FormattedMessage];
 		break;
 	case ESentryLevel::Error:
-		[SENTRY_APPLE_CLASS(SentrySDK).logger logError:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] error:FormattedMessage];
 		break;
 	case ESentryLevel::Warning:
-		[SENTRY_APPLE_CLASS(SentrySDK).logger logWarning:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] warn:FormattedMessage];
 		break;
 	case ESentryLevel::Info:
-		[SENTRY_APPLE_CLASS(SentrySDK).logger logInfo:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:FormattedMessage];
 		break;
 	case ESentryLevel::Debug:
-		[SENTRY_APPLE_CLASS(SentrySDK).logger logDebug:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:FormattedMessage];
 		break;
 	}
 }
