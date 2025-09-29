@@ -106,7 +106,7 @@ public:
 	 * @param Category Optional category to prepend to the body.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddLog(const FString& Body, ESentryLevel Level, const FString& Category = TEXT("LogSentrySDK"));
+	void AddLog(const FString& Body, ESentryLevel Level, const FString& Category = TEXT("LogSentrySdk"));
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.
