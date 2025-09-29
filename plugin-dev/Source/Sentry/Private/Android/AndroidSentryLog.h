@@ -11,18 +11,18 @@ class FAndroidSentryLog : public ISentryLog, public FSentryJavaObjectWrapper
 public:
 	FAndroidSentryLog();
 	FAndroidSentryLog(jobject logEvent);
-	FAndroidSentryLog(const FString& message, ESentryLevel level);
+	FAndroidSentryLog(const FString& body, ESentryLevel level);
 
 	void SetupClassMethods();
 
-	virtual void SetMessage(const FString& message) override;
-	virtual FString GetMessage() const override;
+	virtual void SetBody(const FString& body) override;
+	virtual FString GetBody() const override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	FSentryJavaMethod SetMessageMethod;
-	FSentryJavaMethod GetMessageMethod;
+	FSentryJavaMethod SetBodyMethod;
+	FSentryJavaMethod GetBodyMethod;
 	FSentryJavaMethod SetLevelMethod;
 	FSentryJavaMethod GetLevelMethod;
 };

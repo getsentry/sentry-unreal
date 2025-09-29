@@ -15,10 +15,10 @@ FGenericPlatformSentryLog::FGenericPlatformSentryLog(sentry_value_t log)
 	Log = log;
 }
 
-FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& message, ESentryLevel level)
+FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& body, ESentryLevel level)
 {
 	Log = sentry_value_new_object();
-	SetMessage(message);
+	SetBody(body);
 	SetLevel(level);
 }
 
@@ -27,15 +27,15 @@ sentry_value_t FGenericPlatformSentryLog::GetNativeObject()
 	return Log;
 }
 
-void FGenericPlatformSentryLog::SetMessage(const FString& message)
+void FGenericPlatformSentryLog::SetBody(const FString& body)
 {
-	sentry_value_set_by_key(Log, "message", sentry_value_new_string(TCHAR_TO_UTF8(*message)));
+	sentry_value_set_by_key(Log, "body", sentry_value_new_string(TCHAR_TO_UTF8(*body)));
 }
 
-FString FGenericPlatformSentryLog::GetMessage() const
+FString FGenericPlatformSentryLog::GetBody() const
 {
-	sentry_value_t message = sentry_value_get_by_key(Log, "message");
-	return FString(sentry_value_as_string(message));
+	sentry_value_t body = sentry_value_get_by_key(Log, "body");
+	return FString(sentry_value_as_string(body));
 }
 
 void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)

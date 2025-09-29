@@ -222,24 +222,24 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
-void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const FString& Category)
+void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
 {
-	// Ignore Empty Messages
-	if (Message.IsEmpty())
+	// Ignore Empty Bodies
+	if (Body.IsEmpty())
 	{
 		return;
 	}
 
-	// Format message with category
+	// Format body with category
 	NSString* FormattedMessage;
 	if (!Category.IsEmpty())
 	{
-		FString FullMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Message);
+		FString FullMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
 		FormattedMessage = FullMessage.GetNSString();
 	}
 	else
 	{
-		FormattedMessage = Message.GetNSString();
+		FormattedMessage = Body.GetNSString();
 	}
 
 	// Use level-specific Apple Sentry SDK logging functions

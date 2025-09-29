@@ -23,13 +23,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void Initialize();
 
-	/** Sets the log message. */
+	/** Sets the log body. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetMessage(const FString& Message);
+	void SetBody(const FString& Body);
 
-	/** Gets the log message. */
+	/** Gets the log body. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetMessage() const;
+	FString GetBody() const;
 
 	/** Sets the log level. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -41,7 +41,7 @@ public:
 
 private:
 	UPROPERTY()
-	FString Message;
+	FString Body;
 
 	UPROPERTY()
 	ESentryLevel Level;

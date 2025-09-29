@@ -9,8 +9,8 @@ class FNullSentryLog final : public ISentryLog
 public:
 	virtual ~FNullSentryLog() override = default;
 
-	virtual void SetMessage(const FString& message) override {}
-	virtual FString GetMessage() const override { return TEXT(""); }
+	virtual void SetBody(const FString& body) override {}
+	virtual FString GetBody() const override { return TEXT(""); }
 	virtual void SetLevel(ESentryLevel level) override {}
 	virtual ESentryLevel GetLevel() const override { return ESentryLevel::Info; }
 };

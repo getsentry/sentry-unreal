@@ -101,12 +101,12 @@ public:
 	/**
 	 * Add a structured log message to Sentry.
 	 *
-	 * @param Message Log message to add.
+	 * @param Body Log body to add.
 	 * @param Level Log level.
-	 * @param Category Optional category to prepend to the message.
+	 * @param Category Optional category to prepend to the body.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddLog(const FString& Message, ESentryLevel Level, const FString& Category);
+	void AddLog(const FString& Body, ESentryLevel Level, const FString& Category = TEXT("LogSentrySDK"));
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.

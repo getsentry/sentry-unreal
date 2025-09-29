@@ -141,23 +141,23 @@ void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, co
 		breadcrumbAndroid->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const FString& Category)
+void FAndroidSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
 {
-	// Ignore Empty Messages
-	if (Message.IsEmpty())
+	// Ignore Empty Bodies
+	if (Body.IsEmpty())
 	{
 		return;
 	}
 
-	// Format message with category
+	// Format body with category
 	FString FormattedMessage;
 	if (!Category.IsEmpty())
 	{
-		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Message);
+		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
 	}
 	else
 	{
-		FormattedMessage = Message;
+		FormattedMessage = Body;
 	}
 
 	// Use level-specific Android Sentry SDK logging functions via Java bridge

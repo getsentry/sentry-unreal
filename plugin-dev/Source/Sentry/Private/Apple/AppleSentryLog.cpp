@@ -9,7 +9,13 @@
 
 FAppleSentryLog::FAppleSentryLog()
 {
-	LogApple = [[SENTRY_APPLE_CLASS(SentryLog) alloc] init];
+	LogApple = [SENTRY_APPLE_CLASS(SentryLog) alloc];
+	// Initialize required properties
+	LogApple.timestamp = [NSDate date];
+	LogApple.traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] init];
+	LogApple.body = @"";
+	LogApple.attributes = @{};
+	LogApple.level = SentryStructuredLogLevelDebug;
 }
 
 FAppleSentryLog::FAppleSentryLog(SentryLog* log)
@@ -17,10 +23,14 @@ FAppleSentryLog::FAppleSentryLog(SentryLog* log)
 	LogApple = log;
 }
 
-FAppleSentryLog::FAppleSentryLog(const FString& message, ESentryLevel level)
+FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLevel level)
 {
-	LogApple = [[SENTRY_APPLE_CLASS(SentryLog) alloc] init];
-	SetMessage(message);
+	LogApple = [SENTRY_APPLE_CLASS(SentryLog) alloc];
+	// Initialize required properties
+	LogApple.timestamp = [NSDate date];
+	LogApple.traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] init];
+	LogApple.attributes = @{};
+	SetBody(body);
 	SetLevel(level);
 }
 
@@ -34,12 +44,12 @@ SentryLog* FAppleSentryLog::GetNativeObject()
 	return LogApple;
 }
 
-void FAppleSentryLog::SetMessage(const FString& message)
+void FAppleSentryLog::SetBody(const FString& body)
 {
-	LogApple.body = message.GetNSString();
+	LogApple.body = body.GetNSString();
 }
 
-FString FAppleSentryLog::GetMessage() const
+FString FAppleSentryLog::GetBody() const
 {
 	return FString(LogApple.body);
 }

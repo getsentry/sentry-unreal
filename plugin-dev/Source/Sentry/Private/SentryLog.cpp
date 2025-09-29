@@ -9,20 +9,20 @@ void USentryLog::Initialize()
 	NativeImpl = CreateSharedSentryLog();
 }
 
-void USentryLog::SetMessage(const FString& InMessage)
+void USentryLog::SetBody(const FString& InBody)
 {
 	if (!NativeImpl)
 		return;
 
-	NativeImpl->SetMessage(InMessage);
+	NativeImpl->SetBody(InBody);
 }
 
-FString USentryLog::GetMessage() const
+FString USentryLog::GetBody() const
 {
 	if (!NativeImpl)
 		return FString();
 
-	return NativeImpl->GetMessage();
+	return NativeImpl->GetBody();
 }
 
 void USentryLog::SetLevel(ESentryLevel InLevel)

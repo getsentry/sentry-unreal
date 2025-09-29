@@ -498,23 +498,23 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
 }
 
-void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const FString& Category)
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
 {
-	// Ignore Empty Messages
-	if (Message.IsEmpty())
+	// Ignore Empty Bodies
+	if (Body.IsEmpty())
 	{
 		return;
 	}
 
-	// Format message with category if provided
+	// Format body with category if provided
 	FString FormattedMessage;
 	if (!Category.IsEmpty())
 	{
-		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Message);
+		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
 	}
 	else
 	{
-		FormattedMessage = Message;
+		FormattedMessage = Body;
 	}
 
 	auto MessageCStrConverter = StringCast<ANSICHAR>(*FormattedMessage);

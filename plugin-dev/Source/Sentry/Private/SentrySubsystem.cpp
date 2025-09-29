@@ -233,7 +233,7 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 	SubsystemNativeImpl->AddBreadcrumbWithParams(Message, Category, Type, Data, Level);
 }
 
-void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const FString& Category)
+void USentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
 {
 	check(SubsystemNativeImpl);
 
@@ -242,7 +242,7 @@ void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const 
 		return;
 	}
 
-	SubsystemNativeImpl->AddLog(Message, Level, Category);
+	SubsystemNativeImpl->AddLog(Body, Level, Category);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()

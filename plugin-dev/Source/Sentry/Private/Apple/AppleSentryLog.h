@@ -11,13 +11,13 @@ class FAppleSentryLog : public ISentryLog
 public:
 	FAppleSentryLog();
 	FAppleSentryLog(SentryLog* log);
-	FAppleSentryLog(const FString& message, ESentryLevel level);
+	FAppleSentryLog(const FString& body, ESentryLevel level);
 	virtual ~FAppleSentryLog() override;
 
 	SentryLog* GetNativeObject();
 
-	virtual void SetMessage(const FString& message) override;
-	virtual FString GetMessage() const override;
+	virtual void SetBody(const FString& body) override;
+	virtual FString GetBody() const override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
 

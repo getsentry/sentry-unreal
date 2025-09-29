@@ -17,31 +17,31 @@ FAndroidSentryLog::FAndroidSentryLog(jobject logEvent)
 	SetupClassMethods();
 }
 
-FAndroidSentryLog::FAndroidSentryLog(const FString& message, ESentryLevel level)
+FAndroidSentryLog::FAndroidSentryLog(const FString& body, ESentryLevel level)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogEvent, "()V")
 {
 	SetupClassMethods();
 
-	SetMessage(message);
+	SetBody(body);
 	SetLevel(level);
 }
 
 void FAndroidSentryLog::SetupClassMethods()
 {
-	SetMessageMethod = GetMethod("setMessage", "(Ljava/lang/String;)V");
-	GetMessageMethod = GetMethod("getMessage", "()Ljava/lang/String;");
+	SetBodyMethod = GetMethod("setBody", "(Ljava/lang/String;)V");
+	GetBodyMethod = GetMethod("getBody", "()Ljava/lang/String;");
 	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
 	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
 }
 
-void FAndroidSentryLog::SetMessage(const FString& message)
+void FAndroidSentryLog::SetBody(const FString& body)
 {
-	CallMethod<void>(SetMessageMethod, *GetJString(message));
+	CallMethod<void>(SetBodyMethod, *GetJString(body));
 }
 
-FString FAndroidSentryLog::GetMessage() const
+FString FAndroidSentryLog::GetBody() const
 {
-	return CallMethod<FString>(GetMessageMethod);
+	return CallMethod<FString>(GetBodyMethod);
 }
 
 void FAndroidSentryLog::SetLevel(ESentryLevel level)
