@@ -190,12 +190,15 @@ Source/Sentry/Private/SentryTransaction.cpp
 Source/Sentry/Private/SentryTransactionContext.cpp
 Source/Sentry/Private/SentryUser.cpp
 Source/Sentry/Private/SentryVariant.cpp
+Source/Sentry/Private/Tests/SentryBeforeLogHandler.spec.cpp
 Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentryFeedback.spec.cpp
+Source/Sentry/Private/Tests/SentryLog.spec.cpp
 Source/Sentry/Private/Tests/SentryScope.spec.cpp
 Source/Sentry/Private/Tests/SentryScopeBeforeSendHandler.h
 Source/Sentry/Private/Tests/SentrySubsystem.spec.cpp
+Source/Sentry/Private/Tests/SentryTestBeforeLogHandler.h
 Source/Sentry/Private/Tests/SentryTests.h
 Source/Sentry/Private/Tests/SentryTraceSampling.spec.cpp
 Source/Sentry/Private/Tests/SentryTraceSamplingHandler.h
