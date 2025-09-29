@@ -12,9 +12,9 @@
 - Bump Android Gradle Plugin from v5.10.0 to v5.12.0 ([#1078](https://github.com/getsentry/sentry-unreal/pull/1078), [#1086](https://github.com/getsentry/sentry-unreal/pull/1086))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#5120)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/5.10.0...5.12.0)
-- Bump Cocoa SDK (iOS and Mac) from v8.55.1 to v8.56.0 ([#1077](https://github.com/getsentry/sentry-unreal/pull/1077))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
+- Bump Cocoa SDK (iOS and Mac) from v8.55.1 to v8.56.2 ([#1077](https://github.com/getsentry/sentry-unreal/pull/1077), [#1093](https://github.com/getsentry/sentry-unreal/pull/1093))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8562)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.2)
 - Bump Native SDK from v0.10.1 to v0.11.1 ([#1080](https://github.com/getsentry/sentry-unreal/pull/1080), [#1088](https://github.com/getsentry/sentry-unreal/pull/1088))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0111)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.10.1...0.11.1)
@@ -24,9 +24,6 @@
 - Bump Java SDK (Android) from v8.21.1 to v8.22.0 ([#1083](https://github.com/getsentry/sentry-unreal/pull/1083))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8220)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.21.1...8.22.0)
-- Bump Cocoa SDK (iOS and Mac) from v8.56.0 to v8.56.2 ([#1093](https://github.com/getsentry/sentry-unreal/pull/1093))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8562)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.56.0...8.56.2)
 
 ## 1.1.1
 
