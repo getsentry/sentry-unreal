@@ -57,7 +57,7 @@ SentryStructuredLogLevel FAppleSentryConverters::SentryStructuredLogLevelToNativ
 		nativeLevel = SentryStructuredLogLevelFatal;
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
 	}
 
 	return nativeLevel;
