@@ -35,12 +35,13 @@ void FGenericPlatformSentryLog::SetBody(const FString& body)
 FString FGenericPlatformSentryLog::GetBody() const
 {
 	sentry_value_t body = sentry_value_get_by_key(Log, "body");
-	return FString(sentry_value_as_string(body));
+	const char* bodyStr = sentry_value_as_string(body);
+	return FString(bodyStr ? bodyStr : "");
 }
 
 void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
 {
-	const char* levelStr = nullptr;
+	const char* levelStr = "info"; // Default to "info" to avoid nullptr
 	switch (level)
 	{
 	case ESentryLevel::Fatal:
@@ -57,6 +58,9 @@ void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
 		break;
 	case ESentryLevel::Debug:
 		levelStr = "debug";
+		break;
+	default:
+		// Use default "info" level for unhandled cases
 		break;
 	}
 	sentry_value_set_by_key(Log, "level", sentry_value_new_string(levelStr));

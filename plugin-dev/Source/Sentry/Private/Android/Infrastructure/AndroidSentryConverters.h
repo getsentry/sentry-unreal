@@ -15,6 +15,7 @@ class FAndroidSentryConverters
 public:
 	/** Conversions to native Java types */
 	static TSharedPtr<FSentryJavaObjectWrapper> SentryLevelToNative(ESentryLevel level);
+	static TSharedPtr<FSentryJavaObjectWrapper> SentryLogLevelToNative(ESentryLevel level);
 	static TSharedPtr<FSentryJavaObjectWrapper> StringArrayToNative(const TArray<FString>& stringArray);
 	static TSharedPtr<FSentryJavaObjectWrapper> StringMapToNative(const TMap<FString, FString>& stringMap);
 	static TSharedPtr<FSentryJavaObjectWrapper> VariantToNative(const FSentryVariant& variant);
@@ -24,6 +25,7 @@ public:
 
 	/** Conversions from native Java types */
 	static ESentryLevel SentryLevelToUnreal(jobject level);
+	static ESentryLevel SentryLogLevelToUnreal(jobject level);
 	static TMap<FString, FString> StringMapToUnreal(jobject stringMap);
 	static TArray<FString> StringListToUnreal(jobject stringList);
 	static TArray<uint8> ByteArrayToUnreal(jbyteArray byteArray);

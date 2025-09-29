@@ -30,8 +30,8 @@ void FAndroidSentryLog::SetupClassMethods()
 {
 	SetBodyMethod = GetMethod("setBody", "(Ljava/lang/String;)V");
 	GetBodyMethod = GetMethod("getBody", "()Ljava/lang/String;");
-	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLevel;)V");
-	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLevel;");
+	SetLevelMethod = GetMethod("setLevel", "(Lio/sentry/SentryLogLevel;)V");
+	GetLevelMethod = GetMethod("getLevel", "()Lio/sentry/SentryLogLevel;");
 }
 
 void FAndroidSentryLog::SetBody(const FString& body)
@@ -46,12 +46,12 @@ FString FAndroidSentryLog::GetBody() const
 
 void FAndroidSentryLog::SetLevel(ESentryLevel level)
 {
-	TSharedPtr<FSentryJavaObjectWrapper> AndroidLevel = FAndroidSentryConverters::SentryLevelToNative(level);
+	TSharedPtr<FSentryJavaObjectWrapper> AndroidLevel = FAndroidSentryConverters::SentryLogLevelToNative(level);
 	CallMethod<void>(SetLevelMethod, AndroidLevel->GetJObject());
 }
 
 ESentryLevel FAndroidSentryLog::GetLevel() const
 {
 	auto LevelObject = CallObjectMethod<jobject>(GetLevelMethod);
-	return FAndroidSentryConverters::SentryLevelToUnreal(*LevelObject);
+	return FAndroidSentryConverters::SentryLogLevelToUnreal(*LevelObject);
 }
