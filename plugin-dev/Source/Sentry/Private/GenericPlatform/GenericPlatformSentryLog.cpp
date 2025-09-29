@@ -51,7 +51,7 @@ void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
 		levelStr = "error";
 		break;
 	case ESentryLevel::Warning:
-		levelStr = "warning";
+		levelStr = "warn";
 		break;
 	case ESentryLevel::Info:
 		levelStr = "info";
@@ -80,11 +80,13 @@ ESentryLevel FGenericPlatformSentryLog::GetLevel() const
 		return ESentryLevel::Fatal;
 	else if (FCStringAnsi::Strcmp(levelStr, "error") == 0)
 		return ESentryLevel::Error;
-	else if (FCStringAnsi::Strcmp(levelStr, "warning") == 0)
+	else if (FCStringAnsi::Strcmp(levelStr, "warn") == 0)
 		return ESentryLevel::Warning;
 	else if (FCStringAnsi::Strcmp(levelStr, "info") == 0)
 		return ESentryLevel::Info;
 	else if (FCStringAnsi::Strcmp(levelStr, "debug") == 0)
+		return ESentryLevel::Debug;
+	else if (FCStringAnsi::Strcmp(levelStr, "trace") == 0) // map trace to debug
 		return ESentryLevel::Debug;
 	else
 		return ESentryLevel::Info; // default
