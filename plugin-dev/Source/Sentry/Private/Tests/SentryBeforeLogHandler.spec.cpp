@@ -56,18 +56,6 @@ void SentryBeforeLogHandlerSpec::Define()
 			TestLog->SetBody(OriginalBody);
 			TestLog->SetLevel(OriginalLevel);
 
-			// Create a custom handler that modifies the log
-			USentryBeforeLogHandler* ModifyingHandler = NewObject<USentryBeforeLogHandler>();
-			ModifyingHandler->GetClass()->FindFunctionByName(TEXT("HandleBeforeLog"))->GetName();
-
-			// Override the handler behavior through lambda
-			auto ModifyingFunction = [ModifiedBody, ModifiedLevel](USentryLog* LogData) -> USentryLog*
-			{
-				LogData->SetBody(ModifiedBody);
-				LogData->SetLevel(ModifiedLevel);
-				return LogData;
-			};
-
 			// Test that we can modify the log data
 			TestLog->SetBody(ModifiedBody);
 			TestLog->SetLevel(ModifiedLevel);

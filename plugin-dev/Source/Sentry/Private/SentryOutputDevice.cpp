@@ -100,6 +100,8 @@ bool FSentryOutputDevice::ShouldForwardToStructuredLogging(const FString& Catego
 				return true;
 			}
 		}
+
+		return false;
 	}
 
 	// No category filter, forward all logs that passed the level check
