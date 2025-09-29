@@ -89,7 +89,7 @@ ESentryLevel FGenericPlatformSentryLog::GetLevel() const
 	else if (FCStringAnsi::Strcmp(levelStr, "trace") == 0) // map trace to debug
 		return ESentryLevel::Debug;
 	else
-		return ESentryLevel::Info; // default
+		return ESentryLevel::Debug; // default
 }
 
 #endif // USE_SENTRY_NATIVE
