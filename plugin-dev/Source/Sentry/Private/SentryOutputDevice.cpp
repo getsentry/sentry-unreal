@@ -9,10 +9,6 @@
 #include "Engine/Engine.h"
 #include "Utils/SentryLogUtils.h"
 
-#if USE_SENTRY_NATIVE
-#include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
-#endif
-
 FSentryOutputDevice::FSentryOutputDevice()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
@@ -97,16 +93,13 @@ bool FSentryOutputDevice::ShouldForwardToStructuredLogging(const FString& Catego
 	// Check category filter
 	if (StructuredLoggingCategories.Num() > 0)
 	{
-		bool bCategoryFound = false;
 		for (const FString& CategoryFilter : StructuredLoggingCategories)
 		{
 			if (Category.Equals(CategoryFilter, ESearchCase::IgnoreCase))
 			{
-				bCategoryFound = true;
-				break;
+				return true;
 			}
 		}
-		return bCategoryFound;
 	}
 
 	// No category filter, forward all logs that passed the level check
