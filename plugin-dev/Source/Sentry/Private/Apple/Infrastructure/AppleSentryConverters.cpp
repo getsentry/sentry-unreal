@@ -206,7 +206,7 @@ ESentryLevel FAppleSentryConverters::SentryStructuredLogLevelToUnreal(SentryStru
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry structured log level value used. Debug will be returned."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry structured log level value used. Debug will be returned."));
 	}
 
 	return unrealLevel;
