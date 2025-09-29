@@ -134,7 +134,7 @@ bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun(const FString& handler
 
 	if (IsGarbageCollecting())
 	{
-	    // If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
 		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
 		// In this case event will be reported without calling a `beforeSend` handler.
 		UE_LOG(LogSentrySdk, Log, TEXT("Executing `%s` handler is not allowed during garbage collection."), *handlerName);
