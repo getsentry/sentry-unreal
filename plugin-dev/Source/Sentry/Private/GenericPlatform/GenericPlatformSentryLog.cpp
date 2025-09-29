@@ -41,7 +41,7 @@ FString FGenericPlatformSentryLog::GetBody() const
 
 void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
 {
-	const char* levelStr = "info"; // Default to "info" to avoid nullptr
+	const char* levelStr = "debug"; // Default to "debug" to avoid nullptr
 	switch (level)
 	{
 	case ESentryLevel::Fatal:
@@ -73,7 +73,7 @@ ESentryLevel FGenericPlatformSentryLog::GetLevel() const
 
 	if (!levelStr)
 	{
-		return ESentryLevel::Info; // default
+		return ESentryLevel::Debug; // default
 	}
 
 	if (FCStringAnsi::Strcmp(levelStr, "fatal") == 0)

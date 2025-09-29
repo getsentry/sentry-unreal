@@ -180,6 +180,7 @@ void FAndroidSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, co
 			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
 		break;
 	case ESentryLevel::Debug:
+	default:
 		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogDebug", "(Ljava/lang/String;)V",
 			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
 		break;

@@ -258,6 +258,7 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:FormattedMessage];
 		break;
 	case ESentryLevel::Debug:
+	default:
 		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:FormattedMessage];
 		break;
 	}

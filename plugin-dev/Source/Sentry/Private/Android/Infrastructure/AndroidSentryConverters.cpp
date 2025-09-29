@@ -43,7 +43,7 @@ TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLevelToNati
 		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLevel, Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField)));
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Null will be returned."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Null will be returned."));
 	}
 
 	return nativeLevel;
@@ -177,7 +177,7 @@ ESentryLevel FAndroidSentryConverters::SentryLevelToUnreal(jobject level)
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
 	}
 
 	return unrealLevel;
@@ -215,7 +215,7 @@ TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLogLevelToN
 		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField)));
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
 		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField)));
 	}
 
@@ -249,7 +249,7 @@ ESentryLevel FAndroidSentryConverters::SentryLogLevelToUnreal(jobject level)
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry log level value used. Debug will be returned."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry log level value used. Debug will be returned."));
 	}
 
 	return unrealLevel;

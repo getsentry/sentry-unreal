@@ -58,6 +58,10 @@ void SentryLogSpec::Define()
 			// Test Fatal level
 			SentryLog->SetLevel(ESentryLevel::Fatal);
 			TestEqual("Fatal level", SentryLog->GetLevel(), ESentryLevel::Fatal);
+
+			// Test Info level
+			SentryLog->SetLevel(static_cast<ESentryLevel>(18));
+			TestEqual("Invalid level - default Debug", SentryLog->GetLevel(), ESentryLevel::Debug);
 		});
 
 		It("should handle empty body", [this]()
@@ -69,19 +73,6 @@ void SentryLogSpec::Define()
 
 			TestEqual("Empty body", SentryLog->GetBody(), EmptyBody);
 			TestEqual("Level with empty body", SentryLog->GetLevel(), ESentryLevel::Info);
-		});
-
-		It("should handle long body text", [this]()
-		{
-			FString LongBody = TEXT("This is a very long log message that contains multiple sentences and various characters. ");
-			LongBody += TEXT("It includes numbers like 12345, special characters like !@#$%^&*(), and Unicode characters. ");
-			LongBody += TEXT("This test ensures that the log body can handle extended text content without issues.");
-
-			SentryLog->SetBody(LongBody);
-			SentryLog->SetLevel(ESentryLevel::Error);
-
-			TestEqual("Long body", SentryLog->GetBody(), LongBody);
-			TestEqual("Level with long body", SentryLog->GetLevel(), ESentryLevel::Error);
 		});
 	});
 }

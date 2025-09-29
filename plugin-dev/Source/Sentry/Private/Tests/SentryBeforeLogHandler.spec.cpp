@@ -56,6 +56,9 @@ void SentryBeforeLogHandlerSpec::Define()
 			TestLog->SetBody(OriginalBody);
 			TestLog->SetLevel(OriginalLevel);
 
+			TestEqual("Verify original body", TestLog->GetBody(), OriginalBody);
+			TestEqual("Verify oiriginal level", TestLog->GetLevel(), OriginalLevel);
+
 			// Test that we can modify the log data
 			TestLog->SetBody(ModifiedBody);
 			TestLog->SetLevel(ModifiedLevel);

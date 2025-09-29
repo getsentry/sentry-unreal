@@ -539,6 +539,7 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel L
 		sentry_log_info(MessageCStr);
 		break;
 	case ESentryLevel::Debug:
+	default:
 		sentry_log_debug(MessageCStr);
 		break;
 	}
