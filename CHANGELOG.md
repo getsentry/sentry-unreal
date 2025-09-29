@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add commandlet for debug symbols upload ([#1076](https://github.com/getsentry/sentry-unreal/pull/1076))
+
 ### Fixes
 
 - Prevent usage of internal UE logger during crash handling ([#1081](https://github.com/getsentry/sentry-unreal/pull/1081))
