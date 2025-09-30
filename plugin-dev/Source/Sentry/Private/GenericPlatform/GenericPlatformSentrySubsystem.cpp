@@ -128,7 +128,7 @@ bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun() const
 {
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		\ return false;
+		return false;
 	}
 
 	if (IsGarbageCollecting())
@@ -136,7 +136,7 @@ bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun() const
 		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
 		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
 		// In this case event will be reported without calling a `beforeSend` handler.
-		\ return false;
+		return false;
 	}
 
 	return true;
