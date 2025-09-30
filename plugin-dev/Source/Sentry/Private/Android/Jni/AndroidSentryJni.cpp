@@ -130,3 +130,16 @@ JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getLogFilePath(JNIEnv*
 
 	return env->NewStringUTF(TCHAR_TO_UTF8(*LogFilePath));
 }
+
+JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getScreenshotFilePath(JNIEnv* env, jclass clazz)
+{
+	const FString ScreenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*SentryFileUtils::GetLatestScreenshot());
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*ScreenshotFilePath))
+	{
+		return env->NewStringUTF("");
+	}
+
+	return env->NewStringUTF(TCHAR_TO_UTF8(*ScreenshotFilePath));
+}

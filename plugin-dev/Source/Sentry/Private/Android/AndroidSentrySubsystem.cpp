@@ -26,8 +26,13 @@
 #include "Utils/SentryFileUtils.h"
 
 #include "Dom/JsonObject.h"
+#include "HAL/FileManager.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/FileHelper.h"
 #include "Misc/OutputDeviceError.h"
+#include "Misc/Paths.h"
 #include "Serialization/JsonSerializer.h"
+#include "Utils/SentryScreenshotUtils.h"
 
 FAndroidSentrySubsystem::FAndroidSentrySubsystem()
 {
@@ -81,6 +86,14 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "init", "(Landroid/app/Activity;Ljava/lang/String;)V",
 		FJavaWrapper::GameActivityThis, *FSentryJavaObjectWrapper::GetJString(SettingsJsonStr));
+
+	if (IsEnabled())
+	{
+		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
+		{
+			TryCaptureScreenshot();
+		});
+	}
 }
 
 void FAndroidSentrySubsystem::Close()
@@ -339,4 +352,16 @@ void FAndroidSentrySubsystem::HandleAssert()
 {
 	GError->HandleError();
 	PLATFORM_BREAK();
+}
+
+FString FAndroidSentrySubsystem::TryCaptureScreenshot() const
+{
+	FString ScreenshotPath = SentryFileUtils::GetScreenshotPath();
+
+	if (!SentryScreenshotUtils::CaptureScreenshot(ScreenshotPath))
+	{
+		return FString("");
+	}
+
+	return ScreenshotPath;
 }

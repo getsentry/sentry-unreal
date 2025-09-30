@@ -55,6 +55,20 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
+#if PLATFORM_ANDROID
+	Algo::Reverse(*Bitmap);
+
+	for (int32 Y = 0; Y < ViewportSize.Y; ++Y)
+	{
+		int32 RowStart = Y * ViewportSize.X;
+		int32 RowEnd = RowStart + ViewportSize.X - 1;
+		for (int32 X = 0; X < ViewportSize.X / 2; ++X)
+		{
+			Swap((*Bitmap)[RowStart + X], (*Bitmap)[RowEnd - X]);
+		}
+	}
+#endif
+
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	GetHighResScreenshotConfig().MergeMaskIntoAlpha(*Bitmap);
 	TArray<uint8>* CompressedBitmap = new TArray<uint8>();

@@ -11,4 +11,6 @@ public:
 	static FString GetGameLogPath();
 	static FString GetGameLogBackupPath();
 	static FString GetGpuDumpPath();
+	static FString GetScreenshotPath();
+	static FString GetLatestScreenshot();
 };

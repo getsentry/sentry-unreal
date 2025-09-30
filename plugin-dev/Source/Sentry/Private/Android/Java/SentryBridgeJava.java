@@ -39,6 +39,7 @@ public class SentryBridgeJava {
 	public static native Breadcrumb onBeforeBreadcrumb(long handlerAddr, Breadcrumb breadcrumb, Hint hint);
 	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
 	public static native String getLogFilePath(boolean isCrash);
+	public static native String getScreenshotFilePath();
 
 	public static void init(Activity activity, final String settingsJsonStr) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
@@ -56,7 +57,6 @@ public class SentryBridgeJava {
 					options.setDebug(settingJson.getBoolean("debug"));
 					options.setSampleRate(settingJson.getDouble("sampleRate"));
 					options.setMaxBreadcrumbs(settingJson.getInt("maxBreadcrumbs"));
-					options.setAttachScreenshot(settingJson.getBoolean("attachScreenshot"));
 					options.setSendDefaultPii(settingJson.getBoolean("sendDefaultPii"));
 					JSONArray Includes = settingJson.getJSONArray("inAppInclude");
 					for (int i = 0; i < Includes.length(); i++) {
@@ -94,10 +94,12 @@ public class SentryBridgeJava {
 						});
 					}
                     if (settingJson.has("beforeSendHandler")) {
-						options.setBeforeSend(new SentryUnrealBeforeSendCallback(settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getLong("beforeSendHandler")));
+						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
+								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), settingJson.getLong("beforeSendHandler")));
 					}
                     else {
-						options.setBeforeSend(new SentryUnrealBeforeSendCallback(settingJson.getBoolean("enableAutoLogAttachment")));
+						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
+								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot")));
 					}
 				} catch (JSONException e) {
 					throw new RuntimeException(e);
@@ -117,6 +119,8 @@ public class SentryBridgeJava {
 		}
 
 		Sentry.addBreadcrumb(breadcrumb);
+
+		Sentry.getCurrentScopes().captureEnvelope()
 	}
 
 	public static SentryId captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
@@ -243,24 +247,33 @@ public class SentryBridgeJava {
 
 	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
 		private final boolean attachLog;
+		private final boolean attachScreenshot;
 		private final long beforeSendAddr;
 
-		public SentryUnrealBeforeSendCallback(boolean attachLog) {
+		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot) {
 			this.attachLog = attachLog;
+			this.attachScreenshot = attachScreenshot;
 			this.beforeSendAddr = 0;
 		}
 
-		public SentryUnrealBeforeSendCallback(boolean attachLog, long beforeSendAddr) {
+		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot, long beforeSendAddr) {
 			this.attachLog = attachLog;
+			this.attachScreenshot = attachScreenshot;
 			this.beforeSendAddr = beforeSendAddr;
 		}
 
 		@Override
 		public SentryEvent execute(SentryEvent event, Hint hint) {
-			if(attachLog) {
+			if (attachLog) {
 				String logFilePath = getLogFilePath(event.isCrashed());
-				if(!logFilePath.isEmpty()) {
+				if (!logFilePath.isEmpty()) {
 					hint.addAttachment(new Attachment(logFilePath, new File(logFilePath).getName(), "text/plain"));
+				}
+			}
+			if (attachScreenshot && event.isCrashed()) {
+				String screenshotFilePath = getScreenshotFilePath();
+				if (!screenshotFilePath.isEmpty()) {
+					hint.addAttachment(new Attachment(screenshotFilePath, "screenshot.png", "text/plain"));
 				}
 			}
             if (beforeSendAddr != 0) {
