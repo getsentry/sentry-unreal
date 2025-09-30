@@ -46,6 +46,8 @@ FAndroidSentrySubsystem::~FAndroidSentrySubsystem()
 
 void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
 {
+	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
+
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
 	SettingsJson->SetStringField(TEXT("release"), settings->GetEffectiveRelease());
@@ -87,7 +89,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "init", "(Landroid/app/Activity;Ljava/lang/String;)V",
 		FJavaWrapper::GameActivityThis, *FSentryJavaObjectWrapper::GetJString(SettingsJsonStr));
 
-	if (IsEnabled())
+	if (IsEnabled() && isScreenshotAttachmentEnabled)
 	{
 		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
 		{
@@ -219,6 +221,16 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEnsure(const FString& type
 {
 	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureException", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/protocol/SentryId;",
 		*FSentryJavaObjectWrapper::GetJString(type), *FSentryJavaObjectWrapper::GetJString(message));
+
+	if (isScreenshotAttachmentEnabled)
+	{
+		const FString& screenshotPath = TryCaptureScreenshot();
+		if (!screenshotPath.IsEmpty())
+		{
+			FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "uploadScreenshotForEvent", "(Lio/sentry/protocol/SentryId;Ljava/lang/String;)V",
+				*id, *FSentryJavaObjectWrapper::GetJString(IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*screenshotPath)));
+		}
+	}
 
 	return MakeShareable(new FAndroidSentryId(*id));
 }

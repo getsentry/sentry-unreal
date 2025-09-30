@@ -23,6 +23,8 @@ import io.sentry.SamplingContext;
 import io.sentry.IScope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
+import io.sentry.SentryEnvelope;
+import io.sentry.SentryEnvelopeItem;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
@@ -119,8 +121,6 @@ public class SentryBridgeJava {
 		}
 
 		Sentry.addBreadcrumb(breadcrumb);
-
-		Sentry.getCurrentScopes().captureEnvelope()
 	}
 
 	public static SentryId captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
@@ -245,6 +245,34 @@ public class SentryBridgeJava {
 		Sentry.getGlobalScope().clearAttachments();
 	}
 
+	public static void uploadScreenshotForEvent(SentryId eventId, String filePath) {
+		// Screenshot capturing is a best-effort solution so if one wasn't captured (path is empty) skip the upload
+		File screenshotFile = new File(filePath);
+		if (!screenshotFile.exists()) {
+			return;
+		}
+		uploadAttachmentForEvent(eventId, filePath, "screenshot.png", "image/png", true);
+	}
+
+	public static void uploadAttachmentForEvent(SentryId eventId, String filePath, String name, String contentType, boolean deleteAfterUpload) {
+		SentryOptions options = getOptions();
+		Attachment attachment = new Attachment(filePath, name, contentType);
+		SentryEnvelopeItem item = SentryEnvelopeItem.fromAttachment(
+			options.getSerializer(),
+			options.getLogger(),
+			attachment,
+			options.getMaxAttachmentSize()
+		);
+		SentryEnvelope envelope = new SentryEnvelope(eventId, options.getSdkVersion(), item);
+		Sentry.getCurrentScopes().captureEnvelope(envelope);
+		if (deleteAfterUpload) {
+//			File attachmentFile = new File(filePath);
+//			if (!attachmentFile.delete()) {
+//				options.getLogger().log(SentryLevel.ERROR, "Failed to delete file: %s", filePath);
+//			}
+		}
+	}
+
 	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
 		private final boolean attachLog;
 		private final boolean attachScreenshot;
@@ -273,7 +301,7 @@ public class SentryBridgeJava {
 			if (attachScreenshot && event.isCrashed()) {
 				String screenshotFilePath = getScreenshotFilePath();
 				if (!screenshotFilePath.isEmpty()) {
-					hint.addAttachment(new Attachment(screenshotFilePath, "screenshot.png", "text/plain"));
+					SentryBridgeJava.uploadScreenshotForEvent(event.getEventId(), screenshotFilePath);
 				}
 			}
             if (beforeSendAddr != 0) {

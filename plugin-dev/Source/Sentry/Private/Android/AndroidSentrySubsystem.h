@@ -46,6 +46,9 @@ public:
 	virtual void HandleAssert() override;
 
 	FString TryCaptureScreenshot() const;
+
+protected:
+	bool isScreenshotAttachmentEnabled = false;
 };
 
 typedef FAndroidSentrySubsystem FPlatformSentrySubsystem;
