@@ -19,12 +19,13 @@ class FGenericPlatformSentrySubsystem : public ISentrySubsystem
 public:
 	FGenericPlatformSentrySubsystem();
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override;
+	virtual void AddLog(const FString& Body, ESentryLevel Level, const FString& Category) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override;
@@ -54,9 +55,10 @@ public:
 
 	virtual void HandleAssert() override {}
 
-	USentryBeforeSendHandler* GetBeforeSendHandler();
-	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler();
-	USentryTraceSampler* GetTraceSampler();
+	USentryBeforeSendHandler* GetBeforeSendHandler() const;
+	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler() const;
+	USentryBeforeLogHandler* GetBeforeLogHandler() const;
+	USentryTraceSampler* GetTraceSampler() const;
 
 	void TryCaptureScreenshot();
 	void TryCaptureGpuDump();
@@ -75,6 +77,7 @@ protected:
 
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
+	virtual sentry_value_t OnBeforeLog(sentry_value_t log, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
@@ -91,11 +94,19 @@ private:
 	 */
 	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
 	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
+	static sentry_value_t HandleBeforeLog(sentry_value_t log, void* closure);
 	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure);
 
+	/**
+	 * Checks if it's safe to run callback handlers that instantiate UObjects.
+	 * Returns false if during post-load or garbage collection to prevent deadlocks.
+	 */
+	bool IsCallbackSafeToRun() const;
+
 	USentryBeforeSendHandler* beforeSend;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;
+	USentryBeforeLogHandler* beforeLog;
 	USentryTraceSampler* sampler;
 
 	TSharedPtr<FGenericPlatformSentryCrashReporter> crashReporter;

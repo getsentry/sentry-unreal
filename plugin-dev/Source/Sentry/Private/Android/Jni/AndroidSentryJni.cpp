@@ -3,6 +3,7 @@
 #include "Android/AndroidSentryBreadcrumb.h"
 #include "Android/AndroidSentryEvent.h"
 #include "Android/AndroidSentryHint.h"
+#include "Android/AndroidSentryLog.h"
 #include "Android/AndroidSentrySamplingContext.h"
 #include "Android/AndroidSentryScope.h"
 #include "Android/AndroidSentrySubsystem.h"
@@ -13,11 +14,13 @@
 #include "Android/AndroidJNI.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeLogHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
+#include "SentryLog.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
 
@@ -50,7 +53,6 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 {
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
 		return event;
 	}
 
@@ -59,7 +61,6 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
 		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
 		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 		return event;
 	}
 
@@ -97,6 +98,29 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNI
 	USentryBreadcrumb* ProcessedBreadcrumb = handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, HintToProcess);
 
 	return ProcessedBreadcrumb ? breadcrumb : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* env, jclass clazz, jlong objAddr, jobject logEvent)
+{
+	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	{
+		return logEvent;
+	}
+
+	if (IsGarbageCollecting())
+	{
+		// If log event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
+		// since it will cause a deadlock. In this case log event will be reported without calling a `beforeLog` handler.
+		return logEvent;
+	}
+
+	USentryBeforeLogHandler* handler = reinterpret_cast<USentryBeforeLogHandler*>(objAddr);
+
+	USentryLog* LogDataToProcess = USentryLog::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
+
+	USentryLog* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
+
+	return ProcessedLogData ? logEvent : nullptr;
 }
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)

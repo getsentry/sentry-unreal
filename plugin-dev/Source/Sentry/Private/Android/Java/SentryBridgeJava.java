@@ -32,11 +32,13 @@ import io.sentry.exception.ExceptionMechanismException;
 import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
+import io.sentry.SentryLogEvent;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
 	public static native Breadcrumb onBeforeBreadcrumb(long handlerAddr, Breadcrumb breadcrumb, Hint hint);
+	public static native SentryLogEvent onBeforeLog(long handlerAddr, SentryLogEvent logEvent);
 	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
 	public static native String getLogFilePath(boolean isCrash);
 
@@ -67,6 +69,7 @@ public class SentryBridgeJava {
 						options.addInAppExclude(Excludes.getString(i));
 					}
 					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
+					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));
 					if(settingJson.has("tracesSampleRate")) {
 						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
 					}
@@ -98,6 +101,10 @@ public class SentryBridgeJava {
 					}
                     else {
 						options.setBeforeSend(new SentryUnrealBeforeSendCallback(settingJson.getBoolean("enableAutoLogAttachment")));
+					}
+
+					if (settingJson.has("beforeLogHandler")) {
+						options.getLogs().setBeforeSend(new SentryUnrealBeforeLogCallback(settingJson.getLong("beforeLogHandler")));
 					}
 				} catch (JSONException e) {
 					throw new RuntimeException(e);
@@ -241,6 +248,26 @@ public class SentryBridgeJava {
 		Sentry.getGlobalScope().clearAttachments();
 	}
 
+	public static void addLogFatal(final String message) {
+		Sentry.logger().fatal(message);
+	}
+
+	public static void addLogError(final String message) {
+		Sentry.logger().error(message);
+	}
+
+	public static void addLogWarn(final String message) {
+		Sentry.logger().warn(message);
+	}
+
+	public static void addLogInfo(final String message) {
+		Sentry.logger().info(message);
+	}
+
+	public static void addLogDebug(final String message) {
+		Sentry.logger().debug(message);
+	}
+
 	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
 		private final boolean attachLog;
 		private final long beforeSendAddr;
@@ -268,5 +295,21 @@ public class SentryBridgeJava {
 			}
             return event;
         }
+	}
+
+	private static class SentryUnrealBeforeLogCallback implements SentryOptions.Logs.BeforeSendLogCallback {
+		private final long beforeLogAddr;
+
+		public SentryUnrealBeforeLogCallback(long beforeLogAddr) {
+			this.beforeLogAddr = beforeLogAddr;
+		}
+
+		@Override
+		public SentryLogEvent execute(SentryLogEvent logEvent) {
+			if (beforeLogAddr != 0) {
+				return onBeforeLog(beforeLogAddr, logEvent);
+			}
+			return logEvent;
+		}
 	}
 }

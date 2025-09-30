@@ -3,6 +3,7 @@
 #include "SentrySubsystem.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeLogHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
@@ -106,12 +107,17 @@ void USentrySubsystem::Initialize()
 			? NewObject<USentryBeforeBreadcrumbHandler>(this, static_cast<UClass*>(Settings->BeforeBreadcrumbHandler))
 			: nullptr;
 
+	BeforeLogHandler =
+		Settings->BeforeLogHandler != nullptr
+			? NewObject<USentryBeforeLogHandler>(this, static_cast<UClass*>(Settings->BeforeLogHandler))
+			: nullptr;
+
 	TraceSampler =
 		Settings->TracesSampler != nullptr
 			? NewObject<USentryTraceSampler>(this, static_cast<UClass*>(Settings->TracesSampler))
 			: nullptr;
 
-	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, TraceSampler);
+	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
 
 	if (!SubsystemNativeImpl->IsEnabled())
 	{
@@ -225,6 +231,18 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 	}
 
 	SubsystemNativeImpl->AddBreadcrumbWithParams(Message, Category, Type, Data, Level);
+}
+
+void USentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddLog(Body, Level, Category);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()
@@ -860,4 +878,9 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 		});
 		GError = OutputDeviceError.Get();
 	}
+}
+
+USentryBeforeLogHandler* USentrySubsystem::GetBeforeLogHandler() const
+{
+	return BeforeLogHandler;
 }

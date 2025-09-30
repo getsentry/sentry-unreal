@@ -39,7 +39,7 @@ FAndroidSentrySubsystem::~FAndroidSentrySubsystem()
 	SentryJavaClasses::ClearJavaClassRefsCache();
 }
 
-void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
+void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler)
 {
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
@@ -58,6 +58,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
+	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);
@@ -73,6 +74,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	if (beforeSendHandler != nullptr)
 	{
 		SettingsJson->SetNumberField(TEXT("beforeSendHandler"), (jlong)beforeSendHandler);
+	}
+	if (beforeLogHandler != nullptr)
+	{
+		SettingsJson->SetNumberField(TEXT("beforeLogHandler"), (jlong)beforeLogHandler);
 	}
 
 	FString SettingsJsonStr;
@@ -134,6 +139,52 @@ void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, co
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "addBreadcrumb", "(Lio/sentry/Breadcrumb;)V",
 		breadcrumbAndroid->GetJObject());
+}
+
+void FAndroidSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+{
+	// Ignore Empty Bodies
+	if (Body.IsEmpty())
+	{
+		return;
+	}
+
+	// Format body with category
+	FString FormattedMessage;
+	if (!Category.IsEmpty())
+	{
+		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
+	}
+	else
+	{
+		FormattedMessage = Body;
+	}
+
+	// Use level-specific Android Sentry SDK logging functions via Java bridge
+	switch (Level)
+	{
+	case ESentryLevel::Fatal:
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogFatal", "(Ljava/lang/String;)V",
+			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		break;
+	case ESentryLevel::Error:
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogError", "(Ljava/lang/String;)V",
+			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		break;
+	case ESentryLevel::Warning:
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogWarn", "(Ljava/lang/String;)V",
+			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		break;
+	case ESentryLevel::Info:
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogInfo", "(Ljava/lang/String;)V",
+			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		break;
+	case ESentryLevel::Debug:
+	default:
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogDebug", "(Ljava/lang/String;)V",
+			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		break;
+	}
 }
 
 void FAndroidSentrySubsystem::ClearBreadcrumbs()
