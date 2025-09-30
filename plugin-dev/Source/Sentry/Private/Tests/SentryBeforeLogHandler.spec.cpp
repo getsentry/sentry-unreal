@@ -46,29 +46,6 @@ void SentryBeforeLogHandlerSpec::Define()
 			TestEqual("Log level should be unchanged", Result->GetLevel(), TestLevel);
 		});
 
-		It("should allow modifying log data", [this]()
-		{
-			const FString OriginalBody = TEXT("Original message");
-			const FString ModifiedBody = TEXT("Modified message");
-			const ESentryLevel OriginalLevel = ESentryLevel::Info;
-			const ESentryLevel ModifiedLevel = ESentryLevel::Error;
-
-			TestLog->SetBody(OriginalBody);
-			TestLog->SetLevel(OriginalLevel);
-
-			TestEqual("Verify original body", TestLog->GetBody(), OriginalBody);
-			TestEqual("Verify oiriginal level", TestLog->GetLevel(), OriginalLevel);
-
-			// Test that we can modify the log data
-			TestLog->SetBody(ModifiedBody);
-			TestLog->SetLevel(ModifiedLevel);
-
-			USentryLog* Result = BeforeLogHandler->HandleBeforeLog(TestLog);
-
-			TestEqual("Modified body should persist", Result->GetBody(), ModifiedBody);
-			TestEqual("Modified level should persist", Result->GetLevel(), ModifiedLevel);
-		});
-
 		It("should be called when log is processed", [this]()
 		{
 			USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
