@@ -60,7 +60,7 @@ void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
 		levelStr = "debug";
 		break;
 	default:
-		// Use default "info" level for unhandled cases
+		// Use default "debug" level for unhandled cases
 		break;
 	}
 	sentry_value_set_by_key(Log, "level", sentry_value_new_string(levelStr));
