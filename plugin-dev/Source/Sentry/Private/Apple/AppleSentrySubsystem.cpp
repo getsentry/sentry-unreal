@@ -158,7 +158,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				options.beforeSend = ^SentryEvent*(SentryEvent* event) {
 					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 					{
-						UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
 						return event;
 					}
 
@@ -167,7 +166,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 						// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
 						// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
 						// In this case event will be reported without calling a `beforeSend` handler.
-						UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 						return event;
 					}
 

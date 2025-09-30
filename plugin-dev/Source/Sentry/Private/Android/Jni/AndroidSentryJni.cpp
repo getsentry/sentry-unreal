@@ -53,7 +53,6 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 {
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
 		return event;
 	}
 
@@ -62,7 +61,6 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
 		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
 		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 		return event;
 	}
 
@@ -106,7 +104,6 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* en
 {
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeLog` handler is not allowed during object post-loading."));
 		return logEvent;
 	}
 
@@ -114,7 +111,6 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* en
 	{
 		// If log event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
 		// since it will cause a deadlock. In this case log event will be reported without calling a `beforeLog` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeLog` handler is not allowed during garbage collection."));
 		return logEvent;
 	}
 

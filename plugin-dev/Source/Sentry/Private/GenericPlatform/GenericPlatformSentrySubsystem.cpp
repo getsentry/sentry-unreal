@@ -124,12 +124,11 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	return log;
 }
 
-bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun(const FString& handlerName) const
+bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun() const
 {
 	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `%s` handler is not allowed during object post-loading."), *handlerName);
-		return false;
+\		return false;
 	}
 
 	if (IsGarbageCollecting())
@@ -137,8 +136,7 @@ bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun(const FString& handler
 		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
 		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
 		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `%s` handler is not allowed during garbage collection."), *handlerName);
-		return false;
+\		return false;
 	}
 
 	return true;
@@ -158,7 +156,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	if (!IsCallbackSafeToRun(TEXT("beforeSend")))
+	if (!IsCallbackSafeToRun())
 	{
 		return event;
 	}
@@ -187,7 +185,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 		return breadcrumb;
 	}
 
-	if (!IsCallbackSafeToRun(TEXT("beforeBreadcrumb")))
+	if (!IsCallbackSafeToRun())
 	{
 		return breadcrumb;
 	}
@@ -213,7 +211,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 		return log;
 	}
 
-	if (!IsCallbackSafeToRun(TEXT("beforeLog")))
+	if (!IsCallbackSafeToRun())
 	{
 		return log;
 	}
@@ -252,7 +250,7 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
-	if (!IsCallbackSafeToRun(TEXT("traceSampler")))
+	if (!IsCallbackSafeToRun())
 	{
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
