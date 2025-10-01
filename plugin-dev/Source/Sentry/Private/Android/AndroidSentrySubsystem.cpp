@@ -96,7 +96,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 
 	if (IsEnabled() && isScreenshotAttachmentEnabled)
 	{
-		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
+		OnHandleSystemErrorDelegateHandle = FCoreDelegates::OnHandleSystemError.AddLambda([this]()
 		{
 			TryCaptureScreenshot();
 		});
@@ -105,6 +105,12 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 
 void FAndroidSentrySubsystem::Close()
 {
+	if (OnHandleSystemErrorDelegateHandle.IsValid())
+	{
+		FCoreDelegates::OnHandleSystemError.Remove(OnHandleSystemErrorDelegateHandle);
+		OnHandleSystemErrorDelegateHandle.Reset();
+	}
+
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "close", "()V");
 }
 

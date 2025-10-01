@@ -48,8 +48,10 @@ public:
 
 	FString TryCaptureScreenshot() const;
 
-protected:
+private:
 	bool isScreenshotAttachmentEnabled = false;
+
+	FDelegateHandle OnHandleSystemErrorDelegateHandle;
 };
 
 typedef FAndroidSentrySubsystem FPlatformSentrySubsystem;
