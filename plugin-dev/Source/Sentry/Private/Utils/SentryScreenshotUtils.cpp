@@ -55,7 +55,8 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
-#if PLATFORM_ANDROID
+	// On Android bitmap fill order is different so we flip and mirror it accordingly to get a proper image
+#if PLATFORM_ANDROID_ARM64
 	Algo::Reverse(*Bitmap);
 
 	for (int32 Y = 0; Y < ViewportSize.Y; ++Y)
