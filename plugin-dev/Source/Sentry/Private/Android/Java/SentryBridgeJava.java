@@ -24,8 +24,6 @@ import io.sentry.SamplingContext;
 import io.sentry.IScope;
 import io.sentry.ScopeCallback;
 import io.sentry.Sentry;
-import io.sentry.SentryEnvelope;
-import io.sentry.SentryEnvelopeItem;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
