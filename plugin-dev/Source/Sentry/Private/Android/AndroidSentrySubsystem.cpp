@@ -219,18 +219,29 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEventWithScope(TSharedPtr<
 
 TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
-	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureException", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/protocol/SentryId;",
-		*FSentryJavaObjectWrapper::GetJString(type), *FSentryJavaObjectWrapper::GetJString(message));
+	TSharedPtr<FAndroidSentryAttachment> ScreenshotAttachment = nullptr;
 
 	if (isScreenshotAttachmentEnabled)
 	{
-		const FString& screenshotPath = TryCaptureScreenshot();
-		if (!screenshotPath.IsEmpty())
+		const FString& ScreenshotPath = TryCaptureScreenshot();
+		if (!ScreenshotPath.IsEmpty())
 		{
-			FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "uploadScreenshotForEvent", "(Lio/sentry/protocol/SentryId;Ljava/lang/String;)V",
-				*id, *FSentryJavaObjectWrapper::GetJString(IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*screenshotPath)));
+			TArray<uint8> ScreenshotData;
+			if (FFileHelper::LoadFileToArray(ScreenshotData, *ScreenshotPath))
+			{
+				ScreenshotAttachment = MakeShareable(new FAndroidSentryAttachment(ScreenshotData, TEXT("screenshot.png"), TEXT("image/png")));
+			}
+
+			if (!IFileManager::Get().Delete(*ScreenshotPath))
+			{
+				UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot attachment: %s"), *ScreenshotPath);
+			}
 		}
 	}
+
+	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureException", "(Ljava/lang/String;Ljava/lang/String;Lio/sentry/Attachment;)Lio/sentry/protocol/SentryId;",
+		*FSentryJavaObjectWrapper::GetJString(type), *FSentryJavaObjectWrapper::GetJString(message),
+		ScreenshotAttachment.IsValid() ? ScreenshotAttachment->GetJObject() : nullptr);
 
 	return MakeShareable(new FAndroidSentryId(*id));
 }
