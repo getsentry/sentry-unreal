@@ -350,7 +350,16 @@ public class SentryBridgeJava {
 		FileInputStream fis = new FileInputStream(file);
 		try {
 			byte[] buffer = new byte[(int) file.length()];
-			fis.read(buffer);
+			int offset = 0;
+			int remaining = buffer.length;
+			while (remaining > 0) {
+				int bytesRead = fis.read(buffer, offset, remaining);
+				if (bytesRead < 0) {
+					throw new Exception("Unexpected end of file while reading: " + file.getAbsolutePath());
+				}
+				offset += bytesRead;
+				remaining -= bytesRead;
+			}
 			return buffer;
 		} finally {
 			fis.close();
