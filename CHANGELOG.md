@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add screenshot capturing for ensure/assert events on Android ([#1097](https://github.com/getsentry/sentry-unreal/pull/1097))
+
 ## 1.2.0-beta.1
 
 ### Features
