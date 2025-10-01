@@ -23,4 +23,11 @@ public:
 
 private:
 	TMap<ESentryLevel, bool> BreadcrumbFlags;
+	TMap<ESentryLevel, bool> StructuredLoggingFlags;
+
+	bool bIsStructuredLoggingEnabled;
+	TArray<FString> StructuredLoggingCategories;
+	bool bSendBreadcrumbsWithStructuredLogging;
+
+	bool ShouldForwardToStructuredLogging(const FString& Category, ESentryLevel Level) const;
 };

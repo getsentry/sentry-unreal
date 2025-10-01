@@ -57,6 +57,7 @@ function packFiles()
             $newSentrySubsystemHeader = $newSentrySubsystemHeader `
                 -replace 'USentryBeforeSendHandler\* BeforeSendHandler;', 'TObjectPtr<USentryBeforeSendHandler> BeforeSendHandler;' `
                 -replace 'USentryBeforeBreadcrumbHandler\* BeforeBreadcrumbHandler;', 'TObjectPtr<USentryBeforeBreadcrumbHandler> BeforeBreadcrumbHandler;' `
+                -replace 'USentryBeforeLogHandler\* BeforeLogHandler;', 'TObjectPtr<USentryBeforeLogHandler> BeforeLogHandler;' `
                 -replace 'USentryTraceSampler\* TraceSampler;', 'TObjectPtr<USentryTraceSampler> TraceSampler;'
         }
 

@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.2.0-beta.1
+
+### Features
+
+- Implement structured logging for Unreal (all platforms) ([#1091](https://github.com/getsentry/sentry-unreal/pull/1091))
 
 ### Fixes
 
