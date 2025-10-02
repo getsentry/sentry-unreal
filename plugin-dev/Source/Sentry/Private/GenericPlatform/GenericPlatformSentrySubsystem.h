@@ -98,12 +98,6 @@ private:
 	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure);
 
-	/**
-	 * Checks if it's safe to run callback handlers that instantiate UObjects.
-	 * Returns false if during post-load or garbage collection to prevent deadlocks.
-	 */
-	bool IsCallbackSafeToRun() const;
-
 	USentryBeforeSendHandler* beforeSend;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;
 	USentryBeforeLogHandler* beforeLog;

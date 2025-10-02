@@ -26,8 +26,8 @@
 #include "SentrySubsystem.h"
 #include "SentryTraceSampler.h"
 
+#include "Utils/SentryCallbackUtils.h"
 #include "Utils/SentryFileUtils.h"
-#include "Utils/SentryLogUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
 #include "Infrastructure/GenericPlatformSentryConverters.h"
@@ -40,10 +40,7 @@
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
-#include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
-#include "Misc/ScopeLock.h"
-#include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
 extern CORE_API bool GIsGPUCrashed;
@@ -124,24 +121,6 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	return log;
 }
 
-bool FGenericPlatformSentrySubsystem::IsCallbackSafeToRun() const
-{
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
-	{
-		return false;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case event will be reported without calling a `beforeSend` handler.
-		return false;
-	}
-
-	return true;
-}
-
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
 {
 	if (!closure || this != closure)
@@ -156,7 +135,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	if (!IsCallbackSafeToRun())
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		return event;
 	}
@@ -185,7 +164,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 		return breadcrumb;
 	}
 
-	if (!IsCallbackSafeToRun())
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		return breadcrumb;
 	}
@@ -211,7 +190,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 		return log;
 	}
 
-	if (!IsCallbackSafeToRun())
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		return log;
 	}
@@ -250,7 +229,7 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
-	if (!IsCallbackSafeToRun())
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
