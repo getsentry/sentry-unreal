@@ -30,12 +30,11 @@
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
 
+#include "Utils/SentryCallbackUtils.h"
 #include "Utils/SentryFileUtils.h"
-#include "Utils/SentryLogUtils.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
-#include "HAL/PlatformSentryAttachment.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -99,8 +98,14 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler && traceSampler != nullptr)
 			{
 				options.tracesSampler = ^NSNumber*(SentrySamplingContext* samplingContext) {
-					FGCScopeGuard GCScopeGuard;
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
+					{
+						// Falling back to default sampling value without calling a custom sampling function
+						return nil;
+					}
+
 					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new FAppleSentrySamplingContext(samplingContext)));
+
 					float samplingValue;
 					return traceSampler->Sample(Context, samplingValue) ? [NSNumber numberWithFloat:samplingValue] : nil;
 				};
@@ -108,17 +113,9 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (beforeBreadcrumbHandler != nullptr)
 			{
 				options.beforeBreadcrumb = ^SentryBreadcrumb*(SentryBreadcrumb* breadcrumb) {
-					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
-						// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
-						return breadcrumb;
-					}
-
-					if (IsGarbageCollecting())
-					{
-						// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-						// since there is no guarantee it will be ever freed.
-						// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
+						// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
 						return breadcrumb;
 					}
 
@@ -132,17 +129,9 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (beforeLogHandler != nullptr)
 			{
 				options.beforeSendLog = ^SentryLog*(SentryLog* log) {
-					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
-						// Don't print to logs within `onBeforeLog` handler as this can lead to creating new log
-						return log;
-					}
-
-					if (IsGarbageCollecting())
-					{
-						// If log is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-						// since there is no guarantee it will be ever freed.
-						// In this case log will be added without calling a `beforeLog` handler.
+						// Log will be added without calling a `onBeforeLog` handler
 						return log;
 					}
 
@@ -156,16 +145,9 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (beforeSendHandler != nullptr)
 			{
 				options.beforeSend = ^SentryEvent*(SentryEvent* event) {
-					if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
-						return event;
-					}
-
-					if (IsGarbageCollecting())
-					{
-						// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-						// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-						// In this case event will be reported without calling a `beforeSend` handler.
+						// Event will be sent without calling a `onBeforeSend` handler
 						return event;
 					}
 
