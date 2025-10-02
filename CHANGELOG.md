@@ -10,6 +10,9 @@
 - Bump CLI from v2.55.0 to v2.56.0 ([#1094](https://github.com/getsentry/sentry-unreal/pull/1094))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2560)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.55.0...2.56.0)
+- Bump Native SDK from v0.11.1 to v0.11.2 ([#1100](https://github.com/getsentry/sentry-unreal/pull/1100))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0112)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.11.1...0.11.2)
 
 ## 1.2.0-beta.1
 
