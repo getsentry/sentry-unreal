@@ -6,6 +6,15 @@
 
 - Add screenshot capturing for ensure/assert events on Android ([#1097](https://github.com/getsentry/sentry-unreal/pull/1097))
 
+### Dependencies
+
+- Bump Java SDK (Android) from v8.22.0 to v8.23.0 ([#1098](https://github.com/getsentry/sentry-unreal/pull/1098))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8230)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.22.0...8.23.0)
+- Bump CLI from v2.55.0 to v2.56.0 ([#1094](https://github.com/getsentry/sentry-unreal/pull/1094))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2560)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.55.0...2.56.0)
+
 ## 1.2.0-beta.1
 
 ### Features
