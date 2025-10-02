@@ -30,6 +30,7 @@
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
 
+#include "Utils/SentryCallbackUtils.h"
 #include "Utils/SentryFileUtils.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
@@ -97,7 +98,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler && traceSampler != nullptr)
 			{
 				options.tracesSampler = ^NSNumber*(SentrySamplingContext* samplingContext) {
-					if (!IsCallbackSafeToRun())
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Falling back to default sampling value without calling a custom sampling function
 						return nil;
@@ -112,7 +113,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (beforeBreadcrumbHandler != nullptr)
 			{
 				options.beforeBreadcrumb = ^SentryBreadcrumb*(SentryBreadcrumb* breadcrumb) {
-					if (!IsCallbackSafeToRun())
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
 						return breadcrumb;
@@ -128,7 +129,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (beforeLogHandler != nullptr)
 			{
 				options.beforeSendLog = ^SentryLog*(SentryLog* log) {
-					if (!IsCallbackSafeToRun())
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Log will be added without calling a `onBeforeLog` handler
 						return log;
@@ -144,7 +145,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			if (beforeSendHandler != nullptr)
 			{
 				options.beforeSend = ^SentryEvent*(SentryEvent* event) {
-					if (!IsCallbackSafeToRun())
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Event will be sent without calling a `onBeforeSend` handler
 						return event;
@@ -565,22 +566,4 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 	});
 
 	return Screenshots[0];
-}
-
-bool FAppleSentrySubsystem::IsCallbackSafeToRun() const
-{
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
-	{
-		return false;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If callback is about to be called during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case a custom callback handler won't be called.
-		return false;
-	}
-
-	return true;
 }

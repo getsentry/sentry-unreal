@@ -59,11 +59,4 @@ protected:
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
-
-private:
-	/**
-	 * Checks if it's safe to run callback handlers that instantiate UObjects.
-	 * Returns false if during post-load or garbage collection to prevent deadlocks.
-	 */
-	bool IsCallbackSafeToRun() const;
 };
