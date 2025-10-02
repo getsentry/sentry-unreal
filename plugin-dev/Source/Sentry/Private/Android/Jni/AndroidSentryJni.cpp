@@ -24,11 +24,13 @@
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
 
+#include "Utils/SentryCallbackUtils.h"
+#include "Utils/SentryFileUtils.h"
+
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
-#include "Utils/SentryFileUtils.h"
 
 JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong callbackId, jobject scope)
 {
@@ -51,16 +53,9 @@ JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* 
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* env, jclass clazz, jlong objAddr, jobject event, jobject hint)
 {
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		return event;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case event will be reported without calling a `beforeSend` handler.
+		// Event will be sent without calling a `onBeforeSend` handler
 		return event;
 	}
 
@@ -76,17 +71,9 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)
 {
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
-		return breadcrumb;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since there is no guarantee it will be ever freed.
-		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
+		// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
 		return breadcrumb;
 	}
 
@@ -102,15 +89,9 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNI
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* env, jclass clazz, jlong objAddr, jobject logEvent)
 {
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		return logEvent;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If log event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock. In this case log event will be reported without calling a `beforeLog` handler.
+		// Log will be added without calling a `onBeforeLog` handler
 		return logEvent;
 	}
 
@@ -125,7 +106,11 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* en
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
 {
-	FGCScopeGuard GCScopeGuard;
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Falling back to default sampling value without calling a custom sampling function
+		return -1.0f;
+	}
 
 	USentryTraceSampler* sampler = reinterpret_cast<USentryTraceSampler*>(objAddr);
 
@@ -137,7 +122,7 @@ JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv*
 		return (jfloat)samplingValue;
 	}
 
-	// to avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
+	// To avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
 	// which should be interpreted as `null` in Java code to fallback to fixed sample rate value
 	return -1.0f;
 }
