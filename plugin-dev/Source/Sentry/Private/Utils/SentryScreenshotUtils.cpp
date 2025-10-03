@@ -1,10 +1,9 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryScreenshotUtils.h"
-
-#include "HighResScreenshot.h"
 #include "SentryDefines.h"
 
+#include "HighResScreenshot.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Framework/Application/SlateApplication.h"
@@ -55,18 +54,27 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
-	// On Android bitmap fill order is different so we flip and mirror it accordingly to get a proper image
-#if PLATFORM_ANDROID_ARM64
-	Algo::Reverse(*Bitmap);
-
-	for (int32 Y = 0; Y < ViewportSize.Y; ++Y)
+#if PLATFORM_ANDROID
+	FString RHIName = GDynamicRHI ? GDynamicRHI->GetName() : TEXT("Unknown");
+	if (RHIName.Contains(TEXT("OpenGL")))
 	{
-		int32 RowStart = Y * ViewportSize.X;
-		int32 RowEnd = RowStart + ViewportSize.X - 1;
-		for (int32 X = 0; X < ViewportSize.X / 2; ++X)
+		UE_LOG(LogSentrySdk, Log, TEXT("Applying OpenGL flip/mirror correction for captured screenshot"));
+
+		Algo::Reverse(*Bitmap);
+
+		for (int32 Y = 0; Y < ViewportSize.Y; ++Y)
 		{
-			Swap((*Bitmap)[RowStart + X], (*Bitmap)[RowEnd - X]);
+			int32 RowStart = Y * ViewportSize.X;
+			int32 RowEnd = RowStart + ViewportSize.X - 1;
+			for (int32 X = 0; X < ViewportSize.X / 2; ++X)
+			{
+				Swap((*Bitmap)[RowStart + X], (*Bitmap)[RowEnd - X]);
+			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("No flip/mirror correction required captured screenshot (Vulkan or other RHI)"));
 	}
 #endif
 
