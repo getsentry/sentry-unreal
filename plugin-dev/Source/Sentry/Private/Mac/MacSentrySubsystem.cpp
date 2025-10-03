@@ -20,11 +20,22 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* settings, USen
 
 	if (IsEnabled() && isScreenshotAttachmentEnabled)
 	{
-		FCoreDelegates::OnHandleSystemError.AddLambda([this]()
+		OnHandleSystemErrorDelegateHandle = FCoreDelegates::OnHandleSystemError.AddLambda([this]()
 		{
 			TryCaptureScreenshot();
 		});
 	}
+}
+
+void FMacSentrySubsystem::Close()
+{
+	if (OnHandleSystemErrorDelegateHandle.IsValid())
+	{
+		FCoreDelegates::OnHandleSystemError.Remove(OnHandleSystemErrorDelegateHandle);
+		OnHandleSystemErrorDelegateHandle.Reset();
+	}
+
+	FAppleSentrySubsystem::Close();
 }
 
 TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
