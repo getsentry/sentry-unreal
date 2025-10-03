@@ -3,10 +3,10 @@
 #include "SentryScreenshotUtils.h"
 #include "SentryDefines.h"
 
-#include "HighResScreenshot.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Framework/Application/SlateApplication.h"
+#include "HighResScreenshot.h"
 #include "ImageUtils.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
