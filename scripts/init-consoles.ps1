@@ -170,7 +170,7 @@ function New-SymbolicLink {
 }
 
 # Symlink .uplugin file
-$upluginFiles = Get-ChildItem -Path $sourceDir -Filter "*.uplugin"
+$upluginFiles = @(Get-ChildItem -Path $sourceDir -Filter "*.uplugin" -ErrorAction SilentlyContinue)
 if ($upluginFiles.Count -eq 0) {
     throw "No .uplugin file found in $sourceDir"
 }
@@ -180,7 +180,7 @@ New-SymbolicLink -LinkPath $upluginLink -TargetPath $upluginTarget
 Write-Host "  Linked: $($upluginFiles[0].Name)" -ForegroundColor Gray
 
 # Symlink .Build.cs file
-$buildcsFiles = Get-ChildItem -Path (Join-Path $sourceDir "Source") -Filter "*.Build.cs" -ErrorAction SilentlyContinue
+$buildcsFiles = @(Get-ChildItem -Path (Join-Path $sourceDir "Source") -Filter "*.Build.cs" -ErrorAction SilentlyContinue)
 if ($buildcsFiles.Count -gt 0) {
     $buildcsTarget = $buildcsFiles[0].FullName
     $buildcsLink = Join-Path $targetSourceRoot $buildcsFiles[0].Name
