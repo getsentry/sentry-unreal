@@ -71,11 +71,11 @@ Write-Host "  ✓ Extension path validated" -ForegroundColor Green
 
 # Step 2: Build extension
 Write-Host "`n[2/5] Building extension..." -ForegroundColor Yellow
-Write-Host "  Running: cmake --workflow --preset $($config.Preset)"
+Write-Host "  Running: cmake --workflow --preset $($config.Preset) --fresh"
 
 Push-Location $ExtensionPath
 try {
-    $buildOutput = & cmake --workflow --preset $config.Preset 2>&1
+    $buildOutput = & cmake --workflow --preset $config.Preset --fresh 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Host $buildOutput -ForegroundColor Red
         throw "Build failed with exit code $LASTEXITCODE"
