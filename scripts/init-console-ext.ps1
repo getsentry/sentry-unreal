@@ -47,10 +47,10 @@ Write-Host "Extension path: $ExtensionPath"
 # Step 1: Validate extension path
 Write-Host "`n[1/5] Validating extension path..." -ForegroundColor Yellow
 
-$ExtensionPath = Resolve-Path $ExtensionPath -ErrorAction Stop
 if (-not (Test-Path $ExtensionPath)) {
     throw "Extension path does not exist: $ExtensionPath"
 }
+$ExtensionPath = Resolve-Path $ExtensionPath
 
 $cmakeFile = Join-Path $ExtensionPath "CMakeLists.txt"
 if (-not (Test-Path $cmakeFile)) {
