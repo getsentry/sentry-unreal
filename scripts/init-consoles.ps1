@@ -1,203 +1,138 @@
 param(
-    [Parameter(Mandatory=$true)]
-    [ValidateSet('Switch', 'PS5', 'XSX', 'XB1')]
-    [string]$Platform,
-
-    [Parameter(Mandatory=$true)]
-    [string]$ExtensionPath
+    [switch]$All,
+    [switch]$Switch,
+    [switch]$PS5,
+    [switch]$XSX,
+    [switch]$XB1
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Platform-specific configuration
-$platformConfig = @{
+Write-Host "Console Extension Setup" -ForegroundColor Cyan
+Write-Host "=======================" -ForegroundColor Cyan
+
+# If -All is specified, enable all platforms
+if ($All) {
+    $Switch = $true
+    $PS5 = $true
+    $XSX = $true
+    $XB1 = $true
+}
+
+# Check if at least one platform is selected
+if (-not ($Switch -or $PS5 -or $XSX -or $XB1)) {
+    Write-Host "Error: No platform specified. Use -All or specify individual platforms (-Switch, -PS5, -XSX, -XB1)" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Examples:" -ForegroundColor Gray
+    Write-Host "  ./scripts/init-consoles.ps1 -All" -ForegroundColor Gray
+    Write-Host "  ./scripts/init-consoles.ps1 -Switch -PS5" -ForegroundColor Gray
+    Write-Host "  ./scripts/init-consoles.ps1 -XSX -XB1" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Environment variables required:" -ForegroundColor Gray
+    Write-Host "  SENTRY_SWITCH_PATH       - Path to sentry-switch repo" -ForegroundColor Gray
+    Write-Host "  SENTRY_PLAYSTATION_PATH  - Path to sentry-playstation repo" -ForegroundColor Gray
+    Write-Host "  SENTRY_XBOX_PATH         - Path to sentry-xbox repo" -ForegroundColor Gray
+    exit 1
+}
+
+# Platform configuration with env var mapping
+$platformConfigs = @{
     'Switch' = @{
-        Preset = 'nx64-unreal'
-        BuildDir = 'nx64-unreal'
-        PlatformFolder = 'Switch'
-        SourceDir = 'Sentry'
+        EnvVar = 'SENTRY_SWITCH_PATH'
+        Enabled = $Switch
     }
     'PS5' = @{
-        Preset = 'ps5-unreal'
-        BuildDir = 'ps5-unreal'
-        PlatformFolder = 'PS5'
-        SourceDir = 'Sentry'
+        EnvVar = 'SENTRY_PLAYSTATION_PATH'
+        Enabled = $PS5
     }
     'XSX' = @{
-        Preset = 'scarlett-unreal'
-        BuildDir = 'scarlett-unreal'
-        PlatformFolder = 'XSX'
-        SourceDir = 'Sentry_XSX'
+        EnvVar = 'SENTRY_XBOX_PATH'
+        Enabled = $XSX
     }
     'XB1' = @{
-        Preset = 'xboxone-unreal'
-        BuildDir = 'xboxone-unreal'
-        PlatformFolder = 'XB1'
-        SourceDir = 'Sentry_XB1'
+        EnvVar = 'SENTRY_XBOX_PATH'
+        Enabled = $XB1
     }
 }
 
-$config = $platformConfig[$Platform]
-$repoRoot = Resolve-Path "$PSScriptRoot/.."
+# Track results
+$results = @()
 
-Write-Host "Setting up $Platform console extension..." -ForegroundColor Cyan
-Write-Host "Extension path: $ExtensionPath" -ForegroundColor Gray
-Write-Host "Platform folder: $($config.PlatformFolder)" -ForegroundColor Gray
+# Process each enabled platform
+foreach ($platform in $platformConfigs.Keys | Sort-Object) {
+    $config = $platformConfigs[$platform]
 
-# Step 1: Validate extension path
-Write-Host "`n[1/5] Validating extension path..." -ForegroundColor Yellow
-
-$ExtensionPath = Resolve-Path $ExtensionPath -ErrorAction Stop
-if (-not (Test-Path $ExtensionPath)) {
-    throw "Extension path does not exist: $ExtensionPath"
-}
-
-$cmakeFile = Join-Path $ExtensionPath "CMakeLists.txt"
-if (-not (Test-Path $cmakeFile)) {
-    throw "CMakeLists.txt not found in extension path: $ExtensionPath"
-}
-
-$unrealDir = Join-Path $ExtensionPath "unreal"
-if (-not (Test-Path $unrealDir)) {
-    throw "unreal directory not found in extension path: $ExtensionPath"
-}
-
-$sourceDir = Join-Path $unrealDir $config.SourceDir
-if (-not (Test-Path $sourceDir)) {
-    throw "Source directory not found: $sourceDir"
-}
-
-Write-Host "  ✓ Extension path validated" -ForegroundColor Green
-
-# Step 2: Build extension
-Write-Host "`n[2/5] Building extension..." -ForegroundColor Yellow
-Write-Host "  Running: cmake --workflow --preset $($config.Preset)" -ForegroundColor Gray
-
-Push-Location $ExtensionPath
-try {
-    $buildOutput = & cmake --workflow --preset $config.Preset 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host $buildOutput -ForegroundColor Red
-        throw "Build failed with exit code $LASTEXITCODE"
+    if (-not $config.Enabled) {
+        continue
     }
-    Write-Host "  ✓ Extension built successfully" -ForegroundColor Green
-} finally {
-    Pop-Location
-}
 
-# Verify build output exists
-$buildOutputDir = Join-Path $ExtensionPath "build" $config.BuildDir "unreal" "Sentry"
-if (-not (Test-Path $buildOutputDir)) {
-    throw "Build output directory not found: $buildOutputDir"
-}
+    Write-Host "`n[$platform]" -ForegroundColor Cyan
 
-# Step 3: Create directory structure in sample project
-Write-Host "`n[3/5] Creating directory structure..." -ForegroundColor Yellow
+    # Get extension path from environment variable
+    $envVarName = $config.EnvVar
+    $extensionPath = [Environment]::GetEnvironmentVariable($envVarName)
 
-$targetPluginRoot = Join-Path $repoRoot "sample" "Platforms" $config.PlatformFolder "Plugins" "Sentry"
-$targetSourceRoot = Join-Path $targetPluginRoot "Source"
-$targetThirdPartyDir = Join-Path $targetSourceRoot "ThirdParty" $config.PlatformFolder
-
-# Create all necessary directories
-$dirsToCreate = @(
-    $targetPluginRoot,
-    $targetSourceRoot,
-    (Join-Path $targetSourceRoot "Sentry" "Private"),
-    $targetThirdPartyDir
-)
-
-foreach ($dir in $dirsToCreate) {
-    if (-not (Test-Path $dir)) {
-        New-Item -ItemType Directory -Path $dir -Force | Out-Null
-        Write-Host "  Created: $dir" -ForegroundColor Gray
+    if (-not $extensionPath) {
+        Write-Host "ERROR: Environment variable '$envVarName' is not set" -ForegroundColor Red
+        $results += @{
+            Platform = $platform
+            Status = "Failed"
+            Message = "Environment variable not set: $envVarName"
+        }
+        continue
     }
-}
 
-Write-Host "  ✓ Directory structure created" -ForegroundColor Green
+    # Call init-console-ext.ps1 for this platform
+    try {
+        $scriptPath = Join-Path $PSScriptRoot "init-console-ext.ps1"
+        & $scriptPath -Platform $platform -ExtensionPath $extensionPath
 
-# Step 4: Copy build artifacts (ThirdParty libs/headers)
-Write-Host "`n[4/5] Copying build artifacts..." -ForegroundColor Yellow
+        if ($LASTEXITCODE -ne 0) {
+            throw "Script failed with exit code $LASTEXITCODE"
+        }
 
-$buildThirdPartyDir = Join-Path $buildOutputDir "Source" "ThirdParty" $config.PlatformFolder
-if (-not (Test-Path $buildThirdPartyDir)) {
-    throw "Build ThirdParty directory not found: $buildThirdPartyDir"
-}
-
-# Remove existing ThirdParty directory if it exists to ensure clean copy
-if (Test-Path $targetThirdPartyDir) {
-    Remove-Item -Path $targetThirdPartyDir -Recurse -Force
-}
-
-# Copy entire ThirdParty directory
-Copy-Item -Path $buildThirdPartyDir -Destination (Join-Path $targetSourceRoot "ThirdParty") -Recurse -Force
-Write-Host "  Copied: ThirdParty/$($config.PlatformFolder)/" -ForegroundColor Gray
-
-Write-Host "  ✓ Build artifacts copied" -ForegroundColor Green
-
-# Step 5: Symlink source files for live editing
-Write-Host "`n[5/5] Creating symlinks to source files..." -ForegroundColor Yellow
-
-# Helper function to create symlink/junction
-function New-SymbolicLink {
-    param(
-        [string]$LinkPath,
-        [string]$TargetPath
-    )
-
-    # Remove existing link if it exists
-    if (Test-Path $LinkPath) {
-        $item = Get-Item $LinkPath
-        if ($item.LinkType -eq "Junction" -or $item.LinkType -eq "SymbolicLink") {
-            $item.Delete()
-        } else {
-            Remove-Item -Path $LinkPath -Recurse -Force
+        $results += @{
+            Platform = $platform
+            Status = "Success"
+            Message = "Setup completed"
         }
     }
-
-    # Create parent directory if needed
-    $parentDir = Split-Path -Parent $LinkPath
-    if (-not (Test-Path $parentDir)) {
-        New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
+    catch {
+        Write-Host "ERROR: Failed to setup $platform - $_" -ForegroundColor Red
+        $results += @{
+            Platform = $platform
+            Status = "Failed"
+            Message = $_.Exception.Message
+        }
     }
+}
 
-    # Create junction (works cross-platform with PowerShell)
-    if (Test-Path $TargetPath -PathType Container) {
-        New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath | Out-Null
+# Summary report
+Write-Host "`n========================================" -ForegroundColor Cyan
+Write-Host "Summary" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+
+$successCount = 0
+$failCount = 0
+
+foreach ($result in $results) {
+    $statusColor = if ($result.Status -eq "Success") { "Green" } else { "Red" }
+    $statusSymbol = if ($result.Status -eq "Success") { "✓" } else { "✗" }
+
+    Write-Host "$statusSymbol $($result.Platform): " -NoNewline -ForegroundColor $statusColor
+    Write-Host $result.Message -ForegroundColor Gray
+
+    if ($result.Status -eq "Success") {
+        $successCount++
     } else {
-        New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath | Out-Null
+        $failCount++
     }
 }
 
-# Symlink .uplugin file
-$upluginFiles = @(Get-ChildItem -Path $sourceDir -Filter "*.uplugin" -ErrorAction SilentlyContinue)
-if ($upluginFiles.Count -eq 0) {
-    throw "No .uplugin file found in $sourceDir"
+Write-Host ""
+Write-Host "Total: $($results.Count) | Success: $successCount | Failed: $failCount" -ForegroundColor $(if ($failCount -eq 0) { "Green" } else { "Yellow" })
+
+if ($failCount -gt 0) {
+    exit 1
 }
-$upluginTarget = $upluginFiles[0].FullName
-$upluginLink = Join-Path $targetPluginRoot $upluginFiles[0].Name
-New-SymbolicLink -LinkPath $upluginLink -TargetPath $upluginTarget
-Write-Host "  Linked: $($upluginFiles[0].Name)" -ForegroundColor Gray
-
-# Symlink .Build.cs file
-$buildcsFiles = @(Get-ChildItem -Path (Join-Path $sourceDir "Source") -Filter "*.Build.cs" -ErrorAction SilentlyContinue)
-if ($buildcsFiles.Count -gt 0) {
-    $buildcsTarget = $buildcsFiles[0].FullName
-    $buildcsLink = Join-Path $targetSourceRoot $buildcsFiles[0].Name
-    New-SymbolicLink -LinkPath $buildcsLink -TargetPath $buildcsTarget
-    Write-Host "  Linked: Source/$($buildcsFiles[0].Name)" -ForegroundColor Gray
-}
-
-# Symlink Sentry/Private directory (contains .cpp/.h files)
-$privateSourceDir = Join-Path $sourceDir "Source" "Sentry" "Private"
-if (Test-Path $privateSourceDir) {
-    $privateTargetDir = Join-Path $targetSourceRoot "Sentry" "Private"
-    New-SymbolicLink -LinkPath $privateTargetDir -TargetPath $privateSourceDir
-    Write-Host "  Linked: Source/Sentry/Private/" -ForegroundColor Gray
-}
-
-Write-Host "  ✓ Source files symlinked" -ForegroundColor Green
-
-Write-Host "`n✓ Console extension setup complete!" -ForegroundColor Green
-Write-Host "`nTarget location: $targetPluginRoot" -ForegroundColor Cyan
-Write-Host "You can now modify console-specific code and changes will be tracked in the extension repo." -ForegroundColor Gray
