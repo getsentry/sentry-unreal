@@ -42,8 +42,7 @@ $config = $platformConfig[$Platform]
 $repoRoot = Resolve-Path "$PSScriptRoot/.."
 
 Write-Host "Setting up $Platform console extension..." -ForegroundColor Cyan
-Write-Host "Extension path: $ExtensionPath" -ForegroundColor Gray
-Write-Host "Platform folder: $($config.PlatformFolder)" -ForegroundColor Gray
+Write-Host "Extension path: $ExtensionPath"
 
 # Step 1: Validate extension path
 Write-Host "`n[1/5] Validating extension path..." -ForegroundColor Yellow
@@ -72,7 +71,7 @@ Write-Host "  ✓ Extension path validated" -ForegroundColor Green
 
 # Step 2: Build extension
 Write-Host "`n[2/5] Building extension..." -ForegroundColor Yellow
-Write-Host "  Running: cmake --workflow --preset $($config.Preset)" -ForegroundColor Gray
+Write-Host "  Running: cmake --workflow --preset $($config.Preset)"
 
 Push-Location $ExtensionPath
 try {
@@ -110,7 +109,7 @@ $dirsToCreate = @(
 foreach ($dir in $dirsToCreate) {
     if (-not (Test-Path $dir)) {
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
-        Write-Host "  Created: $dir" -ForegroundColor Gray
+        Write-Host "  Created: $dir"
     }
 }
 
@@ -131,7 +130,7 @@ if (Test-Path $targetThirdPartyDir) {
 
 # Copy entire ThirdParty directory
 Copy-Item -Path $buildThirdPartyDir -Destination (Join-Path $targetSourceRoot "ThirdParty") -Recurse -Force
-Write-Host "  Copied: ThirdParty/$($config.PlatformFolder)/" -ForegroundColor Gray
+Write-Host "  Copied: ThirdParty/$($config.PlatformFolder)/"
 
 Write-Host "  ✓ Build artifacts copied" -ForegroundColor Green
 
@@ -177,7 +176,7 @@ if ($upluginFiles.Count -eq 0) {
 $upluginTarget = $upluginFiles[0].FullName
 $upluginLink = Join-Path $targetPluginRoot $upluginFiles[0].Name
 New-SymbolicLink -LinkPath $upluginLink -TargetPath $upluginTarget
-Write-Host "  Linked: $($upluginFiles[0].Name)" -ForegroundColor Gray
+Write-Host "  Linked: $($upluginFiles[0].Name)"
 
 # Symlink .Build.cs file
 $buildcsFiles = @(Get-ChildItem -Path (Join-Path $sourceDir "Source") -Filter "*.Build.cs" -ErrorAction SilentlyContinue)
@@ -185,7 +184,7 @@ if ($buildcsFiles.Count -gt 0) {
     $buildcsTarget = $buildcsFiles[0].FullName
     $buildcsLink = Join-Path $targetSourceRoot $buildcsFiles[0].Name
     New-SymbolicLink -LinkPath $buildcsLink -TargetPath $buildcsTarget
-    Write-Host "  Linked: Source/$($buildcsFiles[0].Name)" -ForegroundColor Gray
+    Write-Host "  Linked: Source/$($buildcsFiles[0].Name)"
 }
 
 # Symlink Sentry/Private directory (contains .cpp/.h files)
@@ -193,11 +192,10 @@ $privateSourceDir = Join-Path $sourceDir "Source" "Sentry" "Private"
 if (Test-Path $privateSourceDir) {
     $privateTargetDir = Join-Path $targetSourceRoot "Sentry" "Private"
     New-SymbolicLink -LinkPath $privateTargetDir -TargetPath $privateSourceDir
-    Write-Host "  Linked: Source/Sentry/Private/" -ForegroundColor Gray
+    Write-Host "  Linked: Source/Sentry/Private/"
 }
 
 Write-Host "  ✓ Source files symlinked" -ForegroundColor Green
 
 Write-Host "`n✓ Console extension setup complete!" -ForegroundColor Green
 Write-Host "`nTarget location: $targetPluginRoot" -ForegroundColor Cyan
-Write-Host "You can now modify console-specific code and changes will be tracked in the extension repo." -ForegroundColor Gray

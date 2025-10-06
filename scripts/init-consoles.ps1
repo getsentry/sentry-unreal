@@ -9,8 +9,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Write-Host "Console Extension Setup" -ForegroundColor Cyan
-Write-Host "=======================" -ForegroundColor Cyan
+Write-Host "Setting up console plugin extensions" -ForegroundColor Cyan
 
 # If -All is specified, enable all platforms
 if ($All) {
@@ -24,15 +23,15 @@ if ($All) {
 if (-not ($Switch -or $PS5 -or $XSX -or $XB1)) {
     Write-Host "Error: No platform specified. Use -All or specify individual platforms (-Switch, -PS5, -XSX, -XB1)" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Examples:" -ForegroundColor Gray
-    Write-Host "  ./scripts/init-consoles.ps1 -All" -ForegroundColor Gray
-    Write-Host "  ./scripts/init-consoles.ps1 -Switch -PS5" -ForegroundColor Gray
-    Write-Host "  ./scripts/init-consoles.ps1 -XSX -XB1" -ForegroundColor Gray
+    Write-Host "Examples:"
+    Write-Host "  ./scripts/init-consoles.ps1 -All"
+    Write-Host "  ./scripts/init-consoles.ps1 -Switch -PS5"
+    Write-Host "  ./scripts/init-consoles.ps1 -XSX -XB1"
     Write-Host ""
-    Write-Host "Environment variables required:" -ForegroundColor Gray
-    Write-Host "  SENTRY_SWITCH_PATH       - Path to sentry-switch repo" -ForegroundColor Gray
-    Write-Host "  SENTRY_PLAYSTATION_PATH  - Path to sentry-playstation repo" -ForegroundColor Gray
-    Write-Host "  SENTRY_XBOX_PATH         - Path to sentry-xbox repo" -ForegroundColor Gray
+    Write-Host "Environment variables required:"
+    Write-Host "  SENTRY_SWITCH_PATH       - Path to sentry-switch repo"
+    Write-Host "  SENTRY_PLAYSTATION_PATH  - Path to sentry-playstation repo"
+    Write-Host "  SENTRY_XBOX_PATH         - Path to sentry-xbox repo"
     exit 1
 }
 
@@ -67,7 +66,7 @@ foreach ($platform in $platformConfigs.Keys | Sort-Object) {
         continue
     }
 
-    Write-Host "`n[$platform]" -ForegroundColor Cyan
+    Write-Host ""
 
     # Get extension path from environment variable
     $envVarName = $config.EnvVar
@@ -109,9 +108,7 @@ foreach ($platform in $platformConfigs.Keys | Sort-Object) {
 }
 
 # Summary report
-Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "Summary" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "`nSummary:`n" -ForegroundColor Cyan
 
 $successCount = 0
 $failCount = 0
@@ -121,7 +118,7 @@ foreach ($result in $results) {
     $statusSymbol = if ($result.Status -eq "Success") { "✓" } else { "✗" }
 
     Write-Host "$statusSymbol $($result.Platform): " -NoNewline -ForegroundColor $statusColor
-    Write-Host $result.Message -ForegroundColor Gray
+    Write-Host $result.Message
 
     if ($result.Status -eq "Success") {
         $successCount++
@@ -130,8 +127,7 @@ foreach ($result in $results) {
     }
 }
 
-Write-Host ""
-Write-Host "Total: $($results.Count) | Success: $successCount | Failed: $failCount" -ForegroundColor $(if ($failCount -eq 0) { "Green" } else { "Yellow" })
+Write-Host "`nTotal: $($results.Count) | Success: $successCount | Failed: $failCount" -ForegroundColor $(if ($failCount -eq 0) { "Green" } else { "Yellow" })
 
 if ($failCount -gt 0) {
     exit 1
