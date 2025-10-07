@@ -218,6 +218,11 @@ void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 		return;
 	}
 
+	if (!Breadcrumb)
+	{
+		return;
+	}
+
 	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
 }
 
@@ -260,8 +265,14 @@ void USentrySubsystem::ClearBreadcrumbs()
 void USentrySubsystem::AddAttachment(USentryAttachment* Attachment)
 {
 	check(SubsystemNativeImpl);
+	check(Attachment);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (!Attachment)
 	{
 		return;
 	}
@@ -291,6 +302,10 @@ FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Le
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessage(Message, Level);
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -309,11 +324,17 @@ FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const 
 		return FString();
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+	const auto ConfigureScopeLambda = FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
 	{
 		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
 		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}));
+	});
+
+	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, ConfigureScopeLambda);
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -328,7 +349,16 @@ FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 		return FString();
 	}
 
+	if (!Event)
+	{
+		return FString();
+	}
+
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEvent(Event->GetNativeObject());
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -348,11 +378,22 @@ FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConf
 		return FString();
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+	if (!Event)
+	{
+		return FString();
+	}
+
+	const auto ConfigureScopeLambda = FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
 	{
 		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
 		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}));
+	});
+
+	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), ConfigureScopeLambda);
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -367,16 +408,24 @@ void USentrySubsystem::CaptureFeedback(USentryFeedback* Feedback)
 		return;
 	}
 
+	if (!Feedback)
+	{
+		return;
+	}
+
 	SubsystemNativeImpl->CaptureFeedback(Feedback->GetNativeObject());
 }
 
 void USentrySubsystem::CaptureFeedbackWithParams(const FString& Message, const FString& Name, const FString& Email, const FString& EventId)
 {
 	check(SubsystemNativeImpl);
-	check(!Message.IsEmpty());
 
-	USentryFeedback* Feedback = USentryFeedback::Create(MakeShareable(new FPlatformSentryFeedback(Message)));
-	check(Feedback);
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	TSharedPtr<ISentryFeedback> Feedback = MakeShareable(new FPlatformSentryFeedback(Message));
 
 	if (!Name.IsEmpty())
 		Feedback->SetName(Name);
@@ -385,7 +434,7 @@ void USentrySubsystem::CaptureFeedbackWithParams(const FString& Message, const F
 	if (!EventId.IsEmpty())
 		Feedback->SetAssociatedEvent(EventId);
 
-	CaptureFeedback(Feedback);
+	SubsystemNativeImpl->CaptureFeedback(Feedback);
 }
 
 void USentrySubsystem::SetUser(USentryUser* User)
@@ -394,6 +443,11 @@ void USentrySubsystem::SetUser(USentryUser* User)
 	check(User);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (!User)
 	{
 		return;
 	}
@@ -531,7 +585,10 @@ USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, cons
 	}
 
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransaction(Name, Operation, BindToScope);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -546,8 +603,16 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 		return nullptr;
 	}
 
+	if (!Context)
+	{
+		return nullptr;
+	}
+
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject(), BindToScope);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -562,8 +627,16 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 		return nullptr;
 	}
 
+	if (!Context)
+	{
+		return nullptr;
+	}
+
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp, BindToScope);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -578,8 +651,16 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 		return nullptr;
 	}
 
+	if (!Context)
+	{
+		return nullptr;
+	}
+
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context->GetNativeObject(), Options);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -594,7 +675,10 @@ USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& Sentry
 	}
 
 	TSharedPtr<ISentryTransactionContext> SentryTransactionContext = SubsystemNativeImpl->ContinueTrace(SentryTrace, BaggageHeaders);
-	check(SentryTransactionContext);
+	if (!SentryTransactionContext)
+	{
+		return nullptr;
+	}
 
 	return USentryTransactionContext::Create(SentryTransactionContext);
 }
