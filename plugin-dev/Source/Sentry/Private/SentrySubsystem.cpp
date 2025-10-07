@@ -302,6 +302,10 @@ FString USentrySubsystem::CaptureMessage(const FString& Message, ESentryLevel Le
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessage(Message, Level);
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -320,11 +324,17 @@ FString USentrySubsystem::CaptureMessageWithScope(const FString& Message, const 
 		return FString();
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+	const auto ConfigureScopeLambda = FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
 	{
 		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
 		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}));
+	});
+
+	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureMessageWithScope(Message, Level, ConfigureScopeLambda);
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -345,6 +355,10 @@ FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 	}
 
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEvent(Event->GetNativeObject());
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -369,11 +383,17 @@ FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConf
 		return FString();
 	}
 
-	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+	const auto ConfigureScopeLambda = FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
 	{
 		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
 		OnConfigureScope.ExecuteIfBound(UnrealScope);
-	}));
+	});
+
+	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), ConfigureScopeLambda);
+	if (!SentryId)
+	{
+		return FString();
+	}
 
 	return SentryId->ToString();
 }
@@ -565,7 +585,10 @@ USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, cons
 	}
 
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransaction(Name, Operation, BindToScope);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -586,7 +609,10 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 	}
 
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject(), BindToScope);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -607,7 +633,10 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 	}
 
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp, BindToScope);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -628,7 +657,10 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 	}
 
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndOptions(Context->GetNativeObject(), Options);
-	check(SentryTransaction);
+	if (!SentryTransaction)
+	{
+		return nullptr;
+	}
 
 	return USentryTransaction::Create(SentryTransaction);
 }
@@ -643,7 +675,10 @@ USentryTransactionContext* USentrySubsystem::ContinueTrace(const FString& Sentry
 	}
 
 	TSharedPtr<ISentryTransactionContext> SentryTransactionContext = SubsystemNativeImpl->ContinueTrace(SentryTrace, BaggageHeaders);
-	check(SentryTransactionContext);
+	if (!SentryTransactionContext)
+	{
+		return nullptr;
+	}
 
 	return USentryTransactionContext::Create(SentryTransactionContext);
 }
