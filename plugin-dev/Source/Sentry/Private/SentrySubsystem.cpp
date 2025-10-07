@@ -267,7 +267,7 @@ void USentrySubsystem::AddAttachment(USentryAttachment* Attachment)
 	check(SubsystemNativeImpl);
 	check(Attachment)
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+		if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
