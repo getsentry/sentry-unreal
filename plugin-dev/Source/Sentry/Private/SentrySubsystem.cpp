@@ -218,6 +218,11 @@ void USentrySubsystem::AddBreadcrumb(USentryBreadcrumb* Breadcrumb)
 		return;
 	}
 
+	if (!Breadcrumb)
+	{
+		return;
+	}
+
 	SubsystemNativeImpl->AddBreadcrumb(Breadcrumb->GetNativeObject());
 }
 
@@ -260,8 +265,14 @@ void USentrySubsystem::ClearBreadcrumbs()
 void USentrySubsystem::AddAttachment(USentryAttachment* Attachment)
 {
 	check(SubsystemNativeImpl);
+	check(Attachment)
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (!Attachment)
 	{
 		return;
 	}
@@ -328,6 +339,11 @@ FString USentrySubsystem::CaptureEvent(USentryEvent* Event)
 		return FString();
 	}
 
+	if (!Event)
+	{
+		return FString();
+	}
+
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEvent(Event->GetNativeObject());
 
 	return SentryId->ToString();
@@ -348,6 +364,11 @@ FString USentrySubsystem::CaptureEventWithScope(USentryEvent* Event, const FConf
 		return FString();
 	}
 
+	if (!Event)
+	{
+		return FString();
+	}
+
 	TSharedPtr<ISentryId> SentryId = SubsystemNativeImpl->CaptureEventWithScope(Event->GetNativeObject(), FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
 	{
 		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
@@ -363,6 +384,11 @@ void USentrySubsystem::CaptureFeedback(USentryFeedback* Feedback)
 	check(Feedback);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (!Feedback)
 	{
 		return;
 	}
@@ -397,6 +423,11 @@ void USentrySubsystem::SetUser(USentryUser* User)
 	check(User);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (!User)
 	{
 		return;
 	}
@@ -549,6 +580,11 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContext(USentryTransac
 		return nullptr;
 	}
 
+	if (!Context)
+	{
+		return nullptr;
+	}
+
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContext(Context->GetNativeObject(), BindToScope);
 	check(SentryTransaction);
 
@@ -565,6 +601,11 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndTimestamp(US
 		return nullptr;
 	}
 
+	if (!Context)
+	{
+		return nullptr;
+	}
+
 	TSharedPtr<ISentryTransaction> SentryTransaction = SubsystemNativeImpl->StartTransactionWithContextAndTimestamp(Context->GetNativeObject(), Timestamp, BindToScope);
 	check(SentryTransaction);
 
@@ -577,6 +618,11 @@ USentryTransaction* USentrySubsystem::StartTransactionWithContextAndOptions(USen
 	check(Context);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return nullptr;
+	}
+
+	if (!Context)
 	{
 		return nullptr;
 	}
