@@ -24,7 +24,7 @@ USentrySymbolUploadCommandlet::USentrySymbolUploadCommandlet()
 	LogToConsole = true;
 
 	ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-	
+
 	TSharedPtr<IPlugin> SentryPlugin = IPluginManager::Get().FindPlugin(TEXT("Sentry"));
 	if (SentryPlugin.IsValid())
 	{
