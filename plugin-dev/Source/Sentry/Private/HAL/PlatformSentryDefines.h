@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "HAL/Platform.h"
+
 // clang-format off
 
 #ifdef SENTRY_PLATFORM_NULL

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "HAL/Platform.h"
+
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryEvent.h"
 #elif PLATFORM_APPLE
