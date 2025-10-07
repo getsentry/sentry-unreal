@@ -1,13 +1,12 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryScreenshotUtils.h"
-
-#include "HighResScreenshot.h"
 #include "SentryDefines.h"
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Framework/Application/SlateApplication.h"
+#include "HighResScreenshot.h"
 #include "ImageUtils.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
@@ -54,6 +53,30 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		UE_LOG(LogSentrySdk, Error, TEXT("Failed to capture screenshot"));
 		return false;
 	}
+
+#if PLATFORM_ANDROID
+	FString RHIName = GDynamicRHI ? GDynamicRHI->GetName() : TEXT("Unknown");
+	if (RHIName.Contains(TEXT("OpenGL")))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Applying OpenGL flip/mirror correction for captured screenshot"));
+
+		Algo::Reverse(*Bitmap);
+
+		for (int32 Y = 0; Y < ViewportSize.Y; ++Y)
+		{
+			int32 RowStart = Y * ViewportSize.X;
+			int32 RowEnd = RowStart + ViewportSize.X - 1;
+			for (int32 X = 0; X < ViewportSize.X / 2; ++X)
+			{
+				Swap((*Bitmap)[RowStart + X], (*Bitmap)[RowEnd - X]);
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("No flip/mirror correction required captured screenshot (Vulkan or other RHI)"));
+	}
+#endif
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	GetHighResScreenshotConfig().MergeMaskIntoAlpha(*Bitmap);

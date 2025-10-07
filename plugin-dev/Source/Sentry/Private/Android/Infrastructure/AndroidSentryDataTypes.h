@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+
 #include "Android/AndroidJNI.h"
 
 enum class ESentryJavaClassType : uint8

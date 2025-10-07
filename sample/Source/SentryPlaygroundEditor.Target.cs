@@ -14,6 +14,12 @@ public class SentryPlaygroundEditorTarget : TargetRules
 		bUseUnityBuild = false;
 		bUsePCHFiles = false;
 
+#if UE_5_0_OR_LATER
+		NativePointerMemberBehaviorOverride = System.Environment.GetEnvironmentVariable("DISALLOW_RAW_POINTERS") == "true"
+			? PointerMemberBehavior.Disallow 
+			: PointerMemberBehavior.AllowAndLog;
+#endif
+
 #if UE_5_1_OR_LATER
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 #endif

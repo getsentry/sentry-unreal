@@ -35,6 +35,34 @@ SentryLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
+SentryStructuredLogLevel FAppleSentryConverters::SentryStructuredLogLevelToNative(ESentryLevel level)
+{
+	SentryStructuredLogLevel nativeLevel = SentryStructuredLogLevelDebug;
+
+	switch (level)
+	{
+	case ESentryLevel::Debug:
+		nativeLevel = SentryStructuredLogLevelDebug;
+		break;
+	case ESentryLevel::Info:
+		nativeLevel = SentryStructuredLogLevelInfo;
+		break;
+	case ESentryLevel::Warning:
+		nativeLevel = SentryStructuredLogLevelWarn;
+		break;
+	case ESentryLevel::Error:
+		nativeLevel = SentryStructuredLogLevelError;
+		break;
+	case ESentryLevel::Fatal:
+		nativeLevel = SentryStructuredLogLevelFatal;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
+	}
+
+	return nativeLevel;
+}
+
 NSDictionary* FAppleSentryConverters::StringMapToNative(const TMap<FString, FString>& map)
 {
 	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:map.Num()];
@@ -149,7 +177,36 @@ ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
+	}
+
+	return unrealLevel;
+}
+
+ESentryLevel FAppleSentryConverters::SentryStructuredLogLevelToUnreal(SentryStructuredLogLevel level)
+{
+	ESentryLevel unrealLevel = ESentryLevel::Debug;
+
+	switch (level)
+	{
+	case SentryStructuredLogLevelTrace:
+	case SentryStructuredLogLevelDebug:
+		unrealLevel = ESentryLevel::Debug;
+		break;
+	case SentryStructuredLogLevelInfo:
+		unrealLevel = ESentryLevel::Info;
+		break;
+	case SentryStructuredLogLevelWarn:
+		unrealLevel = ESentryLevel::Warning;
+		break;
+	case SentryStructuredLogLevelError:
+		unrealLevel = ESentryLevel::Error;
+		break;
+	case SentryStructuredLogLevelFatal:
+		unrealLevel = ESentryLevel::Fatal;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry structured log level value used. Debug will be returned."));
 	}
 
 	return unrealLevel;

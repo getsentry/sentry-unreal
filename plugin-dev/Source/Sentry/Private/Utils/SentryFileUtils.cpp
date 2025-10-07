@@ -71,3 +71,31 @@ FString SentryFileUtils::GetGpuDumpPath()
 
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GpuDumpFiles[0]);
 }
+
+FString SentryFileUtils::GetScreenshotPath()
+{
+	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
+}
+
+FString SentryFileUtils::GetLatestScreenshot()
+{
+	const FString& ScreenshotsDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"));
+
+	TArray<FString> Screenshots;
+	IFileManager::Get().FindFiles(Screenshots, *ScreenshotsDir, TEXT("*.png"));
+
+	if (Screenshots.Num() == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("There are no screenshots found."));
+		return FString("");
+	}
+
+	for (int i = 0; i < Screenshots.Num(); ++i)
+	{
+		Screenshots[i] = ScreenshotsDir / Screenshots[i];
+	}
+
+	Screenshots.Sort(FSentrySortFileByDatePredicate());
+
+	return Screenshots[0];
+}

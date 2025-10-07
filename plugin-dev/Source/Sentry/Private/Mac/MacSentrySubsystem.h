@@ -7,7 +7,8 @@
 class FMacSentrySubsystem : public FAppleSentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) override;
+	virtual void Close() override;
 
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 
@@ -16,6 +17,9 @@ public:
 protected:
 	virtual FString GetGameLogPath() const override;
 	virtual FString GetLatestGameLog() const override;
+
+private:
+	FDelegateHandle OnHandleSystemErrorDelegateHandle;
 };
 
 typedef FMacSentrySubsystem FPlatformSentrySubsystem;

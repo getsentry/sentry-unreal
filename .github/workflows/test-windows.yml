@@ -25,11 +25,13 @@ jobs:
         env:
           WORKSPACE_PATH: ${{ github.workspace }}
           UNREAL_VERSION: ${{ inputs.unreal-version }}
+          DISALLOW_RAW_POINTERS: ${{ inputs.unreal-version == '4.27' && 'false' || 'true' }}
         run: |
           docker run -td `
             --name unreal `
             --volume "${env:WORKSPACE_PATH}:C:/workspace" `
             --workdir C:/workspace `
+            --env DISALLOW_RAW_POINTERS=${env:DISALLOW_RAW_POINTERS} `
             ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
 
       - name: Download package

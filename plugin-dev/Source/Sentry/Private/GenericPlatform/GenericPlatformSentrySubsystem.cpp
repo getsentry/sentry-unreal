@@ -6,6 +6,7 @@
 #include "GenericPlatformSentryEvent.h"
 #include "GenericPlatformSentryFeedback.h"
 #include "GenericPlatformSentryId.h"
+#include "GenericPlatformSentryLog.h"
 #include "GenericPlatformSentrySamplingContext.h"
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryTransaction.h"
@@ -13,18 +14,20 @@
 #include "GenericPlatformSentryUser.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeLogHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
+#include "SentryLog.h"
 #include "SentryModule.h"
 #include "SentrySamplingContext.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryTraceSampler.h"
 
+#include "Utils/SentryCallbackUtils.h"
 #include "Utils/SentryFileUtils.h"
-#include "Utils/SentryLogUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
 #include "Infrastructure/GenericPlatformSentryConverters.h"
@@ -37,10 +40,7 @@
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
-#include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
-#include "Misc/ScopeLock.h"
-#include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
 extern CORE_API bool GIsGPUCrashed;
@@ -111,6 +111,16 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeLog(sentry_value_t log, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeLog(log, closure);
+	}
+
+	return log;
+}
+
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
 {
 	if (!closure || this != closure)
@@ -125,18 +135,8 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
-		return event;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
 		return event;
 	}
 
@@ -164,17 +164,8 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 		return breadcrumb;
 	}
 
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
-		return breadcrumb;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since there is no guarantee it will be ever freed.
-		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
 		return breadcrumb;
 	}
 
@@ -183,6 +174,33 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 	USentryBreadcrumb* ProcessedBreadcrumb = Handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
 
 	return ProcessedBreadcrumb ? breadcrumb : sentry_value_new_null();
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return log;
+	}
+
+	USentryBeforeLogHandler* Handler = GetBeforeLogHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return log;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return log;
+	}
+
+	// Create USentryLog object using the log wrapper
+	USentryLog* LogData = USentryLog::Create(MakeShareable(new FGenericPlatformSentryLog(log)));
+
+	USentryLog* ProcessedLogData = Handler->HandleBeforeLog(LogData);
+
+	return ProcessedLogData ? log : sentry_value_new_null();
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
@@ -211,18 +229,8 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing traces sampler is not allowed during object post-loading."));
-		return parent_sampled != nullptr ? *parent_sampled : 0.0;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If traces sampling happens during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing traces sampler is not allowed during garbage collection."));
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
@@ -284,6 +292,7 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
+	, beforeLog(nullptr)
 	, sampler(nullptr)
 	, crashReporter(nullptr)
 	, isEnabled(false)
@@ -294,10 +303,11 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 {
 }
 
-void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryTraceSampler* traceSampler)
+void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler)
 {
 	beforeSend = beforeSendHandler;
 	beforeBreadcrumb = beforeBreadcrumbHandler;
+	beforeLog = beforeLogHandler;
 	sampler = traceSampler;
 
 	sentry_options_t* options = sentry_options_new();
@@ -361,10 +371,12 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
+	sentry_options_set_before_send_log(options, HandleBeforeLog, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 	sentry_options_set_logger_enabled_when_crashed(options, false);
+	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
 
 	if (settings->bRequireUserConsent)
 	{
@@ -464,6 +476,50 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	}
 
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
+}
+
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+{
+	// Ignore Empty Bodies
+	if (Body.IsEmpty())
+	{
+		return;
+	}
+
+	// Format body with category if provided
+	FString FormattedMessage;
+	if (!Category.IsEmpty())
+	{
+		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
+	}
+	else
+	{
+		FormattedMessage = Body;
+	}
+
+	auto MessageCStrConverter = StringCast<ANSICHAR>(*FormattedMessage);
+	const char* MessageCStr = MessageCStrConverter.Get();
+
+	// Use level-specific sentry logging functions
+	switch (Level)
+	{
+	case ESentryLevel::Fatal:
+		sentry_log_fatal(MessageCStr);
+		break;
+	case ESentryLevel::Error:
+		sentry_log_error(MessageCStr);
+		break;
+	case ESentryLevel::Warning:
+		sentry_log_warn(MessageCStr);
+		break;
+	case ESentryLevel::Info:
+		sentry_log_info(MessageCStr);
+		break;
+	case ESentryLevel::Debug:
+	default:
+		sentry_log_debug(MessageCStr);
+		break;
+	}
 }
 
 void FGenericPlatformSentrySubsystem::ClearBreadcrumbs()
@@ -765,17 +821,22 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 	return transactionContext;
 }
 
-USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler()
+USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler() const
 {
 	return beforeSend;
 }
 
-USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler()
+USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler() const
 {
 	return beforeBreadcrumb;
 }
 
-USentryTraceSampler* FGenericPlatformSentrySubsystem::GetTraceSampler()
+USentryBeforeLogHandler* FGenericPlatformSentrySubsystem::GetBeforeLogHandler() const
+{
+	return beforeLog;
+}
+
+USentryTraceSampler* FGenericPlatformSentrySubsystem::GetTraceSampler() const
 {
 	return sampler;
 }

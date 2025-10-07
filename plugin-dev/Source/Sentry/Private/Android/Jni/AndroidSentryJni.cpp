@@ -3,6 +3,7 @@
 #include "Android/AndroidSentryBreadcrumb.h"
 #include "Android/AndroidSentryEvent.h"
 #include "Android/AndroidSentryHint.h"
+#include "Android/AndroidSentryLog.h"
 #include "Android/AndroidSentrySamplingContext.h"
 #include "Android/AndroidSentryScope.h"
 #include "Android/AndroidSentrySubsystem.h"
@@ -13,19 +14,23 @@
 #include "Android/AndroidJNI.h"
 
 #include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeLogHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
+#include "SentryLog.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
+
+#include "Utils/SentryCallbackUtils.h"
+#include "Utils/SentryFileUtils.h"
 
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
-#include "Utils/SentryFileUtils.h"
 
 JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong callbackId, jobject scope)
 {
@@ -48,18 +53,9 @@ JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* 
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* env, jclass clazz, jlong objAddr, jobject event, jobject hint)
 {
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during object post-loading."));
-		return event;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If event is captured during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since it will cause a deadlock (see https://github.com/getsentry/sentry-unreal/issues/850).
-		// In this case event will be reported without calling a `beforeSend` handler.
-		UE_LOG(LogSentrySdk, Log, TEXT("Executing `beforeSend` handler is not allowed during garbage collection."));
+		// Event will be sent without calling a `onBeforeSend` handler
 		return event;
 	}
 
@@ -75,17 +71,9 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)
 {
-	if (FUObjectThreadContext::Get().IsRoutingPostLoad)
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		// Don't print to logs within `onBeforeBreadcrumb` handler as this can lead to creating new breadcrumb
-		return breadcrumb;
-	}
-
-	if (IsGarbageCollecting())
-	{
-		// If breadcrumb is added during garbage collection we can't instantiate UObjects safely or obtain a GC lock
-		// since there is no guarantee it will be ever freed.
-		// In this case breadcrumb will be added without calling a `beforeBreadcrumb` handler.
+		// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
 		return breadcrumb;
 	}
 
@@ -99,9 +87,30 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNI
 	return ProcessedBreadcrumb ? breadcrumb : nullptr;
 }
 
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* env, jclass clazz, jlong objAddr, jobject logEvent)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Log will be added without calling a `onBeforeLog` handler
+		return logEvent;
+	}
+
+	USentryBeforeLogHandler* handler = reinterpret_cast<USentryBeforeLogHandler*>(objAddr);
+
+	USentryLog* LogDataToProcess = USentryLog::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
+
+	USentryLog* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
+
+	return ProcessedLogData ? logEvent : nullptr;
+}
+
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
 {
-	FGCScopeGuard GCScopeGuard;
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Falling back to default sampling value without calling a custom sampling function
+		return -1.0f;
+	}
 
 	USentryTraceSampler* sampler = reinterpret_cast<USentryTraceSampler*>(objAddr);
 
@@ -113,7 +122,7 @@ JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv*
 		return (jfloat)samplingValue;
 	}
 
-	// to avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
+	// To avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
 	// which should be interpreted as `null` in Java code to fallback to fixed sample rate value
 	return -1.0f;
 }
@@ -129,4 +138,17 @@ JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getLogFilePath(JNIEnv*
 	}
 
 	return env->NewStringUTF(TCHAR_TO_UTF8(*LogFilePath));
+}
+
+JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getScreenshotFilePath(JNIEnv* env, jclass clazz)
+{
+	const FString ScreenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*SentryFileUtils::GetLatestScreenshot());
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*ScreenshotFilePath))
+	{
+		return env->NewStringUTF("");
+	}
+
+	return env->NewStringUTF(TCHAR_TO_UTF8(*ScreenshotFilePath));
 }
