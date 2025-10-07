@@ -373,10 +373,13 @@ void USentrySubsystem::CaptureFeedback(USentryFeedback* Feedback)
 void USentrySubsystem::CaptureFeedbackWithParams(const FString& Message, const FString& Name, const FString& Email, const FString& EventId)
 {
 	check(SubsystemNativeImpl);
-	check(!Message.IsEmpty());
 
-	USentryFeedback* Feedback = USentryFeedback::Create(MakeShareable(new FPlatformSentryFeedback(Message)));
-	check(Feedback);
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	TSharedPtr<ISentryFeedback> Feedback = MakeShareable(new FPlatformSentryFeedback(Message));
 
 	if (!Name.IsEmpty())
 		Feedback->SetName(Name);
@@ -385,7 +388,7 @@ void USentrySubsystem::CaptureFeedbackWithParams(const FString& Message, const F
 	if (!EventId.IsEmpty())
 		Feedback->SetAssociatedEvent(EventId);
 
-	CaptureFeedback(Feedback);
+	SubsystemNativeImpl->CaptureFeedback(Feedback);
 }
 
 void USentrySubsystem::SetUser(USentryUser* User)
