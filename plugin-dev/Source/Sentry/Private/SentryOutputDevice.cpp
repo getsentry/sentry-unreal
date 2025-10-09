@@ -52,9 +52,6 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 		// Use level-specific logging methods
 		switch (Level)
 		{
-		case ESentryLevel::Debug:
-			SentrySubsystem->LogDebug(Message, CategoryString);
-			break;
 		case ESentryLevel::Info:
 			SentrySubsystem->LogInfo(Message, CategoryString);
 			break;
@@ -66,6 +63,10 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 			break;
 		case ESentryLevel::Fatal:
 			SentrySubsystem->LogFatal(Message, CategoryString);
+			break;
+		case ESentryLevel::Debug:
+		default:
+			SentrySubsystem->LogDebug(Message, CategoryString);
 			break;
 		}
 
