@@ -238,7 +238,7 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 	SubsystemNativeImpl->AddBreadcrumbWithParams(Message, Category, Type, Data, Level);
 }
 
-void USentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void USentrySubsystem::LogDebug(const FString& Message, const FString& Category)
 {
 	check(SubsystemNativeImpl);
 
@@ -247,7 +247,55 @@ void USentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FSt
 		return;
 	}
 
-	SubsystemNativeImpl->AddLog(Body, Level, Category);
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Debug, Category);
+}
+
+void USentrySubsystem::LogInfo(const FString& Message, const FString& Category)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Info, Category);
+}
+
+void USentrySubsystem::LogWarning(const FString& Message, const FString& Category)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Warning, Category);
+}
+
+void USentrySubsystem::LogError(const FString& Message, const FString& Category)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Error, Category);
+}
+
+void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Fatal, Category);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()
