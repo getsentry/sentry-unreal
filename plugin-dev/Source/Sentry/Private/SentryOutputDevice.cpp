@@ -49,7 +49,26 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 
 	if (bIsStructuredLoggingEnabled && ShouldForwardToStructuredLogging(CategoryString, Level))
 	{
-		SentrySubsystem->AddLog(Message, Level, CategoryString);
+		// Use level-specific logging methods
+		switch (Level)
+		{
+		case ESentryLevel::Info:
+			SentrySubsystem->LogInfo(Message, CategoryString);
+			break;
+		case ESentryLevel::Warning:
+			SentrySubsystem->LogWarning(Message, CategoryString);
+			break;
+		case ESentryLevel::Error:
+			SentrySubsystem->LogError(Message, CategoryString);
+			break;
+		case ESentryLevel::Fatal:
+			SentrySubsystem->LogFatal(Message, CategoryString);
+			break;
+		case ESentryLevel::Debug:
+		default:
+			SentrySubsystem->LogDebug(Message, CategoryString);
+			break;
+		}
 
 		// If we don't want to also send breadcrumbs when structured logging is enabled, return early
 		if (!bSendBreadcrumbsWithStructuredLogging)

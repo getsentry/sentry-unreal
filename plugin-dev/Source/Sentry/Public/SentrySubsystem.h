@@ -99,14 +99,49 @@ public:
 		ESentryLevel Level = ESentryLevel::Info);
 
 	/**
-	 * Add a structured log message to Sentry.
+	 * Add a debug level structured log message to Sentry.
 	 *
-	 * @param Body Log body to add.
-	 * @param Level Log level.
-	 * @param Category Optional category to prepend to the body.
+	 * @param Message Log message to add.
+	 * @param Category Optional category to prepend to the message.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddLog(const FString& Body, ESentryLevel Level, const FString& Category = TEXT("LogSentrySdk"));
+	void LogDebug(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Add an info level structured log message to Sentry.
+	 *
+	 * @param Message Log message to add.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void LogInfo(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Add a warning level structured log message to Sentry.
+	 *
+	 * @param Message Log message to add.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void LogWarning(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Add an error level structured log message to Sentry.
+	 *
+	 * @param Message Log message to add.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void LogError(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Add a fatal level structured log message to Sentry.
+	 *
+	 * @param Message Log message to add.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void LogFatal(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.
