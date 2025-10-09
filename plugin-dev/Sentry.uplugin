@@ -45,12 +45,19 @@
 			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
 		],
 		"Win64": [
-			"setlocal enabledelayedexpansion", 
-			"set \"CRASHPAD_HANDLER_LINUX=$(PluginDir)/Binaries/Linux/crashpad_handler\"",
-			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%CRASHPAD_HANDLER_LINUX%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Linux/bin/*\" \"$(PluginDir)/Binaries/Linux/\" /F /R /Y /I)\n)",
-			"set \"CRASHPAD_HANDLER_WIN=$(PluginDir)/Binaries/Win64/crashpad_handler.exe\"",
-			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%CRASHPAD_HANDLER_WIN%\" (xcopy \"$(PluginDir)/Source/ThirdParty/Win64/Crashpad/bin/*\" \"$(PluginDir)/Binaries/Win64/\" /F /R /Y /I)\n)",
-			"set \"SYM_UPLOAD_SCRIPT=$(PluginDir)/Scripts/upload-debug-symbols-win.bat\"",
+			"setlocal enabledelayedexpansion",
+			"set \"PLUGIN_DIR=$(PluginDir)\"",
+			"set \"PLUGIN_DIR=%PLUGIN_DIR:/=\\%\"",
+			"set \"LINUX_BIN_DIR=%PLUGIN_DIR%\\Binaries\\Linux\"",
+			"set \"LINUX_SOURCE_DIR=%PLUGIN_DIR%\\Source\\ThirdParty\\Linux\\bin\"",
+			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%LINUX_BIN_DIR%\" (mkdir \"%LINUX_BIN_DIR%\")\n)",
+			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%LINUX_BIN_DIR%\\crashpad_handler\" (copy /Y \"%LINUX_SOURCE_DIR%\\crashpad_handler\" \"%LINUX_BIN_DIR%\\\")\n)",
+			"set \"WIN64_BIN_DIR=%PLUGIN_DIR%\\Binaries\\Win64\"",
+			"set \"WIN64_SOURCE_DIR=%PLUGIN_DIR%\\Source\\ThirdParty\\Win64\\bin\"",
+			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%WIN64_BIN_DIR%\" (mkdir \"%WIN64_BIN_DIR%\")\n)",
+			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%WIN64_BIN_DIR%\\crashpad_handler.exe\" (copy /Y \"%WIN64_SOURCE_DIR%\\crashpad_handler.exe\" \"%WIN64_BIN_DIR%\\\")\n)",
+			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%WIN64_BIN_DIR%\\crashpad_wer.dll\" (copy /Y \"%WIN64_SOURCE_DIR%\\crashpad_wer.dll\" \"%WIN64_BIN_DIR%\\\")\n)",
+			"set \"SYM_UPLOAD_SCRIPT=%PLUGIN_DIR%\\Scripts\\upload-debug-symbols-win.bat\"",
 			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Sentry: Symbol upload script is missing. Skipping post build step.\n)",
 			"endlocal"
 		]

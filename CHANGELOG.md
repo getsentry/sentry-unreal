@@ -9,6 +9,7 @@
 ### Fixes
 
 - Fix screenshot capture after Sentry disabled on Mac ([#1101](https://github.com/getsentry/sentry-unreal/pull/1101))
+- Fix SDK initialization and packaging issues in plugin version from FAB ([#1108](https://github.com/getsentry/sentry-unreal/pull/1108))
 - Added missing platform includes ([#1106](https://github.com/getsentry/sentry-unreal/pull/1106))
 
 ### Dependencies
