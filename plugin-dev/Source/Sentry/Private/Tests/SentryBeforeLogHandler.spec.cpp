@@ -69,7 +69,7 @@ void SentryBeforeLogHandlerSpec::Define()
 				TestEqual("Handler received correct level", LogData->GetLevel(), TestLevel);
 			});
 
-			SentrySubsystem->AddLog(TestBody, TestLevel, TestCategory);
+			SentrySubsystem->LogWarning(TestBody, TestCategory);
 
 			TestTrue("BeforeLogHandler should be called", bHandlerCalled);
 
