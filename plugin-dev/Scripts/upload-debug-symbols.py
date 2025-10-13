@@ -223,7 +223,7 @@ def main():
     ]
 
     try:
-        # Execute the upload command with retry logic to avoid linker file locking issue on Windows
+        # Execute the upload command with retry logic to avoid linker file locking issues
         # See https://github.com/getsentry/sentry-unreal/issues/542
         result = run_cmd_with_retry(upload_cmd)
 
