@@ -1,5 +1,4 @@
 @echo off
-REM Copyright (c) 2025 Sentry. All Rights Reserved.
 
 setlocal enabledelayedexpansion
 

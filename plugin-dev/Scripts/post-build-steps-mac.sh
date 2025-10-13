@@ -1,5 +1,4 @@
 #!/bin/bash
-# Copyright (c) 2025 Sentry. All Rights Reserved.
 
 TARGET_PLATFORM="$1"
 TARGET_NAME="$2"
