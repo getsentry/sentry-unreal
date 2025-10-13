@@ -22,14 +22,13 @@
 
 #if PLATFORM_WINDOWS
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Windows-x86_64.exe");
-const FString FSentrySymToolsDownloader::SentrySymUploadScriptName = TEXT("upload-debug-symbols-win.bat");
 #elif PLATFORM_MAC
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Darwin-universal");
-const FString FSentrySymToolsDownloader::SentrySymUploadScriptName = TEXT("upload-debug-symbols.sh");
 #elif PLATFORM_LINUX
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Linux-x86_64");
-const FString FSentrySymToolsDownloader::SentrySymUploadScriptName = TEXT("upload-debug-symbols.sh");
 #endif
+
+const FString FSentrySymToolsDownloader::SentrySymUploadScriptName = TEXT("upload-debug-symbols.py");
 
 void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 {
