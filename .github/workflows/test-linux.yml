@@ -84,6 +84,7 @@ jobs:
           uid=$(id -u) # the GH action user ID
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Python3/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/\"$ENGINE_PATH\" ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/USD/UsdResources/Linux ;
             mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
