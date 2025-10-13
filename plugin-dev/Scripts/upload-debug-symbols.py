@@ -77,6 +77,23 @@ def get_cli_executable(plugin_dir):
     return None
 
 
+def run_cmd_with_retry(cmd, max_retries=3, retry_delay_sec=2):
+    for attempt in range(max_retries):
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+
+        if result.returncode != 0 and "os error 32" in result.stderr:
+            if attempt < max_retries - 1:
+                log(f"Debug file is locked, retrying in {retry_delay_sec} seconds... (attempt {attempt + 1}/{max_retries})")
+                time.sleep(retry_delay_sec)
+                continue
+            else:
+                log("Error: Debug files are still locked after multiple retries")
+
+        break
+
+    return result
+
+
 def main():
     target_platform = sys.argv[1]
     target_name = sys.argv[2]
@@ -205,39 +222,23 @@ def main():
         plugin_binaries_path
     ]
 
-    # Retry logic for linker file locking issue when bulding multiple configuration simultaneously on Windows (see https://github.com/getsentry/sentry-unreal/issues/542)
-    max_retries = 3
-    retry_delay = 1  # seconds
+    try:
+        # Execute the upload command with retry logic to avoid linker file locking issue on Windows
+        # See https://github.com/getsentry/sentry-unreal/issues/542
+        result = run_cmd_with_retry(upload_cmd)
 
-    for attempt in range(max_retries):
-        try:
-            # Execute the upload command
-            result = subprocess.run(upload_cmd, check=False, capture_output=True, text=True)
+        # Output stdout/stderr
+        if result.stdout:
+            print(result.stdout, end='')
+        if result.stderr:
+            print(result.stderr, end='')
 
-            # Check if we hit a file locking error (Windows)
-            if result.returncode != 0 and "os error 32" in result.stderr:
-                if attempt < max_retries - 1:
-                    log(f"File is locked, retrying in {retry_delay} seconds... (attempt {attempt + 1}/{max_retries})")
-                    time.sleep(retry_delay)
-                    continue
-                else:
-                    log("Error: Files are still locked after multiple retries")
-                    return result.returncode
+        log("Upload finished")
+        return result.returncode
 
-            # Output stdout/stderr
-            if result.stdout:
-                print(result.stdout, end='')
-            if result.stderr:
-                print(result.stderr, end='')
-
-            log("Upload finished")
-            return result.returncode
-
-        except Exception as e:
-            log(f"Error executing sentry-cli: {e}")
-            return 1
-
-    return 1
+    except Exception as e:
+        log(f"Error executing sentry-cli: {e}")
+        return 1
 
 
 if __name__ == '__main__':
