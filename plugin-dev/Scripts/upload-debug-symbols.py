@@ -4,6 +4,7 @@ import sys
 import os
 import platform
 import subprocess
+import time
 
 
 def log(message):
@@ -204,16 +205,39 @@ def main():
         plugin_binaries_path
     ]
 
-    try:
-        # Execute the upload command
-        result = subprocess.run(upload_cmd, check=False)
+    # Retry logic for linker file locking issue when bulding multiple configuration simultaneously on Windows (see https://github.com/getsentry/sentry-unreal/issues/542)
+    max_retries = 3
+    retry_delay = 1  # seconds
 
-        log("Upload finished")
-        return result.returncode
+    for attempt in range(max_retries):
+        try:
+            # Execute the upload command
+            result = subprocess.run(upload_cmd, check=False, capture_output=True, text=True)
 
-    except Exception as e:
-        log(f"Error executing sentry-cli: {e}")
-        return 1
+            # Check if we hit a file locking error (Windows)
+            if result.returncode != 0 and "os error 32" in result.stderr:
+                if attempt < max_retries - 1:
+                    log(f"File is locked, retrying in {retry_delay} seconds... (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    log("Error: Files are still locked after multiple retries")
+                    return result.returncode
+
+            # Output stdout/stderr
+            if result.stdout:
+                print(result.stdout, end='')
+            if result.stderr:
+                print(result.stderr, end='')
+
+            log("Upload finished")
+            return result.returncode
+
+        except Exception as e:
+            log(f"Error executing sentry-cli: {e}")
+            return 1
+
+    return 1
 
 
 if __name__ == '__main__':
