@@ -31,7 +31,7 @@ This script links the checked out version of the plugin (the [plugin-dev](./plug
 > [!TIP]
 > When working with a `sentry-unreal` fork, run `gh repo set-default` to select the default remote repository used for GitHub API queries (required for pulling plugin dependencies from CI). If you don't plan to configure the CI pipeline for your fork, it's recommended to set `getsentry/sentry-unreal` as the default remote.
 
-After that you can generate source files for `SentryPlayground.uproject` to open in your IDE and start making changes to SDK like with any Unreal other project
+After that, you can generate project files for SentryPlayground.uproject to open it in your IDE and make changes to the SDK as you would with any other Unreal project.
 
 ### Modifying Plugin Content
 
