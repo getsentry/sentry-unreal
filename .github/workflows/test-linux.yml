@@ -110,6 +110,10 @@ jobs:
         # sentry-native requires write access to sample project directory in order to initialize itself properly
         run: docker exec -w /workspace/checkout unreal chmod -R +x sample
 
+      - name: Set execute permission for Python3
+        # Python3 is needed for post-build symbol upload script
+        run: docker exec --user root unreal chmod +x /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Python3/Linux/bin/python3
+
       - name: Update engine's build configuration
         run: |
           docker exec unreal bash -c "
