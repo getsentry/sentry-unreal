@@ -109,6 +109,10 @@ jobs:
         # sentry-native requires write access to sample project directory in order to initialize itself properly
         run: docker exec -w /workspace/checkout unreal chmod -R +x sample
 
+      - name: Set execute permission for Python3
+        # Python3 is needed for post-build symbol upload script
+        run: docker exec --user root unreal chmod +x /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Python3/Linux/bin/python3
+
       - name: Update engine's build configuration
         run: |
           docker exec unreal bash -c "
@@ -119,8 +123,17 @@ jobs:
         id: run-tests
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
+          SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY: true
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
-          docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+          docker exec -w /workspace/checkout/sample \
+            -e SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY="$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY" \
+            -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+            -e SENTRY_ORG="$SENTRY_ORG" \
+            -e SENTRY_PROJECT="$SENTRY_PROJECT" \
+            unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
             -platform=Linux \

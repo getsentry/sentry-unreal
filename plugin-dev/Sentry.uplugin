@@ -31,35 +31,22 @@
 	"PreBuildSteps":
 	{
 		"Mac": [
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n chmod +x \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" \nfi",
-			"if [ -f \"$(PluginDir)/Source/ThirdParty/CLI/sentry-cli-Darwin-universal\" ]; then\n chmod +x \"$(PluginDir)/Source/ThirdParty/CLI/sentry-cli-Darwin-universal\" \nfi"
+			"chmod +x \"$(PluginDir)/Scripts/post-build-steps-mac.sh\""
+		],
+		"Linux": [
+			"chmod +x \"$(PluginDir)/Scripts/post-build-steps-linux.sh\""
 		]
 	},
 	"PostBuildSteps":
 	{
 		"Mac": [
-			"if [ $(TargetPlatform) = \"Mac\" ] && [ ! -f \"$(PluginDir)/Binaries/Mac/sentry.dylib\" ]; then\n cp \"$(PluginDir)/Source/ThirdParty/Mac/bin/sentry.dylib\" \"$(PluginDir)/Binaries/Mac/sentry.dylib\"\nfi",
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
+			"\"$(PluginDir)/Scripts/post-build-steps-mac.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		],
 		"Linux": [
-			"if [ -f \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" ]; then\n \"$(PluginDir)/Scripts/upload-debug-symbols.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\"\nelse\n echo \"Sentry: Symbol upload script is missing. Skipping post build step.\"\nfi"
+			"\"$(PluginDir)/Scripts/post-build-steps-linux.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		],
 		"Win64": [
-			"setlocal enabledelayedexpansion",
-			"set \"PLUGIN_DIR=$(PluginDir)\"",
-			"set \"PLUGIN_DIR=%PLUGIN_DIR:/=\\%\"",
-			"set \"LINUX_BIN_DIR=%PLUGIN_DIR%\\Binaries\\Linux\"",
-			"set \"LINUX_SOURCE_DIR=%PLUGIN_DIR%\\Source\\ThirdParty\\Linux\\bin\"",
-			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%LINUX_BIN_DIR%\" (mkdir \"%LINUX_BIN_DIR%\")\n)",
-			"if \"$(TargetPlatform)\"==\"Linux\" (\n if not exist \"%LINUX_BIN_DIR%\\crashpad_handler\" (copy /Y \"%LINUX_SOURCE_DIR%\\crashpad_handler\" \"%LINUX_BIN_DIR%\\\")\n)",
-			"set \"WIN64_BIN_DIR=%PLUGIN_DIR%\\Binaries\\Win64\"",
-			"set \"WIN64_SOURCE_DIR=%PLUGIN_DIR%\\Source\\ThirdParty\\Win64\\bin\"",
-			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%WIN64_BIN_DIR%\" (mkdir \"%WIN64_BIN_DIR%\")\n)",
-			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%WIN64_BIN_DIR%\\crashpad_handler.exe\" (copy /Y \"%WIN64_SOURCE_DIR%\\crashpad_handler.exe\" \"%WIN64_BIN_DIR%\\\")\n)",
-			"if \"$(TargetPlatform)\"==\"Win64\" (\n if not exist \"%WIN64_BIN_DIR%\\crashpad_wer.dll\" (copy /Y \"%WIN64_SOURCE_DIR%\\crashpad_wer.dll\" \"%WIN64_BIN_DIR%\\\")\n)",
-			"set \"SYM_UPLOAD_SCRIPT=%PLUGIN_DIR%\\Scripts\\upload-debug-symbols-win.bat\"",
-			"if exist \"%SYM_UPLOAD_SCRIPT%\" (call \"%SYM_UPLOAD_SCRIPT%\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectDir)\" \"$(PluginDir)\") else (\necho Sentry: Symbol upload script is missing. Skipping post build step.\n)",
-			"endlocal"
+			"\"$(PluginDir)/Scripts/post-build-steps-win.bat\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		]
 	}
 }
