@@ -131,7 +131,8 @@ def main():
         upload_symbols = env_override
         log(f"Automatic symbols upload settings were overridden via environment variable SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY with value '{env_override}'")
 
-    if upload_symbols != "True":
+    # Check if upload is enabled
+    if not upload_symbols or upload_symbols.lower() != "true":
         log("Automatic symbols upload is disabled in plugin settings. Skipping...")
         return 0
 
