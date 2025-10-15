@@ -26,7 +26,7 @@ cd sentry-unreal
 ./scripts/init-win.ps1
 ```
 
-This script links the checked out version of the plugin (the [plugin-dev](./plugin-dev/) directory) to the playground project (the [sample]([./sample/) directory) and downloads the latest pre-built SDK dependencies from CI using GitHub CLI.
+This script links the checked out version of the plugin (the [plugin-dev](./plugin-dev/) directory) to the playground project (the [sample](./sample/) directory) and downloads the latest pre-built SDK dependencies from CI using GitHub CLI.
 
 > [!TIP]
 > When working with a `sentry-unreal` fork, run `gh repo set-default` to select the default remote repository used for GitHub API queries (required for pulling plugin dependencies from CI). If you don't plan to configure the CI pipeline for your fork, it's recommended to set `getsentry/sentry-unreal` as the default remote.
@@ -109,4 +109,4 @@ Tests source code can be found at `plugin-dev/Source/Sentry/Private/Tests`.
 
 ## Documentation
 
-The Sentry Unreal SDK has the official [documentation](https://docs.sentry.io/platforms/unreal/). When introducing a new feature, make sure it's properly documented by opening a corresponding pull request in the [sentry-docs](https://github.com/getsentry/sentry-docs) repository and linking it to your PR here.
+Sentry Unreal SDK has the official [documentation](https://docs.sentry.io/platforms/unreal/). When introducing a new feature, make sure it's properly documented by opening a corresponding pull request in the [sentry-docs](https://github.com/getsentry/sentry-docs) repository and linking it to your PR here.
