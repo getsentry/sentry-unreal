@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryFeedback.h"
+#include "SentryAttachment.h"
 
 #include "HAL/PlatformSentryFeedback.h"
 
