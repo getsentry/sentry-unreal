@@ -125,5 +125,4 @@ void FGenericPlatformSentryFeedback::AddByteAttachment(TSharedPtr<FGenericPlatfo
 	attachment->SetNativeObject(nativeAttachment);
 }
 
-
 #endif

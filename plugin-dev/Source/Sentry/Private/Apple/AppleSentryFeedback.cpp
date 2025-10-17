@@ -54,7 +54,6 @@ FString FAppleSentryFeedback::GetAssociatedEvent() const
 
 void FAppleSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	
 }
 
 SentryFeedback* FAppleSentryFeedback::CreateSentryFeedback(TSharedPtr<FAppleSentryFeedback> feedback)
