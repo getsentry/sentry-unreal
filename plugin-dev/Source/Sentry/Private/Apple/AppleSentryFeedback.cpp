@@ -2,10 +2,13 @@
 
 #include "AppleSentryFeedback.h"
 
+#include "AppleSentryAttachment.h"
 #include "AppleSentryId.h"
 
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
+
+#include "Misc/FileHelper.h"
 
 FAppleSentryFeedback::FAppleSentryFeedback(const FString& message)
 	: Message(message)
@@ -54,6 +57,7 @@ FString FAppleSentryFeedback::GetAssociatedEvent() const
 
 void FAppleSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
+	Attachments.Add(attachment);
 }
 
 SentryFeedback* FAppleSentryFeedback::CreateSentryFeedback(TSharedPtr<FAppleSentryFeedback> feedback)
@@ -65,10 +69,40 @@ SentryFeedback* FAppleSentryFeedback::CreateSentryFeedback(TSharedPtr<FAppleSent
 		id = idIOS->GetNativeObject();
 	}
 
+	NSMutableArray<NSData*>* attachments = nil;
+	if (feedback->Attachments.Num() > 0)
+	{
+		attachments = [NSMutableArray arrayWithCapacity:feedback->Attachments.Num()];
+
+		for (const TSharedPtr<ISentryAttachment>& attachment : feedback->Attachments)
+		{
+			NSData* data = nil;
+
+			if (attachment->GetData().Num() > 0)
+			{
+				const TArray<uint8>& bytes = attachment->GetData();
+				data = [NSData dataWithBytes:bytes.GetData() length:bytes.Num()];
+			}
+			else if (!attachment->GetPath().IsEmpty())
+			{
+				TArray<uint8> fileData;
+				if (FFileHelper::LoadFileToArray(fileData, *attachment->GetPath()))
+				{
+					data = [NSData dataWithBytes:fileData.GetData() length:fileData.Num()];
+				}
+			}
+
+			if (data != nil)
+			{
+				[attachments addObject:data];
+			}
+		}
+	}
+
 	return [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:feedback->Message.GetNSString()
 																  name:feedback->Name.GetNSString()
 																 email:feedback->Email.GetNSString()
 																source:SentryFeedbackSourceCustom
 													 associatedEventId:id
-														   attachments:nil];
+														   attachments:attachments];
 }

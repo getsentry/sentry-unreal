@@ -28,6 +28,8 @@ private:
 	FString Name;
 	FString Email;
 	FString EventId;
+
+	TArray<TSharedPtr<ISentryAttachment>> Attachments;
 };
 
 typedef FAppleSentryFeedback FPlatformSentryFeedback;
