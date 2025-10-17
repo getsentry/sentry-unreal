@@ -6,12 +6,12 @@
 #include "AndroidSentryBreadcrumb.h"
 #include "AndroidSentryEvent.h"
 #include "AndroidSentryFeedback.h"
+#include "AndroidSentryHint.h"
 #include "AndroidSentryId.h"
 #include "AndroidSentryTransaction.h"
 #include "AndroidSentryTransactionContext.h"
 #include "AndroidSentryTransactionOptions.h"
 #include "AndroidSentryUser.h"
-#include "AndroidSentryHint.h"
 
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
