@@ -69,3 +69,7 @@ FString FAndroidSentryFeedback::GetAssociatedEvent() const
 	TSharedPtr<FAndroidSentryId> eventId = MakeShareable(new FAndroidSentryId(*idAndroid));
 	return eventId->ToString();
 }
+
+void FAndroidSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+}

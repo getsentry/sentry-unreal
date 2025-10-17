@@ -67,3 +67,11 @@ FString USentryFeedback::GetAssociatedEvent() const
 
 	return NativeImpl->GetAssociatedEvent();
 }
+
+void USentryFeedback::AddAttachment(USentryAttachment* Attachment)
+{
+	if (!NativeImpl)
+		return;
+
+	return NativeImpl->AddAttachment(Attachment->GetNativeObject());
+}
