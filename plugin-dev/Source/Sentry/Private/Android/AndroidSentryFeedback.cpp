@@ -2,6 +2,7 @@
 
 #include "AndroidSentryFeedback.h"
 
+#include "AndroidSentryHint.h"
 #include "AndroidSentryId.h"
 
 #include "Infrastructure/AndroidSentryJavaClasses.h"
@@ -9,6 +10,7 @@
 FAndroidSentryFeedback::FAndroidSentryFeedback(const FString& message)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::Feedback, "(Ljava/lang/String;)V",
 		  *GetJString(message))
+	, Hint(nullptr)
 {
 	SetupClassMethods();
 }
@@ -72,4 +74,15 @@ FString FAndroidSentryFeedback::GetAssociatedEvent() const
 
 void FAndroidSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
+	if (!Hint)
+	{
+		Hint = MakeShareable(new FAndroidSentryHint());
+	}
+
+	Hint->AddAttachment(attachment);
+}
+
+TSharedPtr<FAndroidSentryHint> FAndroidSentryFeedback::GetHint()
+{
+	return Hint;
 }

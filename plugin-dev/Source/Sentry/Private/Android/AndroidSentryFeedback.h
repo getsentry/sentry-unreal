@@ -7,6 +7,7 @@
 #include "Infrastructure/AndroidSentryJavaObjectWrapper.h"
 
 class ISentryId;
+class FAndroidSentryHint;
 
 class FAndroidSentryFeedback : public ISentryFeedback, public FSentryJavaObjectWrapper
 {
@@ -24,6 +25,8 @@ public:
 	virtual FString GetAssociatedEvent() const override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 
+	TSharedPtr<FAndroidSentryHint> GetHint();
+
 private:
 	FSentryJavaMethod GetMessageMethod;
 	FSentryJavaMethod SetNameMethod;
@@ -32,6 +35,8 @@ private:
 	FSentryJavaMethod GetContactEmailMethod;
 	FSentryJavaMethod SetAssociatedEventMethod;
 	FSentryJavaMethod GetAssociatedEventMethod;
+
+	TSharedPtr<FAndroidSentryHint> Hint;
 };
 
 typedef FAndroidSentryFeedback FPlatformSentryFeedback;
