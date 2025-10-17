@@ -5,8 +5,6 @@
 
 #include "Infrastructure/GenericPlatformSentryConverters.h"
 
-#include <NvParameterized.h>
-
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback()
