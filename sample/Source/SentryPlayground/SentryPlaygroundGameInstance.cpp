@@ -37,12 +37,8 @@ void USentryPlaygroundGameInstance::Init()
 
 			USentryPlaygroundUtils::LogCrashpadDiagnostics();
 
-			// Install Wine/Proton VEH workaround
-			USentryLibrary::InstallWineVectoredExceptionHandler();
-
 			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
 			UE_LOG(LogSentrySample, Log, TEXT("Crashpad diagnostics complete"));
-			UE_LOG(LogSentrySample, Log, TEXT("Wine/Proton workarounds installed!"));
 			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
 		}
 	}

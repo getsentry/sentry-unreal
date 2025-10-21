@@ -16,7 +16,6 @@
 #include "HAL/PlatformSentryUser.h"
 
 #include "Utils/SentryCrashpadDiagnostics.h"
-#include "Utils/SentryWineVectoredExceptionHandler.h"
 
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
@@ -100,9 +99,4 @@ void USentryLibrary::LogCrashpadDiagnostics()
 bool USentryLibrary::IsExceptionFilterInstalled()
 {
 	return FSentryCrashpadDiagnostics::IsExceptionFilterInstalled();
-}
-
-void USentryLibrary::InstallWineVectoredExceptionHandler()
-{
-	FSentryWineVectoredExceptionHandler::Install();
 }
