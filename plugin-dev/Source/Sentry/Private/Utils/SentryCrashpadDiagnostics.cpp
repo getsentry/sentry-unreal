@@ -91,7 +91,7 @@ void FSentryCrashpadDiagnostics::TriggerTestCrash()
 
 	// Trigger a null pointer dereference
 	int* nullPtr = nullptr;
-	*nullPtr = 42;  // This will cause an access violation
+	*nullPtr = 42; // This will cause an access violation
 #endif
 }
 
