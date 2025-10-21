@@ -67,7 +67,7 @@ LONG WINAPI FSentryWineVectoredExceptionHandler::VectoredExceptionHandler(EXCEPT
 				UE_LOG(LogSentrySdk, Warning, TEXT("Crashpad passed on the exception"));
 			}
 		}
-		__except(EXCEPTION_EXECUTE_HANDLER)
+		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
 			UE_LOG(LogSentrySdk, Error, TEXT("ERROR: Exception while calling Crashpad filter!"));
 		}
