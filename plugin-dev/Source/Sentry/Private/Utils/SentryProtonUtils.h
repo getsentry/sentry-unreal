@@ -6,8 +6,8 @@
 
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
+#include <windows.h>
 #endif
 
 /**
