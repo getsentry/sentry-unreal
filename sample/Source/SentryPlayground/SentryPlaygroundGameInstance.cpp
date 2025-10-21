@@ -11,6 +11,10 @@
 #include "Misc/CommandLine.h"
 #include "Engine/Engine.h"
 
+#if PLATFORM_WINDOWS
+#include "Utils/SentryCrashpadDiagnostics.h"
+#endif
+
 void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
@@ -35,6 +39,11 @@ void USentryPlaygroundGameInstance::Init()
 			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
 
 			USentryPlaygroundUtils::LogCrashpadDiagnostics();
+
+			// Install logging wrapper to monitor if Wine calls the exception filter
+			#if PLATFORM_WINDOWS
+			FSentryCrashpadDiagnostics::InstallLoggingExceptionFilterWrapper();
+			#endif
 
 			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
 			UE_LOG(LogSentrySample, Log, TEXT("Crashpad diagnostics complete"));

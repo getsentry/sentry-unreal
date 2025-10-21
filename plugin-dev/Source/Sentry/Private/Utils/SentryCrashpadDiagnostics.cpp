@@ -7,7 +7,10 @@
 
 #if PLATFORM_WINDOWS
 LPTOP_LEVEL_EXCEPTION_FILTER FSentryCrashpadDiagnostics::OriginalFilter = nullptr;
+LPTOP_LEVEL_EXCEPTION_FILTER FSentryCrashpadDiagnostics::CrashpadFilter = nullptr;
 bool FSentryCrashpadDiagnostics::bTestFilterWasCalled = false;
+bool FSentryCrashpadDiagnostics::bLoggingWrapperCalled = false;
+int32 FSentryCrashpadDiagnostics::WrapperCallCount = 0;
 
 LONG WINAPI FSentryCrashpadDiagnostics::TestExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
@@ -24,6 +27,44 @@ LONG WINAPI FSentryCrashpadDiagnostics::TestExceptionFilter(EXCEPTION_POINTERS* 
 	if (OriginalFilter)
 	{
 		return OriginalFilter(ExceptionInfo);
+	}
+
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
+LONG WINAPI FSentryCrashpadDiagnostics::LoggingExceptionFilterWrapper(EXCEPTION_POINTERS* ExceptionInfo)
+{
+	bLoggingWrapperCalled = true;
+	WrapperCallCount++;
+
+	UE_LOG(LogSentrySdk, Error, TEXT("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+	UE_LOG(LogSentrySdk, Error, TEXT("LOGGING WRAPPER CALLED! (Call #%d)"), WrapperCallCount);
+	UE_LOG(LogSentrySdk, Error, TEXT("Wine IS calling the exception filter!"));
+	UE_LOG(LogSentrySdk, Error, TEXT("Exception Code: 0x%08X"), ExceptionInfo->ExceptionRecord->ExceptionCode);
+	UE_LOG(LogSentrySdk, Error, TEXT("Exception Address: 0x%p"), ExceptionInfo->ExceptionRecord->ExceptionAddress);
+	UE_LOG(LogSentrySdk, Error, TEXT("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+
+	// Forward to Crashpad's original filter
+	if (CrashpadFilter)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Calling Crashpad's filter at 0x%p..."), CrashpadFilter);
+		LONG result = CrashpadFilter(ExceptionInfo);
+		UE_LOG(LogSentrySdk, Error, TEXT("Crashpad filter returned: %d"), result);
+
+		if (result == EXCEPTION_EXECUTE_HANDLER)
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Crashpad wants to handle the exception"));
+		}
+		else if (result == EXCEPTION_CONTINUE_SEARCH)
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Crashpad is passing on the exception"));
+		}
+
+		return result;
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("ERROR: No Crashpad filter to forward to!"));
 	}
 
 	return EXCEPTION_CONTINUE_SEARCH;
@@ -216,6 +257,54 @@ void FSentryCrashpadDiagnostics::LogExceptionHandlerState()
 		UE_LOG(LogSentrySdk, Warning, TEXT("    4. Another module overrides the filter"));
 	}
 
+	if (bLoggingWrapperCalled)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT(""));
+		UE_LOG(LogSentrySdk, Error, TEXT("!!! LOGGING WRAPPER WAS CALLED %d TIMES !!!"), WrapperCallCount);
+		UE_LOG(LogSentrySdk, Error, TEXT("This means Wine IS calling the exception filter!"));
+		UE_LOG(LogSentrySdk, Error, TEXT("The problem is either:"));
+		UE_LOG(LogSentrySdk, Error, TEXT("  1. Crashpad's filter is failing internally"));
+		UE_LOG(LogSentrySdk, Error, TEXT("  2. IPC with crashpad_handler.exe is broken"));
+		UE_LOG(LogSentrySdk, Error, TEXT("  3. Crash report is generated but not uploaded"));
+	}
+
 	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
+#endif
+}
+
+void FSentryCrashpadDiagnostics::InstallLoggingExceptionFilterWrapper()
+{
+#if PLATFORM_WINDOWS
+	FSentryProtonUtils::FProtonInfo ProtonInfo = FSentryProtonUtils::DetectProtonEnvironment();
+
+	if (!ProtonInfo.bIsRunningUnderWine)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Not running under Wine - skipping logging wrapper"));
+		return;
+	}
+
+	UE_LOG(LogSentrySdk, Warning, TEXT("========================================"));
+	UE_LOG(LogSentrySdk, Warning, TEXT("INSTALLING LOGGING EXCEPTION FILTER WRAPPER"));
+	UE_LOG(LogSentrySdk, Warning, TEXT("This will intercept exception filter calls and log them"));
+	UE_LOG(LogSentrySdk, Warning, TEXT("========================================"));
+
+	// Get Crashpad's current filter
+	CrashpadFilter = SetUnhandledExceptionFilter(LoggingExceptionFilterWrapper);
+
+	if (CrashpadFilter)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Wrapped Crashpad's filter at: 0x%p"), CrashpadFilter);
+		UE_LOG(LogSentrySdk, Log, TEXT("Our wrapper is now at: 0x%p"), LoggingExceptionFilterWrapper);
+		UE_LOG(LogSentrySdk, Log, TEXT("When a crash occurs, you'll see detailed logs about:"));
+		UE_LOG(LogSentrySdk, Log, TEXT("  1. Whether Wine calls the filter"));
+		UE_LOG(LogSentrySdk, Log, TEXT("  2. What Crashpad's filter returns"));
+		UE_LOG(LogSentrySdk, Log, TEXT("  3. Whether the problem is in Crashpad or Wine"));
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("No previous filter was installed - Crashpad may not have initialized"));
+	}
+
+	UE_LOG(LogSentrySdk, Warning, TEXT("========================================"));
 #endif
 }

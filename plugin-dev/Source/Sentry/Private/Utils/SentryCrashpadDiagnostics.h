@@ -42,15 +42,34 @@ public:
 	 */
 	static void LogExceptionHandlerState();
 
+	/**
+	 * Installs a wrapper exception filter that logs when Wine calls it,
+	 * then forwards to the original (Crashpad's) filter.
+	 * This helps diagnose if Wine is calling the filter but Crashpad's IPC is failing.
+	 */
+	static void InstallLoggingExceptionFilterWrapper();
+
 private:
 #if PLATFORM_WINDOWS
 	/** Test exception filter callback */
 	static LONG WINAPI TestExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo);
 
+	/** Logging wrapper exception filter that monitors calls */
+	static LONG WINAPI LoggingExceptionFilterWrapper(EXCEPTION_POINTERS* ExceptionInfo);
+
 	/** Original exception filter before our test */
 	static LPTOP_LEVEL_EXCEPTION_FILTER OriginalFilter;
 
+	/** Crashpad's exception filter that we're wrapping */
+	static LPTOP_LEVEL_EXCEPTION_FILTER CrashpadFilter;
+
 	/** Whether our test filter was called */
 	static bool bTestFilterWasCalled;
+
+	/** Whether the logging wrapper was called */
+	static bool bLoggingWrapperCalled;
+
+	/** Number of times the wrapper was called */
+	static int32 WrapperCallCount;
 #endif
 };
