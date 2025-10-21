@@ -43,6 +43,8 @@
 #include "Misc/Paths.h"
 #include "UObject/UObjectThreadContext.h"
 
+#include "Utils/SentryProtonUtils.h"
+
 extern CORE_API bool GIsGPUCrashed;
 
 #if USE_SENTRY_NATIVE
@@ -258,8 +260,20 @@ void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttach
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
+	// Convert path for Wine/Proton compatibility if needed
+	FString AttachmentPath = FSentryProtonUtils::ConvertPathForWine(platformAttachment->GetPath());
+
+	// Verify the file exists before attaching
+	if (!FPaths::FileExists(AttachmentPath))
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Attachment file not found at path: %s"), *AttachmentPath);
+		return;
+	}
+
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Attaching file: %s"), *AttachmentPath);
+
 	sentry_attachment_t* nativeAttachment =
-		sentry_attach_file(TCHAR_TO_UTF8(*platformAttachment->GetPath()));
+		sentry_attach_file(TCHAR_TO_UTF8(*AttachmentPath));
 
 	if (!platformAttachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
@@ -356,10 +370,32 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		sentry_options_set_traces_sampler(options, HandleTraceSampling, this);
 	}
 
-	ConfigureHandlerPath(options);
-	ConfigureDatabasePath(options);
-	ConfigureCertsPath(options);
-	ConfigureNetworkConnectFunc(options);
+#if PLATFORM_WINDOWS
+	// Check for Wine/Proton environment and adjust backend accordingly
+	FSentryProtonUtils::FProtonInfo ProtonInfo = FSentryProtonUtils::DetectProtonEnvironment();
+	if (ProtonInfo.bIsRunningUnderWine)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Detected Wine/Proton environment. Using in-process crash backend instead of Crashpad."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Crash reports will be captured but may have reduced functionality compared to native Windows."));
+
+		// Use in-process backend for Wine/Proton as Crashpad doesn't work reliably
+		// The in-process backend captures crashes within the same process
+		sentry_options_set_backend(options, NULL);
+
+		// Still configure database path for storing events
+		ConfigureDatabasePath(options);
+		ConfigureCertsPath(options);
+		ConfigureNetworkConnectFunc(options);
+	}
+	else
+#endif
+	{
+		// Native environment - use full Crashpad backend
+		ConfigureHandlerPath(options);
+		ConfigureDatabasePath(options);
+		ConfigureCertsPath(options);
+		ConfigureNetworkConnectFunc(options);
+	}
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->GetEffectiveDsn()));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->GetEffectiveRelease()));

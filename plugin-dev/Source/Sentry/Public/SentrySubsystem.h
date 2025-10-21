@@ -389,6 +389,9 @@ private:
 	/** Adds GPU context data for all events captured by Sentry SDK. */
 	void AddDeviceContext();
 
+	/** Adds Proton/Wine environment context data for all events captured by Sentry SDK. */
+	void AddProtonContext();
+
 	/** Promote specified values to tags for all events captured by Sentry SDK. */
 	void PromoteTags();
 

@@ -19,6 +19,8 @@
 #include "GenericPlatform/GenericPlatformMisc.h"
 #endif
 
+#include "Utils/SentryProtonUtils.h"
+
 void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
 {
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
@@ -53,8 +55,20 @@ void FMicrosoftSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> 
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
+	// Convert path for Wine/Proton compatibility if needed
+	FString AttachmentPath = FSentryProtonUtils::ConvertPathForWine(platformAttachment->GetPath());
+
+	// Verify the file exists before attaching
+	if (!FPaths::FileExists(AttachmentPath))
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Attachment file not found at path: %s"), *AttachmentPath);
+		return;
+	}
+
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Attaching file: %s"), *AttachmentPath);
+
 	sentry_attachment_t* nativeAttachment =
-		sentry_attach_filew(*platformAttachment->GetPath());
+		sentry_attach_filew(*AttachmentPath);
 
 	if (!platformAttachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filenamew(nativeAttachment, *platformAttachment->GetFilename());

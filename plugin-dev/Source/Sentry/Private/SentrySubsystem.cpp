@@ -34,6 +34,8 @@
 #include "HAL/PlatformSentryId.h"
 #include "HAL/PlatformSentrySubsystem.h"
 
+#include "Utils/SentryProtonUtils.h"
+
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -128,6 +130,7 @@ void USentrySubsystem::Initialize()
 	AddDefaultContext();
 	AddGpuContext();
 	AddDeviceContext();
+	AddProtonContext();
 
 	PromoteTags();
 	ConfigureBreadcrumbs();
@@ -815,6 +818,70 @@ void USentrySubsystem::AddDeviceContext()
 	DeviceContext.Add(TEXT("physical_memory_size_gb"), FString::FromInt(MemoryConstants.TotalPhysicalGB));
 
 	SubsystemNativeImpl->SetContext(TEXT("device"), DeviceContext);
+}
+
+void USentrySubsystem::AddProtonContext()
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+#if PLATFORM_WINDOWS
+	FSentryProtonUtils::FProtonInfo ProtonInfo = FSentryProtonUtils::DetectProtonEnvironment();
+
+	if (ProtonInfo.bIsRunningUnderWine)
+	{
+		TMap<FString, FSentryVariant> ProtonContext;
+		ProtonContext.Add(TEXT("running_under_wine"), LexToString(true));
+		ProtonContext.Add(TEXT("wine_version"), ProtonInfo.WineVersion);
+
+		if (!ProtonInfo.HostSystem.IsEmpty())
+		{
+			ProtonContext.Add(TEXT("host_system"), ProtonInfo.HostSystem);
+		}
+
+		if (!ProtonInfo.HostRelease.IsEmpty())
+		{
+			ProtonContext.Add(TEXT("host_release"), ProtonInfo.HostRelease);
+		}
+
+		if (ProtonInfo.bIsSteamProton)
+		{
+			ProtonContext.Add(TEXT("is_steam_proton"), LexToString(true));
+
+			if (!ProtonInfo.ProtonVersion.IsEmpty())
+			{
+				ProtonContext.Add(TEXT("proton_version"), ProtonInfo.ProtonVersion);
+			}
+
+			if (!ProtonInfo.SteamCompatDataPath.IsEmpty())
+			{
+				ProtonContext.Add(TEXT("steam_compat_data_path"), ProtonInfo.SteamCompatDataPath);
+			}
+		}
+
+		SubsystemNativeImpl->SetContext(TEXT("proton"), ProtonContext);
+
+		// Also set as tags for easier filtering in Sentry UI
+		SubsystemNativeImpl->SetTag(TEXT("Runtime"), TEXT("Proton/Wine"));
+		SubsystemNativeImpl->SetTag(TEXT("Wine Version"), ProtonInfo.WineVersion);
+
+		if (ProtonInfo.bIsSteamProton && !ProtonInfo.ProtonVersion.IsEmpty())
+		{
+			SubsystemNativeImpl->SetTag(TEXT("Proton Version"), ProtonInfo.ProtonVersion);
+		}
+
+		if (!ProtonInfo.HostSystem.IsEmpty())
+		{
+			SubsystemNativeImpl->SetTag(TEXT("Host OS"), ProtonInfo.HostSystem);
+		}
+
+		UE_LOG(LogSentrySdk, Log, TEXT("Added Proton/Wine context to Sentry events"));
+	}
+#endif
 }
 
 void USentrySubsystem::PromoteTags()
