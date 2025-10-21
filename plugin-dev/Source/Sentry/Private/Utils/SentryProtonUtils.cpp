@@ -5,6 +5,7 @@
 #include "SentryDefines.h"
 
 #include "HAL/PlatformMisc.h"
+#include "Misc/Paths.h"
 
 // Static member initialization
 FSentryProtonUtils::FProtonInfo FSentryProtonUtils::CachedProtonInfo;
@@ -29,8 +30,9 @@ FSentryProtonUtils::FProtonInfo FSentryProtonUtils::DetectProtonEnvironment()
 	if (hNtdll)
 	{
 		// wine_get_version returns the Wine version string
-		typedef const char*(CDECL * wine_get_version_t)(void);
-		wine_get_version_t wine_get_version = (wine_get_version_t)GetProcAddress(hNtdll, "wine_get_version");
+		typedef const char* (CDECL *wine_get_version_t)(void);
+		FARPROC procAddr = GetProcAddress(hNtdll, "wine_get_version");
+		wine_get_version_t wine_get_version = reinterpret_cast<wine_get_version_t>(procAddr);
 
 		if (wine_get_version)
 		{
@@ -43,8 +45,9 @@ FSentryProtonUtils::FProtonInfo FSentryProtonUtils::DetectProtonEnvironment()
 			}
 
 			// wine_get_host_version provides information about the host OS
-			typedef void(CDECL * wine_get_host_version_t)(const char** sysname, const char** release);
-			wine_get_host_version_t wine_get_host_version = (wine_get_host_version_t)GetProcAddress(hNtdll, "wine_get_host_version");
+			typedef void (CDECL *wine_get_host_version_t)(const char** sysname, const char** release);
+			FARPROC hostProcAddr = GetProcAddress(hNtdll, "wine_get_host_version");
+			wine_get_host_version_t wine_get_host_version = reinterpret_cast<wine_get_host_version_t>(hostProcAddr);
 
 			if (wine_get_host_version)
 			{
