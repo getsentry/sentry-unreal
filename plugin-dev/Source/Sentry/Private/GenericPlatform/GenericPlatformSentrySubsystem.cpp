@@ -370,32 +370,11 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		sentry_options_set_traces_sampler(options, HandleTraceSampling, this);
 	}
 
-#if PLATFORM_WINDOWS
-	// Check for Wine/Proton environment and adjust backend accordingly
-	FSentryProtonUtils::FProtonInfo ProtonInfo = FSentryProtonUtils::DetectProtonEnvironment();
-	if (ProtonInfo.bIsRunningUnderWine)
-	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Detected Wine/Proton environment. Using in-process crash backend instead of Crashpad."));
-		UE_LOG(LogSentrySdk, Warning, TEXT("Crash reports will be captured but may have reduced functionality compared to native Windows."));
-
-		// Use in-process backend for Wine/Proton as Crashpad doesn't work reliably
-		// The in-process backend captures crashes within the same process
-		sentry_options_set_backend(options, NULL);
-
-		// Still configure database path for storing events
-		ConfigureDatabasePath(options);
-		ConfigureCertsPath(options);
-		ConfigureNetworkConnectFunc(options);
-	}
-	else
-#endif
-	{
-		// Native environment - use full Crashpad backend
-		ConfigureHandlerPath(options);
-		ConfigureDatabasePath(options);
-		ConfigureCertsPath(options);
-		ConfigureNetworkConnectFunc(options);
-	}
+	// Native environment - use full Crashpad backend
+	ConfigureHandlerPath(options);
+	ConfigureDatabasePath(options);
+	ConfigureCertsPath(options);
+	ConfigureNetworkConnectFunc(options);
 
 	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->GetEffectiveDsn()));
 	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->GetEffectiveRelease()));

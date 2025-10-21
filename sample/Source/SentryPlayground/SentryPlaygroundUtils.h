@@ -55,4 +55,18 @@ public:
 	/** Forces garbage collection and captures Sentry event to test beforeSend hook limitation. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static void CaptureEventDuringGC();
+
+	/**
+	 * Logs diagnostic information about Crashpad exception handling state.
+	 * Useful for debugging crash capture issues on Wine/Proton.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry|Diagnostics")
+	static void LogCrashpadDiagnostics();
+
+	/**
+	 * Checks if an exception filter is currently installed.
+	 * Returns true if Crashpad or another crash handler has registered an exception filter.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry|Diagnostics")
+	static bool IsExceptionFilterInstalled();
 };

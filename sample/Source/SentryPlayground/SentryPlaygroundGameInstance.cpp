@@ -19,10 +19,27 @@ void USentryPlaygroundGameInstance::Init()
 
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("crash-capture")) || 
+	if (FParse::Param(FCommandLine::Get(), TEXT("crash-capture")) ||
 		FParse::Param(FCommandLine::Get(), TEXT("message-capture")))
 	{
 		RunIntegrationTest(CommandLine);
+	}
+	else
+	{
+		// Normal game startup - run diagnostics after Sentry initialization
+		USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+		if (SentrySubsystem && SentrySubsystem->IsEnabled())
+		{
+			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
+			UE_LOG(LogSentrySample, Log, TEXT("Running Crashpad diagnostics on startup..."));
+			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
+
+			USentryPlaygroundUtils::LogCrashpadDiagnostics();
+
+			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
+			UE_LOG(LogSentrySample, Log, TEXT("Crashpad diagnostics complete"));
+			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
+		}
 	}
 }
 

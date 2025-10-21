@@ -12,6 +12,7 @@
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
 #include "SentryGCCallback.h"
+#include "SentryLibrary.h"
 
 #if PLATFORM_MICROSOFT
 #include "Microsoft/WindowsHWrapper.h"
@@ -155,5 +156,15 @@ void USentryPlaygroundUtils::CaptureEventDuringGC()
 	ObjectsToGC.Empty();
 
 	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+}
+
+void USentryPlaygroundUtils::LogCrashpadDiagnostics()
+{
+	USentryLibrary::LogCrashpadDiagnostics();
+}
+
+bool USentryPlaygroundUtils::IsExceptionFilterInstalled()
+{
+	return USentryLibrary::IsExceptionFilterInstalled();
 }
 

@@ -15,6 +15,8 @@
 #include "HAL/PlatformSentryTransactionContext.h"
 #include "HAL/PlatformSentryUser.h"
 
+#include "Utils/SentryCrashpadDiagnostics.h"
+
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
 	USentryEvent* Event = USentryEvent::Create(CreateSharedSentryEvent());
@@ -87,4 +89,14 @@ USentryAttachment* USentryLibrary::CreateSentryAttachmentWithPath(const FString&
 USentryTransactionContext* USentryLibrary::CreateSentryTransactionContext(const FString& Name, const FString& Operation)
 {
 	return USentryTransactionContext::Create(CreateSharedSentryTransactionContext(Name, Operation));
+}
+
+void USentryLibrary::LogCrashpadDiagnostics()
+{
+	FSentryCrashpadDiagnostics::LogExceptionHandlerState();
+}
+
+bool USentryLibrary::IsExceptionFilterInstalled()
+{
+	return FSentryCrashpadDiagnostics::IsExceptionFilterInstalled();
 }
