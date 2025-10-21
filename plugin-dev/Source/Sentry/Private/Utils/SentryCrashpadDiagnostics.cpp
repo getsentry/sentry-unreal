@@ -80,7 +80,7 @@ bool FSentryCrashpadDiagnostics::IsExceptionFilterInstalled()
 	{
 		HMODULE hModule = nullptr;
 		if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-			(LPCTSTR)current, &hModule))
+				(LPCTSTR)current, &hModule))
 		{
 			WCHAR modulePath[MAX_PATH];
 			if (GetModuleFileNameW(hModule, modulePath, MAX_PATH))
