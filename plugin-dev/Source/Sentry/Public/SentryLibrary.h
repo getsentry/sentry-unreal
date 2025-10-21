@@ -119,4 +119,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry|Diagnostics")
 	static bool IsExceptionFilterInstalled();
+
+	/**
+	 * Installs Vectored Exception Handler for Wine/Proton compatibility.
+	 * This works around Wine not calling SetUnhandledExceptionFilter reliably.
+	 * Should be called after Sentry initialization.
+	 *
+	 * @note This is only available on Windows and only activates under Wine/Proton.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry|Diagnostics")
+	static void InstallWineVectoredExceptionHandler();
 };

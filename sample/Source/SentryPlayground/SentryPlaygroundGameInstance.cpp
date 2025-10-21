@@ -5,16 +5,12 @@
 #include "SentryPlayground.h"
 #include "SentrySubsystem.h"
 #include "SentrySettings.h"
+#include "SentryLibrary.h"
 #include "SentryPlaygroundUtils.h"
 #include "SentryUser.h"
 
 #include "Misc/CommandLine.h"
 #include "Engine/Engine.h"
-
-#if PLATFORM_WINDOWS
-#include "Utils/SentryCrashpadDiagnostics.h"
-#include "Utils/SentryWineVectoredExceptionHandler.h"
-#endif
 
 void USentryPlaygroundGameInstance::Init()
 {
@@ -41,18 +37,12 @@ void USentryPlaygroundGameInstance::Init()
 
 			USentryPlaygroundUtils::LogCrashpadDiagnostics();
 
-			// Install logging wrapper to monitor if Wine calls the exception filter
-			#if PLATFORM_WINDOWS
-			FSentryCrashpadDiagnostics::InstallLoggingExceptionFilterWrapper();
-
-			// Install Vectored Exception Handler for Wine/Proton compatibility
-			// This works around Wine not calling SetUnhandledExceptionFilter
-			FSentryWineVectoredExceptionHandler::Install();
-			#endif
+			// Install Wine/Proton VEH workaround
+			USentryLibrary::InstallWineVectoredExceptionHandler();
 
 			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
 			UE_LOG(LogSentrySample, Log, TEXT("Crashpad diagnostics complete"));
-			UE_LOG(LogSentrySample, Log, TEXT("Proton/Wine workarounds installed!"));
+			UE_LOG(LogSentrySample, Log, TEXT("Wine/Proton workarounds installed!"));
 			UE_LOG(LogSentrySample, Log, TEXT("========================================"));
 		}
 	}
