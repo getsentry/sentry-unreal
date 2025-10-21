@@ -75,6 +75,36 @@ bool FSentryCrashpadDiagnostics::IsExceptionFilterInstalled()
 		isInstalled ? TEXT("INSTALLED") : TEXT("NOT INSTALLED"),
 		current);
 
+	// Try to identify which module owns the filter
+	if (current)
+	{
+		HMODULE hModule = nullptr;
+		if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			(LPCTSTR)current, &hModule))
+		{
+			WCHAR modulePath[MAX_PATH];
+			if (GetModuleFileNameW(hModule, modulePath, MAX_PATH))
+			{
+				UE_LOG(LogSentrySdk, Log, TEXT("  Filter belongs to module: %s"), modulePath);
+
+				FString modulePathStr(modulePath);
+				if (modulePathStr.Contains(TEXT("crashpad"), ESearchCase::IgnoreCase))
+				{
+					UE_LOG(LogSentrySdk, Log, TEXT("  -> Appears to be Crashpad's handler"));
+				}
+				else if (modulePathStr.Contains(TEXT("steam"), ESearchCase::IgnoreCase))
+				{
+					UE_LOG(LogSentrySdk, Warning, TEXT("  -> WARNING: Appears to be Steam's handler!"));
+					UE_LOG(LogSentrySdk, Warning, TEXT("  -> Steam overlay may interfere with Crashpad"));
+				}
+				else if (modulePathStr.Contains(TEXT("sentry"), ESearchCase::IgnoreCase))
+				{
+					UE_LOG(LogSentrySdk, Log, TEXT("  -> Appears to be Sentry's handler"));
+				}
+			}
+		}
+	}
+
 	return isInstalled;
 #else
 	return false;
@@ -108,45 +138,84 @@ void FSentryCrashpadDiagnostics::LogExceptionHandlerState()
 	if (ProtonInfo.bIsRunningUnderWine)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Wine Version: %s"), *ProtonInfo.WineVersion);
-		UE_LOG(LogSentrySdk, Log, TEXT("Host System: %s"), *ProtonInfo.HostSystem);
+		UE_LOG(LogSentrySdk, Log, TEXT("Host System: %s %s"), *ProtonInfo.HostSystem, *ProtonInfo.HostRelease);
+
+		if (ProtonInfo.bIsSteamProton)
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("Steam Proton: YES"));
+			UE_LOG(LogSentrySdk, Log, TEXT("Proton Version: %s"), *ProtonInfo.ProtonVersion);
+			UE_LOG(LogSentrySdk, Log, TEXT(""));
+			UE_LOG(LogSentrySdk, Warning, TEXT("STEAM OVERLAY WARNING:"));
+			UE_LOG(LogSentrySdk, Warning, TEXT("Steam runs its own native Linux crashpad_handler"));
+			UE_LOG(LogSentrySdk, Warning, TEXT("This may conflict with your Windows Crashpad via Proton!"));
+			UE_LOG(LogSentrySdk, Warning, TEXT(""));
+		}
 	}
 
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
 	bool filterInstalled = IsExceptionFilterInstalled();
-	UE_LOG(LogSentrySdk, Log, TEXT("Exception Filter Installed: %s"), filterInstalled ? TEXT("YES") : TEXT("NO"));
 
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
 	if (bTestFilterWasCalled)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Test Filter Was Called: YES"));
+		UE_LOG(LogSentrySdk, Log, TEXT("Test Filter Called: YES"));
 		UE_LOG(LogSentrySdk, Log, TEXT("  -> Wine IS calling SetUnhandledExceptionFilter"));
+		UE_LOG(LogSentrySdk, Log, TEXT("  -> Problem is likely IPC or handler communication"));
 	}
 	else
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Test Filter Was Called: NO (no crash triggered yet)"));
+		UE_LOG(LogSentrySdk, Log, TEXT("Test Filter Called: NO (trigger crash to test)"));
 	}
 
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
+	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
+	UE_LOG(LogSentrySdk, Log, TEXT("WHERE TO FIND WINE DEBUG LOGS:"));
+	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
+	UE_LOG(LogSentrySdk, Log, TEXT("1. If running from terminal with WINEDEBUG:"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   -> Output goes to stderr"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   -> Redirect: WINEDEBUG=+seh,+exception %%command%% 2>&1 | tee ~/wine.log"));
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
+	UE_LOG(LogSentrySdk, Log, TEXT("2. Steam launch options (add this):"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   WINEDEBUG=+seh,+exception,+relay,+pipe %%command%% 2>&1 | tee ~/wine_debug.log"));
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
+	UE_LOG(LogSentrySdk, Log, TEXT("3. Check standard Steam/Proton log locations:"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   ~/.steam/steam/logs/"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   ~/.steam/steam/steamapps/compatdata/<AppID>/"));
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
+	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
+	UE_LOG(LogSentrySdk, Log, TEXT("DEBUGGING STEPS:"));
+	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
+	UE_LOG(LogSentrySdk, Log, TEXT("1. Check running crashpad processes:"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   ps aux | grep crashpad"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   -> You should see both Steam's and your game's handler"));
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
+	UE_LOG(LogSentrySdk, Log, TEXT("2. Enable Wine debugging and trigger crash"));
+	UE_LOG(LogSentrySdk, Log, TEXT("3. Check Wine logs for:"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   - SEH exception being raised"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   - UnhandledExceptionFilter being called"));
+	UE_LOG(LogSentrySdk, Log, TEXT("   - Named pipe communication"));
+	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
+
+	UE_LOG(LogSentrySdk, Log, TEXT(""));
 	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
 	UE_LOG(LogSentrySdk, Log, TEXT("POTENTIAL ISSUES:"));
+	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
 
 	if (ProtonInfo.bIsRunningUnderWine && !filterInstalled)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("  - No exception filter installed under Wine!"));
-		UE_LOG(LogSentrySdk, Warning, TEXT("  - Crashpad may not have registered successfully"));
+		UE_LOG(LogSentrySdk, Error, TEXT("  [CRITICAL] No exception filter installed!"));
+		UE_LOG(LogSentrySdk, Error, TEXT("  -> Crashpad StartHandler() failed"));
 	}
-
-	if (ProtonInfo.bIsRunningUnderWine && filterInstalled)
+	else if (ProtonInfo.bIsRunningUnderWine && filterInstalled)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("  - Filter is installed, testing if Wine calls it..."));
-		UE_LOG(LogSentrySdk, Log, TEXT("  - Possible issues:"));
-		UE_LOG(LogSentrySdk, Log, TEXT("    1. Wine converts signals to SEH but doesn't call UnhandledExceptionFilter"));
-		UE_LOG(LogSentrySdk, Log, TEXT("    2. Crashpad's IPC communication isn't working"));
-		UE_LOG(LogSentrySdk, Log, TEXT("    3. Another module overrode Crashpad's filter"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("  [INFO] Filter IS installed but crashes may not be captured"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("  Possible causes:"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("    1. Wine doesn't call filter for all exception types"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("    2. Named pipe IPC fails between process and handler"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("    3. Steam overlay's handler interferes"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("    4. Another module overrides the filter"));
 	}
 
-	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
-	UE_LOG(LogSentrySdk, Log, TEXT("NEXT STEPS:"));
-	UE_LOG(LogSentrySdk, Log, TEXT("  1. Check if crashpad_handler.exe is running (ps aux | grep crashpad)"));
-	UE_LOG(LogSentrySdk, Log, TEXT("  2. Enable Wine debug channels: WINEDEBUG=+seh,+exception"));
-	UE_LOG(LogSentrySdk, Log, TEXT("  3. Try triggering a test crash"));
 	UE_LOG(LogSentrySdk, Log, TEXT("========================================"));
 #endif
 }
