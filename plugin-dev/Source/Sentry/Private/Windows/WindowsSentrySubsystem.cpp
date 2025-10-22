@@ -12,8 +12,8 @@
 #include "Windows/WindowsPlatformStackWalk.h"
 
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <winternl.h>
 #include "Windows/HideWindowsPlatformTypes.h"
+#include <winternl.h>
 
 bool FWindowsSentrySubsystem::IsRunningUnderWineOrProton() const
 {
@@ -25,7 +25,7 @@ bool FWindowsSentrySubsystem::IsRunningUnderWineOrProton() const
 	}
 
 	// wine_get_version is exported by Wine's ntdll
-	typedef const char* (CDECL *wine_get_version_t)(void);
+	typedef const char*(CDECL * wine_get_version_t)(void);
 	wine_get_version_t wine_get_version =
 		reinterpret_cast<wine_get_version_t>(GetProcAddress(hNtDll, "wine_get_version"));
 
