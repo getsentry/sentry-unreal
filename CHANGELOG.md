@@ -24,6 +24,7 @@
 - Add screenshot capturing for ensure/assert events on Android ([#1097](https://github.com/getsentry/sentry-unreal/pull/1097))
 - Add level-specific logging methods (LogDebug, LogInfo, LogWarning, LogError, LogFatal) to match other Sentry SDKs ([#1110](https://github.com/getsentry/sentry-unreal/pull/1110))
 - Migrated debug symbol upload to unified Python-based implementation to improve stability ([#1114](https://github.com/getsentry/sentry-unreal/pull/1114))
+- Implement support for SteamOS detection + crashpad support ([#1123](https://github.com/getsentry/sentry-unreal/pull/1123))
 
 ### Fixes
 

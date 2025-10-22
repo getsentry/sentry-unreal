@@ -54,6 +54,31 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 
 	// Call parent implementation
 	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
+
+	// Add Wine/Proton context for all events if detected
+	if (bIsWineOrProton && IsEnabled())
+	{
+		// Add runtime context
+		sentry_value_t runtime_context = sentry_value_new_object();
+		sentry_value_set_by_key(runtime_context, "name", sentry_value_new_string("wine"));
+		sentry_value_set_by_key(runtime_context, "proton", sentry_value_new_bool(true));
+		sentry_set_context("runtime", runtime_context);
+
+		// Check if running under Proton and set OS context
+		const TCHAR* SteamCompatPath = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_COMPAT_DATA_PATH"));
+		if (SteamCompatPath != nullptr && FCString::Strlen(SteamCompatPath) > 0)
+		{
+			// Running under Proton - set OS to SteamOS
+			sentry_value_t os_context = sentry_value_new_object();
+			sentry_value_set_by_key(os_context, "name", sentry_value_new_string("SteamOS"));
+			sentry_set_context("os", os_context);
+			UE_LOG(LogSentrySdk, Log, TEXT("Set OS context to SteamOS (detected Proton via STEAM_COMPAT_DATA_PATH)"));
+		}
+
+		// Add tag for filtering
+		sentry_set_tag("wine_proton", "true");
+		UE_LOG(LogSentrySdk, Log, TEXT("Added Wine/Proton context and tags for all events"));
+	}
 }
 
 void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
@@ -78,47 +103,9 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	event = FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
-
-	if (bIsWineOrProton)
-	{
-		// Add Wine/Proton context tags
-		sentry_value_t contexts = sentry_value_get_by_key(event, "contexts");
-		if (sentry_value_is_null(contexts))
-		{
-			contexts = sentry_value_new_object();
-			sentry_value_set_by_key(event, "contexts", contexts);
-		}
-
-		sentry_value_t runtime_context = sentry_value_new_object();
-		sentry_value_set_by_key(runtime_context, "name", sentry_value_new_string("wine"));
-		sentry_value_set_by_key(runtime_context, "proton", sentry_value_new_bool(true));
-		sentry_value_set_by_key(contexts, "runtime", runtime_context);
-
-		// Fix OS name to SteamOS for Proton
-		sentry_value_t os_context = sentry_value_get_by_key(contexts, "os");
-		if (!sentry_value_is_null(os_context))
-		{
-			// Check if STEAM_COMPAT_DATA_PATH is set (indicates Proton)
-			const TCHAR* SteamCompatPath = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_COMPAT_DATA_PATH"));
-			if (SteamCompatPath != nullptr && FCString::Strlen(SteamCompatPath) > 0)
-			{
-				sentry_value_set_by_key(os_context, "name", sentry_value_new_string("SteamOS"));
-				UE_LOG(LogSentrySdk, Log, TEXT("Set OS name to SteamOS (detected Proton via STEAM_COMPAT_DATA_PATH)"));
-			}
-		}
-
-		// Add tags
-		sentry_value_t tags = sentry_value_get_by_key(event, "tags");
-		if (sentry_value_is_null(tags))
-		{
-			tags = sentry_value_new_object();
-			sentry_value_set_by_key(event, "tags", tags);
-		}
-		sentry_value_set_by_key(tags, "wine_proton", sentry_value_new_string("true"));
-	}
-
-	return event;
+	// Context and tags are already set globally during InitWithSettings
+	// Just call parent implementation
+	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
 }
 
 #endif // USE_SENTRY_NATIVE
