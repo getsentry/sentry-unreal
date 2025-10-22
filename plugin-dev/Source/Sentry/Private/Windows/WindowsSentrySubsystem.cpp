@@ -26,8 +26,10 @@ bool FWindowsSentrySubsystem::IsRunningUnderWineOrProton() const
 
 	// wine_get_version is exported by Wine's ntdll
 	typedef const char*(CDECL * wine_get_version_t)(void);
+	PRAGMA_DISABLE_UNSAFE_TYPECAST_WARNINGS
 	wine_get_version_t wine_get_version =
 		reinterpret_cast<wine_get_version_t>(GetProcAddress(hNtDll, "wine_get_version"));
+	PRAGMA_RESTORE_UNSAFE_TYPECAST_WARNINGS
 
 	if (wine_get_version != nullptr)
 	{
@@ -37,10 +39,10 @@ bool FWindowsSentrySubsystem::IsRunningUnderWineOrProton() const
 	}
 
 	// Check environment variable (common in Proton)
-	const TCHAR* WineVersion = FPlatformMisc::GetEnvironmentVariable(TEXT("WINE_VERSION"));
-	if (WineVersion != nullptr && FCString::Strlen(WineVersion) > 0)
+	FString WineVersion = FPlatformMisc::GetEnvironmentVariable(TEXT("WINE_VERSION"));
+	if (!WineVersion.IsEmpty())
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected Wine/Proton via WINE_VERSION environment variable: %s"), WineVersion);
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected Wine/Proton via WINE_VERSION environment variable: %s"), *WineVersion);
 		return true;
 	}
 
@@ -65,8 +67,8 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		sentry_set_context("runtime", runtime_context);
 
 		// Check if running under Proton and set OS context
-		const TCHAR* SteamCompatPath = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_COMPAT_DATA_PATH"));
-		if (SteamCompatPath != nullptr && FCString::Strlen(SteamCompatPath) > 0)
+		FString SteamCompatPath = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_COMPAT_DATA_PATH"));
+		if (!SteamCompatPath.IsEmpty())
 		{
 			// Running under Proton - set OS to SteamOS
 			sentry_value_t os_context = sentry_value_new_object();
