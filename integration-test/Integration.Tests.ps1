@@ -14,7 +14,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-function Convert-HashtableToObject($item) {
+function script:Convert-HashtableToObject($item) {
     if ($item -is [System.Collections.IDictionary]) {
         $obj = [PSCustomObject]@{}
         foreach ($key in $item.Keys) {
@@ -31,7 +31,7 @@ function Convert-HashtableToObject($item) {
     }
 }
 
-function Get-SentryUnrealTestEvent {
+function script:Get-SentryUnrealTestEvent {
     [CmdletBinding()]
     param(
         [Parameter()]
