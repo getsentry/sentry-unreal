@@ -28,7 +28,7 @@ void USentryPlaygroundGameInstance::Init()
 
 void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 {
-	UE_LOG(LogSentrySample, Log, TEXT("Running integration test for command: %s\n"), CommandLine);
+	UE_LOG(LogSentrySample, Display, TEXT("Running integration test for command: %s\n"), CommandLine);
 
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 	if (!SentrySubsystem)
@@ -78,9 +78,9 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 	// Because we don't get the real crash event ID, create a fake one and set it as a tag
 	// This tag is then used by integration test script in CI to fetch the event
 
-	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::Digits);
+	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
-	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
 
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
@@ -93,7 +93,7 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 
 	FString EventId = SentrySubsystem->CaptureMessage(TEXT("Integration test message"));
 
-	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
 
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
 }
@@ -115,9 +115,24 @@ void USentryPlaygroundGameInstance::ConfigureTestContext()
 
 void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestName, bool Result, const FString& Message)
 {
-	UE_LOG(LogSentrySample, Log, TEXT("TEST_RESULT: {\"test\":\"%s\",\"success\":%s,\"message\":\"%s\"}\n"),
+	UE_LOG(LogSentrySample, Display, TEXT("TEST_RESULT: {\"test\":\"%s\",\"success\":%s,\"message\":\"%s\"}\n"),
 		*TestName, Result ? TEXT("true") : TEXT("false"), *Message);
 
 	// Close app after test is completed
 	FGenericPlatformMisc::RequestExit(false);
+}
+
+FString USentryPlaygroundGameInstance::FormatEventIdWithHyphens(const FString& EventId)
+{
+	if (EventId.Len() == 32 && !EventId.Contains(TEXT("-")))
+	{
+		return FString::Printf(TEXT("%s-%s-%s-%s-%s"),
+			*EventId.Mid(0, 8),
+			*EventId.Mid(8, 4),
+			*EventId.Mid(12, 4),
+			*EventId.Mid(16, 4),
+			*EventId.Mid(20, 12));
+	}
+
+	return EventId;
 }
