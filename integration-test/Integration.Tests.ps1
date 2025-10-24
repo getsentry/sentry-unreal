@@ -19,7 +19,6 @@ function Convert-HashtableToObject($item) {
         $obj = [PSCustomObject]@{}
         foreach ($key in $item.Keys) {
             if ([string]::IsNullOrWhiteSpace($key)) {
-                Write-Warning "Removed property with empty name"
                 continue
             }
             $obj | Add-Member -NotePropertyName $key -NotePropertyValue (Convert-HashtableToObject $item[$key])
@@ -32,7 +31,7 @@ function Convert-HashtableToObject($item) {
     }
 }
 
-function Get-MyTestEvent {
+function Get-SentryUnrealTestEvent {
     [CmdletBinding()]
     param(
         [Parameter()]
@@ -237,7 +236,7 @@ Describe "Sentry Unreal Integration Tests ($Platform)" {
 
                 # Fetch event from Sentry (with polling)
                 try {
-                    $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
+                    $script:CrashEvent = Get-SentryUnrealTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
                     Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
                 } catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
@@ -347,7 +346,7 @@ Describe "Sentry Unreal Integration Tests ($Platform)" {
 
                 # Fetch event from Sentry (with polling) using sanitized helper
                 try {
-                    $script:MessageEvent = Get-MyTestEvent -EventId $eventIds[0] -TimeoutSeconds 300
+                    $script:MessageEvent = Get-SentryUnrealTestEvent -EventId $eventIds[0]
                     Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
                 } catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
