@@ -112,7 +112,7 @@ jobs:
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
         env:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/SentryPlayground.exe
         run: |
           cd checkout/integration-test
