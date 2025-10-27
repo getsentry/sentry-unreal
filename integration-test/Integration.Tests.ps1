@@ -222,7 +222,7 @@ Describe "Sentry Unreal Integration Tests" {
             $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
-            $script:CrashResult | ConvertTo-Json -Depth 5 | Out-File "$script:OutputDir/$timestamp-crash-result.json"
+            $script:CrashResult | ConvertTo-Json -Depth 10 | Out-File "$script:OutputDir/$timestamp-crash-result.json"
 
             Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -311,7 +311,7 @@ Describe "Sentry Unreal Integration Tests" {
             $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
-            $script:MessageResult | ConvertTo-Json -Depth 5 | Out-File "$script:OutputDir/$timestamp-message-result.json"
+            $script:MessageResult | ConvertTo-Json -Depth 10 | Out-File "$script:OutputDir/$timestamp-message-result.json"
 
             Write-Host "Message test executed. Exit code: $($script:MessageResult.ExitCode)" -ForegroundColor Cyan
 
