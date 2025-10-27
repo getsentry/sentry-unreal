@@ -168,7 +168,12 @@ jobs:
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Linux)
           path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'LinuxNoEditor' || 'Linux' }}/
-          retention-days: 1          
+          retention-days: 1
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck
 
       - name: Run integration tests
         id: run-integration-tests
