@@ -118,5 +118,5 @@ jobs:
           cd checkout/integration-test
           mkdir build
           cmake -B build -S .
-          pwsh -Command "Invoke-Pester -Path ./Integration.Tests.ps1"
+          pwsh -Command "Invoke-Pester -Path ./Integration.Tests.ps1 -CI"
 
