@@ -132,7 +132,7 @@ function script:Invoke-SentryUnrealTestApp {
         [string]$StderrFile
     )
 
-    if ($script:Platform -eq 'Win64') {
+    if ($IsWindows -or $env:OS -eq 'Windows_NT') {
         $process = Start-Process -FilePath $script:AppPath -ArgumentList $Arguments `
             -Wait -PassThru -NoNewWindow `
             -RedirectStandardOutput $StdoutFile `
@@ -175,8 +175,12 @@ BeforeAll {
     $script:AuthToken = $env:SENTRY_AUTH_TOKEN
     $script:AppPath = $env:SENTRY_UNREAL_TEST_APP_PATH
 
-    if (-not $script:DSN -or -not $script:AuthToken) {
-        throw "Environment variables SENTRY_UNREAL_TEST_DSN and SENTRY_AUTH_TOKEN must be set"
+    if (-not $script:DSN) {
+        throw "Environment variable SENTRY_UNREAL_TEST_DSN must be set"
+    }
+
+    if (-not $script:AuthToken) {
+        throw "Environment variable SENTRY_AUTH_TOKEN must be set"
     }
 
     if (-not $script:AppPath) {
@@ -197,20 +201,9 @@ BeforeAll {
     if (-not (Test-Path $script:OutputDir)) {
         New-Item -ItemType Directory -Path $script:OutputDir | Out-Null
     }
-
-    # Detect platform based on host OS
-    $script:Platform = if ($IsWindows -or $env:OS -match 'Windows') {
-        'Win64'
-    } elseif ($IsLinux) {
-        'Linux'
-    } elseif ($IsMacOS) {
-        'Mac'
-    } else {
-        throw "Unsupported platform. Unable to detect Windows, Linux, or macOS."
-    }
 }
 
-Describe "Sentry Unreal Integration Tests ($script:Platform)" {
+Describe "Sentry Unreal Integration Tests" {
 
     Context "Crash Capture Tests" {
         BeforeAll {
