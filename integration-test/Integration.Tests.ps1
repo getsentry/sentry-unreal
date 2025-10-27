@@ -1,7 +1,7 @@
 # Integration tests for Sentry Unreal SDK
 # Requires:
 # - Pre-built SentryPlayground application
-# - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_SAMPLE_APP_PATH
+# - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_TEST_APP_PATH
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -173,14 +173,14 @@ BeforeAll {
     # Validate environment variables
     $script:DSN = $env:SENTRY_UNREAL_TEST_DSN
     $script:AuthToken = $env:SENTRY_AUTH_TOKEN
-    $script:AppPath = $env:SENTRY_UNREAL_SAMPLE_APP_PATH
+    $script:AppPath = $env:SENTRY_UNREAL_TEST_APP_PATH
 
     if (-not $script:DSN -or -not $script:AuthToken) {
         throw "Environment variables SENTRY_UNREAL_TEST_DSN and SENTRY_AUTH_TOKEN must be set"
     }
 
     if (-not $script:AppPath) {
-        throw "Environment variable SENTRY_UNREAL_SAMPLE_APP_PATH must be set"
+        throw "Environment variable SENTRY_UNREAL_TEST_APP_PATH must be set"
     }
 
     # Connect to Sentry API
