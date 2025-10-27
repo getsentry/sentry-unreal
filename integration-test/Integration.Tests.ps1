@@ -1,26 +1,10 @@
 # Integration tests for Sentry Unreal SDK
 # Requires:
 # - Pre-built SentryPlayground application
-# - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN
-
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$AppPath
-)
+# - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_SAMPLE_APP_PATH
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-
-# Detect platform based on host OS
-$script:Platform = if ($IsWindows -or $env:OS -match 'Windows') {
-    'Win64'
-} elseif ($IsLinux) {
-    'Linux'
-} elseif ($IsMacOS) {
-    'Mac'
-} else {
-    throw "Unsupported platform. Unable to detect Windows, Linux, or macOS."
-}
 
 function script:Convert-HashtableToObject($item) {
     if ($item -is [System.Collections.IDictionary]) {
@@ -135,21 +119,49 @@ function script:Get-SentryUnrealTestEvent {
     }
 }
 
+function script:Invoke-SentryUnrealTestApp {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$Arguments,
+
+        [Parameter(Mandatory)]
+        [string]$StdoutFile,
+
+        [Parameter(Mandatory)]
+        [string]$StderrFile
+    )
+
+    if ($script:Platform -eq 'Win64') {
+        $process = Start-Process -FilePath $script:AppPath -ArgumentList $Arguments `
+            -Wait -PassThru -NoNewWindow `
+            -RedirectStandardOutput $StdoutFile `
+            -RedirectStandardError $StderrFile
+
+        return @{
+            ExitCode = $process.ExitCode
+            Output = Get-Content $StdoutFile
+            Error = Get-Content $StderrFile
+        }
+    } else {
+        # Linux or Mac
+        chmod +x $script:AppPath 2>&1 | Out-Null
+        $output = & $script:AppPath @Arguments 2>&1
+        $output | Out-File $StdoutFile
+
+        return @{
+            ExitCode = $LASTEXITCODE
+            Output = $output
+            Error = @()
+        }
+    }
+}
+
 BeforeAll {
-    # Check if environment is configured
+    # Check if configuration file exists
     $configFile = "$PSScriptRoot/TestConfig.local.ps1"
     if (-not (Test-Path $configFile)) {
-        throw @"
-Integration test environment not configured.
-
-Please run:
-  cd integration-test
-  cmake -B build -S .
-
-With environment variables:
-  SENTRY_UNREAL_TEST_DSN=https://...
-  SENTRY_AUTH_TOKEN=sntrys_...
-"@
+        throw "Configuration file '$configFile' not found."
     }
 
     # Load configuration (provides $global:AppRunnerPath)
@@ -161,9 +173,14 @@ With environment variables:
     # Validate environment variables
     $script:DSN = $env:SENTRY_UNREAL_TEST_DSN
     $script:AuthToken = $env:SENTRY_AUTH_TOKEN
+    $script:AppPath = $env:SENTRY_UNREAL_SAMPLE_APP_PATH
 
     if (-not $script:DSN -or -not $script:AuthToken) {
         throw "Environment variables SENTRY_UNREAL_TEST_DSN and SENTRY_AUTH_TOKEN must be set"
+    }
+
+    if (-not $script:AppPath) {
+        throw "Environment variable SENTRY_UNREAL_SAMPLE_APP_PATH must be set"
     }
 
     # Connect to Sentry API
@@ -171,8 +188,8 @@ With environment variables:
     Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
 
     # Validate app path
-    if (-not (Test-Path $AppPath)) {
-        throw "Application not found at: $AppPath"
+    if (-not (Test-Path $script:AppPath)) {
+        throw "Application not found at: $script:AppPath"
     }
 
     # Create output directory
@@ -181,10 +198,16 @@ With environment variables:
         New-Item -ItemType Directory -Path $script:OutputDir | Out-Null
     }
 
-    Write-Host "Test environment ready" -ForegroundColor Green
-    Write-Host "  Platform: $script:Platform" -ForegroundColor Cyan
-    Write-Host "  App: $AppPath" -ForegroundColor Cyan
-    Write-Host "  Output: $script:OutputDir" -ForegroundColor Cyan
+    # Detect platform based on host OS
+    $script:Platform = if ($IsWindows -or $env:OS -match 'Windows') {
+        'Win64'
+    } elseif ($IsLinux) {
+        'Linux'
+    } elseif ($IsMacOS) {
+        'Mac'
+    } else {
+        throw "Unsupported platform. Unable to detect Windows, Linux, or macOS."
+    }
 }
 
 Describe "Sentry Unreal Integration Tests ($script:Platform)" {
@@ -201,33 +224,9 @@ Describe "Sentry Unreal Integration Tests ($script:Platform)" {
             $stdoutFile = "$script:OutputDir/$timestamp-crash-stdout.log"
             $stderrFile = "$script:OutputDir/$timestamp-crash-stderr.log"
 
-            # Build arguments
-            $args = @('-crash-capture', '-NullRHI', '-unattended')
-
-            # Execute application based on platform
-            if ($script:Platform -eq 'Win64') {
-                $process = Start-Process -FilePath $AppPath -ArgumentList $args `
-                    -Wait -PassThru -NoNewWindow `
-                    -RedirectStandardOutput $stdoutFile `
-                    -RedirectStandardError $stderrFile
-
-                $script:CrashResult = @{
-                    ExitCode = $process.ExitCode
-                    Output = Get-Content $stdoutFile
-                    Error = Get-Content $stderrFile
-                }
-            } else {
-                # Linux or Mac
-                chmod +x $AppPath 2>&1 | Out-Null
-                $output = & $AppPath @args 2>&1
-                $output | Out-File $stdoutFile
-
-                $script:CrashResult = @{
-                    ExitCode = $LASTEXITCODE
-                    Output = $output
-                    Error = @()
-                }
-            }
+            # Build arguments and execute application
+            $appArgs = @('-crash-capture', '-NullRHI', '-unattended')
+            $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
             $script:CrashResult | ConvertTo-Json -Depth 5 | Out-File "$script:OutputDir/$timestamp-crash-result.json"
@@ -314,32 +313,9 @@ Describe "Sentry Unreal Integration Tests ($script:Platform)" {
             $stdoutFile = "$script:OutputDir/$timestamp-message-stdout.log"
             $stderrFile = "$script:OutputDir/$timestamp-message-stderr.log"
 
-            # Build arguments
-            $args = @('-message-capture', '-NullRHI', '-unattended')
-
-            # Execute application based on platform
-            if ($script:Platform -eq 'Win64') {
-                $process = Start-Process -FilePath $AppPath -ArgumentList $args `
-                    -Wait -PassThru -NoNewWindow `
-                    -RedirectStandardOutput $stdoutFile `
-                    -RedirectStandardError $stderrFile
-
-                $script:MessageResult = @{
-                    ExitCode = $process.ExitCode
-                    Output = Get-Content $stdoutFile
-                    Error = Get-Content $stderrFile
-                }
-            } else {
-                # Linux or Mac
-                $output = & $AppPath @args 2>&1
-                $output | Out-File $stdoutFile
-
-                $script:MessageResult = @{
-                    ExitCode = $LASTEXITCODE
-                    Output = $output
-                    Error = @()
-                }
-            }
+            # Build arguments and execute application
+            $appArgs = @('-message-capture', '-NullRHI', '-unattended')
+            $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
             $script:MessageResult | ConvertTo-Json -Depth 5 | Out-File "$script:OutputDir/$timestamp-message-result.json"
