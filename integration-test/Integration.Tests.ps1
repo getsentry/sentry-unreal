@@ -5,14 +5,22 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$AppPath,
-
-    [ValidateSet('Win64', 'Linux')]
-    [string]$Platform = 'Win64'
+    [string]$AppPath
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# Detect platform based on host OS
+$script:Platform = if ($IsWindows -or $env:OS -match 'Windows') {
+    'Win64'
+} elseif ($IsLinux) {
+    'Linux'
+} elseif ($IsMacOS) {
+    'Mac'
+} else {
+    throw "Unsupported platform. Unable to detect Windows, Linux, or macOS."
+}
 
 function script:Convert-HashtableToObject($item) {
     if ($item -is [System.Collections.IDictionary]) {
@@ -174,12 +182,12 @@ With environment variables:
     }
 
     Write-Host "Test environment ready" -ForegroundColor Green
-    Write-Host "  Platform: $Platform" -ForegroundColor Cyan
+    Write-Host "  Platform: $script:Platform" -ForegroundColor Cyan
     Write-Host "  App: $AppPath" -ForegroundColor Cyan
     Write-Host "  Output: $script:OutputDir" -ForegroundColor Cyan
 }
 
-Describe "Sentry Unreal Integration Tests ($Platform)" {
+Describe "Sentry Unreal Integration Tests ($script:Platform)" {
 
     Context "Crash Capture Tests" {
         BeforeAll {
@@ -197,7 +205,7 @@ Describe "Sentry Unreal Integration Tests ($Platform)" {
             $args = @('-crash-capture', '-NullRHI', '-unattended')
 
             # Execute application based on platform
-            if ($Platform -eq 'Win64') {
+            if ($script:Platform -eq 'Win64') {
                 $process = Start-Process -FilePath $AppPath -ArgumentList $args `
                     -Wait -PassThru -NoNewWindow `
                     -RedirectStandardOutput $stdoutFile `
@@ -209,7 +217,7 @@ Describe "Sentry Unreal Integration Tests ($Platform)" {
                     Error = Get-Content $stderrFile
                 }
             } else {
-                # Linux
+                # Linux or Mac
                 chmod +x $AppPath 2>&1 | Out-Null
                 $output = & $AppPath @args 2>&1
                 $output | Out-File $stdoutFile
@@ -310,7 +318,7 @@ Describe "Sentry Unreal Integration Tests ($Platform)" {
             $args = @('-message-capture', '-NullRHI', '-unattended')
 
             # Execute application based on platform
-            if ($Platform -eq 'Win64') {
+            if ($script:Platform -eq 'Win64') {
                 $process = Start-Process -FilePath $AppPath -ArgumentList $args `
                     -Wait -PassThru -NoNewWindow `
                     -RedirectStandardOutput $stdoutFile `
@@ -322,7 +330,7 @@ Describe "Sentry Unreal Integration Tests ($Platform)" {
                     Error = Get-Content $stderrFile
                 }
             } else {
-                # Linux
+                # Linux or Mac
                 $output = & $AppPath @args 2>&1
                 $output | Out-File $stdoutFile
 
