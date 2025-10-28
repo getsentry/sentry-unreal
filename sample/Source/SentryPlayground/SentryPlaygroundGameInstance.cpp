@@ -106,9 +106,6 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
 #endif
 
-	// Flush logs to ensure output is captured before exit
-	GLog->Flush();
-
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
 }
 
