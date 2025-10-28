@@ -8,6 +8,7 @@
 #include "SentryPlaygroundUtils.h"
 #include "SentryUser.h"
 
+#include "HAL/Platform.h"
 #include "Misc/CommandLine.h"
 #include "Engine/Engine.h"
 
@@ -128,7 +129,7 @@ void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestNa
 	GLog->Flush();
 
 	// Close app after test is completed
-#if PLATFORM_WINDOW
+#if PLATFORM_WINDOWS
 	FGenericPlatformMisc::RequestExitWithStatus(true, 0);
 #else
 	FGenericPlatformMisc::RequestExit(false);
