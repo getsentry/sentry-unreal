@@ -8,13 +8,23 @@
 #include "SentryPlaygroundUtils.h"
 #include "SentryUser.h"
 
+#include "CoreGlobals.h"
 #include "HAL/Platform.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/CommandLine.h"
 #include "Engine/Engine.h"
 
 void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
+
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	if (GLogConsole)
+	{
+		GLog->RemoveOutputDevice(GLogConsole);
+	}
+#endif
 
 	const TCHAR* CommandLine = FCommandLine::Get();
 
