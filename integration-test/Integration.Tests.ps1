@@ -129,31 +129,74 @@ function script:Invoke-SentryUnrealTestApp {
         [string]$StdoutFile,
 
         [Parameter(Mandatory)]
-        [string]$StderrFile
+        [string]$StderrFile,
+
+        [Parameter()]
+        [int]$TimeoutSeconds = 300
     )
 
-    if ($IsWindows -or $env:OS -eq 'Windows_NT') {
+    # Ensure executable permission on Unix-based systems
+    if (-not ($IsWindows -or $env:OS -eq 'Windows_NT')) {
+        chmod +x $script:AppPath 2>&1 | Out-Null
+    }
+
+    # Use Start-Process for all platforms to ensure consistent behavior
+    # This properly captures output and exit code even if the process hangs or crashes
+    $exitCode = -1
+    $timedOut = $false
+
+    try {
+        Write-Host "Starting test app with timeout of $TimeoutSeconds seconds..." -ForegroundColor Yellow
+
         $process = Start-Process -FilePath $script:AppPath -ArgumentList $Arguments `
-            -Wait -PassThru -NoNewWindow `
+            -PassThru -NoNewWindow `
             -RedirectStandardOutput $StdoutFile `
             -RedirectStandardError $StderrFile
 
-        return @{
-            ExitCode = $process.ExitCode
-            Output = Get-Content $StdoutFile
-            Error = Get-Content $StderrFile
-        }
-    } else {
-        # Linux or Mac
-        chmod +x $script:AppPath 2>&1 | Out-Null
-        $output = & $script:AppPath @Arguments 2>&1
-        $output | Out-File $StdoutFile
+        # Wait for process with timeout
+        $processId = $process.Id
+        Write-Host "Process started with PID: $processId" -ForegroundColor Cyan
 
-        return @{
-            ExitCode = $LASTEXITCODE
-            Output = $output
-            Error = @()
+        if ($process.WaitForExit($TimeoutSeconds * 1000)) {
+            $exitCode = $process.ExitCode
+            Write-Host "Process completed with exit code: $exitCode" -ForegroundColor Cyan
+        } else {
+            $timedOut = $true
+            Write-Host "Process timed out after $TimeoutSeconds seconds. Killing process..." -ForegroundColor Red
+            $process.Kill($true)  # Kill process tree
+            $exitCode = -1
         }
+    } catch {
+        Write-Host "Process execution failed: $_" -ForegroundColor Red
+        # If Start-Process fails, try to read any output that was captured
+        $exitCode = -1
+    }
+
+    # Read output from files to ensure we get everything that was written
+    $stdout = @()
+    $stderr = @()
+
+    if (Test-Path $StdoutFile) {
+        $stdout = Get-Content $StdoutFile -ErrorAction SilentlyContinue
+    }
+
+    if (Test-Path $StderrFile) {
+        $stderr = Get-Content $StderrFile -ErrorAction SilentlyContinue
+    }
+
+    if ($timedOut) {
+        Write-Host "Test app output before timeout:" -ForegroundColor Yellow
+        Write-Host "STDOUT (last 50 lines):" -ForegroundColor Yellow
+        $stdout | Select-Object -Last 50 | ForEach-Object { Write-Host $_ }
+        Write-Host "STDERR (last 50 lines):" -ForegroundColor Yellow
+        $stderr | Select-Object -Last 50 | ForEach-Object { Write-Host $_ }
+    }
+
+    return @{
+        ExitCode = $exitCode
+        Output = $stdout
+        Error = $stderr
+        TimedOut = $timedOut
     }
 }
 
