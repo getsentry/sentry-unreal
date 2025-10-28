@@ -142,7 +142,7 @@ void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestNa
 #if PLATFORM_WINDOWS
 	FGenericPlatformMisc::RequestExitWithStatus(true, 0);
 #else
-	FGenericPlatformMisc::RequestExit(false);
+	FGenericPlatformMisc::RequestExit(true);
 #endif
 }
 
