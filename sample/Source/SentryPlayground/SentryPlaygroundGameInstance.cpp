@@ -106,6 +106,8 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
 #endif
 
+	SentrySubsystem->Close();
+
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
 }
 
