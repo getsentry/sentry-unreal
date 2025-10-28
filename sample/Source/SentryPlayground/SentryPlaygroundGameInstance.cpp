@@ -128,7 +128,7 @@ void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestNa
 	GLog->Flush();
 
 	// Close app after test is completed
-	FGenericPlatformMisc::RequestExit(false);
+	FGenericPlatformMisc::RequestExitWithStatus(true, 0);
 }
 
 FString USentryPlaygroundGameInstance::FormatEventIdWithHyphens(const FString& EventId)
