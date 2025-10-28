@@ -22,7 +22,7 @@ void USentryPlaygroundGameInstance::Init()
 #if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (GLogConsole)
 	{
-		GLog->RemoveOutputDevice(GLogConsole);
+		GLog->RemoveOutputDevice(&GLogConsole);
 	}
 #endif
 
