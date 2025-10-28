@@ -18,14 +18,6 @@ void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
 
-	// Workaround for duplicated log messages in UE 4.27 on Linux
-#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
-	if (GLogConsole)
-	{
-		GLog->RemoveOutputDevice(&GLogConsole);
-	}
-#endif
-
 	const TCHAR* CommandLine = FCommandLine::Get();
 
 	// Check for expected test parameters to decide between running integration tests
@@ -107,7 +99,12 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 
 	FString EventId = SentrySubsystem->CaptureMessage(TEXT("Integration test message"));
 
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
+#else
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
+#endif
 
 	// Flush logs to ensure output is captured before exit
 	GLog->Flush();
