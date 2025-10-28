@@ -21,6 +21,9 @@ jobs:
           name: UE ${{ inputs.unreal-version }} sample build (Linux)
           path: sample-build
 
+      - name: Set execute permissions
+        run: chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
+
       - name: Install Pester
         shell: pwsh
         run: |
