@@ -22,7 +22,9 @@ jobs:
           path: sample-build
 
       - name: Set execute permissions
-        run: chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
+        run: |
+          chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
+          chmod +x ${{ github.workspace }}/sample-build/SentryPlayground/Plugins/sentry/Binaries/Linux/crashpad_handler
 
       - name: Install Pester
         shell: pwsh
