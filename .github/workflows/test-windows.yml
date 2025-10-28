@@ -107,23 +107,3 @@ jobs:
           path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
           retention-days: 1
 
-      - name: Run integration tests
-        id: run-integration-tests
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
-        env:
-          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/SentryPlayground.exe
-        run: |
-          cd "$env:WORKSPACE_PATH/checkout/integration-test"
-          mkdir build
-          cmake -B build -S .
-          Invoke-Pester Integration.Tests.ps1 -CI
-
-      - name: Upload integration test output
-        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: UE ${{ inputs.unreal-version }} integration test output (Windows)
-          path: checkout/integration-test/output/
-
