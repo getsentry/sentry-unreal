@@ -115,8 +115,8 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/SentryPlayground.exe
         run: |
-          cd checkout/integration-test
+          cd "$env:WORKSPACE_PATH/checkout/integration-test"
           mkdir build
           cmake -B build -S .
-          pwsh -Command "Invoke-Pester -Path ./Integration.Tests.ps1 -CI"
+          Invoke-Pester Integration.Tests.ps1 -CI"
 

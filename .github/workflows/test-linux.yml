@@ -178,6 +178,7 @@ jobs:
       - name: Run integration tests
         id: run-integration-tests
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        shell: pwsh
         env:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
@@ -186,4 +187,4 @@ jobs:
           cd checkout/integration-test
           mkdir build
           cmake -B build -S .
-          pwsh -Command "Invoke-Pester -Path ./Integration.Tests.ps1 -CI"
+          Invoke-Pester Integration.Tests.ps1 -CI
