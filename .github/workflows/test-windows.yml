@@ -118,5 +118,12 @@ jobs:
           cd "$env:WORKSPACE_PATH/checkout/integration-test"
           mkdir build
           cmake -B build -S .
-          Invoke-Pester Integration.Tests.ps1 -CI"
+          Invoke-Pester Integration.Tests.ps1 -CI
+
+      - name: Upload integration test output
+        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} integration test output (Windows)
+          path: checkout/integration-test/output/
 
