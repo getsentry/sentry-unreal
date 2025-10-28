@@ -38,4 +38,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: UE ${{ inputs.unreal-version }} integration test output (Windows)
-          path: integration-test/output/
+          path: |
+            integration-test/output/
+            sample-build/SentryPlayground/Saved/Logs/
