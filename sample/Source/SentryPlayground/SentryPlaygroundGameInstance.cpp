@@ -82,6 +82,9 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
 
+	// Flush logs to ensure output is captured before crash
+	GLog->Flush();
+
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
 	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
@@ -94,6 +97,9 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	FString EventId = SentrySubsystem->CaptureMessage(TEXT("Integration test message"));
 
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
+
+	// Flush logs to ensure output is captured before exit
+	GLog->Flush();
 
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
 }
@@ -117,6 +123,9 @@ void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestNa
 {
 	UE_LOG(LogSentrySample, Display, TEXT("TEST_RESULT: {\"test\":\"%s\",\"success\":%s,\"message\":\"%s\"}\n"),
 		*TestName, Result ? TEXT("true") : TEXT("false"), *Message);
+
+	// Flush logs to ensure output is captured before exit
+	GLog->Flush();
 
 	// Close app after test is completed
 	FGenericPlatformMisc::RequestExit(false);
