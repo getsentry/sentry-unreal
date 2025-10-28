@@ -261,7 +261,8 @@ Describe "Sentry Unreal Integration Tests" {
             $stderrFile = "$script:OutputDir/$timestamp-crash-stderr.log"
 
             # Build arguments and execute application
-            $appArgs = @('-crash-capture', '-NullRHI', '-unattended')
+            # -stdout ensures logs are written to stdout on Linux/Unix systems
+            $appArgs = @('-crash-capture', '-NullRHI', '-unattended', '-stdout')
             $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
@@ -350,7 +351,8 @@ Describe "Sentry Unreal Integration Tests" {
             $stderrFile = "$script:OutputDir/$timestamp-message-stderr.log"
 
             # Build arguments and execute application
-            $appArgs = @('-message-capture', '-NullRHI', '-unattended')
+            # -stdout ensures logs are written to stdout on Linux/Unix systems
+            $appArgs = @('-message-capture', '-NullRHI', '-unattended', '-stdout')
             $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
