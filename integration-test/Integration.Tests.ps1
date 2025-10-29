@@ -236,7 +236,8 @@ Describe "Sentry Unreal Integration Tests" {
 
             # Build arguments and execute application
             # -stdout ensures logs are written to stdout on Linux/Unix systems
-            $appArgs = @('-crash-capture', '-NullRHI', '-unattended', '-stdout')
+            # -nosplash prevents splash screen and dialogs
+            $appArgs = @('-crash-capture', '-NullRHI', '-unattended', '-stdout', '-nosplash')
             $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
@@ -326,7 +327,8 @@ Describe "Sentry Unreal Integration Tests" {
 
             # Build arguments and execute application
             # -stdout ensures logs are written to stdout on Linux/Unix systems
-            $appArgs = @('-message-capture', '-NullRHI', '-unattended', '-stdout')
+            # -nosplash prevents splash screen and dialogs
+            $appArgs = @('-message-capture', '-NullRHI', '-unattended', '-stdout', '-nosplash')
             $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
 
             # Save full output
