@@ -11,6 +11,7 @@ This directory contains integration tests for the Sentry Unreal SDK using Pester
 - **Environment variables**:
   - `SENTRY_UNREAL_TEST_DSN` - Sentry test project DSN
   - `SENTRY_AUTH_TOKEN` - Sentry API authentication token
+  - `SENTRY_UNREAL_TEST_APP_PATH` - Path to the SentryPlayground executable
 
 ## Setup
 
@@ -33,10 +34,12 @@ This will:
 # Windows PowerShell
 $env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
 $env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
+$env:SENTRY_UNREAL_TEST_APP_PATH = "path/to/SentryPlayground.exe"
 
 # Linux/macOS
 export SENTRY_UNREAL_TEST_DSN="https://key@org.ingest.sentry.io/project"
 export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
+export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.sh"
 ```
 
 ### 2. Get SentryPlayground Application
@@ -59,31 +62,27 @@ Follow the standard Unreal Engine build process for the [sample](./sample/) proj
 ### Windows
 
 ```powershell
-# Ensure environment variables are set
+# Set environment variables
 $env:SENTRY_UNREAL_TEST_DSN = "https://..."
 $env:SENTRY_AUTH_TOKEN = "sntrys_..."
+$env:SENTRY_UNREAL_TEST_APP_PATH = "path/to/SentryPlayground.exe"
 
 # Run tests
-Invoke-Pester integration-test/Integration.Tests.ps1
-
-# You will be prompted for test application path
-#   Supply values for the following parameters:
-#   AppPath: path/to/SentryPlayground.exe
+cd integration-test
+Invoke-Pester Integration.Tests.ps1
 ```
 
 ### Linux
 
 ```bash
-# Ensure environment variables are set
+# Set environment variables
 export SENTRY_UNREAL_TEST_DSN="https://..."
 export SENTRY_AUTH_TOKEN="sntrys_..."
+export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.sh"
 
 # Run tests
-pwsh -Command "Invoke-Pester integration-test/Integration.Tests.ps1"
-
-# You will be prompted for test application path
-#   Supply values for the following parameters:
-#   AppPath: ./path/to/SentryPlayground.sh
+cd integration-test
+pwsh -Command "Invoke-Pester Integration.Tests.ps1"
 ```
 
 ## Test Coverage
@@ -123,4 +122,4 @@ Test outputs are saved to `integration-test/output/`:
 
 ## CI Integration
 
-See `.github/workflows/test-windows.yml` and `.github/workflows/test-linux.yml` for CI usage examples.
+See `.github/workflows/integration-test-windows.yml` and `.github/workflows/integration-test-linux.yml` for CI usage examples.
