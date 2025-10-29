@@ -24,7 +24,7 @@ include(FetchContent)
 FetchContent_Declare(
     app-runner
     GIT_REPOSITORY https://github.com/getsentry/app-runner.git
-    GIT_TAG 44583d2c37d666d7e9063814491ab475e1c6020b
+    GIT_TAG 288991e2096a39bda7aaa40f1baf2a65952a5f23
 )
 
 FetchContent_MakeAvailable(app-runner)

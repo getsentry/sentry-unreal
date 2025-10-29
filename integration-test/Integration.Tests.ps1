@@ -6,119 +6,6 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-function script:Convert-HashtableToObject($item) {
-    if ($item -is [System.Collections.IDictionary]) {
-        $obj = [PSCustomObject]@{}
-        foreach ($key in $item.Keys) {
-            if ([string]::IsNullOrWhiteSpace($key)) {
-                continue
-            }
-            $obj | Add-Member -NotePropertyName $key -NotePropertyValue (Convert-HashtableToObject $item[$key])
-        }
-        return $obj
-    } elseif ($item -is [System.Collections.IEnumerable] -and -not ($item -is [string])) {
-        return @($item | ForEach-Object { Convert-HashtableToObject $_ })
-    } else {
-        return $item
-    }
-}
-
-function script:Get-SentryUnrealTestEvent {
-    [CmdletBinding()]
-    param(
-        [Parameter()]
-        [string]$EventId,
-
-        [Parameter()]
-        [string]$TagName,
-
-        [Parameter()]
-        [string]$TagValue,
-
-        [Parameter()]
-        [int]$TimeoutSeconds = 120
-    )
-
-    if ($EventId) {
-        Write-Host "Fetching Sentry event by ID: $EventId" -ForegroundColor Yellow
-        $progressActivity = "Waiting for Sentry event $EventId"
-    } elseif ($TagName -and $TagValue) {
-        Write-Host "Fetching Sentry event by tag: $TagName=$TagValue" -ForegroundColor Yellow
-        $progressActivity = "Waiting for Sentry event with tag $TagName=$TagValue"
-    } else {
-        throw 'Must specify either EventId or both TagName and TagValue'
-    }
-
-    $startTime = Get-Date
-    $endTime = $startTime.AddSeconds($TimeoutSeconds)
-    $lastError = $null
-    $elapsedSeconds = 0
-
-    try {
-        do {
-            $sentryEvent = $null
-            $elapsedSeconds = [int]((Get-Date) - $startTime).TotalSeconds
-            $percentComplete = [math]::Min(100, ($elapsedSeconds / $TimeoutSeconds) * 100)
-
-            Write-Progress -Activity $progressActivity -Status "Elapsed: $elapsedSeconds/$TimeoutSeconds seconds" -PercentComplete $percentComplete
-
-            try {
-                if ($EventId) {
-                    # Find by event ID
-                    $sentryEvent = Get-SentryEvent -EventId $EventId
-                } else {
-                    # Find by tag
-                    $result = Find-SentryEventByTag -TagName $TagName -TagValue $TagValue
-                    $result.Count | Should -Be 1
-                    $sentryEvent = $result[0]
-                }
-            } catch {
-                $lastError = $_.Exception.Message
-                # Event not found yet, continue waiting
-                if ($EventId) {
-                    Write-Debug "Event $EventId not found yet: $lastError"
-                } else {
-                    Write-Debug "Event with tag $TagName=$TagValue not found yet: $lastError"
-                }
-            }
-
-            if ($sentryEvent) {
-               # Convert from JSON if it's a raw string
-                if ($sentryEvent -is [string]) {
-                    try {
-                        $raw = $sentryEvent | ConvertFrom-Json -Depth 50 -AsHashTable
-                        # Recursively convert hashtables to PSCustomObjects
-                        $sentryEvent = Convert-HashtableToObject $raw
-                    } catch {
-                        Write-Host "Failed to parse JSON from Sentry event: $($_.Exception.Message)" -ForegroundColor Red
-                        return
-                    }
-                }
-
-                Write-Host "Event $($sentryEvent.id) fetched from Sentry" -ForegroundColor Green
-                $entries = $sentryEvent.entries
-                $sentryEvent = $sentryEvent | Select-Object -ExcludeProperty 'entries'
-                foreach ($entry in $entries) {
-                    $sentryEvent | Add-Member -MemberType NoteProperty -Name $entry.type -Value $entry.data -Force
-                }
-                $sentryEvent | ConvertTo-Json -Depth 10 | Out-File -FilePath (Get-OutputFilePath "event-$($sentryEvent.id).json")
-                return $sentryEvent
-            }
-
-            Start-Sleep -Milliseconds 500
-            $currentTime = Get-Date
-        } while ($currentTime -lt $endTime)
-    } finally {
-        Write-Progress -Activity $progressActivity -Completed
-    }
-
-    if ($EventId) {
-        throw "Event $EventId not found in Sentry within $TimeoutSeconds seconds: $lastError"
-    } else {
-        throw "Event with tag $TagName=$TagValue not found in Sentry within $TimeoutSeconds seconds: $lastError"
-    }
-}
-
 function script:Invoke-SentryUnrealTestApp {
     [CmdletBinding()]
     param(
@@ -255,7 +142,7 @@ Describe "Sentry Unreal Integration Tests" {
 
                 # Fetch event from Sentry (with polling)
                 try {
-                    $script:CrashEvent = Get-SentryUnrealTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
+                    $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
                     Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
                 } catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
@@ -344,7 +231,7 @@ Describe "Sentry Unreal Integration Tests" {
 
                 # Fetch event from Sentry (with polling) using sanitized helper
                 try {
-                    $script:MessageEvent = Get-SentryUnrealTestEvent -EventId $eventIds[0]
+                    $script:MessageEvent = Get-SentryTestEvent -EventId $eventIds[0]
                     Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
                 } catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
