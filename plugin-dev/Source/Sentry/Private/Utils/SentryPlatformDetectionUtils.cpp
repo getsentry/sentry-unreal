@@ -8,8 +8,8 @@
 
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <winternl.h>
 #include "Windows/HideWindowsPlatformTypes.h"
+#include <winternl.h>
 #endif
 
 FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
@@ -24,13 +24,13 @@ FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
 		// wine_get_version is exported by Wine's ntdll
 		typedef const char*(CDECL * wine_get_version_t)(void);
 #ifdef _MSC_VER
-		#pragma warning(push)
-		#pragma warning(disable: 4191) // unsafe conversion from FARPROC
+#pragma warning(push)
+#pragma warning(disable : 4191) // unsafe conversion from FARPROC
 #endif
 		wine_get_version_t wine_get_version =
 			reinterpret_cast<wine_get_version_t>(GetProcAddress(hNtDll, "wine_get_version"));
 #ifdef _MSC_VER
-		#pragma warning(pop)
+#pragma warning(pop)
 #endif
 
 		if (wine_get_version != nullptr)
