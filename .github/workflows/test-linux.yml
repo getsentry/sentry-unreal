@@ -105,6 +105,25 @@ jobs:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: unzip sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
 
+      - name: Restore cached DDC and Cooked content
+        id: cache-content
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            checkout/sample/DerivedDataCache
+            checkout/sample/Saved/Cooked
+          key: ue-${{ inputs.unreal-version }}-linux-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          restore-keys: |
+            ue-${{ inputs.unreal-version }}-linux-content-
+
+      - name: Display cache status
+        run: |
+          if [ "${{ steps.cache-content.outputs.cache-hit }}" == "true" ]; then
+            echo "✓ Cache hit! Using cached DDC and cooked content."
+          else
+            echo "✗ Cache miss. Will cook content from scratch."
+          fi
+
       - name: Set permissions for sample
         # sentry-native requires write access to sample project directory in order to initialize itself properly
         run: docker exec -w /workspace/checkout unreal chmod -R +x sample
@@ -139,6 +158,7 @@ jobs:
             -platform=Linux \
             -nop4 \
             -cook \
+            -iterate \
             -build \
             -stage \
             -prereqss \
@@ -153,6 +173,15 @@ jobs:
             -NoPause \
             -NoSplash \
             -NullRHI          
+
+      - name: Save DDC and Cooked content to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            checkout/sample/DerivedDataCache
+            checkout/sample/Saved/Cooked
+          key: ue-${{ inputs.unreal-version }}-linux-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}

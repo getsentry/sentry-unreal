@@ -52,6 +52,25 @@ jobs:
           New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
           Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
 
+      - name: Restore cached DDC and Cooked content
+        id: cache-content
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            checkout/sample/DerivedDataCache
+            checkout/sample/Saved/Cooked
+          key: ue-${{ inputs.unreal-version }}-win64-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          restore-keys: |
+            ue-${{ inputs.unreal-version }}-win64-content-
+
+      - name: Display cache status
+        run: |
+          if ("${{ steps.cache-content.outputs.cache-hit }}" -eq "true") {
+            Write-Host "✓ Cache hit! Using cached DDC and cooked content."
+          } else {
+            Write-Host "✗ Cache miss. Will cook content from scratch."
+          }
+
       - name: Update engine's build configuration
         run: |
           docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
@@ -77,6 +96,7 @@ jobs:
             -platform=Win64 `
             -nop4 `
             -cook `
+            -iterate `
             -build `
             -stage `
             -prereqss `
@@ -90,6 +110,15 @@ jobs:
             -NoPause `
             -NoSplash `
             -NullRHI
+
+      - name: Save DDC and Cooked content to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            checkout/sample/DerivedDataCache
+            checkout/sample/Saved/Cooked
+          key: ue-${{ inputs.unreal-version }}-win64-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
