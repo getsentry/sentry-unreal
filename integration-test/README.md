@@ -28,19 +28,7 @@ This will:
 - Download `app-runner` from GitHub (contains SentryApiClient and test utilities)
 - Generate `TestConfig.local.ps1` with module paths
 
-**Note**: If environment variables are not set, CMake will skip configuration with a warning. Set them first:
-
-```bash
-# Windows PowerShell
-$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
-$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
-$env:SENTRY_UNREAL_TEST_APP_PATH = "path/to/SentryPlayground.exe"
-
-# Linux/macOS
-export SENTRY_UNREAL_TEST_DSN="https://key@org.ingest.sentry.io/project"
-export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
-export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.sh"
-```
+**Note**: CMake configuration can be run without setting environment variables. The environment variables are only required at test runtime and will be validated by the test script itself.
 
 ### 2. Get SentryPlayground Application
 
@@ -59,12 +47,14 @@ Follow the standard Unreal Engine build process for the [sample](./sample/) proj
 
 ## Running Tests
 
+Before running tests, ensure you have set the required environment variables:
+
 ### Windows
 
 ```powershell
 # Set environment variables
-$env:SENTRY_UNREAL_TEST_DSN = "https://..."
-$env:SENTRY_AUTH_TOKEN = "sntrys_..."
+$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
+$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
 $env:SENTRY_UNREAL_TEST_APP_PATH = "path/to/SentryPlayground.exe"
 
 # Run tests
@@ -76,8 +66,8 @@ Invoke-Pester Integration.Tests.ps1
 
 ```bash
 # Set environment variables
-export SENTRY_UNREAL_TEST_DSN="https://..."
-export SENTRY_AUTH_TOKEN="sntrys_..."
+export SENTRY_UNREAL_TEST_DSN="https://key@org.ingest.sentry.io/project"
+export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
 export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.sh"
 
 # Run tests
@@ -91,7 +81,7 @@ The integration tests cover:
 
 ### Crash Capture Tests
 - Application crashes with non-zero exit code
-- Event ID is captured from output
+- Event ID is captured from output (set via `test.crash_id` tag)
 - Crash event appears in Sentry
 - Exception information is present
 - Stack traces are captured
