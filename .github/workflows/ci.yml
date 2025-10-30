@@ -161,3 +161,36 @@ jobs:
     uses: ./.github/workflows/test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
+
+  # Run test twice to validate caching (first run populates cache, second run uses it)
+  test-linux-cache-validation-run1:
+    needs: [package-preparation]
+    name: Linux UE 5.1 (Cache Test - Run 1)
+    secrets: inherit
+    uses: ./.github/workflows/test-linux.yml
+    with:
+      unreal-version: '5.1'
+
+  test-linux-cache-validation-run2:
+    needs: [test-linux-cache-validation-run1]
+    name: Linux UE 5.1 (Cache Test - Run 2)
+    secrets: inherit
+    uses: ./.github/workflows/test-linux.yml
+    with:
+      unreal-version: '5.1'
+
+  test-windows-cache-validation-run1:
+    needs: [package-preparation]
+    name: Windows UE 5.1 (Cache Test - Run 1)
+    secrets: inherit
+    uses: ./.github/workflows/test-windows.yml
+    with:
+      unreal-version: '5.1'
+
+  test-windows-cache-validation-run2:
+    needs: [test-windows-cache-validation-run1]
+    name: Windows UE 5.1 (Cache Test - Run 2)
+    secrets: inherit
+    uses: ./.github/workflows/test-windows.yml
+    with:
+      unreal-version: '5.1'
