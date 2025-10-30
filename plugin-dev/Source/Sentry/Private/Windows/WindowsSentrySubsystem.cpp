@@ -31,11 +31,93 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		DistroInfo = FSentryPlatformDetectionUtils::DetectLinuxDistro();
 		HandheldInfo = FSentryPlatformDetectionUtils::DetectHandheldDevice();
 
-		// Use centralized platform detection utilities to set contexts
-		FSentryPlatformDetectionUtils::SetSentryRuntimeContext(WineProtonInfo);
-		FSentryPlatformDetectionUtils::SetSentryOSContext(DistroInfo);
-		FSentryPlatformDetectionUtils::SetSentryDeviceContext(HandheldInfo);
-		FSentryPlatformDetectionUtils::SetSentryPlatformTags(&WineProtonInfo, &DistroInfo, &HandheldInfo);
+		// Set Runtime context (Wine/Proton)
+		TMap<FString, FSentryVariant> RuntimeContext;
+		RuntimeContext.Add(TEXT("name"), FSentryPlatformDetectionUtils::GetRuntimeName(WineProtonInfo));
+		RuntimeContext.Add(TEXT("version"), FSentryPlatformDetectionUtils::GetRuntimeVersion(WineProtonInfo));
+		SetContext(TEXT("runtime"), RuntimeContext);
+
+		// Set OS context (Linux distro)
+		if (!DistroInfo.ID.IsEmpty())
+		{
+			TMap<FString, FSentryVariant> OSContext;
+			OSContext.Add(TEXT("name"), FSentryPlatformDetectionUtils::GetOSNameForContext(DistroInfo));
+			if (!DistroInfo.Version.IsEmpty())
+			{
+				OSContext.Add(TEXT("version"), DistroInfo.Version);
+			}
+			if (!DistroInfo.ID.IsEmpty())
+			{
+				OSContext.Add(TEXT("kernel_version"), DistroInfo.ID);
+			}
+			SetContext(TEXT("os"), OSContext);
+		}
+
+		// Set Device context (Handheld device)
+		if (HandheldInfo.bIsHandheld)
+		{
+			TMap<FString, FSentryVariant> DeviceContext;
+			if (!HandheldInfo.Manufacturer.IsEmpty())
+			{
+				DeviceContext.Add(TEXT("manufacturer"), HandheldInfo.Manufacturer);
+			}
+			if (!HandheldInfo.Model.IsEmpty())
+			{
+				DeviceContext.Add(TEXT("model"), HandheldInfo.Model);
+			}
+			if (!HandheldInfo.Codename.IsEmpty())
+			{
+				DeviceContext.Add(TEXT("name"), HandheldInfo.Codename);
+			}
+			SetContext(TEXT("device"), DeviceContext);
+		}
+
+		// Set platform tags
+		SetTag(TEXT("wine_proton"), WineProtonInfo.bIsProton ? TEXT("proton") : TEXT("wine"));
+		if (!WineProtonInfo.Version.IsEmpty())
+		{
+			SetTag(TEXT("wine_version"), WineProtonInfo.Version);
+		}
+		if (WineProtonInfo.bIsProton && !WineProtonInfo.ProtonBuildName.IsEmpty())
+		{
+			SetTag(TEXT("proton_build"), WineProtonInfo.ProtonBuildName);
+		}
+		if (WineProtonInfo.bIsExperimental)
+		{
+			SetTag(TEXT("proton_experimental"), TEXT("true"));
+		}
+		if (!DistroInfo.ID.IsEmpty())
+		{
+			SetTag(TEXT("linux_distro"), DistroInfo.ID);
+		}
+		if (DistroInfo.bIsSteamOS)
+		{
+			SetTag(TEXT("steamos"), TEXT("true"));
+		}
+		if (DistroInfo.bIsBazzite)
+		{
+			SetTag(TEXT("bazzite"), TEXT("true"));
+		}
+		if (DistroInfo.bIsGamingDistro)
+		{
+			SetTag(TEXT("gaming_distro"), TEXT("true"));
+		}
+		if (HandheldInfo.bIsSteamDeck)
+		{
+			SetTag(TEXT("steam_deck"), TEXT("true"));
+			if (HandheldInfo.bIsSteamDeckOLED)
+			{
+				SetTag(TEXT("steam_deck_oled"), TEXT("true"));
+			}
+		}
+		if (HandheldInfo.bIsHandheld && !HandheldInfo.bIsSteamDeck)
+		{
+			SetTag(TEXT("handheld"), TEXT("true"));
+		}
+		if (FSentryPlatformDetectionUtils::IsRunningSteam())
+		{
+			SetTag(TEXT("running_steam"), TEXT("true"));
+		}
 	}
 }
 

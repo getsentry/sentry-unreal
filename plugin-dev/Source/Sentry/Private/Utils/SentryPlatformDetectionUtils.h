@@ -44,38 +44,22 @@ public:
 	static bool IsRunningSteam();
 
 	/**
-	 * Sets Sentry OS context based on detected Linux distribution
-	 * This uses the standard Sentry OS context schema
-	 *
-	 * @param DistroInfo The detected Linux distribution information
+	 * Gets the OS name for Sentry context based on distribution info
+	 * Returns "SteamOS", "Bazzite", or "Linux"
 	 */
-	static void SetSentryOSContext(const FLinuxDistroInfo& DistroInfo);
+	static FString GetOSNameForContext(const FLinuxDistroInfo& DistroInfo);
 
 	/**
-	 * Sets Sentry device context based on detected handheld device
-	 * This uses the standard Sentry device context schema
-	 *
-	 * @param HandheldInfo The detected handheld device information
+	 * Gets the runtime name for Sentry context based on Wine/Proton info
+	 * Returns "Proton" or "Wine"
 	 */
-	static void SetSentryDeviceContext(const FHandheldDeviceInfo& HandheldInfo);
+	static FString GetRuntimeName(const FWineProtonInfo& WineProtonInfo);
 
 	/**
-	 * Sets Sentry runtime context based on detected Wine/Proton
-	 * This uses the standard Sentry runtime context schema
-	 *
-	 * @param WineProtonInfo The detected Wine/Proton information
+	 * Gets the runtime version for Sentry context based on Wine/Proton info
+	 * Returns Proton build name or Wine version
 	 */
-	static void SetSentryRuntimeContext(const FWineProtonInfo& WineProtonInfo);
-
-	/**
-	 * Sets Sentry tags based on platform detection
-	 *
-	 * @param WineProtonInfo Wine/Proton detection info (optional)
-	 * @param DistroInfo Linux distribution info (optional)
-	 * @param HandheldInfo Handheld device info (optional)
-	 */
-	static void SetSentryPlatformTags(const FWineProtonInfo* WineProtonInfo,
-		const FLinuxDistroInfo* DistroInfo, const FHandheldDeviceInfo* HandheldInfo);
+	static FString GetRuntimeVersion(const FWineProtonInfo& WineProtonInfo);
 
 private:
 	/** Reads and parses /etc/os-release file */

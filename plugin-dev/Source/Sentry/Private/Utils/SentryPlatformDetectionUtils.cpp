@@ -8,12 +8,8 @@
 
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
 #include <winternl.h>
-#endif
-
-#if USE_SENTRY_NATIVE
-#include "sentry.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 #endif
 
 FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
@@ -28,13 +24,13 @@ FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
 		// wine_get_version is exported by Wine's ntdll
 		typedef const char*(CDECL * wine_get_version_t)(void);
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4191) // unsafe conversion from FARPROC
+		#pragma warning(push)
+		#pragma warning(disable: 4191) // unsafe conversion from FARPROC
 #endif
 		wine_get_version_t wine_get_version =
 			reinterpret_cast<wine_get_version_t>(GetProcAddress(hNtDll, "wine_get_version"));
 #ifdef _MSC_VER
-#pragma warning(pop)
+		#pragma warning(pop)
 #endif
 
 		if (wine_get_version != nullptr)
@@ -175,214 +171,33 @@ bool FSentryPlatformDetectionUtils::IsRunningSteam()
 	return !SteamAppId.IsEmpty() || !SteamGameId.IsEmpty() || !SteamOverlayGameId.IsEmpty();
 }
 
-void FSentryPlatformDetectionUtils::SetSentryOSContext(const FLinuxDistroInfo& DistroInfo)
+FString FSentryPlatformDetectionUtils::GetOSNameForContext(const FLinuxDistroInfo& DistroInfo)
 {
-#if USE_SENTRY_NATIVE
-	if (DistroInfo.ID.IsEmpty())
-	{
-		return;
-	}
-
-	sentry_value_t os_context = sentry_value_new_object();
-
 	// OS name should be high-level: "SteamOS", "Bazzite", or "Linux"
-	FString OSName = TEXT("Linux");
 	if (DistroInfo.bIsSteamOS)
 	{
-		OSName = TEXT("SteamOS");
+		return TEXT("SteamOS");
 	}
 	else if (DistroInfo.bIsBazzite)
 	{
-		OSName = TEXT("Bazzite");
+		return TEXT("Bazzite");
 	}
-
-	sentry_value_set_by_key(os_context, "name",
-		sentry_value_new_string(TCHAR_TO_UTF8(*OSName)));
-
-	if (!DistroInfo.Version.IsEmpty())
-	{
-		sentry_value_set_by_key(os_context, "version",
-			sentry_value_new_string(TCHAR_TO_UTF8(*DistroInfo.Version)));
-	}
-
-	// Use distribution object for detailed Linux distro info (standard Sentry field)
-	sentry_value_t distribution = sentry_value_new_object();
-	sentry_value_set_by_key(distribution, "name",
-		sentry_value_new_string(TCHAR_TO_UTF8(*DistroInfo.ID)));
-
-	if (!DistroInfo.PrettyName.IsEmpty())
-	{
-		sentry_value_set_by_key(distribution, "pretty_name",
-			sentry_value_new_string(TCHAR_TO_UTF8(*DistroInfo.PrettyName)));
-	}
-
-	if (!DistroInfo.Version.IsEmpty())
-	{
-		sentry_value_set_by_key(distribution, "version",
-			sentry_value_new_string(TCHAR_TO_UTF8(*DistroInfo.Version)));
-	}
-
-	sentry_value_set_by_key(os_context, "distribution", distribution);
-
-	// Add custom fields for gaming distro detection
-	if (DistroInfo.bIsGamingDistro)
-	{
-		sentry_value_set_by_key(os_context, "gaming_distro", sentry_value_new_bool(true));
-	}
-
-	sentry_set_context("os", os_context);
-	UE_LOG(LogSentrySdk, Log, TEXT("Set OS context to %s (%s)"), *OSName, *DistroInfo.PrettyName);
-#endif
+	return TEXT("Linux");
 }
 
-void FSentryPlatformDetectionUtils::SetSentryDeviceContext(const FHandheldDeviceInfo& HandheldInfo)
+FString FSentryPlatformDetectionUtils::GetRuntimeName(const FWineProtonInfo& WineProtonInfo)
 {
-#if USE_SENTRY_NATIVE
-	if (!HandheldInfo.bIsHandheld)
-	{
-		return;
-	}
-
-	sentry_value_t device_context = sentry_value_new_object();
-
-	// Use standard Sentry device fields
-	if (!HandheldInfo.Manufacturer.IsEmpty())
-	{
-		sentry_value_set_by_key(device_context, "manufacturer",
-			sentry_value_new_string(TCHAR_TO_UTF8(*HandheldInfo.Manufacturer)));
-	}
-
-	if (!HandheldInfo.Model.IsEmpty())
-	{
-		sentry_value_set_by_key(device_context, "model",
-			sentry_value_new_string(TCHAR_TO_UTF8(*HandheldInfo.Model)));
-	}
-
-	// Set device_type to indicate it's a handheld
-	sentry_value_set_by_key(device_context, "device_type", sentry_value_new_string("handheld"));
-
-	// Add custom fields for specific handheld types
-	if (HandheldInfo.bIsSteamDeck)
-	{
-		sentry_value_set_by_key(device_context, "steam_deck", sentry_value_new_bool(true));
-
-		if (HandheldInfo.bIsSteamDeckOLED)
-		{
-			sentry_value_set_by_key(device_context, "steam_deck_oled", sentry_value_new_bool(true));
-		}
-	}
-
-	if (!HandheldInfo.Codename.IsEmpty())
-	{
-		sentry_value_set_by_key(device_context, "model_id",
-			sentry_value_new_string(TCHAR_TO_UTF8(*HandheldInfo.Codename)));
-	}
-
-	sentry_set_context("device", device_context);
-	UE_LOG(LogSentrySdk, Log, TEXT("Set device context: %s %s"),
-		*HandheldInfo.Manufacturer, *HandheldInfo.Model);
-#endif
+	return WineProtonInfo.bIsProton ? TEXT("Proton") : TEXT("Wine");
 }
 
-void FSentryPlatformDetectionUtils::SetSentryRuntimeContext(const FWineProtonInfo& WineProtonInfo)
+FString FSentryPlatformDetectionUtils::GetRuntimeVersion(const FWineProtonInfo& WineProtonInfo)
 {
-#if USE_SENTRY_NATIVE
-	if (!WineProtonInfo.bIsRunningUnderWine)
+	// For Proton, use build name if available, otherwise fall back to Wine version
+	if (WineProtonInfo.bIsProton && !WineProtonInfo.ProtonBuildName.IsEmpty())
 	{
-		return;
+		return WineProtonInfo.ProtonBuildName;
 	}
-
-	// Add runtime context with detailed information
-	sentry_value_t runtime_context = sentry_value_new_object();
-
-	// Set name and version based on whether it's Proton or Wine
-	if (WineProtonInfo.bIsProton)
-	{
-		sentry_value_set_by_key(runtime_context, "name", sentry_value_new_string("Proton"));
-
-		// Use Proton build name if available, otherwise fall back to Wine version
-		if (!WineProtonInfo.ProtonBuildName.IsEmpty())
-		{
-			sentry_value_set_by_key(runtime_context, "version",
-				sentry_value_new_string(TCHAR_TO_UTF8(*WineProtonInfo.ProtonBuildName)));
-		}
-		else if (!WineProtonInfo.Version.IsEmpty())
-		{
-			sentry_value_set_by_key(runtime_context, "version",
-				sentry_value_new_string(TCHAR_TO_UTF8(*WineProtonInfo.Version)));
-		}
-
-		if (WineProtonInfo.bIsExperimental)
-		{
-			sentry_value_set_by_key(runtime_context, "raw_description", sentry_value_new_string("Experimental Proton Build"));
-		}
-	}
-	else
-	{
-		sentry_value_set_by_key(runtime_context, "name", sentry_value_new_string("Wine"));
-
-		if (!WineProtonInfo.Version.IsEmpty())
-		{
-			sentry_value_set_by_key(runtime_context, "version",
-				sentry_value_new_string(TCHAR_TO_UTF8(*WineProtonInfo.Version)));
-		}
-	}
-
-	sentry_set_context("runtime", runtime_context);
-	UE_LOG(LogSentrySdk, Log, TEXT("Set %s runtime context"),
-		WineProtonInfo.bIsProton ? TEXT("Proton") : TEXT("Wine"));
-#endif
-}
-
-void FSentryPlatformDetectionUtils::SetSentryPlatformTags(const FWineProtonInfo* WineProtonInfo,
-	const FLinuxDistroInfo* DistroInfo, const FHandheldDeviceInfo* HandheldInfo)
-{
-#if USE_SENTRY_NATIVE
-	// Add Wine/Proton tags
-	if (WineProtonInfo && WineProtonInfo->bIsRunningUnderWine)
-	{
-		if (WineProtonInfo->bIsProton)
-		{
-			sentry_set_tag("proton", "true");
-		}
-		else
-		{
-			sentry_set_tag("wine", "true");
-		}
-	}
-
-	// Add distribution tags
-	if (DistroInfo)
-	{
-		if (DistroInfo->bIsSteamOS)
-		{
-			sentry_set_tag("steamos", "true");
-		}
-
-		if (DistroInfo->bIsBazzite)
-		{
-			sentry_set_tag("bazzite", "true");
-		}
-
-		if (DistroInfo->bIsGamingDistro)
-		{
-			sentry_set_tag("gaming_distro", "true");
-		}
-	}
-
-	// Add handheld device tags
-	if (HandheldInfo && HandheldInfo->bIsHandheld)
-	{
-		sentry_set_tag("handheld", "true");
-
-		if (HandheldInfo->bIsSteamDeck)
-		{
-			sentry_set_tag("steam_deck", "true");
-		}
-	}
-
-	UE_LOG(LogSentrySdk, Log, TEXT("Set platform detection tags"));
-#endif
+	return WineProtonInfo.Version;
 }
 
 TMap<FString, FString> FSentryPlatformDetectionUtils::ParseOsReleaseFile()
