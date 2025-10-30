@@ -1,12 +1,19 @@
 name: Build UE Android Docker image
 
 on:
+  push:
+    branches:
+      - ci/android-docker
+    paths:
+      - '.github/workflows/ue-docker-android.yml'
+      - 'docker/ue-android-prerequisites.dockerfile'
   workflow_dispatch:
     inputs:
       ue_version:
         description: Select Unreal Engine version
         required: true
         type: choice
+        default: 5.4
         options:
         - 4.27
         - 5.1
