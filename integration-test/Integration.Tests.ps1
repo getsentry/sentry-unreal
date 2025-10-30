@@ -267,7 +267,7 @@ Describe "Sentry Unreal Integration Tests" {
 
         It "Should have message content" {
             $script:MessageEvent.message | Should -Not -BeNullOrEmpty
-            $script:MessageEvent.message | Should -Match 'Integration test message'
+            $script:MessageEvent.message.formatted | Should -Match 'Integration test message'
         }
 
         It "Should have user context" {
