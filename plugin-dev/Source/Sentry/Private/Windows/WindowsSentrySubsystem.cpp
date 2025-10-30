@@ -13,8 +13,8 @@
 #include "Windows/WindowsPlatformStackWalk.h"
 
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
 #include <winternl.h>
+#include "Windows/HideWindowsPlatformTypes.h"
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
 {
@@ -45,10 +45,6 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 			if (!DistroInfo.Version.IsEmpty())
 			{
 				OSContext.Add(TEXT("version"), DistroInfo.Version);
-			}
-			if (!DistroInfo.ID.IsEmpty())
-			{
-				OSContext.Add(TEXT("kernel_version"), DistroInfo.ID);
 			}
 			SetContext(TEXT("os"), OSContext);
 		}

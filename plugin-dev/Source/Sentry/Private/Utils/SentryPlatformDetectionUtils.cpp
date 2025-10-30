@@ -8,8 +8,8 @@
 
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
 #include <winternl.h>
+#include "Windows/HideWindowsPlatformTypes.h"
 #endif
 
 FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()

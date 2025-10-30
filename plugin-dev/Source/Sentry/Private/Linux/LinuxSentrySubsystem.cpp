@@ -35,10 +35,6 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, US
 			{
 				OSContext.Add(TEXT("version"), DistroInfo.Version);
 			}
-			if (!DistroInfo.ID.IsEmpty())
-			{
-				OSContext.Add(TEXT("kernel_version"), DistroInfo.ID);
-			}
 			SetContext(TEXT("os"), OSContext);
 		}
 
