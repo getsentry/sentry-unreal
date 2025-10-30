@@ -6,19 +6,14 @@
 #include "Misc/Paths.h"
 #include "SentryDefines.h"
 
-#if USE_SENTRY_NATIVE
-#include "Desktop/DesktopSentryScope.h"
-#include "Infrastructure/SentryConvertors.h"
-
-THIRD_PARTY_INCLUDES_START
-#include "sentry.h"
-THIRD_PARTY_INCLUDES_END
-#endif
-
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
 #include <winternl.h>
+#include "Windows/HideWindowsPlatformTypes.h"
+#endif
+
+#if USE_SENTRY_NATIVE
+#include "sentry.h"
 #endif
 
 FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
