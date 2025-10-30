@@ -140,7 +140,24 @@ jobs:
         run: |
           docker exec unreal bash -c "
             mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
-            cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "            
+            cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "
+
+      - name: Configure project-local DDC
+        run: |
+          docker exec unreal bash -c 'cat >> /workspace/checkout/sample/Config/DefaultEngine.ini << "DDCEOF"
+
+          [InstalledDerivedDataBackendGraph]
+          MinimumDaysToKeepFile=7
+          Root=(Type=KeyLength, Length=120, Inner=AsyncPut)
+          AsyncPut=(Type=AsyncPut, Inner=Hierarchy)
+          Hierarchy=(Type=Hierarchical, Inner=Boot, Inner=Pak, Inner=EnginePak, Inner=Local, Inner=Shared)
+          Boot=(Type=Boot, Filename="%GAMEDIR%DerivedDataCache/Boot.ddc", MaxCacheSize=512)
+          Local=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, PurgeTransient=true, DeleteUnused=true, UnusedFileAge=34, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache", EnvPathOverride=UE-LocalDataCachePath, EditorOverrideSetting=LocalDerivedDataCache)
+          Shared=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, DeleteUnused=true, UnusedFileAge=10, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache/Shared", EnvPathOverride=UE-SharedDataCachePath, EditorOverrideSetting=SharedDerivedDataCache, CommandLineOverride=SharedDataCachePath)
+          Pak=(Type=ReadPak, Filename="%GAMEDIR%DerivedDataCache/DDC.ddp")
+          EnginePak=(Type=ReadPak, Filename=%ENGINEDIR%DerivedDataCache/Compressed.ddp)
+          DDCEOF
+          '
 
       - name: Run tests
         id: run-tests
@@ -179,7 +196,7 @@ jobs:
             -NullRHI          
 
       - name: Save DDC and Cooked content to cache
-        if: always()
+        if: always() && steps.cache-content.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
