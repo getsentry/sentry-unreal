@@ -99,8 +99,8 @@ jobs:
           --exclude templates \
           --exclude ddc \
           --prerequisites-dockerfile="./docker/ue-android-prerequisites-$UE_VERSION.dockerfile" \
-          --opt itdependencies_args="--exclude=Mac --exclude=Win32 --exclude=Win64" \
-          --opt buildgraph_args="-set:HostPlatformOnly=false -set:WithAndroid=true"
+          --opt itdependencies_args="--exclude=Mac --exclude=Win32 --exclude=Win64 --exclude=LinuxArm64" \
+          --opt buildgraph_args="-set:HostPlatformOnly=false -set:WithAndroid=true -set:WithLinuxArm64=false"
 
       - name: Log in to GitHub package registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
