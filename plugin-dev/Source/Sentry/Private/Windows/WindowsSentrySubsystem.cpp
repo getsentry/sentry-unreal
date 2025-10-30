@@ -13,8 +13,8 @@
 #include "Windows/WindowsPlatformStackWalk.h"
 
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <winternl.h>
 #include "Windows/HideWindowsPlatformTypes.h"
+#include <winternl.h>
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
 {
