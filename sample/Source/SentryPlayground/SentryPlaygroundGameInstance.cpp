@@ -15,6 +15,8 @@ void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
 
+	UE_LOG(LogSentrySample, Log, TEXT("TEST"));
+
 	const TCHAR* CommandLine = FCommandLine::Get();
 
 	// Check for expected test parameters to decide between running integration tests
