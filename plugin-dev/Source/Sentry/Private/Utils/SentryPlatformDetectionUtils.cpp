@@ -2,14 +2,14 @@
 
 #include "SentryPlatformDetectionUtils.h"
 
-#include "SentryDefines.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "SentryDefines.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <winternl.h>
 #include "Windows/HideWindowsPlatformTypes.h"
+#include <winternl.h>
 #endif
 
 FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
@@ -335,7 +335,9 @@ void FSentryPlatformDetectionUtils::SetSentryPlatformTags(const FWineProtonInfo*
 		if (WineProtonInfo->bIsProton)
 		{
 			sentry_set_tag("proton", "true");
-		} else {
+		}
+		else
+		{
 			sentry_set_tag("wine", "true");
 		}
 	}

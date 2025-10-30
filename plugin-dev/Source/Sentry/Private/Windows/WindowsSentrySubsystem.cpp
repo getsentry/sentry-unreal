@@ -26,7 +26,7 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 
 	// Add Wine/Proton context for all events if detected
 	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
-	{	
+	{
 		// Detect Linux distro if running under Wine/Proton
 		DistroInfo = FSentryPlatformDetectionUtils::DetectLinuxDistro();
 		HandheldInfo = FSentryPlatformDetectionUtils::DetectHandheldDevice();
