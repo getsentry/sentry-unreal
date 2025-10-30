@@ -5,11 +5,7 @@
 #if USE_SENTRY_NATIVE
 
 #include "Microsoft/MicrosoftSentrySubsystem.h"
-
-// Forward declarations
-struct FWineProtonInfo;
-struct FLinuxDistroInfo;
-struct FHandheldDeviceInfo;
+#include "Utils/SentryPlatformInfo.h"
 
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {

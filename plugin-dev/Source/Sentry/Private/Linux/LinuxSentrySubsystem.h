@@ -5,10 +5,7 @@
 #if USE_SENTRY_NATIVE
 
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
-
-// Forward declarations
-struct FLinuxDistroInfo;
-struct FHandheldDeviceInfo;
+#include "Utils/SentryPlatformInfo.h"
 
 class FLinuxSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
