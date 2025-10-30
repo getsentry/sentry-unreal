@@ -150,6 +150,8 @@ Source/Sentry/Private/Linux/LinuxSentrySubsystem.cpp
 Source/Sentry/Private/Linux/LinuxSentrySubsystem.h
 Source/Sentry/Private/Mac/MacSentrySubsystem.cpp
 Source/Sentry/Private/Mac/MacSentrySubsystem.h
+Source/Sentry/Private/Microsoft/MicrosoftSentryFeedback.cpp
+Source/Sentry/Private/Microsoft/MicrosoftSentryFeedback.h
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp

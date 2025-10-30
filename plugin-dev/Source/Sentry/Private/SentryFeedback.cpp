@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryFeedback.h"
+#include "SentryAttachment.h"
 
 #include "HAL/PlatformSentryFeedback.h"
 
@@ -66,4 +67,12 @@ FString USentryFeedback::GetAssociatedEvent() const
 		return FString();
 
 	return NativeImpl->GetAssociatedEvent();
+}
+
+void USentryFeedback::AddAttachment(USentryAttachment* Attachment)
+{
+	if (!NativeImpl)
+		return;
+
+	return NativeImpl->AddAttachment(Attachment->GetNativeObject());
 }
