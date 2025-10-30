@@ -13,22 +13,25 @@ function script:Invoke-SentryUnrealTestApp {
         [string[]]$Arguments,
 
         [Parameter(Mandatory)]
-        [string]$StdoutFile,
-
-        [Parameter(Mandatory)]
-        [string]$StderrFile,
+        [string]$TestName,
 
         [Parameter()]
         [int]$TimeoutSeconds = 300
     )
+
+    # Generate timestamp and output file paths
+    $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $stdoutFile = "$script:OutputDir/$timestamp-$TestName-stdout.log"
+    $stderrFile = "$script:OutputDir/$timestamp-$TestName-stderr.log"
+    $resultFile = "$script:OutputDir/$timestamp-$TestName-result.json"
 
     $exitCode = -1
 
     try {
         $process = Start-Process -FilePath $script:AppPath -ArgumentList $Arguments `
             -PassThru -NoNewWindow `
-            -RedirectStandardOutput $StdoutFile `
-            -RedirectStandardError $StderrFile
+            -RedirectStandardOutput $stdoutFile `
+            -RedirectStandardError $stderrFile
 
         if ($process.WaitForExit($TimeoutSeconds * 1000)) {
             $exitCode = $process.ExitCode
@@ -46,19 +49,24 @@ function script:Invoke-SentryUnrealTestApp {
     $stdout = @()
     $stderr = @()
 
-    if (Test-Path $StdoutFile) {
-        $stdout = Get-Content $StdoutFile -ErrorAction SilentlyContinue
+    if (Test-Path $stdoutFile) {
+        $stdout = Get-Content $stdoutFile -ErrorAction SilentlyContinue
     }
 
-    if (Test-Path $StderrFile) {
-        $stderr = Get-Content $StderrFile -ErrorAction SilentlyContinue
+    if (Test-Path $stderrFile) {
+        $stderr = Get-Content $stderrFile -ErrorAction SilentlyContinue
     }
 
-    return @{
+    $result = @{
         ExitCode = $exitCode
         Output = $stdout
         Error = $stderr
     }
+
+    # Save full output to result JSON
+    $result | ConvertTo-Json -Depth 10 | Out-File $resultFile
+
+    return $result
 }
 
 BeforeAll {
@@ -116,19 +124,11 @@ Describe "Sentry Unreal Integration Tests" {
 
             Write-Host "Running crash capture test..." -ForegroundColor Yellow
 
-            # Prepare output files
-            $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-            $stdoutFile = "$script:OutputDir/$timestamp-crash-stdout.log"
-            $stderrFile = "$script:OutputDir/$timestamp-crash-stderr.log"
-
             # Build arguments and execute application
             # -stdout ensures logs are written to stdout on Linux/Unix systems
             # -nosplash prevents splash screen and dialogs
             $appArgs = @('-crash-capture', '-NullRHI', '-unattended', '-stdout', '-nosplash')
-            $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
-
-            # Save full output
-            $script:CrashResult | ConvertTo-Json -Depth 10 | Out-File "$script:OutputDir/$timestamp-crash-result.json"
+            $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -TestName 'crash'
 
             Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -207,19 +207,11 @@ Describe "Sentry Unreal Integration Tests" {
 
             Write-Host "Running message capture test..." -ForegroundColor Yellow
 
-            # Prepare output files
-            $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-            $stdoutFile = "$script:OutputDir/$timestamp-message-stdout.log"
-            $stderrFile = "$script:OutputDir/$timestamp-message-stderr.log"
-
             # Build arguments and execute application
             # -stdout ensures logs are written to stdout on Linux/Unix systems
             # -nosplash prevents splash screen and dialogs
             $appArgs = @('-message-capture', '-NullRHI', '-unattended', '-stdout', '-nosplash')
-            $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -StdoutFile $stdoutFile -StderrFile $stderrFile
-
-            # Save full output
-            $script:MessageResult | ConvertTo-Json -Depth 10 | Out-File "$script:OutputDir/$timestamp-message-result.json"
+            $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -TestName 'message'
 
             Write-Host "Message test executed. Exit code: $($script:MessageResult.ExitCode)" -ForegroundColor Cyan
 
