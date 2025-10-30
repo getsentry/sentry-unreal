@@ -6,6 +6,11 @@
 
 #include "Microsoft/MicrosoftSentrySubsystem.h"
 
+// Forward declarations
+struct FWineProtonInfo;
+struct FLinuxDistroInfo;
+struct FHandheldDeviceInfo;
+
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
 public:
@@ -19,11 +24,14 @@ protected:
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
 
 private:
-	/** Detects if running under Wine or Proton */
-	bool IsRunningUnderWineOrProton() const;
+	/** Wine/Proton detection info */
+	FWineProtonInfo WineProtonInfo;
 
-	/** Cached detection result */
-	bool bIsWineOrProton = false;
+	/** Linux distro info (when running under Wine/Proton) */
+	FLinuxDistroInfo DistroInfo;
+
+	/** Handheld device info (when running under Wine/Proton) */
+	FHandheldDeviceInfo HandheldInfo;
 };
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;

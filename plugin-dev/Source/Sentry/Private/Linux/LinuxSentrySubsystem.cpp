@@ -6,6 +6,7 @@
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
 #include "SentrySettings.h"
+#include "Utils/SentryPlatformDetectionUtils.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "Misc/Paths.h"
@@ -17,6 +18,19 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, US
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
 
 	InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+
+	// Add platform context if detected
+	if (IsEnabled())
+	{
+		// Detect Linux distro and handheld device
+		DistroInfo = FSentryPlatformDetectionUtils::DetectLinuxDistro();
+		HandheldInfo = FSentryPlatformDetectionUtils::DetectHandheldDevice();
+
+		// Use centralized platform detection utilities to set contexts
+		FSentryPlatformDetectionUtils::SetSentryOSContext(DistroInfo);
+		FSentryPlatformDetectionUtils::SetSentryDeviceContext(HandheldInfo);
+		FSentryPlatformDetectionUtils::SetSentryPlatformTags(nullptr, &DistroInfo, &HandheldInfo);
+	}
 }
 
 void FLinuxSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)

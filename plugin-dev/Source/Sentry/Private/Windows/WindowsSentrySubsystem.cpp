@@ -5,6 +5,7 @@
 #if USE_SENTRY_NATIVE
 
 #include "SentryDefines.h"
+#include "Utils/SentryPlatformDetectionUtils.h"
 
 #include "Misc/OutputDeviceRedirector.h"
 #include "Misc/Paths.h"
@@ -15,71 +16,26 @@
 #include "Windows/HideWindowsPlatformTypes.h"
 #include <winternl.h>
 
-bool FWindowsSentrySubsystem::IsRunningUnderWineOrProton() const
-{
-	// Check for Wine DLL
-	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
-	if (hNtDll == nullptr)
-	{
-		return false;
-	}
-
-	// wine_get_version is exported by Wine's ntdll
-	typedef const char*(CDECL * wine_get_version_t)(void);
-	PRAGMA_DISABLE_UNSAFE_TYPECAST_WARNINGS
-	wine_get_version_t wine_get_version =
-		reinterpret_cast<wine_get_version_t>(GetProcAddress(hNtDll, "wine_get_version"));
-	PRAGMA_RESTORE_UNSAFE_TYPECAST_WARNINGS
-
-	if (wine_get_version != nullptr)
-	{
-		const char* version = wine_get_version();
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected Wine version: %hs"), version);
-		return true;
-	}
-
-	// Check environment variable (common in Proton)
-	FString WineVersion = FPlatformMisc::GetEnvironmentVariable(TEXT("WINE_VERSION"));
-	if (!WineVersion.IsEmpty())
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected Wine/Proton via WINE_VERSION environment variable: %s"), *WineVersion);
-		return true;
-	}
-
-	return false;
-}
-
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
 {
 	// Detect Wine/Proton before initializing
-	bIsWineOrProton = IsRunningUnderWineOrProton();
+	WineProtonInfo = FSentryPlatformDetectionUtils::DetectWineProton();
 
 	// Call parent implementation
 	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
 
 	// Add Wine/Proton context for all events if detected
-	if (bIsWineOrProton && IsEnabled())
-	{
-		// Add runtime context
-		sentry_value_t runtime_context = sentry_value_new_object();
-		sentry_value_set_by_key(runtime_context, "name", sentry_value_new_string("wine"));
-		sentry_value_set_by_key(runtime_context, "proton", sentry_value_new_bool(true));
-		sentry_set_context("runtime", runtime_context);
+	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
+	{	
+		// Detect Linux distro if running under Wine/Proton
+		DistroInfo = FSentryPlatformDetectionUtils::DetectLinuxDistro();
+		HandheldInfo = FSentryPlatformDetectionUtils::DetectHandheldDevice();
 
-		// Check if running under Proton and set OS context
-		FString SteamCompatPath = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_COMPAT_DATA_PATH"));
-		if (!SteamCompatPath.IsEmpty())
-		{
-			// Running under Proton - set OS to SteamOS
-			sentry_value_t os_context = sentry_value_new_object();
-			sentry_value_set_by_key(os_context, "name", sentry_value_new_string("SteamOS"));
-			sentry_set_context("os", os_context);
-			UE_LOG(LogSentrySdk, Log, TEXT("Set OS context to SteamOS (detected Proton via STEAM_COMPAT_DATA_PATH)"));
-		}
-
-		// Add tag for filtering
-		sentry_set_tag("wine_proton", "true");
-		UE_LOG(LogSentrySdk, Log, TEXT("Added Wine/Proton context and tags for all events"));
+		// Use centralized platform detection utilities to set contexts
+		FSentryPlatformDetectionUtils::SetSentryRuntimeContext(WineProtonInfo);
+		FSentryPlatformDetectionUtils::SetSentryOSContext(DistroInfo);
+		FSentryPlatformDetectionUtils::SetSentryDeviceContext(HandheldInfo);
+		FSentryPlatformDetectionUtils::SetSentryPlatformTags(&WineProtonInfo, &DistroInfo, &HandheldInfo);
 	}
 }
 
@@ -96,10 +52,10 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 	sentry_options_set_handler_pathw(Options, *HandlerPath);
 
 	// Enable stack capture adjustment for Wine/Proton
-	if (bIsWineOrProton)
+	if (WineProtonInfo.bIsRunningUnderWine)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Enabling Crashpad stack capture adjustment for Wine/Proton compatibility"));
-		sentry_options_set_crashpad_adjust_stack_capture(Options, 1);
+		sentry_options_set_crashpad_limit_stack_capture_to_sp(Options, 1);
 	}
 }
 

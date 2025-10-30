@@ -6,6 +6,10 @@
 
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
 
+// Forward declarations
+struct FLinuxDistroInfo;
+struct FHandheldDeviceInfo;
+
 class FLinuxSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
 public:
@@ -18,6 +22,13 @@ protected:
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
 
 	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler"); }
+
+private:
+	/** Linux distro info */
+	FLinuxDistroInfo DistroInfo;
+
+	/** Handheld device info */
+	FHandheldDeviceInfo HandheldInfo;
 };
 
 typedef FLinuxSentrySubsystem FPlatformSentrySubsystem;
