@@ -105,6 +105,10 @@ jobs:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: unzip sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
 
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=ue-${{ inputs.unreal-version }}-linux-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}" >> $GITHUB_OUTPUT
+
       - name: Restore cached DDC and Cooked content
         id: cache-content
         uses: actions/cache/restore@v4
@@ -112,7 +116,7 @@ jobs:
           path: |
             checkout/sample/DerivedDataCache
             checkout/sample/Saved/Cooked
-          key: ue-${{ inputs.unreal-version }}-linux-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.cache-key.outputs.key }}
           restore-keys: |
             ue-${{ inputs.unreal-version }}-linux-content-
 
@@ -181,7 +185,7 @@ jobs:
           path: |
             checkout/sample/DerivedDataCache
             checkout/sample/Saved/Cooked
-          key: ue-${{ inputs.unreal-version }}-linux-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.cache-key.outputs.key }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}

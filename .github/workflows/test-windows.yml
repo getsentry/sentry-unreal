@@ -52,6 +52,10 @@ jobs:
           New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
           Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
 
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=ue-${{ inputs.unreal-version }}-win64-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}" >> $env:GITHUB_OUTPUT
+
       - name: Restore cached DDC and Cooked content
         id: cache-content
         uses: actions/cache/restore@v4
@@ -59,7 +63,7 @@ jobs:
           path: |
             checkout/sample/DerivedDataCache
             checkout/sample/Saved/Cooked
-          key: ue-${{ inputs.unreal-version }}-win64-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.cache-key.outputs.key }}
           restore-keys: |
             ue-${{ inputs.unreal-version }}-win64-content-
 
@@ -118,7 +122,7 @@ jobs:
           path: |
             checkout/sample/DerivedDataCache
             checkout/sample/Saved/Cooked
-          key: ue-${{ inputs.unreal-version }}-win64-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.cache-key.outputs.key }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
