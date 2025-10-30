@@ -124,10 +124,13 @@ Describe "Sentry Unreal Integration Tests" {
 
             Write-Host "Running crash capture test..." -ForegroundColor Yellow
 
-            # Build arguments and execute application
-            # -stdout ensures logs are written to stdout on Linux/Unix systems
-            # -nosplash prevents splash screen and dialogs
-            $appArgs = @('-crash-capture', '-NullRHI', '-unattended', '-stdout', '-nosplash')
+            # Build arguments and execute application:
+            # -crash-capture: Triggers integration test crash scenario in the sample app
+            # -nullrhi: Runs without graphics rendering (headless mode)
+            # -unattended: Disables user prompts and interactive dialogs
+            # -stdout: Ensures logs are written to stdout on Linux/Unix systems
+            # -nosplash: Prevents splash screen and dialogs
+            $appArgs = @('-crash-capture', '-nullrhi', '-unattended', '-stdout', '-nosplash')
             $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -TestName 'crash'
 
             Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
@@ -207,10 +210,13 @@ Describe "Sentry Unreal Integration Tests" {
 
             Write-Host "Running message capture test..." -ForegroundColor Yellow
 
-            # Build arguments and execute application
-            # -stdout ensures logs are written to stdout on Linux/Unix systems
-            # -nosplash prevents splash screen and dialogs
-            $appArgs = @('-message-capture', '-NullRHI', '-unattended', '-stdout', '-nosplash')
+            # Build arguments and execute application:
+            # -message-capture: Triggers integration test message scenario in the sample app
+            # -nullrhi: Runs without graphics rendering (headless mode)
+            # -unattended: Disables user prompts and interactive dialogs
+            # -stdout: Ensures logs are written to stdout on Linux/Unix systems
+            # -nosplash: Prevents splash screen and dialogs
+            $appArgs = @('-message-capture', '-nullrhi', '-unattended', '-stdout', '-nosplash')
             $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -TestName 'message'
 
             Write-Host "Message test executed. Exit code: $($script:MessageResult.ExitCode)" -ForegroundColor Cyan
