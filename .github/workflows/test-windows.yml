@@ -11,7 +11,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: windows-latest-4-cores
+    runs-on: windows-2022
 
     steps:
       - name: Log in to GitHub package registry
@@ -20,33 +20,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install docker-squash
-        run: |
-          python -m pip install --upgrade pip
-          pip install docker-squash
-
-      - name: Pull and squash UE Docker image
-        env:
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
-        run: |
-          $imageName = "ghcr.io/getsentry/unreal-docker:$env:UNREAL_VERSION"
-          $squashedTag = "$env:UNREAL_VERSION-squashed"
-
-          Write-Host "Pulling image: $imageName"
-          docker pull $imageName
-
-          Write-Host "Image size before squashing:"
-          docker images $imageName --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
-
-          Write-Host "Squashing image..."
-          docker-squash -t "ghcr.io/getsentry/unreal-docker:$squashedTag" $imageName
-
-          Write-Host "Image size after squashing:"
-          docker images "ghcr.io/getsentry/unreal-docker:$squashedTag" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
-
-          Write-Host "Removing original image to save space"
-          docker rmi $imageName
 
       - name: Start Docker container
         env:
@@ -59,7 +32,7 @@ jobs:
             --volume "${env:WORKSPACE_PATH}:C:/workspace" `
             --workdir C:/workspace `
             --env DISALLOW_RAW_POINTERS=${env:DISALLOW_RAW_POINTERS} `
-            ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION-squashed"
+            ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
 
       - name: Download package
         uses: actions/download-artifact@v4
