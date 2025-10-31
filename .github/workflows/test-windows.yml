@@ -52,38 +52,9 @@ jobs:
           New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
           Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
 
-      - name: Generate cache key
-        id: cache-key
-        run: echo "key=ue-${{ inputs.unreal-version }}-win64-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}" >> $env:GITHUB_OUTPUT
-
-      - name: Restore cached DDC and Cooked content
-        id: cache-content
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            checkout/sample/DerivedDataCache
-            checkout/sample/Saved/Cooked
-          key: ${{ steps.cache-key.outputs.key }}
-          restore-keys: |
-            ue-${{ inputs.unreal-version }}-win64-content-
-
-      - name: Display cache status
-        run: |
-          if ("${{ steps.cache-content.outputs.cache-hit }}" -eq "true") {
-            Write-Host "✓ Cache hit! Using cached DDC and cooked content."
-          } else {
-            Write-Host "✗ Cache miss. Will cook content from scratch."
-          }
-
-      - name: Update engine's build configuration
-        run: |
-          docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
-          docker exec unreal powershell -Command 'Copy-Item -Path "C:/workspace/checkout/.github/BuildConfiguration.xml" -Destination "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml" -Force'
-
       - name: Configure project-local DDC
         run: |
-          docker exec unreal powershell -Command @'
-          Add-Content -Path "C:/workspace/checkout/sample/Config/DefaultEngine.ini" -Value @"
+          Add-Content -Path "checkout/sample/Config/DefaultEngine.ini" -Value @"
 
           [InstalledDerivedDataBackendGraph]
           MinimumDaysToKeepFile=7
@@ -96,7 +67,20 @@ jobs:
           Pak=(Type=ReadPak, Filename="%GAMEDIR%DerivedDataCache/DDC.ddp")
           EnginePak=(Type=ReadPak, Filename=%ENGINEDIR%DerivedDataCache/Compressed.ddp)
           "@
-          '@
+
+      - name: Restore cached DDC
+        id: cache-ddc
+        uses: actions/cache/restore@v4
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ue-${{ inputs.unreal-version }}-win64-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          restore-keys: |
+            ue-${{ inputs.unreal-version }}-win64-ddc
+
+      - name: Update engine's build configuration
+        run: |
+          docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
+          docker exec unreal powershell -Command 'Copy-Item -Path "C:/workspace/checkout/.github/BuildConfiguration.xml" -Destination "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml" -Force'
 
       - name: Run tests
         id: run-tests
@@ -133,14 +117,12 @@ jobs:
             -NoSplash `
             -NullRHI
 
-      - name: Save DDC and Cooked content to cache
-        if: always() && steps.cache-content.outputs.cache-hit != 'true'
+      - name: Save DDC to cache
+        if: success() && steps.cache-ddc.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: |
-            checkout/sample/DerivedDataCache
-            checkout/sample/Saved/Cooked
-          key: ${{ steps.cache-key.outputs.key }}
+          path: checkout/sample/DerivedDataCache
+          key: ue-${{ inputs.unreal-version }}-win64-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}

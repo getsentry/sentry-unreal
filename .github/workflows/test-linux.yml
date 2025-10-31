@@ -105,28 +105,30 @@ jobs:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: unzip sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
 
-      - name: Generate cache key
-        id: cache-key
-        run: echo "key=ue-${{ inputs.unreal-version }}-linux-content-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}" >> $GITHUB_OUTPUT
+      - name: Configure project-local DDC
+        run: |
+          cat >> checkout/sample/Config/DefaultEngine.ini << 'DDCEOF'
 
-      - name: Restore cached DDC and Cooked content
-        id: cache-content
+          [InstalledDerivedDataBackendGraph]
+          MinimumDaysToKeepFile=7
+          Root=(Type=KeyLength, Length=120, Inner=AsyncPut)
+          AsyncPut=(Type=AsyncPut, Inner=Hierarchy)
+          Hierarchy=(Type=Hierarchical, Inner=Boot, Inner=Pak, Inner=EnginePak, Inner=Local, Inner=Shared)
+          Boot=(Type=Boot, Filename="%GAMEDIR%DerivedDataCache/Boot.ddc", MaxCacheSize=512)
+          Local=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, PurgeTransient=true, DeleteUnused=true, UnusedFileAge=34, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache", EnvPathOverride=UE-LocalDataCachePath, EditorOverrideSetting=LocalDerivedDataCache)
+          Shared=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, DeleteUnused=true, UnusedFileAge=10, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache/Shared", EnvPathOverride=UE-SharedDataCachePath, EditorOverrideSetting=SharedDerivedDataCache, CommandLineOverride=SharedDataCachePath)
+          Pak=(Type=ReadPak, Filename="%GAMEDIR%DerivedDataCache/DDC.ddp")
+          EnginePak=(Type=ReadPak, Filename=%ENGINEDIR%DerivedDataCache/Compressed.ddp)
+          DDCEOF
+
+      - name: Restore cached DDC
+        id: cache-ddc
         uses: actions/cache/restore@v4
         with:
-          path: |
-            checkout/sample/DerivedDataCache
-            checkout/sample/Saved/Cooked
-          key: ${{ steps.cache-key.outputs.key }}
+          path: checkout/sample/DerivedDataCache
+          key: ue-${{ inputs.unreal-version }}-linux-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
           restore-keys: |
-            ue-${{ inputs.unreal-version }}-linux-content-
-
-      - name: Display cache status
-        run: |
-          if [ "${{ steps.cache-content.outputs.cache-hit }}" == "true" ]; then
-            echo "✓ Cache hit! Using cached DDC and cooked content."
-          else
-            echo "✗ Cache miss. Will cook content from scratch."
-          fi
+            ue-${{ inputs.unreal-version }}-linux-ddc
 
       - name: Set permissions for sample
         # sentry-native requires write access to sample project directory in order to initialize itself properly
@@ -141,23 +143,6 @@ jobs:
           docker exec unreal bash -c "
             mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
             cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "
-
-      - name: Configure project-local DDC
-        run: |
-          docker exec unreal bash -c 'cat >> /workspace/checkout/sample/Config/DefaultEngine.ini << "DDCEOF"
-
-          [InstalledDerivedDataBackendGraph]
-          MinimumDaysToKeepFile=7
-          Root=(Type=KeyLength, Length=120, Inner=AsyncPut)
-          AsyncPut=(Type=AsyncPut, Inner=Hierarchy)
-          Hierarchy=(Type=Hierarchical, Inner=Boot, Inner=Pak, Inner=EnginePak, Inner=Local, Inner=Shared)
-          Boot=(Type=Boot, Filename="%GAMEDIR%DerivedDataCache/Boot.ddc", MaxCacheSize=512)
-          Local=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, PurgeTransient=true, DeleteUnused=true, UnusedFileAge=34, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache", EnvPathOverride=UE-LocalDataCachePath, EditorOverrideSetting=LocalDerivedDataCache)
-          Shared=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, DeleteUnused=true, UnusedFileAge=10, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache/Shared", EnvPathOverride=UE-SharedDataCachePath, EditorOverrideSetting=SharedDerivedDataCache, CommandLineOverride=SharedDataCachePath)
-          Pak=(Type=ReadPak, Filename="%GAMEDIR%DerivedDataCache/DDC.ddp")
-          EnginePak=(Type=ReadPak, Filename=%ENGINEDIR%DerivedDataCache/Compressed.ddp)
-          DDCEOF
-          '
 
       - name: Run tests
         id: run-tests
@@ -195,14 +180,12 @@ jobs:
             -NoSplash \
             -NullRHI          
 
-      - name: Save DDC and Cooked content to cache
-        if: always() && steps.cache-content.outputs.cache-hit != 'true'
+      - name: Save DDC to cache
+        if: success() && steps.cache-ddc.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: |
-            checkout/sample/DerivedDataCache
-            checkout/sample/Saved/Cooked
-          key: ${{ steps.cache-key.outputs.key }}
+          path: checkout/sample/DerivedDataCache
+          key: ue-${{ inputs.unreal-version }}-linux-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
