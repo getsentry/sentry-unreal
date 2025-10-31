@@ -109,6 +109,10 @@ jobs:
         shell: pwsh
         run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
 
+      - name: Debug - Show cache key
+        run: |
+          echo "Cache key will be: ue-${{ inputs.unreal-version }}-linux-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
+
       - name: Restore cached DDC
         id: cache-ddc
         uses: actions/cache/restore@v4
@@ -117,6 +121,12 @@ jobs:
           key: ue-${{ inputs.unreal-version }}-linux-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
           restore-keys: |
             ue-${{ inputs.unreal-version }}-linux-ddc
+
+      - name: Debug - Cache restore result
+        run: |
+          echo "Cache hit: '${{ steps.cache-ddc.outputs.cache-hit }}'"
+          echo "Cache matched key: '${{ steps.cache-ddc.outputs.cache-matched-key }}'"
+          echo "Will skip save: ${{ steps.cache-ddc.outputs.cache-hit == 'true' }}"
 
       - name: Set permissions for sample
         # sentry-native requires write access to sample project directory in order to initialize itself properly
