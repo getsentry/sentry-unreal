@@ -43,7 +43,6 @@ public:
 	 */
 	static bool IsRunningSteam();
 
-
 	/**
 	 * Gets the runtime name for Sentry context based on Wine/Proton info
 	 * Returns "Proton" or "Wine"
