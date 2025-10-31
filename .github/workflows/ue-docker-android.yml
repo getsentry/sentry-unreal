@@ -75,7 +75,7 @@ jobs:
 
       - name: Install unreal-docker
         run: |
-            pip install ue4-docker
+            pip install ue4-docker==0.0.115
 
       - name: Configure unreal-docker
         run: |
