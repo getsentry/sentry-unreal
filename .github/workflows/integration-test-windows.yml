@@ -1,0 +1,50 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+
+jobs:
+  integration-test:
+    name: Integration Test
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # UE 5.2-5.3 require older DirectX runtime to run pre-built test app
+      - name: Install DirectX June 2010 Runtime
+        run: |
+          Invoke-WebRequest -Uri "https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe" -OutFile "$env:TEMP\directx_redist.exe"
+          Start-Process -FilePath "$env:TEMP\directx_redist.exe" -ArgumentList "/Q","/T:$env:TEMP\DirectX" -Wait
+          Start-Process -FilePath "$env:TEMP\DirectX\DXSETUP.exe" -ArgumentList "/silent" -Wait
+
+      - name: Download sample build
+        uses: actions/download-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Windows)
+          path: sample-build
+
+      - name: Run integration tests
+        id: run-integration-tests
+        env:
+          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground.exe
+        run: |
+          cd integration-test
+          mkdir build
+          cmake -B build -S .
+          Invoke-Pester Integration.Tests.ps1 -CI
+
+      - name: Upload integration test output
+        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} integration test output (Windows)
+          path: |
+            integration-test/output/
+            sample-build/SentryPlayground/Saved/Logs/
