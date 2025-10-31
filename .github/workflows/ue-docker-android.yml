@@ -73,9 +73,11 @@ jobs:
           python-version: '3.12.8'
           architecture: 'x64'
 
-      - name: Install unreal-docker
+      - name: Clone and install ue4-docker from master
         run: |
-            pip install ue4-docker==0.0.115
+          git clone https://github.com/adamrehn/ue4-docker.git /tmp/ue4-docker
+          cd /tmp/ue4-docker
+          pip install .
 
       - name: Configure unreal-docker
         run: |
