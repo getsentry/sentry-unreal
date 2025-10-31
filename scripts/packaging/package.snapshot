@@ -212,6 +212,9 @@ Source/Sentry/Private/Utils/SentryFileUtils.cpp
 Source/Sentry/Private/Utils/SentryFileUtils.h
 Source/Sentry/Private/Utils/SentryLogUtils.cpp
 Source/Sentry/Private/Utils/SentryLogUtils.h
+Source/Sentry/Private/Utils/SentryPlatformDetectionUtils.cpp
+Source/Sentry/Private/Utils/SentryPlatformDetectionUtils.h
+Source/Sentry/Private/Utils/SentryPlatformInfo.h
 Source/Sentry/Private/Utils/SentryScreenshotUtils.cpp
 Source/Sentry/Private/Utils/SentryScreenshotUtils.h
 Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.cpp
