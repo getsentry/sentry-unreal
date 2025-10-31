@@ -52,28 +52,26 @@ jobs:
           New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
           Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
 
+      - name: Compute DDC cache key
+        id: ddc-cache-key
+        run: |
+          $hash = "${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
+          $key = "ue-${{ inputs.unreal-version }}-win64-ddc-${hash}"
+          echo "key=${key}" >> $env:GITHUB_OUTPUT
+          echo "DDC cache key: ${key}"
+
       - name: Configure project-local DDC
         shell: pwsh
         run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
-
-      - name: Debug - Show cache key
-        run: |
-          echo "Cache key will be: ue-${{ inputs.unreal-version }}-win64-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
 
       - name: Restore cached DDC
         id: cache-ddc
         uses: actions/cache/restore@v4
         with:
           path: checkout/sample/DerivedDataCache
-          key: ue-${{ inputs.unreal-version }}-win64-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.ddc-cache-key.outputs.key }}
           restore-keys: |
             ue-${{ inputs.unreal-version }}-win64-ddc
-
-      - name: Debug - Cache restore result
-        run: |
-          echo "Cache hit: '${{ steps.cache-ddc.outputs.cache-hit }}'"
-          echo "Cache matched key: '${{ steps.cache-ddc.outputs.cache-matched-key }}'"
-          echo "Will skip save: ${{ steps.cache-ddc.outputs.cache-hit == 'true' }}"
 
       - name: Update engine's build configuration
         run: |
@@ -120,7 +118,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: checkout/sample/DerivedDataCache
-          key: ue-${{ inputs.unreal-version }}-win64-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}

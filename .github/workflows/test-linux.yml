@@ -105,28 +105,26 @@ jobs:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: unzip sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
 
+      - name: Compute DDC cache key
+        id: ddc-cache-key
+        run: |
+          HASH="${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
+          KEY="ue-${{ inputs.unreal-version }}-linux-ddc-${HASH}"
+          echo "key=${KEY}" >> $GITHUB_OUTPUT
+          echo "DDC cache key: ${KEY}"
+
       - name: Configure project-local DDC
         shell: pwsh
         run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
-
-      - name: Debug - Show cache key
-        run: |
-          echo "Cache key will be: ue-${{ inputs.unreal-version }}-linux-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
 
       - name: Restore cached DDC
         id: cache-ddc
         uses: actions/cache/restore@v4
         with:
           path: checkout/sample/DerivedDataCache
-          key: ue-${{ inputs.unreal-version }}-linux-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.ddc-cache-key.outputs.key }}
           restore-keys: |
             ue-${{ inputs.unreal-version }}-linux-ddc
-
-      - name: Debug - Cache restore result
-        run: |
-          echo "Cache hit: '${{ steps.cache-ddc.outputs.cache-hit }}'"
-          echo "Cache matched key: '${{ steps.cache-ddc.outputs.cache-matched-key }}'"
-          echo "Will skip save: ${{ steps.cache-ddc.outputs.cache-hit == 'true' }}"
 
       - name: Set permissions for sample
         # sentry-native requires write access to sample project directory in order to initialize itself properly
@@ -183,7 +181,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: checkout/sample/DerivedDataCache
-          key: ue-${{ inputs.unreal-version }}-linux-ddc-${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
