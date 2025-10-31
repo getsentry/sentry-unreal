@@ -11,7 +11,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4-cores
 
     steps:
       - name: Free disk space
@@ -44,6 +44,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install docker-squash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install docker-squash
+
+      - name: Pull and squash UE Docker image
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: |
+          IMAGE_NAME="ghcr.io/getsentry/unreal-docker:${UNREAL_VERSION}-linux"
+          SQUASHED_TAG="${UNREAL_VERSION}-linux-squashed"
+
+          echo "Pulling image: ${IMAGE_NAME}"
+          docker pull "${IMAGE_NAME}"
+
+          echo "Image size before squashing:"
+          docker images "${IMAGE_NAME}" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+
+          echo "Squashing image..."
+          docker-squash -t "ghcr.io/getsentry/unreal-docker:${SQUASHED_TAG}" "${IMAGE_NAME}"
+
+          echo "Image size after squashing:"
+          docker images "ghcr.io/getsentry/unreal-docker:${SQUASHED_TAG}" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+
+          echo "Removing original image to save space"
+          docker rmi "${IMAGE_NAME}"
+
       - name: Start Docker container
         env:
           WORKSPACE_PATH: ${{ github.workspace }}
@@ -66,7 +94,7 @@ jobs:
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --env DISALLOW_RAW_POINTERS=$DISALLOW_RAW_POINTERS \
             --network ip6net -p 80:80 \
-            ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-linux
+            ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-linux-squashed
           docker logout ghcr.io
           # Add the user so it has a home directory (needed to run tests later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
