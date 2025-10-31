@@ -101,7 +101,7 @@ jobs:
           --exclude templates \
           --exclude ddc \
           --prerequisites-dockerfile="./docker/ue-android-prerequisites-$UE_VERSION.dockerfile" \
-          --opt itdependencies_args="--exclude=Mac --exclude=Win32 --exclude=Win64" \
+          --opt gitdependencies_args="--exclude=Mac --exclude=Win32 --exclude=Win64" \
           --opt buildgraph_args="-set:HostPlatformOnly=false -set:WithAndroid=true"
 
       - name: Log in to GitHub package registry
