@@ -33,21 +33,31 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		RuntimeContext.Add(TEXT("version"), FSentryPlatformDetectionUtils::GetRuntimeVersion(WineProtonInfo));
 		SetContext(TEXT("runtime"), RuntimeContext);
 
-		// Set OS context for SteamOS or Bazzite
+		// Override OS context when running under Wine/Proton (always show Linux, not Windows)
+		TMap<FString, FSentryVariant> OSContext;
+		OSContext.Add(TEXT("type"), TEXT("os")); // Explicitly set context type
+
+		// Detect specific Linux distros
 		if (FSentryPlatformDetectionUtils::IsSteamOS())
 		{
-			TMap<FString, FSentryVariant> OSContext;
 			OSContext.Add(TEXT("name"), TEXT("SteamOS"));
-			SetContext(TEXT("os"), OSContext);
 			SetTag(TEXT("steamos"), TEXT("true"));
+			UE_LOG(LogSentrySdk, Log, TEXT("Overriding OS context: SteamOS (detected via Wine/Proton)"));
 		}
 		else if (FSentryPlatformDetectionUtils::IsBazzite())
 		{
-			TMap<FString, FSentryVariant> OSContext;
 			OSContext.Add(TEXT("name"), TEXT("Bazzite"));
-			SetContext(TEXT("os"), OSContext);
 			SetTag(TEXT("bazzite"), TEXT("true"));
+			UE_LOG(LogSentrySdk, Log, TEXT("Overriding OS context: Bazzite (detected via Wine/Proton)"));
 		}
+		else
+		{
+			// Default to "Linux" for unknown distros
+			OSContext.Add(TEXT("name"), TEXT("Linux"));
+			UE_LOG(LogSentrySdk, Log, TEXT("Overriding OS context: Linux (detected via Wine/Proton)"));
+		}
+
+		SetContext(TEXT("os"), OSContext);
 
 		// Set platform tags
 		SetTag(TEXT("compatibility"), WineProtonInfo.bIsProton ? TEXT("proton") : TEXT("wine"));

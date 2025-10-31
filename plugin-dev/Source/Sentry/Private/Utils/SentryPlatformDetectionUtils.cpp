@@ -83,22 +83,45 @@ FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
 
 bool FSentryPlatformDetectionUtils::IsSteamOS()
 {
-	// Check for SteamOS-specific environment variables
-	// SteamOS sets these environment variables in its gaming mode
-	FString SteamOSVar = FPlatformMisc::GetEnvironmentVariable(TEXT("SteamOS"));
-	FString SteamGameMode = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_RUNTIME"));
+	// Check for multiple SteamOS-specific indicators
 
-	// Check if SteamOS variable is explicitly set
+	// Check for explicit SteamOS variable (Gaming Mode)
+	FString SteamOSVar = FPlatformMisc::GetEnvironmentVariable(TEXT("SteamOS"));
 	if (!SteamOSVar.IsEmpty())
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via SteamOS environment variable"));
 		return true;
 	}
 
-	// Check for Steam Runtime which is commonly set on SteamOS
-	if (SteamGameMode.Contains(TEXT("steamrt")) || SteamGameMode.Contains(TEXT("steam-runtime")))
+	// Check for HOME directory containing "deck" user (common on Steam Deck/SteamOS)
+	FString HomeDir = FPlatformMisc::GetEnvironmentVariable(TEXT("HOME"));
+	if (HomeDir.Contains(TEXT("/home/deck"), ESearchCase::IgnoreCase))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via HOME directory path"));
+		return true;
+	}
+
+	// Check for USER environment variable
+	FString UserVar = FPlatformMisc::GetEnvironmentVariable(TEXT("USER"));
+	if (UserVar.Equals(TEXT("deck"), ESearchCase::IgnoreCase))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via USER environment variable (deck)"));
+		return true;
+	}
+
+	// Check for STEAM_RUNTIME (indicates Steam runtime environment)
+	FString SteamRuntime = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_RUNTIME"));
+	if (!SteamRuntime.IsEmpty() && (SteamRuntime.Contains(TEXT("steamrt")) || SteamRuntime.Contains(TEXT("steam-runtime"))))
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via STEAM_RUNTIME environment variable"));
+		return true;
+	}
+
+	// Check for SteamOS-specific XDG directories
+	FString XdgCurrentDesktop = FPlatformMisc::GetEnvironmentVariable(TEXT("XDG_CURRENT_DESKTOP"));
+	if (XdgCurrentDesktop.Contains(TEXT("gamescope"), ESearchCase::IgnoreCase))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via XDG_CURRENT_DESKTOP (gamescope)"));
 		return true;
 	}
 
