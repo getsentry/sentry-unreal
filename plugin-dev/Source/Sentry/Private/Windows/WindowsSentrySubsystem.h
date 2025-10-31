@@ -22,12 +22,6 @@ protected:
 private:
 	/** Wine/Proton detection info */
 	FWineProtonInfo WineProtonInfo;
-
-	/** Linux distro info (when running under Wine/Proton) */
-	FLinuxDistroInfo DistroInfo;
-
-	/** Handheld device info (when running under Wine/Proton) */
-	FHandheldDeviceInfo HandheldInfo;
 };
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;

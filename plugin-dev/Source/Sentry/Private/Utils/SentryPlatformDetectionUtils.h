@@ -21,20 +21,20 @@ public:
 	static FWineProtonInfo DetectWineProton();
 
 	/**
-	 * Detects the Linux distribution by reading /etc/os-release
-	 * Only applicable on Linux platforms
+	 * Detects if running on SteamOS by checking environment variables
+	 * Does not rely on file system access or hardware detection
 	 *
-	 * @return Linux distribution information
+	 * @return true if SteamOS is detected
 	 */
-	static FLinuxDistroInfo DetectLinuxDistro();
+	static bool IsSteamOS();
 
 	/**
-	 * Detects if running on a handheld gaming device
-	 * Checks DMI information, device tree, and Steam-specific environment variables
+	 * Detects if running on Bazzite by checking environment variables
+	 * Does not rely on file system access or hardware detection
 	 *
-	 * @return Handheld device information
+	 * @return true if Bazzite is detected
 	 */
-	static FHandheldDeviceInfo DetectHandheldDevice();
+	static bool IsBazzite();
 
 	/**
 	 * Checks if running under Steam (any platform)
@@ -43,11 +43,6 @@ public:
 	 */
 	static bool IsRunningSteam();
 
-	/**
-	 * Gets the OS name for Sentry context based on distribution info
-	 * Returns "SteamOS", "Bazzite", or "Linux"
-	 */
-	static FString GetOSNameForContext(const FLinuxDistroInfo& DistroInfo);
 
 	/**
 	 * Gets the runtime name for Sentry context based on Wine/Proton info
@@ -62,21 +57,6 @@ public:
 	static FString GetRuntimeVersion(const FWineProtonInfo& WineProtonInfo);
 
 private:
-	/** Reads and parses /etc/os-release file */
-	static TMap<FString, FString> ParseOsReleaseFile();
-
-	/** Reads a file and returns its contents as a string */
-	static FString ReadFileToString(const FString& FilePath);
-
 	/** Parses Wine version string to extract version and Proton information */
 	static void ParseWineVersion(const FString& VersionString, FWineProtonInfo& OutInfo);
-
-	/** Reads DMI information from sysfs */
-	static FString ReadDMIInfo(const FString& DMIField);
-
-	/** Detects Steam Deck specifically */
-	static void DetectSteamDeck(FHandheldDeviceInfo& OutInfo);
-
-	/** Detects other handheld devices (ROG Ally, Legion Go, etc.) */
-	static void DetectOtherHandhelds(FHandheldDeviceInfo& OutInfo);
 };

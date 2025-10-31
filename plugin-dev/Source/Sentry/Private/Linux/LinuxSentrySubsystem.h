@@ -5,7 +5,6 @@
 #if USE_SENTRY_NATIVE
 
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
-#include "Utils/SentryPlatformInfo.h"
 
 class FLinuxSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
@@ -19,13 +18,6 @@ protected:
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
 
 	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler"); }
-
-private:
-	/** Linux distro info */
-	FLinuxDistroInfo DistroInfo;
-
-	/** Handheld device info */
-	FHandheldDeviceInfo HandheldInfo;
 };
 
 typedef FLinuxSentrySubsystem FPlatformSentrySubsystem;

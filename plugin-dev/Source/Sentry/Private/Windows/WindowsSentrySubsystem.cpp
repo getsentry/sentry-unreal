@@ -27,49 +27,30 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 	// Add Wine/Proton context for all events if detected
 	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
 	{
-		// Detect Linux distro if running under Wine/Proton
-		DistroInfo = FSentryPlatformDetectionUtils::DetectLinuxDistro();
-		HandheldInfo = FSentryPlatformDetectionUtils::DetectHandheldDevice();
-
 		// Set Runtime context (Wine/Proton)
 		TMap<FString, FSentryVariant> RuntimeContext;
 		RuntimeContext.Add(TEXT("name"), FSentryPlatformDetectionUtils::GetRuntimeName(WineProtonInfo));
 		RuntimeContext.Add(TEXT("version"), FSentryPlatformDetectionUtils::GetRuntimeVersion(WineProtonInfo));
 		SetContext(TEXT("runtime"), RuntimeContext);
 
-		// Set OS context (Linux distro)
-		if (!DistroInfo.ID.IsEmpty())
+		// Set OS context for SteamOS or Bazzite
+		if (FSentryPlatformDetectionUtils::IsSteamOS())
 		{
 			TMap<FString, FSentryVariant> OSContext;
-			OSContext.Add(TEXT("name"), FSentryPlatformDetectionUtils::GetOSNameForContext(DistroInfo));
-			if (!DistroInfo.Version.IsEmpty())
-			{
-				OSContext.Add(TEXT("version"), DistroInfo.Version);
-			}
+			OSContext.Add(TEXT("name"), TEXT("SteamOS"));
 			SetContext(TEXT("os"), OSContext);
+			SetTag(TEXT("steamos"), TEXT("true"));
 		}
-
-		// Set Device context (Handheld device)
-		if (HandheldInfo.bIsHandheld)
+		else if (FSentryPlatformDetectionUtils::IsBazzite())
 		{
-			TMap<FString, FSentryVariant> DeviceContext;
-			if (!HandheldInfo.Manufacturer.IsEmpty())
-			{
-				DeviceContext.Add(TEXT("manufacturer"), HandheldInfo.Manufacturer);
-			}
-			if (!HandheldInfo.Model.IsEmpty())
-			{
-				DeviceContext.Add(TEXT("model"), HandheldInfo.Model);
-			}
-			if (!HandheldInfo.Codename.IsEmpty())
-			{
-				DeviceContext.Add(TEXT("name"), HandheldInfo.Codename);
-			}
-			SetContext(TEXT("device"), DeviceContext);
+			TMap<FString, FSentryVariant> OSContext;
+			OSContext.Add(TEXT("name"), TEXT("Bazzite"));
+			SetContext(TEXT("os"), OSContext);
+			SetTag(TEXT("bazzite"), TEXT("true"));
 		}
 
 		// Set platform tags
-		SetTag(TEXT("wine_proton"), WineProtonInfo.bIsProton ? TEXT("proton") : TEXT("wine"));
+		SetTag(TEXT("compatibility"), WineProtonInfo.bIsProton ? TEXT("proton") : TEXT("wine"));
 		if (!WineProtonInfo.Version.IsEmpty())
 		{
 			SetTag(TEXT("wine_version"), WineProtonInfo.Version);
@@ -82,37 +63,9 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		{
 			SetTag(TEXT("proton_experimental"), TEXT("true"));
 		}
-		if (!DistroInfo.ID.IsEmpty())
-		{
-			SetTag(TEXT("linux_distro"), DistroInfo.ID);
-		}
-		if (DistroInfo.bIsSteamOS)
-		{
-			SetTag(TEXT("steamos"), TEXT("true"));
-		}
-		if (DistroInfo.bIsBazzite)
-		{
-			SetTag(TEXT("bazzite"), TEXT("true"));
-		}
-		if (DistroInfo.bIsGamingDistro)
-		{
-			SetTag(TEXT("gaming_distro"), TEXT("true"));
-		}
-		if (HandheldInfo.bIsSteamDeck)
-		{
-			SetTag(TEXT("steam_deck"), TEXT("true"));
-			if (HandheldInfo.bIsSteamDeckOLED)
-			{
-				SetTag(TEXT("steam_deck_oled"), TEXT("true"));
-			}
-		}
-		if (HandheldInfo.bIsHandheld && !HandheldInfo.bIsSteamDeck)
-		{
-			SetTag(TEXT("handheld"), TEXT("true"));
-		}
 		if (FSentryPlatformDetectionUtils::IsRunningSteam())
 		{
-			SetTag(TEXT("running_steam"), TEXT("true"));
+			SetTag(TEXT("steam"), TEXT("true"));
 		}
 	}
 }

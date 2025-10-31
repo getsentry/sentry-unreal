@@ -22,73 +22,25 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, US
 	// Add platform context if detected
 	if (IsEnabled())
 	{
-		// Detect Linux distro and handheld device
-		DistroInfo = FSentryPlatformDetectionUtils::DetectLinuxDistro();
-		HandheldInfo = FSentryPlatformDetectionUtils::DetectHandheldDevice();
-
-		// Set OS context (Linux distro)
-		if (!DistroInfo.ID.IsEmpty())
+		// Set OS context for SteamOS or Bazzite
+		if (FSentryPlatformDetectionUtils::IsSteamOS())
 		{
 			TMap<FString, FSentryVariant> OSContext;
-			OSContext.Add(TEXT("name"), FSentryPlatformDetectionUtils::GetOSNameForContext(DistroInfo));
-			if (!DistroInfo.Version.IsEmpty())
-			{
-				OSContext.Add(TEXT("version"), DistroInfo.Version);
-			}
+			OSContext.Add(TEXT("name"), TEXT("SteamOS"));
 			SetContext(TEXT("os"), OSContext);
-		}
-
-		// Set Device context (Handheld device)
-		if (HandheldInfo.bIsHandheld)
-		{
-			TMap<FString, FSentryVariant> DeviceContext;
-			if (!HandheldInfo.Manufacturer.IsEmpty())
-			{
-				DeviceContext.Add(TEXT("manufacturer"), HandheldInfo.Manufacturer);
-			}
-			if (!HandheldInfo.Model.IsEmpty())
-			{
-				DeviceContext.Add(TEXT("model"), HandheldInfo.Model);
-			}
-			if (!HandheldInfo.Codename.IsEmpty())
-			{
-				DeviceContext.Add(TEXT("name"), HandheldInfo.Codename);
-			}
-			SetContext(TEXT("device"), DeviceContext);
-		}
-
-		// Set platform tags
-		if (!DistroInfo.ID.IsEmpty())
-		{
-			SetTag(TEXT("linux_distro"), DistroInfo.ID);
-		}
-		if (DistroInfo.bIsSteamOS)
-		{
 			SetTag(TEXT("steamos"), TEXT("true"));
 		}
-		if (DistroInfo.bIsBazzite)
+		else if (FSentryPlatformDetectionUtils::IsBazzite())
 		{
+			TMap<FString, FSentryVariant> OSContext;
+			OSContext.Add(TEXT("name"), TEXT("Bazzite"));
+			SetContext(TEXT("os"), OSContext);
 			SetTag(TEXT("bazzite"), TEXT("true"));
 		}
-		if (DistroInfo.bIsGamingDistro)
-		{
-			SetTag(TEXT("gaming_distro"), TEXT("true"));
-		}
-		if (HandheldInfo.bIsSteamDeck)
-		{
-			SetTag(TEXT("steam_deck"), TEXT("true"));
-			if (HandheldInfo.bIsSteamDeckOLED)
-			{
-				SetTag(TEXT("steam_deck_oled"), TEXT("true"));
-			}
-		}
-		if (HandheldInfo.bIsHandheld && !HandheldInfo.bIsSteamDeck)
-		{
-			SetTag(TEXT("handheld"), TEXT("true"));
-		}
+
 		if (FSentryPlatformDetectionUtils::IsRunningSteam())
 		{
-			SetTag(TEXT("running_steam"), TEXT("true"));
+			SetTag(TEXT("steam"), TEXT("true"));
 		}
 	}
 }
