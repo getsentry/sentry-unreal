@@ -161,3 +161,16 @@ jobs:
     uses: ./.github/workflows/test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
+
+  test-android:
+    needs: [package-preparation]
+    name: Android UE ${{ matrix.unreal }}
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        # Testing Android builds for 4.27 and 5.4 only
+        unreal: ['4.27', '5.4']
+    uses: ./.github/workflows/test-android.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
