@@ -83,12 +83,25 @@ jobs:
         run: |
           ue4-docker setup
 
+      - name: Set Linux ARM platform name based on UE version
+        id: set_linux_arm_platform
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+        run: |
+          # UE 4.27 uses "LinuxAArch64", UE 5.x uses "LinuxArm64"
+          if [[ "$UE_VERSION" == "4.27" ]]; then
+            echo "platform_name=LinuxAArch64" >> $GITHUB_OUTPUT
+          else
+            echo "platform_name=LinuxArm64" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build Unreal Engine Docker image with Android support
         env:
           UE_REPO: ${{ inputs.ue_repo }}
           UE_VERSION: ${{ inputs.ue_version }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          LINUX_ARM_PLATFORM: ${{ steps.set_linux_arm_platform.outputs.platform_name }}
         run: |
           ue4-docker build custom -repo="$UE_REPO" -branch="$UE_VERSION" \
           -basetag ubuntu22.04 \
@@ -101,8 +114,8 @@ jobs:
           --exclude templates \
           --exclude ddc \
           --prerequisites-dockerfile="./docker/ue-android-prerequisites-$UE_VERSION.dockerfile" \
-          --opt gitdependencies_args="--exclude=Mac --exclude=Win32 --exclude=Win64 --exclude=LinuxAArch64" \
-          --opt buildgraph_args="-set:HostPlatformOnly=false -set:WithAndroid=true -set:LinuxAArch64=false -set:WithClient=false -set:WithServer=false"
+          --opt gitdependencies_args="--exclude=Mac --exclude=Win32 --exclude=Win64 --exclude=$LINUX_ARM_PLATFORM" \
+          --opt buildgraph_args="-set:HostPlatformOnly=false -set:WithAndroid=true -set:With${LINUX_ARM_PLATFORM}=false -set:WithClient=false -set:WithServer=false"
 
       - name: Log in to GitHub package registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
