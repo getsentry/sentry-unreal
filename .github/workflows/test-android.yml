@@ -134,7 +134,6 @@ jobs:
             -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             -e SENTRY_ORG="$SENTRY_ORG" \
             -e SENTRY_PROJECT="$SENTRY_PROJECT" \
-            -e TMPDIR="/workspace/checkout/sample/Intermediate/Android/tmp" \
             unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \

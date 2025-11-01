@@ -169,8 +169,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Testing Android builds for 4.27 and 5.4 only
-        unreal: ['4.27', '5.4']
+        # Testing Android builds for 4.27, 5.1, and 5.4
+        unreal: ['4.27', '5.1', '5.4']
     uses: ./.github/workflows/test-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}
