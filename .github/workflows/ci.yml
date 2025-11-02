@@ -170,7 +170,7 @@ jobs:
       fail-fast: false
       matrix:
         # Testing Android builds for 4.27, 5.1, 5.2, 5.3, and 5.4
-        unreal: ['4.27', '5.1', '5.2', '5.4']
+        unreal: ['4.27', '5.1', '5.2', '5.3', '5.4']
     uses: ./.github/workflows/test-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}
