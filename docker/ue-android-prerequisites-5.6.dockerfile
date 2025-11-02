@@ -5,16 +5,16 @@ FROM ${NAMESPACE}/ue4-base-build-prerequisites:${PREREQS_TAG}
 # Switch to root to install additional packages
 USER root
 
-# Install Java 17 (required for UE 5.6 Android builds)
+# Install Java 21 (required for UE 5.6 Android builds)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-17-jdk \
+    openjdk-21-jdk \
     wget \
     unzip && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up environment variables for Android SDK/NDK
 # Unreal Engine checks multiple environment variable names, so we set all of them
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 ENV ANDROID_HOME=/home/ue4/android-sdk
 ENV ANDROID_SDK_ROOT=/home/ue4/android-sdk
 ENV ANDROID_NDK=/home/ue4/android-sdk/ndk/27.2.12479018
