@@ -82,7 +82,6 @@ jobs:
           ENGINE_PATH: ${{ inputs.unreal-version == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }}
         run: |
           uid=$(id -u) # the GH action user ID
-          user='gh'
           docker exec --user root unreal bash -c "
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/\"$ENGINE_PATH\" ;
@@ -91,9 +90,7 @@ jobs:
             mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun ;
             mkdir -p /home/ue4/.config/Epic/UnrealEngine && chown -R $uid /home/ue4/.config ;
-            chown -R $uid /home/ue4/android-sdk ;
-            chown -R $uid /home/$user ;
-            chmod 1777 /tmp "
+            chown -R $uid /home/ue4/android-sdk "
 
       - name: Download package
         uses: actions/download-artifact@v4
