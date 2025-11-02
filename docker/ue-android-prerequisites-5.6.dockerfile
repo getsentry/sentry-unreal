@@ -40,5 +40,5 @@ RUN yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses && \
     ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager \
     "platform-tools" \
     "platforms;android-34" \
-    "build-tools;34.0.0" \
+    "build-tools;35.0.1" \
     "ndk;27.2.12479018"
