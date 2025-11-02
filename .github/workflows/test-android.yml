@@ -70,6 +70,8 @@ jobs:
           docker logout ghcr.io
           # Add the user so it has a home directory (needed to run tests later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
+          # Ensure the gh user owns their home directory (needed for clang++ to write temp files)
+          docker exec --user root unreal chown -R $uid:$gid /home/$user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
