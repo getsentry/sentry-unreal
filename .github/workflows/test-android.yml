@@ -93,6 +93,7 @@ jobs:
             mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun ;
             mkdir -p /home/ue4/.config/Epic/UnrealEngine && chown -R $uid /home/ue4/.config ;
+            mkdir -p /home/ue4/.gradle && chown -R $uid /home/ue4/.gradle ;
             chown -R $uid /home/ue4/android-sdk "
 
       - name: Download package
