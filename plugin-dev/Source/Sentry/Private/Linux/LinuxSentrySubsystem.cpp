@@ -6,6 +6,7 @@
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
 #include "SentrySettings.h"
+#include "Utils/SentryPlatformDetectionUtils.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "Misc/Paths.h"
@@ -17,6 +18,31 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, US
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
 
 	InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+
+	// Add platform context if detected
+	if (IsEnabled())
+	{
+		// Set OS context for SteamOS or Bazzite
+		if (FSentryPlatformDetectionUtils::IsSteamOS())
+		{
+			TMap<FString, FSentryVariant> OSContext;
+			OSContext.Add(TEXT("name"), TEXT("SteamOS"));
+			SetContext(TEXT("os"), OSContext);
+			SetTag(TEXT("steamos"), TEXT("true"));
+		}
+		else if (FSentryPlatformDetectionUtils::IsBazzite())
+		{
+			TMap<FString, FSentryVariant> OSContext;
+			OSContext.Add(TEXT("name"), TEXT("Bazzite"));
+			SetContext(TEXT("os"), OSContext);
+			SetTag(TEXT("bazzite"), TEXT("true"));
+		}
+
+		if (FSentryPlatformDetectionUtils::IsRunningSteam())
+		{
+			SetTag(TEXT("steam"), TEXT("true"));
+		}
+	}
 }
 
 void FLinuxSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)

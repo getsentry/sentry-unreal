@@ -1,0 +1,54 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+
+jobs:
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download sample build
+        uses: actions/download-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Linux)
+          path: sample-build
+
+      - name: Set execute permissions
+        run: |
+          chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
+          chmod +x ${{ github.workspace }}/sample-build/SentryPlayground/Plugins/sentry/Binaries/Linux/crashpad_handler
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck
+
+      - name: Run integration tests
+        id: run-integration-tests
+        shell: pwsh
+        env:
+          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground.sh
+        run: |
+          cd integration-test
+          mkdir build
+          cmake -B build -S .
+          Invoke-Pester Integration.Tests.ps1 -CI
+
+      - name: Upload integration test output
+        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} integration test output (Linux)
+          path: |
+            integration-test/output/
+            sample-build/SentryPlayground/Saved/Logs/
