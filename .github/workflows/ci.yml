@@ -168,7 +168,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unreal: ['4.27', '5.1', '5.2', '5.3', '5.4', '5.5']
+        unreal: ['4.27', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6']
     uses: ./.github/workflows/test-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}
