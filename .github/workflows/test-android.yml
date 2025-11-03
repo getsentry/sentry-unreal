@@ -70,6 +70,8 @@ jobs:
           docker logout ghcr.io
           # Add the user so it has a home directory (needed to run tests later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
+          # Ensure the gh user owns their home directory (needed for clang++ to write temp files)
+          docker exec --user root unreal chown -R $uid:$gid /home/$user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
@@ -93,7 +95,7 @@ jobs:
             mkdir -p /home/ue4/.config/Epic/UnrealEngine && chown -R $uid /home/ue4/.config ;
             mkdir -p /home/ue4/.gradle && chown -R $uid /home/ue4/.gradle ;
             chown -R $uid /home/ue4/android-sdk ;
-            mkdir -p /home/gh/.cache && chown -R $uid /home/gh/.cache ;
+            mkdir -p /home/gh/.cache/tmp && chown -R $uid /home/gh/.cache ;
             mkdir -p /home/ue4/UnrealEngine/UnrealTrace && chown -R $uid /home/ue4/UnrealEngine/UnrealTrace ;
             mkdir -p /home/gh/Library/Logs && chown -R $uid /home/gh/Library "
 
@@ -135,6 +137,7 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
           docker exec -w /workspace/checkout/sample \
+            -e TMPDIR=/home/gh/.cache/tmp \
             -e SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY="$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY" \
             -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             -e SENTRY_ORG="$SENTRY_ORG" \
