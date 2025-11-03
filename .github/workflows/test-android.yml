@@ -94,7 +94,10 @@ jobs:
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun ;
             mkdir -p /home/ue4/.config/Epic/UnrealEngine && chown -R $uid /home/ue4/.config ;
             mkdir -p /home/ue4/.gradle && chown -R $uid /home/ue4/.gradle ;
-            chown -R $uid /home/ue4/android-sdk "
+            chown -R $uid /home/ue4/android-sdk ;
+            mkdir -p /home/gh/.cache && chown -R $uid /home/gh/.cache ;
+            mkdir -p /home/ue4/UnrealEngine/UnrealTrace && chown -R $uid /home/ue4/UnrealEngine/UnrealTrace ;
+            mkdir -p /home/gh/Library/Logs && chown -R $uid /home/gh/Library "
 
       - name: Download package
         uses: actions/download-artifact@v4
