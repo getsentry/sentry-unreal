@@ -35,12 +35,10 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
     mv cmdline-tools latest
 
 # Accept licenses and install Android SDK components
-# UE 4.27 requires: API Level 29, Build Tools 30.0.3, NDK r21b (21.1.6352462)
-# Also install build-tools 29.0.2 which is required by Gradle during the build
+# UE 4.27 requires: API Level 29, Build Tools 29.0.2, NDK r21b (21.1.6352462)
 RUN yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses && \
     ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager \
     "platform-tools" \
     "platforms;android-29" \
-    "build-tools;30.0.3" \
     "build-tools;29.0.2" \
     "ndk;21.1.6352462"
