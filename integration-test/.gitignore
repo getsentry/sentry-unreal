@@ -1,0 +1,6 @@
+# CMake build artifacts
+build/
+TestConfig.local.ps1
+
+# Test outputs
+output/

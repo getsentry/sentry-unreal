@@ -27,4 +27,7 @@ private:
 	void ConfigureTestContext();
 
 	void CompleteTestWithResult(const FString& TestName, bool Result, const FString& Message);
+
+	/** Converts event ID to UUID format with hyphens (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX) */
+	static FString FormatEventIdWithHyphens(const FString& EventId);
 };

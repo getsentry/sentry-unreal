@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.1
 
 ### Dependencies
 
@@ -16,6 +16,10 @@
 - Bump Java SDK (Android) from v8.24.0 to v8.25.0 ([#1130](https://github.com/getsentry/sentry-unreal/pull/1130))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8250)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.24.0...8.25.0)
+
+### Features
+
+- Implement Wine/Proton detection and automatic Crashpad stack capture adjustment for SteamOS/Bazzite compatibility ([#1123](https://github.com/getsentry/sentry-unreal/pull/1123))
 
 ## 1.2.0
 
