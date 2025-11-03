@@ -42,7 +42,7 @@ Boot=(Type=Boot, Filename="%GAMEDIR%DerivedDataCache/Boot.ddc", MaxCacheSize=512
 Local=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, PurgeTransient=true, DeleteUnused=true, UnusedFileAge=34, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache", EnvPathOverride=UE-LocalDataCachePath, EditorOverrideSetting=LocalDerivedDataCache)
 Shared=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, DeleteUnused=true, UnusedFileAge=10, FoldersToClean=-1, Path="%GAMEDIR%DerivedDataCache/Shared", EnvPathOverride=UE-SharedDataCachePath, EditorOverrideSetting=SharedDerivedDataCache, CommandLineOverride=SharedDataCachePath)
 Pak=(Type=ReadPak, Filename="%GAMEDIR%DerivedDataCache/DDC.ddp")
-EnginePak=(Type=ReadPak, Filename=%ENGINEDIR%DerivedDataCache/Compressed.ddp)
+EnginePak=(Type=ReadPak, Filename="%ENGINEDIR%DerivedDataCache/Compressed.ddp")
 "@
 
 Add-Content -Path $configPath -Value $ddcConfig
