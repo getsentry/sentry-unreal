@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add pluging setting allowing to attach all threads info to captured events (Android) ([#1137](https://github.com/getsentry/sentry-unreal/pull/1137))
+
 ## 1.2.1
 
 ### Dependencies
