@@ -165,6 +165,7 @@ jobs:
   test-android:
     needs: [package-preparation]
     name: Android UE ${{ matrix.unreal }}
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
