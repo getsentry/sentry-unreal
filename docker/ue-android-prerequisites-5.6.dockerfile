@@ -35,7 +35,7 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
     mv cmdline-tools latest
 
 # Accept licenses and install Android SDK components
-# UE 5.6 requires: API Level 34, Build Tools 35.0.1, CMake 3.22.1, NDK r27c (27.2.12479018)
+# UE 5.6 requires: API Level 34, Build Tools 35.0.1, NDK r27c (27.2.12479018)
 RUN yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses && \
     ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager \
     "platform-tools" \
