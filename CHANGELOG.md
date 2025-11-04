@@ -6,6 +6,15 @@
 
 - Add pluging setting allowing to attach all threads info to captured events (Android) ([#1137](https://github.com/getsentry/sentry-unreal/pull/1137))
 
+### Dependencies
+
+- Bump Native SDK from v0.12.0 to v0.12.1 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0121)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.0...0.12.1)
+- Bump Android Gradle Plugin from v5.12.1 to v5.12.2 ([#1135](https://github.com/getsentry/sentry-unreal/pull/1135))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#5122)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/5.12.1...5.12.2)
+
 ## 1.2.1
 
 ### Dependencies
