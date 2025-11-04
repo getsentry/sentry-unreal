@@ -321,9 +321,9 @@ public:
 
 	/**
 	 * Returns if user consent is required for crash upload.
-	 * 
+	 *
 	 * @return True if user consent is required; otherwise false.
-	 * 
+	 *
 	 * @note This method is currently only relevant on Windows and Linux; other platforms will default to `false`.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
