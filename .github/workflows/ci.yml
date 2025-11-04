@@ -114,27 +114,6 @@ jobs:
           path: |
             sentry-unreal-*.zip
 
-  package-validation:
-    needs: [package-preparation]
-    name: Check snapshot
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download packages
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ github.sha }}
-
-      # If this step fails, you can accept the new file content by
-      # running the following script locally with 'accept' as an argument
-      # and committing the new snapshot file to your branch. i.e:
-      # pwsh ./scripts/test-contents.ps1 accept
-      - name: Verify package content against snapshot
-        shell: pwsh
-        run: ./scripts/packaging/test-contents.ps1
-
   test-linux:
     needs: [package-preparation]
     name: Linux UE ${{ matrix.unreal }}
@@ -197,3 +176,24 @@ jobs:
     uses: ./.github/workflows/integration-test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
+
+  package-validation:
+    needs: [package-preparation]
+    name: Check snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.sha }}
+
+      # If this step fails, you can accept the new file content by
+      # running the following script locally with 'accept' as an argument
+      # and committing the new snapshot file to your branch. i.e:
+      # pwsh ./scripts/test-contents.ps1 accept
+      - name: Verify package content against snapshot
+        shell: pwsh
+        run: ./scripts/packaging/test-contents.ps1
