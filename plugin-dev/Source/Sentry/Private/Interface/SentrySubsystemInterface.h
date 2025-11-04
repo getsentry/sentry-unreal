@@ -60,6 +60,7 @@ public:
 	virtual void GiveUserConsent() = 0;
 	virtual void RevokeUserConsent() = 0;
 	virtual EUserConsent GetUserConsent() const = 0;
+	virtual bool IsUserConsentRequired() const { return false; }
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation, bool bindToScope) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context, bool bindToScope) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope) = 0;
