@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add runtime API to query user consent requirement ()
+- Add runtime API to query user consent requirement ([#1139](https://github.com/getsentry/sentry-unreal/pull/1139))
 
 ### Dependencies
 
