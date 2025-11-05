@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Removed usage of deprecated `CGWindowListCreateImage` function on Mac. Replaced with Sentry Screenshot Utils ([#1034](https://github.com/getsentry/sentry-unreal/pull/1034/))
+
 ### Dependencies
 
 - Bump Native SDK from v0.12.0 to v0.12.1 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136))
