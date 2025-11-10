@@ -161,3 +161,40 @@ jobs:
     uses: ./.github/workflows/test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
+
+  test-android:
+    needs: [package-preparation]
+    name: Android UE ${{ matrix.unreal }}
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ['4.27', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6']
+    uses: ./.github/workflows/test-android.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
+  integration-test-linux:
+    needs: [test-linux]
+    name: Linux UE ${{ matrix.unreal }}
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ['4.27', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6']
+    uses: ./.github/workflows/integration-test-linux.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
+  integration-test-windows:
+    needs: [test-windows]
+    name: Windows UE ${{ matrix.unreal }}
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        # Integration tests only for UE 5.2 and newer where CRC can be disabled
+        unreal: ['5.2', '5.3', '5.4', '5.5', '5.6']
+    uses: ./.github/workflows/integration-test-windows.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}

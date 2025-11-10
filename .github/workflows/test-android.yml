@@ -11,7 +11,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4-cores
 
     steps:
       - name: Free disk space
@@ -66,10 +66,12 @@ jobs:
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --env DISALLOW_RAW_POINTERS=$DISALLOW_RAW_POINTERS \
             --network ip6net -p 80:80 \
-            ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-linux
+            ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-android
           docker logout ghcr.io
           # Add the user so it has a home directory (needed to run tests later on)
           docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
+          # Ensure the gh user owns their home directory (needed for clang++ to write temp files)
+          docker exec --user root unreal chown -R $uid:$gid /home/$user
           # Ensure CA certs are in the right directory (needed for running tests)
           docker exec --user root unreal bash -c "
             mkdir -p /etc/pki/tls/certs ;
@@ -86,9 +88,16 @@ jobs:
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/\"$ENGINE_PATH\" ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/USD/UsdResources/Linux ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/AutomationTool ;
+            chown -R $uid /home/ue4/android-sdk ;
             mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
-            mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun "
+            mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun ;
+            mkdir -p /home/ue4/.config/Epic/UnrealEngine && chown -R $uid /home/ue4/.config ;
+            mkdir -p /home/ue4/UnrealEngine/UnrealTrace && chown -R $uid /home/ue4/UnrealEngine/UnrealTrace ;
+            mkdir -p /home/ue4/.gradle && chown -R $uid /home/ue4/.gradle ;            
+            mkdir -p /home/gh/.cache/tmp && chown -R $uid /home/gh/.cache ;            
+            mkdir -p /home/gh/Library/Logs && chown -R $uid /home/gh/Library "
 
       - name: Download package
         uses: actions/download-artifact@v4
@@ -109,7 +118,7 @@ jobs:
         id: ddc-cache-key
         run: |
           HASH="${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
-          KEY="ue-${{ inputs.unreal-version }}-linux-ddc-${HASH}"
+          KEY="ue-${{ inputs.unreal-version }}-android-ddc-${HASH}"
           echo "key=${KEY}" >> $GITHUB_OUTPUT
           echo "DDC cache key: ${KEY}"
 
@@ -124,7 +133,7 @@ jobs:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
           restore-keys: |
-            ue-${{ inputs.unreal-version }}-linux-ddc
+            ue-${{ inputs.unreal-version }}-android-ddc
 
       - name: Set permissions for sample
         # sentry-native requires write access to sample project directory in order to initialize itself properly
@@ -140,16 +149,16 @@ jobs:
             mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
             cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "
 
-      - name: Run tests
-        id: run-tests
+      - name: Build Android package
+        id: build-android
         env:
-          EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
           SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY: true
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
           docker exec -w /workspace/checkout/sample \
+            -e TMPDIR=/home/gh/.cache/tmp \
             -e SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY="$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY" \
             -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             -e SENTRY_ORG="$SENTRY_ORG" \
@@ -157,24 +166,16 @@ jobs:
             unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
-            -platform=Linux \
+            -platform=Android \
+            -clientconfig=Development \
             -nop4 \
             -cook \
             -iterate \
             -build \
             -stage \
-            -prereqss \
+            -prereqs \
             -package \
             -archive
-          docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \
-            /workspace/checkout/sample/SentryPlayground.uproject \
-            -ReportExportPath=/workspace/checkout/sample/Saved/Automation \
-            -ExecCmds="Automation RunTests Sentry;quit" \
-            -TestExit="Automation Test Queue Empty" \
-            -Unattended \
-            -NoPause \
-            -NoSplash \
-            -NullRHI          
 
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
@@ -183,18 +184,18 @@ jobs:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
-      - name: Collect sample test info
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+      - name: Collect build logs on failure
+        if: ${{ always() && steps.build-android.outcome == 'failure' }}
         uses: actions/upload-artifact@v4
         with:
-          name: UE ${{ inputs.unreal-version }} sample test report (Linux)
+          name: UE ${{ inputs.unreal-version }} Android build logs
           path: |
-            checkout/sample/Saved/Automation
+            checkout/sample/Saved/Logs
 
-      - name: Upload sample build
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+      - name: Upload Android build
+        if: ${{ success() && steps.build-android.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: UE ${{ inputs.unreal-version }} sample build (Linux)
-          path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'LinuxNoEditor' || 'Linux' }}/
+          name: UE ${{ inputs.unreal-version }} sample build (Android)
+          path: checkout/sample/Builds/Android/
           retention-days: 1

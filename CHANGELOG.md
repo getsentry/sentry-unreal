@@ -1,5 +1,43 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Native SDK from v0.12.0 to v0.12.1 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0121)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.0...0.12.1)
+- Bump Android Gradle Plugin from v5.12.1 to v5.12.2 ([#1135](https://github.com/getsentry/sentry-unreal/pull/1135))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#5122)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/5.12.1...5.12.2)
+- Bump Cocoa SDK (iOS and Mac) from v8.57.0 to v8.57.1 ([#1133](https://github.com/getsentry/sentry-unreal/pull/1133))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8571)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.0...8.57.1)
+- Bump CLI from v2.57.0 to v2.58.0 ([#1142](https://github.com/getsentry/sentry-unreal/pull/1142))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2580)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.57.0...2.58.0)
+
+## 1.2.1
+
+### Dependencies
+
+- Bump CLI from v2.56.1 to v2.57.0 ([#1124](https://github.com/getsentry/sentry-unreal/pull/1124))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2570)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.56.1...2.57.0)
+- Bump Java SDK (Android) from v8.23.0 to v8.24.0 ([#1125](https://github.com/getsentry/sentry-unreal/pull/1125))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8240)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.23.0...8.24.0)
+- Bump Native SDK from v0.11.3 to v0.12.0 ([#1129](https://github.com/getsentry/sentry-unreal/pull/1129))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0120)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.11.3...0.12.0)
+- Bump Java SDK (Android) from v8.24.0 to v8.25.0 ([#1130](https://github.com/getsentry/sentry-unreal/pull/1130))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8250)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.24.0...8.25.0)
+
+### Features
+
+- Implement Wine/Proton detection and automatic Crashpad stack capture adjustment for SteamOS/Bazzite compatibility ([#1123](https://github.com/getsentry/sentry-unreal/pull/1123))
+
 ## 1.2.0
 
 ### Features
