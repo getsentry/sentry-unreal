@@ -1,15 +1,24 @@
 # Builds plugin dependencies locally and replaces corresponding binaries in `plugin-dev/Sources/ThirdParty/...`
 # Depending on a platform this script is running on some dependencies may or may not be built.
 
-# Plugin dependencies are represented by the following submodules:
+# Plugin dependencies:
 # * sentry-native - for Windows support (can be built only on Windows)
 # * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
+#   - Requires SENTRY_COCOA_PATH environment variable pointing to local sentry-cocoa repository
+#   - Example: $env:SENTRY_COCOA_PATH="/path/to/sentry-cocoa"; ./build-deps.ps1 mac
 # * sentry-java - for Android support (can be built both on Windows and MacOS)
 
-# Running this scrip without parameters will build all plugin dependencies it can on the current platform.
+# Running this script without parameters will build all plugin dependencies it can on the current platform.
 
 # To build only a certain plugin dependency run `pwsh ./build-deps.ps1 <platfrom_name>`.
 # Supported platforms names are: `win`, `mac`, `ios`, `android`.
+
+param(
+    [Parameter(ValueFromRemainingArguments=$true)]
+    [string[]]$Platforms
+)
+
+$SentryCocoaPath = $env:SENTRY_COCOA_PATH
 
 Set-StrictMode -Version latest
 
@@ -19,14 +28,69 @@ $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 $macPlatfromDeps = @("mac", "ios", "android")
 $winPlatfromDeps = @("win", "android")
 
+function extractXCFramework([string] $zipPath, [string] $destination)
+{
+    if (-not (Test-Path $zipPath))
+    {
+        throw "XCFramework zip not found at: $zipPath"
+    }
+
+    if (Test-Path $destination)
+    {
+        Remove-Item $destination -Recurse -Force
+    }
+
+    New-Item $destination -ItemType Directory > $null
+
+    Push-Location $destination
+    try
+    {
+        unzip -q "$zipPath"
+    }
+    finally
+    {
+        Pop-Location
+    }
+}
+
 function buildSentryCocoaIos()
 {
-    Push-Location -Path "$modulesDir/sentry-cocoa"
+    if ([string]::IsNullOrEmpty($SentryCocoaPath))
+    {
+        Write-Warning "SENTRY_COCOA_PATH environment variable is not set. Skipping iOS build."
+        Write-Warning "Set it to your local sentry-cocoa repository path: `$env:SENTRY_COCOA_PATH='/path/to/sentry-cocoa'"
+        return
+    }
 
-    carthage build --use-xcframeworks --no-skip-current --platform iOS
+    if (-not (Test-Path $SentryCocoaPath))
+    {
+        throw "Sentry Cocoa path does not exist: $SentryCocoaPath"
+    }
 
-    Pop-Location
+    Write-Host "Building Sentry Cocoa for iOS using local repository at: $SentryCocoaPath"
 
+    Push-Location -Path $SentryCocoaPath
+
+    try
+    {
+        # Build dynamic XCFramework for iOS only
+        bash ./scripts/build-xcframework-local.sh "iOSOnly" "DynamicOnly"
+
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "Failed to build Sentry Cocoa XCFramework for iOS"
+        }
+    }
+    finally
+    {
+        Pop-Location
+    }
+
+    # Extract the built XCFramework
+    $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-ios"
+    extractXCFramework "$SentryCocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
+
+    # Prepare output directories
     $iosOutDir = "$outDir/IOS"
 
     if (Test-Path $iosOutDir)
@@ -35,11 +99,15 @@ function buildSentryCocoaIos()
     }
 
     New-Item $iosOutDir -ItemType Directory > $null
+
+    # Copy iOS framework
+    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/ios-arm64/Sentry.framework" -Destination "$iosOutDir/Sentry.framework" -Recurse
+
+    # Create embedded framework structure
     New-Item "$iosOutDir/Sentry.embeddedframework" -ItemType Directory > $null
+    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/ios-arm64/Sentry.framework" -Destination "$iosOutDir/Sentry.embeddedframework/Sentry.framework" -Recurse
 
-    Copy-Item "$modulesDir/sentry-cocoa/Carthage/Build/Sentry.xcframework/ios-arm64/Sentry.framework" -Destination "$iosOutDir/Sentry.framework" -Recurse
-    Copy-Item "$modulesDir/sentry-cocoa/Carthage/Build/Sentry.xcframework/ios-arm64/Sentry.framework" -Destination "$iosOutDir/Sentry.embeddedframework/Sentry.framework" -Recurse
-
+    # Create zip for embedded framework
     Push-Location $iosOutDir
     try
     {
@@ -50,20 +118,54 @@ function buildSentryCocoaIos()
         Pop-Location
     }
 
+    # Cleanup
     Remove-Item "$iosOutDir/Sentry.embeddedframework" -Recurse -Force
+    Remove-Item $tempExtractDir -Recurse -Force
+
+    Write-Host "Successfully built Sentry Cocoa for iOS"
 }
 
 function buildSentryCocoaMac()
 {
-    Push-Location -Path "$modulesDir/sentry-cocoa"
+    if ([string]::IsNullOrEmpty($SentryCocoaPath))
+    {
+        Write-Warning "SENTRY_COCOA_PATH environment variable is not set. Skipping Mac build."
+        Write-Warning "Set it to your local sentry-cocoa repository path: `$env:SENTRY_COCOA_PATH='/path/to/sentry-cocoa'"
+        return
+    }
 
-    carthage build --no-skip-current --platform macOS
+    if (-not (Test-Path $SentryCocoaPath))
+    {
+        throw "Sentry Cocoa path does not exist: $SentryCocoaPath"
+    }
 
-    Pop-Location
+    Write-Host "Building Sentry Cocoa for Mac using local repository at: $SentryCocoaPath"
 
+    Push-Location -Path $SentryCocoaPath
+
+    try
+    {
+        # Build dynamic XCFramework for Mac only
+        bash ./scripts/build-xcframework-local.sh "macOSOnly" "DynamicOnly"
+
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "Failed to build Sentry Cocoa XCFramework for Mac"
+        }
+    }
+    finally
+    {
+        Pop-Location
+    }
+
+    # Extract the built XCFramework
+    $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-mac"
+    extractXCFramework "$SentryCocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
+
+    # Prepare output directories
     $macOutDir = "$outDir/Mac"
     $macOutDirBinaries = "$macOutDir/bin"
-    $macOutDirIncludes = "$macOutDir/include/Headers"
+    $macOutDirIncludes = "$macOutDir/include/Sentry"
 
     if (Test-Path $macOutDir)
     {
@@ -74,9 +176,17 @@ function buildSentryCocoaMac()
     New-Item $macOutDirBinaries -ItemType Directory > $null
     New-Item $macOutDirIncludes -ItemType Directory > $null
 
-    Copy-Item "$modulesDir/sentry-cocoa/Carthage/Build/Mac/Sentry.framework/Sentry" -Destination "$macOutDirBinaries/sentry.dylib"
-    Copy-Item "$modulesDir/sentry-cocoa/Carthage/Build/Mac/Sentry.framework/Headers/*" -Destination $macOutDirIncludes
-    Copy-Item "$modulesDir/sentry-cocoa/Carthage/Build/Mac/Sentry.framework/PrivateHeaders/*" -Destination $macOutDirIncludes
+    # Copy Mac framework binary
+    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Sentry" -Destination "$macOutDirBinaries/sentry.dylib"
+
+    # Copy headers and private headers
+    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Headers/*" -Destination $macOutDirIncludes
+    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/PrivateHeaders/*" -Destination $macOutDirIncludes
+
+    # Cleanup
+    Remove-Item $tempExtractDir -Recurse -Force
+
+    Write-Host "Successfully built Sentry Cocoa for Mac"
 }
 
 function buildSentryJava()
@@ -158,17 +268,17 @@ function buildPlatformDependency([string] $platform)
     }
 }
 
-if ($args.Count -eq 0)
+if ($null -eq $Platforms -or $Platforms.Count -eq 0)
 {
-    $platforms = if ($IsMacOS) { $macPlatfromDeps } else { $winPlatfromDeps }
-    foreach ($platform in $platforms)
+    $platformsToBuild = if ($IsMacOS) { $macPlatfromDeps } else { $winPlatfromDeps }
+    foreach ($platform in $platformsToBuild)
     {
         buildPlatformDependency($platform)
     }
 }
 else
 {
-    foreach ($platform in $args)
+    foreach ($platform in $Platforms)
     {
         buildPlatformDependency($platform)
     }
