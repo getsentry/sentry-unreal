@@ -10,6 +10,37 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Helper function to create symlink/junction
+function New-SymbolicLink {
+    param(
+        [string]$LinkPath,
+        [string]$TargetPath
+    )
+
+    # Remove existing link if it exists
+    if (Test-Path $LinkPath) {
+        $item = Get-Item $LinkPath
+        if ($item.LinkType -eq "Junction" -or $item.LinkType -eq "SymbolicLink") {
+            $item.Delete()
+        } else {
+            Remove-Item -Path $LinkPath -Recurse -Force
+        }
+    }
+
+    # Create parent directory if needed
+    $parentDir = Split-Path -Parent $LinkPath
+    if (-not (Test-Path $parentDir)) {
+        New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
+    }
+
+    # Create junction (works cross-platform with PowerShell)
+    if (Test-Path $TargetPath -PathType Container) {
+        New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath | Out-Null
+    } else {
+        New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath | Out-Null
+    }
+}
+
 # Platform-specific configuration
 $platformConfig = @{
     'Switch' = @{
@@ -45,7 +76,7 @@ Write-Host "Setting up $Platform console extension..." -ForegroundColor Cyan
 Write-Host "Extension path: $ExtensionPath"
 
 # Step 1: Validate extension path
-Write-Host "`n[1/5] Validating extension path..." -ForegroundColor Yellow
+Write-Host "`n[1/6] Validating extension path..." -ForegroundColor Yellow
 
 if (-not (Test-Path $ExtensionPath)) {
     throw "Extension path does not exist: $ExtensionPath"
@@ -70,7 +101,7 @@ if (-not (Test-Path $sourceDir)) {
 Write-Host "  ✓ Extension path validated" -ForegroundColor Green
 
 # Step 2: Build extension
-Write-Host "`n[2/5] Building extension..." -ForegroundColor Yellow
+Write-Host "`n[2/6] Building extension..." -ForegroundColor Yellow
 Write-Host "  Running: cmake --workflow --preset $($config.Preset) --fresh"
 
 Push-Location $ExtensionPath
@@ -92,7 +123,7 @@ if (-not (Test-Path $buildOutputDir)) {
 }
 
 # Step 3: Create directory structure in sample project
-Write-Host "`n[3/5] Creating directory structure..." -ForegroundColor Yellow
+Write-Host "`n[3/6] Creating directory structure..." -ForegroundColor Yellow
 
 $targetPluginRoot = Join-Path $repoRoot "sample" "Platforms" $config.PlatformFolder "Plugins" "Sentry"
 $targetSourceRoot = Join-Path $targetPluginRoot "Source"
@@ -116,7 +147,7 @@ foreach ($dir in $dirsToCreate) {
 Write-Host "  ✓ Directory structure created" -ForegroundColor Green
 
 # Step 4: Copy build artifacts (ThirdParty libs/headers)
-Write-Host "`n[4/5] Copying build artifacts..." -ForegroundColor Yellow
+Write-Host "`n[4/6] Copying build artifacts..." -ForegroundColor Yellow
 
 $buildThirdPartyDir = Join-Path $buildOutputDir "Source" "ThirdParty" $config.PlatformFolder
 if (-not (Test-Path $buildThirdPartyDir)) {
@@ -135,38 +166,7 @@ Write-Host "  Copied: ThirdParty/$($config.PlatformFolder)/"
 Write-Host "  ✓ Build artifacts copied" -ForegroundColor Green
 
 # Step 5: Symlink source files for live editing
-Write-Host "`n[5/5] Creating symlinks to source files..." -ForegroundColor Yellow
-
-# Helper function to create symlink/junction
-function New-SymbolicLink {
-    param(
-        [string]$LinkPath,
-        [string]$TargetPath
-    )
-
-    # Remove existing link if it exists
-    if (Test-Path $LinkPath) {
-        $item = Get-Item $LinkPath
-        if ($item.LinkType -eq "Junction" -or $item.LinkType -eq "SymbolicLink") {
-            $item.Delete()
-        } else {
-            Remove-Item -Path $LinkPath -Recurse -Force
-        }
-    }
-
-    # Create parent directory if needed
-    $parentDir = Split-Path -Parent $LinkPath
-    if (-not (Test-Path $parentDir)) {
-        New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
-    }
-
-    # Create junction (works cross-platform with PowerShell)
-    if (Test-Path $TargetPath -PathType Container) {
-        New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath | Out-Null
-    } else {
-        New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath | Out-Null
-    }
-}
+Write-Host "`n[5/6] Creating symlinks to source files..." -ForegroundColor Yellow
 
 # Symlink .uplugin file
 $upluginFiles = @(Get-ChildItem -Path $sourceDir -Filter "*.uplugin" -ErrorAction SilentlyContinue)
@@ -196,6 +196,35 @@ if (Test-Path $privateSourceDir) {
 }
 
 Write-Host "  ✓ Source files symlinked" -ForegroundColor Green
+
+# Step 6: Symlink config files for live editing
+Write-Host "`n[6/6] Creating symlinks to config files..." -ForegroundColor Yellow
+
+$sampleConfigDir = Join-Path $ExtensionPath "unreal" "sample-config"
+if (Test-Path $sampleConfigDir) {
+    $targetConfigDir = Join-Path $repoRoot "sample" "Platforms" $config.PlatformFolder "Config"
+
+    # Ensure Config directory exists
+    if (-not (Test-Path $targetConfigDir)) {
+        New-Item -ItemType Directory -Path $targetConfigDir -Force | Out-Null
+    }
+
+    # Symlink platform-specific Engine.ini
+    $configFile = "$($config.PlatformFolder)Engine.ini"
+    $configTarget = Join-Path $sampleConfigDir $configFile
+
+    if (Test-Path $configTarget) {
+        $configLink = Join-Path $targetConfigDir $configFile
+        New-SymbolicLink -LinkPath $configLink -TargetPath $configTarget
+        Write-Host "  Linked: Config/$configFile"
+    } else {
+        Write-Host "  Warning: Config file not found: $configFile" -ForegroundColor Yellow
+    }
+
+    Write-Host "  ✓ Config files symlinked" -ForegroundColor Green
+} else {
+    Write-Host "  Skipping config symlinking (sample-config directory not found)" -ForegroundColor Gray
+}
 
 Write-Host "`n✓ Console extension setup complete!" -ForegroundColor Green
 Write-Host "`nTarget location: $targetPluginRoot" -ForegroundColor Cyan
