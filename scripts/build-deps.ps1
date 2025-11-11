@@ -1,32 +1,36 @@
 # Builds plugin dependencies locally and replaces corresponding binaries in `plugin-dev/Sources/ThirdParty/...`
-# Depending on a platform this script is running on some dependencies may or may not be built.
-
+#
 # Plugin dependencies:
 # * sentry-native - for Windows support (can be built only on Windows)
 # * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
-#   - Requires SENTRY_COCOA_PATH environment variable pointing to local sentry-cocoa repository
-#   - Example: $env:SENTRY_COCOA_PATH="/path/to/sentry-cocoa"; ./build-deps.ps1 mac ios
 # * sentry-java - for Android support (can be built both on Windows and MacOS)
-
-# Running this script without parameters will build all plugin dependencies it can on the current platform.
-
-# To build only a certain plugin dependency run `pwsh ./build-deps.ps1 <platfrom_name>`.
-# Supported platforms names are: `win`, `mac`, `ios`, `android`.
+#
+# Usage:
+#   .\build-deps.ps1 -CocoaPath "C:\path\to\sentry-cocoa"  # Builds Mac & iOS only
+#   .\build-deps.ps1 -NativePath "C:\path\to\sentry-native"  # Builds Windows only
+#   .\build-deps.ps1 -JavaPath "C:\path\to\sentry-java"  # Builds Android only
+#   .\build-deps.ps1 -CocoaPath "..." -JavaPath "..."  # Builds multiple SDKs
+#   .\build-deps.ps1  # Uses environment variables (fallback)
+#
+# Environment variables (used as fallback if parameters not provided):
+#   SENTRY_COCOA_PATH - Path to local sentry-cocoa repository
+#   SENTRY_NATIVE_PATH - Path to local sentry-native repository
+#   SENTRY_JAVA_PATH - Path to local sentry-java repository
 
 param(
-    [Parameter(ValueFromRemainingArguments=$true)]
-    [string[]]$Platforms
+    [string]$CocoaPath,
+    [string]$NativePath,
+    [string]$JavaPath
 )
 
-$SentryCocoaPath = $env:SENTRY_COCOA_PATH
+# Fallback to environment variables if parameters not provided
+if ([string]::IsNullOrEmpty($CocoaPath)) { $CocoaPath = $env:SENTRY_COCOA_PATH }
+if ([string]::IsNullOrEmpty($NativePath)) { $NativePath = $env:SENTRY_NATIVE_PATH }
+if ([string]::IsNullOrEmpty($JavaPath)) { $JavaPath = $env:SENTRY_JAVA_PATH }
 
 Set-StrictMode -Version latest
 
-$modulesDir = Resolve-Path "$PSScriptRoot/../modules"
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
-
-$macPlatfromDeps = @("mac", "ios", "android")
-$winPlatfromDeps = @("win", "android")
 
 function extractXCFramework([string] $zipPath, [string] $destination)
 {
@@ -55,21 +59,21 @@ function extractXCFramework([string] $zipPath, [string] $destination)
 
 function buildSentryCocoaIos()
 {
-    if ([string]::IsNullOrEmpty($SentryCocoaPath))
+    if ([string]::IsNullOrEmpty($CocoaPath))
     {
-        Write-Warning "SENTRY_COCOA_PATH environment variable is not set. Skipping iOS build."
-        Write-Warning "Set it to your local sentry-cocoa repository path: `$env:SENTRY_COCOA_PATH='/path/to/sentry-cocoa'"
+        Write-Warning "Cocoa path is not set. Skipping iOS build."
+        Write-Warning "Provide -CocoaPath parameter or set SENTRY_COCOA_PATH environment variable."
         return
     }
 
-    if (-not (Test-Path $SentryCocoaPath))
+    if (-not (Test-Path $CocoaPath))
     {
-        throw "Sentry Cocoa path does not exist: $SentryCocoaPath"
+        throw "Sentry Cocoa path does not exist: $CocoaPath"
     }
 
-    Write-Host "Building Sentry Cocoa for iOS using local repository at: $SentryCocoaPath"
+    Write-Host "Building Sentry Cocoa for iOS using local repository at: $CocoaPath"
 
-    Push-Location -Path $SentryCocoaPath
+    Push-Location -Path $CocoaPath
 
     try
     {
@@ -88,7 +92,7 @@ function buildSentryCocoaIos()
 
     # Extract the built XCFramework
     $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-ios"
-    extractXCFramework "$SentryCocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
+    extractXCFramework "$CocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
 
     # Prepare output directories
     $iosOutDir = "$outDir/IOS"
@@ -127,21 +131,21 @@ function buildSentryCocoaIos()
 
 function buildSentryCocoaMac()
 {
-    if ([string]::IsNullOrEmpty($SentryCocoaPath))
+    if ([string]::IsNullOrEmpty($CocoaPath))
     {
-        Write-Warning "SENTRY_COCOA_PATH environment variable is not set. Skipping Mac build."
-        Write-Warning "Set it to your local sentry-cocoa repository path: `$env:SENTRY_COCOA_PATH='/path/to/sentry-cocoa'"
+        Write-Warning "Cocoa path is not set. Skipping Mac build."
+        Write-Warning "Provide -CocoaPath parameter or set SENTRY_COCOA_PATH environment variable."
         return
     }
 
-    if (-not (Test-Path $SentryCocoaPath))
+    if (-not (Test-Path $CocoaPath))
     {
-        throw "Sentry Cocoa path does not exist: $SentryCocoaPath"
+        throw "Sentry Cocoa path does not exist: $CocoaPath"
     }
 
-    Write-Host "Building Sentry Cocoa for Mac using local repository at: $SentryCocoaPath"
+    Write-Host "Building Sentry Cocoa for Mac using local repository at: $CocoaPath"
 
-    Push-Location -Path $SentryCocoaPath
+    Push-Location -Path $CocoaPath
 
     try
     {
@@ -160,7 +164,7 @@ function buildSentryCocoaMac()
 
     # Extract the built XCFramework
     $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-mac"
-    extractXCFramework "$SentryCocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
+    extractXCFramework "$CocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
 
     # Prepare output directories
     $macOutDir = "$outDir/Mac"
@@ -191,7 +195,21 @@ function buildSentryCocoaMac()
 
 function buildSentryJava()
 {
-    Push-Location -Path "$modulesDir/sentry-java"
+    if ([string]::IsNullOrEmpty($JavaPath))
+    {
+        Write-Warning "Java path is not set. Skipping Android build."
+        Write-Warning "Provide -JavaPath parameter or set SENTRY_JAVA_PATH environment variable."
+        return
+    }
+
+    if (-not (Test-Path $JavaPath))
+    {
+        throw "Sentry Java path does not exist: $JavaPath"
+    }
+
+    Write-Host "Building Sentry Java for Android using local repository at: $JavaPath"
+
+    Push-Location -Path $JavaPath
 
     ./gradlew -PsentryAndroidSdkName="sentry.native.android.unreal" `
         :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
@@ -207,14 +225,28 @@ function buildSentryJava()
 
     New-Item $androidOutDir -ItemType Directory > $null
 
-    Copy-Item "$modulesDir/sentry-java/sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" -Destination "$androidOutDir/sentry-android-ndk-release.aar"
-    Copy-Item "$modulesDir/sentry-java/sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" -Destination "$androidOutDir/sentry-android-core-release.aar"
-    Copy-Item "$modulesDir/sentry-java/sentry/build/libs/$("sentry-*.jar")" -Destination "$androidOutDir/sentry.jar"
+    Copy-Item "$JavaPath/sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" -Destination "$androidOutDir/sentry-android-ndk-release.aar"
+    Copy-Item "$JavaPath/sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" -Destination "$androidOutDir/sentry-android-core-release.aar"
+    Copy-Item "$JavaPath/sentry/build/libs/$("sentry-*.jar")" -Destination "$androidOutDir/sentry.jar"
 }
 
 function buildSentryNative()
 {
-    Push-Location -Path "$modulesDir/sentry-native"
+    if ([string]::IsNullOrEmpty($NativePath))
+    {
+        Write-Warning "Native path is not set. Skipping Windows build."
+        Write-Warning "Provide -NativePath parameter or set SENTRY_NATIVE_PATH environment variable."
+        return
+    }
+
+    if (-not (Test-Path $NativePath))
+    {
+        throw "Sentry Native path does not exist: $NativePath"
+    }
+
+    Write-Host "Building Sentry Native for Windows using local repository at: $NativePath"
+
+    Push-Location -Path $NativePath
 
     cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
     cmake --build "build" --target sentry --config RelWithDebInfo --parallel
@@ -238,48 +270,25 @@ function buildSentryNative()
     New-Item $nativeOutDirBinaries -ItemType Directory > $null
     New-Item $nativeOutDirIncludes -ItemType Directory > $null
 
-    Get-ChildItem -Path "$modulesDir/sentry-native/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination $nativeOutDirLibs
-    Copy-Item "$modulesDir/sentry-native/install/bin/crashpad_handler.exe" -Destination $nativeOutDirBinaries
-    Copy-Item "$modulesDir/sentry-native/install/bin/crashpad_wer.dll" -Destination $nativeOutDirBinaries
-    Copy-Item "$modulesDir/sentry-native/install/include/sentry.h" -Destination $nativeOutDirIncludes
+    Get-ChildItem -Path "$NativePath/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination $nativeOutDirLibs
+    Copy-Item "$NativePath/install/bin/crashpad_handler.exe" -Destination $nativeOutDirBinaries
+    Copy-Item "$NativePath/install/bin/crashpad_wer.dll" -Destination $nativeOutDirBinaries
+    Copy-Item "$NativePath/install/include/sentry.h" -Destination $nativeOutDirIncludes
 }
 
-function buildPlatformDependency([string] $platform)
+# Build SDKs based on provided paths
+if (![string]::IsNullOrEmpty($CocoaPath))
 {
-    if ($platform -eq "win")
-    {
-        buildSentryNative
-    }
-    elseif ($platform -eq "mac")
-    {
-        buildSentryCocoaMac
-    }
-    elseif ($platform -eq "ios")
-    {
-        buildSentryCocoaIos
-    }
-    elseif ($platform -eq "android")
-    {
-        buildSentryJava
-    }
-    else
-    {
-        Write-Warning "Platform '$platform' is not supported"
-    }
+    buildSentryCocoaMac
+    buildSentryCocoaIos
 }
 
-if ($null -eq $Platforms -or $Platforms.Count -eq 0)
+if (![string]::IsNullOrEmpty($NativePath))
 {
-    $platformsToBuild = if ($IsMacOS) { $macPlatfromDeps } else { $winPlatfromDeps }
-    foreach ($platform in $platformsToBuild)
-    {
-        buildPlatformDependency($platform)
-    }
+    buildSentryNative
 }
-else
+
+if (![string]::IsNullOrEmpty($JavaPath))
 {
-    foreach ($platform in $Platforms)
-    {
-        buildPlatformDependency($platform)
-    }
+    buildSentryJava
 }
