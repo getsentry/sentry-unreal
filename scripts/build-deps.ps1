@@ -6,24 +6,64 @@
 # * sentry-java - for Android support (can be built both on Windows and MacOS)
 #
 # Usage:
-#   .\build-deps.ps1 -CocoaPath "C:\path\to\sentry-cocoa"  # Builds Mac & iOS only
-#   .\build-deps.ps1 -NativePath "C:\path\to\sentry-native"  # Builds Windows only
-#   .\build-deps.ps1 -JavaPath "C:\path\to\sentry-java"  # Builds Android only
-#   .\build-deps.ps1 -CocoaPath "..." -JavaPath "..."  # Builds multiple SDKs
-#   .\build-deps.ps1  # Uses environment variables (fallback)
+#   .\build-deps.ps1 -All                                  # Build all SDKs for current platform
+#   .\build-deps.ps1 -Cocoa -Java                          # Build only Cocoa and Java
+#   .\build-deps.ps1 -Native -NativePath "C:\custom\path"  # Build Native with custom path
+#   .\build-deps.ps1 -All -CocoaPath "C:\custom\path"      # Build all with custom Cocoa path
 #
-# Environment variables (used as fallback if parameters not provided):
+# Environment variables (used as fallback if custom paths not provided):
 #   SENTRY_COCOA_PATH - Path to local sentry-cocoa repository
 #   SENTRY_NATIVE_PATH - Path to local sentry-native repository
 #   SENTRY_JAVA_PATH - Path to local sentry-java repository
 
 param(
+    [switch]$All,
+    [switch]$Cocoa,
+    [switch]$Native,
+    [switch]$Java,
     [string]$CocoaPath,
     [string]$NativePath,
     [string]$JavaPath
 )
 
-# Fallback to environment variables if parameters not provided
+# If -All is specified, enable all SDKs for current platform
+if ($All)
+{
+    if ($IsWindows)
+    {
+        $Native = $true
+        $Java = $true
+    }
+    else
+    {
+        $Cocoa = $true
+        $Java = $true
+    }
+}
+
+# Check if at least one SDK is selected
+if (-not ($Cocoa -or $Native -or $Java))
+{
+    Write-Host "Error: No SDK specified. Use -All or specify individual SDKs (-Cocoa, -Native, -Java)" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Examples:"
+    Write-Host "  .\build-deps.ps1 -All"
+    Write-Host "  .\build-deps.ps1 -Cocoa -Java"
+    Write-Host "  .\build-deps.ps1 -Native -NativePath 'D:\projects\sentry-native'"
+    Write-Host ""
+    Write-Host "Environment variables (used as fallback):"
+    Write-Host "  SENTRY_COCOA_PATH  - Path to local sentry-cocoa repository"
+    Write-Host "  SENTRY_NATIVE_PATH - Path to local sentry-native repository"
+    Write-Host "  SENTRY_JAVA_PATH   - Path to local sentry-java repository"
+    exit 1
+}
+
+# Determine which SDKs to build based on flags
+$buildCocoa = $Cocoa
+$buildNative = $Native
+$buildJava = $Java
+
+# Resolve paths: use custom path if provided, otherwise fallback to environment variable
 if ([string]::IsNullOrEmpty($CocoaPath)) { $CocoaPath = $env:SENTRY_COCOA_PATH }
 if ([string]::IsNullOrEmpty($NativePath)) { $NativePath = $env:SENTRY_NATIVE_PATH }
 if ([string]::IsNullOrEmpty($JavaPath)) { $JavaPath = $env:SENTRY_JAVA_PATH }
@@ -59,13 +99,6 @@ function extractXCFramework([string] $zipPath, [string] $destination)
 
 function buildSentryCocoaIos()
 {
-    if ([string]::IsNullOrEmpty($CocoaPath))
-    {
-        Write-Warning "Cocoa path is not set. Skipping iOS build."
-        Write-Warning "Provide -CocoaPath parameter or set SENTRY_COCOA_PATH environment variable."
-        return
-    }
-
     if (-not (Test-Path $CocoaPath))
     {
         throw "Sentry Cocoa path does not exist: $CocoaPath"
@@ -131,13 +164,6 @@ function buildSentryCocoaIos()
 
 function buildSentryCocoaMac()
 {
-    if ([string]::IsNullOrEmpty($CocoaPath))
-    {
-        Write-Warning "Cocoa path is not set. Skipping Mac build."
-        Write-Warning "Provide -CocoaPath parameter or set SENTRY_COCOA_PATH environment variable."
-        return
-    }
-
     if (-not (Test-Path $CocoaPath))
     {
         throw "Sentry Cocoa path does not exist: $CocoaPath"
@@ -195,13 +221,6 @@ function buildSentryCocoaMac()
 
 function buildSentryJava()
 {
-    if ([string]::IsNullOrEmpty($JavaPath))
-    {
-        Write-Warning "Java path is not set. Skipping Android build."
-        Write-Warning "Provide -JavaPath parameter or set SENTRY_JAVA_PATH environment variable."
-        return
-    }
-
     if (-not (Test-Path $JavaPath))
     {
         throw "Sentry Java path does not exist: $JavaPath"
@@ -232,13 +251,6 @@ function buildSentryJava()
 
 function buildSentryNative()
 {
-    if ([string]::IsNullOrEmpty($NativePath))
-    {
-        Write-Warning "Native path is not set. Skipping Windows build."
-        Write-Warning "Provide -NativePath parameter or set SENTRY_NATIVE_PATH environment variable."
-        return
-    }
-
     if (-not (Test-Path $NativePath))
     {
         throw "Sentry Native path does not exist: $NativePath"
@@ -276,19 +288,43 @@ function buildSentryNative()
     Copy-Item "$NativePath/install/include/sentry.h" -Destination $nativeOutDirIncludes
 }
 
-# Build SDKs based on provided paths
-if (![string]::IsNullOrEmpty($CocoaPath))
+# Build SDKs based on flags
+if ($buildCocoa)
 {
-    buildSentryCocoaMac
-    buildSentryCocoaIos
+    if ([string]::IsNullOrEmpty($CocoaPath))
+    {
+        Write-Warning "Cocoa SDK build requested but path is not set."
+        Write-Warning "Provide -CocoaPath parameter or set SENTRY_COCOA_PATH environment variable."
+    }
+    else
+    {
+        buildSentryCocoaMac
+        buildSentryCocoaIos
+    }
 }
 
-if (![string]::IsNullOrEmpty($NativePath))
+if ($buildNative)
 {
-    buildSentryNative
+    if ([string]::IsNullOrEmpty($NativePath))
+    {
+        Write-Warning "Native SDK build requested but path is not set."
+        Write-Warning "Provide -NativePath parameter or set SENTRY_NATIVE_PATH environment variable."
+    }
+    else
+    {
+        buildSentryNative
+    }
 }
 
-if (![string]::IsNullOrEmpty($JavaPath))
+if ($buildJava)
 {
-    buildSentryJava
+    if ([string]::IsNullOrEmpty($JavaPath))
+    {
+        Write-Warning "Java SDK build requested but path is not set."
+        Write-Warning "Provide -JavaPath parameter or set SENTRY_JAVA_PATH environment variable."
+    }
+    else
+    {
+        buildSentryJava
+    }
 }
