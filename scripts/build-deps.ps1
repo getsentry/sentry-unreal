@@ -5,7 +5,7 @@
 # * sentry-native - for Windows support (can be built only on Windows)
 # * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
 #   - Requires SENTRY_COCOA_PATH environment variable pointing to local sentry-cocoa repository
-#   - Example: $env:SENTRY_COCOA_PATH="/path/to/sentry-cocoa"; ./build-deps.ps1 mac
+#   - Example: $env:SENTRY_COCOA_PATH="/path/to/sentry-cocoa"; ./build-deps.ps1 mac ios
 # * sentry-java - for Android support (can be built both on Windows and MacOS)
 
 # Running this script without parameters will build all plugin dependencies it can on the current platform.
@@ -223,7 +223,7 @@ function buildSentryNative()
 
     Pop-Location
 
-    $nativeOutDir = "$outDir/Win64/Crashpad"
+    $nativeOutDir = "$outDir/Win64"
     $nativeOutDirLibs = "$nativeOutDir/lib"
     $nativeOutDirBinaries = "$nativeOutDir/bin"
     $nativeOutDirIncludes = "$nativeOutDir/include"
