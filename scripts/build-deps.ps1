@@ -238,10 +238,20 @@ function buildSentryJava()
 
     Push-Location -Path $JavaPath
 
-    ./gradlew -PsentryAndroidSdkName="sentry.native.android.unreal" `
-        :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
+    try
+    {
+        ./gradlew -PsentryAndroidSdkName="sentry.native.android.unreal" `
+            :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
 
-    Pop-Location
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "Failed to build Sentry Java"
+        }
+    }
+    finally
+    {
+        Pop-Location
+    }
 
     $androidOutDir = "$outDir/Android"
 
@@ -268,12 +278,17 @@ function buildSentryNative()
 
     Push-Location -Path $NativePath
 
-    cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
-    cmake --build "build" --target sentry --config RelWithDebInfo --parallel
-    cmake --build "build" --target crashpad_handler --config RelWithDebInfo --parallel
-    cmake --install "build" --prefix "install" --config RelWithDebInfo
-
-    Pop-Location
+    try
+    {
+        cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
+        cmake --build "build" --target sentry --config RelWithDebInfo --parallel
+        cmake --build "build" --target crashpad_handler --config RelWithDebInfo --parallel
+        cmake --install "build" --prefix "install" --config RelWithDebInfo
+    }
+    finally
+    {
+        Pop-Location
+    }
 
     $nativeOutDir = "$outDir/Win64"
     $nativeOutDirLibs = "$nativeOutDir/lib"
