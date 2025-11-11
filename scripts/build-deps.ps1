@@ -26,10 +26,20 @@ param(
     [string]$JavaPath
 )
 
+Set-StrictMode -Version latest
+
+# Compatibility: $IsWindows doesn't exist in Windows PowerShell 5.1 (only in PowerShell Core 6+)
+# If not defined, we're on Windows PowerShell 5.1 which only runs on Windows
+$isWindowsPlatform = if ($null -eq (Get-Variable -Name IsWindows -ErrorAction SilentlyContinue)) {
+    $true  # Windows PowerShell 5.1 only runs on Windows
+} else {
+    $IsWindows
+}
+
 # If -All is specified, enable all SDKs for current platform
 if ($All)
 {
-    if ($IsWindows)
+    if ($isWindowsPlatform)
     {
         $Native = $true
         $Java = $true
@@ -67,8 +77,6 @@ $buildJava = $Java
 if ([string]::IsNullOrEmpty($CocoaPath)) { $CocoaPath = $env:SENTRY_COCOA_PATH }
 if ([string]::IsNullOrEmpty($NativePath)) { $NativePath = $env:SENTRY_NATIVE_PATH }
 if ([string]::IsNullOrEmpty($JavaPath)) { $JavaPath = $env:SENTRY_JAVA_PATH }
-
-Set-StrictMode -Version latest
 
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 
