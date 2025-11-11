@@ -1,0 +1,86 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+
+jobs:
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download sample build
+        uses: actions/download-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Android)
+          path: sample-build
+
+      - name: List downloaded files
+        run: |
+          echo "Downloaded build contents:"
+          ls -lah sample-build/
+          echo "Using x64 APK for emulator testing"
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Setup Android directories
+        run: |
+          mkdir -p $HOME/.android/avd
+          touch $HOME/.android/repositories.cfg
+
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module -Name Pester -Force -SkipPublisherCheck
+
+      - name: Setup integration test configuration
+        shell: pwsh
+        run: |
+          cd integration-test
+          mkdir build
+          cmake -B build -S .
+
+      - name: Run Android Integration Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        id: integration-test
+        timeout-minutes: 45
+        with:
+          api-level: 34
+          target: 'google_apis'
+          arch: x86_64
+          force-avd-creation: true
+          disable-animations: true
+          disable-spellchecker: true
+          emulator-options: >
+            -no-window
+            -no-snapshot-save
+            -gpu swiftshader_indirect
+            -noaudio
+            -no-boot-anim
+            -camera-back none
+            -camera-front none
+          script: |
+            adb wait-for-device
+            cd integration-test
+            pwsh -Command "Invoke-Pester Integration.Tests.Android.ps1 -CI"
+        env:
+          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build
+
+      - name: Upload integration test output
+        if: ${{ always() && steps.integration-test.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} integration test output (Android)
+          path: integration-test/output/
+          retention-days: 14
