@@ -14,18 +14,80 @@
 #include "Misc/CommandLine.h"
 #include "Engine/Engine.h"
 
+#if PLATFORM_ANDROID
+#include "Android/AndroidJNI.h"
+#include "Android/AndroidApplication.h"
+
+// Helper function to get command-line arguments from Android Intent extras
+// Calls the AndroidThunkJava_GetIntentCommandLine() method added via UPL
+FString GetIntentCommandLineFromAndroid()
+{
+	FString Result;
+
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		// Get GameActivity class
+		jclass GameActivityClass = FAndroidApplication::FindJavaClass("com/epicgames/unreal/GameActivity");
+		if (GameActivityClass != nullptr)
+		{
+			// Find our custom method: AndroidThunkJava_GetIntentCommandLine()
+			jmethodID GetIntentCmdLineMethod = Env->GetMethodID(
+				GameActivityClass,
+				"AndroidThunkJava_GetIntentCommandLine",
+				"()Ljava/lang/String;"
+			);
+
+			if (GetIntentCmdLineMethod != nullptr)
+			{
+				// Get the GameActivity instance
+				jobject GameActivityObj = FAndroidApplication::GetGameActivityThis();
+				if (GameActivityObj != nullptr)
+				{
+					// Call the method
+					jstring JavaResult = (jstring)Env->CallObjectMethod(GameActivityObj, GetIntentCmdLineMethod);
+					if (JavaResult != nullptr)
+					{
+						// Convert Java string to FString
+						const char* JavaChars = Env->GetStringUTFChars(JavaResult, nullptr);
+						Result = FString(UTF8_TO_TCHAR(JavaChars));
+						Env->ReleaseStringUTFChars(JavaResult, JavaChars);
+						Env->DeleteLocalRef(JavaResult);
+					}
+				}
+			}
+
+			Env->DeleteLocalRef(GameActivityClass);
+		}
+	}
+
+	return Result;
+}
+#endif
+
 void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
 
-	const TCHAR* CommandLine = FCommandLine::Get();
+	FString CommandLine = FCommandLine::Get();
+
+#if PLATFORM_ANDROID
+	// On Android, merge Intent extras into command line
+	// Intent extras are passed via: adb shell am start -n <package>/<activity> -e test crash-capture
+	FString IntentCommandLine = GetIntentCommandLineFromAndroid();
+	if (!IntentCommandLine.IsEmpty())
+	{
+		UE_LOG(LogSentrySample, Display, TEXT("[SentryPlayground] Intent command line: %s"), *IntentCommandLine);
+		// Prepend Intent args so they take precedence over default command line
+		CommandLine = IntentCommandLine + TEXT(" ") + CommandLine;
+	}
+#endif
 
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("crash-capture")) || 
-		FParse::Param(FCommandLine::Get(), TEXT("message-capture")))
+	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
+		FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
-		RunIntegrationTest(CommandLine);
+		RunIntegrationTest(*CommandLine);
 	}
 }
 
