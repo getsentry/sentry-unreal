@@ -281,11 +281,11 @@ Describe "Sentry Unreal Android Integration Tests" {
     #     BeforeAll {
     #         # Crash event is sent during the MESSAGE run (Run 2)
     #         # But the crash_id comes from the CRASH run (Run 1)
-    #         $script:CrashResult = $global:AndroidCrashResult
-    #         $script:CrashEvent = $null
+    #         $CrashResult = $global:AndroidCrashResult
+    #         $CrashEvent = $null
     #
     #         # Parse crash event ID from crash run output
-    #         $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
+    #         $eventIds = Get-EventIds -AppOutput $CrashResult.Output -ExpectedCount 1
     #
     #         if ($eventIds -and $eventIds.Count -gt 0) {
     #             Write-Host "Crash ID captured: $($eventIds[0])" -ForegroundColor Cyan
@@ -293,7 +293,7 @@ Describe "Sentry Unreal Android Integration Tests" {
     #
     #             # Fetch crash event using the tag (event was sent during message run)
     #             try {
-    #                 $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
+    #                 $CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
     #                 Write-Host "Crash event fetched from Sentry successfully" -ForegroundColor Green
     #             } catch {
     #                 Write-Host "Failed to fetch crash event from Sentry: $_" -ForegroundColor Red
@@ -304,70 +304,70 @@ Describe "Sentry Unreal Android Integration Tests" {
     #     }
     #
     #     It "Should output event ID before crash" {
-    #         $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
+    #         $eventIds = Get-EventIds -AppOutput $CrashResult.Output -ExpectedCount 1
     #         $eventIds | Should -Not -BeNullOrEmpty
     #         $eventIds.Count | Should -Be 1
     #     }
     #
     #     It "Should capture crash event in Sentry (uploaded during next run)" {
-    #         $script:CrashEvent | Should -Not -BeNullOrEmpty
+    #         $CrashEvent | Should -Not -BeNullOrEmpty
     #     }
     #
     #     It "Should have correct event type and platform" {
-    #         $script:CrashEvent.type | Should -Be 'error'
-    #         $script:CrashEvent.platform | Should -Be 'native'
+    #         $CrashEvent.type | Should -Be 'error'
+    #         $CrashEvent.platform | Should -Be 'native'
     #     }
     #
     #     It "Should have exception information" {
-    #         $script:CrashEvent.exception | Should -Not -BeNullOrEmpty
-    #         $script:CrashEvent.exception.values | Should -Not -BeNullOrEmpty
+    #         $CrashEvent.exception | Should -Not -BeNullOrEmpty
+    #         $CrashEvent.exception.values | Should -Not -BeNullOrEmpty
     #     }
     #
     #     It "Should have stack trace" {
-    #         $exception = $script:CrashEvent.exception.values[0]
+    #         $exception = $CrashEvent.exception.values[0]
     #         $exception.stacktrace | Should -Not -BeNullOrEmpty
     #         $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
     #     }
     #
     #     It "Should have user context" {
-    #         $script:CrashEvent.user | Should -Not -BeNullOrEmpty
-    #         $script:CrashEvent.user.username | Should -Be 'TestUser'
-    #         $script:CrashEvent.user.email | Should -Be 'user-mail@test.abc'
-    #         $script:CrashEvent.user.id | Should -Be '12345'
+    #         $CrashEvent.user | Should -Not -BeNullOrEmpty
+    #         $CrashEvent.user.username | Should -Be 'TestUser'
+    #         $CrashEvent.user.email | Should -Be 'user-mail@test.abc'
+    #         $CrashEvent.user.id | Should -Be '12345'
     #     }
     #
     #     It "Should have test.crash_id tag for correlation" {
-    #         $tags = $script:CrashEvent.tags
+    #         $tags = $CrashEvent.tags
     #         $crashIdTag = $tags | Where-Object { $_.key -eq 'test.crash_id' }
     #         $crashIdTag | Should -Not -BeNullOrEmpty
     #         $crashIdTag.value | Should -Not -BeNullOrEmpty
     #     }
     #
     #     It "Should have integration test tag" {
-    #         $tags = $script:CrashEvent.tags
+    #         $tags = $CrashEvent.tags
     #         ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
     #     }
     #
     #     It "Should have breadcrumbs from before crash" {
-    #         $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
-    #         $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+    #         $CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
+    #         $CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
     #     }
     # }
 
     Context "Message Capture Tests" {
         BeforeAll {
-            $script:MessageResult = $global:AndroidMessageResult
-            $script:MessageEvent = $null
+            $MessageResult = $global:AndroidMessageResult
+            $MessageEvent = $null
 
             # Parse event ID from output
-            $eventIds = Get-EventIds -AppOutput $script:MessageResult.Output -ExpectedCount 1
+            $eventIds = Get-EventIds -AppOutput $MessageResult.Output -ExpectedCount 1
 
             if ($eventIds -and $eventIds.Count -gt 0) {
                 Write-Host "Message event ID captured: $($eventIds[0])" -ForegroundColor Cyan
 
                 # Fetch event from Sentry (with polling)
                 try {
-                    $script:MessageEvent = Get-SentryTestEvent -EventId $eventIds[0]
+                    $MessageEvent = Get-SentryTestEvent -EventId $eventIds[0]
                     Write-Host "Message event fetched from Sentry successfully" -ForegroundColor Green
                 } catch {
                     Write-Host "Failed to fetch message event from Sentry: $_" -ForegroundColor Red
@@ -378,44 +378,44 @@ Describe "Sentry Unreal Android Integration Tests" {
         }
 
         It "Should output event ID" {
-            $eventIds = Get-EventIds -AppOutput $script:MessageResult.Output -ExpectedCount 1
+            $eventIds = Get-EventIds -AppOutput $MessageResult.Output -ExpectedCount 1
             $eventIds | Should -Not -BeNullOrEmpty
             $eventIds.Count | Should -Be 1
         }
 
         It "Should output TEST_RESULT with success" {
-            $testResultLine = $script:MessageResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine = $MessageResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
             $testResultLine | Should -Not -BeNullOrEmpty
             $testResultLine | Should -Match '"success"\s*:\s*true'
         }
 
         It "Should capture message event in Sentry" {
-            $script:MessageEvent | Should -Not -BeNullOrEmpty
+            $MessageEvent | Should -Not -BeNullOrEmpty
         }
 
         It "Should have correct platform" {
             # Android events are captured from Java layer, so platform is 'java' not 'native'
-            $script:MessageEvent.platform | Should -Be 'java'
+            $MessageEvent.platform | Should -Be 'java'
         }
 
         It "Should have message content" {
-            $script:MessageEvent.message | Should -Not -BeNullOrEmpty
-            $script:MessageEvent.message.formatted | Should -Match 'Integration test message'
+            $MessageEvent.message | Should -Not -BeNullOrEmpty
+            $MessageEvent.message.formatted | Should -Match 'Integration test message'
         }
 
         It "Should have user context" {
-            $script:MessageEvent.user | Should -Not -BeNullOrEmpty
-            $script:MessageEvent.user.username | Should -Be 'TestUser'
+            $MessageEvent.user | Should -Not -BeNullOrEmpty
+            $MessageEvent.user.username | Should -Be 'TestUser'
         }
 
         It "Should have integration test tag" {
-            $tags = $script:MessageEvent.tags
+            $tags = $MessageEvent.tags
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
         It "Should have breadcrumbs" {
-            $script:MessageEvent.breadcrumbs | Should -Not -BeNullOrEmpty
-            $script:MessageEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+            $MessageEvent.breadcrumbs | Should -Not -BeNullOrEmpty
+            $MessageEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
     }
 }
