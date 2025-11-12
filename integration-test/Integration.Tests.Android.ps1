@@ -7,43 +7,27 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# Get the x64 APK specifically for emulator testing
-$ApkBasePath = $env:SENTRY_UNREAL_TEST_APP_PATH
-if ($ApkBasePath -match "\.apk$") {
-    # Direct path to APK
-    $script:ApkPath = $ApkBasePath
-} else {
-    # Path to directory containing APKs - pick x64 for emulator
-    $script:ApkPath = Join-Path $ApkBasePath "SentryPlayground-x64.apk"
-    if (-not (Test-Path $script:ApkPath)) {
-        throw "x64 APK not found at: $script:ApkPath"
-    }
-}
+function script:Get-AndroidDeviceId {
+    # Get lines that end with "device" (not "offline" or "unauthorized")
+    $lines = adb devices | Select-String "device$"
 
-function Get-ApkPackageName([string]$ApkPath) {
-    $output = & aapt dump badging $ApkPath 2>&1 | Out-String
-    if ($output -match "package: name='([^']+)'") {
-        return $Matches[1]
-    }
-    throw "Could not extract package name from APK: $output"
-}
-
-$script:PackageName = Get-ApkPackageName $script:ApkPath
-$script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
-
-Write-Host "Package: $script:PackageName" -ForegroundColor Cyan
-Write-Host "Activity: $script:ActivityName" -ForegroundColor Cyan
-Write-Host "APK: $script:ApkPath" -ForegroundColor Cyan
-
-function Get-AndroidDeviceId {
-    $devices = adb devices | Select-String "device$" | ForEach-Object { ($_ -split '\s+')[0] }
-    if ($devices.Count -eq 0) {
+    if (-not $lines) {
         throw "No Android devices found"
     }
-    return $devices[0]
+
+    # Extract device ID from the first matching line
+    # Line format: "emulator-5554	device"
+    $firstLine = $lines | Select-Object -First 1
+    $deviceId = ($firstLine.Line -split '\s+')[0]
+
+    if (-not $deviceId) {
+        throw "Could not extract device ID from: $($firstLine.Line)"
+    }
+
+    return $deviceId
 }
 
-function Invoke-AndroidTestApp {
+function script:Invoke-AndroidTestApp {
     param(
         [Parameter(Mandatory)]
         [string]$TestName,  # 'crash-capture' or 'message-capture'
@@ -63,10 +47,11 @@ function Invoke-AndroidTestApp {
 
     if (-not $SkipReinstall) {
         # 1. Uninstall previous installation (to ensure clean state)
-        $installed = adb -s $device shell pm list packages | Select-String $script:PackageName
+        $packageName = $script:PackageName
+        $installed = adb -s $device shell pm list packages | Select-String -Pattern $packageName -SimpleMatch
         if ($installed) {
             Write-Host "Uninstalling previous version..."
-            adb -s $device uninstall $script:PackageName | Out-Null
+            adb -s $device uninstall $packageName | Out-Null
             Start-Sleep -Seconds 1
         }
 
@@ -95,11 +80,15 @@ function Invoke-AndroidTestApp {
     Write-Host "Waiting for app process..."
     Start-Sleep -Seconds 3
     $appPID = $null
+    $packageName = $script:PackageName
     for ($i = 0; $i -lt 30; $i++) {
-        $pidOutput = (adb -s $device shell pidof $script:PackageName 2>&1).Trim()
-        if ($pidOutput -and $pidOutput -match '^\d+$') {
-            $appPID = $pidOutput
-            break
+        $pidOutput = adb -s $device shell pidof $packageName 2>&1
+        if ($pidOutput) {
+            $pidOutput = $pidOutput.ToString().Trim()
+            if ($pidOutput -match '^\d+$') {
+                $appPID = $pidOutput
+                break
+            }
         }
         Start-Sleep -Seconds 1
     }
@@ -151,6 +140,11 @@ function Invoke-AndroidTestApp {
 }
 
 BeforeAll {
+    # Package name is defined in sample/Config/DefaultEngine.ini
+    # If this changes, update this constant
+    $script:PackageName = "io.sentry.unreal.sample"
+    $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
+
     # Check if configuration file exists
     $configFile = "$PSScriptRoot/TestConfig.local.ps1"
     if (-not (Test-Path $configFile)) {
@@ -175,9 +169,25 @@ BeforeAll {
         throw "Environment variable SENTRY_AUTH_TOKEN must be set"
     }
 
+    # Resolve APK path from environment variable
+    $ApkBasePath = $env:SENTRY_UNREAL_TEST_APP_PATH
+    if (-not $ApkBasePath) {
+        throw "Environment variable SENTRY_UNREAL_TEST_APP_PATH must be set"
+    }
+
+    if ($ApkBasePath -match "\.apk$") {
+        # Direct path to APK
+        $script:ApkPath = $ApkBasePath
+    } else {
+        # Path to directory containing APKs - pick x64 for emulator
+        $script:ApkPath = Join-Path $ApkBasePath "SentryPlayground-x64.apk"
+    }
+
     if (-not (Test-Path $script:ApkPath)) {
         throw "APK not found at: $script:ApkPath"
     }
+
+    Write-Host "APK: $script:ApkPath" -ForegroundColor Cyan
 
     # Check adb and device
     try {
@@ -346,7 +356,8 @@ Describe "Sentry Unreal Android Integration Tests" {
         }
 
         It "Should have correct platform" {
-            $script:MessageEvent.platform | Should -Be 'native'
+            # Android events are captured from Java layer, so platform is 'java' not 'native'
+            $script:MessageEvent.platform | Should -Be 'java'
         }
 
         It "Should have message content" {
