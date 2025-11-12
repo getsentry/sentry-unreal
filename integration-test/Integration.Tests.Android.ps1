@@ -27,6 +27,28 @@ function script:Get-AndroidDeviceId {
     return $deviceId
 }
 
+function script:Get-PackageNameFromApk {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ApkPath
+    )
+
+    # Use aapt to extract package name from APK
+    # aapt dump badging returns: package: name='io.sentry.unreal.sample' versionCode='1' ...
+    $aaptOutput = aapt dump badging "$ApkPath" 2>&1 | Select-String "^package:"
+
+    if (-not $aaptOutput) {
+        # Fallback: try using adb directly
+        $aaptOutput = adb shell dumpsys package "$ApkPath" 2>&1 | Select-String "package:"
+    }
+
+    if ($aaptOutput -and $aaptOutput.Line -match "name='([^']+)'") {
+        return $matches[1]
+    }
+
+    throw "Could not extract package name from APK: $ApkPath"
+}
+
 function script:Invoke-AndroidTestApp {
     param(
         [Parameter(Mandatory)]
@@ -36,7 +58,16 @@ function script:Invoke-AndroidTestApp {
         [int]$TimeoutSeconds = 300,
 
         [Parameter()]
-        [switch]$SkipReinstall  # Don't reinstall APK (for preserving crash state)
+        [switch]$SkipReinstall,  # Don't reinstall APK (for preserving crash state)
+
+        [Parameter()]
+        [int]$InitialWaitSeconds = 3,  # Wait time before checking for PID
+
+        [Parameter()]
+        [int]$PidRetrySeconds = 30,  # Timeout for PID detection (in seconds)
+
+        [Parameter()]
+        [int]$LogPollIntervalSeconds = 2  # Logcat polling interval
     )
 
     $device = Get-AndroidDeviceId
@@ -58,8 +89,8 @@ function script:Invoke-AndroidTestApp {
         # 2. Install APK
         Write-Host "Installing APK..."
         $installOutput = adb -s $device install -r $script:ApkPath 2>&1 | Out-String
-        if ($installOutput -notmatch "Success") {
-            throw "Failed to install APK: $installOutput"
+        if ($LASTEXITCODE -ne 0 -or $installOutput -notmatch "Success") {
+            throw "Failed to install APK (exit code: $LASTEXITCODE): $installOutput"
         }
     } else {
         Write-Host "Skipping reinstall (preserving crash state)..." -ForegroundColor Cyan
@@ -78,10 +109,10 @@ function script:Invoke-AndroidTestApp {
 
     # 5. Get process ID (with retries)
     Write-Host "Waiting for app process..."
-    Start-Sleep -Seconds 3
+    Start-Sleep -Seconds $InitialWaitSeconds
     $appPID = $null
     $packageName = $script:PackageName
-    for ($i = 0; $i -lt 30; $i++) {
+    for ($i = 0; $i -lt $PidRetrySeconds; $i++) {
         $pidOutput = adb -s $device shell pidof $packageName 2>&1
         if ($pidOutput) {
             $pidOutput = $pidOutput.ToString().Trim()
@@ -93,22 +124,24 @@ function script:Invoke-AndroidTestApp {
         Start-Sleep -Seconds 1
     }
 
+    # Initialize logCache as array for consistent type handling
+    [array]$logCache = @()
+
     if (-not $appPID) {
         # App might have already exited (fast message test) - capture logs anyway
         Write-Host "Warning: Could not find process ID (app may have exited quickly)" -ForegroundColor Yellow
-        $logCache = adb -s $device logcat -d 2>&1
+        $logCache = @(adb -s $device logcat -d 2>&1)
     } else {
         Write-Host "App PID: $appPID" -ForegroundColor Green
 
         # 6. Monitor logcat for test completion
-        $logCache = @()
         $startTime = Get-Date
         $completed = $false
 
         while ((Get-Date) - $startTime -lt [TimeSpan]::FromSeconds($TimeoutSeconds)) {
             $newLogs = adb -s $device logcat -d --pid=$appPID 2>&1
             if ($newLogs) {
-                $logCache = $newLogs
+                $logCache = @($newLogs)
 
                 # Check for completion markers from SentryPlaygroundGameInstance
                 if (($newLogs | Select-String "TEST_RESULT:") -or
@@ -119,7 +152,7 @@ function script:Invoke-AndroidTestApp {
                 }
             }
 
-            Start-Sleep -Seconds 2
+            Start-Sleep -Seconds $LogPollIntervalSeconds
         }
 
         if (-not $completed) {
@@ -140,11 +173,6 @@ function script:Invoke-AndroidTestApp {
 }
 
 BeforeAll {
-    # Package name is defined in sample/Config/DefaultEngine.ini
-    # If this changes, update this constant
-    $script:PackageName = "io.sentry.unreal.sample"
-    $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
-
     # Check if configuration file exists
     $configFile = "$PSScriptRoot/TestConfig.local.ps1"
     if (-not (Test-Path $configFile)) {
@@ -188,6 +216,16 @@ BeforeAll {
     }
 
     Write-Host "APK: $script:ApkPath" -ForegroundColor Cyan
+
+    # Extract package name from APK (prevents hardcoded drift)
+    try {
+        $script:PackageName = Get-PackageNameFromApk -ApkPath $script:ApkPath
+        Write-Host "Package name: $script:PackageName" -ForegroundColor Cyan
+    } catch {
+        Write-Host "Warning: Could not extract package name from APK, using default" -ForegroundColor Yellow
+        $script:PackageName = "io.sentry.unreal.sample"
+    }
+    $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
 
     # Check adb and device
     try {
