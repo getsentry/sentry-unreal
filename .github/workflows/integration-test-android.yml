@@ -50,7 +50,7 @@ jobs:
           cmake -B build -S .
 
       - name: Run Android Integration Tests
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b
         id: integration-test
         timeout-minutes: 45
         with:
