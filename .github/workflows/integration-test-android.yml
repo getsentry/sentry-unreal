@@ -70,8 +70,7 @@ jobs:
             -camera-front none
           script: |
             adb wait-for-device
-            cd integration-test
-            pwsh -Command "Invoke-Pester Integration.Tests.Android.ps1 -CI"
+            cd integration-test && pwsh -Command "Invoke-Pester Integration.Tests.Android.ps1 -CI"
         env:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
