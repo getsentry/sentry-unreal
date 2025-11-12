@@ -199,28 +199,25 @@ BeforeAll {
     $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
 
     # ==========================================
-    # NOTE: Crash test is currently DISABLED due to tag sync issue
-    # The test.crash_id tag set before crash is not synced to the captured event on Android
-    # TODO: Re-enable once Android SDK tag persistence is fixed
+    # RUN 1: Crash test - creates minidump
     # ==========================================
-    # # RUN 1: Crash test - creates minidump
-    # # The crash is captured but NOT uploaded yet (Android behavior)
-    # Write-Host "`n=== Running crash-capture test (will crash) ===" -ForegroundColor Yellow
+    # The crash is captured but NOT uploaded yet (Android behavior).
+    # TODO: Re-enable once Android SDK tag persistence is fixed (`test.crash_id` tag set before crash is not synced to the captured crash on Android)
+
+    # Write-Host "Running crash-capture test (will crash)..." -ForegroundColor Yellow
     # $global:AndroidCrashResult = Invoke-AndroidTestApp -TestName 'crash-capture'
+
     # Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
-    #
-    # # RUN 2: Message test - uploads crash from Run 1 + captures message
-    # # Android Sentry SDK uploads previous crash on next app start
-    # # Use -SkipReinstall to preserve the crash state
-    # Write-Host "`n=== Running message-capture test (will upload crash from previous run) ===" -ForegroundColor Yellow
-    # $global:AndroidMessageResult = Invoke-AndroidTestApp -TestName 'message-capture' -SkipReinstall
-    # Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 
     # ==========================================
-    # RUN: Message test only (crash test disabled)
+    # RUN 2: Message test - uploads crash from Run 1 + captures message
     # ==========================================
-    Write-Host "`n=== Running message-capture test ===" -ForegroundColor Yellow
+    # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
+    # TODO: use -SkipReinstall to preserve the crash state.
+
+    Write-Host "Running message-capture test (will upload crash from previous run)..." -ForegroundColor Yellow
     $global:AndroidMessageResult = Invoke-AndroidTestApp -TestName 'message-capture'
+
     Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 }
 
