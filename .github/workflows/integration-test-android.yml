@@ -75,7 +75,7 @@ jobs:
         env:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build
+          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground-x64.apk
 
       - name: Upload integration test output
         if: ${{ always() && steps.integration-test.outcome == 'failure' }}

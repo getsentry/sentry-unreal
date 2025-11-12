@@ -27,28 +27,6 @@ function script:Get-AndroidDeviceId {
     return $deviceId
 }
 
-function script:Get-PackageNameFromApk {
-    param(
-        [Parameter(Mandatory)]
-        [string]$ApkPath
-    )
-
-    # Use aapt to extract package name from APK
-    # aapt dump badging returns: package: name='io.sentry.unreal.sample' versionCode='1' ...
-    $aaptOutput = aapt dump badging "$ApkPath" 2>&1 | Select-String "^package:"
-
-    if (-not $aaptOutput) {
-        # Fallback: try using adb directly
-        $aaptOutput = adb shell dumpsys package "$ApkPath" 2>&1 | Select-String "package:"
-    }
-
-    if ($aaptOutput -and $aaptOutput.Line -match "name='([^']+)'") {
-        return $matches[1]
-    }
-
-    throw "Could not extract package name from APK: $ApkPath"
-}
-
 function script:Invoke-AndroidTestApp {
     param(
         [Parameter(Mandatory)]
@@ -188,6 +166,7 @@ BeforeAll {
     # Validate environment variables
     $script:DSN = $env:SENTRY_UNREAL_TEST_DSN
     $script:AuthToken = $env:SENTRY_AUTH_TOKEN
+    $script:ApkPath = $env:SENTRY_UNREAL_TEST_APP_PATH
 
     if (-not $script:DSN) {
         throw "Environment variable SENTRY_UNREAL_TEST_DSN must be set"
@@ -197,53 +176,27 @@ BeforeAll {
         throw "Environment variable SENTRY_AUTH_TOKEN must be set"
     }
 
-    # Resolve APK path from environment variable
-    $ApkBasePath = $env:SENTRY_UNREAL_TEST_APP_PATH
-    if (-not $ApkBasePath) {
+    if (-not $script:ApkPath) {
         throw "Environment variable SENTRY_UNREAL_TEST_APP_PATH must be set"
-    }
-
-    if ($ApkBasePath -match "\.apk$") {
-        # Direct path to APK
-        $script:ApkPath = $ApkBasePath
-    } else {
-        # Path to directory containing APKs - pick x64 for emulator
-        $script:ApkPath = Join-Path $ApkBasePath "SentryPlayground-x64.apk"
-    }
-
-    if (-not (Test-Path $script:ApkPath)) {
-        throw "APK not found at: $script:ApkPath"
-    }
-
-    Write-Host "APK: $script:ApkPath" -ForegroundColor Cyan
-
-    # Extract package name from APK (prevents hardcoded drift)
-    try {
-        $script:PackageName = Get-PackageNameFromApk -ApkPath $script:ApkPath
-        Write-Host "Package name: $script:PackageName" -ForegroundColor Cyan
-    } catch {
-        Write-Host "Warning: Could not extract package name from APK, using default" -ForegroundColor Yellow
-        $script:PackageName = "io.sentry.unreal.sample"
-    }
-    $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
-
-    # Check adb and device
-    try {
-        $device = Get-AndroidDeviceId
-        Write-Host "Found Android device: $device" -ForegroundColor Green
-    } catch {
-        throw "No Android devices found. Is emulator running?"
     }
 
     # Connect to Sentry API
     Write-Host "Connecting to Sentry API..." -ForegroundColor Yellow
     Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
 
+    # Validate app path
+    if (-not (Test-Path $script:ApkPath)) {
+        throw "Application not found at: $script:ApkPath"
+    }
+
     # Create output directory
     $script:OutputDir = "$PSScriptRoot/output"
     if (-not (Test-Path $script:OutputDir)) {
         New-Item -ItemType Directory -Path $script:OutputDir | Out-Null
     }
+
+    $script:PackageName = "io.sentry.unreal.sample"
+    $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
 
     # ==========================================
     # NOTE: Crash test is currently DISABLED due to tag sync issue
