@@ -71,18 +71,18 @@ jobs:
 
       - name: Install unreal-docker
         run: |
-            Invoke-WebRequest -Uri "https://github.com/adamrehn/ue4-docker/archive/refs/tags/v0.0.116.zip" -OutFile "ue-docker.zip"
-            Expand-Archive -Path "ue-docker.zip" -DestinationPath "."
-            cd ue4-docker-0.0.116
-            # Patch install-prerequisites.ps1 to fix pre-requisites image build
-            $file = "src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
-            (Get-Content $file) -replace 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64' | Set-Content $file
-            # Install the patched ue4-docker package
-            pip install -e .
+            # Invoke-WebRequest -Uri "https://github.com/adamrehn/ue4-docker/archive/refs/tags/v0.0.116.zip" -OutFile "ue-docker.zip"
+            # Expand-Archive -Path "ue-docker.zip" -DestinationPath "."
+            # cd ue4-docker-0.0.116
+            # # Patch install-prerequisites.ps1 to fix pre-requisites image build
+            # $file = "src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
+            # (Get-Content $file) -replace 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64' | Set-Content $file
+            # # Install the patched ue4-docker package
+            # pip install -e .
+            pip install ue4-docker
 
       - name: Configure unreal-docker
         run: |
-          Stop-Service -Name docker -Force
           ue4-docker setup
 
       - name: Build Unreal Engine Docker image
