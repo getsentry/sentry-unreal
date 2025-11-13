@@ -256,7 +256,6 @@ BeforeAll {
     # TODO: use -SkipReinstall to preserve the crash state.
 
     Write-Host "Running message-capture test (will upload crash from previous run)..." -ForegroundColor Yellow
-    # TODO: When AndroidProvider is added to app-runner: Invoke-DeviceApp $script:ActivityName -Arguments "-e test message-capture"
     $cmdlineMessageArgs = "-e cmdline '-message-capture'"
     $global:AndroidMessageResult = Invoke-AndroidApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
 
