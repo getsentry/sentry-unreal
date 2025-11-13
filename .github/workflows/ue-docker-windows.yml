@@ -82,6 +82,7 @@ jobs:
 
       - name: Configure unreal-docker
         run: |
+          Stop-Service -Name docker -Force
           ue4-docker setup
 
       - name: Build Unreal Engine Docker image
