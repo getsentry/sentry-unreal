@@ -80,10 +80,6 @@ jobs:
             # Install the patched ue4-docker package
             pip install -e .
 
-      - name: Configure unreal-docker
-        run: |
-          ue4-docker setup
-
       - name: Build Unreal Engine Docker image
         env:
           UE_REPO: ${{ inputs.ue_repo }}
