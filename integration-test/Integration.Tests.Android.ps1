@@ -244,7 +244,8 @@ BeforeAll {
     # TODO: Re-enable once Android SDK tag persistence is fixed (`test.crash_id` tag set before crash is not synced to the captured crash on Android)
 
     # Write-Host "Running crash-capture test (will crash)..." -ForegroundColor Yellow
-    # $global:AndroidCrashResult = Invoke-AndroidApp -ExecutablePath $script:ActivityName -Arguments "-e test crash-capture"
+    # $cmdlineCrashArgs = "-e cmdline '-crash-capture'"
+    # $global:AndroidCrashResult = Invoke-AndroidApp -ExecutablePath $script:ActivityName -Arguments $cmdlineCrashArgs
 
     # Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -256,7 +257,8 @@ BeforeAll {
 
     Write-Host "Running message-capture test (will upload crash from previous run)..." -ForegroundColor Yellow
     # TODO: When AndroidProvider is added to app-runner: Invoke-DeviceApp $script:ActivityName -Arguments "-e test message-capture"
-    $global:AndroidMessageResult = Invoke-AndroidApp -ExecutablePath $script:ActivityName -Arguments "-e test message-capture"
+    $cmdlineMessageArgs = "-e cmdline '-message-capture'"
+    $global:AndroidMessageResult = Invoke-AndroidApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
 
     Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 }

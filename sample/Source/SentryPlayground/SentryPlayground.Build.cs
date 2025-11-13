@@ -20,12 +20,5 @@ public class SentryPlayground : ModuleRules
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
 
 		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
-
-		// Register Android UPL for Intent extras handling (integration tests)
-		if (Target.Platform == UnrealTargetPlatform.Android)
-		{
-			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-			AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "SentryPlayground_Android_UPL.xml"));
-		}
 	}
 }
