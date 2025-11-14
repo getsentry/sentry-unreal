@@ -7,6 +7,7 @@
 #include "SentryFeedback.generated.h"
 
 class ISentryFeedback;
+class USentryAttachment;
 
 /**
  * Additional information about what happened to be sent to Sentry.
@@ -52,4 +53,8 @@ public:
 	/** Gets associated event identifier. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	FString GetAssociatedEvent() const;
+
+	/** Adds an attachment to the current feedback. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddAttachment(USentryAttachment* Attachment);
 };

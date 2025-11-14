@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add attachments support for user feedback ([#1121](https://github.com/getsentry/sentry-unreal/pull/1121))
+
 ### Dependencies
 
 - Bump Native SDK from v0.12.0 to v0.12.1 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136))
