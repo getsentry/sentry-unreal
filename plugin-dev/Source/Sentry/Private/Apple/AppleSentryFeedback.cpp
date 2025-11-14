@@ -69,32 +69,21 @@ SentryFeedback* FAppleSentryFeedback::CreateSentryFeedback(TSharedPtr<FAppleSent
 		id = idIOS->GetNativeObject();
 	}
 
-	NSMutableArray<NSData*>* attachments = nil;
+	NSMutableArray<SentryAttachment*>* attachments = nil;
 	if (feedback->Attachments.Num() > 0)
 	{
 		attachments = [NSMutableArray arrayWithCapacity:feedback->Attachments.Num()];
 
 		for (const TSharedPtr<ISentryAttachment>& attachment : feedback->Attachments)
 		{
-			NSData* data = nil;
-
-			if (attachment->GetData().Num() > 0)
+			TSharedPtr<FAppleSentryAttachment> attachmentApple = StaticCastSharedPtr<FAppleSentryAttachment>(attachment);
+			if (attachmentApple)
 			{
-				const TArray<uint8>& bytes = attachment->GetData();
-				data = [NSData dataWithBytes:bytes.GetData() length:bytes.Num()];
-			}
-			else if (!attachment->GetPath().IsEmpty())
-			{
-				TArray<uint8> fileData;
-				if (FFileHelper::LoadFileToArray(fileData, *attachment->GetPath()))
+				SentryAttachment* nativeAttachment = attachmentApple->GetNativeObject();
+				if (nativeAttachment != nil)
 				{
-					data = [NSData dataWithBytes:fileData.GetData() length:fileData.Num()];
+					[attachments addObject:nativeAttachment];
 				}
-			}
-
-			if (data != nil)
-			{
-				[attachments addObject:data];
 			}
 		}
 	}
