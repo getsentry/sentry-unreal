@@ -86,10 +86,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			{
 				[options addInAppInclude:it->GetNSString()];
 			}
-			for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
-			{
-				[options addInAppExclude:it->GetNSString()];
-			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{
