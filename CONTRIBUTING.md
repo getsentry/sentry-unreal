@@ -33,6 +33,41 @@ This script links the checked out version of the plugin (the [plugin-dev](./plug
 
 After that, you can generate project files for SentryPlayground.uproject to open it in your IDE and make changes to the SDK as you would with any other Unreal project.
 
+### Building Plugin Dependencies Locally
+
+By default, the initialization scripts download pre-built SDK dependencies from CI. If you need to build platform dependencies locally (e.g., for development or debugging) you can use the `build-deps.ps1` script.
+
+The plugin uses the following platform-specific SDKs:
+- **[sentry-native](https://github.com/getsentry/sentry-native.git)** - Windows support (requires Windows)
+- **[sentry-cocoa](https://github.com/getsentry/sentry-cocoa.git)** - Mac and iOS support (requires macOS)
+- **[sentry-java](https://github.com/getsentry/sentry-java.git)** - Android support (any platform)
+
+To build dependencies locally, first obtain the SDK source code, configure environment variables (optional) and run the build script:
+
+```pwsh
+# One-time: Set environment variables
+$env:SENTRY_NATIVE_PATH = "D:\projects\sentry-native"
+$env:SENTRY_COCOA_PATH = "D:\projects\sentry-cocoa"
+$env:SENTRY_JAVA_PATH = "D:\projects\sentry-java"
+
+# Option 1: Build all SDKs for current platform (uses environment variables)
+./scripts/build-deps.ps1 -All
+
+# Option 2: Build specific SDKs
+./scripts/build-deps.ps1 -Native -Java
+./scripts/build-deps.ps1 -Cocoa
+
+# Option 3: Build with custom paths (without setting environment variables)
+./scripts/build-deps.ps1 -Native -NativePath "D:\projects\sentry-native"
+./scripts/build-deps.ps1 -All -CocoaPath "D:\custom\sentry-cocoa"
+```
+
+The script pre-builds the SDK binaries and copies them to `plugin-dev/Source/ThirdParty` directory, replacing any existing binaries.
+
+> [!NOTE]
+> - **Windows**: `-All` builds Native + Java (Cocoa requires macOS)
+> - **macOS**: `-All` builds Cocoa + Java (Native requires Windows)
+
 ### Modifying Plugin Content
 
 All files that belong to the plugin are listed in the snapshot file:
