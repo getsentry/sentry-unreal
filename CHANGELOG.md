@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix compatibility issues with Cocoa SDK 9.0.0 ([#1149](https://github.com/getsentry/sentry-unreal/pull/1149))
+
 ### Dependencies
 
 - Bump Native SDK from v0.12.0 to v0.12.1 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136))

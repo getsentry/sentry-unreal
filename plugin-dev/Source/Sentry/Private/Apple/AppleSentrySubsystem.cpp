@@ -64,7 +64,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
-			options.experimental.enableLogs = settings->EnableStructuredLogging;
+			options.enableLogs = settings->EnableStructuredLogging;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
@@ -85,10 +85,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
-			}
-			for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
-			{
-				[options addInAppExclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)

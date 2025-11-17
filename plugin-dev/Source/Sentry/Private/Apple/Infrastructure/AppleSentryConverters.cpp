@@ -35,26 +35,26 @@ SentryLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
-SentryStructuredLogLevel FAppleSentryConverters::SentryStructuredLogLevelToNative(ESentryLevel level)
+SentryLogLevel FAppleSentryConverters::SentryLogLevelToNative(ESentryLevel level)
 {
-	SentryStructuredLogLevel nativeLevel = SentryStructuredLogLevelDebug;
+	SentryLogLevel nativeLevel = SentryLogLevelDebug;
 
 	switch (level)
 	{
 	case ESentryLevel::Debug:
-		nativeLevel = SentryStructuredLogLevelDebug;
+		nativeLevel = SentryLogLevelDebug;
 		break;
 	case ESentryLevel::Info:
-		nativeLevel = SentryStructuredLogLevelInfo;
+		nativeLevel = SentryLogLevelInfo;
 		break;
 	case ESentryLevel::Warning:
-		nativeLevel = SentryStructuredLogLevelWarn;
+		nativeLevel = SentryLogLevelWarn;
 		break;
 	case ESentryLevel::Error:
-		nativeLevel = SentryStructuredLogLevelError;
+		nativeLevel = SentryLogLevelError;
 		break;
 	case ESentryLevel::Fatal:
-		nativeLevel = SentryStructuredLogLevelFatal;
+		nativeLevel = SentryLogLevelFatal;
 		break;
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
@@ -183,26 +183,26 @@ ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
 	return unrealLevel;
 }
 
-ESentryLevel FAppleSentryConverters::SentryStructuredLogLevelToUnreal(SentryStructuredLogLevel level)
+ESentryLevel FAppleSentryConverters::SentryLogLevelToUnreal(SentryLogLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
 
 	switch (level)
 	{
-	case SentryStructuredLogLevelTrace:
-	case SentryStructuredLogLevelDebug:
+	case SentryLogLevelTrace:
+	case SentryLogLevelDebug:
 		unrealLevel = ESentryLevel::Debug;
 		break;
-	case SentryStructuredLogLevelInfo:
+	case SentryLogLevelInfo:
 		unrealLevel = ESentryLevel::Info;
 		break;
-	case SentryStructuredLogLevelWarn:
+	case SentryLogLevelWarn:
 		unrealLevel = ESentryLevel::Warning;
 		break;
-	case SentryStructuredLogLevelError:
+	case SentryLogLevelError:
 		unrealLevel = ESentryLevel::Error;
 		break;
-	case SentryStructuredLogLevelFatal:
+	case SentryLogLevelFatal:
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:

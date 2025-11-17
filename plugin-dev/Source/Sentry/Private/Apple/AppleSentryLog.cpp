@@ -15,7 +15,7 @@ FAppleSentryLog::FAppleSentryLog()
 	LogApple.traceId = [[SENTRY_APPLE_CLASS(SentryId) alloc] init];
 	LogApple.body = @"";
 	LogApple.attributes = @{};
-	LogApple.level = SentryStructuredLogLevelDebug;
+	LogApple.level = SentryLogLevelDebug;
 }
 
 FAppleSentryLog::FAppleSentryLog(SentryLog* log)
@@ -56,10 +56,10 @@ FString FAppleSentryLog::GetBody() const
 
 void FAppleSentryLog::SetLevel(ESentryLevel level)
 {
-	LogApple.level = FAppleSentryConverters::SentryStructuredLogLevelToNative(level);
+	LogApple.level = FAppleSentryConverters::SentryLogLevelToNative(level);
 }
 
 ESentryLevel FAppleSentryLog::GetLevel() const
 {
-	return FAppleSentryConverters::SentryStructuredLogLevelToUnreal(LogApple.level);
+	return FAppleSentryConverters::SentryLogLevelToUnreal(LogApple.level);
 }
