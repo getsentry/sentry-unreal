@@ -57,7 +57,8 @@ protected:
 	virtual FString GetGameLogPath() const { return FString(); };
 	virtual FString GetLatestGameLog() const { return FString(); }
 
-protected:;
+protected:
+	;
 
 protected:
 	bool isScreenshotAttachmentEnabled = false;
