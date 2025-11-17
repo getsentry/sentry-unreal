@@ -89,6 +89,7 @@ jobs:
             chown -R $uid /home/ue4/UnrealEngine/Engine/\"$ENGINE_PATH\" ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/USD/UsdResources/Linux ;
             chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/AutomationTool ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/Android/a/UnrealGame/Development/BuildSettings/Gen ;
             chown -R $uid /home/ue4/android-sdk ;
             mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
