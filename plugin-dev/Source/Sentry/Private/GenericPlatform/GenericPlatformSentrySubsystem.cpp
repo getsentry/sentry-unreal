@@ -751,7 +751,7 @@ EUserConsent FGenericPlatformSentrySubsystem::GetUserConsent() const
 
 bool FGenericPlatformSentrySubsystem::IsUserConsentRequired() const
 {
-	return sentry_user_consent_required() == 1;
+	return sentry_user_consent_is_required() == 1;
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)
