@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- No more warnings in UE 5.7 caused by deprecated API usage ([#1152](https://github.com/getsentry/sentry-unreal/pull/1152))
+
 ### Dependencies
 
 - Bump Native SDK from v0.12.0 to v0.12.1 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136))
