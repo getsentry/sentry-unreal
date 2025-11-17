@@ -26,6 +26,7 @@
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
+#include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
 
 #include "Interface/SentrySubsystemInterface.h"
@@ -994,7 +995,9 @@ void USentrySubsystem::ConfigureOutputDevice()
 	if (OutputDevice)
 	{
 		GLog->AddOutputDevice(OutputDevice.Get());
+#if UE_VERSION_OLDER_THAN(5, 7, 0)
 		GLog->SerializeBacklog(OutputDevice.Get());
+#endif
 	}
 }
 
