@@ -71,47 +71,18 @@ jobs:
 
       - name: Install unreal-docker
         run: |
-            # Use PR #384 which dynamically determines VS components from Windows_SDK.json
-            Invoke-WebRequest -Uri "https://github.com/slonopotamus/ue4-docker/archive/refs/heads/windows_sdk.json.zip" -OutFile "ue-docker.zip"
+            Invoke-WebRequest -Uri "https://github.com/adamrehn/ue4-docker/archive/refs/tags/v0.0.116.zip" -OutFile "ue-docker.zip"
             Expand-Archive -Path "ue-docker.zip" -DestinationPath "."
-            cd ue4-docker-windows_sdk.json
+            cd ue4-docker-0.0.116
+            # Patch install-prerequisites.ps1 to fix pre-requisites image build
+            $file = "src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
+            (Get-Content $file) -replace 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64' | Set-Content $file
+            # Install the patched ue4-docker package
             pip install -e .
 
       - name: Pre-configure Docker storage to avoid ue4-docker setup restart issue
         run: |
-          # Pre-configure Docker storage limit BEFORE running ue4-docker setup
-          # This way, setup will see it's already configured and skip the Docker restart
-          # which fails with error 1056 when Docker is already running
-
-          # Stop Docker to modify daemon.json
-          Stop-Service -Name docker -Force
-          Write-Host "Docker stopped for configuration"
-
-          # Configure Docker daemon with 800GB storage limit
-          $daemonConfig = @{
-            "storage-opts" = @("size=800GB")
-          }
-          $daemonConfig | ConvertTo-Json | Set-Content -Path "C:\ProgramData\docker\config\daemon.json" -Force
-          Write-Host "Configured Docker storage limit to 800GB"
-
-          # Start Docker
-          Start-Service -Name docker
-          Write-Host "Docker started"
-
-          # Wait for Docker to be ready
-          $timeout = 60
-          $elapsed = 0
-          while ($elapsed -lt $timeout) {
-            try {
-              docker info | Out-Null
-              Write-Host "Docker is ready"
-              break
-            } catch {
-              Write-Host "Waiting for Docker to start..."
-              Start-Sleep -Seconds 2
-              $elapsed += 2
-            }
-          }
+          ue4-docker setup
 
       - name: Run ue4-docker setup for credential endpoint configuration
         run: |
@@ -126,11 +97,12 @@ jobs:
           VS_VERSION: ${{ steps.set_vs_version.outputs.vs_version }}
         run: |
           ue4-docker build custom -repo="$env:UE_REPO" -branch="$env:UE_VERSION" `
-          -basetag ltsc2025 `
+          -basetag ltsc2022 `
           -suffix "$env:UE_VERSION" `
           -isolation=process `
           -username="$env:DOCKER_USERNAME" `
           -password="$env:DOCKER_TOKEN" `
+          --visual-studio "$env:VS_VERSION" `
           --target minimal `
           --exclude debug `
           --exclude templates `
