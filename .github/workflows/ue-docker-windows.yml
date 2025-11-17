@@ -80,11 +80,7 @@ jobs:
             # Install the patched ue4-docker package
             pip install -e .
 
-      - name: Pre-configure Docker storage to avoid ue4-docker setup restart issue
-        run: |
-          ue4-docker setup
-
-      - name: Run ue4-docker setup for credential endpoint configuration
+      - name: Configure unreal-docker
         run: |
           ue4-docker setup
 
