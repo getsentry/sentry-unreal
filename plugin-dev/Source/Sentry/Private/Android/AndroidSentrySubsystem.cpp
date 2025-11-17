@@ -378,7 +378,7 @@ EUserConsent FAndroidSentrySubsystem::GetUserConsent() const
 
 bool FAndroidSentrySubsystem::IsUserConsentRequired() const
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("IsUserConsentRequired is not supported on Android."));
+	UE_LOG(LogSentrySdk, Log, TEXT("IsUserConsentRequired is not supported on Android. Returning default `false` value."));
 	return false;
 }
 
