@@ -36,7 +36,7 @@ The SDK compiles with three latest engine versions.
 
 Blog posts:
 * [Building the Sentry Unreal Engine SDK with GitHub Actions](https://blog.sentry.io/building-the-sentry-unreal-engine-sdk-with-github-actions/)
-* [Game Console Suppoet GA](https://blog.sentry.io/error-monitoring-and-crash-reporting-for-gaming-consoles/)
+* [Game Console Support GA](https://blog.sentry.io/error-monitoring-and-crash-reporting-for-gaming-consoles/)
 
 ## Known Limitations
 
