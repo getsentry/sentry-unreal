@@ -9,7 +9,7 @@
 Sentry SDK for Unreal Engine
 ===========
 
-This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for both desktop and mobile. Also, it [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
+This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for both desktop, mobile and consoles. Also, it [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
 
 ## Downloads
 
