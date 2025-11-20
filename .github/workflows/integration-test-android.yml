@@ -10,15 +10,20 @@ jobs:
     name: Integration Test
     runs-on: ubuntu-latest
 
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      GITHUB_TOKEN: ${{ github.token }}
+      SAUCE_REGION: eu-central-1
+
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      - name: Download sample build
-        uses: actions/download-artifact@v4
+      - name: Download artifact from workflow run
+        uses: dawidd6/action-download-artifact@v6
         with:
-          name: UE ${{ inputs.unreal-version }} sample build (Android)
+          run_id: 19533023161
+          name: "UE ${{ inputs.unreal-version }} sample build (Android)"
           path: sample-build
 
       - name: List downloaded files
@@ -26,17 +31,6 @@ jobs:
           echo "Downloaded build contents:"
           ls -lah sample-build/
           echo "Using x64 APK for emulator testing"
-
-      - name: Enable KVM group perms
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Setup Android directories
-        run: |
-          mkdir -p $HOME/.android/avd
-          touch $HOME/.android/repositories.cfg
 
       - name: Install Pester
         shell: pwsh
@@ -49,37 +43,197 @@ jobs:
           mkdir build
           cmake -B build -S .
 
-      - name: Run Android Integration Tests
-        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b
-        id: integration-test
-        timeout-minutes: 45
-        with:
-          api-level: 34
-          target: 'google_apis'
-          arch: x86_64
-          force-avd-creation: true
-          disable-animations: true
-          disable-spellchecker: true
-          emulator-options: >
-            -no-window
-            -no-snapshot-save
-            -gpu swiftshader_indirect
-            -noaudio
-            -no-boot-anim
-            -camera-back none
-            -camera-front none
-          script: |
-            adb wait-for-device
-            cd integration-test && pwsh -Command "Invoke-Pester Integration.Tests.Android.ps1 -CI"
-        env:
-          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground-x64.apk
+      - name: Upload APK to SauceLabs Storage
+        id: upload_apk
+        run: |
+          sudo apt-get install -y jq
+
+          APK=$(ls sample-build/*.apk | head -n1)
+          echo "Uploading: $APK"
+
+          RESPONSE=$(curl -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            -X POST "https://api.${SAUCE_REGION}.saucelabs.com/v1/storage/upload" \
+            -F "payload=@${APK}" \
+            -F "name=$(basename "$APK")")
+
+          echo "Upload Response: $RESPONSE"
+          STORAGE_ID=$(echo "$RESPONSE" | jq -r '.item.id')
+
+          echo "storage_id=$STORAGE_ID" >> $GITHUB_OUTPUT
+
+      - name: Start UE5 test on real device
+        id: start_session
+        run: |
+          REQUEST=$(cat <<EOF
+          {
+            "capabilities": {
+              "alwaysMatch": {
+                "platformName": "Android",
+                "appium:app": "storage:${{ steps.upload_apk.outputs.storage_id }}",
+                "appium:deviceName": "Samsung_Galaxy_S23_FE_free",
+                "appium:automationName": "UiAutomator2",
+                "appium:noReset": true,
+                "appium:autoLaunch": false,
+                "sauce:options": {
+                  "name": "${{ inputs.unreal-version }} Android Integration Test",
+                  "appiumVersion": "latest"
+                }
+              }
+            }
+          }
+          EOF
+          )
+
+          echo "Sending Appium session request..."
+          echo "$REQUEST"
+
+          RESPONSE=$(curl -sS -w "\nHTTP_CODE:%{http_code}" \
+            -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            -X POST "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session" \
+            -H "Content-Type: application/json" \
+            -d "$REQUEST")
+
+          echo "Session Response: $RESPONSE"
+
+          SESSION_ID=$(echo "$RESPONSE" | grep -v "HTTP_CODE" | jq -r '.value.sessionId // .sessionId')
+          echo "Extracted session_id: $SESSION_ID"
+          echo "session_id=$SESSION_ID" >> $GITHUB_OUTPUT
+
+      - name: First launch (crash capture)
+        run: |
+          SESSION_ID="${{ steps.start_session.outputs.session_id }}"
+          
+          RESPONSE=$(curl -sSL -w "\nHTTP:%{http_code}" \
+            -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            -X POST "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session/$SESSION_ID/appium/device/start_activity" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "appPackage": "io.sentry.unreal.sample",
+              "appActivity": "com.epicgames.unreal.GameActivity",
+              "appWaitActivity": "*",
+              "intentAction": "android.intent.action.MAIN",
+              "intentCategory": "android.intent.category.LAUNCHER",
+              "optionalIntentArguments": "-e cmdline '-crash-capture'"
+            }')
+          echo "Launch response: $RESPONSE"
+
+      - name: Wait for app to finish (first run)
+        run: |
+          SESSION_ID="${{ steps.start_session.outputs.session_id }}"
+          
+          echo "Waiting for app to finish..."
+          MAX_WAIT=20  # Max wait time in seconds
+          POLL_INTERVAL=2
+          ELAPSED=0
+          
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            STATE=$(curl -sSL \
+              -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+              -X POST "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session/$SESSION_ID/execute/sync" \
+              -H "Content-Type: application/json" \
+              -d '{"script": "mobile: queryAppState", "args": [{"appId": "io.sentry.unreal.sample"}]}' \
+              | jq -r '.value')
+            
+            echo "App state: $STATE (elapsed: ${ELAPSED}s)"
+            
+            # State 1 = not running, 0 = not installed
+            if [ "$STATE" = "1" ] || [ "$STATE" = "0" ]; then
+              echo "App finished/crashed"
+              break
+            fi
+            
+            sleep $POLL_INTERVAL
+            ELAPSED=$((ELAPSED + POLL_INTERVAL))
+          done
+          
+          if [ $ELAPSED -ge $MAX_WAIT ]; then
+            echo "Timeout waiting for app to finish"
+          fi
+
+      - name: Get first run logs
+        run: |
+          SESSION_ID="${{ steps.start_session.outputs.session_id }}"
+          curl -sS -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            -X POST "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session/$SESSION_ID/log" \
+            -H "Content-Type: application/json" \
+            -d '{"type": "logcat"}' \
+            -o first_run_logs.json
+
+      - name: Second launch (message capture)
+        run: |
+          SESSION_ID="${{ steps.start_session.outputs.session_id }}"
+          
+          RESPONSE=$(curl -sSL -w "\nHTTP:%{http_code}" \
+            -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            -X POST "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session/$SESSION_ID/appium/device/start_activity" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "appPackage": "io.sentry.unreal.sample",
+              "appActivity": "com.epicgames.unreal.GameActivity",
+              "appWaitActivity": "*",
+              "intentAction": "android.intent.action.MAIN",
+              "intentCategory": "android.intent.category.LAUNCHER",
+              "optionalIntentArguments": "-e cmdline '-message-capture'"
+            }')
+          echo "Launch response: $RESPONSE"
+
+      - name: Wait for app to finish (second run)
+        run: |
+          SESSION_ID="${{ steps.start_session.outputs.session_id }}"
+          
+          echo "Waiting for app to finish..."
+          MAX_WAIT=20  # Max wait time in seconds
+          POLL_INTERVAL=2
+          ELAPSED=0
+          
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            STATE=$(curl -sSL \
+              -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+              -X POST "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session/$SESSION_ID/execute/sync" \
+              -H "Content-Type: application/json" \
+              -d '{"script": "mobile: queryAppState", "args": [{"appId": "io.sentry.unreal.sample"}]}' \
+              | jq -r '.value')
+            
+            echo "App state: $STATE (elapsed: ${ELAPSED}s)"
+            
+            # State 1 = not running, 0 = not installed
+            if [ "$STATE" = "1" ] || [ "$STATE" = "0" ]; then
+              echo "App finished/crashed"
+              break
+            fi
+            
+            sleep $POLL_INTERVAL
+            ELAPSED=$((ELAPSED + POLL_INTERVAL))
+          done
+          
+          if [ $ELAPSED -ge $MAX_WAIT ]; then
+            echo "Timeout waiting for app to finish"
+          fi
+
+      - name: Get second run logs
+        run: |
+          SESSION_ID="${{ steps.start_session.outputs.session_id }}"
+          curl -sS -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            -X POST "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session/$SESSION_ID/log" \
+            -H "Content-Type: application/json" \
+            -d '{"type": "logcat"}' \
+            -o second_run_logs.json
+
+      - name: End session
+        if: always()
+        run: |
+          SESSION_ID="${{ steps.start_session.outputs.session_id }}"
+          if [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "null" ]; then
+            curl -sS -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+              -X DELETE "https://ondemand.eu-central-1.saucelabs.com/wd/hub/session/$SESSION_ID"
+          fi
 
       - name: Upload integration test output
-        if: ${{ always() && steps.integration-test.outcome == 'failure' }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: UE ${{ inputs.unreal-version }} integration test output (Android)
-          path: integration-test/output/
+          name: UE ${{ inputs.unreal-version }} device logs (Android)
+          path: |
+            first_run_logs.json
+            second_run_logs.json
           retention-days: 14
