@@ -376,6 +376,12 @@ EUserConsent FAndroidSentrySubsystem::GetUserConsent() const
 	return EUserConsent::Unknown;
 }
 
+bool FAndroidSentrySubsystem::IsUserConsentRequired() const
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("IsUserConsentRequired is not supported on Android. Returning default `false` value."));
+	return false;
+}
+
 TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)
 {
 	TSharedPtr<FAndroidSentryTransactionOptions> transactionOptionsAndroid = MakeShareable(new FAndroidSentryTransactionOptions());

@@ -35,6 +35,7 @@ public:
 	virtual void GiveUserConsent() override;
 	virtual void RevokeUserConsent() override;
 	virtual EUserConsent GetUserConsent() const override;
+	virtual bool IsUserConsentRequired() const override;
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation, bool bindToScope) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context, bool bindToScope) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope) override;
@@ -54,7 +55,7 @@ protected:
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;
 	virtual FString GetGameLogPath() const { return FString(); };
-	virtual FString GetLatestGameLog() const { return FString(); };
+	virtual FString GetLatestGameLog() const { return FString(); }
 
 protected:
 	bool isScreenshotAttachmentEnabled = false;

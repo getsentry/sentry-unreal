@@ -415,6 +415,12 @@ EUserConsent FAppleSentrySubsystem::GetUserConsent() const
 	return EUserConsent::Unknown;
 }
 
+bool FAppleSentrySubsystem::IsUserConsentRequired() const
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("IsUserConsentRequired is not supported on Mac/iOS. Returning default `false` value."));
+	return false;
+}
+
 TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)
 {
 	id<SentrySpan> transaction = [SENTRY_APPLE_CLASS(SentrySDK) startTransactionWithName:name.GetNSString() operation:operation.GetNSString() bindToScope:bindToScope];
