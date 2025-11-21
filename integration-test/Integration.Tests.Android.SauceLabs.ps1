@@ -252,8 +252,9 @@ function script:Invoke-SauceLabsApp {
             $logResponse = Invoke-SauceLabsApi -Method POST -Uri "$baseUri/log" -Body $logBody
 
             if ($logResponse.value -and $logResponse.value.Count -gt $script:LogLineCount) {
-                $newLogs = @($logResponse.value | Select-Object -Skip $script:LogLineCount)
-                $logMessages = @($newLogs | ForEach-Object { $_.message })
+                # Use array slicing instead of Select-Object -Skip (more reliable)
+                $newLogs = @($logResponse.value[$script:LogLineCount..($logResponse.value.Count - 1)])
+                $logMessages = @($newLogs | ForEach-Object { if ($_) { $_.message } })
 
                 # Check for completion markers
                 if (($logMessages | Where-Object { $_ -match "TEST_RESULT:" }) -or
@@ -286,8 +287,8 @@ function script:Invoke-SauceLabsApp {
         Write-Debug "Total logs in response: $totalLogCount, Previously read: $script:LogLineCount"
 
         if ($totalLogCount -gt $script:LogLineCount) {
-            # Get only new logs (skip previously read lines)
-            $allLogs = @($logResponse.value | Select-Object -Skip $script:LogLineCount)
+            # Get only new logs using array slicing (more reliable than Select-Object -Skip)
+            $allLogs = @($logResponse.value[$script:LogLineCount..($totalLogCount - 1)])
             Write-Host "Retrieved $($allLogs.Count) new log lines" -ForegroundColor Cyan
         } else {
             Write-Host "No new log lines since last read" -ForegroundColor Yellow
@@ -303,11 +304,13 @@ function script:Invoke-SauceLabsApp {
     $logCache = @()
     if ($allLogs -and $allLogs.Count -gt 0) {
         $logCache = $allLogs | ForEach-Object {
-            $timestamp = if ($_.timestamp) { $_.timestamp } else { "" }
-            $level = if ($_.level) { $_.level } else { "" }
-            $message = if ($_.message) { $_.message } else { "" }
-            "$timestamp $level $message"
-        }
+            if ($_) {
+                $timestamp = if ($_.timestamp) { $_.timestamp } else { "" }
+                $level = if ($_.level) { $_.level } else { "" }
+                $message = if ($_.message) { $_.message } else { "" }
+                "$timestamp $level $message"
+            }
+        } | Where-Object { $_ }  # Filter out any nulls
     }
 
     # Save logs to file if OutputDir specified
