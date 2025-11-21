@@ -252,8 +252,8 @@ function script:Invoke-SauceLabsApp {
             $logResponse = Invoke-SauceLabsApi -Method POST -Uri "$baseUri/log" -Body $logBody
 
             if ($logResponse.value -and $logResponse.value.Count -gt $script:LogLineCount) {
-                $newLogs = $logResponse.value | Select-Object -Skip $script:LogLineCount
-                $logMessages = $newLogs | ForEach-Object { $_.message }
+                $newLogs = @($logResponse.value | Select-Object -Skip $script:LogLineCount)
+                $logMessages = @($newLogs | ForEach-Object { $_.message })
 
                 # Check for completion markers
                 if (($logMessages | Where-Object { $_ -match "TEST_RESULT:" }) -or
@@ -281,17 +281,33 @@ function script:Invoke-SauceLabsApp {
 
     # Extract new log lines (delta)
     [array]$allLogs = @()
-    if ($logResponse.value) {
-        $allLogs = $logResponse.value | Select-Object -Skip $script:LogLineCount
-        $script:LogLineCount = $logResponse.value.Count
+    if ($logResponse.value -and $logResponse.value.Count -gt 0) {
+        $totalLogCount = $logResponse.value.Count
+        Write-Debug "Total logs in response: $totalLogCount, Previously read: $script:LogLineCount"
+
+        if ($totalLogCount -gt $script:LogLineCount) {
+            # Get only new logs (skip previously read lines)
+            $allLogs = @($logResponse.value | Select-Object -Skip $script:LogLineCount)
+            Write-Host "Retrieved $($allLogs.Count) new log lines" -ForegroundColor Cyan
+        } else {
+            Write-Host "No new log lines since last read" -ForegroundColor Yellow
+        }
+
+        # Update counter for next read
+        $script:LogLineCount = $totalLogCount
+    } else {
+        Write-Host "No logs available in response" -ForegroundColor Yellow
     }
 
     # Convert SauceLabs log format to text (matching adb output)
-    $logCache = $allLogs | ForEach-Object {
-        $timestamp = if ($_.timestamp) { $_.timestamp } else { "" }
-        $level = if ($_.level) { $_.level } else { "" }
-        $message = if ($_.message) { $_.message } else { "" }
-        "$timestamp $level $message"
+    $logCache = @()
+    if ($allLogs -and $allLogs.Count -gt 0) {
+        $logCache = $allLogs | ForEach-Object {
+            $timestamp = if ($_.timestamp) { $_.timestamp } else { "" }
+            $level = if ($_.level) { $_.level } else { "" }
+            $message = if ($_.message) { $_.message } else { "" }
+            "$timestamp $level $message"
+        }
     }
 
     # Save logs to file if OutputDir specified
