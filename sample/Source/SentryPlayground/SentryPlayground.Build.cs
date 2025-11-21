@@ -1,7 +1,6 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 using UnrealBuildTool;
-using System.IO;
 
 public class SentryPlayground : ModuleRules
 {
