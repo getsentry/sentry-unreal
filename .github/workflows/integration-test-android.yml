@@ -18,30 +18,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download artifact from workflow run
-        uses: dawidd6/action-download-artifact@v6
         with:
-          run_id: 19533023161
-          name: "UE ${{ inputs.unreal-version }} sample build (Android)"
-          path: sample-build
+          submodules: recursive
 
-      - name: List downloaded files
-        run: |
-          echo "Downloaded build contents:"
-          ls -lah sample-build/
-          echo "Using APK for SauceLabs real device testing"
+      - name: Download sample build
+        uses: actions/download-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Android)
+          path: sample-build
 
       - name: Install Pester
         shell: pwsh
         run: Install-Module -Name Pester -Force -SkipPublisherCheck
-
-      - name: Setup integration test configuration
-        shell: pwsh
-        run: |
-          cd integration-test
-          mkdir build
-          cmake -B build -S .
 
       - name: Run integration tests
         id: run-integration-tests
@@ -49,18 +37,12 @@ jobs:
         env:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground-arm64.apk
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: |
-          # Find the APK file
-          $apkPath = Get-ChildItem -Path "${{ github.workspace }}/sample-build" -Filter "*.apk" | Select-Object -First 1
-          if (-not $apkPath) {
-            throw "No APK file found in sample-build directory"
-          }
-
-          Write-Host "Found APK: $($apkPath.Name)"
-          $env:SENTRY_UNREAL_TEST_APP_PATH = $apkPath.FullName
-
           cd integration-test
+          mkdir build
+          cmake -B build -S .
           Invoke-Pester Integration.Tests.Android.SauceLabs.ps1 -CI
 
       - name: Upload integration test output
