@@ -18,14 +18,16 @@ void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
 
-	const TCHAR* CommandLine = FCommandLine::Get();
+	FString CommandLine = FCommandLine::Get();
+
+	UE_LOG(LogSentrySample, Display, TEXT("Startin app with commandline: %s\n"), *CommandLine);
 
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("crash-capture")) || 
-		FParse::Param(FCommandLine::Get(), TEXT("message-capture")))
+	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
+		FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
-		RunIntegrationTest(CommandLine);
+		RunIntegrationTest(*CommandLine);
 	}
 }
 
