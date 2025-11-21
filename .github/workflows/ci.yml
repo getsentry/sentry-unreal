@@ -200,6 +200,7 @@ jobs:
       unreal-version: ${{ matrix.unreal }}
 
   integration-test-android:
+    needs: [test-android]
     name: Android UE ${{ matrix.unreal }}
     secrets: inherit
     strategy:
