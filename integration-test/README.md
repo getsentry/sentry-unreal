@@ -2,7 +2,14 @@
 
 This directory contains integration tests for the Sentry Unreal SDK using Pester (PowerShell testing framework).
 
+Supports testing on:
+- **Windows** - Desktop (x64)
+- **Linux** - Desktop (x64)
+- **Android** - Local device/emulator (via adb) or SauceLabs Real Device Cloud
+
 ## Prerequisites
+
+### Common Requirements
 
 - **PowerShell 7+** (Core edition)
 - **CMake 3.20+**
@@ -11,7 +18,20 @@ This directory contains integration tests for the Sentry Unreal SDK using Pester
 - **Environment variables**:
   - `SENTRY_UNREAL_TEST_DSN` - Sentry test project DSN
   - `SENTRY_AUTH_TOKEN` - Sentry API authentication token
-  - `SENTRY_UNREAL_TEST_APP_PATH` - Path to the SentryPlayground executable
+  - `SENTRY_UNREAL_TEST_APP_PATH` - Path to the SentryPlayground executable/APK
+
+### Android-Specific Requirements
+
+#### Option A: Local Testing (via adb)
+- **Android device or emulator** connected and visible via `adb devices`
+- **ADB (Android Debug Bridge)** installed and in PATH
+
+#### Option B: Cloud Testing (via SauceLabs)
+- **SauceLabs account** with Real Device Cloud access
+- **Additional environment variables**:
+  - `SAUCE_USERNAME` - SauceLabs username
+  - `SAUCE_ACCESS_KEY` - SauceLabs access key
+  - `SAUCE_REGION` - SauceLabs region (e.g., `eu-central-1`)
 
 ## Setup
 
@@ -39,6 +59,7 @@ This will:
 3. Download the appropriate artifact:
    - `UE X.X sample build (Windows)` for Windows testing
    - `UE X.X sample build (Linux)` for Linux testing
+   - `UE X.X sample build (Android)` for Android testing
 4. Extract to a known location
 
 #### Option B: Build Locally
@@ -75,11 +96,43 @@ cd integration-test
 pwsh -Command "Invoke-Pester Integration.Tests.ps1"
 ```
 
+### Android (Local via adb)
+
+```bash
+# Ensure device/emulator is connected
+adb devices
+
+# Set environment variables
+export SENTRY_UNREAL_TEST_DSN="https://key@org.ingest.sentry.io/project"
+export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
+export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.apk"
+
+# Run tests
+cd integration-test
+pwsh -Command "Invoke-Pester Integration.Tests.Android.Adb.ps1"
+```
+
+### Android (Cloud via SauceLabs)
+
+```bash
+# Set environment variables
+export SENTRY_UNREAL_TEST_DSN="https://key@org.ingest.sentry.io/project"
+export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
+export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.apk"
+export SAUCE_USERNAME="your-saucelabs-username"
+export SAUCE_ACCESS_KEY="your-saucelabs-access-key"
+export SAUCE_REGION="eu-central-1"
+
+# Run tests
+cd integration-test
+pwsh -Command "Invoke-Pester Integration.Tests.Android.SauceLabs.ps1"
+```
+
 ## Test Coverage
 
 The integration tests cover:
 
-### Crash Capture Tests
+### Crash Capture Tests _(Windows/Linux)_
 - Application crashes with non-zero exit code
 - Event ID is captured from output (set via `test.crash_id` tag)
 - Crash event appears in Sentry
@@ -89,8 +142,10 @@ The integration tests cover:
 - Integration test tags are set
 - Breadcrumbs are collected
 
-### Message Capture Tests
-- Application exits cleanly (exit code 0)
+**Note**: Crash capture tests are currently disabled on Android due to a known issue with tag persistence across app sessions.
+
+### Message Capture Tests _(All platforms)_
+- Application exits cleanly (exit code 0 on Windows/Linux, Android doesn't report exit codes)
 - Event ID is captured from output
 - TEST_RESULT indicates success
 - Message event appears in Sentry
@@ -99,9 +154,13 @@ The integration tests cover:
 - Integration test tags are set
 - Breadcrumbs are collected
 
+**Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
+
 ## Output
 
 Test outputs are saved to `integration-test/output/`:
+
+### Windows/Linux
 - `*-crash-stdout.log` - Crash test standard output
 - `*-crash-stderr.log` - Crash test standard error
 - `*-crash-result.json` - Full crash test result
@@ -110,6 +169,13 @@ Test outputs are saved to `integration-test/output/`:
 - `*-message-result.json` - Full message test result
 - `event-*.json` - Events fetched from Sentry API
 
+### Android
+- `*-logcat.txt` - Logcat output from app execution (one file per launch)
+- `event-*.json` - Events fetched from Sentry API
+
 ## CI Integration
 
-See `.github/workflows/integration-test-windows.yml` and `.github/workflows/integration-test-linux.yml` for CI usage examples.
+See the following workflow files for CI usage examples:
+- `.github/workflows/integration-test-windows.yml` - Windows desktop testing
+- `.github/workflows/integration-test-linux.yml` - Linux desktop testing
+- `.github/workflows/integration-test-android.yml` - Android testing via SauceLabs Real Device Cloud
