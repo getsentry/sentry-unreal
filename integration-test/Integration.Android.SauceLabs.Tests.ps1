@@ -47,11 +47,12 @@ function script:Invoke-SauceLabsApi {
 
     try {
         if ($IsMultipart) {
-            # Use curl for multipart uploads (PowerShell's Invoke-WebRequest struggles with this)
-            $curlCmd = "curl -u `"$username`:$accessKey`" -X $Method `"$Uri`" -F `"payload=@$FilePath`" -F `"name=$(Split-Path $FilePath -Leaf)`""
-            Write-Debug "Executing: $curlCmd"
-            $response = Invoke-Expression $curlCmd | ConvertFrom-Json
-            return $response
+            # Use -Form parameter for multipart uploads (PowerShell Core 7+)
+            $form = @{
+                payload = Get-Item -Path $FilePath
+                name = (Split-Path $FilePath -Leaf)
+            }
+            $webResponse = Invoke-WebRequest -Uri $Uri -Method $Method -Headers $headers -Form $form
         } else {
             $params = @{
                 Uri = $Uri
@@ -64,17 +65,21 @@ function script:Invoke-SauceLabsApi {
                 $params['ContentType'] = $ContentType
             }
 
-            $response = Invoke-RestMethod @params
-            return $response
+            $webResponse = Invoke-WebRequest @params
         }
+
+        # Explicit JSON parsing for better error visibility (Invoke-RestMethod can silently return strings)
+        if ($webResponse.Content) {
+            return $webResponse.Content | ConvertFrom-Json -AsHashtable
+        }
+        return $null
     } catch {
-        Write-Error "SauceLabs API call failed: $($_.Exception.Message)"
+        $ErrorMessage = "SauceLabs API request ($Method $Uri) failed: $($_.Exception.Message)"
         if ($_.Exception.Response) {
-            $reader = [System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream())
-            $responseBody = $reader.ReadToEnd()
-            Write-Error "Response: $responseBody"
+            $StatusCode = $_.Exception.Response.StatusCode
+            $ErrorMessage += " (Status: $StatusCode)"
         }
-        throw
+        throw $ErrorMessage
     }
 }
 
