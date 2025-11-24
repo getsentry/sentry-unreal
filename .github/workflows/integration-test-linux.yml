@@ -26,11 +26,6 @@ jobs:
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground/Plugins/sentry/Binaries/Linux/crashpad_handler
 
-      - name: Install Pester
-        shell: pwsh
-        run: |
-          Install-Module -Name Pester -Force -SkipPublisherCheck
-
       - name: Run integration tests
         id: run-integration-tests
         shell: pwsh
