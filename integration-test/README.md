@@ -109,7 +109,7 @@ export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.apk"
 
 # Run tests
 cd integration-test
-pwsh -Command "Invoke-Pester Integration.Tests.Android.Adb.ps1"
+pwsh -Command "Invoke-Pester ./Integration.Android.Adb.Tests.ps1"
 ```
 
 ### Android (Cloud via SauceLabs)
@@ -125,7 +125,7 @@ export SAUCE_REGION="eu-central-1"
 
 # Run tests
 cd integration-test
-pwsh -Command "Invoke-Pester Integration.Tests.Android.SauceLabs.ps1"
+pwsh -Command "Invoke-Pester ./Integration.Android.SauceLabs.Tests.ps1"
 ```
 
 ## Test Coverage

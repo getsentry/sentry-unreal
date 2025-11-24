@@ -39,7 +39,7 @@ jobs:
           cd integration-test
           mkdir build
           cmake -B build -S .
-          Invoke-Pester Integration.Tests.Android.SauceLabs.ps1 -CI
+          Invoke-Pester Integration.Android.SauceLabs.Tests.ps1 -CI
 
       - name: Upload integration test output
         if: ${{ always() }}
