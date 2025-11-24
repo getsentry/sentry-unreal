@@ -20,7 +20,7 @@ void USentryPlaygroundGameInstance::Init()
 
 	FString CommandLine = FCommandLine::Get();
 
-	UE_LOG(LogSentrySample, Display, TEXT("Startin app with commandline: %s\n"), *CommandLine);
+	UE_LOG(LogSentrySample, Display, TEXT("Starting app with commandline: %s\n"), *CommandLine);
 
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
