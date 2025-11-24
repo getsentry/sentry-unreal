@@ -10,7 +10,6 @@ $ErrorActionPreference = 'Stop'
 
 # Script-level state for session management
 $script:SessionId = $null
-$script:LogLineCount = 0  # Track log lines read so far (for delta)
 
 function script:Invoke-SauceLabsApi {
     param(
@@ -251,24 +250,6 @@ function script:Invoke-SauceLabsApp {
                 $completed = $true
                 break
             }
-
-            # Also check logs for completion markers
-            $logBody = @{ type = "logcat" }
-            $logResponse = Invoke-SauceLabsApi -Method POST -Uri "$baseUri/log" -Body $logBody
-
-            if ($logResponse.value -and $logResponse.value.Count -gt $script:LogLineCount) {
-                # Use array slicing instead of Select-Object -Skip (more reliable)
-                $newLogs = @($logResponse.value[$script:LogLineCount..($logResponse.value.Count - 1)])
-                $logMessages = @($newLogs | ForEach-Object { if ($_) { $_.message } })
-
-                # Check for completion markers
-                if (($logMessages | Where-Object { $_ -match "TEST_RESULT:" }) -or
-                    ($logMessages | Where-Object { $_ -match "Requesting app exit" })) {
-                    Write-Host "Test completion detected in logs" -ForegroundColor Green
-                    $completed = $true
-                    break
-                }
-            }
         } catch {
             Write-Warning "Failed to query app state: $_"
         }
@@ -280,29 +261,15 @@ function script:Invoke-SauceLabsApp {
         Write-Host "Warning: Test did not complete within timeout" -ForegroundColor Yellow
     }
 
-    # Retrieve final logs (delta from last read)
+    # Retrieve logs after app completion
     Write-Host "Retrieving logs..." -ForegroundColor Yellow
     $logBody = @{ type = "logcat" }
     $logResponse = Invoke-SauceLabsApi -Method POST -Uri "$baseUri/log" -Body $logBody
 
-    # Extract new log lines (delta)
     [array]$allLogs = @()
     if ($logResponse.value -and $logResponse.value.Count -gt 0) {
-        $totalLogCount = $logResponse.value.Count
-        Write-Debug "Total logs in response: $totalLogCount, Previously read: $script:LogLineCount"
-
-        if ($totalLogCount -gt $script:LogLineCount) {
-            # Get only new logs using array slicing (more reliable than Select-Object -Skip)
-            $allLogs = @($logResponse.value[$script:LogLineCount..($totalLogCount - 1)])
-            Write-Host "Retrieved $($allLogs.Count) new log lines" -ForegroundColor Cyan
-        } else {
-            Write-Host "No new log lines since last read" -ForegroundColor Yellow
-        }
-
-        # Update counter for next read
-        $script:LogLineCount = $totalLogCount
-    } else {
-        Write-Host "No logs available in response" -ForegroundColor Yellow
+        $allLogs = @($logResponse.value)
+        Write-Host "Retrieved $($allLogs.Count) log lines" -ForegroundColor Cyan
     }
 
     # Convert SauceLabs log format to text (matching adb output)
