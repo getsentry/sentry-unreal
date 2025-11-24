@@ -383,7 +383,7 @@ BeforeAll {
     # TODO: Re-enable once Android SDK tag persistence is fixed (`test.crash_id` tag set before crash is not synced to the captured crash on Android)
 
     # Write-Host "Running crash-capture test (will crash)..." -ForegroundColor Yellow
-    # $cmdlineCrashArgs = "-e cmdline '-crash-capture'"
+    # $cmdlineCrashArgs = "-e cmdline -crash-capture"
     # $global:SauceLabsCrashResult = Invoke-SauceLabsApp `
     #     -PackageName $script:PackageName `
     #     -ActivityName $script:ActivityName `
@@ -398,7 +398,7 @@ BeforeAll {
     # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
 
     Write-Host "Running message-capture test (will upload crash from previous run)..." -ForegroundColor Yellow
-    $cmdlineMessageArgs = "-e cmdline '-message-capture'"
+    $cmdlineMessageArgs = "-e cmdline -message-capture"
     $global:SauceLabsMessageResult = Invoke-SauceLabsApp `
         -PackageName $script:PackageName `
         -ActivityName $script:ActivityName `
