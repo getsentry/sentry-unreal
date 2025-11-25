@@ -1,4 +1,4 @@
-# Integration tests for Sentry Unreal SDK on Android
+# Integration tests for Sentry Unreal SDK on Android via ADB
 # Requires:
 # - Pre-built APK (x64 for emulator)
 # - Android emulator or device connected
@@ -6,180 +6,6 @@
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-
-function script:Get-AndroidDeviceId {
-    $lines = adb devices | Select-String "device$"
-
-    if (-not $lines) {
-        throw "No Android devices found. Is emulator running?"
-    }
-
-    # Extract device ID from the first matching line
-    # Line format: "emulator-5554	device"
-    $firstLine = $lines | Select-Object -First 1
-    $deviceId = ($firstLine.Line -split '\s+')[0]
-
-    if (-not $deviceId) {
-        throw "Could not extract device ID from: $($firstLine.Line)"
-    }
-
-    return $deviceId
-}
-
-function script:Install-AndroidApp {
-    param(
-        [Parameter(Mandatory)]
-        [string]$ApkPath,
-
-        [Parameter(Mandatory)]
-        [string]$PackageName,
-
-        [Parameter(Mandatory)]
-        [string]$DeviceId
-    )
-
-    if (-not (Test-Path $ApkPath)) {
-        throw "APK file not found: $ApkPath"
-    }
-
-    if ($ApkPath -notlike '*.apk') {
-        throw "Package must be an .apk file. Got: $ApkPath"
-    }
-
-    # Check for existing installation
-    Write-Debug "Checking for existing package: $PackageName"
-    $installed = adb -s $DeviceId shell pm list packages | Select-String -Pattern $PackageName -SimpleMatch
-
-    if ($installed) {
-        Write-Host "Uninstalling previous version..." -ForegroundColor Yellow
-        adb -s $DeviceId uninstall $PackageName | Out-Null
-        Start-Sleep -Seconds 1
-    }
-
-    # Install APK
-    Write-Host "Installing APK to device: $DeviceId" -ForegroundColor Yellow
-    $installOutput = adb -s $DeviceId install -r $ApkPath 2>&1 | Out-String
-
-    if ($LASTEXITCODE -ne 0 -or $installOutput -notmatch "Success") {
-        throw "Failed to install APK (exit code: $LASTEXITCODE): $installOutput"
-    }
-
-    Write-Host "Package installed successfully: $PackageName" -ForegroundColor Green
-}
-
-function script:Invoke-AndroidApp {
-    param(
-        [Parameter(Mandatory)]
-        [string]$ExecutablePath,
-
-        [Parameter()]
-        [string]$Arguments = ""
-    )
-
-    # Extract package name from activity path (format: package.name/activity.name)
-    if ($ExecutablePath -notmatch '^([^/]+)/') {
-        throw "ExecutablePath must be in format 'package.name/activity.name'. Got: $ExecutablePath"
-    }
-    $packageName = $matches[1]
-
-    # Use script-level Android configuration
-    $deviceId = $script:DeviceId
-    $outputDir = $script:OutputDir
-
-    # Android-specific timeout configuration
-    $timeoutSeconds = 300
-    $initialWaitSeconds = 3
-    $pidRetrySeconds = 30
-    $logPollIntervalSeconds = 2
-
-    $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-    $logFile = if ($OutputDir) { "$OutputDir/$timestamp-logcat.txt" } else { $null }
-
-    # Clear logcat before launch
-    Write-Debug "Clearing logcat on device: $deviceId"
-    adb -s $deviceId logcat -c
-
-    # Launch activity with Intent extras
-    Write-Host "Launching: $ExecutablePath" -ForegroundColor Cyan
-    if ($Arguments) {
-        Write-Host "  Arguments: $Arguments" -ForegroundColor Cyan
-    }
-
-    $startOutput = adb -s $deviceId shell am start -n $ExecutablePath $Arguments -W 2>&1 | Out-String
-
-    if ($startOutput -match "Error") {
-        throw "Failed to start activity: $startOutput"
-    }
-
-    # Get process ID (with retries)
-    Write-Debug "Waiting for app process..."
-    Start-Sleep -Seconds $initialWaitSeconds
-
-    $appPID = $null
-    for ($i = 0; $i -lt $pidRetrySeconds; $i++) {
-        $pidOutput = adb -s $deviceId shell pidof $packageName 2>&1
-        if ($pidOutput) {
-            $pidOutput = $pidOutput.ToString().Trim()
-            if ($pidOutput -match '^\d+$') {
-                $appPID = $pidOutput
-                break
-            }
-        }
-        Start-Sleep -Seconds 1
-    }
-
-    # Initialize log cache as array for consistent type handling
-    [array]$logCache = @()
-
-    if (-not $appPID) {
-        # App might have already exited (fast message test) - capture logs anyway
-        Write-Host "Warning: Could not find process ID (app may have exited quickly)" -ForegroundColor Yellow
-        $logCache = @(adb -s $deviceId logcat -d 2>&1)
-        $exitCode = 0
-    } else {
-        Write-Host "App PID: $appPID" -ForegroundColor Green
-
-        # Monitor logcat for test completion
-        $startTime = Get-Date
-        $completed = $false
-
-        while ((Get-Date) - $startTime -lt [TimeSpan]::FromSeconds($timeoutSeconds)) {
-            $newLogs = adb -s $deviceId logcat -d --pid=$appPID 2>&1
-            if ($newLogs) {
-                $logCache = @($newLogs)
-
-                # Check for completion markers from SentryPlaygroundGameInstance
-                if (($newLogs | Select-String "TEST_RESULT:") -or
-                    ($newLogs | Select-String "Requesting app exit")) {
-                    $completed = $true
-                    Write-Host "Test completion detected" -ForegroundColor Green
-                    break
-                }
-            }
-
-            Start-Sleep -Seconds $logPollIntervalSeconds
-        }
-
-        if (-not $completed) {
-            Write-Host "Warning: Test did not complete within timeout" -ForegroundColor Yellow
-        }
-
-        $exitCode = 0  # Android apps don't report exit codes via adb
-    }
-
-    # Save logcat to file if OutputDir specified
-    if ($logFile) {
-        $logCache | Out-File $logFile
-        Write-Host "Logcat saved to: $logFile"
-    }
-
-    # Return structured result (matches app-runner pattern)
-    return @{
-        ExitCode = $exitCode
-        Output = $logCache
-        Error = @()
-    }
-}
 
 BeforeAll {
     # Check if configuration file exists
@@ -229,13 +55,13 @@ BeforeAll {
     $script:PackageName = "io.sentry.unreal.sample"
     $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
 
-    # Get Android device
-    $script:DeviceId = Get-AndroidDeviceId
-    Write-Host "Found Android device: $script:DeviceId" -ForegroundColor Green
+    # Connect to Android device via ADB (auto-discovers available device)
+    Write-Host "Connecting to Android device..." -ForegroundColor Yellow
+    Connect-Device -Platform AndroidAdb
 
     # Install APK to device
     Write-Host "Installing APK to Android device..." -ForegroundColor Yellow
-    Install-AndroidApp -ApkPath $script:ApkPath -PackageName $script:PackageName -DeviceId $script:DeviceId
+    Install-DeviceApp -PackagePath $script:ApkPath
 
     # ==========================================
     # RUN 1: Crash test - creates minidump
@@ -245,7 +71,7 @@ BeforeAll {
 
     # Write-Host "Running crash-capture test (will crash)..." -ForegroundColor Yellow
     # $cmdlineCrashArgs = "-e cmdline -crash-capture"
-    # $global:AndroidCrashResult = Invoke-AndroidApp -ExecutablePath $script:ActivityName -Arguments $cmdlineCrashArgs
+    # $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineCrashArgs
 
     # Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -257,7 +83,7 @@ BeforeAll {
 
     Write-Host "Running message-capture test (will upload crash from previous run)..." -ForegroundColor Yellow
     $cmdlineMessageArgs = "-e cmdline -message-capture"
-    $global:AndroidMessageResult = Invoke-AndroidApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
+    $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
 
     Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 }
@@ -412,7 +238,13 @@ Describe "Sentry Unreal Android Integration Tests" {
 }
 
 AfterAll {
+    # Disconnect from Android device
+    Write-Host "Disconnecting from Android device..." -ForegroundColor Yellow
+    Disconnect-Device
+
+    # Disconnect from Sentry API
     Write-Host "Disconnecting from Sentry API..." -ForegroundColor Yellow
     Disconnect-SentryApi
+
     Write-Host "Integration tests complete" -ForegroundColor Green
 }
