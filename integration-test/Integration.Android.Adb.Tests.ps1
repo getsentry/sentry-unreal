@@ -61,7 +61,7 @@ BeforeAll {
 
     # Install APK to device
     Write-Host "Installing APK to Android device..." -ForegroundColor Yellow
-    Install-DeviceApp -PackagePath $script:ApkPath
+    Install-DeviceApp -Path $script:ApkPath
 
     # ==========================================
     # RUN 1: Crash test - creates minidump

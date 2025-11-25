@@ -85,7 +85,7 @@ BeforeAll {
 
     # Install APK to SauceLabs device
     Write-Host "Installing APK to SauceLabs device..." -ForegroundColor Yellow
-    Install-DeviceApp -PackagePath $script:ApkPath
+    Install-DeviceApp -Path $script:ApkPath
 
     # ==========================================
     # RUN 1: Crash test - creates minidump
