@@ -143,7 +143,7 @@ function script:Initialize-SauceLabsSession {
                 'appium:noReset' = $true
                 'appium:autoLaunch' = $false
                 'sauce:options' = @{
-                    name = "$UnrealVersion Android Integration Test"
+                    name = "UE $UnrealVersion Android Integration Test"
                     appiumVersion = "latest"
                 }
             }
