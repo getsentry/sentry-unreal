@@ -79,9 +79,9 @@ BeforeAll {
     $script:PackageName = "io.sentry.unreal.sample"
     $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
 
-    # Connect to SauceLabs (reads credentials and configuration from environment variables)
+    # Connect to SauceLabs (reads credentials and region from environment variables)
     Write-Host "Connecting to SauceLabs..." -ForegroundColor Yellow
-    Connect-Device -Platform AndroidSauceLabs
+    Connect-Device -Platform AndroidSauceLabs -Target $script:SauceDeviceName
 
     # Install APK to SauceLabs device
     Write-Host "Installing APK to SauceLabs device..." -ForegroundColor Yellow
