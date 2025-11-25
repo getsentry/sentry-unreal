@@ -14,7 +14,7 @@ jobs:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       GITHUB_TOKEN: ${{ github.token }}
-      SAUCE_REGION: eu-central-1
+      SAUCE_REGION: us-west-1
 
     steps:
       - uses: actions/checkout@v4
