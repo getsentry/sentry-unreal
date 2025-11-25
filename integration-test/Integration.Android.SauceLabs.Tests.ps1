@@ -361,7 +361,7 @@ BeforeAll {
 
     $script:PackageName = "io.sentry.unreal.sample"
     $script:ActivityName = "com.epicgames.unreal.GameActivity"
-    $script:DeviceName = "Samsung_Galaxy_S23_FE_free"
+    $script:DeviceName = "Samsung_Galaxy_S23_15_real_sjc1"
     $script:UnrealVersion = if ($env:UNREAL_VERSION) { $env:UNREAL_VERSION } else { "5.x" }
 
     # Upload APK to SauceLabs Storage
