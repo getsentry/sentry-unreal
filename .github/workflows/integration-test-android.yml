@@ -41,7 +41,7 @@ jobs:
           Invoke-Pester Integration.Android.SauceLabs.Tests.ps1 -CI
 
       - name: Upload integration test output
-        if: ${{ always() }}
+        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
         uses: actions/upload-artifact@v4
         with:
           name: UE ${{ inputs.unreal-version }} integration test output (Android)
