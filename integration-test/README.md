@@ -31,7 +31,17 @@ Supports testing on:
 - **Additional environment variables**:
   - `SAUCE_USERNAME` - SauceLabs username
   - `SAUCE_ACCESS_KEY` - SauceLabs access key
-  - `SAUCE_REGION` - SauceLabs region (e.g., `eu-central-1`)
+  - `SAUCE_REGION` - SauceLabs region (e.g., `us-west-1`, `eu-central-1`)
+  - `SAUCE_DEVICE_NAME` - Device name available in the specified region (must match region datacenter suffix)
+
+**Note**: The device name must match a device available in your SauceLabs region. Device names include a datacenter suffix that must align with the region:
+- `us-west-1` → devices ending in `_sjc1` (San Jose DC1)
+- `eu-central-1` → devices ending in `_fra1` (Frankfurt DC1)
+- `us-east-4` → devices ending in `_use1` (US East DC1)
+
+Example valid combinations:
+- Region: `us-west-1`, Device: `Samsung_Galaxy_S23_15_real_sjc1` ✓
+- Region: `eu-central-1`, Device: `Samsung_Galaxy_S23_15_real_sjc1` ✗ (mismatch)
 
 ## Setup
 
@@ -121,12 +131,15 @@ export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
 export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.apk"
 export SAUCE_USERNAME="your-saucelabs-username"
 export SAUCE_ACCESS_KEY="your-saucelabs-access-key"
-export SAUCE_REGION="eu-central-1"
+export SAUCE_REGION="us-west-1"
+export SAUCE_DEVICE_NAME="Samsung_Galaxy_S23_15_real_sjc1"
 
 # Run tests
 cd integration-test
 pwsh -Command "Invoke-Pester ./Integration.Android.SauceLabs.Tests.ps1"
 ```
+
+**Note**: Ensure `SAUCE_DEVICE_NAME` matches a device available in your `SAUCE_REGION`. See the [SauceLabs Platform Configurator](https://app.saucelabs.com/live/web-testing) to find available devices for your region.
 
 ## Test Coverage
 

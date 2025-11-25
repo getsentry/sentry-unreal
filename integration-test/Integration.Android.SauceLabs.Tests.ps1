@@ -3,7 +3,10 @@
 # - Pre-built APK
 # - SauceLabs account credentials
 # - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_TEST_APP_PATH
-#                          SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION
+#                          SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION, SAUCE_DEVICE_NAME
+#
+# Note: SAUCE_DEVICE_NAME must match a device available in SAUCE_REGION.
+#       Example: For SAUCE_REGION=us-west-1, use devices with 'sjc1' suffix (San Jose DC1)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -319,6 +322,7 @@ BeforeAll {
     $script:SauceUsername = $env:SAUCE_USERNAME
     $script:SauceAccessKey = $env:SAUCE_ACCESS_KEY
     $script:SauceRegion = $env:SAUCE_REGION
+    $script:SauceDeviceName = $env:SAUCE_DEVICE_NAME
 
     if (-not $script:DSN) {
         throw "Environment variable SENTRY_UNREAL_TEST_DSN must be set"
@@ -344,6 +348,10 @@ BeforeAll {
         throw "Environment variable SAUCE_REGION must be set"
     }
 
+    if (-not $script:SauceDeviceName) {
+        throw "Environment variable SAUCE_DEVICE_NAME must be set"
+    }
+
     # Connect to Sentry API
     Write-Host "Connecting to Sentry API..." -ForegroundColor Yellow
     Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
@@ -361,7 +369,7 @@ BeforeAll {
 
     $script:PackageName = "io.sentry.unreal.sample"
     $script:ActivityName = "com.epicgames.unreal.GameActivity"
-    $script:DeviceName = "Samsung_Galaxy_S23_15_real_sjc1"
+    $script:DeviceName = $script:SauceDeviceName
     $script:UnrealVersion = if ($env:UNREAL_VERSION) { $env:UNREAL_VERSION } else { "5.x" }
 
     # Upload APK to SauceLabs Storage

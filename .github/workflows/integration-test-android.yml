@@ -15,6 +15,7 @@ jobs:
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       GITHUB_TOKEN: ${{ github.token }}
       SAUCE_REGION: us-west-1
+      SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
 
     steps:
       - uses: actions/checkout@v4
