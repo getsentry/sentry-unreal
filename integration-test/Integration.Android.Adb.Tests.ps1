@@ -1,6 +1,6 @@
 # Integration tests for Sentry Unreal SDK on Android via ADB
 # Requires:
-# - Pre-built APK (x64 for emulator)
+# - Pre-built APK (x64 for emulator, arm64 for device)
 # - Android emulator or device connected
 # - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_TEST_APP_PATH
 
@@ -79,7 +79,6 @@ BeforeAll {
     # RUN 2: Message test - uploads crash from Run 1 + captures message
     # ==========================================
     # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
-    # TODO: use -SkipReinstall to preserve the crash state.
 
     Write-Host "Running message-capture test (will upload crash from previous run)..." -ForegroundColor Yellow
     $cmdlineMessageArgs = "-e cmdline -message-capture"
