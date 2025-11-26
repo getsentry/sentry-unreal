@@ -39,7 +39,8 @@ jobs:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: |
           cmake -B build -S .
-          Invoke-Pester Integration.Android.SauceLabs.Tests.ps1 -CI
+          $Container = New-PesterContainer -Path 'Integration.Android.Tests.ps1' -Data @{ Platform = 'SauceLabs' }
+          Invoke-Pester -Container $Container -CI
 
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
