@@ -33,6 +33,7 @@ Supports testing on:
   - `SAUCE_ACCESS_KEY` - SauceLabs access key
   - `SAUCE_REGION` - SauceLabs region (e.g., `us-west-1`, `eu-central-1`)
   - `SAUCE_DEVICE_NAME` - Device name available in the specified region (must match region datacenter suffix)
+  - `SAUCE_SESSION_NAME` - Session name for SauceLabs dashboard (optional, defaults to "App Runner Android Test")
 
 **Note**: The device name must match a device available in your SauceLabs region. Device names include a datacenter suffix that must align with the region:
 - `us-west-1` → devices ending in `_sjc1` (San Jose DC1)
@@ -133,6 +134,7 @@ $env:SAUCE_USERNAME = "your-saucelabs-username"
 $env:SAUCE_ACCESS_KEY = "your-saucelabs-access-key"
 $env:SAUCE_REGION = "us-west-1"
 $env:SAUCE_DEVICE_NAME = "Samsung_Galaxy_S23_15_real_sjc1"
+$env:SAUCE_SESSION_NAME = "My Custom Test Session"  # Optional, defaults to "App Runner Android Test"
 
 # Run tests with explicit platform selection
 cd integration-test

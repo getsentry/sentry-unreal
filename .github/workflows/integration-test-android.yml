@@ -16,6 +16,7 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       SAUCE_REGION: us-west-1
       SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
+      SAUCE_SESSION_NAME: UE ${{ inputs.unreal-version }} Android Integration Test
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +37,6 @@ jobs:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground-arm64.apk
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: |
           cmake -B build -S .
           $Container = New-PesterContainer -Path 'Integration.Android.Tests.ps1' -Data @{ Platform = 'SauceLabs' }
