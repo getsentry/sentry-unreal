@@ -96,7 +96,6 @@ BeforeAll {
     # RUN 1: Crash test - creates minidump
     # ==========================================
     # The crash is captured but NOT uploaded yet (Android behavior).
-    # TODO: Re-enable once Android SDK tag persistence is fixed (`test.crash_id` tag set before crash is not synced to the captured crash on Android)
 
     Write-Host "Running crash-capture test (will crash)..." -ForegroundColor Yellow
     $cmdlineCrashArgs = "-e cmdline -crash-capture"
@@ -118,10 +117,6 @@ BeforeAll {
 
 Describe "Sentry Unreal Android Integration Tests ($Platform)" {
 
-    # ==========================================
-    # NOTE: Crash Capture Tests are DISABLED due to tag sync issue
-    # Uncomment when Android SDK tag persistence is fixed
-    # ==========================================
     Context "Crash Capture Tests" {
         BeforeAll {
             # Crash event is sent during the MESSAGE run (Run 2)
