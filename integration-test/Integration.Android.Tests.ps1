@@ -2,15 +2,7 @@
 # Supports both ADB (local devices/emulators) and SauceLabs (cloud devices)
 #
 # Usage:
-#   # Default (uses ADB)
 #   Invoke-Pester Integration.Android.Tests.ps1
-#
-#   # Explicit platform selection with Pester containers
-#   $Container = New-PesterContainer -Path 'Integration.Android.Tests.ps1' -Data @{ Platform = 'Adb' }
-#   Invoke-Pester -Container $Container
-#
-#   $Container = New-PesterContainer -Path 'Integration.Android.Tests.ps1' -Data @{ Platform = 'SauceLabs' }
-#   Invoke-Pester -Container $Container
 #
 # Requires:
 # - Pre-built APK
@@ -20,23 +12,70 @@
 #   - Android emulator or device connected via ADB
 #
 # For SauceLabs:
-#   - SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION, SAUCE_DEVICE_NAME
-
-param(
-    [Parameter(Mandatory = $false)]
-    [ValidateSet('Adb', 'SauceLabs')]
-    [string]$Platform = 'Adb'
-)
+#   - SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION, SAUCE_DEVICE_NAME, SAUCE_SESSION_NAME
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+BeforeDiscovery {
+    # Define test targets
+    function Get-TestTarget {
+        param(
+            [string]$Platform,
+            [string]$ProviderName
+        )
+
+        return @{
+            Platform     = $Platform
+            ProviderName = $ProviderName
+        }
+    }
+
+    $TestTargets = @()
+
+    # Detect if running in CI environment
+    # In CI, running tests using SauceLabs is mandatory while adb tests are skipped due to emulator limitations
+    $isCI = $env:CI -eq 'true'
+
+    # Check adb test configuration
+    if (Get-Command 'adb' -ErrorAction SilentlyContinue) {
+        # Check if any devices are connected
+        $adbDevices = adb devices
+        if ($adbDevices -match '\tdevice$') {
+            $TestTargets += Get-TestTarget -Platform 'Adb' -ProviderName 'Adb'
+        }
+        else {
+            Write-Host "No devices connected via adb. Adb tests will be skipped."
+        }
+    }
+    else {
+        Write-Host "adb not found in PATH. Adb tests will be skipped."
+    }
+
+    # Check SauceLabs test configuration
+    if ($env:SAUCE_USERNAME -and $env:SAUCE_ACCESS_KEY -and $env:SAUCE_REGION -and $env:SAUCE_DEVICE_NAME -and $env:SAUCE_SESSION_NAME) {
+        $TestTargets += Get-TestTarget -Platform 'SauceLabs' -ProviderName 'AndroidSauceLabs'
+    }
+    else {
+        $message = "SauceLabs credentials not found"
+        if ($isCI) {
+            throw "$message. These are required in CI."
+        }
+        else {
+            Write-Host "$message. SauceLabs tests will be skipped."
+        }
+    }
+
+    # Inform user if no test targets are available
+    if ($TestTargets.Count -eq 0) {
+        Write-Warning "No Android test targets detected. Integration tests will be skipped."
+        Write-Warning "To run Android integration tests, configure at least one test target:"
+        Write-Warning "  - Adb: ADB must be in PATH and at least one Android device must be connected (physical or emulator)"
+        Write-Warning "  - SauceLabs: Environment variables SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION, SAUCE_DEVICE_NAME, SAUCE_SESSION_NAME must be set"
+    }
+}
+
 BeforeAll {
-    # Map friendly platform name to app-runner platform name
-    $appRunnerPlatform = if ($Platform -eq 'Adb') { 'AndroidAdb' } else { 'AndroidSauceLabs' }
-
-    Write-Host "Running Android tests with platform: $Platform (app-runner: $appRunnerPlatform)" -ForegroundColor Cyan
-
     # Check if configuration file exists
     $configFile = "$PSScriptRoot/TestConfig.local.ps1"
     if (-not (Test-Path $configFile)) {
@@ -83,39 +122,49 @@ BeforeAll {
 
     $script:PackageName = "io.sentry.unreal.sample"
     $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
-
-    # Connect to Android device (provider validates its own env vars)
-    Write-Host "Connecting to Android via $Platform..." -ForegroundColor Yellow
-    Connect-Device -Platform $appRunnerPlatform
-
-    # Install APK
-    Write-Host "Installing APK via $Platform..." -ForegroundColor Yellow
-    Install-DeviceApp -Path $script:ApkPath
-
-    # ==========================================
-    # RUN 1: Crash test - creates minidump
-    # ==========================================
-    # The crash is captured but NOT uploaded yet (Android behavior).
-
-    Write-Host "Running crash-capture test (will crash)..." -ForegroundColor Yellow
-    $cmdlineCrashArgs = "-e cmdline -crash-capture"
-    $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineCrashArgs
-
-    Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
-
-    # ==========================================
-    # RUN 2: Message test - uploads crash from Run 1 + captures message
-    # ==========================================
-    # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
-
-    Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-    $cmdlineMessageArgs = "-e cmdline -message-capture"
-    $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
-
-    Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 }
 
-Describe "Sentry Unreal Android Integration Tests ($Platform)" {
+Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTargets {
+
+    BeforeAll {
+        # Connect to Android device (provider validates its own env vars)
+        Write-Host "Connecting to Android via $Platform..." -ForegroundColor Yellow
+        Connect-Device -Platform $ProviderName
+
+        # Install APK
+        Write-Host "Installing APK via $Platform..." -ForegroundColor Yellow
+        Install-DeviceApp -Path $script:ApkPath
+
+        # ==========================================
+        # RUN 1: Crash test - creates minidump
+        # ==========================================
+        # The crash is captured but NOT uploaded yet (Android behavior).
+
+        Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
+        $cmdlineCrashArgs = "-e cmdline -crash-capture"
+        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineCrashArgs
+
+        Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 2: Message test - uploads crash from Run 1 + captures message
+        # ==========================================
+        # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
+
+        Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
+        $cmdlineMessageArgs = "-e cmdline -message-capture"
+        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
+
+        Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
+    }
+
+    AfterAll {
+        # Disconnect from Android device
+        Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
+        Disconnect-Device
+
+        Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
+    }
 
     Context "Crash Capture Tests" {
         BeforeAll {
@@ -135,10 +184,12 @@ Describe "Sentry Unreal Android Integration Tests ($Platform)" {
                 try {
                     $CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
                     Write-Host "Crash event fetched from Sentry successfully" -ForegroundColor Green
-                } catch {
+                }
+                catch {
                     Write-Host "Failed to fetch crash event from Sentry: $_" -ForegroundColor Red
                 }
-            } else {
+            }
+            else {
                 Write-Host "Warning: No crash event ID found in output" -ForegroundColor Yellow
             }
         }
@@ -263,10 +314,6 @@ Describe "Sentry Unreal Android Integration Tests ($Platform)" {
 }
 
 AfterAll {
-    # Disconnect from Android device
-    Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
-    Disconnect-Device
-
     # Disconnect from Sentry API
     Write-Host "Disconnecting from Sentry API..." -ForegroundColor Yellow
     Disconnect-SentryApi

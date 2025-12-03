@@ -107,39 +107,27 @@ cd integration-test
 pwsh -Command "Invoke-Pester Integration.Tests.ps1"
 ```
 
-### Android (Local via ADB)
+### Android
 
 ```powershell
-# Ensure device/emulator is connected
+# Set environment variables
+$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
+$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
+$env:SENTRY_UNREAL_TEST_APP_PATH = "./path/to/SentryPlayground.apk"
+
+# Ensure device/emulator is connected (for ADB)
 adb devices
 
-# Set environment variables
-$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
-$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
-$env:SENTRY_UNREAL_TEST_APP_PATH = "./path/to/SentryPlayground.apk"
-
-# Run tests (uses ADB by default)
-cd integration-test
-Invoke-Pester Integration.Android.Tests.ps1
-```
-
-### Android (Cloud via SauceLabs)
-
-```powershell
-# Set environment variables
-$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
-$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
-$env:SENTRY_UNREAL_TEST_APP_PATH = "./path/to/SentryPlayground.apk"
+# Set credentials (for SauceLabs)
 $env:SAUCE_USERNAME = "your-saucelabs-username"
 $env:SAUCE_ACCESS_KEY = "your-saucelabs-access-key"
 $env:SAUCE_REGION = "us-west-1"
 $env:SAUCE_DEVICE_NAME = "Samsung_Galaxy_S23_15_real_sjc1"
 $env:SAUCE_SESSION_NAME = "My Custom Test Session"  # Optional, defaults to "App Runner Android Test"
 
-# Run tests with explicit platform selection
+# Run tests (uses ADB by default)
 cd integration-test
-$Container = New-PesterContainer -Path 'Integration.Android.Tests.ps1' -Data @{ Platform = 'SauceLabs' }
-Invoke-Pester -Container $Container
+Invoke-Pester Integration.Android.Tests.ps1
 ```
 
 **Note**: Ensure `SAUCE_DEVICE_NAME` matches a device available in your `SAUCE_REGION`. See the [SauceLabs Platform Configurator](https://app.saucelabs.com/live/web-testing) to find available devices for your region.
