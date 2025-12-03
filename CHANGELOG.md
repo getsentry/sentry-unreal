@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add runtime API to query user consent requirement ([#1139](https://github.com/getsentry/sentry-unreal/pull/1139))
+
 ### Fixes
 
 - No more warnings in UE 5.7 caused by deprecated API usage ([#1152](https://github.com/getsentry/sentry-unreal/pull/1152))

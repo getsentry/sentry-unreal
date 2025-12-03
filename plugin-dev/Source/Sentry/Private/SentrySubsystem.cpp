@@ -624,6 +624,18 @@ EUserConsent USentrySubsystem::GetUserConsent() const
 	return SubsystemNativeImpl->GetUserConsent();
 }
 
+bool USentrySubsystem::IsUserConsentRequired() const
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return false;
+	}
+
+	return SubsystemNativeImpl->IsUserConsentRequired();
+}
+
 USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation, bool BindToScope)
 {
 	check(SubsystemNativeImpl);
