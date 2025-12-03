@@ -2,27 +2,33 @@
 
 ## Unreleased
 
+### Features
+
+- Add runtime API to query user consent requirement ([#1139](https://github.com/getsentry/sentry-unreal/pull/1139))
+
 ### Fixes
 
+- No more warnings in UE 5.7 caused by deprecated API usage ([#1152](https://github.com/getsentry/sentry-unreal/pull/1152))
+- Custom tags are now correctly included in Android NDK crash events ([#1160](https://github.com/getsentry/sentry-unreal/pull/1160))
 - Fix compatibility issues with Cocoa SDK 9.0.0 ([#1149](https://github.com/getsentry/sentry-unreal/pull/1149))
 
 ### Dependencies
 
-- Bump Native SDK from v0.12.0 to v0.12.1 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0121)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.0...0.12.1)
+- Bump Native SDK from v0.12.0 to v0.12.2 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136), [#1162](https://github.com/getsentry/sentry-unreal/pull/1162))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0122)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.0...0.12.2)
 - Bump Android Gradle Plugin from v5.12.1 to v5.12.2 ([#1135](https://github.com/getsentry/sentry-unreal/pull/1135))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#5122)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/5.12.1...5.12.2)
-- Bump Cocoa SDK (iOS and Mac) from v8.57.0 to v8.57.2 ([#1133](https://github.com/getsentry/sentry-unreal/pull/1133), [#1143](https://github.com/getsentry/sentry-unreal/pull/1143))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8572)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.0...8.57.2)
+- Bump Cocoa SDK (iOS and Mac) from v8.57.0 to v8.57.3 ([#1133](https://github.com/getsentry/sentry-unreal/pull/1133), [#1143](https://github.com/getsentry/sentry-unreal/pull/1143), [#1150](https://github.com/getsentry/sentry-unreal/pull/1150))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8573)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.0...8.57.3)
 - Bump CLI from v2.57.0 to v2.58.2 ([#1142](https://github.com/getsentry/sentry-unreal/pull/1142), [#1145](https://github.com/getsentry/sentry-unreal/pull/1145), [#1148](https://github.com/getsentry/sentry-unreal/pull/1148))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2582)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.57.0...2.58.2)
-- Bump Java SDK (Android) from v8.25.0 to v8.26.0 ([#1147](https://github.com/getsentry/sentry-unreal/pull/1147))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8260)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.25.0...8.26.0)
+- Bump Java SDK (Android) from v8.25.0 to v8.27.1 ([#1147](https://github.com/getsentry/sentry-unreal/pull/1147), [#1156](https://github.com/getsentry/sentry-unreal/pull/1156), [#1159](https://github.com/getsentry/sentry-unreal/pull/1159))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8271)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.25.0...8.27.1)
 
 ## 1.2.1
 

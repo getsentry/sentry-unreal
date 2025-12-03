@@ -26,6 +26,7 @@
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
+#include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
 
 #include "Interface/SentrySubsystemInterface.h"
@@ -623,6 +624,18 @@ EUserConsent USentrySubsystem::GetUserConsent() const
 	return SubsystemNativeImpl->GetUserConsent();
 }
 
+bool USentrySubsystem::IsUserConsentRequired() const
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return false;
+	}
+
+	return SubsystemNativeImpl->IsUserConsentRequired();
+}
+
 USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation, bool BindToScope)
 {
 	check(SubsystemNativeImpl);
@@ -994,7 +1007,9 @@ void USentrySubsystem::ConfigureOutputDevice()
 	if (OutputDevice)
 	{
 		GLog->AddOutputDevice(OutputDevice.Get());
+#if UE_VERSION_OLDER_THAN(5, 7, 0)
 		GLog->SerializeBacklog(OutputDevice.Get());
+#endif
 	}
 }
 
