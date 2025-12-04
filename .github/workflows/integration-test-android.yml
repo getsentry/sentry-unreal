@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      GITHUB_TOKEN: ${{ github.token }}
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      GITHUB_TOKEN: ${{ github.token }}
       SAUCE_REGION: us-west-1
       SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
       SAUCE_SESSION_NAME: UE ${{ inputs.unreal-version }} Android Integration Test
@@ -39,8 +39,7 @@ jobs:
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground-arm64.apk
         run: |
           cmake -B build -S .
-          $Container = New-PesterContainer -Path 'Integration.Android.Tests.ps1' -Data @{ Platform = 'SauceLabs' }
-          Invoke-Pester -Container $Container -CI
+          Invoke-Pester Integration.Android.Tests.ps1 -CI
 
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
