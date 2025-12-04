@@ -2,7 +2,14 @@
 
 This directory contains integration tests for the Sentry Unreal SDK using Pester (PowerShell testing framework).
 
+Supports testing on:
+- **Windows** - Desktop (x64)
+- **Linux** - Desktop (x64)
+- **Android** - Local device/emulator (via adb) or SauceLabs Real Device Cloud
+
 ## Prerequisites
+
+### Common Requirements
 
 - **PowerShell 7+** (Core edition)
 - **CMake 3.20+**
@@ -11,7 +18,31 @@ This directory contains integration tests for the Sentry Unreal SDK using Pester
 - **Environment variables**:
   - `SENTRY_UNREAL_TEST_DSN` - Sentry test project DSN
   - `SENTRY_AUTH_TOKEN` - Sentry API authentication token
-  - `SENTRY_UNREAL_TEST_APP_PATH` - Path to the SentryPlayground executable
+  - `SENTRY_UNREAL_TEST_APP_PATH` - Path to the SentryPlayground executable/APK
+
+### Android-Specific Requirements
+
+#### Option A: Local Testing (via adb)
+- **Android device or emulator** connected and visible via `adb devices`
+- **ADB (Android Debug Bridge)** installed and in PATH
+
+#### Option B: Cloud Testing (via SauceLabs)
+- **SauceLabs account** with Real Device Cloud access
+- **Additional environment variables**:
+  - `SAUCE_USERNAME` - SauceLabs username
+  - `SAUCE_ACCESS_KEY` - SauceLabs access key
+  - `SAUCE_REGION` - SauceLabs region (e.g., `us-west-1`, `eu-central-1`)
+  - `SAUCE_DEVICE_NAME` - Device name available in the specified region (must match region datacenter suffix)
+  - `SAUCE_SESSION_NAME` - Session name for SauceLabs dashboard (optional, defaults to "App Runner Android Test")
+
+**Note**: The device name must match a device available in your SauceLabs region. Device names include a datacenter suffix that must align with the region:
+- `us-west-1` → devices ending in `_sjc1` (San Jose DC1)
+- `eu-central-1` → devices ending in `_fra1` (Frankfurt DC1)
+- `us-east-4` → devices ending in `_use1` (US East DC1)
+
+Example valid combinations:
+- Region: `us-west-1`, Device: `Samsung_Galaxy_S23_15_real_sjc1` ✓
+- Region: `eu-central-1`, Device: `Samsung_Galaxy_S23_15_real_sjc1` ✗ (mismatch)
 
 ## Setup
 
@@ -39,6 +70,7 @@ This will:
 3. Download the appropriate artifact:
    - `UE X.X sample build (Windows)` for Windows testing
    - `UE X.X sample build (Linux)` for Linux testing
+   - `UE X.X sample build (Android)` for Android testing
 4. Extract to a known location
 
 #### Option B: Build Locally
@@ -75,11 +107,36 @@ cd integration-test
 pwsh -Command "Invoke-Pester Integration.Tests.ps1"
 ```
 
+### Android
+
+```powershell
+# Set environment variables
+$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
+$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
+$env:SENTRY_UNREAL_TEST_APP_PATH = "./path/to/SentryPlayground.apk"
+
+# Ensure device/emulator is connected (for ADB)
+adb devices
+
+# Set credentials (for SauceLabs)
+$env:SAUCE_USERNAME = "your-saucelabs-username"
+$env:SAUCE_ACCESS_KEY = "your-saucelabs-access-key"
+$env:SAUCE_REGION = "us-west-1"
+$env:SAUCE_DEVICE_NAME = "Samsung_Galaxy_S23_15_real_sjc1"
+$env:SAUCE_SESSION_NAME = "My Custom Test Session"  # Optional, defaults to "App Runner Android Test"
+
+# Run tests (uses ADB by default)
+cd integration-test
+Invoke-Pester Integration.Android.Tests.ps1
+```
+
+**Note**: Ensure `SAUCE_DEVICE_NAME` matches a device available in your `SAUCE_REGION`. See the [SauceLabs Platform Configurator](https://app.saucelabs.com/live/web-testing) to find available devices for your region.
+
 ## Test Coverage
 
 The integration tests cover:
 
-### Crash Capture Tests
+### Crash Capture Tests _(Windows/Linux)_
 - Application crashes with non-zero exit code
 - Event ID is captured from output (set via `test.crash_id` tag)
 - Crash event appears in Sentry
@@ -89,8 +146,10 @@ The integration tests cover:
 - Integration test tags are set
 - Breadcrumbs are collected
 
-### Message Capture Tests
-- Application exits cleanly (exit code 0)
+**Note**: Crash capture tests are currently disabled on Android due to a known issue with tag persistence across app sessions.
+
+### Message Capture Tests _(All platforms)_
+- Application exits cleanly (exit code 0 on Windows/Linux, Android doesn't report exit codes)
 - Event ID is captured from output
 - TEST_RESULT indicates success
 - Message event appears in Sentry
@@ -99,9 +158,13 @@ The integration tests cover:
 - Integration test tags are set
 - Breadcrumbs are collected
 
+**Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
+
 ## Output
 
 Test outputs are saved to `integration-test/output/`:
+
+### Windows/Linux
 - `*-crash-stdout.log` - Crash test standard output
 - `*-crash-stderr.log` - Crash test standard error
 - `*-crash-result.json` - Full crash test result
@@ -110,6 +173,13 @@ Test outputs are saved to `integration-test/output/`:
 - `*-message-result.json` - Full message test result
 - `event-*.json` - Events fetched from Sentry API
 
+### Android
+- `*-logcat.txt` - Logcat output from app execution (one file per launch)
+- `event-*.json` - Events fetched from Sentry API
+
 ## CI Integration
 
-See `.github/workflows/integration-test-windows.yml` and `.github/workflows/integration-test-linux.yml` for CI usage examples.
+See the following workflow files for CI usage examples:
+- `.github/workflows/integration-test-windows.yml` - Windows desktop testing
+- `.github/workflows/integration-test-linux.yml` - Linux desktop testing
+- `.github/workflows/integration-test-android.yml` - Android testing via SauceLabs Real Device Cloud

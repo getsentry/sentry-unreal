@@ -18,20 +18,22 @@ void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
 
-	const TCHAR* CommandLine = FCommandLine::Get();
+	FString CommandLine = FCommandLine::Get();
+
+	UE_LOG(LogSentrySample, Display, TEXT("Starting app with commandline: %s\n"), *CommandLine);
 
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("crash-capture")) || 
-		FParse::Param(FCommandLine::Get(), TEXT("message-capture")))
+	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
+		FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
 		RunIntegrationTest(CommandLine);
 	}
 }
 
-void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
+void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLine)
 {
-	UE_LOG(LogSentrySample, Display, TEXT("Running integration test for command: %s\n"), CommandLine);
+	UE_LOG(LogSentrySample, Display, TEXT("Running integration test for command: %s\n"), *CommandLine);
 
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 	if (!SentrySubsystem)
@@ -40,11 +42,11 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 		return;
 	}
 
-	SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
+	SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([CommandLine](USentrySettings* Settings)
 	{
 		// Override options set in config file if needed
 		FString Dsn;
-		if (FParse::Value(CommandLine, TEXT("dsn="), Dsn))
+		if (FParse::Value(*CommandLine, TEXT("dsn="), Dsn))
 		{
 			Settings->Dsn = Dsn;
 		}
@@ -64,11 +66,11 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 	SentrySubsystem->AddBreadcrumbWithParams(
 		TEXT("Context configuration finished"), TEXT("Test"), TEXT("info"), TMap<FString, FSentryVariant>(), ESentryLevel::Info);
 
-	if (FParse::Param(CommandLine, TEXT("crash-capture")))
+	if (FParse::Param(*CommandLine, TEXT("crash-capture")))
 	{
 		RunCrashTest();
 	}
-	else if (FParse::Param(CommandLine, TEXT("message-capture")))
+	else if (FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
 		RunMessageTest();
 	}
@@ -89,6 +91,8 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 	GLog->Flush();
 
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
+
+	FPlatformProcess::Sleep(1.0f);
 
 	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
 }

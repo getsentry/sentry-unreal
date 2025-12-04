@@ -20,7 +20,7 @@ public:
 	virtual void Init() override;
 
 private:
-	void RunIntegrationTest(const TCHAR* CommandLine);
+	void RunIntegrationTest(const FString& CommandLine);
 	void RunCrashTest();
 	void RunMessageTest();
 
