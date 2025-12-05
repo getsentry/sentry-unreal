@@ -22,6 +22,8 @@ void USentryPlaygroundGameInstance::Init()
 
 	UE_LOG(LogSentrySample, Display, TEXT("Starting app with commandline: %s\n"), *CommandLine);
 
+	FPlatformMisc::RequestExitWithStatus(true, 0);
+
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
