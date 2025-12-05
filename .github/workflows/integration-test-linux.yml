@@ -36,7 +36,7 @@ jobs:
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground.sh
         run: |
           cmake -B build -S .
-          Invoke-Pester Integration.Tests.ps1 -CI
+          Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
