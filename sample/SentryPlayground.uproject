@@ -42,6 +42,8 @@
 		"Linux",
 		"Windows",
 		"Mac",
-		"LinuxArm64"
+		"LinuxArm64",
+		"Switch",
+		"PS5"
 	]
 }
