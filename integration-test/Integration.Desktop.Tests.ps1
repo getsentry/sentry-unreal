@@ -118,12 +118,19 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             # Build arguments and execute application:
             # -crash-capture: Triggers integration test crash scenario in the sample app
+            # -init-only: Only initializes the app to flush captured events and quit right after
             # -nullrhi: Runs without graphics rendering (headless mode)
             # -unattended: Disables user prompts and interactive dialogs
             # -stdout: Ensures logs are written to stdout on Linux/Unix systems
             # -nosplash: Prevents splash screen and dialogs
-            $appArgs = @('-crash-capture', '-nullrhi', '-unattended', '-stdout', '-nosplash')
-            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($appArgs -join ' ')
+            $appArgs = @('-nullrhi', '-unattended', '-stdout', '-nosplash')
+            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments (@('-crash-capture') + $appArgs -join ' ')
+
+            # On macOS, the crash is captured but not uploaded immediately (due to Cocoa’s behavior),
+            # so we need to run the test app again to send it to Sentry
+            if ($Platform -eq 'MacOS') {
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments (@('-init-only') + $appArgs -join ' ')
+            }
 
             Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -165,7 +172,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
         It "Should have correct event type and platform" {
             $script:CrashEvent.type | Should -Be 'error'
-            $script:CrashEvent.platform | Should -Be 'native'
+            if ($Platform -eq 'MacOS') {
+                $script:CrashEvent.platform | Should -Be 'cocoa'
+            }
+            else {
+                $script:CrashEvent.platform | Should -Be 'native'
+            }
         }
 
         It "Should have exception information" {
@@ -256,7 +268,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
 
         It "Should have correct platform" {
-            $script:MessageEvent.platform | Should -Be 'native'
+            if ($Platform -eq 'MacOS') {
+                $script:MessageEvent.platform | Should -Be 'cocoa'
+            }
+            else {
+                $script:MessageEvent.platform | Should -Be 'native'
+            }
         }
 
         It "Should have message content" {
