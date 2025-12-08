@@ -124,12 +124,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # -stdout: Ensures logs are written to stdout on Linux/Unix systems
             # -nosplash: Prevents splash screen and dialogs
             $appArgs = @('-nullrhi', '-unattended', '-stdout', '-nosplash')
-            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments (@('-crash-capture') + $appArgs -join ' ')
+            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-crash-capture') + $appArgs) -join ' ')
 
             # On macOS, the crash is captured but not uploaded immediately (due to Cocoa’s behavior),
             # so we need to run the test app again to send it to Sentry
             if ($Platform -eq 'MacOS') {
-                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments (@('-init-only') + $appArgs -join ' ')
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
             }
 
             Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
