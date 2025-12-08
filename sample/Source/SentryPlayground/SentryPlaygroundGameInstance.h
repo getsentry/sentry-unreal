@@ -23,6 +23,7 @@ private:
 	void RunIntegrationTest(const FString& CommandLine);
 	void RunCrashTest();
 	void RunMessageTest();
+	void RunInitOnly();
 
 	void ConfigureTestContext();
 

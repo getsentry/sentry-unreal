@@ -77,7 +77,7 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	}
 	else if (FParse::Param(*CommandLine, TEXT("init-only")))
 	{
-		CompleteTestWithResult(TEXT("init-only"), true, TEXT("Test complete"));
+		RunInitOnly();
 	}
 }
 
@@ -115,7 +115,20 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
 #endif
 
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunInitOnly()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	CompleteTestWithResult(TEXT("init-only"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::ConfigureTestContext()
@@ -135,11 +148,6 @@ void USentryPlaygroundGameInstance::ConfigureTestContext()
 
 void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestName, bool Result, const FString& Message)
 {
-	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-
-	// Ensure events were flushed
-	SentrySubsystem->Close();
-
 	UE_LOG(LogSentrySample, Display, TEXT("TEST_RESULT: {\"test\":\"%s\",\"success\":%s,\"message\":\"%s\"}\n"),
 		*TestName, Result ? TEXT("true") : TEXT("false"), *Message);
 
