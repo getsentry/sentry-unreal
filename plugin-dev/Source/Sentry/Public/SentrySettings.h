@@ -243,6 +243,10 @@ class SENTRY_API USentrySettings : public UObject
 	bool AttachStacktrace;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Attach information about all threads to captured events (for Android only)", ToolTip = "Flag indicating whether to attach information about all threads automatically to captured events, not just the crashing thread."))
+	bool AttachThreads;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach personally identifiable information", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
 	bool SendDefaultPii;
 
