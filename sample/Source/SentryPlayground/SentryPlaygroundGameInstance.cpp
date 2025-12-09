@@ -94,7 +94,7 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
-	FPlatformProcess::Sleep(1.0f);
+	// FPlatformProcess::Sleep(1.0f);
 
 	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
 }
