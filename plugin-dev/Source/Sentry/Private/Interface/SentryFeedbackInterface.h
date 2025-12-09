@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+class ISentryAttachment;
+
 class ISentryFeedback
 {
 public:
@@ -16,4 +18,5 @@ public:
 	virtual FString GetContactEmail() const = 0;
 	virtual void SetAssociatedEvent(const FString& eventId) = 0;
 	virtual FString GetAssociatedEvent() const = 0;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
 };

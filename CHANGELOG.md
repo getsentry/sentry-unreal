@@ -12,6 +12,10 @@
 - Custom tags are now correctly included in Android NDK crash events ([#1160](https://github.com/getsentry/sentry-unreal/pull/1160))
 - Fix compatibility issues with Cocoa SDK 9.0.0 ([#1149](https://github.com/getsentry/sentry-unreal/pull/1149))
 
+### Features
+
+- Add attachments support for user feedback ([#1121](https://github.com/getsentry/sentry-unreal/pull/1121))
+
 ### Dependencies
 
 - Bump Native SDK from v0.12.0 to v0.12.2 ([#1136](https://github.com/getsentry/sentry-unreal/pull/1136), [#1162](https://github.com/getsentry/sentry-unreal/pull/1162))
