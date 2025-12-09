@@ -1,4 +1,8 @@
-# Integration tests for Sentry Unreal SDK
+# Integration tests for Sentry Unreal SDK on desktop platforms
+#
+# Usage:
+#   Invoke-Pester Integration.Desktop.Tests.ps1
+#
 # Requires:
 # - Pre-built SentryPlayground application
 # - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_TEST_APP_PATH
@@ -6,67 +10,41 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-function script:Invoke-SentryUnrealTestApp {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string[]]$Arguments,
-
-        [Parameter(Mandatory)]
-        [string]$TestName,
-
-        [Parameter()]
-        [int]$TimeoutSeconds = 300
-    )
-
-    # Generate timestamp and output file paths
-    $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-    $stdoutFile = "$script:OutputDir/$timestamp-$TestName-stdout.log"
-    $stderrFile = "$script:OutputDir/$timestamp-$TestName-stderr.log"
-    $resultFile = "$script:OutputDir/$timestamp-$TestName-result.json"
-
-    $exitCode = -1
-
-    try {
-        $process = Start-Process -FilePath $script:AppPath -ArgumentList $Arguments `
-            -PassThru -NoNewWindow `
-            -RedirectStandardOutput $stdoutFile `
-            -RedirectStandardError $stderrFile
-
-        if ($process.WaitForExit($TimeoutSeconds * 1000)) {
-            $exitCode = $process.ExitCode
-        } else {
-            Write-Host "Process timed out after $TimeoutSeconds seconds. Killing process..." -ForegroundColor Red
-            $process.Kill($true)
-            $exitCode = -1
+BeforeDiscovery {
+    # Detect current platform and add as test target
+    function Get-CurrentDesktopPlatform {
+        if ($IsWindows) {
+            return 'Windows'
         }
-    } catch {
-        Write-Host "Process execution failed: $_" -ForegroundColor Red
-        $exitCode = -1
+        elseif ($IsMacOS) {
+            return 'MacOS'
+        }
+        elseif ($IsLinux) {
+            return 'Linux'
+        }
+        else {
+            return $null
+        }
     }
 
-    # Read output from files to ensure we get everything that was written
-    $stdout = @()
-    $stderr = @()
+    # Define test targets
+    function Get-TestTarget {
+        param(
+            [string]$Platform,
+            [string]$ProviderName
+        )
 
-    if (Test-Path $stdoutFile) {
-        $stdout = Get-Content $stdoutFile -ErrorAction SilentlyContinue
+        return @{
+            Platform     = $Platform
+            ProviderName = $ProviderName
+        }
     }
 
-    if (Test-Path $stderrFile) {
-        $stderr = Get-Content $stderrFile -ErrorAction SilentlyContinue
-    }
-
-    $result = @{
-        ExitCode = $exitCode
-        Output = $stdout
-        Error = $stderr
-    }
-
-    # Save full output to result JSON
-    $result | ConvertTo-Json -Depth 10 | Out-File $resultFile
-
-    return $result
+    # Only test the current desktop platform
+    $TestTargets = @()
+    $currentPlatform = Get-CurrentDesktopPlatform
+    $currentPlatform | Should -Not -Be $null
+    $TestTargets += Get-TestTarget -Platform $currentPlatform -ProviderName $currentPlatform
 }
 
 BeforeAll {
@@ -99,14 +77,14 @@ BeforeAll {
         throw "Environment variable SENTRY_UNREAL_TEST_APP_PATH must be set"
     }
 
-    # Connect to Sentry API
-    Write-Host "Connecting to Sentry API..." -ForegroundColor Yellow
-    Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
-
     # Validate app path
     if (-not (Test-Path $script:AppPath)) {
         throw "Application not found at: $script:AppPath"
     }
+
+    # Connect to Sentry API
+    Write-Host "Connecting to Sentry API..." -ForegroundColor Yellow
+    Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
 
     # Create output directory
     $script:OutputDir = "$PSScriptRoot/output"
@@ -115,7 +93,21 @@ BeforeAll {
     }
 }
 
-Describe "Sentry Unreal Integration Tests" {
+Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTargets {
+
+    BeforeAll {
+        # Connect to desktop device (required to create corresponding provider)
+        Write-Host "Connecting to $Platform..." -ForegroundColor Yellow
+        Connect-Device -Platform $Platform
+    }
+
+    AfterAll {
+        # Disconnect from desktop device
+        Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
+        Disconnect-Device
+
+        Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
+    }
 
     Context "Crash Capture Tests" {
         BeforeAll {
@@ -126,12 +118,19 @@ Describe "Sentry Unreal Integration Tests" {
 
             # Build arguments and execute application:
             # -crash-capture: Triggers integration test crash scenario in the sample app
+            # -init-only: Only initializes the app to flush captured events and quit right after
             # -nullrhi: Runs without graphics rendering (headless mode)
             # -unattended: Disables user prompts and interactive dialogs
             # -stdout: Ensures logs are written to stdout on Linux/Unix systems
             # -nosplash: Prevents splash screen and dialogs
-            $appArgs = @('-crash-capture', '-nullrhi', '-unattended', '-stdout', '-nosplash')
-            $script:CrashResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -TestName 'crash'
+            $appArgs = @('-nullrhi', '-unattended', '-stdout', '-nosplash')
+            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-crash-capture') + $appArgs) -join ' ')
+
+            # On macOS, the crash is captured but not uploaded immediately (due to Cocoa’s behavior),
+            # so we need to run the test app again to send it to Sentry
+            if ($Platform -eq 'MacOS') {
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
+            }
 
             Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -147,10 +146,12 @@ Describe "Sentry Unreal Integration Tests" {
                 try {
                     $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
                     Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
-                } catch {
+                }
+                catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
                 }
-            } else {
+            }
+            else {
                 Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
             }
         }
@@ -171,7 +172,12 @@ Describe "Sentry Unreal Integration Tests" {
 
         It "Should have correct event type and platform" {
             $script:CrashEvent.type | Should -Be 'error'
-            $script:CrashEvent.platform | Should -Be 'native'
+            if ($Platform -eq 'MacOS') {
+                $script:CrashEvent.platform | Should -Be 'cocoa'
+            }
+            else {
+                $script:CrashEvent.platform | Should -Be 'native'
+            }
         }
 
         It "Should have exception information" {
@@ -217,7 +223,7 @@ Describe "Sentry Unreal Integration Tests" {
             # -stdout: Ensures logs are written to stdout on Linux/Unix systems
             # -nosplash: Prevents splash screen and dialogs
             $appArgs = @('-message-capture', '-nullrhi', '-unattended', '-stdout', '-nosplash')
-            $script:MessageResult = Invoke-SentryUnrealTestApp -Arguments $appArgs -TestName 'message'
+            $script:MessageResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($appArgs -join ' ')
 
             Write-Host "Message test executed. Exit code: $($script:MessageResult.ExitCode)" -ForegroundColor Cyan
 
@@ -231,10 +237,12 @@ Describe "Sentry Unreal Integration Tests" {
                 try {
                     $script:MessageEvent = Get-SentryTestEvent -EventId $eventIds[0]
                     Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
-                } catch {
+                }
+                catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
                 }
-            } else {
+            }
+            else {
                 Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
             }
         }
@@ -260,7 +268,12 @@ Describe "Sentry Unreal Integration Tests" {
         }
 
         It "Should have correct platform" {
-            $script:MessageEvent.platform | Should -Be 'native'
+            if ($Platform -eq 'MacOS') {
+                $script:MessageEvent.platform | Should -Be 'cocoa'
+            }
+            else {
+                $script:MessageEvent.platform | Should -Be 'native'
+            }
         }
 
         It "Should have message content" {
@@ -288,5 +301,6 @@ Describe "Sentry Unreal Integration Tests" {
 AfterAll {
     Write-Host "Disconnecting from Sentry API..." -ForegroundColor Yellow
     Disconnect-SentryApi
+
     Write-Host "Integration tests complete" -ForegroundColor Green
 }

@@ -25,7 +25,8 @@ void USentryPlaygroundGameInstance::Init()
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
-		FParse::Param(*CommandLine, TEXT("message-capture")))
+		FParse::Param(*CommandLine, TEXT("message-capture")) ||
+		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
 	}
@@ -74,6 +75,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	{
 		RunMessageTest();
 	}
+	else if (FParse::Param(*CommandLine, TEXT("init-only")))
+	{
+		RunInitOnly();
+	}
 }
 
 void USentryPlaygroundGameInstance::RunCrashTest()
@@ -114,6 +119,16 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	SentrySubsystem->Close();
 
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunInitOnly()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	CompleteTestWithResult(TEXT("init-only"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::ConfigureTestContext()

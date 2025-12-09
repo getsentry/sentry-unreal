@@ -91,7 +91,7 @@ $env:SENTRY_UNREAL_TEST_APP_PATH = "path/to/SentryPlayground.exe"
 
 # Run tests
 cd integration-test
-Invoke-Pester Integration.Tests.ps1
+Invoke-Pester Integration.Desktop.Tests.ps1
 ```
 
 ### Linux
@@ -104,7 +104,7 @@ export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.sh"
 
 # Run tests
 cd integration-test
-pwsh -Command "Invoke-Pester Integration.Tests.ps1"
+pwsh -Command "Invoke-Pester Integration.Desktop.Tests.ps1"
 ```
 
 ### Android
@@ -136,7 +136,7 @@ Invoke-Pester Integration.Android.Tests.ps1
 
 The integration tests cover:
 
-### Crash Capture Tests _(Windows/Linux)_
+### Crash Capture Tests
 - Application crashes with non-zero exit code
 - Event ID is captured from output (set via `test.crash_id` tag)
 - Crash event appears in Sentry
@@ -148,7 +148,7 @@ The integration tests cover:
 
 **Note**: Crash capture tests are currently disabled on Android due to a known issue with tag persistence across app sessions.
 
-### Message Capture Tests _(All platforms)_
+### Message Capture Tests
 - Application exits cleanly (exit code 0 on Windows/Linux, Android doesn't report exit codes)
 - Event ID is captured from output
 - TEST_RESULT indicates success
