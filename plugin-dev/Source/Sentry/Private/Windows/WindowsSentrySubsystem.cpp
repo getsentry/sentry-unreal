@@ -153,22 +153,22 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 				// 1. Log the contents of GErrorHist to the log file
 				// 2. Flush the log to disk
 				// This mirrors UE's WindowsErrorOutputDevice.cpp implementation
-#if !NO_LOGGING
-				FDebug::LogFormattedMessageWithCallstack(
-					LogSentrySdk.GetCategoryName(),
-					__FILE__,
-					__LINE__,
-					TEXT("=== Sentry Crash Report ==="),
-					GErrorHist,
-					ELogVerbosity::Error
-				);
-#endif
-
-				// Flush logs to disk
-				if (GLog)
-				{
-					GLog->Flush();
-				}
+// #if !NO_LOGGING
+// 				FDebug::LogFormattedMessageWithCallstack(
+// 					LogSentrySdk.GetCategoryName(),
+// 					__FILE__,
+// 					__LINE__,
+// 					TEXT("=== Sentry Crash Report ==="),
+// 					GErrorHist,
+// 					ELogVerbosity::Error
+// 				);
+// #endif
+//
+// 				// // Flush logs to disk
+// 				if (GLog)
+// 				{
+// 					GLog->Flush();
+// 				}
 			}
 		}
 	}

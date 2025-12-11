@@ -169,9 +169,17 @@ void FWindowsCrashLogger::PerformCrashLogging()
 	// This happens in a separate thread to avoid stack overflow issues
 	WriteToErrorBuffers(SharedCrashContext, SharedCrashedThreadHandle);
 
-	// NOTE: We don't call GLog->Panic() or FDebug::LogFormattedMessageWithCallstack() here
-	// because they need to be called from the crash handler context, not this separate thread.
-	// The OnCrash hook will handle logging and flushing after we signal completion.
+	// NOTE: We call FDebug::LogFormattedMessageWithCallstack() and GLog->Flush() here
+	// because it's unsafe to call them from the crashing thread when handling memory-related errors (e.g. stack overflow, memory corruption, etc.)
+
+#if !NO_LOGGING
+	FDebug::LogFormattedMessageWithCallstack(LogSentrySdk.GetCategoryName(), __FILE__, __LINE__, TEXT("Sentry Crash Callstack"), GErrorHist, ELogVerbosity::Error);
+#endif
+
+	if (GLog)
+	{
+		GLog->Flush();
+	}
 }
 
 void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
