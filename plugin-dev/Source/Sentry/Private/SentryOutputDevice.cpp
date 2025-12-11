@@ -32,6 +32,12 @@ FSentryOutputDevice::FSentryOutputDevice()
 
 void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
+	// Filter internal log messages coming from the underlying platform-specific Sentry SDKs 
+	if (Category.IsEqual(TEXT("LogSentryInternal")))
+	{
+		return;
+	}
+ 
 	const FString Message = FString(V).TrimStartAndEnd();
 	if (Message.IsEmpty() || Message.Contains(TEXT("[Callstack]")))
 	{
