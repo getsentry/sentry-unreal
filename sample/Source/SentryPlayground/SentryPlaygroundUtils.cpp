@@ -61,6 +61,13 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 				}
 			}
 			break;
+		case ESentryAppTerminationType::MemoryCorruption:
+			{
+				void* ptr = FMemory::Malloc(100);
+				FMemory::Free(ptr);
+				FMemory::Free(ptr);
+			}
+			break;
 		case ESentryAppTerminationType::RenderThreadCrash:
 			GEngine->Exec(nullptr, TEXT("Debug RenderCrash"));
 			break;
