@@ -5,9 +5,8 @@
 #if USE_SENTRY_NATIVE
 
 #include "CoreMinimal.h"
-#include "sentry.h"
 
-#include "Microsoft/AllowMicrosoftPlatformTypes.h"
+#include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
 
 /**
  * Manages a dedicated thread for safe crash logging on Windows.
@@ -74,7 +73,5 @@ private:
 	const sentry_ucontext_t* SharedCrashContext;
 	HANDLE SharedCrashedThreadHandle;
 };
-
-#include "Microsoft/HideMicrosoftPlatformTypes.h"
 
 #endif // USE_SENTRY_NATIVE

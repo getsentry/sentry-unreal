@@ -219,7 +219,12 @@ void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCont
 		{
 			// Perform stack walking using the crashed thread's context
 			void* ProgramCounter = CrashContext->exception_ptrs.ExceptionRecord->ExceptionAddress;
+
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 			FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, ProgramCounter, ContextWrapper);
+#else
+			FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, 0, ContextWrapper);
+#endif
 
 			// Release the context wrapper
 			FWindowsPlatformStackWalk::ReleaseThreadContextWrapper(ContextWrapper);
