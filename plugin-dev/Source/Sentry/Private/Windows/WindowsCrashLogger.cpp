@@ -9,8 +9,8 @@
 #include "Windows/Infrastructure/WindowsSentryConverters.h"
 
 #include "HAL/PlatformStackWalk.h"
-#include "Misc/OutputDeviceRedirector.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/OutputDeviceRedirector.h"
 #include "Windows/WindowsPlatformStackWalk.h"
 
 // These are pre-allocated global buffers from UE that are safe to use during crash handling
@@ -28,9 +28,9 @@ FWindowsCrashLogger::FWindowsCrashLogger()
 	, SharedCrashedThreadHandle(nullptr)
 {
 	// Create synchronization events
-	CrashEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr);          // Auto-reset event
+	CrashEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr);			 // Auto-reset event
 	CrashCompletedEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr); // Auto-reset event
-	StopThreadEvent = CreateEvent(nullptr, Windows::TRUE, Windows::FALSE, nullptr);      // Manual-reset event
+	StopThreadEvent = CreateEvent(nullptr, Windows::TRUE, Windows::FALSE, nullptr);		 // Manual-reset event
 
 	if (!CrashEvent || !CrashCompletedEvent || !StopThreadEvent)
 	{
@@ -40,12 +40,12 @@ FWindowsCrashLogger::FWindowsCrashLogger()
 
 	// Create the crash logging thread
 	CrashLoggingThread = CreateThread(
-		nullptr,                          // Default security attributes
-		0,                                // Default stack size
-		CrashLoggingThreadProc,           // Thread procedure
-		this,                             // Parameter to thread procedure
-		0,                                // Run immediately
-		&CrashLoggingThreadId             // Thread ID output
+		nullptr,				// Default security attributes
+		0,						// Default stack size
+		CrashLoggingThreadProc, // Thread procedure
+		this,					// Parameter to thread procedure
+		0,						// Run immediately
+		&CrashLoggingThreadId	// Thread ID output
 	);
 
 	if (CrashLoggingThread)
@@ -187,8 +187,7 @@ void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCont
 	FWindowsSentryConverters::SentryCrashContextToString(
 		CrashContext,
 		GErrorExceptionDescription,
-		UE_ARRAY_COUNT(GErrorExceptionDescription)
-	);
+		UE_ARRAY_COUNT(GErrorExceptionDescription));
 
 	// Step 2: Append exception description to GErrorHist
 #if !UE_VERSION_OLDER_THAN(5, 6, 0)
@@ -211,8 +210,7 @@ void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCont
 		// Create thread context wrapper for safe cross-thread stack walking
 		void* ContextWrapper = FWindowsPlatformStackWalk::MakeThreadContextWrapper(
 			CrashContext->exception_ptrs.ContextRecord,
-			CrashedThreadHandle
-		);
+			CrashedThreadHandle);
 
 		if (ContextWrapper)
 		{

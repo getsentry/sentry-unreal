@@ -126,14 +126,14 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 
 		// Duplicate the pseudo-handle to get a real handle
 		if (DuplicateHandle(
-			GetCurrentProcess(),           // Source process
-			CurrentThreadPseudoHandle,     // Source handle (pseudo)
-			GetCurrentProcess(),           // Target process
-			&CrashedThreadHandle,          // Target handle (real)
-			0,                             // Desired access (ignored when using DUPLICATE_SAME_ACCESS)
-			Windows::FALSE,                // Inherit handle
-			DUPLICATE_SAME_ACCESS          // Options
-		))
+				GetCurrentProcess(),	   // Source process
+				CurrentThreadPseudoHandle, // Source handle (pseudo)
+				GetCurrentProcess(),	   // Target process
+				&CrashedThreadHandle,	   // Target handle (real)
+				0,						   // Desired access (ignored when using DUPLICATE_SAME_ACCESS)
+				Windows::FALSE,			   // Inherit handle
+				DUPLICATE_SAME_ACCESS	   // Options
+				))
 		{
 			// Log the crash (with timeout to prevent hanging)
 			// This waits for the logging thread to complete stack walking and fill GErrorHist
@@ -148,22 +148,22 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 				// 1. Log the contents of GErrorHist to the log file
 				// 2. Flush the log to disk
 				// This mirrors UE's WindowsErrorOutputDevice.cpp implementation
-// #if !NO_LOGGING
-// 				FDebug::LogFormattedMessageWithCallstack(
-// 					LogSentrySdk.GetCategoryName(),
-// 					__FILE__,
-// 					__LINE__,
-// 					TEXT("=== Sentry Crash Report ==="),
-// 					GErrorHist,
-// 					ELogVerbosity::Error
-// 				);
-// #endif
-//
-// 				// // Flush logs to disk
-// 				if (GLog)
-// 				{
-// 					GLog->Flush();
-// 				}
+				// #if !NO_LOGGING
+				// 				FDebug::LogFormattedMessageWithCallstack(
+				// 					LogSentrySdk.GetCategoryName(),
+				// 					__FILE__,
+				// 					__LINE__,
+				// 					TEXT("=== Sentry Crash Report ==="),
+				// 					GErrorHist,
+				// 					ELogVerbosity::Error
+				// 				);
+				// #endif
+				//
+				// 				// // Flush logs to disk
+				// 				if (GLog)
+				// 				{
+				// 					GLog->Flush();
+				// 				}
 			}
 		}
 	}

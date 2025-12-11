@@ -64,9 +64,9 @@ private:
 	DWORD CrashLoggingThreadId;
 
 	// Synchronization events
-	HANDLE CrashEvent;          // Signaled when a crash occurs
+	HANDLE CrashEvent;			// Signaled when a crash occurs
 	HANDLE CrashCompletedEvent; // Signaled when logging is complete
-	HANDLE StopThreadEvent;     // Signaled to stop the thread
+	HANDLE StopThreadEvent;		// Signaled to stop the thread
 
 	// Shared data (accessed from both main thread and logging thread)
 	// These must be set before signaling CrashEvent
