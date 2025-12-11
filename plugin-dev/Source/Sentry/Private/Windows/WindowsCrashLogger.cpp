@@ -6,13 +6,12 @@
 
 #include "SentryDefines.h"
 
+#include "Windows/Infrastructure/WindowsSentryConverters.h"
+
 #include "HAL/PlatformStackWalk.h"
 #include "Misc/OutputDeviceRedirector.h"
 #include "Misc/EngineVersionComparison.h"
-#include "Windows/Infrastructure/WindowsSentryConverters.h"
 #include "Windows/WindowsPlatformStackWalk.h"
-
-#include "Microsoft/AllowMicrosoftPlatformTypes.h"
 
 // These are pre-allocated global buffers from UE that are safe to use during crash handling
 extern CORE_API TCHAR GErrorHist[16384];
@@ -29,9 +28,9 @@ FWindowsCrashLogger::FWindowsCrashLogger()
 	, SharedCrashedThreadHandle(nullptr)
 {
 	// Create synchronization events
-	CrashEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);          // Auto-reset event
-	CrashCompletedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr); // Auto-reset event
-	StopThreadEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);      // Manual-reset event
+	CrashEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr);          // Auto-reset event
+	CrashCompletedEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr); // Auto-reset event
+	StopThreadEvent = CreateEvent(nullptr, Windows::TRUE, Windows::FALSE, nullptr);      // Manual-reset event
 
 	if (!CrashEvent || !CrashCompletedEvent || !StopThreadEvent)
 	{
@@ -133,7 +132,7 @@ DWORD WINAPI FWindowsCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
 	while (true)
 	{
 		// Wait for either a crash event or stop event
-		DWORD WaitResult = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
+		DWORD WaitResult = WaitForMultipleObjects(2, Events, Windows::FALSE, INFINITE);
 
 		if (WaitResult == WAIT_OBJECT_0)
 		{
@@ -238,7 +237,5 @@ void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCont
 	FCString::Strncat(GErrorHist, ANSI_TO_TCHAR(StackTrace), UE_ARRAY_COUNT(GErrorHist));
 #endif
 }
-
-#include "Microsoft/HideMicrosoftPlatformTypes.h"
 
 #endif // USE_SENTRY_NATIVE

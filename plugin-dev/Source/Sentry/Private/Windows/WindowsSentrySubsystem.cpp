@@ -6,16 +6,11 @@
 
 #include "SentryDefines.h"
 #include "SentrySettings.h"
+
 #include "Utils/SentryPlatformDetectionUtils.h"
 
 #include "Misc/OutputDeviceRedirector.h"
 #include "Misc/Paths.h"
-#include "Windows/Infrastructure/WindowsSentryConverters.h"
-#include "Windows/WindowsPlatformStackWalk.h"
-
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
-#include <winternl.h>
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
 {
