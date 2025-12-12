@@ -122,13 +122,13 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 
 		// Duplicate the pseudo-handle to get a real handle
 		if (DuplicateHandle(
-				GetCurrentProcess(),		// Source process
-				CurrentThreadPseudoHandle,	// Source handle (pseudo)
-				GetCurrentProcess(),		// Target process
-				&CrashedThreadHandle,		// Target handle (real)
-				0,							// Desired access (ignored when using DUPLICATE_SAME_ACCESS)
-				Windows::FALSE,				// Inherit handle
-				DUPLICATE_SAME_ACCESS		// Options
+				GetCurrentProcess(),	   // Source process
+				CurrentThreadPseudoHandle, // Source handle (pseudo)
+				GetCurrentProcess(),	   // Target process
+				&CrashedThreadHandle,	   // Target handle (real)
+				0,						   // Desired access (ignored when using DUPLICATE_SAME_ACCESS)
+				Windows::FALSE,			   // Inherit handle
+				DUPLICATE_SAME_ACCESS	   // Options
 				))
 		{
 			// Log the crash (with timeout to prevent hanging)
