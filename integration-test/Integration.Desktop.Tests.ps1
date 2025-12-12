@@ -45,6 +45,13 @@ BeforeDiscovery {
     $currentPlatform = Get-CurrentDesktopPlatform
     $currentPlatform | Should -Not -Be $null
     $TestTargets += Get-TestTarget -Platform $currentPlatform -ProviderName $currentPlatform
+
+    # Define crash types to test
+    $CrashTypesToTest = @(
+        @{ Name = 'NullPointer'; Flag = 'crash-capture' }
+        @{ Name = 'StackOverflow'; Flag = 'crash-stackoverflow' }
+        @{ Name = 'MemoryCorruption'; Flag = 'crash-memorycorruption' }
+    )
 }
 
 BeforeAll {
@@ -109,30 +116,30 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
     }
 
-    Context "Crash Capture Tests" {
+    Context "Crash Capture Tests - <Name>" -ForEach $CrashTypesToTest {
         BeforeAll {
             $script:CrashResult = $null
             $script:CrashEvent = $null
 
-            Write-Host "Running crash capture test..." -ForegroundColor Yellow
+            Write-Host "Running $($_.Name) crash test..." -ForegroundColor Yellow
 
             # Build arguments and execute application:
-            # -crash-capture: Triggers integration test crash scenario in the sample app
+            # -crash-capture/-crash-stackoverflow/-crash-memorycorruption: Triggers specific crash type
             # -init-only: Only initializes the app to flush captured events and quit right after
             # -nullrhi: Runs without graphics rendering (headless mode)
             # -unattended: Disables user prompts and interactive dialogs
             # -stdout: Ensures logs are written to stdout on Linux/Unix systems
             # -nosplash: Prevents splash screen and dialogs
             $appArgs = @('-nullrhi', '-unattended', '-stdout', '-nosplash')
-            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-crash-capture') + $appArgs) -join ' ')
+            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@("-$($_.Flag)") + $appArgs) -join ' ')
 
-            # On macOS, the crash is captured but not uploaded immediately (due to Cocoa’s behavior),
+            # On macOS, the crash is captured but not uploaded immediately (due to Cocoa's behavior),
             # so we need to run the test app again to send it to Sentry
             if ($Platform -eq 'MacOS') {
                 Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
             }
 
-            Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "$($_.Name) crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
 
             # Parse event ID from output
             $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1

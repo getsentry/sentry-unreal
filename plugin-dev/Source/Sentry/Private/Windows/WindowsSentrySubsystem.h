@@ -7,10 +7,13 @@
 #include "Microsoft/MicrosoftSentrySubsystem.h"
 #include "Utils/SentryPlatformInfo.h"
 
+#include "WindowsCrashLogger.h"
+
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler) override;
+	virtual void Close() override;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
@@ -22,6 +25,9 @@ protected:
 private:
 	/** Wine/Proton detection info */
 	FWineProtonInfo WineProtonInfo;
+
+	/** Crash logger for safe stack trace logging during crashes */
+	TUniquePtr<FWindowsCrashLogger> CrashLogger;
 };
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;

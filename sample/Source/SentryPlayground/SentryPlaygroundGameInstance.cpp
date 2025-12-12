@@ -25,6 +25,8 @@ void USentryPlaygroundGameInstance::Init()
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
+		FParse::Param(*CommandLine, TEXT("crash-stackoverflow")) ||
+		FParse::Param(*CommandLine, TEXT("crash-memorycorruption")) ||
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -69,7 +71,15 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")))
 	{
-		RunCrashTest();
+		RunCrashTest(ESentryAppTerminationType::NullPointer);
+	}
+	if (FParse::Param(*CommandLine, TEXT("crash-stackoverflow")))
+	{
+		RunCrashTest(ESentryAppTerminationType::StackOverflow);
+	}
+	if (FParse::Param(*CommandLine, TEXT("crash-memorycorruption")))
+	{
+		RunCrashTest(ESentryAppTerminationType::MemoryCorruption);
 	}
 	else if (FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
@@ -81,7 +91,7 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	}
 }
 
-void USentryPlaygroundGameInstance::RunCrashTest()
+void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType CrashType)
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
@@ -99,7 +109,7 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 
 	FPlatformProcess::Sleep(1.0f);
 
-	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
+	USentryPlaygroundUtils::Terminate(CrashType);
 }
 
 void USentryPlaygroundGameInstance::RunMessageTest()

@@ -21,7 +21,7 @@ public:
 
 private:
 	void RunIntegrationTest(const FString& CommandLine);
-	void RunCrashTest();
+	void RunCrashTest(ESentryAppTerminationType CrashType);
 	void RunMessageTest();
 	void RunInitOnly();
 
