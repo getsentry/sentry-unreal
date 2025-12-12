@@ -9,16 +9,12 @@
 
 #include "Utils/SentryPlatformDetectionUtils.h"
 
-#include "Misc/OutputDeviceRedirector.h"
 #include "Misc/Paths.h"
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
 {
-	// Store crash logging setting
-	bEnableOnCrashLogging = Settings->EnableOnCrashLogging;
-
 	// Initialize crash logger if enabled
-	if (bEnableOnCrashLogging)
+	if (Settings->EnableOnCrashLogging)
 	{
 		CrashLogger = MakeUnique<FWindowsCrashLogger>();
 		if (CrashLogger->IsThreadRunning())
@@ -116,8 +112,8 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	// If crash logging is enabled, log the crash to UE's game log
-	if (CrashLogger && uctx)
+	// If crash logging is enabled, log the crash callstack to game log
+	if (CrashLogger)
 	{
 		// Get a pseudo-handle to the current thread (the crashed thread)
 		// We need a real handle for cross-thread stack walking
@@ -126,59 +122,34 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 
 		// Duplicate the pseudo-handle to get a real handle
 		if (DuplicateHandle(
-				GetCurrentProcess(),	   // Source process
-				CurrentThreadPseudoHandle, // Source handle (pseudo)
-				GetCurrentProcess(),	   // Target process
-				&CrashedThreadHandle,	   // Target handle (real)
-				0,						   // Desired access (ignored when using DUPLICATE_SAME_ACCESS)
-				Windows::FALSE,			   // Inherit handle
-				DUPLICATE_SAME_ACCESS	   // Options
+				GetCurrentProcess(),		// Source process
+				CurrentThreadPseudoHandle,	// Source handle (pseudo)
+				GetCurrentProcess(),		// Target process
+				&CrashedThreadHandle,		// Target handle (real)
+				0,							// Desired access (ignored when using DUPLICATE_SAME_ACCESS)
+				Windows::FALSE,				// Inherit handle
+				DUPLICATE_SAME_ACCESS		// Options
 				))
 		{
 			// Log the crash (with timeout to prevent hanging)
-			// This waits for the logging thread to complete stack walking and fill GErrorHist
-			bool bLogSuccess = CrashLogger->LogCrash(uctx, CrashedThreadHandle, 5000);
+			// This waits for the logging thread to complete stack walking, fill GErrorHist and dump callstack to logs
+			CrashLogger->LogCrash(uctx, CrashedThreadHandle, 5000);
 
 			// Close the duplicated handle
 			CloseHandle(CrashedThreadHandle);
-
-			if (bLogSuccess)
-			{
-				// Now that GErrorHist is filled by the logging thread, we need to:
-				// 1. Log the contents of GErrorHist to the log file
-				// 2. Flush the log to disk
-				// This mirrors UE's WindowsErrorOutputDevice.cpp implementation
-				// #if !NO_LOGGING
-				// 				FDebug::LogFormattedMessageWithCallstack(
-				// 					LogSentrySdk.GetCategoryName(),
-				// 					__FILE__,
-				// 					__LINE__,
-				// 					TEXT("=== Sentry Crash Report ==="),
-				// 					GErrorHist,
-				// 					ELogVerbosity::Error
-				// 				);
-				// #endif
-				//
-				// 				// // Flush logs to disk
-				// 				if (GLog)
-				// 				{
-				// 					GLog->Flush();
-				// 				}
-			}
 		}
 	}
 
-	// Context and tags are already set globally during InitWithSettings
-	// Just call parent implementation
 	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
 }
 
 void FWindowsSentrySubsystem::Close()
 {
-	// Clean up crash logger before closing
-	CrashLogger.Reset();
+	if (CrashLogger)
+	{
+		CrashLogger.Reset();
+	}
 
-	// Call parent implementation
 	FMicrosoftSentrySubsystem::Close();
 }
 

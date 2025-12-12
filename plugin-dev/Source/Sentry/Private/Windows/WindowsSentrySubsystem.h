@@ -28,9 +28,6 @@ private:
 
 	/** Crash logger for safe stack trace logging during crashes */
 	TUniquePtr<FWindowsCrashLogger> CrashLogger;
-
-	/** Flag indicating if crash logging is enabled */
-	bool bEnableOnCrashLogging = false;
 };
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;

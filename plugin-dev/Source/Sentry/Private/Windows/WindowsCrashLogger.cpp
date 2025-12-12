@@ -8,15 +8,10 @@
 
 #include "Windows/Infrastructure/WindowsSentryConverters.h"
 
-#include "HAL/PlatformStackWalk.h"
+#include "CoreGlobals.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/OutputDeviceRedirector.h"
 #include "Windows/WindowsPlatformStackWalk.h"
-
-// These are pre-allocated global buffers from UE that are safe to use during crash handling
-extern CORE_API TCHAR GErrorHist[16384];
-extern CORE_API TCHAR GErrorExceptionDescription[4096];
-extern CORE_API class FOutputDeviceRedirector* GLog;
 
 FWindowsCrashLogger::FWindowsCrashLogger()
 	: CrashLoggingThread(nullptr)
@@ -28,9 +23,9 @@ FWindowsCrashLogger::FWindowsCrashLogger()
 	, SharedCrashedThreadHandle(nullptr)
 {
 	// Create synchronization events
-	CrashEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr);			 // Auto-reset event
-	CrashCompletedEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr); // Auto-reset event
-	StopThreadEvent = CreateEvent(nullptr, Windows::TRUE, Windows::FALSE, nullptr);		 // Manual-reset event
+	CrashEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr);				// Auto-reset event
+	CrashCompletedEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr);	// Auto-reset event
+	StopThreadEvent = CreateEvent(nullptr, Windows::TRUE, Windows::FALSE, nullptr);			// Manual-reset event
 
 	if (!CrashEvent || !CrashCompletedEvent || !StopThreadEvent)
 	{

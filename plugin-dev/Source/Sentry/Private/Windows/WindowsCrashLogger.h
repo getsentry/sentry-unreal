@@ -9,15 +9,15 @@
 #include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
 
 /**
- * Manages a dedicated thread for safe crash logging on Windows.
+ * Class that manages a dedicated thread for safe crash logging on Windows.
  *
  * This class creates a separate thread that performs stack walking and logging
  * during crash handling. By using a separate thread, we:
  * - Avoid stack overflow issues (thread has its own stack)
  * - Can safely walk the crashed thread's stack
- * - Write crash information to UE's log file without risking secondary crashes
+ * - Write crash information to game log file without risking secondary crashes
  *
- * The implementation mirrors UE's own Crash Reporter design (see WindowsPlatformCrashContext.cpp).
+ * The implementation mirrors Unreal's own Crash Reporter design (see WindowsPlatformCrashContext.cpp).
  */
 class FWindowsCrashLogger
 {
