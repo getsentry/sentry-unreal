@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add support for printing crash stack traces to the game log (Windows) ([#1170](https://github.com/getsentry/sentry-unreal/pull/1170))
+
 ## 1.3.0
 
 ### Features
