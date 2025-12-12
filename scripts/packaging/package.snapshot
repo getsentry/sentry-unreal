@@ -273,7 +273,6 @@ Source/ThirdParty/IOS/Sentry.framework/Headers/SentryBreadcrumb.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryCrashExceptionApplication.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryDebugMeta.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryDefines.h
-Source/ThirdParty/IOS/Sentry.framework/Headers/SentryDsn.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryError.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryEvent.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/SentryException.h
@@ -319,14 +318,12 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/PrivateSentrySDKOnly.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/PrivatesHeader.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAppStartMeasurement.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAsynchronousOperation.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAutoSessionTrackingIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryBaseIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryBreadcrumb+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashInstallationReporter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashReportConverter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashReportSink.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDateUtils.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDsn+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFormatter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryIntegrationProtocol.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
@@ -375,7 +372,6 @@ Source/ThirdParty/Mac/include/Sentry/Sentry.h
 Source/ThirdParty/Mac/include/Sentry/SentryAppStartMeasurement.h
 Source/ThirdParty/Mac/include/Sentry/SentryAsynchronousOperation.h
 Source/ThirdParty/Mac/include/Sentry/SentryAttachment.h
-Source/ThirdParty/Mac/include/Sentry/SentryAutoSessionTrackingIntegration.h
 Source/ThirdParty/Mac/include/Sentry/SentryBaggage.h
 Source/ThirdParty/Mac/include/Sentry/SentryBaseIntegration.h
 Source/ThirdParty/Mac/include/Sentry/SentryBreadcrumb.h
@@ -387,8 +383,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryCrashReportSink.h
 Source/ThirdParty/Mac/include/Sentry/SentryDateUtils.h
 Source/ThirdParty/Mac/include/Sentry/SentryDebugMeta.h
 Source/ThirdParty/Mac/include/Sentry/SentryDefines.h
-Source/ThirdParty/Mac/include/Sentry/SentryDsn.h
-Source/ThirdParty/Mac/include/Sentry/SentryDsn+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryError.h
 Source/ThirdParty/Mac/include/Sentry/SentryEvent.h
 Source/ThirdParty/Mac/include/Sentry/SentryException.h
