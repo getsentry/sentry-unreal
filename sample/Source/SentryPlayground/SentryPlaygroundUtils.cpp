@@ -63,7 +63,7 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			break;
 		case ESentryAppTerminationType::MemoryCorruption:
 			{
-				void* ptr = FMemory::Malloc(100);
+				void* ptr = FMemory::Malloc(1024);
 				FMemory::Free(ptr);
 				FMemory::Free(ptr);
 			}
