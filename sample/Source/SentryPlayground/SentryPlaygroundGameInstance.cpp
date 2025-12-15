@@ -112,7 +112,9 @@ void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType Crash
 
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
+#if PLATFORM_ANDROID
 	FPlatformProcess::Sleep(1.0f);
+#endif
 
 	USentryPlaygroundUtils::Terminate(CrashType);
 }
