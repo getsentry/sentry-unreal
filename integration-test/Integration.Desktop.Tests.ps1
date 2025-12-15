@@ -48,9 +48,9 @@ BeforeDiscovery {
 
     # Define crash types to test
     $TestCrashTypes = @(
-        @{ Name = 'NullPointer'; Arg = 'crash-capture' }
-        @{ Name = 'StackOverflow'; Arg = 'crash-stackoverflow' }
-        @{ Name = 'MemoryCorruption'; Arg = 'crash-memorycorruption' }
+        @{ Name = 'NullPointer'; Arg = '-crash-capture' }
+        @{ Name = 'StackOverflow'; Arg = '-crash-stackoverflow' }
+        @{ Name = 'MemoryCorruption'; Arg = '-crash-memorycorruption' }
     )
 }
 
@@ -136,8 +136,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # Override default project settings to avoid double initialization
             $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:InitAutomatically=False'
 
-            # -$crashTypeArg triggers specific crash type scenario in the sample app
-            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-$crashTypeArg') + $appArgs) -join ' ')
+            # $crashTypeArg triggers specific crash type scenario in the sample app
+            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
 
             # On macOS, the crash is captured but not uploaded immediately (due to Cocoa's behavior),
             # so we need to run the test app again to send it to Sentry.
