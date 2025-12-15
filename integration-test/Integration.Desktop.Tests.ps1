@@ -130,7 +130,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # -unattended: Disables user prompts and interactive dialogs
             # -stdout: Ensures logs are written to stdout on Linux/Unix systems
             # -nosplash: Prevents splash screen and dialogs
-            $appArgs = @('-nullrhi', '-unattended', '-stdout', '-nosplash')
+            $appArgs = @('-nullrhi', '-unattended', '-stdout', '-nosplash', '-ini:Engine:[/Script/Sentry.SentrySettings]:InitAutomatically=False')
             $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@("-$($_.Flag)") + $appArgs) -join ' ')
 
             # On macOS, the crash is captured but not uploaded immediately (due to Cocoa's behavior),
