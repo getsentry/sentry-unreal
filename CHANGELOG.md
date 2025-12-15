@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Missing `IsUserConsentRequired` function definition no longer causes errors when Sentry is not enabled for the target build platform ([#1170](https://github.com/getsentry/sentry-unreal/pull/1170))
+- Missing `IsUserConsentRequired` function definition no longer causes errors when Sentry is not enabled for the target build platform ([#1172](https://github.com/getsentry/sentry-unreal/pull/1172))
 
 ### Dependencies
 
