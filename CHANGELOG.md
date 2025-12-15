@@ -6,11 +6,15 @@
 
 - Add support for printing crash stack traces to the game log (Windows) ([#1170](https://github.com/getsentry/sentry-unreal/pull/1170))
 
+### Fixes
+
+- Missing `IsUserConsentRequired` function definition no longer causes errors when Sentry is not enabled for the target build platform ([#1172](https://github.com/getsentry/sentry-unreal/pull/1172))
+
 ### Dependencies
 
-- Bump CLI from v2.58.2 to v2.58.3 ([#1167](https://github.com/getsentry/sentry-unreal/pull/1167))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2583)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.2...2.58.3)
+- Bump CLI from v2.58.2 to v2.58.4 ([#1167](https://github.com/getsentry/sentry-unreal/pull/1167), [#1169](https://github.com/getsentry/sentry-unreal/pull/1169))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2584)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.2...2.58.4)
 - Bump Cocoa SDK (iOS and Mac) from v9.0.0 to v9.1.0 ([#1168](https://github.com/getsentry/sentry-unreal/pull/1168))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#910)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.0.0...9.1.0)
