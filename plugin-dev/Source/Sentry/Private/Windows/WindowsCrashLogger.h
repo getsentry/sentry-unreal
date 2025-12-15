@@ -58,6 +58,12 @@ private:
 	 */
 	void WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle);
 
+	/**
+	 * Safely retrieves the exception address from crash context.
+	 * Returns nullptr if the exception record is null or invalid.
+	 */
+	void* GetExceptionAddress(const sentry_ucontext_t* CrashContext);
+
 private:
 	// Thread handle
 	HANDLE CrashLoggingThread;

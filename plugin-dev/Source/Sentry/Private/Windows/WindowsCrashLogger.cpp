@@ -176,6 +176,16 @@ void FWindowsCrashLogger::PerformCrashLogging()
 	}
 }
 
+void* FWindowsCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashContext)
+{
+	if (CrashContext && CrashContext->exception_ptrs.ExceptionRecord)
+	{
+		return CrashContext->exception_ptrs.ExceptionRecord->ExceptionAddress;
+	}
+
+	return nullptr;
+}
+
 void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
 {
 	// Step 1: Write exception description to GErrorExceptionDescription
@@ -210,7 +220,7 @@ void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCont
 		if (ContextWrapper)
 		{
 			// Perform stack walking using the crashed thread's context
-			void* ProgramCounter = CrashContext->exception_ptrs.ExceptionRecord->ExceptionAddress;
+			void* ProgramCounter = GetExceptionAddress(CrashContext);
 
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 			FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, ProgramCounter, ContextWrapper);
