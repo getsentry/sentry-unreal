@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Missing `IsUserConsentRequired` function definition no longer causes errors when Sentry is not enabled for the target build platform ([#1170](https://github.com/getsentry/sentry-unreal/pull/1170))
+
 ### Dependencies
 
 - Bump CLI from v2.58.2 to v2.58.4 ([#1167](https://github.com/getsentry/sentry-unreal/pull/1167), [#1169](https://github.com/getsentry/sentry-unreal/pull/1169))
