@@ -73,11 +73,11 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	{
 		RunCrashTest(ESentryAppTerminationType::NullPointer);
 	}
-	if (FParse::Param(*CommandLine, TEXT("crash-stackoverflow")))
+	else if (FParse::Param(*CommandLine, TEXT("crash-stackoverflow")))
 	{
 		RunCrashTest(ESentryAppTerminationType::StackOverflow);
 	}
-	if (FParse::Param(*CommandLine, TEXT("crash-memorycorruption")))
+	else if (FParse::Param(*CommandLine, TEXT("crash-memorycorruption")))
 	{
 		RunCrashTest(ESentryAppTerminationType::MemoryCorruption);
 	}
