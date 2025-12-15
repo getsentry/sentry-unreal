@@ -49,8 +49,8 @@ BeforeDiscovery {
     # Define crash types to test
     $TestCrashTypes = @(
         @{ Name = 'NullPointer'; Arg = '-crash-capture' }
-        @{ Name = 'StackOverflow'; Arg = '-crash-stackoverflow' }
-        @{ Name = 'MemoryCorruption'; Arg = '-crash-memorycorruption' }
+        @{ Name = 'StackOverflow'; Arg = '-crash-stack-overflow' }
+        @{ Name = 'MemoryCorruption'; Arg = '-crash-memory-corruption' }
     )
 }
 

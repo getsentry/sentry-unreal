@@ -25,8 +25,8 @@ void USentryPlaygroundGameInstance::Init()
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
-		FParse::Param(*CommandLine, TEXT("crash-stackoverflow")) ||
-		FParse::Param(*CommandLine, TEXT("crash-memorycorruption")) ||
+		FParse::Param(*CommandLine, TEXT("crash-stack-overflow")) ||
+		FParse::Param(*CommandLine, TEXT("crash-memory-corruption")) ||
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -73,11 +73,11 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	{
 		RunCrashTest(ESentryAppTerminationType::NullPointer);
 	}
-	else if (FParse::Param(*CommandLine, TEXT("crash-stackoverflow")))
+	else if (FParse::Param(*CommandLine, TEXT("crash-stack-overflow")))
 	{
 		RunCrashTest(ESentryAppTerminationType::StackOverflow);
 	}
-	else if (FParse::Param(*CommandLine, TEXT("crash-memorycorruption")))
+	else if (FParse::Param(*CommandLine, TEXT("crash-memory-corruption")))
 	{
 		RunCrashTest(ESentryAppTerminationType::MemoryCorruption);
 	}
