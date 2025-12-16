@@ -61,11 +61,6 @@ protected:
 	 */
 	virtual void ReleaseContextWrapper(void* Wrapper) = 0;
 
-	/**
-	 * Platform-specific: Gets the platform name for logging purposes.
-	 */
-	virtual const TCHAR* GetPlatformName() const = 0;
-
 private:
 	/**
 	 * Thread procedure that waits for crash events and performs logging.
