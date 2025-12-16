@@ -7,9 +7,9 @@
 #include "SentryDefines.h"
 
 #include "CoreGlobals.h"
+#include "HAL/PlatformStackWalk.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/OutputDeviceRedirector.h"
-#include "HAL/PlatformStackWalk.h"
 
 #include "Microsoft/AllowMicrosoftPlatformTypes.h"
 
@@ -23,9 +23,9 @@ FMicrosoftCrashLogger::FMicrosoftCrashLogger()
 	, SharedCrashedThreadHandle(nullptr)
 {
 	// Create synchronization events
-	CrashEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);			// Auto-reset event
-	CrashCompletedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);	// Auto-reset event
-	StopThreadEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);		// Manual-reset event
+	CrashEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);		   // Auto-reset event
+	CrashCompletedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr); // Auto-reset event
+	StopThreadEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);	   // Manual-reset event
 
 	if (!CrashEvent || !CrashCompletedEvent || !StopThreadEvent)
 	{
