@@ -133,8 +133,10 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nosplash'     # Prevents splash screen and dialogs
             )
 
-            # Override default project settings to avoid double initialization
-            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:InitAutomatically=False'
+            # Override default project settings
+            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:InitAutomatically=False'       # Prevents double initialization
+            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:EnableOnCrashLogging=True'     # Enables crash logging
+            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:EnableAutoLogAttachment=True'  # Enables log attachment
 
             # $crashTypeArg triggers specific crash type scenario in the sample app
             $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
