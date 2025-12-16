@@ -96,6 +96,12 @@ bool FWindowsCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE
 		// Thread not initialized properly
 		return false;
 	}
+	
+	if (!CrashContext)
+	{
+		// Crash context is invalid
+		return false;
+	}
 
 	// Set shared data for the logging thread to access
 	SharedCrashContext = CrashContext;
@@ -150,20 +156,9 @@ DWORD WINAPI FWindowsCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
 
 void FWindowsCrashLogger::PerformCrashLogging()
 {
-	if (!SharedCrashContext)
-	{
-		return;
-	}
-
 	// Perform stack walking and fill GErrorHist
 	// This happens in a separate thread to avoid stack overflow issues
 	WriteToErrorBuffers(SharedCrashContext, SharedCrashedThreadHandle);
-
-	// Close the crashed thread handle now that we're done with stack walking
-	if (SharedCrashedThreadHandle)
-	{
-		CloseHandle(SharedCrashedThreadHandle);
-	}
 
 	// NOTE: We call FDebug::LogFormattedMessageWithCallstack() and GLog->Flush() here
 	// because it's unsafe to call them from the crashing thread when handling memory-related errors (e.g. stack overflow, memory corruption, etc.)
@@ -177,7 +172,13 @@ void FWindowsCrashLogger::PerformCrashLogging()
 		GLog->Flush();
 	}
 
-	// Clear shared data now that we're done with it
+	// Close the crashed thread handle now that we're done with stack walking
+	if (SharedCrashedThreadHandle)
+	{
+		CloseHandle(SharedCrashedThreadHandle);
+	}
+
+	// Clear shared data
 	SharedCrashContext = nullptr;
 	SharedCrashedThreadHandle = nullptr;
 }

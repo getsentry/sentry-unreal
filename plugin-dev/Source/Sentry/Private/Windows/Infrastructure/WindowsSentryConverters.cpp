@@ -7,6 +7,10 @@
 /* static */ void FWindowsSentryConverters::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
 {
 	EXCEPTION_RECORD* ExceptionRecord = crashContext->exception_ptrs.ExceptionRecord;
+	if (!ExceptionRecord)
+	{
+		return;
+	}
 
 	FString ErrorString = TEXT("Unhandled Exception: ");
 
