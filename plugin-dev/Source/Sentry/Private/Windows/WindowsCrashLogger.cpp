@@ -96,7 +96,7 @@ bool FWindowsCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE
 		// Thread not initialized properly
 		return false;
 	}
-	
+
 	if (!CrashContext)
 	{
 		// Crash context is invalid
