@@ -107,10 +107,6 @@ bool FWindowsCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE
 	// Wait for logging to complete (with timeout)
 	DWORD WaitResult = WaitForSingleObject(CrashCompletedEvent, TimeoutMs);
 
-	// Clear shared data
-	SharedCrashContext = nullptr;
-	SharedCrashedThreadHandle = nullptr;
-
 	return (WaitResult == WAIT_OBJECT_0);
 }
 
@@ -180,6 +176,10 @@ void FWindowsCrashLogger::PerformCrashLogging()
 	{
 		GLog->Flush();
 	}
+
+	// Clear shared data now that we're done with it
+	SharedCrashContext = nullptr;
+	SharedCrashedThreadHandle = nullptr;
 }
 
 void* FWindowsCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashContext)
