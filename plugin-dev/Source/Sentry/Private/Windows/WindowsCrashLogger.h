@@ -33,6 +33,8 @@ public:
 	 * @param CrashedThreadHandle - Handle to the crashed thread (for cross-thread stack walking)
 	 * @param TimeoutMs - Maximum time to wait for logging to complete (default: 5 seconds)
 	 * @return true if logging completed successfully, false if timeout or error
+	 * 
+	 * @note Ownership of CrashedThreadHandle is transferred to the logging thread which will close it when done
 	 */
 	bool LogCrash(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle, DWORD TimeoutMs = 5000);
 

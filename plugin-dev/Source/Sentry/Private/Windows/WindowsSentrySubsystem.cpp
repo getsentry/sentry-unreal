@@ -133,10 +133,8 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 		{
 			// Log the crash (with timeout to prevent hanging)
 			// This waits for the logging thread to complete stack walking, fill GErrorHist and dump callstack to logs
+			// Logging thread is responsible for closing CrashedThreadHandle when done
 			CrashLogger->LogCrash(uctx, CrashedThreadHandle, 5000);
-
-			// Close the duplicated handle
-			CloseHandle(CrashedThreadHandle);
 		}
 	}
 

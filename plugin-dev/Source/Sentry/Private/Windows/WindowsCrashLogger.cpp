@@ -163,6 +163,12 @@ void FWindowsCrashLogger::PerformCrashLogging()
 	// This happens in a separate thread to avoid stack overflow issues
 	WriteToErrorBuffers(SharedCrashContext, SharedCrashedThreadHandle);
 
+	// Close the crashed thread handle now that we're done with stack walking
+	if (SharedCrashedThreadHandle)
+	{
+		CloseHandle(SharedCrashedThreadHandle);
+	}
+
 	// NOTE: We call FDebug::LogFormattedMessageWithCallstack() and GLog->Flush() here
 	// because it's unsafe to call them from the crashing thread when handling memory-related errors (e.g. stack overflow, memory corruption, etc.)
 
