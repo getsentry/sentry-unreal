@@ -20,11 +20,11 @@
  * Platform-specific implementations override context wrapper management functions
  * to handle differences in stack walking APIs between platforms.
  */
-class FMicrosoftCrashLogger
+class FMicrosoftSentryCrashLogger
 {
 public:
-	FMicrosoftCrashLogger();
-	virtual ~FMicrosoftCrashLogger();
+	FMicrosoftSentryCrashLogger();
+	virtual ~FMicrosoftSentryCrashLogger();
 
 	/**
 	 * Logs crash information from a separate thread.
@@ -46,33 +46,17 @@ public:
 
 protected:
 	/**
-	 * Platform-specific: Creates a context wrapper for cross-thread stack walking.
-	 *
-	 * @param Context - The exception context record
-	 * @param ThreadHandle - Handle to the crashed thread
-	 * @return Context wrapper, or nullptr if not supported/failed
-	 */
-	virtual void* CreateContextWrapper(void* Context, HANDLE ThreadHandle) = 0;
-
-	/**
-	 * Platform-specific: Releases the context wrapper created by CreateContextWrapper.
-	 *
-	 * @param Wrapper - The context wrapper to release
-	 */
-	virtual void ReleaseContextWrapper(void* Wrapper) = 0;
-
-	/**
-	 * Platform-specific: Performs stack walking on the crashed thread.
-	 * Default implementation uses FPlatformStackWalk::StackWalkAndDump with the context wrapper.
-	 * Xbox overrides this because its CaptureStackBackTrace ignores the context parameter.
+	 * Performs stack walking on the crashed thread.
+	 * Uses FPlatformStackWalk::CaptureThreadStackBackTrace which properly handles context wrappers
+	 * on all Microsoft platforms (Windows, Xbox).
 	 *
 	 * @param StackTrace - Output buffer for the stack trace string
 	 * @param StackTraceSize - Size of the output buffer
-	 * @param ContextWrapper - Context wrapper created by CreateContextWrapper
+	 * @param ContextWrapper - Context wrapper for cross-thread stack walking
 	 * @param CrashContext - The crash context
 	 * @param CrashedThreadHandle - Handle to the crashed thread
 	 */
-	virtual void PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle);
+	void PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle);
 
 private:
 	/**
@@ -90,12 +74,6 @@ private:
 	 * Uses only pre-allocated buffers and crash-safe functions.
 	 */
 	void WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle);
-
-	/**
-	 * Converts crash context to human-readable exception string.
-	 * Platform-agnostic implementation that works for all Microsoft platforms.
-	 */
-	void CrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize);
 
 	/**
 	 * Safely retrieves the exception address from crash context.

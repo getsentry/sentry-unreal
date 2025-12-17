@@ -1,10 +1,12 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "MicrosoftCrashLogger.h"
+#include "MicrosoftSentryCrashLogger.h"
 
 #if USE_SENTRY_NATIVE
 
 #include "SentryDefines.h"
+
+#include "Infrastructure/MicrosoftSentryConverters.h"
 
 #include "CoreGlobals.h"
 #include "HAL/PlatformStackWalk.h"
@@ -13,7 +15,7 @@
 
 #include "Microsoft/AllowMicrosoftPlatformTypes.h"
 
-FMicrosoftCrashLogger::FMicrosoftCrashLogger()
+FMicrosoftSentryCrashLogger::FMicrosoftSentryCrashLogger()
 	: CrashLoggingThread(nullptr)
 	, CrashLoggingThreadId(0)
 	, CrashEvent(nullptr)
@@ -55,7 +57,7 @@ FMicrosoftCrashLogger::FMicrosoftCrashLogger()
 	}
 }
 
-FMicrosoftCrashLogger::~FMicrosoftCrashLogger()
+FMicrosoftSentryCrashLogger::~FMicrosoftSentryCrashLogger()
 {
 	if (StopThreadEvent)
 	{
@@ -89,7 +91,7 @@ FMicrosoftCrashLogger::~FMicrosoftCrashLogger()
 	}
 }
 
-bool FMicrosoftCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle, DWORD TimeoutMs)
+bool FMicrosoftSentryCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle, DWORD TimeoutMs)
 {
 	if (!CrashLoggingThread || !CrashEvent || !CrashCompletedEvent)
 	{
@@ -116,9 +118,9 @@ bool FMicrosoftCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HAND
 	return (WaitResult == WAIT_OBJECT_0);
 }
 
-DWORD WINAPI FMicrosoftCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
+DWORD WINAPI FMicrosoftSentryCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
 {
-	FMicrosoftCrashLogger* Logger = static_cast<FMicrosoftCrashLogger*>(Parameter);
+	FMicrosoftSentryCrashLogger* Logger = static_cast<FMicrosoftSentryCrashLogger*>(Parameter);
 	if (!Logger)
 	{
 		return 1;
@@ -154,7 +156,7 @@ DWORD WINAPI FMicrosoftCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
 	return 0;
 }
 
-void FMicrosoftCrashLogger::PerformCrashLogging()
+void FMicrosoftSentryCrashLogger::PerformCrashLogging()
 {
 	// Perform stack walking and fill GErrorHist
 	// This happens in a separate thread to avoid stack overflow issues
@@ -183,7 +185,7 @@ void FMicrosoftCrashLogger::PerformCrashLogging()
 	SharedCrashedThreadHandle = nullptr;
 }
 
-void* FMicrosoftCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashContext)
+void* FMicrosoftSentryCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashContext)
 {
 	if (CrashContext && CrashContext->exception_ptrs.ExceptionRecord)
 	{
@@ -193,63 +195,10 @@ void* FMicrosoftCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashC
 	return nullptr;
 }
 
-void FMicrosoftCrashLogger::CrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
-{
-	EXCEPTION_RECORD* ExceptionRecord = crashContext->exception_ptrs.ExceptionRecord;
-	if (!ExceptionRecord)
-	{
-		return;
-	}
-
-	FString ErrorString = TEXT("Unhandled Exception: ");
-
-#define HANDLE_CASE(x)           \
-	case x:                      \
-		ErrorString += TEXT(#x); \
-		break;
-
-	switch (ExceptionRecord->ExceptionCode)
-	{
-	case EXCEPTION_ACCESS_VIOLATION:
-		ErrorString += TEXT("EXCEPTION_ACCESS_VIOLATION ");
-		if (ExceptionRecord->ExceptionInformation[0] == 0)
-		{
-			ErrorString += TEXT("reading address ");
-		}
-		else if (ExceptionRecord->ExceptionInformation[0] == 1)
-		{
-			ErrorString += TEXT("writing address ");
-		}
-		ErrorString += FString::Printf(
-#if PLATFORM_64BITS
-			TEXT("0x%016llx"),
-#else
-			TEXT("0x%08x"),
-#endif
-			ExceptionRecord->ExceptionInformation[1]);
-		break;
-		HANDLE_CASE(EXCEPTION_ARRAY_BOUNDS_EXCEEDED)
-		HANDLE_CASE(EXCEPTION_DATATYPE_MISALIGNMENT)
-		HANDLE_CASE(EXCEPTION_FLT_DENORMAL_OPERAND)
-		HANDLE_CASE(EXCEPTION_FLT_DIVIDE_BY_ZERO)
-		HANDLE_CASE(EXCEPTION_FLT_INVALID_OPERATION)
-		HANDLE_CASE(EXCEPTION_ILLEGAL_INSTRUCTION)
-		HANDLE_CASE(EXCEPTION_INT_DIVIDE_BY_ZERO)
-		HANDLE_CASE(EXCEPTION_PRIV_INSTRUCTION)
-		HANDLE_CASE(EXCEPTION_STACK_OVERFLOW)
-	default:
-		ErrorString += FString::Printf(TEXT("0x%08x"), (uint32)ExceptionRecord->ExceptionCode);
-	}
-
-	FCString::Strncpy(outErrorString, *ErrorString, errorStringBufSize);
-
-#undef HANDLE_CASE
-}
-
-void FMicrosoftCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
+void FMicrosoftSentryCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
 {
 	// Step 1: Write exception description to GErrorExceptionDescription
-	CrashContextToString(
+	FMicrosoftSentryConverters::SentryCrashContextToString(
 		CrashContext,
 		GErrorExceptionDescription,
 		UE_ARRAY_COUNT(GErrorExceptionDescription));
@@ -273,7 +222,8 @@ void FMicrosoftCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCo
 	if (CrashedThreadHandle && CrashContext->exception_ptrs.ContextRecord)
 	{
 		// Create platform-specific context wrapper for cross-thread stack walking
-		void* ContextWrapper = CreateContextWrapper(
+		FPlatformStackWalk StackWalker;
+		void* ContextWrapper = StackWalker.MakeThreadContextWrapper(
 			CrashContext->exception_ptrs.ContextRecord,
 			CrashedThreadHandle);
 
@@ -283,7 +233,7 @@ void FMicrosoftCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCo
 			PerformStackWalk(StackTrace, StackTraceSize, ContextWrapper, CrashContext, CrashedThreadHandle);
 
 			// Release the platform-specific context wrapper
-			ReleaseContextWrapper(ContextWrapper);
+			StackWalker.ReleaseThreadContextWrapper(ContextWrapper);
 		}
 	}
 
@@ -295,16 +245,26 @@ void FMicrosoftCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCo
 #endif
 }
 
-void FMicrosoftCrashLogger::PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
+void FMicrosoftSentryCrashLogger::PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
 {
-	// Default implementation for Windows: use FPlatformStackWalk::StackWalkAndDump
-	void* ProgramCounter = GetExceptionAddress(CrashContext);
+	// Unified implementation for all Microsoft platforms (Windows, Xbox)
+	// Use CaptureThreadStackBackTrace which properly handles context wrappers on all platforms
 
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
-	FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, ProgramCounter, ContextWrapper);
-#else
-	FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, 0, ContextWrapper);
-#endif
+	const uint32 MaxDepth = 100;
+	uint64 BackTrace[MaxDepth];
+
+	// Get the thread ID from the thread handle
+	DWORD CrashedThreadId = GetThreadId(CrashedThreadHandle);
+
+	// CaptureThreadStackBackTrace properly uses the context wrapper on both Windows and Xbox
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(CrashedThreadId, BackTrace, MaxDepth, ContextWrapper);
+
+	// Format the captured addresses into human-readable strings
+	for (uint32 i = 0; i < Depth; i++)
+	{
+		FPlatformStackWalk::ProgramCounterToHumanReadableString(i, BackTrace[i], StackTrace, StackTraceSize, nullptr);
+		FCStringAnsi::StrncatTruncateDest(StackTrace, (int32)StackTraceSize, LINE_TERMINATOR_ANSI);
+	}
 }
 
 #include "Microsoft/HideMicrosoftPlatformTypes.h"
