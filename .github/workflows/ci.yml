@@ -2,12 +2,6 @@ name: package-plugin-workflow
 
 on:
   push:
-    branches:
-      - main
-      - release/*
-  pull_request:
-    paths-ignore:
-      - "**.md"
 
 jobs:
   android-sdk:
