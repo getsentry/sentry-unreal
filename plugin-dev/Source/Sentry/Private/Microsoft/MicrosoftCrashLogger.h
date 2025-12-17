@@ -61,6 +61,19 @@ protected:
 	 */
 	virtual void ReleaseContextWrapper(void* Wrapper) = 0;
 
+	/**
+	 * Platform-specific: Performs stack walking on the crashed thread.
+	 * Default implementation uses FPlatformStackWalk::StackWalkAndDump with the context wrapper.
+	 * Xbox overrides this because its CaptureStackBackTrace ignores the context parameter.
+	 *
+	 * @param StackTrace - Output buffer for the stack trace string
+	 * @param StackTraceSize - Size of the output buffer
+	 * @param ContextWrapper - Context wrapper created by CreateContextWrapper
+	 * @param CrashContext - The crash context
+	 * @param CrashedThreadHandle - Handle to the crashed thread
+	 */
+	virtual void PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle);
+
 private:
 	/**
 	 * Thread procedure that waits for crash events and performs logging.

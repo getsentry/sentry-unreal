@@ -279,14 +279,8 @@ void FMicrosoftCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCo
 
 		if (ContextWrapper)
 		{
-			// Perform stack walking using the crashed thread's context
-			void* ProgramCounter = GetExceptionAddress(CrashContext);
-
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
-			FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, ProgramCounter, ContextWrapper);
-#else
-			FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, 0, ContextWrapper);
-#endif
+			// Platform-specific stack walking (Xbox overrides this)
+			PerformStackWalk(StackTrace, StackTraceSize, ContextWrapper, CrashContext, CrashedThreadHandle);
 
 			// Release the platform-specific context wrapper
 			ReleaseContextWrapper(ContextWrapper);
@@ -298,6 +292,18 @@ void FMicrosoftCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCo
 	FCString::StrncatTruncateDest(GErrorHist, UE_ARRAY_COUNT(GErrorHist), ANSI_TO_TCHAR(StackTrace));
 #else
 	FCString::Strncat(GErrorHist, ANSI_TO_TCHAR(StackTrace), UE_ARRAY_COUNT(GErrorHist));
+#endif
+}
+
+void FMicrosoftCrashLogger::PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
+{
+	// Default implementation for Windows: use FPlatformStackWalk::StackWalkAndDump
+	void* ProgramCounter = GetExceptionAddress(CrashContext);
+
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+	FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, ProgramCounter, ContextWrapper);
+#else
+	FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, 0, ContextWrapper);
 #endif
 }
 
