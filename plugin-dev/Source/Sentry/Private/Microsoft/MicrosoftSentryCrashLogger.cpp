@@ -256,14 +256,22 @@ void FMicrosoftSentryCrashLogger::PerformStackWalk(ANSICHAR* StackTrace, SIZE_T 
 	// Get the thread ID from the thread handle
 	DWORD CrashedThreadId = GetThreadId(CrashedThreadHandle);
 
-	// CaptureThreadStackBackTrace properly uses the context wrapper on both Windows and Xbox
+	// CaptureThreadStackBackTrace properly determines for which thread stack walking should be performed
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(CrashedThreadId, BackTrace, MaxDepth, ContextWrapper);
+#else
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(CrashedThreadId, BackTrace, MaxDepth);
+#endif
 
 	// Format the captured addresses into human-readable strings
 	for (uint32 i = 0; i < Depth; i++)
 	{
 		FPlatformStackWalk::ProgramCounterToHumanReadableString(i, BackTrace[i], StackTrace, StackTraceSize, nullptr);
+#if !UE_VERSION_OLDER_THAN(5, 6, 0)
 		FCStringAnsi::StrncatTruncateDest(StackTrace, (int32)StackTraceSize, LINE_TERMINATOR_ANSI);
+#else
+		FCStringAnsi::Strncat(StackTrace, LINE_TERMINATOR_ANSI, (int32)StackTraceSize);
+#endif
 	}
 }
 
