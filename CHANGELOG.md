@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add support for printing crash stack traces to the game log (Windows) ([#1170](https://github.com/getsentry/sentry-unreal/pull/1170))
+- Add support for printing crash stack traces to the game log (Windows, Xbox) ([#1177](https://github.com/getsentry/sentry-unreal/pull/1177))
 
 ### Fixes
 
