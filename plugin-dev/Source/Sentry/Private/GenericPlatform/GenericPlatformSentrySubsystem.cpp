@@ -52,15 +52,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
 
-	FString MessageBuf = FString(buffer);
-
-#if !NO_LOGGING
-	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
-#else
-	const FName SentryCategoryName(TEXT("LogSentrySdk"));
-#endif
-
-	GLog->CategorizedLogf(SentryCategoryName, FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
+	GLog->CategorizedLogf(TEXT("LogSentryInternal"), FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), StringCast<TCHAR>(buffer).Get());
 }
 
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
@@ -375,7 +367,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
-	sentry_options_set_logger_enabled_when_crashed(options, false);
+	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
 
 	if (settings->bRequireUserConsent)

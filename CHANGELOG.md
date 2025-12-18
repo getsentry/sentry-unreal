@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add support for printing crash stack traces to the game log (Windows) ([#1170](https://github.com/getsentry/sentry-unreal/pull/1170))
+
 ### Fixes
 
 - Missing `IsUserConsentRequired` function definition no longer causes errors when Sentry is not enabled for the target build platform ([#1172](https://github.com/getsentry/sentry-unreal/pull/1172))

@@ -45,6 +45,13 @@ BeforeDiscovery {
     $currentPlatform = Get-CurrentDesktopPlatform
     $currentPlatform | Should -Not -Be $null
     $TestTargets += Get-TestTarget -Platform $currentPlatform -ProviderName $currentPlatform
+
+    # Define crash types to test
+    $TestCrashTypes = @(
+        @{ Name = 'NullPointer'; Arg = '-crash-capture' }
+        @{ Name = 'StackOverflow'; Arg = '-crash-stack-overflow' }
+        @{ Name = 'MemoryCorruption'; Arg = '-crash-memory-corruption' }
+    )
 }
 
 BeforeAll {
@@ -109,30 +116,39 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
     }
 
-    Context "Crash Capture Tests" {
+    Context "Crash Capture Tests - <Name>" -ForEach $TestCrashTypes {
         BeforeAll {
+            $crashTypeName = $_.Name
+            $crashTypeArg = $_.Arg
+
             $script:CrashResult = $null
             $script:CrashEvent = $null
 
-            Write-Host "Running crash capture test..." -ForegroundColor Yellow
+            Write-Host "Running $crashTypeName crash test..." -ForegroundColor Yellow
 
-            # Build arguments and execute application:
-            # -crash-capture: Triggers integration test crash scenario in the sample app
-            # -init-only: Only initializes the app to flush captured events and quit right after
-            # -nullrhi: Runs without graphics rendering (headless mode)
-            # -unattended: Disables user prompts and interactive dialogs
-            # -stdout: Ensures logs are written to stdout on Linux/Unix systems
-            # -nosplash: Prevents splash screen and dialogs
-            $appArgs = @('-nullrhi', '-unattended', '-stdout', '-nosplash')
-            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-crash-capture') + $appArgs) -join ' ')
+            $appArgs = @(
+                '-nullrhi',     # Runs without graphics rendering (headless mode)
+                '-unattended',  # Disables user prompts and interactive dialogs
+                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
+                '-nosplash'     # Prevents splash screen and dialogs
+            )
 
-            # On macOS, the crash is captured but not uploaded immediately (due to Cocoa’s behavior),
-            # so we need to run the test app again to send it to Sentry
+            # Override default project settings
+            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:InitAutomatically=False'       # Prevents double initialization
+            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:EnableOnCrashLogging=True'     # Enables crash logging
+            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:EnableAutoLogAttachment=True'  # Enables log attachment
+
+            # $crashTypeArg triggers specific crash type scenario in the sample app
+            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
+
+            # On macOS, the crash is captured but not uploaded immediately (due to Cocoa's behavior),
+            # so we need to run the test app again to send it to Sentry.
+            # -init-only allows starting the app to flush captured events and quit right after
             if ($Platform -eq 'MacOS') {
                 Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
             }
 
-            Write-Host "Crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "$crashTypeName crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
 
             # Parse event ID from output
             $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
@@ -216,14 +232,18 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running message capture test..." -ForegroundColor Yellow
 
-            # Build arguments and execute application:
-            # -message-capture: Triggers integration test message scenario in the sample app
-            # -nullrhi: Runs without graphics rendering (headless mode)
-            # -unattended: Disables user prompts and interactive dialogs
-            # -stdout: Ensures logs are written to stdout on Linux/Unix systems
-            # -nosplash: Prevents splash screen and dialogs
-            $appArgs = @('-message-capture', '-nullrhi', '-unattended', '-stdout', '-nosplash')
-            $script:MessageResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($appArgs -join ' ')
+            $appArgs = @(
+                '-nullrhi',     # Runs without graphics rendering (headless mode)
+                '-unattended',  # Disables user prompts and interactive dialogs
+                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
+                '-nosplash'     # Prevents splash screen and dialogs
+            )
+
+            # Override default project settings to avoid double initialization
+            $appArgs += '-ini:Engine:[/Script/Sentry.SentrySettings]:InitAutomatically=False'
+
+            # -message-capture triggers integration test message scenario in the sample app
+            $script:MessageResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-message-capture') + $appArgs) -join ' ')
 
             Write-Host "Message test executed. Exit code: $($script:MessageResult.ExitCode)" -ForegroundColor Cyan
 

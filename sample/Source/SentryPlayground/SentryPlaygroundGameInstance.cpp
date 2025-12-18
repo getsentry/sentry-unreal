@@ -25,6 +25,8 @@ void USentryPlaygroundGameInstance::Init()
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
+		FParse::Param(*CommandLine, TEXT("crash-stack-overflow")) ||
+		FParse::Param(*CommandLine, TEXT("crash-memory-corruption")) ||
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -69,7 +71,15 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")))
 	{
-		RunCrashTest();
+		RunCrashTest(ESentryAppTerminationType::NullPointer);
+	}
+	else if (FParse::Param(*CommandLine, TEXT("crash-stack-overflow")))
+	{
+		RunCrashTest(ESentryAppTerminationType::StackOverflow);
+	}
+	else if (FParse::Param(*CommandLine, TEXT("crash-memory-corruption")))
+	{
+		RunCrashTest(ESentryAppTerminationType::MemoryCorruption);
 	}
 	else if (FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
@@ -81,7 +91,7 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	}
 }
 
-void USentryPlaygroundGameInstance::RunCrashTest()
+void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType CrashType)
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
@@ -90,16 +100,23 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 
 	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#else
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#endif
 
 	// Flush logs to ensure output is captured before crash
 	GLog->Flush();
 
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
+#if PLATFORM_ANDROID
 	FPlatformProcess::Sleep(1.0f);
+#endif
 
-	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
+	USentryPlaygroundUtils::Terminate(CrashType);
 }
 
 void USentryPlaygroundGameInstance::RunMessageTest()
