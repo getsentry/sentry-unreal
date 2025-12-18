@@ -150,6 +150,10 @@ Source/Sentry/Private/Linux/LinuxSentrySubsystem.cpp
 Source/Sentry/Private/Linux/LinuxSentrySubsystem.h
 Source/Sentry/Private/Mac/MacSentrySubsystem.cpp
 Source/Sentry/Private/Mac/MacSentrySubsystem.h
+Source/Sentry/Private/Microsoft/Infrastructure/MicrosoftSentryConverters.cpp
+Source/Sentry/Private/Microsoft/Infrastructure/MicrosoftSentryConverters.h
+Source/Sentry/Private/Microsoft/MicrosoftSentryCrashLogger.cpp
+Source/Sentry/Private/Microsoft/MicrosoftSentryCrashLogger.h
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
@@ -217,10 +221,6 @@ Source/Sentry/Private/Utils/SentryPlatformDetectionUtils.h
 Source/Sentry/Private/Utils/SentryPlatformInfo.h
 Source/Sentry/Private/Utils/SentryScreenshotUtils.cpp
 Source/Sentry/Private/Utils/SentryScreenshotUtils.h
-Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.cpp
-Source/Sentry/Private/Windows/Infrastructure/WindowsSentryConverters.h
-Source/Sentry/Private/Windows/WindowsCrashLogger.cpp
-Source/Sentry/Private/Windows/WindowsCrashLogger.h
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.cpp
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.h
 Source/Sentry/Public/SentryAttachment.h
