@@ -250,7 +250,7 @@ void FMicrosoftSentryCrashLogger::PerformStackWalk(ANSICHAR* StackTrace, SIZE_T 
 	// Unified implementation for all Microsoft platforms (Windows, Xbox)
 	// Use CaptureThreadStackBackTrace which properly handles context wrappers on all platforms
 
-	const uint32 MaxDepth = 100;
+	const uint32 MaxDepth = 64;
 	uint64 BackTrace[MaxDepth];
 
 	// Get the thread ID from the thread handle
