@@ -45,16 +45,6 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 		return;
 	}
 
-	SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([CommandLine](USentrySettings* Settings)
-	{
-		// Override options set in config file if needed
-		FString Dsn;
-		if (FParse::Value(*CommandLine, TEXT("dsn="), Dsn))
-		{
-			Settings->Dsn = Dsn;
-		}
-	}));
-
 	if (!SentrySubsystem->IsEnabled())
 	{
 		CompleteTestWithResult(TEXT("sentry-error"), false, TEXT("Failed to initialize Sentry"));
@@ -144,8 +134,6 @@ void USentryPlaygroundGameInstance::RunInitOnly()
 
 	// Ensure events were flushed
 	SentrySubsystem->Close();
-
-	FPlatformProcess::Sleep(1.0f);
 
 	CompleteTestWithResult(TEXT("init-only"), true, TEXT("Test complete"));
 }
