@@ -145,6 +145,8 @@ void USentryPlaygroundGameInstance::RunInitOnly()
 	// Ensure events were flushed
 	SentrySubsystem->Close();
 
+	FPlatformProcess::Sleep(1.0f);
+
 	CompleteTestWithResult(TEXT("init-only"), true, TEXT("Test complete"));
 }
 
