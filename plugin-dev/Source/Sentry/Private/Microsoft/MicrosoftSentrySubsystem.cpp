@@ -47,12 +47,15 @@ void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings
 		FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing ? ECrashHandlingType::Disabled : ECrashHandlingType::Default);
 	}
 
-	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default)
+	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default && Settings->EnableCrashReporterContextPropagation)
 	{
 		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
 	}
 #else
-	InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+	if (Settings->EnableCrashReporterContextPropagation)
+	{
+		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+	}
 #endif
 }
 
