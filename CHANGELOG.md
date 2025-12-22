@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add plugin setting to opt out of automatic Crash Reporter context propagation ([#1178](https://github.com/getsentry/sentry-unreal/pull/1178))
+
 ## 1.4.0
 
 ### Features
