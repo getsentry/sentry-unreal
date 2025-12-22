@@ -9,7 +9,7 @@
 #include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
 
 /**
- * Class that manages a dedicated thread for safe crash logging on Windows.
+ * Base class for crash logging on Microsoft platforms (Windows, Xbox).
  *
  * This class creates a separate thread that performs stack walking and logging
  * during crash handling. By using a separate thread, we:
@@ -17,13 +17,14 @@
  * - Can safely walk the crashed thread's stack
  * - Write crash information to game log file without risking secondary crashes
  *
- * The implementation mirrors Unreal's own Crash Reporter design (see WindowsPlatformCrashContext.cpp).
+ * Platform-specific implementations override context wrapper management functions
+ * to handle differences in stack walking APIs between platforms.
  */
-class FWindowsCrashLogger
+class FMicrosoftSentryCrashLogger
 {
 public:
-	FWindowsCrashLogger();
-	~FWindowsCrashLogger();
+	FMicrosoftSentryCrashLogger();
+	virtual ~FMicrosoftSentryCrashLogger();
 
 	/**
 	 * Logs crash information from a separate thread.
@@ -42,6 +43,20 @@ public:
 	 * Checks if the crash logger thread is running.
 	 */
 	bool IsThreadRunning() const { return CrashLoggingThread != nullptr; }
+
+protected:
+	/**
+	 * Performs stack walking on the crashed thread.
+	 * Uses FPlatformStackWalk::CaptureThreadStackBackTrace which properly handles context wrappers
+	 * on all Microsoft platforms (Windows, Xbox).
+	 *
+	 * @param StackTrace - Output buffer for the stack trace string
+	 * @param StackTraceSize - Size of the output buffer
+	 * @param ContextWrapper - Context wrapper for cross-thread stack walking
+	 * @param CrashContext - The crash context
+	 * @param CrashedThreadHandle - Handle to the crashed thread
+	 */
+	void PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle);
 
 private:
 	/**

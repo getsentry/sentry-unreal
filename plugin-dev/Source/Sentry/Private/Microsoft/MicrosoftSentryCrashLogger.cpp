@@ -1,19 +1,21 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "WindowsCrashLogger.h"
+#include "MicrosoftSentryCrashLogger.h"
 
 #if USE_SENTRY_NATIVE
 
 #include "SentryDefines.h"
 
-#include "Windows/Infrastructure/WindowsSentryConverters.h"
+#include "Infrastructure/MicrosoftSentryConverters.h"
 
 #include "CoreGlobals.h"
+#include "HAL/PlatformStackWalk.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/OutputDeviceRedirector.h"
-#include "Windows/WindowsPlatformStackWalk.h"
 
-FWindowsCrashLogger::FWindowsCrashLogger()
+#include "Microsoft/AllowMicrosoftPlatformTypes.h"
+
+FMicrosoftSentryCrashLogger::FMicrosoftSentryCrashLogger()
 	: CrashLoggingThread(nullptr)
 	, CrashLoggingThreadId(0)
 	, CrashEvent(nullptr)
@@ -23,9 +25,9 @@ FWindowsCrashLogger::FWindowsCrashLogger()
 	, SharedCrashedThreadHandle(nullptr)
 {
 	// Create synchronization events
-	CrashEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr);			 // Auto-reset event
-	CrashCompletedEvent = CreateEvent(nullptr, Windows::FALSE, Windows::FALSE, nullptr); // Auto-reset event
-	StopThreadEvent = CreateEvent(nullptr, Windows::TRUE, Windows::FALSE, nullptr);		 // Manual-reset event
+	CrashEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);		   // Auto-reset event
+	CrashCompletedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr); // Auto-reset event
+	StopThreadEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);	   // Manual-reset event
 
 	if (!CrashEvent || !CrashCompletedEvent || !StopThreadEvent)
 	{
@@ -55,7 +57,7 @@ FWindowsCrashLogger::FWindowsCrashLogger()
 	}
 }
 
-FWindowsCrashLogger::~FWindowsCrashLogger()
+FMicrosoftSentryCrashLogger::~FMicrosoftSentryCrashLogger()
 {
 	if (StopThreadEvent)
 	{
@@ -89,7 +91,7 @@ FWindowsCrashLogger::~FWindowsCrashLogger()
 	}
 }
 
-bool FWindowsCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle, DWORD TimeoutMs)
+bool FMicrosoftSentryCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle, DWORD TimeoutMs)
 {
 	if (!CrashLoggingThread || !CrashEvent || !CrashCompletedEvent)
 	{
@@ -116,9 +118,9 @@ bool FWindowsCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE
 	return (WaitResult == WAIT_OBJECT_0);
 }
 
-DWORD WINAPI FWindowsCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
+DWORD WINAPI FMicrosoftSentryCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
 {
-	FWindowsCrashLogger* Logger = static_cast<FWindowsCrashLogger*>(Parameter);
+	FMicrosoftSentryCrashLogger* Logger = static_cast<FMicrosoftSentryCrashLogger*>(Parameter);
 	if (!Logger)
 	{
 		return 1;
@@ -129,7 +131,7 @@ DWORD WINAPI FWindowsCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
 	while (true)
 	{
 		// Wait for either a crash event or stop event
-		DWORD WaitResult = WaitForMultipleObjects(2, Events, Windows::FALSE, INFINITE);
+		DWORD WaitResult = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 
 		if (WaitResult == WAIT_OBJECT_0)
 		{
@@ -154,7 +156,7 @@ DWORD WINAPI FWindowsCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
 	return 0;
 }
 
-void FWindowsCrashLogger::PerformCrashLogging()
+void FMicrosoftSentryCrashLogger::PerformCrashLogging()
 {
 	// Perform stack walking and fill GErrorHist
 	// This happens in a separate thread to avoid stack overflow issues
@@ -183,7 +185,7 @@ void FWindowsCrashLogger::PerformCrashLogging()
 	SharedCrashedThreadHandle = nullptr;
 }
 
-void* FWindowsCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashContext)
+void* FMicrosoftSentryCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashContext)
 {
 	if (CrashContext && CrashContext->exception_ptrs.ExceptionRecord)
 	{
@@ -193,10 +195,10 @@ void* FWindowsCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashCon
 	return nullptr;
 }
 
-void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
+void FMicrosoftSentryCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
 {
 	// Step 1: Write exception description to GErrorExceptionDescription
-	FWindowsSentryConverters::SentryCrashContextToString(
+	FMicrosoftSentryConverters::SentryCrashContextToString(
 		CrashContext,
 		GErrorExceptionDescription,
 		UE_ARRAY_COUNT(GErrorExceptionDescription));
@@ -219,24 +221,19 @@ void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCont
 
 	if (CrashedThreadHandle && CrashContext->exception_ptrs.ContextRecord)
 	{
-		// Create thread context wrapper for safe cross-thread stack walking
-		void* ContextWrapper = FWindowsPlatformStackWalk::MakeThreadContextWrapper(
+		// Create platform-specific context wrapper for cross-thread stack walking
+		FPlatformStackWalk StackWalker;
+		void* ContextWrapper = StackWalker.MakeThreadContextWrapper(
 			CrashContext->exception_ptrs.ContextRecord,
 			CrashedThreadHandle);
 
 		if (ContextWrapper)
 		{
-			// Perform stack walking using the crashed thread's context
-			void* ProgramCounter = GetExceptionAddress(CrashContext);
+			// Platform-specific stack walking (Xbox overrides this)
+			PerformStackWalk(StackTrace, StackTraceSize, ContextWrapper, CrashContext, CrashedThreadHandle);
 
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
-			FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, ProgramCounter, ContextWrapper);
-#else
-			FPlatformStackWalk::StackWalkAndDump(StackTrace, StackTraceSize, 0, ContextWrapper);
-#endif
-
-			// Release the context wrapper
-			FWindowsPlatformStackWalk::ReleaseThreadContextWrapper(ContextWrapper);
+			// Release the platform-specific context wrapper
+			StackWalker.ReleaseThreadContextWrapper(ContextWrapper);
 		}
 	}
 
@@ -247,5 +244,37 @@ void FWindowsCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashCont
 	FCString::Strncat(GErrorHist, ANSI_TO_TCHAR(StackTrace), UE_ARRAY_COUNT(GErrorHist));
 #endif
 }
+
+void FMicrosoftSentryCrashLogger::PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
+{
+	// Unified implementation for all Microsoft platforms (Windows, Xbox)
+	// Use CaptureThreadStackBackTrace which properly handles context wrappers on all platforms
+
+	const uint32 MaxDepth = 64;
+	uint64 BackTrace[MaxDepth];
+
+	// Get the thread ID from the thread handle
+	DWORD CrashedThreadId = GetThreadId(CrashedThreadHandle);
+
+	// CaptureThreadStackBackTrace properly determines for which thread stack walking should be performed
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(CrashedThreadId, BackTrace, MaxDepth, ContextWrapper);
+#else
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(CrashedThreadId, BackTrace, MaxDepth);
+#endif
+
+	// Format the captured addresses into human-readable strings
+	for (uint32 i = 0; i < Depth; i++)
+	{
+		FPlatformStackWalk::ProgramCounterToHumanReadableString(i, BackTrace[i], StackTrace, StackTraceSize, nullptr);
+#if !UE_VERSION_OLDER_THAN(5, 6, 0)
+		FCStringAnsi::StrncatTruncateDest(StackTrace, (int32)StackTraceSize, LINE_TERMINATOR_ANSI);
+#else
+		FCStringAnsi::Strncat(StackTrace, LINE_TERMINATOR_ANSI, (int32)StackTraceSize);
+#endif
+	}
+}
+
+#include "Microsoft/HideMicrosoftPlatformTypes.h"
 
 #endif // USE_SENTRY_NATIVE

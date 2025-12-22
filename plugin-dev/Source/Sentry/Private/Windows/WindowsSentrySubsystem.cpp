@@ -13,25 +13,10 @@
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
 {
-	// Initialize crash logger if enabled
-	if (Settings->EnableOnCrashLogging)
-	{
-		CrashLogger = MakeUnique<FWindowsCrashLogger>();
-		if (CrashLogger->IsThreadRunning())
-		{
-			UE_LOG(LogSentrySdk, Log, TEXT("Crash logging enabled - stack traces will be written to game log during crashes"));
-		}
-		else
-		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Crash logging requested but thread failed to initialize"));
-			CrashLogger.Reset();
-		}
-	}
-
 	// Detect Wine/Proton before initializing
 	WineProtonInfo = FSentryPlatformDetectionUtils::DetectWineProton();
 
-	// Call parent implementation
+	// Call parent implementation (handles crash logger initialization)
 	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
 
 	// Add Wine/Proton context for all events if detected
@@ -112,43 +97,9 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	// If crash logging is enabled, log the crash callstack to game log
-	if (CrashLogger)
-	{
-		// Get a pseudo-handle to the current thread (the crashed thread)
-		// We need a real handle for cross-thread stack walking
-		HANDLE CurrentThreadPseudoHandle = GetCurrentThread();
-		HANDLE CrashedThreadHandle = nullptr;
-
-		// Duplicate the pseudo-handle to get a real handle
-		if (DuplicateHandle(
-				GetCurrentProcess(),	   // Source process
-				CurrentThreadPseudoHandle, // Source handle (pseudo)
-				GetCurrentProcess(),	   // Target process
-				&CrashedThreadHandle,	   // Target handle (real)
-				0,						   // Desired access (ignored when using DUPLICATE_SAME_ACCESS)
-				Windows::FALSE,			   // Inherit handle
-				DUPLICATE_SAME_ACCESS	   // Options
-				))
-		{
-			// Log the crash (with timeout to prevent hanging)
-			// This waits for the logging thread to complete stack walking, fill GErrorHist and dump callstack to logs
-			// Logging thread is responsible for closing CrashedThreadHandle when done
-			CrashLogger->LogCrash(uctx, CrashedThreadHandle, 5000);
-		}
-	}
-
+	// Windows-specific crash handling can go here if needed in the future
+	// For now, just delegate to parent which handles the crash logger
 	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
-}
-
-void FWindowsSentrySubsystem::Close()
-{
-	if (CrashLogger)
-	{
-		CrashLogger.Reset();
-	}
-
-	FMicrosoftSentrySubsystem::Close();
 }
 
 #endif // USE_SENTRY_NATIVE
