@@ -205,7 +205,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		}
 		else
 		{
-			UE_LOG(LogSentrySdk, Verbose, TEXT("Screenshot capturing is not supported on the current platform")); 
+			UE_LOG(LogSentrySdk, Verbose, TEXT("Screenshot capturing is not supported on the current platform"));
 		}
 	}
 
