@@ -10,6 +10,10 @@
 
 - Missing `IsUserConsentRequired` function definition no longer causes errors when Sentry is not enabled for the target build platform ([#1172](https://github.com/getsentry/sentry-unreal/pull/1172))
 
+### Fixes
+
+- Removed usage of deprecated `CGWindowListCreateImage` function on Mac. Replaced with Sentry Screenshot Utils ([#1034](https://github.com/getsentry/sentry-unreal/pull/1034/))
+
 ### Dependencies
 
 - Bump CLI from v2.58.2 to v3.0.1 ([#1167](https://github.com/getsentry/sentry-unreal/pull/1167), [#1169](https://github.com/getsentry/sentry-unreal/pull/1169), [#1174](https://github.com/getsentry/sentry-unreal/pull/1174), [#1176](https://github.com/getsentry/sentry-unreal/pull/1176))
