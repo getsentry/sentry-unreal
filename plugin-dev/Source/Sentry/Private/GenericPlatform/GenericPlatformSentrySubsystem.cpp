@@ -199,7 +199,14 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 {
 	if (isScreenshotAttachmentEnabled)
 	{
-		TryCaptureScreenshot();
+		if (IsScreenshotSupported())
+		{
+			TryCaptureScreenshot();
+		}
+		else
+		{
+			UE_LOG(LogSentrySdk, Verbose, TEXT("Screenshot capturing is not supported on the current platform")); 
+		}
 	}
 
 	if (GIsGPUCrashed && isGpuDumpAttachmentEnabled)
@@ -236,6 +243,11 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 	}
 
 	return parent_sampled != nullptr ? *parent_sampled : 0.0;
+}
+
+bool FGenericPlatformSentrySubsystem::IsScreenshotSupported() const
+{
+	return false;
 }
 
 void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)

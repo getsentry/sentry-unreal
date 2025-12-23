@@ -18,6 +18,8 @@ protected:
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
 
 	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler"); }
+
+	virtual bool IsScreenshotSupported() const override { return true; }
 };
 
 typedef FLinuxSentrySubsystem FPlatformSentrySubsystem;
