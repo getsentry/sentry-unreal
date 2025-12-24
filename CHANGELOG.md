@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Misleading screenshot capture logs on unsupported platforms ([#1180](https://github.com/getsentry/sentry-unreal/pull/1180))
+
 ## 1.4.0
 
 ### Features
