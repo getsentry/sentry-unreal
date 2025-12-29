@@ -37,6 +37,7 @@ JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* 
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		// Skip calling a `onConfigureScope` handler (e.g. during event capturing)
+		AndroidSentryScopeCallback::RemoveDelegate(callbackId);
 		return;
 	}
 
