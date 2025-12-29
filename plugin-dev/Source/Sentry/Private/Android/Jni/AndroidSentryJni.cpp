@@ -34,18 +34,15 @@
 
 JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong callbackId, jobject scope)
 {
-	if (!SentryCallbackUtils::IsCallbackSafeToRun())
-	{
-		// Skip calling a `onConfigureScope` handler (e.g. during event capturing)
-		AndroidSentryScopeCallback::RemoveDelegate(callbackId);
-		return;
-	}
-
 	FSentryScopeDelegate* callback = AndroidSentryScopeCallback::GetDelegateById(callbackId);
 
 	if (callback != nullptr)
 	{
-		callback->Execute(MakeShareable(new FAndroidSentryScope(scope)));
+		if (SentryCallbackUtils::IsCallbackSafeToRun())
+		{
+			callback->Execute(MakeShareable(new FAndroidSentryScope(scope)));
+		}
+
 		AndroidSentryScopeCallback::RemoveDelegate(callbackId);
 	}
 }
