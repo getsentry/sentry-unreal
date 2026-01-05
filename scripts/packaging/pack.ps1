@@ -1,5 +1,7 @@
 # Packages plugin files for publishing to GitHub Releases
 
+. $PSScriptRoot/pack-utils.ps1
+
 function packFiles()
 {
     Remove-Item "package-release" -Force -Recurse -ErrorAction SilentlyContinue
@@ -21,11 +23,11 @@ function packFiles()
     $sentrySubsystemHeader = Get-Content "plugin-dev/Source/Sentry/Public/SentrySubsystem.h" -Encoding UTF8
 
     $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
-    $version = [regex]::Match("$pluginSpec", '"VersionName": "([^"]+)"').Groups[1].Value
+    $pluginVersion = Get-PluginVersion
     $engineVersions = Get-Content $PSScriptRoot/engine-versions.txt
     foreach ($engineVersion in $engineVersions)
     {
-        $packageName = "sentry-unreal-$version-engine$engineVersion.zip"
+        $packageName = "sentry-unreal-$pluginVersion-engine$engineVersion.zip"
         Write-Host "Creating a release package for Unreal $engineVersion as $packageName"
 
         $newPluginSpec = $pluginSpec
