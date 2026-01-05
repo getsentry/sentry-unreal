@@ -2,10 +2,12 @@
 
 . $PSScriptRoot/pack-utils.ps1
 
+$projectRoot = "$PSScriptRoot/../.."
+
 function packFiles()
 {
-    Remove-Item "package-release" -Force -Recurse -ErrorAction SilentlyContinue
-    New-Item "package-release" -ItemType Directory
+    Remove-Item "$projectRoot/package-release" -Force -Recurse -ErrorAction SilentlyContinue
+    New-Item "$projectRoot/package-release" -ItemType Directory
 
     $exclude = @(
         'Sentry.uplugin',
@@ -15,16 +17,16 @@ function packFiles()
         'Intermediate'
     )
 
-    Copy-Item "plugin-dev/*" "package-release/" -Exclude $exclude -Recurse
-    Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
-    Copy-Item "LICENSE" -Destination "package-release/LICENSE"
+    Copy-Item "$projectRoot/plugin-dev/*" "$projectRoot/package-release/" -Exclude $exclude -Recurse
+    Copy-Item "$projectRoot/CHANGELOG.md" -Destination "$projectRoot/package-release/CHANGELOG.md"
+    Copy-Item "$projectRoot/LICENSE" -Destination "$projectRoot/package-release/LICENSE"
 
     # We know the file is meant to be UTF8, so let's be explicit
-    $sentrySubsystemHeader = Get-Content "plugin-dev/Source/Sentry/Public/SentrySubsystem.h" -Encoding UTF8
+    $sentrySubsystemHeader = Get-Content "$projectRoot/plugin-dev/Source/Sentry/Public/SentrySubsystem.h" -Encoding UTF8
 
-    $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
+    $pluginSpec = Get-Content (Get-PluginSpecPath)
     $pluginVersion = Get-PluginVersion
-    $engineVersions = Get-Content $PSScriptRoot/engine-versions.txt
+    $engineVersions = Get-Content "$PSScriptRoot/engine-versions.txt"
     foreach ($engineVersion in $engineVersions)
     {
         $packageName = "sentry-unreal-$pluginVersion-engine$engineVersion.zip"
@@ -42,15 +44,10 @@ function packFiles()
             $newPluginSpec = $newPluginSpec -replace '"LinuxArm64"', '"LinuxAArch64"'
         }
 
-        $newPluginSpec | Out-File "package-release/Sentry.uplugin"
+        $newPluginSpec | Out-File "$projectRoot/package-release/Sentry.uplugin"
 
         # Replacing raw pointers in UPROPERTY fields with TObjectPtr for UE 5.0+
         # See https://github.com/getsentry/sentry-unreal/issues/1082
-
-        # Workaround for PowerShell 5.1 writing UTF8-BOM
-        # ======
-        # Set current directory so that ::WriteAllLines can accept a relative path
-        [System.Environment]::CurrentDirectory = (Get-Location).Path
 
         $newSentrySubsystemHeader = $sentrySubsystemHeader
 
@@ -64,9 +61,9 @@ function packFiles()
         }
 
         # PowerShell 5.1 will write UT8-BOM if we use Out-File, so bypass this issue and use ::WriteAllLines
-        [System.IO.File]::WriteAllLines("package-release/Source/Sentry/Public/SentrySubsystem.h", $newSentrySubsystemHeader)
+        [System.IO.File]::WriteAllLines("$projectRoot/package-release/Source/Sentry/Public/SentrySubsystem.h", $newSentrySubsystemHeader)
 
-        Remove-Item -ErrorAction SilentlyContinue $packageName
+        Remove-Item -ErrorAction SilentlyContinue "$projectRoot/$packageName"
 
         # Workaround for Compress-Archive discarding file permissions
         # ======
@@ -74,7 +71,7 @@ function packFiles()
         # so that we retain file permissions
         # For more information, see https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/36
         # NOTE: This requires .NET 6+: https://github.com/dotnet/runtime/issues/1548
-        Push-Location package-release
+        Push-Location "$projectRoot/package-release"
         try
         {
             $location = Get-Location
@@ -83,7 +80,7 @@ function packFiles()
             {
                 Add-Type -AssemblyName "System.IO.Compression.FileSystem"
             }
-            [System.IO.Compression.ZipFile]::CreateFromDirectory($location, "$location/../$packageName")
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($location, "$projectRoot/$packageName")
         }
         finally
         {

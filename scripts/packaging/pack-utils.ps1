@@ -1,7 +1,11 @@
 # Shared utilities for plugin packaging scripts
 
+function Get-PluginSpecPath {
+    return "$PSScriptRoot/../../plugin-dev/Sentry.uplugin"
+}
+
 function Get-PluginVersion {
-    $pluginSpecPath = "$PSScriptRoot/../../plugin-dev/Sentry.uplugin"
+    $pluginSpecPath = Get-PluginSpecPath
 
     if (-not(Test-Path -Path $pluginSpecPath)) {
         throw "Plugin spec file not found at: $pluginSpecPath"
