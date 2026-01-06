@@ -6,6 +6,10 @@
 
 - Add plugin setting to opt out of automatic Crash Reporter context propagation ([#1178](https://github.com/getsentry/sentry-unreal/pull/1178))
 
+### Fixes
+
+- Misleading screenshot capture logs on unsupported platforms ([#1180](https://github.com/getsentry/sentry-unreal/pull/1180))
+
 ## 1.4.0
 
 ### Features
