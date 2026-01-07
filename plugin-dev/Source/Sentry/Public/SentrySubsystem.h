@@ -108,6 +108,16 @@ public:
 	void LogDebug(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
 
 	/**
+	 * Add a debug level structured log message to Sentry with attributes.
+	 *
+	 * @param Message Log message to add.
+	 * @param Attributes Structured attributes to attach to the log entry.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void LogDebugWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
 	 * Add an info level structured log message to Sentry.
 	 *
 	 * @param Message Log message to add.
@@ -115,6 +125,16 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void LogInfo(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Add an info level structured log message to Sentry with attributes.
+	 *
+	 * @param Message Log message to add.
+	 * @param Attributes Structured attributes to attach to the log entry.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void LogInfoWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
 
 	/**
 	 * Add a warning level structured log message to Sentry.
@@ -126,6 +146,16 @@ public:
 	void LogWarning(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
 
 	/**
+	 * Add a warning level structured log message to Sentry with attributes.
+	 *
+	 * @param Message Log message to add.
+	 * @param Attributes Structured attributes to attach to the log entry.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void LogWarningWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
 	 * Add an error level structured log message to Sentry.
 	 *
 	 * @param Message Log message to add.
@@ -135,6 +165,16 @@ public:
 	void LogError(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
 
 	/**
+	 * Add an error level structured log message to Sentry with attributes.
+	 *
+	 * @param Message Log message to add.
+	 * @param Attributes Structured attributes to attach to the log entry.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void LogErrorWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
 	 * Add a fatal level structured log message to Sentry.
 	 *
 	 * @param Message Log message to add.
@@ -142,6 +182,16 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void LogFatal(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Add a fatal level structured log message to Sentry with attributes.
+	 *
+	 * @param Message Log message to add.
+	 * @param Attributes Structured attributes to attach to the log entry.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.

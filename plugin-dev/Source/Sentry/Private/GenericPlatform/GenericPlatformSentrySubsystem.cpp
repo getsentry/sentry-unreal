@@ -381,6 +381,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
+	sentry_options_set_logs_with_attributes(options, true);
 
 	if (settings->bRequireUserConsent)
 	{
@@ -482,7 +483,7 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
 }
 
-void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes)
 {
 	// Ignore Empty Bodies
 	if (Body.IsEmpty())
@@ -504,24 +505,29 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel L
 	auto MessageCStrConverter = StringCast<ANSICHAR>(*FormattedMessage);
 	const char* MessageCStr = MessageCStrConverter.Get();
 
-	// Use level-specific sentry logging functions
+	sentry_value_t attributes = sentry_value_new_object();
+	for (auto it = Attributes.CreateConstIterator(); it; ++it)
+	{
+		sentry_value_set_by_key(attributes, TCHAR_TO_ANSI(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+	}
+
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		sentry_log_fatal(MessageCStr);
+		sentry_log_fatal(MessageCStr, attributes);
 		break;
 	case ESentryLevel::Error:
-		sentry_log_error(MessageCStr);
+		sentry_log_error(MessageCStr, attributes);
 		break;
 	case ESentryLevel::Warning:
-		sentry_log_warn(MessageCStr);
+		sentry_log_warn(MessageCStr, attributes);
 		break;
 	case ESentryLevel::Info:
-		sentry_log_info(MessageCStr);
+		sentry_log_info(MessageCStr, attributes);
 		break;
 	case ESentryLevel::Debug:
 	default:
-		sentry_log_debug(MessageCStr);
+		sentry_log_debug(MessageCStr, attributes);
 		break;
 	}
 }

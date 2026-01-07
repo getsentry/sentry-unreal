@@ -162,8 +162,11 @@ void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, co
 		breadcrumbAndroid->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FAndroidSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes)
 {
+	// TODO: Implement attributes support for Android platform
+	// For now, attributes are ignored
+
 	// Ignore Empty Bodies
 	if (Body.IsEmpty())
 	{

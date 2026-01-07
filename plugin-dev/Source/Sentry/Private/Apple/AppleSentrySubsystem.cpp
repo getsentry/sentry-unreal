@@ -198,8 +198,11 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
-void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes)
 {
+	// TODO: Implement attributes support for Apple platform
+	// For now, attributes are ignored
+
 	// Ignore Empty Bodies
 	if (Body.IsEmpty())
 	{

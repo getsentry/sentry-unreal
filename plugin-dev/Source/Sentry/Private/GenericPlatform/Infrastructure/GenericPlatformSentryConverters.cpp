@@ -7,6 +7,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 #include "UObject/Class.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
@@ -109,6 +110,50 @@ sentry_value_t FGenericPlatformSentryConverters::VariantMapToNative(const TMap<F
 	}
 
 	return sentryObject;
+}
+
+sentry_value_t FGenericPlatformSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)
+{
+	sentry_value_t value;
+
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		value = sentry_value_new_int32(variant.GetValue<int32>());
+		break;
+	case ESentryVariantType::Float:
+		value = sentry_value_new_double(variant.GetValue<float>());
+		break;
+	case ESentryVariantType::Bool:
+		value = sentry_value_new_bool(variant.GetValue<bool>());
+		break;
+	case ESentryVariantType::String:
+		value = sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
+		break;
+	case ESentryVariantType::Array:
+	case ESentryVariantType::Map:
+	{
+		// For complex types (arrays, maps), convert to JSON string
+		TSharedPtr<FJsonValue> jsonValue = VariantToJsonValue(variant);
+		if (jsonValue.IsValid())
+		{
+			FString jsonString;
+			TSharedRef<TJsonWriter<>> writer = TJsonWriterFactory<>::Create(&jsonString);
+			FJsonSerializer::Serialize(jsonValue.ToSharedRef(), TEXT(""), writer);
+			value = sentry_value_new_string(TCHAR_TO_ANSI(*jsonString));
+		}
+		else
+		{
+			value = sentry_value_new_null();
+		}
+		break;
+	}
+	default:
+		value = sentry_value_new_null();
+		break;
+	}
+
+	return sentry_value_new_attribute(value, nullptr);
 }
 
 sentry_value_t FGenericPlatformSentryConverters::AddressToNative(uint64 address)
