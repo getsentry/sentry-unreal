@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+> [!NOTE]
+> Starting with this release, a generic package is published alongside the engine-specific ones.
+> It omits the `EngineVersion` key in the plugin descriptor so it can be used in licensee engine builds without triggering warnings or requiring manual changes.
+
 ### Features
 
 - Add plugin setting to opt out of automatic Crash Reporter context propagation ([#1178](https://github.com/getsentry/sentry-unreal/pull/1178))

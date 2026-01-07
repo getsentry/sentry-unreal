@@ -26,17 +26,30 @@ function packFiles()
 
     $pluginSpec = Get-Content (Get-PluginSpecPath)
     $pluginVersion = Get-PluginVersion
+
     $engineVersions = Get-Content "$PSScriptRoot/engine-versions.txt"
+    $engineVersions += "generic"
+
     foreach ($engineVersion in $engineVersions)
     {
-        $packageName = "sentry-unreal-$pluginVersion-engine$engineVersion.zip"
-        Write-Host "Creating a release package for Unreal $engineVersion as $packageName"
+        # Adding the EngineVersion key to Sentry.uplugin may trigger warnings in licensee engine builds (https://github.com/getsentry/sentry-unreal/issues/811)
+        # Therefore, we include this key only in engine-specific packages.
+        # The generic package omits it so that users can download a ready-to-use artifact without having to remove the key manually for that use-case.
 
         $newPluginSpec = $pluginSpec
 
-        # Adding EngineVersion key may cause warnings when using package in licensee engine builds (https://github.com/getsentry/sentry-unreal/issues/811)
+        if ($engineVersion -ne "generic")
+        {
+            $packageName = "sentry-unreal-$pluginVersion-engine$engineVersion.zip"
+            Write-Host "Creating a release package for Unreal $engineVersion as $packageName"
 
-        $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '.0",') + @($pluginSpec[1..($pluginSpec.count)])
+            $newPluginSpec = @($pluginSpec[0..0]) + @('	"EngineVersion" : "' + $engineVersion + '.0",') + @($pluginSpec[1..($pluginSpec.count)])
+        }
+        else
+        {
+            $packageName = "sentry-unreal-$pluginVersion.zip"
+            Write-Host "Creating a generic release package as $packageName"
+        }
 
         # Handle platform name difference for UE 4.27
         if ($engineVersion -eq "4.27")
