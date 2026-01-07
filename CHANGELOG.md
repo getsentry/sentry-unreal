@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+> [!NOTE]
+> Starting with this release, a generic package is published alongside the engine-specific ones.
+> It omits the `EngineVersion` key in the plugin descriptor so it can be used in licensee engine builds without triggering warnings or requiring manual changes.
+>
+> Note that the generic package uses the `TObjectPtr` syntax which is only available in UE5.
+> If you are using UE 4.27 or earlier, it’s better to continue using the corresponding engine-specific package as removing the version key manually will be the simpler approach.
+
 ### Features
 
 - Add plugin setting to opt out of automatic Crash Reporter context propagation ([#1178](https://github.com/getsentry/sentry-unreal/pull/1178))
