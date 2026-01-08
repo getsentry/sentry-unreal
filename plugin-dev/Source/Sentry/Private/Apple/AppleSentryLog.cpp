@@ -63,3 +63,30 @@ ESentryLevel FAppleSentryLog::GetLevel() const
 {
 	return FAppleSentryConverters::SentryLogLevelToUnreal(LogApple.level);
 }
+
+void FAppleSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	// TODO: Implement when Apple SDK supports structured logging with attributes
+}
+
+FSentryVariant FAppleSentryLog::GetAttribute(const FString& key) const
+{
+	// TODO: Implement when Apple SDK supports structured logging with attributes
+	return FSentryVariant();
+}
+
+bool FAppleSentryLog::TryGetAttribute(const FString& key, FSentryVariant& value) const
+{
+	// TODO: Implement when Apple SDK supports structured logging with attributes
+	return false;
+}
+
+void FAppleSentryLog::RemoveAttribute(const FString& key)
+{
+	// TODO: Implement when Apple SDK supports structured logging with attributes
+}
+
+void FAppleSentryLog::AddAttributes(const TMap<FString, FSentryVariant>& attributes)
+{
+	// TODO: Implement when Apple SDK supports structured logging with attributes
+}

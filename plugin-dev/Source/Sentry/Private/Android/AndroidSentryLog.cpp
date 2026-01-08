@@ -55,3 +55,30 @@ ESentryLevel FAndroidSentryLog::GetLevel() const
 	auto LevelObject = CallObjectMethod<jobject>(GetLevelMethod);
 	return FAndroidSentryConverters::SentryLogLevelToUnreal(*LevelObject);
 }
+
+void FAndroidSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	// TODO: Implement when Android SDK supports structured logging with attributes
+}
+
+FSentryVariant FAndroidSentryLog::GetAttribute(const FString& key) const
+{
+	// TODO: Implement when Android SDK supports structured logging with attributes
+	return FSentryVariant();
+}
+
+bool FAndroidSentryLog::TryGetAttribute(const FString& key, FSentryVariant& value) const
+{
+	// TODO: Implement when Android SDK supports structured logging with attributes
+	return false;
+}
+
+void FAndroidSentryLog::RemoveAttribute(const FString& key)
+{
+	// TODO: Implement when Android SDK supports structured logging with attributes
+}
+
+void FAndroidSentryLog::AddAttributes(const TMap<FString, FSentryVariant>& attributes)
+{
+	// TODO: Implement when Android SDK supports structured logging with attributes
+}
