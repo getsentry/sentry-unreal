@@ -34,8 +34,11 @@ import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
 import io.sentry.SentryAttributeType;
+import io.sentry.SentryAttributes;
 import io.sentry.SentryLogEvent;
 import io.sentry.SentryLogEventAttributeValue;
+import io.sentry.logger.SentryLogParameters;
+import io.sentry.SentryLogLevel;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
@@ -259,24 +262,54 @@ public class SentryBridgeJava {
 		Sentry.getGlobalScope().clearAttachments();
 	}
 
-	public static void addLogFatal(final String message) {
-		Sentry.logger().fatal(message);
+	public static void addLogFatal(final String message, final HashMap<String, Object> attributesMap) {
+		if (attributesMap != null && !attributesMap.isEmpty()) {
+			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+			SentryLogParameters params = SentryLogParameters.create(attributes);
+			Sentry.logger().log(SentryLogLevel.FATAL, params, message);
+		} else {
+			Sentry.logger().fatal(message);
+		}
 	}
 
-	public static void addLogError(final String message) {
-		Sentry.logger().error(message);
+	public static void addLogError(final String message, final HashMap<String, Object> attributesMap) {
+		if (attributesMap != null && !attributesMap.isEmpty()) {
+			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+			SentryLogParameters params = SentryLogParameters.create(attributes);
+			Sentry.logger().log(SentryLogLevel.ERROR, params, message);
+		} else {
+			Sentry.logger().error(message);
+		}
 	}
 
-	public static void addLogWarn(final String message) {
-		Sentry.logger().warn(message);
+	public static void addLogWarn(final String message, final HashMap<String, Object> attributesMap) {
+		if (attributesMap != null && !attributesMap.isEmpty()) {
+			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+			SentryLogParameters params = SentryLogParameters.create(attributes);
+			Sentry.logger().log(SentryLogLevel.WARN, params, message);
+		} else {
+			Sentry.logger().warn(message);
+		}
 	}
 
-	public static void addLogInfo(final String message) {
-		Sentry.logger().info(message);
+	public static void addLogInfo(final String message, final HashMap<String, Object> attributesMap) {
+		if (attributesMap != null && !attributesMap.isEmpty()) {
+			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+			SentryLogParameters params = SentryLogParameters.create(attributes);
+			Sentry.logger().log(SentryLogLevel.INFO, params, message);
+		} else {
+			Sentry.logger().info(message);
+		}
 	}
 
-	public static void addLogDebug(final String message) {
-		Sentry.logger().debug(message);
+	public static void addLogDebug(final String message, final HashMap<String, Object> attributesMap) {
+		if (attributesMap != null && !attributesMap.isEmpty()) {
+			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+			SentryLogParameters params = SentryLogParameters.create(attributes);
+			Sentry.logger().log(SentryLogLevel.DEBUG, params, message);
+		} else {
+			Sentry.logger().debug(message);
+		}
 	}
 
 	public static void setLogAttribute(final SentryLogEvent logEvent, final String key, final Object value) {
