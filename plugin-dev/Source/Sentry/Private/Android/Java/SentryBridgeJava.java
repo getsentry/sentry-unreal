@@ -33,7 +33,9 @@ import io.sentry.exception.ExceptionMechanismException;
 import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
+import io.sentry.SentryAttributeType;
 import io.sentry.SentryLogEvent;
+import io.sentry.SentryLogEventAttributeValue;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
@@ -275,6 +277,64 @@ public class SentryBridgeJava {
 
 	public static void addLogDebug(final String message) {
 		Sentry.logger().debug(message);
+	}
+
+	public static void setLogAttribute(final SentryLogEvent logEvent, final String key, final Object value) {
+		SentryLogEventAttributeValue attributeValue;
+
+        if (value instanceof String) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value);
+		} else if (value instanceof Integer) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.INTEGER, value);
+		} else if (value instanceof Boolean) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.BOOLEAN, value);
+		} else if (value instanceof Float) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
+		} else {
+			// Unsupported type - convert to string as fallback
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value.toString());
+		}
+
+		logEvent.setAttribute(key, attributeValue);
+	}
+
+	public static Object getLogAttribute(final SentryLogEvent logEvent, final String key) {
+		if (logEvent == null || key == null) {
+			return null;
+		}
+
+		Map<String, SentryLogEventAttributeValue> attributes = logEvent.getAttributes();
+		if (attributes == null) {
+			return null;
+		}
+
+		SentryLogEventAttributeValue attributeValue = attributes.get(key);
+		if (attributeValue == null) {
+			return null;
+		}
+
+		return attributeValue.getValue();
+	}
+
+	public static void removeLogAttribute(final SentryLogEvent logEvent, final String key) {
+		if (logEvent == null || key == null) {
+			return;
+		}
+
+		Map<String, SentryLogEventAttributeValue> attributes = logEvent.getAttributes();
+		if (attributes != null) {
+			attributes.remove(key);
+		}
+	}
+
+	public static void addLogAttributes(final SentryLogEvent logEvent, final HashMap<String, Object> attributes) {
+		if (logEvent == null || attributes == null) {
+			return;
+		}
+
+		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+			setLogAttribute(logEvent, entry.getKey(), entry.getValue());
+		}
 	}
 
 	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {

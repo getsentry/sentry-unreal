@@ -58,27 +58,43 @@ ESentryLevel FAndroidSentryLog::GetLevel() const
 
 void FAndroidSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
 {
-	// TODO: Implement when Android SDK supports structured logging with attributes
+	CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;Ljava/lang/Object;)V",
+		GetJObject(), *GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
 }
 
 FSentryVariant FAndroidSentryLog::GetAttribute(const FString& key) const
 {
-	// TODO: Implement when Android SDK supports structured logging with attributes
-	return FSentryVariant();
+	auto attribute = CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *GetJString(key));
+
+	return FAndroidSentryConverters::VariantToUnreal(*attribute);
 }
 
 bool FAndroidSentryLog::TryGetAttribute(const FString& key, FSentryVariant& value) const
 {
-	// TODO: Implement when Android SDK supports structured logging with attributes
-	return false;
+	auto attribute = CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *GetJString(key));
+
+	if (!attribute)
+	{
+		return false;
+	}
+
+	value = FAndroidSentryConverters::VariantToUnreal(*attribute);
+
+	return true;
 }
 
 void FAndroidSentryLog::RemoveAttribute(const FString& key)
 {
-	// TODO: Implement when Android SDK supports structured logging with attributes
+	CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "removeLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;)V",
+		GetJObject(), *GetJString(key));
 }
 
 void FAndroidSentryLog::AddAttributes(const TMap<FString, FSentryVariant>& attributes)
 {
-	// TODO: Implement when Android SDK supports structured logging with attributes
+	for (const auto& pair : attributes)
+	{
+		SetAttribute(pair.Key, pair.Value);
+	}
 }
