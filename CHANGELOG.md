@@ -18,6 +18,12 @@
 - Misleading screenshot capture logs on unsupported platforms ([#1180](https://github.com/getsentry/sentry-unreal/pull/1180))
 - Deadlock when invoking `onConfigureScope` callback during garbage collection on Android ([#1181](https://github.com/getsentry/sentry-unreal/pull/1181))
 
+### Dependencies
+
+- Bump CLI from v3.0.1 to v3.0.2 ([#1167](https://github.com/getsentry/sentry-unreal/pull/1186))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#302)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.0.1...3.0.2)
+
 ## 1.4.0
 
 ### Features
