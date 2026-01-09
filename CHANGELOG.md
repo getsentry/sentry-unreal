@@ -20,9 +20,9 @@
 
 ### Dependencies
 
-- Bump CLI from v3.0.1 to v3.0.2 ([#1186](https://github.com/getsentry/sentry-unreal/pull/1186))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#302)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/3.0.1...3.0.2)
+- Bump CLI from v3.0.1 to v3.0.3 ([#1186](https://github.com/getsentry/sentry-unreal/pull/1186), [#1188](https://github.com/getsentry/sentry-unreal/pull/1188))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#303)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.0.1...3.0.3)
 - Bump Native SDK from v0.12.2 to v0.12.3 ([#1187](https://github.com/getsentry/sentry-unreal/pull/1187))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0123)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.3)
