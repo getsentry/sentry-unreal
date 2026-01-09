@@ -263,54 +263,34 @@ public class SentryBridgeJava {
 	}
 
 	public static void addLogFatal(final String message, final HashMap<String, Object> attributesMap) {
-		if (attributesMap != null && !attributesMap.isEmpty()) {
-			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
-			SentryLogParameters params = SentryLogParameters.create(attributes);
-			Sentry.logger().log(SentryLogLevel.FATAL, params, message);
-		} else {
-			Sentry.logger().fatal(message);
-		}
+        addLog(SentryLogLevel.FATAL, message, attributesMap);
 	}
 
 	public static void addLogError(final String message, final HashMap<String, Object> attributesMap) {
-		if (attributesMap != null && !attributesMap.isEmpty()) {
-			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
-			SentryLogParameters params = SentryLogParameters.create(attributes);
-			Sentry.logger().log(SentryLogLevel.ERROR, params, message);
-		} else {
-			Sentry.logger().error(message);
-		}
+        addLog(SentryLogLevel.ERROR, message, attributesMap);
 	}
 
 	public static void addLogWarn(final String message, final HashMap<String, Object> attributesMap) {
-		if (attributesMap != null && !attributesMap.isEmpty()) {
-			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
-			SentryLogParameters params = SentryLogParameters.create(attributes);
-			Sentry.logger().log(SentryLogLevel.WARN, params, message);
-		} else {
-			Sentry.logger().warn(message);
-		}
+        addLog(SentryLogLevel.WARN, message, attributesMap);
 	}
 
 	public static void addLogInfo(final String message, final HashMap<String, Object> attributesMap) {
-		if (attributesMap != null && !attributesMap.isEmpty()) {
-			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
-			SentryLogParameters params = SentryLogParameters.create(attributes);
-			Sentry.logger().log(SentryLogLevel.INFO, params, message);
-		} else {
-			Sentry.logger().info(message);
-		}
+        addLog(SentryLogLevel.INFO, message, attributesMap);
 	}
 
 	public static void addLogDebug(final String message, final HashMap<String, Object> attributesMap) {
-		if (attributesMap != null && !attributesMap.isEmpty()) {
-			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
-			SentryLogParameters params = SentryLogParameters.create(attributes);
-			Sentry.logger().log(SentryLogLevel.DEBUG, params, message);
-		} else {
-			Sentry.logger().debug(message);
-		}
+        addLog(SentryLogLevel.DEBUG, message, attributesMap);
 	}
+
+    private static void addLog(final SentryLogLevel level, final String message, final HashMap<String, Object> attributesMap) {
+        if (attributesMap != null && !attributesMap.isEmpty()) {
+            SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+            SentryLogParameters params = SentryLogParameters.create(attributes);
+            Sentry.logger().log(level, params, message);
+        } else {
+            Sentry.logger().log(level, message);
+        }
+    }
 
 	public static void setLogAttribute(final SentryLogEvent logEvent, final String key, final Object value) {
 		SentryLogEventAttributeValue attributeValue;
@@ -324,7 +304,7 @@ public class SentryBridgeJava {
 		} else if (value instanceof Float) {
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
 		} else {
-			// Unsupported type - convert to string as fallback
+			// Unsupported type (e.g. map or array) - convert to string as fallback
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value.toString());
 		}
 
@@ -357,16 +337,6 @@ public class SentryBridgeJava {
 		Map<String, SentryLogEventAttributeValue> attributes = logEvent.getAttributes();
 		if (attributes != null) {
 			attributes.remove(key);
-		}
-	}
-
-	public static void addLogAttributes(final SentryLogEvent logEvent, final HashMap<String, Object> attributes) {
-		if (logEvent == null || attributes == null) {
-			return;
-		}
-
-		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-			setLogAttribute(logEvent, entry.getKey(), entry.getValue());
 		}
 	}
 
