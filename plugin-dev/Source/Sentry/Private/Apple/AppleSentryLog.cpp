@@ -66,27 +66,44 @@ ESentryLevel FAppleSentryLog::GetLevel() const
 
 void FAppleSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
 {
-	// TODO: Implement when Apple SDK supports structured logging with attributes
+	SentryLogAttribute* attribute = FAppleSentryConverters::VariantToSentryAttribute(value);
+	[LogApple setAttribute:attribute forKey:key.GetNSString()];
 }
 
 FSentryVariant FAppleSentryLog::GetAttribute(const FString& key) const
 {
-	// TODO: Implement when Apple SDK supports structured logging with attributes
-	return FSentryVariant();
+	SentryLogAttribute* attribute = [LogApple.attributes objectForKey:key.GetNSString()];
+
+	if (!attribute)
+	{
+		return FSentryVariant();
+	}
+
+	return FAppleSentryConverters::SentryAttributeToVariant(attribute);
 }
 
 bool FAppleSentryLog::TryGetAttribute(const FString& key, FSentryVariant& value) const
 {
-	// TODO: Implement when Apple SDK supports structured logging with attributes
-	return false;
+	SentryLogAttribute* attribute = [LogApple.attributes objectForKey:key.GetNSString()];
+
+	if (!attribute)
+	{
+		return false;
+	}
+
+	value = FAppleSentryConverters::SentryAttributeToVariant(attribute);
+	return true;
 }
 
 void FAppleSentryLog::RemoveAttribute(const FString& key)
 {
-	// TODO: Implement when Apple SDK supports structured logging with attributes
+	[LogApple setAttribute:nil forKey:key.GetNSString()];
 }
 
 void FAppleSentryLog::AddAttributes(const TMap<FString, FSentryVariant>& attributes)
 {
-	// TODO: Implement when Apple SDK supports structured logging with attributes
+	for (const auto& pair : attributes)
+	{
+		SetAttribute(pair.Key, pair.Value);
+	}
 }

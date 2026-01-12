@@ -35,6 +35,10 @@ public:
 	static TArray<FSentryVariant> VariantArrayToUnreal(NSArray* variantArray);
 	static TMap<FString, FSentryVariant> VariantMapToUnreal(NSDictionary* variantMap);
 
+	/** SentryAttribute conversions */
+	static SentryLogAttribute* VariantToSentryAttribute(const FSentryVariant& variant);
+	static FSentryVariant SentryAttributeToVariant(SentryLogAttribute* attribute);
+
 	/** Other conversions */
 	static SentryLevel StringToSentryLevel(NSString* string);
 };
