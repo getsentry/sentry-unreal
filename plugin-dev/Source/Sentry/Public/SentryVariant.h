@@ -190,7 +190,7 @@ public:
 	 * Get variant value
 	 *
 	 * @return - Integer value.
-	 * 
+	 *
 	 * @note If variant type is not integer a default value will be returned.
 	 */
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "Integer"), Category = "Sentry|Variant")
@@ -208,7 +208,7 @@ public:
 	 * Get variant value
 	 *
 	 * @return - Float value.
-	 * 
+	 *
 	 * @note If variant type is not float a default value will be returned.
 	 */
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "Float"), Category = "Sentry|Variant")
@@ -226,7 +226,7 @@ public:
 	 * Get variant value
 	 *
 	 * @return - Boolean value.
-	 * 
+	 *
 	 * @note If variant type is not bool a default value will be returned.
 	 */
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "Bool"), Category = "Sentry|Variant")
@@ -244,7 +244,7 @@ public:
 	 * Get variant value
 	 *
 	 * @return - String value.
-	 * 
+	 *
 	 * @note If variant type is not string a default value will be returned.
 	 */
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "String"), Category = "Sentry|Variant")
@@ -262,7 +262,7 @@ public:
 	 * Get variant value
 	 *
 	 * @return - Array value.
-	 * 
+	 *
 	 * @note If variant type is not array a default value will be returned.
 	 */
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "Array"), Category = "Sentry|Variant")
@@ -280,7 +280,7 @@ public:
 	 * Get variant value
 	 *
 	 * @return - Map value.
-	 * 
+	 *
 	 * @note If variant type is not map a default value will be returned.
 	 */
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "Map"), Category = "Sentry|Variant")
