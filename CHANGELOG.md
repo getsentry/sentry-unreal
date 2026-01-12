@@ -12,6 +12,7 @@
 ### Features
 
 - Add plugin setting to opt out of automatic Crash Reporter context propagation ([#1178](https://github.com/getsentry/sentry-unreal/pull/1178))
+- Add attributes support for structured logs ([#1190](https://github.com/getsentry/sentry-unreal/pull/1190))
 
 ### Fixes
 
