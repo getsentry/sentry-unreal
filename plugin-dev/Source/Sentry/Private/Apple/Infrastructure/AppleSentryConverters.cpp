@@ -155,6 +155,55 @@ SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgra
 	return trace;
 }
 
+SentryLogAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithInteger:variant.GetValue<int32>()];
+	case ESentryVariantType::Float:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithDouble:(double)variant.GetValue<float>()];
+	case ESentryVariantType::Bool:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithBoolean:variant.GetValue<bool>()];
+	case ESentryVariantType::String:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
+	case ESentryVariantType::Array:
+	{
+		// Convert array to native and then to JSON string representation
+		NSArray* nativeArray = VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeArray options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
+		}
+		else
+		{
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeArray description]];
+		}
+	}
+	case ESentryVariantType::Map:
+	{
+		// Convert map to native and then to JSON string representation
+		NSDictionary* nativeDict = VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeDict options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
+		}
+		else
+		{
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeDict description]];
+		}
+	}
+	default:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:@""];
+	}
+}
+
 ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
@@ -313,50 +362,36 @@ TMap<FString, FSentryVariant> FAppleSentryConverters::VariantMapToUnreal(NSDicti
 	return map;
 }
 
-SentryLogAttribute* FAppleSentryConverters::VariantToSentryAttribute(const FSentryVariant& variant)
+SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 {
-	switch (variant.GetType())
+	SentryLevel nativeLevel = kSentryLevelDebug;
+
+	if ([string isEqualToString:@"debug"])
 	{
-	case ESentryVariantType::Integer:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithInteger:variant.GetValue<int32>()];
-	case ESentryVariantType::Float:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithDouble:(double)variant.GetValue<float>()];
-	case ESentryVariantType::Bool:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithBoolean:variant.GetValue<bool>()];
-	case ESentryVariantType::String:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
-	case ESentryVariantType::Array:
-		{
-			// Convert array to native and then to JSON string representation
-			NSArray* nativeArray = VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
-			NSError* error = nil;
-			NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeArray options:0 error:&error];
-			if (jsonData && !error)
-			{
-				NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-				return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
-			}
-			// Fallback if JSON serialization fails
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeArray description]];
-		}
-	case ESentryVariantType::Map:
-		{
-			// Convert map to native and then to JSON string representation
-			NSDictionary* nativeDict = VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
-			NSError* error = nil;
-			NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeDict options:0 error:&error];
-			if (jsonData && !error)
-			{
-				NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-				return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
-			}
-			// Fallback if JSON serialization fails
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeDict description]];
-		}
-	default:
-		// For unknown types, return empty string attribute
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:@""];
+		nativeLevel = kSentryLevelDebug;
 	}
+	else if ([string isEqualToString:@"info"])
+	{
+		nativeLevel = kSentryLevelInfo;
+	}
+	else if ([string isEqualToString:@"warning"])
+	{
+		nativeLevel = kSentryLevelWarning;
+	}
+	else if ([string isEqualToString:@"error"])
+	{
+		nativeLevel = kSentryLevelError;
+	}
+	else if ([string isEqualToString:@"fatal"])
+	{
+		nativeLevel = kSentryLevelFatal;
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
+	}
+
+	return nativeLevel;
 }
 
 FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryLogAttribute* attribute)
@@ -392,36 +427,4 @@ FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryLogAttribu
 	{
 		return FSentryVariant(FString([attribute.value description]));
 	}
-}
-
-SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
-{
-	SentryLevel nativeLevel = kSentryLevelDebug;
-
-	if ([string isEqualToString:@"debug"])
-	{
-		nativeLevel = kSentryLevelDebug;
-	}
-	else if ([string isEqualToString:@"info"])
-	{
-		nativeLevel = kSentryLevelInfo;
-	}
-	else if ([string isEqualToString:@"warning"])
-	{
-		nativeLevel = kSentryLevelWarning;
-	}
-	else if ([string isEqualToString:@"error"])
-	{
-		nativeLevel = kSentryLevelError;
-	}
-	else if ([string isEqualToString:@"fatal"])
-	{
-		nativeLevel = kSentryLevelFatal;
-	}
-	else
-	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
-	}
-
-	return nativeLevel;
 }

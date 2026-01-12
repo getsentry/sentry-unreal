@@ -222,6 +222,11 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 
 	for (const auto& pair : Attributes)
 	{
+		if (pair.Value.GetType() == ESentryVariantType::Empty)
+		{
+			continue;
+		}
+
 		id nativeValue = FAppleSentryConverters::VariantToNative(pair.Value);
 		[attributesDict setObject:nativeValue forKey:pair.Key.GetNSString()];
 	}
