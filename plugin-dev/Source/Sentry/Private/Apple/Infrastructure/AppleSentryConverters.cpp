@@ -326,33 +326,33 @@ SentryLogAttribute* FAppleSentryConverters::VariantToSentryAttribute(const FSent
 	case ESentryVariantType::String:
 		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
 	case ESentryVariantType::Array:
+	{
+		// Convert array to native and then to JSON string representation
+		NSArray* nativeArray = VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeArray options:0 error:&error];
+		if (jsonData && !error)
 		{
-			// Convert array to native and then to JSON string representation
-			NSArray* nativeArray = VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
-			NSError* error = nil;
-			NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeArray options:0 error:&error];
-			if (jsonData && !error)
-			{
-				NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-				return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
-			}
-			// Fallback if JSON serialization fails
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeArray description]];
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
 		}
+		// Fallback if JSON serialization fails
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeArray description]];
+	}
 	case ESentryVariantType::Map:
+	{
+		// Convert map to native and then to JSON string representation
+		NSDictionary* nativeDict = VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeDict options:0 error:&error];
+		if (jsonData && !error)
 		{
-			// Convert map to native and then to JSON string representation
-			NSDictionary* nativeDict = VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
-			NSError* error = nil;
-			NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeDict options:0 error:&error];
-			if (jsonData && !error)
-			{
-				NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-				return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
-			}
-			// Fallback if JSON serialization fails
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeDict description]];
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
 		}
+		// Fallback if JSON serialization fails
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeDict description]];
+	}
 	default:
 		// For unknown types, return empty string attribute
 		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:@""];
