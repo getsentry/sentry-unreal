@@ -227,8 +227,8 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 			continue;
 		}
 
-		id nativeValue = FAppleSentryConverters::VariantToNative(pair.Value);
-		[attributesDict setObject:nativeValue forKey:pair.Key.GetNSString()];
+		SentryLogAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
 	}
 
 	// Use level-specific Apple Sentry SDK logging functions with attributes
