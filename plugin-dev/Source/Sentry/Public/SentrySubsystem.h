@@ -113,7 +113,7 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
-	 * 
+	 *
 	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
@@ -134,7 +134,7 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
-	 * 
+	 *
 	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
@@ -155,7 +155,7 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
-	 * 
+	 *
 	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
@@ -176,7 +176,7 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
-	 * 
+	 *
 	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
@@ -197,7 +197,7 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
-	 * 
+	 *
 	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
