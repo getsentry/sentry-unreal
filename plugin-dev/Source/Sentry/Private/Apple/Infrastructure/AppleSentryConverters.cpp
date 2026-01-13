@@ -119,7 +119,11 @@ NSArray* FAppleSentryConverters::VariantArrayToNative(const TArray<FSentryVarian
 
 	for (auto it = variantArray.CreateConstIterator(); it; ++it)
 	{
-		[arr addObject:VariantToNative(*it)];
+		id object = VariantToNative(*it);
+		if (object != nil)
+		{
+			[arr addObject:object];
+		}
 	}
 
 	return arr;
@@ -131,7 +135,11 @@ NSDictionary* FAppleSentryConverters::VariantMapToNative(const TMap<FString, FSe
 
 	for (auto it = variantMap.CreateConstIterator(); it; ++it)
 	{
-		[dict setValue:VariantToNative(it.Value()) forKey:it.Key().GetNSString()];
+		id object = VariantToNative(it.Value());
+		if (object != nil)
+		{
+			[dict setValue:object forKey:it.Key().GetNSString()];
+		}
 	}
 
 	return dict;
