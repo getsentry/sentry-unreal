@@ -67,6 +67,12 @@ ESentryLevel FAppleSentryLog::GetLevel() const
 void FAppleSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
 {
 	SentryLogAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(value);
+
+	if (!attribute)
+	{
+		return;
+	}
+
 	[LogApple setAttribute:attribute forKey:key.GetNSString()];
 }
 
