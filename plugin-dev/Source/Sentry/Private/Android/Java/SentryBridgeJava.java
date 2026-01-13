@@ -293,11 +293,11 @@ public class SentryBridgeJava {
 	}
 
 	public static void setLogAttribute(final SentryLogEvent logEvent, final String key, final Object value) {
-		SentryLogEventAttributeValue attributeValue;
-
-		if (value == null) {
+		if (logEvent == null || key == null || value == null) {
 			return;
 		}
+
+		SentryLogEventAttributeValue attributeValue;
 
 		if (value instanceof String) {
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value);
