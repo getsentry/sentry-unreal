@@ -308,8 +308,16 @@ public class SentryBridgeJava {
 		} else if (value instanceof Float) {
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
 		} else {
-			// Unsupported type (e.g. map or array) - convert to string as fallback
-			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value.toString());
+			// Unsupported type (e.g. ArrayList, HashMap) - convert to JSON string for consistency with other platforms
+			String jsonString;
+			if (value instanceof java.util.List) {
+				jsonString = new JSONArray((java.util.List<?>) value).toString();
+			} else if (value instanceof java.util.Map) {
+				jsonString = new JSONObject((java.util.Map<?, ?>) value).toString();
+			} else {
+				jsonString = value.toString();
+			}
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, jsonString);
 		}
 
 		logEvent.setAttribute(key, attributeValue);
