@@ -188,7 +188,7 @@ SentryLogAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSent
 		}
 		else
 		{
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeArray description]];
+			return nil;
 		}
 	}
 	case ESentryVariantType::Map:
@@ -204,11 +204,11 @@ SentryLogAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSent
 		}
 		else
 		{
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:[nativeDict description]];
+			return nil;
 		}
 	}
 	default:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:@""];
+		return nil;
 	}
 }
 

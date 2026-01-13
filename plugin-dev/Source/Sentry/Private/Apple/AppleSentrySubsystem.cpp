@@ -222,13 +222,11 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 
 	for (const auto& pair : Attributes)
 	{
-		if (pair.Value.GetType() == ESentryVariantType::Empty)
-		{
-			continue;
-		}
-
 		SentryLogAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
-		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+		if (attribute != nil)
+		{
+			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+		}
 	}
 
 	// Use level-specific Apple Sentry SDK logging functions with attributes
