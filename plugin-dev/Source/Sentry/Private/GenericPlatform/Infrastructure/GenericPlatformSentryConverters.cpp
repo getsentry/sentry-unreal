@@ -128,7 +128,7 @@ sentry_value_t FGenericPlatformSentryConverters::VariantToAttributeNative(const 
 		value = sentry_value_new_bool(variant.GetValue<bool>());
 		break;
 	case ESentryVariantType::String:
-		value = sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
+		value = sentry_value_new_string(TCHAR_TO_UTF8(*variant.GetValue<FString>()));
 		break;
 	case ESentryVariantType::Array:
 	case ESentryVariantType::Map:
@@ -140,7 +140,7 @@ sentry_value_t FGenericPlatformSentryConverters::VariantToAttributeNative(const 
 			FString jsonString;
 			TSharedRef<TJsonWriter<>> writer = TJsonWriterFactory<>::Create(&jsonString);
 			FJsonSerializer::Serialize(jsonValue.ToSharedRef(), TEXT(""), writer);
-			value = sentry_value_new_string(TCHAR_TO_ANSI(*jsonString));
+			value = sentry_value_new_string(TCHAR_TO_UTF8(*jsonString));
 		}
 		else
 		{
