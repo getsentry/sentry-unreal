@@ -9,10 +9,6 @@ on:
     paths-ignore:
       - "**.md"
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   android-sdk:
     uses: ./.github/workflows/sdk-build.yml
@@ -58,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -124,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@v4
 
       - name: Download packages
         uses: actions/download-artifact@v4
