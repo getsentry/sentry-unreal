@@ -58,14 +58,26 @@ ESentryLevel FAndroidSentryLog::GetLevel() const
 
 void FAndroidSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
 {
+	TSharedPtr<FSentryJavaObjectWrapper> attribute = FAndroidSentryConverters::VariantToNative(value);
+
+	if (!attribute)
+	{
+		return;
+	}
+
 	CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;Ljava/lang/Object;)V",
-		GetJObject(), *GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
+		GetJObject(), *GetJString(key), attribute->GetJObject());
 }
 
 FSentryVariant FAndroidSentryLog::GetAttribute(const FString& key) const
 {
 	auto attribute = CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;)Ljava/lang/Object;",
 		GetJObject(), *GetJString(key));
+
+	if (!attribute)
+	{
+		return FSentryVariant();
+	}
 
 	return FAndroidSentryConverters::VariantToUnreal(*attribute);
 }
