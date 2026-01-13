@@ -508,7 +508,7 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel L
 	sentry_value_t attributes = sentry_value_new_object();
 	for (auto it = Attributes.CreateConstIterator(); it; ++it)
 	{
-		sentry_value_set_by_key(attributes, TCHAR_TO_ANSI(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
 	}
 
 	switch (Level)
