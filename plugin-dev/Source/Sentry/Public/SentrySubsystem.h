@@ -113,6 +113,8 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
+	 * 
+	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void LogDebugWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
@@ -132,6 +134,8 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
+	 * 
+	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void LogInfoWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
@@ -151,6 +155,8 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
+	 * 
+	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void LogWarningWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
@@ -170,6 +176,8 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
+	 * 
+	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void LogErrorWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
@@ -189,6 +197,8 @@ public:
 	 * @param Message Log message to add.
 	 * @param Attributes Structured attributes to attach to the log entry.
 	 * @param Category Optional category to prepend to the message.
+	 * 
+	 * @note Attributes that have Array or Map variant types will be captured as Json string
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
