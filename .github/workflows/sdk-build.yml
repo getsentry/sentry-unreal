@@ -11,10 +11,6 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   build:
     runs-on: ${{ inputs.runsOn }}
@@ -36,7 +32,7 @@ jobs:
           apt-get -y install git
           git config --global --add safe.directory $(pwd)
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
 
       - name: Select submodule
         id: env
