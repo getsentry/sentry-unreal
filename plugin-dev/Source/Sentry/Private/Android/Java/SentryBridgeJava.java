@@ -306,6 +306,7 @@ public class SentryBridgeJava {
 		} else if (value instanceof Boolean) {
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.BOOLEAN, value);
 		} else if (value instanceof Float) {
+            // Unreal's variant doesn't support Double so manual conversion is required
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
 		} else {
 			// Unsupported type (e.g. ArrayList, HashMap) - convert to JSON string for consistency with other platforms
@@ -338,7 +339,14 @@ public class SentryBridgeJava {
 			return null;
 		}
 
-		return attributeValue.getValue();
+        Object value = attributeValue.getValue();
+
+        if (value instanceof Double) {
+            // Unreal's variant doesn't support Double so manual conversion is required
+            return ((Double) attributeValue.getValue()).floatValue();
+        }
+
+		return value;
 	}
 
 	public static void removeLogAttribute(final SentryLogEvent logEvent, final String key) {
