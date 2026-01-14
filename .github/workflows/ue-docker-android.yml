@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@v4
 
       # Building docker images for Android requires extra disk space for SDK/NDK
       - name: Clean up disk space before Docker build
