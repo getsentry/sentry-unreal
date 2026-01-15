@@ -36,7 +36,7 @@ FString FGenericPlatformSentryLog::GetBody() const
 {
 	sentry_value_t body = sentry_value_get_by_key(Log, "body");
 	const char* bodyStr = sentry_value_as_string(body);
-	return FString(bodyStr ? bodyStr : "");
+	return FString(UTF8_TO_TCHAR(bodyStr ? bodyStr : ""));
 }
 
 void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
