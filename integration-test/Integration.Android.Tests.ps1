@@ -141,8 +141,11 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # The crash is captured but NOT uploaded yet (Android behavior).
 
         Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-        $cmdlineCrashArgs = "-e cmdline -crash-capture"
-        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineCrashArgs
+        $crashAppArgs = @(
+            '-crash-capture'
+        )
+        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName `
+            -Arguments ('-e cmdline \"' + ($crashAppArgs -join ' ') + '\"')
 
         Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -152,8 +155,11 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
 
         Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-        $cmdlineMessageArgs = "-e cmdline -message-capture"
-        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
+        $messageAppArgs = @(
+            '-message-capture'
+        )
+        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName `
+            -Arguments ('-e cmdline \"' + ($messageAppArgs -join ' ') + '\"')
 
         Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 
@@ -162,8 +168,12 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-        $cmdlineLogArgs = "-e cmdline -log-capture"
-        $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineLogArgs
+        $logAppArgs = @(
+            '-log-capture'
+            '-ini:Engine:[/Script/Sentry.SentrySettings]:EnableStructuredLogging=True'
+        )
+        $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName `
+            -Arguments ('-e cmdline \"' + ($logAppArgs -join ' ') + '\"')
 
         Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
     }
