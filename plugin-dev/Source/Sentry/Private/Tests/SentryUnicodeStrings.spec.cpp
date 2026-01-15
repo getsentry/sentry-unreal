@@ -43,9 +43,19 @@ void SentryUnicodeStringsSpec::Define()
 			TestEqual("Id", SentryUser->GetId(), TestId);
 
 			TMap<FString, FString> ReceivedData = SentryUser->GetData();
-			TestEqual("Data with non-ASCII key", ReceivedData[TEXT("키")], TEXT("한국어값"));
-			TestEqual("Data with non-ASCII key and value", ReceivedData[TEXT("日本語キー")], TEXT("Value値"));
-			TestEqual("Data with mixed characters", ReceivedData[TEXT("mixed")], TEXT("Hello世界🌍"));
+			TestEqual("Data entry count", ReceivedData.Num(), 3);
+
+			const FString* UserValue1 = ReceivedData.Find(TEXT("키"));
+			const FString* UserValue2 = ReceivedData.Find(TEXT("日本語キー"));
+			const FString* UserValue3 = ReceivedData.Find(TEXT("mixed"));
+
+			TestNotNull("Data key 1 exists", UserValue1);
+			TestNotNull("Data key 2 exists", UserValue2);
+			TestNotNull("Data key 3 exists", UserValue3);
+
+			if (UserValue1) TestEqual("Data with non-ASCII key", *UserValue1, TEXT("한국어값"));
+			if (UserValue2) TestEqual("Data with non-ASCII key and value", *UserValue2, TEXT("Value値"));
+			if (UserValue3) TestEqual("Data with mixed characters", *UserValue3, TEXT("Hello世界🌍"));
 		});
 	});
 
@@ -83,8 +93,15 @@ void SentryUnicodeStringsSpec::Define()
 
 			TMap<FString, FSentryVariant> ReceivedContext = SentryEvent->GetContext(ContextKey);
 			TestEqual("Context entry count", ReceivedContext.Num(), 2);
-			TestEqual("Context value 1", ReceivedContext[TEXT("플레이어")].GetValue<FString>(), TEXT("山田🎮"));
-			TestEqual("Context value 2", ReceivedContext[TEXT("状态")].GetValue<FString>(), TEXT("게임중"));
+
+			const FSentryVariant* CtxValue1 = ReceivedContext.Find(TEXT("플레이어"));
+			const FSentryVariant* CtxValue2 = ReceivedContext.Find(TEXT("状态"));
+
+			TestNotNull("Context key 1 exists", CtxValue1);
+			TestNotNull("Context key 2 exists", CtxValue2);
+
+			if (CtxValue1) TestEqual("Context value 1", CtxValue1->GetValue<FString>(), TEXT("山田🎮"));
+			if (CtxValue2) TestEqual("Context value 2", CtxValue2->GetValue<FString>(), TEXT("게임중"));
 			TestEqual("Extra", SentryEvent->GetExtra(ExtraKey).GetValue<FString>(), ExtraValue);
 		});
 
@@ -128,8 +145,16 @@ void SentryUnicodeStringsSpec::Define()
 			TestEqual("Category", SentryBreadcrumb->GetCategory(), TestCategory);
 
 			TMap<FString, FSentryVariant> ReceivedData = SentryBreadcrumb->GetData();
-			TestEqual("Data value 1", ReceivedData[TEXT("화면")].GetValue<FString>(), TEXT("メイン画面"));
-			TestEqual("Data value 2", ReceivedData[TEXT("按钮")].GetValue<FString>(), TEXT("确认🔘"));
+			TestEqual("Data entry count", ReceivedData.Num(), 2);
+
+			const FSentryVariant* Value1 = ReceivedData.Find(TEXT("화면"));
+			const FSentryVariant* Value2 = ReceivedData.Find(TEXT("按钮"));
+
+			TestNotNull("Data key 1 exists", Value1);
+			TestNotNull("Data key 2 exists", Value2);
+
+			if (Value1) TestEqual("Data value 1", Value1->GetValue<FString>(), TEXT("メイン画面"));
+			if (Value2) TestEqual("Data value 2", Value2->GetValue<FString>(), TEXT("确认🔘"));
 		});
 	});
 }
