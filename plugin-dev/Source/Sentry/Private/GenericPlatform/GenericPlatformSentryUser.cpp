@@ -28,7 +28,7 @@ sentry_value_t FGenericPlatformSentryUser::GetNativeObject()
 
 void FGenericPlatformSentryUser::SetEmail(const FString& email)
 {
-	sentry_value_set_by_key(User, "email", sentry_value_new_string(TCHAR_TO_ANSI(*email)));
+	sentry_value_set_by_key(User, "email", sentry_value_new_string(TCHAR_TO_UTF8(*email)));
 }
 
 FString FGenericPlatformSentryUser::GetEmail() const
@@ -39,7 +39,7 @@ FString FGenericPlatformSentryUser::GetEmail() const
 
 void FGenericPlatformSentryUser::SetId(const FString& id)
 {
-	sentry_value_set_by_key(User, "id", sentry_value_new_string(TCHAR_TO_ANSI(*id)));
+	sentry_value_set_by_key(User, "id", sentry_value_new_string(TCHAR_TO_UTF8(*id)));
 }
 
 FString FGenericPlatformSentryUser::GetId() const
@@ -50,7 +50,7 @@ FString FGenericPlatformSentryUser::GetId() const
 
 void FGenericPlatformSentryUser::SetUsername(const FString& username)
 {
-	sentry_value_set_by_key(User, "username", sentry_value_new_string(TCHAR_TO_ANSI(*username)));
+	sentry_value_set_by_key(User, "username", sentry_value_new_string(TCHAR_TO_UTF8(*username)));
 }
 
 FString FGenericPlatformSentryUser::GetUsername() const
@@ -63,7 +63,7 @@ void FGenericPlatformSentryUser::SetIpAddress(const FString& ipAddress)
 {
 	if (!ipAddress.IsEmpty())
 	{
-		sentry_value_set_by_key(User, "ip_address", sentry_value_new_string(TCHAR_TO_ANSI(*ipAddress)));
+		sentry_value_set_by_key(User, "ip_address", sentry_value_new_string(TCHAR_TO_UTF8(*ipAddress)));
 	}
 	else
 	{

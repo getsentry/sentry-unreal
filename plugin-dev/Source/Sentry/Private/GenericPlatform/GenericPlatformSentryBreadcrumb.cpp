@@ -34,7 +34,7 @@ FString FGenericPlatformSentryBreadcrumb::GetMessage() const
 
 void FGenericPlatformSentryBreadcrumb::SetType(const FString& type)
 {
-	sentry_value_set_by_key(Breadcrumb, "type", sentry_value_new_string(TCHAR_TO_ANSI(*type)));
+	sentry_value_set_by_key(Breadcrumb, "type", sentry_value_new_string(TCHAR_TO_UTF8(*type)));
 }
 
 FString FGenericPlatformSentryBreadcrumb::GetType() const
@@ -45,7 +45,7 @@ FString FGenericPlatformSentryBreadcrumb::GetType() const
 
 void FGenericPlatformSentryBreadcrumb::SetCategory(const FString& category)
 {
-	sentry_value_set_by_key(Breadcrumb, "category", sentry_value_new_string(TCHAR_TO_ANSI(*category)));
+	sentry_value_set_by_key(Breadcrumb, "category", sentry_value_new_string(TCHAR_TO_UTF8(*category)));
 }
 
 FString FGenericPlatformSentryBreadcrumb::GetCategory() const
@@ -69,7 +69,7 @@ void FGenericPlatformSentryBreadcrumb::SetLevel(ESentryLevel level)
 {
 	FString levelStr = FGenericPlatformSentryConverters::SentryLevelToString(level);
 	if (!levelStr.IsEmpty())
-		sentry_value_set_by_key(Breadcrumb, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
+		sentry_value_set_by_key(Breadcrumb, "level", sentry_value_new_string(TCHAR_TO_UTF8(*levelStr)));
 }
 
 ESentryLevel FGenericPlatformSentryBreadcrumb::GetLevel() const

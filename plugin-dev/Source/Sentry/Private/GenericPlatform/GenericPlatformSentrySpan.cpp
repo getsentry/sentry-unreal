@@ -25,7 +25,7 @@ sentry_span_t* FGenericPlatformSentrySpan::GetNativeObject()
 
 TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChild(const FString& operation, const FString& description, bool bindToScope)
 {
-	if (sentry_span_t* nativeSpan = sentry_span_start_child(Span, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*description)))
+	if (sentry_span_t* nativeSpan = sentry_span_start_child(Span, TCHAR_TO_UTF8(*operation), TCHAR_TO_UTF8(*description)))
 	{
 		if (bindToScope)
 		{
@@ -42,7 +42,7 @@ TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChild(const FString& op
 
 TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& description, int64 timestamp, bool bindToScope)
 {
-	if (sentry_span_t* nativeSpan = sentry_span_start_child_ts(Span, TCHAR_TO_ANSI(*operation), TCHAR_TO_ANSI(*description), timestamp))
+	if (sentry_span_t* nativeSpan = sentry_span_start_child_ts(Span, TCHAR_TO_UTF8(*operation), TCHAR_TO_UTF8(*description), timestamp))
 	{
 		if (bindToScope)
 		{
@@ -80,28 +80,28 @@ void FGenericPlatformSentrySpan::SetTag(const FString& key, const FString& value
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_set_tag(Span, TCHAR_TO_ANSI(*key), TCHAR_TO_ANSI(*value));
+	sentry_span_set_tag(Span, TCHAR_TO_UTF8(*key), TCHAR_TO_UTF8(*value));
 }
 
 void FGenericPlatformSentrySpan::RemoveTag(const FString& key)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_remove_tag(Span, TCHAR_TO_ANSI(*key));
+	sentry_span_remove_tag(Span, TCHAR_TO_UTF8(*key));
 }
 
 void FGenericPlatformSentrySpan::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_set_data(Span, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+	sentry_span_set_data(Span, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
 }
 
 void FGenericPlatformSentrySpan::RemoveData(const FString& key)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_remove_data(Span, TCHAR_TO_ANSI(*key));
+	sentry_span_remove_data(Span, TCHAR_TO_UTF8(*key));
 }
 
 void FGenericPlatformSentrySpan::GetTrace(FString& name, FString& value)

@@ -8,7 +8,7 @@
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionContext(const FString& name, const FString& operation)
-	: TransactionContext(sentry_transaction_context_new(TCHAR_TO_ANSI(*name), TCHAR_TO_ANSI(*operation)))
+	: TransactionContext(sentry_transaction_context_new(TCHAR_TO_UTF8(*name), TCHAR_TO_UTF8(*operation)))
 {
 }
 

@@ -348,7 +348,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	if (settings->UseProxy)
 	{
-		sentry_options_set_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
+		sentry_options_set_proxy(options, TCHAR_TO_UTF8(*settings->ProxyUrl));
 	}
 
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
@@ -365,10 +365,10 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureCertsPath(options);
 	ConfigureNetworkConnectFunc(options);
 
-	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->GetEffectiveDsn()));
-	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->GetEffectiveRelease()));
-	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->GetEffectiveEnvironment()));
-	sentry_options_set_dist(options, TCHAR_TO_ANSI(*settings->Dist));
+	sentry_options_set_dsn(options, TCHAR_TO_UTF8(*settings->GetEffectiveDsn()));
+	sentry_options_set_release(options, TCHAR_TO_UTF8(*settings->GetEffectiveRelease()));
+	sentry_options_set_environment(options, TCHAR_TO_UTF8(*settings->GetEffectiveEnvironment()));
+	sentry_options_set_dist(options, TCHAR_TO_UTF8(*settings->Dist));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
@@ -501,8 +501,8 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel L
 		FormattedMessage = Body;
 	}
 
-	auto MessageCStrConverter = StringCast<ANSICHAR>(*FormattedMessage);
-	const char* MessageCStr = MessageCStrConverter.Get();
+	auto MessageCStrConverter = StringCast<UTF8CHAR>(*FormattedMessage);
+	const char* MessageCStr = reinterpret_cast<const char*>(MessageCStrConverter.Get());
 
 	// Use level-specific sentry logging functions
 	switch (Level)
@@ -641,7 +641,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
 
-	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
+	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_UTF8(*type), TCHAR_TO_UTF8(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
 	sentry_value_set_stacktrace(exceptionEvent, nullptr, 0);
@@ -823,7 +823,7 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 {
 	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("<unlabeled transaction>"), TEXT("default")));
 
-	sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "sentry-trace", TCHAR_TO_ANSI(*sentryTrace));
+	sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "sentry-trace", TCHAR_TO_UTF8(*sentryTrace));
 
 	// currently `sentry-native` doesn't have API for `sentry_transaction_context_t` to set `baggageHeaders`
 
