@@ -28,6 +28,7 @@ void USentryPlaygroundGameInstance::Init()
 		FParse::Param(*CommandLine, TEXT("crash-stack-overflow")) ||
 		FParse::Param(*CommandLine, TEXT("crash-memory-corruption")) ||
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
+		FParse::Param(*CommandLine, TEXT("log-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
@@ -74,6 +75,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	else if (FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
 		RunMessageTest();
+	}
+	else if (FParse::Param(*CommandLine, TEXT("log-capture")))
+	{
+		RunLogTest();
 	}
 	else if (FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -126,6 +131,30 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	SentrySubsystem->Close();
 
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunLogTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	const FString LogMessage = TEXT("Integration test structured log");
+	const FString LogCategory = TEXT("LogSentryTest");
+
+	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	TMap<FString, FSentryVariant> Attributes;
+	Attributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+
+	SentrySubsystem->LogWarningWithAttributes(LogMessage, Attributes, LogCategory);
+
+	UE_LOG(LogSentrySample, Display, TEXT("LOG_TRIGGERED: %s\n"), *TestId);
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	FPlatformProcess::Sleep(1.0f);
+
+	CompleteTestWithResult(TEXT("log-capture"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::RunInitOnly()
