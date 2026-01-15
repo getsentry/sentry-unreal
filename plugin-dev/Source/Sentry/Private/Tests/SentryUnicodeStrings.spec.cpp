@@ -53,9 +53,12 @@ void SentryUnicodeStringsSpec::Define()
 			TestNotNull("Data key 2 exists", UserValue2);
 			TestNotNull("Data key 3 exists", UserValue3);
 
-			if (UserValue1) TestEqual("Data with non-ASCII key", *UserValue1, TEXT("한국어값"));
-			if (UserValue2) TestEqual("Data with non-ASCII key and value", *UserValue2, TEXT("Value値"));
-			if (UserValue3) TestEqual("Data with mixed characters", *UserValue3, TEXT("Hello世界🌍"));
+			if (UserValue1)
+				TestEqual("Data with non-ASCII key", *UserValue1, TEXT("한국어값"));
+			if (UserValue2)
+				TestEqual("Data with non-ASCII key and value", *UserValue2, TEXT("Value値"));
+			if (UserValue3)
+				TestEqual("Data with mixed characters", *UserValue3, TEXT("Hello世界🌍"));
 		});
 	});
 
@@ -100,8 +103,10 @@ void SentryUnicodeStringsSpec::Define()
 			TestNotNull("Context key 1 exists", CtxValue1);
 			TestNotNull("Context key 2 exists", CtxValue2);
 
-			if (CtxValue1) TestEqual("Context value 1", CtxValue1->GetValue<FString>(), TEXT("山田🎮"));
-			if (CtxValue2) TestEqual("Context value 2", CtxValue2->GetValue<FString>(), TEXT("게임중"));
+			if (CtxValue1)
+				TestEqual("Context value 1", CtxValue1->GetValue<FString>(), TEXT("山田🎮"));
+			if (CtxValue2)
+				TestEqual("Context value 2", CtxValue2->GetValue<FString>(), TEXT("게임중"));
 			TestEqual("Extra", SentryEvent->GetExtra(ExtraKey).GetValue<FString>(), ExtraValue);
 		});
 
@@ -153,8 +158,10 @@ void SentryUnicodeStringsSpec::Define()
 			TestNotNull("Data key 1 exists", Value1);
 			TestNotNull("Data key 2 exists", Value2);
 
-			if (Value1) TestEqual("Data value 1", Value1->GetValue<FString>(), TEXT("メイン画面"));
-			if (Value2) TestEqual("Data value 2", Value2->GetValue<FString>(), TEXT("确认🔘"));
+			if (Value1)
+				TestEqual("Data value 1", Value1->GetValue<FString>(), TEXT("メイン画面"));
+			if (Value2)
+				TestEqual("Data value 2", Value2->GetValue<FString>(), TEXT("确认🔘"));
 		});
 	});
 }
