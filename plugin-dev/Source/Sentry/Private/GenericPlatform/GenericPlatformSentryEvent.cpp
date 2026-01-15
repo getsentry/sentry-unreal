@@ -48,7 +48,7 @@ FString FGenericPlatformSentryEvent::GetMessage() const
 {
 	sentry_value_t messageСontainer = sentry_value_get_by_key(Event, "message");
 	sentry_value_t message = sentry_value_get_by_key(messageСontainer, "formatted");
-	return FString(sentry_value_as_string(message));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(message)));
 }
 
 void FGenericPlatformSentryEvent::SetLevel(ESentryLevel level)
@@ -97,7 +97,7 @@ FString FGenericPlatformSentryEvent::GetTag(const FString& key) const
 	}
 
 	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_UTF8(*key));
-	return FString(sentry_value_as_string(tag));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(tag)));
 }
 
 bool FGenericPlatformSentryEvent::TryGetTag(const FString& key, FString& value) const
@@ -114,7 +114,7 @@ bool FGenericPlatformSentryEvent::TryGetTag(const FString& key, FString& value) 
 		return false;
 	}
 
-	value = FString(sentry_value_as_string(tag));
+	value = FString(UTF8_TO_TCHAR(sentry_value_as_string(tag)));
 
 	return true;
 }

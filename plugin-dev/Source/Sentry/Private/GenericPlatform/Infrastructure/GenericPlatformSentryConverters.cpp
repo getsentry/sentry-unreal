@@ -143,7 +143,7 @@ sentry_value_t FGenericPlatformSentryConverters::CallstackToNative(const TArray<
 
 ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_value_t level)
 {
-	FString levelStr = FString(sentry_value_as_string(level));
+	FString levelStr = FString(UTF8_TO_TCHAR(sentry_value_as_string(level)));
 
 	UEnum* Enum = StaticEnum<ESentryLevel>();
 	if (!Enum)
@@ -195,7 +195,7 @@ FSentryVariant FGenericPlatformSentryConverters::VariantToUnreal(sentry_value_t 
 	case SENTRY_VALUE_TYPE_DOUBLE:
 		return FSentryVariant(static_cast<float>(sentry_value_as_double(variant)));
 	case SENTRY_VALUE_TYPE_STRING:
-		return FSentryVariant(FString(sentry_value_as_string(variant)));
+		return FSentryVariant(FString(UTF8_TO_TCHAR(sentry_value_as_string(variant))));
 	case SENTRY_VALUE_TYPE_LIST:
 		return VariantArrayToUnreal(variant);
 	case SENTRY_VALUE_TYPE_OBJECT:
@@ -304,7 +304,7 @@ TArray<FString> FGenericPlatformSentryConverters::StringArrayToUnreal(sentry_val
 	int32 len = sentry_value_get_length(array);
 	for (int32 i = 0; i < len; ++i)
 	{
-		unrealArray.Add(sentry_value_as_string(sentry_value_get_by_index(array, i)));
+		unrealArray.Add(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_index(array, i))));
 	}
 
 	return unrealArray;

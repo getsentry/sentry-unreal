@@ -119,7 +119,7 @@ void FGenericPlatformSentryTransaction::GetTrace(FString& name, FString& value)
 	sentry_transaction_iter_headers(Transaction, CopyTransactionTracingHeader, &tracingHeader);
 
 	name = TEXT("sentry-trace");
-	value = FString(sentry_value_as_string(sentry_value_get_by_key(tracingHeader, "sentry-trace")));
+	value = FString(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_key(tracingHeader, "sentry-trace"))));
 
 	sentry_value_decref(tracingHeader);
 }

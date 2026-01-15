@@ -111,7 +111,7 @@ void FGenericPlatformSentrySpan::GetTrace(FString& name, FString& value)
 	sentry_span_iter_headers(Span, CopySpanTracingHeader, &tracingHeader);
 
 	name = TEXT("sentry-trace");
-	value = FString(sentry_value_as_string(sentry_value_get_by_key(tracingHeader, "sentry-trace")));
+	value = FString(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_key(tracingHeader, "sentry-trace"))));
 
 	sentry_value_decref(tracingHeader);
 }

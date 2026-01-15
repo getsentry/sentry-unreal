@@ -29,7 +29,7 @@ void FGenericPlatformSentryBreadcrumb::SetMessage(const FString& message)
 FString FGenericPlatformSentryBreadcrumb::GetMessage() const
 {
 	sentry_value_t message = sentry_value_get_by_key(Breadcrumb, "message");
-	return FString(sentry_value_as_string(message));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(message)));
 }
 
 void FGenericPlatformSentryBreadcrumb::SetType(const FString& type)
@@ -40,7 +40,7 @@ void FGenericPlatformSentryBreadcrumb::SetType(const FString& type)
 FString FGenericPlatformSentryBreadcrumb::GetType() const
 {
 	sentry_value_t type = sentry_value_get_by_key(Breadcrumb, "type");
-	return FString(sentry_value_as_string(type));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(type)));
 }
 
 void FGenericPlatformSentryBreadcrumb::SetCategory(const FString& category)
@@ -51,7 +51,7 @@ void FGenericPlatformSentryBreadcrumb::SetCategory(const FString& category)
 FString FGenericPlatformSentryBreadcrumb::GetCategory() const
 {
 	sentry_value_t category = sentry_value_get_by_key(Breadcrumb, "category");
-	return FString(sentry_value_as_string(category));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(category)));
 }
 
 void FGenericPlatformSentryBreadcrumb::SetData(const ::TMap<FString, FSentryVariant>& data)
