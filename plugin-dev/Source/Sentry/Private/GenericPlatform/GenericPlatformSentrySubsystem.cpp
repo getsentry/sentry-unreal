@@ -501,27 +501,26 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel L
 		FormattedMessage = Body;
 	}
 
-	auto MessageCStrConverter = StringCast<UTF8CHAR>(*FormattedMessage);
-	const char* MessageCStr = reinterpret_cast<const char*>(MessageCStrConverter.Get());
+	FTCHARToUTF8 MessageUtf8(*FormattedMessage);
 
 	// Use level-specific sentry logging functions
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		sentry_log_fatal(MessageCStr);
+		sentry_log_fatal(MessageUtf8.Get());
 		break;
 	case ESentryLevel::Error:
-		sentry_log_error(MessageCStr);
+		sentry_log_error(MessageUtf8.Get());
 		break;
 	case ESentryLevel::Warning:
-		sentry_log_warn(MessageCStr);
+		sentry_log_warn(MessageUtf8.Get());
 		break;
 	case ESentryLevel::Info:
-		sentry_log_info(MessageCStr);
+		sentry_log_info(MessageUtf8.Get());
 		break;
 	case ESentryLevel::Debug:
 	default:
-		sentry_log_debug(MessageCStr);
+		sentry_log_debug(MessageUtf8.Get());
 		break;
 	}
 }
