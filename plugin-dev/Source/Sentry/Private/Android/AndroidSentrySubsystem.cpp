@@ -111,6 +111,7 @@ void FAndroidSentrySubsystem::Close()
 		OnHandleSystemErrorDelegateHandle.Reset();
 	}
 
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "flush", "(J)V", (jlong)3000);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "close", "()V");
 }
 
