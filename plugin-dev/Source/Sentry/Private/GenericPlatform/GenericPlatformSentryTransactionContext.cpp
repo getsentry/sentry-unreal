@@ -8,7 +8,7 @@
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionContext(const FString& name, const FString& operation)
-	: TransactionContext(sentry_transaction_context_new(TCHAR_TO_ANSI(*name), TCHAR_TO_ANSI(*operation)))
+	: TransactionContext(sentry_transaction_context_new(TCHAR_TO_UTF8(*name), TCHAR_TO_UTF8(*operation)))
 {
 }
 
@@ -19,12 +19,12 @@ FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionConte
 
 FString FGenericPlatformSentryTransactionContext::GetName() const
 {
-	return FString(sentry_transaction_context_get_name(TransactionContext));
+	return FString(UTF8_TO_TCHAR(sentry_transaction_context_get_name(TransactionContext)));
 }
 
 FString FGenericPlatformSentryTransactionContext::GetOperation() const
 {
-	return FString(sentry_transaction_context_get_operation(TransactionContext));
+	return FString(UTF8_TO_TCHAR(sentry_transaction_context_get_operation(TransactionContext)));
 }
 
 sentry_transaction_context_t* FGenericPlatformSentryTransactionContext::GetNativeObject()

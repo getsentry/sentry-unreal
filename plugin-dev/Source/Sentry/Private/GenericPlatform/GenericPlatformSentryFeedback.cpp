@@ -30,7 +30,7 @@ sentry_value_t FGenericPlatformSentryFeedback::GetNativeObject()
 FString FGenericPlatformSentryFeedback::GetMessage() const
 {
 	sentry_value_t message = sentry_value_get_by_key(Feedback, "message");
-	return FString(sentry_value_as_string(message));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(message)));
 }
 
 void FGenericPlatformSentryFeedback::SetName(const FString& name)
@@ -41,7 +41,7 @@ void FGenericPlatformSentryFeedback::SetName(const FString& name)
 FString FGenericPlatformSentryFeedback::GetName() const
 {
 	sentry_value_t username = sentry_value_get_by_key(Feedback, "name");
-	return FString(sentry_value_as_string(username));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(username)));
 }
 
 void FGenericPlatformSentryFeedback::SetContactEmail(const FString& email)
@@ -52,7 +52,7 @@ void FGenericPlatformSentryFeedback::SetContactEmail(const FString& email)
 FString FGenericPlatformSentryFeedback::GetContactEmail() const
 {
 	sentry_value_t email = sentry_value_get_by_key(Feedback, "contact_email");
-	return FString(sentry_value_as_string(email));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(email)));
 }
 
 void FGenericPlatformSentryFeedback::SetAssociatedEvent(const FString& eventId)
@@ -66,7 +66,7 @@ void FGenericPlatformSentryFeedback::SetAssociatedEvent(const FString& eventId)
 FString FGenericPlatformSentryFeedback::GetAssociatedEvent() const
 {
 	sentry_value_t comment = sentry_value_get_by_key(Feedback, "associated_event_id");
-	return FString(sentry_value_as_string(comment));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(comment)));
 }
 
 #endif
