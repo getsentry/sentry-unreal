@@ -125,6 +125,8 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	// Ensure events were flushed
 	SentrySubsystem->Close();
 
+	FPlatformProcess::Sleep(1.0f);
+
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
 }
 
