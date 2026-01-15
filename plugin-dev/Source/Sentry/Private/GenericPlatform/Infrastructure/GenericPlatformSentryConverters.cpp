@@ -216,7 +216,7 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 		return unrealMap;
 	}
 
-	FString mapJsonString = FString(jsonString);
+	FString mapJsonString = FString(UTF8_TO_TCHAR(jsonString));
 	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
 	{
 		sentry_string_free(jsonString);
@@ -268,7 +268,7 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 		return unrealMap;
 	}
 
-	FString mapJsonString = FString(jsonString);
+	FString mapJsonString = FString(UTF8_TO_TCHAR(jsonString));
 	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
 	{
 		sentry_string_free(jsonString);
