@@ -1,15 +1,15 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryUser.h"
-#include "SentryEvent.h"
 #include "SentryBreadcrumb.h"
+#include "SentryEvent.h"
 #include "SentryTests.h"
+#include "SentryUser.h"
 
 #include "Misc/AutomationTest.h"
 
-#include "HAL/PlatformSentryUser.h"
-#include "HAL/PlatformSentryEvent.h"
 #include "HAL/PlatformSentryBreadcrumb.h"
+#include "HAL/PlatformSentryEvent.h"
+#include "HAL/PlatformSentryUser.h"
 
 #if WITH_AUTOMATION_TESTS
 
