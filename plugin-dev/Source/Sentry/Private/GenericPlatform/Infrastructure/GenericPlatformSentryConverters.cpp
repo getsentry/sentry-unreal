@@ -325,18 +325,6 @@ FString FGenericPlatformSentryConverters::SentryLevelToString(ESentryLevel level
 	return Result;
 }
 
-TArray<uint8> FGenericPlatformSentryConverters::SentryEnvelopeToByteArray(sentry_envelope_t* envelope)
-{
-	size_t size;
-	ANSICHAR* serializedEnvelopeStr = sentry_envelope_serialize(envelope, &size);
-
-	TArray<uint8> envelopeData = TArray<uint8>(reinterpret_cast<uint8*>(serializedEnvelopeStr), size);
-
-	sentry_string_free(serializedEnvelopeStr);
-
-	return envelopeData;
-}
-
 ELogVerbosity::Type FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(sentry_level_t level)
 {
 	ELogVerbosity::Type LogVerbosity = ELogVerbosity::Error;
