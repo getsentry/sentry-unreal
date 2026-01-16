@@ -55,3 +55,58 @@ ESentryLevel FAndroidSentryLog::GetLevel() const
 	auto LevelObject = CallObjectMethod<jobject>(GetLevelMethod);
 	return FAndroidSentryConverters::SentryLogLevelToUnreal(*LevelObject);
 }
+
+void FAndroidSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	TSharedPtr<FSentryJavaObjectWrapper> attribute = FAndroidSentryConverters::VariantToNative(value);
+
+	if (!attribute)
+	{
+		return;
+	}
+
+	CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;Ljava/lang/Object;)V",
+		GetJObject(), *GetJString(key), attribute->GetJObject());
+}
+
+FSentryVariant FAndroidSentryLog::GetAttribute(const FString& key) const
+{
+	auto attribute = CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *GetJString(key));
+
+	if (!attribute)
+	{
+		return FSentryVariant();
+	}
+
+	return FAndroidSentryConverters::VariantToUnreal(*attribute);
+}
+
+bool FAndroidSentryLog::TryGetAttribute(const FString& key, FSentryVariant& value) const
+{
+	auto attribute = CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;)Ljava/lang/Object;",
+		GetJObject(), *GetJString(key));
+
+	if (!attribute)
+	{
+		return false;
+	}
+
+	value = FAndroidSentryConverters::VariantToUnreal(*attribute);
+
+	return true;
+}
+
+void FAndroidSentryLog::RemoveAttribute(const FString& key)
+{
+	CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "removeLogAttribute", "(Lio/sentry/SentryLogEvent;Ljava/lang/String;)V",
+		GetJObject(), *GetJString(key));
+}
+
+void FAndroidSentryLog::AddAttributes(const TMap<FString, FSentryVariant>& attributes)
+{
+	for (const auto& pair : attributes)
+	{
+		SetAttribute(pair.Key, pair.Value);
+	}
+}

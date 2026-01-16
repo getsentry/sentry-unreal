@@ -241,6 +241,11 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 
 void USentrySubsystem::LogDebug(const FString& Message, const FString& Category)
 {
+	LogDebugWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+}
+
+void USentrySubsystem::LogDebugWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
 	check(SubsystemNativeImpl);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -248,11 +253,16 @@ void USentrySubsystem::LogDebug(const FString& Message, const FString& Category)
 		return;
 	}
 
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Debug, Category);
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Debug, Category, Attributes);
 }
 
 void USentrySubsystem::LogInfo(const FString& Message, const FString& Category)
 {
+	LogInfoWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+}
+
+void USentrySubsystem::LogInfoWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
 	check(SubsystemNativeImpl);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -260,11 +270,16 @@ void USentrySubsystem::LogInfo(const FString& Message, const FString& Category)
 		return;
 	}
 
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Info, Category);
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Info, Category, Attributes);
 }
 
 void USentrySubsystem::LogWarning(const FString& Message, const FString& Category)
 {
+	LogWarningWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+}
+
+void USentrySubsystem::LogWarningWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
 	check(SubsystemNativeImpl);
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -272,22 +287,15 @@ void USentrySubsystem::LogWarning(const FString& Message, const FString& Categor
 		return;
 	}
 
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Warning, Category);
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Warning, Category, Attributes);
 }
 
 void USentrySubsystem::LogError(const FString& Message, const FString& Category)
 {
-	check(SubsystemNativeImpl);
-
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Error, Category);
+	LogErrorWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
 }
 
-void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
+void USentrySubsystem::LogErrorWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
 	check(SubsystemNativeImpl);
 
@@ -296,7 +304,24 @@ void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
 		return;
 	}
 
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Fatal, Category);
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Error, Category, Attributes);
+}
+
+void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
+{
+	LogFatalWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+}
+
+void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Fatal, Category, Attributes);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()
@@ -550,6 +575,30 @@ void USentrySubsystem::RemoveTag(const FString& Key)
 	}
 
 	SubsystemNativeImpl->RemoveTag(Key);
+}
+
+void USentrySubsystem::SetAttribute(const FString& Key, const FSentryVariant& Value)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->SetAttribute(Key, Value);
+}
+
+void USentrySubsystem::RemoveAttribute(const FString& Key)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->RemoveAttribute(Key);
 }
 
 void USentrySubsystem::SetLevel(ESentryLevel Level)

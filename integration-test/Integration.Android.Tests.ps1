@@ -141,8 +141,8 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # The crash is captured but NOT uploaded yet (Android behavior).
 
         Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-        $cmdlineCrashArgs = "-e cmdline -crash-capture"
-        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineCrashArgs
+        $crashIntentArgs = "-e cmdline -crash-capture"
+        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $crashIntentArgs
 
         Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -152,10 +152,21 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
 
         Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-        $cmdlineMessageArgs = "-e cmdline -message-capture"
-        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $cmdlineMessageArgs
+        $messageIntentArgs = "-e cmdline -message-capture"
+        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $messageIntentArgs
 
         Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 3: Log test - captures structured log
+        # ==========================================
+
+        Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
+        # Use single quotes around the entire cmdline value to prevent shell interpretation of special chars
+        $logIntentArgs = "-e cmdline '-log-capture -ini:Engine:[/Script/Sentry.SentrySettings]:EnableStructuredLogging=True'"
+        $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
+
+        Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
     }
 
     AfterAll {
@@ -309,6 +320,62 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have breadcrumbs" {
             $script:MessageEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:MessageEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context "Structured Logging Tests" {
+        BeforeAll {
+            $script:LogResult = $global:AndroidLogResult
+            $script:CapturedLogs = @()
+            $script:TestId = $null
+
+            # Parse test ID from output (format: LOG_TRIGGERED: <test-id>)
+            $logTriggeredLines = @($script:LogResult.Output | Where-Object { $_ -match 'LOG_TRIGGERED: ' })
+            if ($logTriggeredLines.Count -gt 0) {
+                $script:TestId = ($logTriggeredLines[0] -split 'LOG_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
+
+                # Fetch logs from Sentry with automatic polling
+                try {
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId
+                }
+                catch {
+                    Write-Host "Warning: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No LOG_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output LOG_TRIGGERED with test ID" {
+            $script:TestId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:LogResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture structured log in Sentry" {
+            $script:CapturedLogs | Should -Not -BeNullOrEmpty
+            $script:CapturedLogs.Count | Should -BeGreaterThan 0
+        }
+
+        It "Should have correct log message" {
+            $log = $script:CapturedLogs[0]
+            $log.message | Should -Match 'Integration test structured log'
+        }
+
+        It "Should have correct severity level" {
+            $log = $script:CapturedLogs[0]
+            $log.severity | Should -Be 'warn'
+        }
+
+        It "Should have test_id attribute matching captured ID" {
+            $log = $script:CapturedLogs[0]
+            $log.'test_id' | Should -Be $script:TestId
         }
     }
 }

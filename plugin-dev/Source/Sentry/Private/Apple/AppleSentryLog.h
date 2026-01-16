@@ -21,6 +21,12 @@ public:
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual ESentryLevel GetLevel() const override;
 
+	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;
+	virtual FSentryVariant GetAttribute(const FString& key) const override;
+	virtual bool TryGetAttribute(const FString& key, FSentryVariant& value) const override;
+	virtual void RemoveAttribute(const FString& key) override;
+	virtual void AddAttributes(const TMap<FString, FSentryVariant>& attributes) override;
+
 private:
 	SentryLog* LogApple;
 };

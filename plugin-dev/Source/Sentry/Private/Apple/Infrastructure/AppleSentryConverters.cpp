@@ -119,7 +119,11 @@ NSArray* FAppleSentryConverters::VariantArrayToNative(const TArray<FSentryVarian
 
 	for (auto it = variantArray.CreateConstIterator(); it; ++it)
 	{
-		[arr addObject:VariantToNative(*it)];
+		id object = VariantToNative(*it);
+		if (object != nil)
+		{
+			[arr addObject:object];
+		}
 	}
 
 	return arr;
@@ -131,7 +135,11 @@ NSDictionary* FAppleSentryConverters::VariantMapToNative(const TMap<FString, FSe
 
 	for (auto it = variantMap.CreateConstIterator(); it; ++it)
 	{
-		[dict setValue:VariantToNative(it.Value()) forKey:it.Key().GetNSString()];
+		id object = VariantToNative(it.Value());
+		if (object != nil)
+		{
+			[dict setValue:object forKey:it.Key().GetNSString()];
+		}
 	}
 
 	return dict;
@@ -153,6 +161,55 @@ SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgra
 	SentryStacktrace* trace = [[SENTRY_APPLE_CLASS(SentryStacktrace) alloc] initWithFrames:arr registers:@{}];
 
 	return trace;
+}
+
+SentryLogAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithInteger:variant.GetValue<int32>()];
+	case ESentryVariantType::Float:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithDouble:(double)variant.GetValue<float>()];
+	case ESentryVariantType::Bool:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithBoolean:variant.GetValue<bool>()];
+	case ESentryVariantType::String:
+		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
+	case ESentryVariantType::Array:
+	{
+		// Convert array to native and then to JSON string representation
+		NSArray* nativeArray = VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeArray options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
+		}
+		else
+		{
+			return nil;
+		}
+	}
+	case ESentryVariantType::Map:
+	{
+		// Convert map to native and then to JSON string representation
+		NSDictionary* nativeDict = VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeDict options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
+		}
+		else
+		{
+			return nil;
+		}
+	}
+	default:
+		return nil;
+	}
 }
 
 ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
@@ -343,4 +400,39 @@ SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 	}
 
 	return nativeLevel;
+}
+
+FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryLogAttribute* attribute)
+{
+	if (!attribute)
+	{
+		return FSentryVariant();
+	}
+
+	NSString* type = attribute.type;
+
+	if ([type isEqualToString:@"string"])
+	{
+		NSString* value = (NSString*)attribute.value;
+		return FSentryVariant(FString(value));
+	}
+	else if ([type isEqualToString:@"boolean"])
+	{
+		NSNumber* value = (NSNumber*)attribute.value;
+		return FSentryVariant([value boolValue]);
+	}
+	else if ([type isEqualToString:@"integer"])
+	{
+		NSNumber* value = (NSNumber*)attribute.value;
+		return FSentryVariant([value intValue]);
+	}
+	else if ([type isEqualToString:@"double"])
+	{
+		NSNumber* value = (NSNumber*)attribute.value;
+		return FSentryVariant((float)[value doubleValue]);
+	}
+	else
+	{
+		return FSentryVariant(FString([attribute.value description]));
+	}
 }

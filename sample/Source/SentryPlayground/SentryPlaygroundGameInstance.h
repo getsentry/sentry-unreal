@@ -23,6 +23,7 @@ private:
 	void RunIntegrationTest(const FString& CommandLine);
 	void RunCrashTest(ESentryAppTerminationType CrashType);
 	void RunMessageTest();
+	void RunLogTest();
 	void RunInitOnly();
 
 	void ConfigureTestContext();

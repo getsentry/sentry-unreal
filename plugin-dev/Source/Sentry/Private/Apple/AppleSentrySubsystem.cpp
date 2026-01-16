@@ -166,6 +166,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 
 void FAppleSentrySubsystem::Close()
 {
+	[SENTRY_APPLE_CLASS(SentrySDK) flush:3000];
 	[SENTRY_APPLE_CLASS(SentrySDK) close];
 }
 
@@ -198,7 +199,7 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
-void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes)
 {
 	// Ignore Empty Bodies
 	if (Body.IsEmpty())
@@ -206,7 +207,7 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 		return;
 	}
 
-	// Format body with category
+	// Format body with category (keep current behavior)
 	NSString* FormattedMessage;
 	if (!Category.IsEmpty())
 	{
@@ -218,24 +219,35 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 		FormattedMessage = Body.GetNSString();
 	}
 
-	// Use level-specific Apple Sentry SDK logging functions
+	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
+
+	for (const auto& pair : Attributes)
+	{
+		SentryLogAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+		if (attribute != nil)
+		{
+			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+		}
+	}
+
+	// Use level-specific Apple Sentry SDK logging functions with attributes
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] fatal:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] fatal:FormattedMessage attributes:attributesDict];
 		break;
 	case ESentryLevel::Error:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] error:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] error:FormattedMessage attributes:attributesDict];
 		break;
 	case ESentryLevel::Warning:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] warn:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] warn:FormattedMessage attributes:attributesDict];
 		break;
 	case ESentryLevel::Info:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:FormattedMessage attributes:attributesDict];
 		break;
 	case ESentryLevel::Debug:
 	default:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:FormattedMessage attributes:attributesDict];
 		break;
 	}
 }
@@ -373,6 +385,21 @@ void FAppleSentrySubsystem::RemoveTag(const FString& key)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
 		[scope removeTagForKey:key.GetNSString()];
+	}];
+}
+
+void FAppleSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		id attrValue = FAppleSentryConverters::VariantToNative(value);
+		[scope setAttributeValue:attrValue forKey:key.GetNSString()];
+	}];
+}
+
+void FAppleSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		[scope removeAttributeForKey:key.GetNSString()];
 	}];
 }
 

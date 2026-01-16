@@ -67,9 +67,13 @@ void SentryBeforeLogHandlerSpec::Define()
 				const FString ExpectedBody = FString::Printf(TEXT("[%s] %s"), *TestCategory, *TestBody);
 				TestEqual("Handler received correct body", LogData->GetBody(), ExpectedBody);
 				TestEqual("Handler received correct level", LogData->GetLevel(), TestLevel);
+				TestEqual("Handler received correct attribute", LogData->GetAttribute(TEXT("custom_attr")).GetValue<FString>(), TEXT("custom_value"));
 			});
 
-			SentrySubsystem->LogWarning(TestBody, TestCategory);
+			TMap<FString, FSentryVariant> Attributes;
+			Attributes.Add(TEXT("custom_attr"), FSentryVariant(TEXT("custom_value")));
+
+			SentrySubsystem->LogWarningWithAttributes(TestBody, Attributes, TestCategory);
 
 			TestTrue("BeforeLogHandler should be called", bHandlerCalled);
 

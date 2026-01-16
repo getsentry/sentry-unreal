@@ -22,6 +22,7 @@ public:
 	static sentry_value_t VariantToNative(const FSentryVariant& variant);
 	static sentry_value_t VariantArrayToNative(const TArray<FSentryVariant>& array);
 	static sentry_value_t VariantMapToNative(const TMap<FString, FSentryVariant>& map);
+	static sentry_value_t VariantToAttributeNative(const FSentryVariant& variant);
 	static sentry_value_t AddressToNative(uint64 address);
 	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 

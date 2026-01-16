@@ -381,6 +381,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
+	sentry_options_set_logs_with_attributes(options, true);
 
 	if (settings->bRequireUserConsent)
 	{
@@ -482,7 +483,7 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
 }
 
-void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes)
 {
 	// Ignore Empty Bodies
 	if (Body.IsEmpty())
@@ -503,24 +504,39 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel L
 
 	FTCHARToUTF8 MessageUtf8(*FormattedMessage);
 
-	// Use level-specific sentry logging functions
+	// Only create attributes object if we have per-log attributes.
+	// Passing null preserves global attributes set via SetAttribute().
+	sentry_value_t attributes;
+	if (Attributes.Num() > 0)
+	{
+		attributes = sentry_value_new_object();
+		for (auto it = Attributes.CreateConstIterator(); it; ++it)
+		{
+			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		}
+	}
+	else
+	{
+		attributes = sentry_value_new_null();
+	}
+
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		sentry_log_fatal(MessageUtf8.Get());
+		sentry_log_fatal(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Error:
-		sentry_log_error(MessageUtf8.Get());
+		sentry_log_error(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Warning:
-		sentry_log_warn(MessageUtf8.Get());
+		sentry_log_warn(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Info:
-		sentry_log_info(MessageUtf8.Get());
+		sentry_log_info(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Debug:
 	default:
-		sentry_log_debug(MessageUtf8.Get());
+		sentry_log_debug(MessageUtf8.Get(), attributes);
 		break;
 	}
 }
@@ -712,6 +728,17 @@ void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
 	{
 		crashReporter->RemoveTag(key);
 	}
+}
+
+void FGenericPlatformSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	sentry_value_t attribute = FGenericPlatformSentryConverters::VariantToAttributeNative(value);
+	sentry_set_attribute(TCHAR_TO_UTF8(*key), attribute);
+}
+
+void FGenericPlatformSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	sentry_remove_attribute(TCHAR_TO_UTF8(*key));
 }
 
 void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)

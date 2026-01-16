@@ -15,7 +15,7 @@ public:
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override { return ESentryCrashedLastRun::NotEvaluated; }
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override {}
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override {}
-	virtual void AddLog(const FString& Body, ESentryLevel Level, const FString& Category) override {}
+	virtual void AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes) override {}
 	virtual void ClearBreadcrumbs() override {}
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override {}
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override {}
@@ -31,6 +31,8 @@ public:
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override {}
 	virtual void SetTag(const FString& key, const FString& value) override {}
 	virtual void RemoveTag(const FString& key) override {}
+	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override {}
+	virtual void RemoveAttribute(const FString& key) override {}
 	virtual void SetLevel(ESentryLevel level) override {}
 	virtual void StartSession() override {}
 	virtual void EndSession() override {}
