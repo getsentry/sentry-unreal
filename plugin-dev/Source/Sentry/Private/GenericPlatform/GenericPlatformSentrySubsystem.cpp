@@ -720,6 +720,17 @@ void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
 	}
 }
 
+void FGenericPlatformSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	sentry_value_t attribute = FGenericPlatformSentryConverters::VariantToAttributeNative(value);
+	sentry_set_attribute(TCHAR_TO_UTF8(*key), attribute);
+}
+
+void FGenericPlatformSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	sentry_remove_attribute(TCHAR_TO_UTF8(*key));
+}
+
 void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)
 {
 	sentry_set_level(FGenericPlatformSentryConverters::SentryLevelToNative(level));

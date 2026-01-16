@@ -577,6 +577,30 @@ void USentrySubsystem::RemoveTag(const FString& Key)
 	SubsystemNativeImpl->RemoveTag(Key);
 }
 
+void USentrySubsystem::SetAttribute(const FString& Key, const FSentryVariant& Value)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->SetAttribute(Key, Value);
+}
+
+void USentrySubsystem::RemoveAttribute(const FString& Key)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->RemoveAttribute(Key);
+}
+
 void USentrySubsystem::SetLevel(ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);

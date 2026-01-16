@@ -388,6 +388,21 @@ void FAppleSentrySubsystem::RemoveTag(const FString& key)
 	}];
 }
 
+void FAppleSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		id attrValue = FAppleSentryConverters::VariantToNative(value);
+		[scope setAttributeValue:attrValue forKey:key.GetNSString()];
+	}];
+}
+
+void FAppleSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		[scope removeAttributeForKey:key.GetNSString()];
+	}];
+}
+
 void FAppleSentrySubsystem::SetLevel(ESentryLevel level)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {

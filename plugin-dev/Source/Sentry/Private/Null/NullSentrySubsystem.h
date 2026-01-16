@@ -31,6 +31,8 @@ public:
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override {}
 	virtual void SetTag(const FString& key, const FString& value) override {}
 	virtual void RemoveTag(const FString& key) override {}
+	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override {}
+	virtual void RemoveAttribute(const FString& key) override {}
 	virtual void SetLevel(ESentryLevel level) override {}
 	virtual void StartSession() override {}
 	virtual void EndSession() override {}

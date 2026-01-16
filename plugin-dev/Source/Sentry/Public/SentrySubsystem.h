@@ -329,6 +329,28 @@ public:
 	void RemoveTag(const FString& Key);
 
 	/**
+	 * Sets a global attribute that will be attached to all captured logs.
+	 *
+	 * @param Key Attribute key.
+	 * @param Value Attribute value (supports bool, int, float, FString).
+	 *
+	 * @note This method is not supported on Android and will be a no-op on that platform.
+	 * @note Values that have Array or Map variant types will be captured as Json string.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetAttribute(const FString& Key, const FSentryVariant& Value);
+
+	/**
+	 * Removes a global log attribute.
+	 *
+	 * @param Key Attribute key to remove.
+	 *
+	 * @note This method is not supported on Android and will be a no-op on that platform.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveAttribute(const FString& Key);
+
+	/**
 	 * Sets the level of all events sent.
 	 *
 	 * @param Level Event level.
