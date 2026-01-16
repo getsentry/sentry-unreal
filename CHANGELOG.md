@@ -18,6 +18,16 @@
 
 - Misleading screenshot capture logs on unsupported platforms ([#1180](https://github.com/getsentry/sentry-unreal/pull/1180))
 - Deadlock when invoking `onConfigureScope` callback during garbage collection on Android ([#1181](https://github.com/getsentry/sentry-unreal/pull/1181))
+- Unicode characters are now handled properly on desktop and consoles ([#1194](https://github.com/getsentry/sentry-unreal/pull/1194))
+
+### Dependencies
+
+- Bump CLI from v3.0.1 to v3.0.3 ([#1186](https://github.com/getsentry/sentry-unreal/pull/1186), [#1188](https://github.com/getsentry/sentry-unreal/pull/1188))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#303)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.0.1...3.0.3)
+- Bump Native SDK from v0.12.2 to v0.12.3 ([#1187](https://github.com/getsentry/sentry-unreal/pull/1187))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0123)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.3)
 
 ## 1.4.0
 

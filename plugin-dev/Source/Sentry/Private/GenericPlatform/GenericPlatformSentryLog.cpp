@@ -72,11 +72,6 @@ ESentryLevel FGenericPlatformSentryLog::GetLevel() const
 	sentry_value_t levelValue = sentry_value_get_by_key(Log, "level");
 	const char* levelStr = sentry_value_as_string(levelValue);
 
-	if (!levelStr)
-	{
-		return ESentryLevel::Debug; // default
-	}
-
 	if (FCStringAnsi::Strcmp(levelStr, "fatal") == 0)
 		return ESentryLevel::Fatal;
 	else if (FCStringAnsi::Strcmp(levelStr, "error") == 0)

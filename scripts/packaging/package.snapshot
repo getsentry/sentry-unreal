@@ -208,6 +208,7 @@ Source/Sentry/Private/Tests/SentryTestBeforeLogHandler.h
 Source/Sentry/Private/Tests/SentryTests.h
 Source/Sentry/Private/Tests/SentryTraceSampling.spec.cpp
 Source/Sentry/Private/Tests/SentryTraceSamplingHandler.h
+Source/Sentry/Private/Tests/SentryUnicodeStrings.spec.cpp
 Source/Sentry/Private/Tests/SentryUser.spec.cpp
 Source/Sentry/Private/Tests/SentryVariant.spec.cpp
 Source/Sentry/Private/Utils/SentryCallbackUtils.cpp

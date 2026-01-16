@@ -48,14 +48,14 @@ FString FGenericPlatformSentryEvent::GetMessage() const
 {
 	sentry_value_t messageСontainer = sentry_value_get_by_key(Event, "message");
 	sentry_value_t message = sentry_value_get_by_key(messageСontainer, "formatted");
-	return FString(sentry_value_as_string(message));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(message)));
 }
 
 void FGenericPlatformSentryEvent::SetLevel(ESentryLevel level)
 {
 	FString levelStr = FGenericPlatformSentryConverters::SentryLevelToString(level).ToLower();
 	if (!levelStr.IsEmpty())
-		sentry_value_set_by_key(Event, "level", sentry_value_new_string(TCHAR_TO_ANSI(*levelStr)));
+		sentry_value_set_by_key(Event, "level", sentry_value_new_string(TCHAR_TO_UTF8(*levelStr)));
 }
 
 ESentryLevel FGenericPlatformSentryEvent::GetLevel() const
@@ -84,7 +84,7 @@ void FGenericPlatformSentryEvent::SetTag(const FString& key, const FString& valu
 	}
 	else
 	{
-		sentry_value_set_by_key(eventTags, TCHAR_TO_ANSI(*key), sentry_value_new_string(TCHAR_TO_ANSI(*value)));
+		sentry_value_set_by_key(eventTags, TCHAR_TO_UTF8(*key), sentry_value_new_string(TCHAR_TO_UTF8(*value)));
 	}
 }
 
@@ -96,8 +96,8 @@ FString FGenericPlatformSentryEvent::GetTag(const FString& key) const
 		return FString();
 	}
 
-	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_ANSI(*key));
-	return FString(sentry_value_as_string(tag));
+	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_UTF8(*key));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(tag)));
 }
 
 bool FGenericPlatformSentryEvent::TryGetTag(const FString& key, FString& value) const
@@ -108,13 +108,13 @@ bool FGenericPlatformSentryEvent::TryGetTag(const FString& key, FString& value) 
 		return false;
 	}
 
-	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_ANSI(*key));
+	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_UTF8(*key));
 	if (sentry_value_is_null(tag))
 	{
 		return false;
 	}
 
-	value = FString(sentry_value_as_string(tag));
+	value = FString(UTF8_TO_TCHAR(sentry_value_as_string(tag)));
 
 	return true;
 }
@@ -127,7 +127,7 @@ void FGenericPlatformSentryEvent::RemoveTag(const FString& key)
 		return;
 	}
 
-	sentry_value_remove_by_key(eventTags, TCHAR_TO_ANSI(*key));
+	sentry_value_remove_by_key(eventTags, TCHAR_TO_UTF8(*key));
 }
 
 void FGenericPlatformSentryEvent::SetTags(const TMap<FString, FString>& tags)
@@ -147,13 +147,13 @@ void FGenericPlatformSentryEvent::SetContext(const FString& key, const TMap<FStr
 	{
 		eventContexts = sentry_value_new_object();
 
-		sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+		sentry_value_set_by_key(eventContexts, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
 
 		sentry_value_set_by_key(Event, "contexts", eventContexts);
 	}
 	else
 	{
-		sentry_value_set_by_key(eventContexts, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+		sentry_value_set_by_key(eventContexts, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
 	}
 }
 
@@ -165,7 +165,7 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryEvent::GetContext(const FStr
 		return TMap<FString, FSentryVariant>();
 	}
 
-	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_ANSI(*key));
+	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_UTF8(*key));
 	if (sentry_value_is_null(context))
 	{
 		return TMap<FString, FSentryVariant>();
@@ -184,7 +184,7 @@ bool FGenericPlatformSentryEvent::TryGetContext(const FString& key, TMap<FString
 		return false;
 	}
 
-	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_ANSI(*key));
+	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_UTF8(*key));
 	if (sentry_value_is_null(context))
 	{
 		return false;
@@ -209,7 +209,7 @@ void FGenericPlatformSentryEvent::RemoveContext(const FString& key)
 		return;
 	}
 
-	sentry_value_remove_by_key(eventContexts, TCHAR_TO_ANSI(*key));
+	sentry_value_remove_by_key(eventContexts, TCHAR_TO_UTF8(*key));
 }
 
 void FGenericPlatformSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
@@ -221,7 +221,7 @@ void FGenericPlatformSentryEvent::SetExtra(const FString& key, const FSentryVari
 	}
 	else
 	{
-		sentry_value_set_by_key(eventExtra, TCHAR_TO_ANSI(*key), FGenericPlatformSentryConverters::VariantToNative(value));
+		sentry_value_set_by_key(eventExtra, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantToNative(value));
 	}
 }
 
@@ -233,7 +233,7 @@ FSentryVariant FGenericPlatformSentryEvent::GetExtra(const FString& key) const
 		return FSentryVariant();
 	}
 
-	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_ANSI(*key));
+	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_UTF8(*key));
 	return FGenericPlatformSentryConverters::VariantToUnreal(extra);
 }
 
@@ -245,7 +245,7 @@ bool FGenericPlatformSentryEvent::TryGetExtra(const FString& key, FSentryVariant
 		return false;
 	}
 
-	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_ANSI(*key));
+	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_UTF8(*key));
 	if (sentry_value_is_null(extra))
 	{
 		return false;
@@ -264,7 +264,7 @@ void FGenericPlatformSentryEvent::RemoveExtra(const FString& key)
 		return;
 	}
 
-	sentry_value_remove_by_key(eventExtra, TCHAR_TO_ANSI(*key));
+	sentry_value_remove_by_key(eventExtra, TCHAR_TO_UTF8(*key));
 }
 
 void FGenericPlatformSentryEvent::SetExtras(const TMap<FString, FSentryVariant>& extras)

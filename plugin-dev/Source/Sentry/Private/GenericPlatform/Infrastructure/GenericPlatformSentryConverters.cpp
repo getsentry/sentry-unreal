@@ -48,7 +48,7 @@ sentry_value_t FGenericPlatformSentryConverters::StringMapToNative(const TMap<FS
 
 	for (auto it = map.CreateConstIterator(); it; ++it)
 	{
-		sentry_value_set_by_key(nativeValue, TCHAR_TO_ANSI(*it.Key()), sentry_value_new_string(TCHAR_TO_ANSI(*it.Value())));
+		sentry_value_set_by_key(nativeValue, TCHAR_TO_UTF8(*it.Key()), sentry_value_new_string(TCHAR_TO_UTF8(*it.Value())));
 	}
 
 	return nativeValue;
@@ -61,7 +61,7 @@ sentry_value_t FGenericPlatformSentryConverters::StringArrayToNative(const TArra
 	for (auto it = array.CreateConstIterator(); it; ++it)
 	{
 		const FString& ArrayItem = *it;
-		sentry_value_append(sentryArray, sentry_value_new_string(TCHAR_TO_ANSI(*ArrayItem)));
+		sentry_value_append(sentryArray, sentry_value_new_string(TCHAR_TO_UTF8(*ArrayItem)));
 	}
 
 	return sentryArray;
@@ -78,7 +78,7 @@ sentry_value_t FGenericPlatformSentryConverters::VariantToNative(const FSentryVa
 	case ESentryVariantType::Bool:
 		return sentry_value_new_bool(variant.GetValue<bool>());
 	case ESentryVariantType::String:
-		return sentry_value_new_string(TCHAR_TO_ANSI(*variant.GetValue<FString>()));
+		return sentry_value_new_string(TCHAR_TO_UTF8(*variant.GetValue<FString>()));
 	case ESentryVariantType::Array:
 		return VariantArrayToNative(variant.GetValue<TArray<FSentryVariant>>());
 	case ESentryVariantType::Map:
@@ -106,7 +106,7 @@ sentry_value_t FGenericPlatformSentryConverters::VariantMapToNative(const TMap<F
 
 	for (auto it = map.CreateConstIterator(); it; ++it)
 	{
-		sentry_value_set_by_key(sentryObject, TCHAR_TO_ANSI(*it.Key()), VariantToNative(it.Value()));
+		sentry_value_set_by_key(sentryObject, TCHAR_TO_UTF8(*it.Key()), VariantToNative(it.Value()));
 	}
 
 	return sentryObject;
@@ -188,7 +188,7 @@ sentry_value_t FGenericPlatformSentryConverters::CallstackToNative(const TArray<
 
 ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_value_t level)
 {
-	FString levelStr = FString(sentry_value_as_string(level));
+	FString levelStr = FString(UTF8_TO_TCHAR(sentry_value_as_string(level)));
 
 	UEnum* Enum = StaticEnum<ESentryLevel>();
 	if (!Enum)
@@ -240,7 +240,7 @@ FSentryVariant FGenericPlatformSentryConverters::VariantToUnreal(sentry_value_t 
 	case SENTRY_VALUE_TYPE_DOUBLE:
 		return FSentryVariant(static_cast<float>(sentry_value_as_double(variant)));
 	case SENTRY_VALUE_TYPE_STRING:
-		return FSentryVariant(FString(sentry_value_as_string(variant)));
+		return FSentryVariant(FString(UTF8_TO_TCHAR(sentry_value_as_string(variant))));
 	case SENTRY_VALUE_TYPE_LIST:
 		return VariantArrayToUnreal(variant);
 	case SENTRY_VALUE_TYPE_OBJECT:
@@ -261,7 +261,7 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 		return unrealMap;
 	}
 
-	FString mapJsonString = FString(jsonString);
+	FString mapJsonString = FString(UTF8_TO_TCHAR(jsonString));
 	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
 	{
 		sentry_string_free(jsonString);
@@ -283,7 +283,7 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 
 	for (auto it = keysArr.CreateConstIterator(); it; ++it)
 	{
-		unrealMap.Add(*it, VariantToUnreal(sentry_value_get_by_key(map, TCHAR_TO_ANSI(**it))));
+		unrealMap.Add(*it, VariantToUnreal(sentry_value_get_by_key(map, TCHAR_TO_UTF8(**it))));
 	}
 
 	sentry_string_free(jsonString);
@@ -313,7 +313,7 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 		return unrealMap;
 	}
 
-	FString mapJsonString = FString(jsonString);
+	FString mapJsonString = FString(UTF8_TO_TCHAR(jsonString));
 	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
 	{
 		sentry_string_free(jsonString);
@@ -349,7 +349,7 @@ TArray<FString> FGenericPlatformSentryConverters::StringArrayToUnreal(sentry_val
 	int32 len = sentry_value_get_length(array);
 	for (int32 i = 0; i < len; ++i)
 	{
-		unrealArray.Add(sentry_value_as_string(sentry_value_get_by_index(array, i)));
+		unrealArray.Add(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_index(array, i))));
 	}
 
 	return unrealArray;
