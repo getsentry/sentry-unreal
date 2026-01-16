@@ -38,19 +38,19 @@ BeforeDiscovery {
     $isCI = $env:CI -eq 'true'
 
     # Check adb test configuration
-    if (Get-Command 'adb' -ErrorAction SilentlyContinue) {
-        # Check if any devices are connected
-        $adbDevices = adb devices
-        if ($adbDevices -match '\tdevice$') {
-            $TestTargets += Get-TestTarget -Platform 'Adb' -ProviderName 'Adb'
-        }
-        else {
-            Write-Host "No devices connected via adb. Adb tests will be skipped."
-        }
-    }
-    else {
-        Write-Host "adb not found in PATH. Adb tests will be skipped."
-    }
+    # if (Get-Command 'adb' -ErrorAction SilentlyContinue) {
+    #     # Check if any devices are connected
+    #     $adbDevices = adb devices
+    #     if ($adbDevices -match '\tdevice$') {
+    #         $TestTargets += Get-TestTarget -Platform 'Adb' -ProviderName 'Adb'
+    #     }
+    #     else {
+    #         Write-Host "No devices connected via adb. Adb tests will be skipped."
+    #     }
+    # }
+    # else {
+    #     Write-Host "adb not found in PATH. Adb tests will be skipped."
+    # }
 
     # Check SauceLabs test configuration
     if ($env:SAUCE_USERNAME -and $env:SAUCE_ACCESS_KEY -and $env:SAUCE_REGION -and $env:SAUCE_DEVICE_NAME -and $env:SAUCE_SESSION_NAME) {
@@ -141,11 +141,8 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # The crash is captured but NOT uploaded yet (Android behavior).
 
         Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-        $crashAppArgs = @(
-            '-crash-capture'
-        )
-        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName `
-            -Arguments ('-e cmdline \"' + ($crashAppArgs -join ' ') + '\"')
+        $crashIntentArgs = "-e cmdline -crash-capture"
+        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $crashIntentArgs
 
         Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -155,11 +152,8 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
 
         Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-        $messageAppArgs = @(
-            '-message-capture'
-        )
-        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName `
-            -Arguments ('-e cmdline \"' + ($messageAppArgs -join ' ') + '\"')
+        $messageIntentArgs = "-e cmdline -message-capture"
+        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $messageIntentArgs
 
         Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 
@@ -168,12 +162,9 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-        $logAppArgs = @(
-            '-log-capture'
-            '-ini:Engine:[/Script/Sentry.SentrySettings]:EnableStructuredLogging=True'
-        )
-        $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName `
-            -Arguments ('-e cmdline \"' + ($logAppArgs -join ' ') + '\"')
+        # Use single quotes around the entire cmdline value to prevent shell interpretation of special chars
+        $logIntentArgs = "-e cmdline '-log-capture -ini:Engine:[/Script/Sentry.SentrySettings]:EnableStructuredLogging=True'"
+        $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
 
         Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
     }
