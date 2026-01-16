@@ -38,19 +38,19 @@ BeforeDiscovery {
     $isCI = $env:CI -eq 'true'
 
     # Check adb test configuration
-    # if (Get-Command 'adb' -ErrorAction SilentlyContinue) {
-    #     # Check if any devices are connected
-    #     $adbDevices = adb devices
-    #     if ($adbDevices -match '\tdevice$') {
-    #         $TestTargets += Get-TestTarget -Platform 'Adb' -ProviderName 'Adb'
-    #     }
-    #     else {
-    #         Write-Host "No devices connected via adb. Adb tests will be skipped."
-    #     }
-    # }
-    # else {
-    #     Write-Host "adb not found in PATH. Adb tests will be skipped."
-    # }
+    if (Get-Command 'adb' -ErrorAction SilentlyContinue) {
+        # Check if any devices are connected
+        $adbDevices = adb devices
+        if ($adbDevices -match '\tdevice$') {
+            $TestTargets += Get-TestTarget -Platform 'Adb' -ProviderName 'Adb'
+        }
+        else {
+            Write-Host "No devices connected via adb. Adb tests will be skipped."
+        }
+    }
+    else {
+        Write-Host "adb not found in PATH. Adb tests will be skipped."
+    }
 
     # Check SauceLabs test configuration
     if ($env:SAUCE_USERNAME -and $env:SAUCE_ACCESS_KEY -and $env:SAUCE_REGION -and $env:SAUCE_DEVICE_NAME -and $env:SAUCE_SESSION_NAME) {

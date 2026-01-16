@@ -504,10 +504,20 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel L
 
 	FTCHARToUTF8 MessageUtf8(*FormattedMessage);
 
-	sentry_value_t attributes = sentry_value_new_object();
-	for (auto it = Attributes.CreateConstIterator(); it; ++it)
+	// Only create attributes object if we have per-log attributes.
+	// Passing null preserves global attributes set via SetAttribute().
+	sentry_value_t attributes;
+	if (Attributes.Num() > 0)
 	{
-		sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		attributes = sentry_value_new_object();
+		for (auto it = Attributes.CreateConstIterator(); it; ++it)
+		{
+			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		}
+	}
+	else
+	{
+		attributes = sentry_value_new_null();
 	}
 
 	switch (Level)
