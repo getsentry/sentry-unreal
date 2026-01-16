@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.5.0
 
 > [!NOTE]
 > Starting with this release, a generic package is published alongside the engine-specific ones.
