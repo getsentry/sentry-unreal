@@ -1053,9 +1053,22 @@ void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const 
 		return;
 	}
 
-	const FString FormattedMessage = Category.IsEmpty() ? Message : FString::Printf(TEXT("[%s] %s"), *Category, *Message);
+	if (!Category.IsEmpty())
+	{
+		const FString FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Message);
 
-	SubsystemNativeImpl->AddLog(FormattedMessage, Level, Attributes);
+		TMap<FString, FSentryVariant> FinalAttributes = Attributes;
+		if (!Attributes.Contains(TEXT("category")))
+		{
+			FinalAttributes.Add(TEXT("category"), Category);
+		}
+
+		SubsystemNativeImpl->AddLog(FormattedMessage, Level, FinalAttributes);
+	}
+	else
+	{
+		SubsystemNativeImpl->AddLog(Message, Level, Attributes);
+	}
 }
 
 USentryBeforeLogHandler* USentrySubsystem::GetBeforeLogHandler() const
