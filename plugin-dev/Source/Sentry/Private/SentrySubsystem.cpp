@@ -241,87 +241,52 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 
 void USentrySubsystem::LogDebug(const FString& Message, const FString& Category)
 {
-	LogDebugWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLevel::Debug, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogDebugWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	check(SubsystemNativeImpl);
-
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Debug, Category, Attributes);
+	AddLog(Message, ESentryLevel::Debug, Attributes, Category);
 }
 
 void USentrySubsystem::LogInfo(const FString& Message, const FString& Category)
 {
-	LogInfoWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLevel::Info, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogInfoWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	check(SubsystemNativeImpl);
-
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Info, Category, Attributes);
+	AddLog(Message, ESentryLevel::Info, Attributes, Category);
 }
 
 void USentrySubsystem::LogWarning(const FString& Message, const FString& Category)
 {
-	LogWarningWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLevel::Warning, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogWarningWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	check(SubsystemNativeImpl);
-
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Warning, Category, Attributes);
+	AddLog(Message, ESentryLevel::Warning, Attributes, Category);
 }
 
 void USentrySubsystem::LogError(const FString& Message, const FString& Category)
 {
-	LogErrorWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLevel::Error, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogErrorWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	check(SubsystemNativeImpl);
-
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Error, Category, Attributes);
+	AddLog(Message, ESentryLevel::Error, Attributes, Category);
 }
 
 void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
 {
-	LogFatalWithAttributes(Message, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLevel::Fatal, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	check(SubsystemNativeImpl);
-
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Fatal, Category, Attributes);
+	AddLog(Message, ESentryLevel::Fatal, Attributes, Category);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()
@@ -1074,6 +1039,23 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 		});
 		GError = OutputDeviceError.Get();
 	}
+}
+
+void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (Message.IsEmpty())
+	{
+		return;
+	}
+
+	const FString FormattedMessage = Category.IsEmpty() ? Message : FString::Printf(TEXT("[%s] %s"), *Category, *Message);
+
+	SubsystemNativeImpl->AddLog(FormattedMessage, Level, Attributes);
 }
 
 USentryBeforeLogHandler* USentrySubsystem::GetBeforeLogHandler() const
