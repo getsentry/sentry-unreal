@@ -43,3 +43,6 @@ sample/SentryPlayground.uproject.DotSettings.user
 
 # Visual Studio solution file from building Sentry Native
 *.sln
+
+# Local Claude Code settings that should not be committed
+.claude/settings.local.json
