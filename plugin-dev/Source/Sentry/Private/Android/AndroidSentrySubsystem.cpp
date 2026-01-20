@@ -56,6 +56,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("autoSessionTracking"), settings->EnableAutoSessionTracking);
 	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);
 	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->AttachStacktrace);
+	SettingsJson->SetBoolField(TEXT("enableThreads"), settings->AttachThreads);
 	SettingsJson->SetBoolField(TEXT("debug"), settings->Debug);
 	SettingsJson->SetNumberField(TEXT("sampleRate"), settings->SampleRate);
 	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);

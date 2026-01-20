@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add pluging setting allowing to attach all threads info to captured events (Android) ([#1137](https://github.com/getsentry/sentry-unreal/pull/1137))
+
 ### Dependencies
 
 - Bump CLI from v3.0.3 to v3.1.0 ([#1192](https://github.com/getsentry/sentry-unreal/pull/1192))
