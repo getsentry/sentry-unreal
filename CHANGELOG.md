@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Infinite loop in `FSentryErrorOutputDevice::Serialize` on re-entrant assert ([#1197](https://github.com/getsentry/sentry-unreal/pull/1197))
+
 ### Dependencies
 
 - Bump CLI from v3.0.3 to v3.1.0 ([#1192](https://github.com/getsentry/sentry-unreal/pull/1192))

@@ -2,6 +2,7 @@
 
 #include "SentryErrorOutputDevice.h"
 
+#include "HAL/PlatformAtomics.h"
 #include "Misc/AssertionMacros.h"
 
 FSentryErrorOutputDevice::FSentryErrorOutputDevice(FOutputDeviceError* Parent)
@@ -13,7 +14,12 @@ void FSentryErrorOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Ver
 {
 	if (FDebug::HasAsserted())
 	{
-		OnAssert.Broadcast(V);
+		static int32 CallCount = 0;
+		int32 NewCallCount = FPlatformAtomics::InterlockedIncrement(&CallCount);
+		if (NewCallCount == 1)
+		{
+			OnAssert.Broadcast(V);
+		}
 	}
 
 	if (!ParentDevice)
