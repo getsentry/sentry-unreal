@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add message category attribute to structured logs for better filtering ([#1199](https://github.com/getsentry/sentry-unreal/pull/1199))
+
 ### Dependencies
 
 - Bump CLI from v3.0.3 to v3.1.0 ([#1192](https://github.com/getsentry/sentry-unreal/pull/1192))
