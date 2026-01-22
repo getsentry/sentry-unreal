@@ -69,7 +69,7 @@ Null/                         # Stubs for unsupported platforms
 
 ## Sample Project
 
-The `sample/` directory contains SentryPlayground demo game used for manual testing (demo UI) and CI integration tests.
+The `sample/` directory contains `SentryPlayground` demo game used for manual testing (demo UI) and CI integration tests.
 
 - **Integration test logic**: `Source/SentryPlayground/SentryPlaygroundGameInstance.cpp`
 - **Sentry configuration**: `Config/DefaultEngine.ini` under `[/Script/Sentry.SentrySettings]` section
@@ -81,7 +81,10 @@ Refer to `sample/README.md` for detailed documentation.
 
 Console support (PlayStation, Xbox, Switch) is provided via private plugin extensions stored in separate repositories.
 
-**Extension paths** (env vars - ask if not set):
+**Extension paths**
+
+Path to extensions source code may be set via environment variables - check them first, only ask to provide path explicitly if these aren't available or invalid.
+
 - `SENTRY_PLAYSTATION_PATH` → PS5
 - `SENTRY_XBOX_PATH` → XSX, XB1
 - `SENTRY_SWITCH_PATH` → Switch
@@ -103,7 +106,7 @@ This builds extensions and integrates them into `sample/Platforms/{Platform}/`:
 ```
 sentry-{platform}/unreal/
 ├── Sentry/Source/Sentry/Private/   # Platform implementation ({Platform}SentrySubsystem.cpp)
-└── sample-config/                  # Platform-specific Sentry settings
+└── sample-config/                  # Platform-specific sample project settings
 ```
 
 **Adding console-specific features:** Edit symlinked sources in extension repo. Follow same patterns as main plugin (`{Platform}SentryXxx.cpp`).
@@ -114,7 +117,7 @@ Refer to `Building for Consoles` in `CONTRIBUTING.md` for build instructions.
 
 ### Project Setup
 
-To work with the Unreal project it has to be properly set up (symlink plugin source code into `sample/Plugins`, download dependencies).
+To work with the Unreal project, it has to be properly set up (symlink plugin source code into `sample/Plugins`, download dependencies).
 
 ```powershell
 # Initialize (first-time setup - downloads SDK dependencies via GitHub CLI, CI provides pre-built binaries)
@@ -127,7 +130,18 @@ To work with the Unreal project it has to be properly set up (symlink plugin sou
 
 ### Code Guidelines
 
-- New plugin features often wrap existing native SDK functionality. Before implementation, examine the relevant SDK's API (sentry-native, sentry-cocoa, or sentry-java) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple).
+- New plugin features often wrap existing native SDK functionality. Before implementation, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple).
+
+Check APIs in this order:
+
+1. **ThirdParty headers** - `plugin-dev/Source/ThirdParty/{platform}/` contains SDK headers
+
+2. **Local source** (if available via env vars):
+    - `SENTRY_NATIVE_PATH` - sentry-native repository
+    - `SENTRY_COCOA_PATH` - sentry-cocoa repository
+    - `SENTRY_JAVA_PATH` - sentry-java repository
+
+3. **GitHub** - Fetch from repositories listed in `Related Code & Repositories` section as last resort
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
@@ -138,9 +152,11 @@ To work with the Unreal project it has to be properly set up (symlink plugin sou
 ./scripts/packaging/test-contents.ps1 accept
 ```
 
-### Code Style 
+- If the build, test, or script execution fails, try to understand the root cause of the error and suggest a fix.
 
-- Source files require copyright notice: `Copyright (c) YYYY Sentry. All Rights Reserved.`
+### Code Style
+
+- Source files require copyright notice: `Copyright (c) YYYY Sentry. All Rights Reserved.` (for `YYYY` use file creation year)
 - Use file naming pattern `{Platform}SentryXxx.cpp` for platform implementations (e.g., AndroidSentrySubsystem.cpp)
 - Use `.clang-format`
 - No BOM (Byte Order Mark) in source files
@@ -154,10 +170,12 @@ To work with the Unreal project it has to be properly set up (symlink plugin sou
 
 ### Building
 
-Building requires Unreal Engine. When a build is needed, check the `UNREAL_ENGINE_ROOT` environment variable for the engine installation path. If `UNREAL_ENGINE_ROOT` is not set or the path doesn't exist, ask for the engine path explicitly. Once provided, reuse the same path for the remainder of the session unless told otherwise. The plugin can be built against any supported engine version (source builds included) - see `scripts/packaging/engine-versions.txt` for the CI-tested version list.
+Since building requires Unreal Engine, check the `UNREAL_ENGINE_ROOT` environment variable for the engine installation path. If `UNREAL_ENGINE_ROOT` is not set or the path doesn't exist, ask for the engine path explicitly. Once provided, reuse the same path for the remainder of the session unless told otherwise.
 
-Typically Development and Shipping build configurations are used.
-Platforms are "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64", "XSX", "XB`", "PS5", "Switch"
+- Build configurations: `Development`, `Shipping`
+- Target platforms: `Win64`, `Mac`, `Android`, `IOS`, `Linux`, `LinuxArm64`, `XSX`, `XB1`, `PS5`, `Switch`
+
+By default, build `Development` configuration for host target platform.
 
 ```powershell
 # Example: Build and package the sample project (Win64, Development)
@@ -171,9 +189,9 @@ Platforms are "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64", "XSX", "X
 
 Note: For UE 4.27, the editor binary is `UE4Editor.exe`; for UE 5.x it's `UnrealEditor.exe`.
 
-### Testing
+### Running Tests
 
-#### Unit Tests
+**Unit Tests**
 
 Run unit tests via command line (headless):
 
@@ -184,11 +202,11 @@ Run unit tests via command line (headless):
     -Unattended -NoPause -NoSplash -NullRHI
 ```
 
-Test results are written to `sample/Saved/Automation/`. To run tests interactively in the editor, see `CONTRIBUTING.md`.
+Test results are written to `sample/Saved/Automation/`.
 
-#### Integration Tests
+**Integration Tests**
 
-Refer to detailed instructions how to setup and run integration tests in `integration-test/README.md`.
+Refer to detailed instructions on how to set up and run integration tests in `integration-test/README.md`.
 
 Test source:
 - `integration-test/Integration.Desktop.Tests.ps1` (Windows, Linux, Mac)
@@ -198,7 +216,7 @@ The integration test infrastructure is built on top of the [Pester](https://gith
 
 The exact version of the `app-runner` module used for testing is specified by a commit SHA in `integration-test\CMakeLists.txt`.
 
-The integration tests expect the sample application to be pre-built using the `Development` configuration, as this is required for the application to generate the log files that the tests parse to verify output. The sample application logic is defined in sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp and is triggered based on a set of input arguments.
+The integration tests expect the sample application to be pre-built using the `Development` configuration, as this is required for the application to generate the log files that the tests parse to verify output. The sample application logic is defined in `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp` and the test scenario triggered at startup is determined by command-line input arguments.
 
 Sample application output and data fetched from the Sentry API can be found in `integration-test\output` - these artifacts are useful for debugging and investigating test failures.
 
@@ -206,15 +224,29 @@ Pester documentation: https://pester.dev/docs/quick-start
 
 ## Related Code & Repositories
 
-[sentry-native](https://github.com/getsentry/sentry-native): crash and error monitoring on Windows/Linux and game consoles
-[sentry-java](https://github.com/getsentry/sentry-java): crash and error monitoring on Android
-[sentry-cocoa](https://github.com/getsentry/sentry-cocoa): crash and error monitoring on macOS and iOS
-[sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
-[sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
-[app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
+- [sentry-native](https://github.com/getsentry/sentry-native): crash and error monitoring on Windows/Linux and game consoles
+- [sentry-java](https://github.com/getsentry/sentry-java): crash and error monitoring on Android
+- [sentry-cocoa](https://github.com/getsentry/sentry-cocoa): crash and error monitoring on macOS and iOS
+- [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
+- [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
+- [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
 
 ## Useful Resources
 
 - Main SDK documentation: https://develop.sentry.dev/sdk/overview/
 - Internal contributing guide: https://docs.sentry.io/internal/contributing/
 - Unreal Engine SDK documentation: https://docs.sentry.io/platforms/unreal/
+
+## Quick References & Tips
+
+**Reading environment variables:** When checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
+
+```powershell
+[System.Environment]::GetEnvironmentVariable('VAR_NAME')
+```
+
+## Maintaining This Document
+
+- When completing a task that reveals new patterns, conventions, best practices, or solutions to recurring issues not yet documented here, suggest adding these insights to `CLAUDE.md`.
+
+- When using compaction (which condenses context by summarizing older messages), make sure to re-read `CLAUDE.md` afterward to keep it fully available in context.
