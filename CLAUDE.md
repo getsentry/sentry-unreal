@@ -168,7 +168,7 @@ Check APIs in this order:
 - Never print or display environment variables that may contain secrets (passwords, API keys, auth tokens, DSNs)
 - When checking environment variables, only verify if they are set (non-empty), don't output their values
 
-### Building
+### Project Build
 
 Since building requires Unreal Engine, check the `UNREAL_ENGINE_ROOT` environment variable for the engine installation path. If `UNREAL_ENGINE_ROOT` is not set or the path doesn't exist, ask for the engine path explicitly. Once provided, reuse the same path for the remainder of the session unless told otherwise.
 
@@ -187,13 +187,9 @@ By default, build `Development` configuration for host target platform.
     -build -cook -stage -package -archive -nop4
 ```
 
-Note: For UE 4.27, the editor binary is `UE4Editor.exe`; for UE 5.x it's `UnrealEditor.exe`.
-
 ### Running Tests
 
 **Unit Tests**
-
-Run unit tests via command line (headless):
 
 ```powershell
 & "$env:UNREAL_ENGINE_ROOT\Engine\Binaries\Win64\UnrealEditor.exe" "$PWD\sample\SentryPlayground.uproject" `
@@ -201,6 +197,8 @@ Run unit tests via command line (headless):
     -TestExit="Automation Test Queue Empty" `
     -Unattended -NoPause -NoSplash -NullRHI
 ```
+
+Note: For older UE4 versions, the editor binary is `UE4Editor.exe`; for UE5 it's `UnrealEditor.exe`.
 
 Test results are written to `sample/Saved/Automation/`.
 
