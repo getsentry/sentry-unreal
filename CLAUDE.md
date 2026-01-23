@@ -152,20 +152,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 ### Common Instructions
 
-- New plugin features often wrap existing native SDK functionality. Before implementation, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple).
-
-Check the APIs in the order below, proceeding to the next source only if the previous one is unavailable or lacks sufficient context:
-
-1. **ThirdParty headers** - `plugin-dev/Source/ThirdParty/{Platform}/` contains SDK headers
-
-2. **Repo submodules** - `modules/` contains `sentry-native` and `sentry-java` sources
-
-3. **Local source** - Check env vars specifying local repository path; if not set, prompt user; if not provided, proceed to next source:
-    - `SENTRY_NATIVE_PATH` - sentry-native repository
-    - `SENTRY_COCOA_PATH` - sentry-cocoa repository
-    - `SENTRY_JAVA_PATH` - sentry-java repository
-
-4. **GitHub** - Fetch from repositories listed in `Related Code & Repositories` section as last resort
+- New plugin features often wrap existing native SDK functionality. Before implementation, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple). Refer to `Native SDK API Lookup Order` in Quick References for where to find SDK APIs.
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
@@ -263,7 +250,24 @@ Pester documentation: https://pester.dev/docs/quick-start
 
 ## Quick References & Tips
 
-**Reading environment variables:** When checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
+### Native SDK API Lookup Order
+
+When implementing features that wrap native SDK functionality, check APIs in the following order (proceed to next source only if previous is unavailable or lacks context):
+
+1. **ThirdParty headers** - `plugin-dev/Source/ThirdParty/{Platform}/` contains SDK headers
+
+2. **Repo submodules** - `modules/` contains `sentry-native` and `sentry-java` sources
+
+3. **Local source** - Check env vars specifying local repository path; if not set, prompt user; if not provided, proceed to next source:
+    - `SENTRY_NATIVE_PATH` - sentry-native repository
+    - `SENTRY_COCOA_PATH` - sentry-cocoa repository
+    - `SENTRY_JAVA_PATH` - sentry-java repository
+
+4. **GitHub** - Fetch from repositories listed in `Related Code & Repositories` section as last resort
+
+### Reading Environment Variables
+
+When checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
 
 ```powershell
 [System.Environment]::GetEnvironmentVariable('VAR_NAME')
