@@ -111,9 +111,9 @@ Path to extensions source code may be set via environment variables. When workin
 
 **Setup console extensions:**
 
-```powershell
-./scripts/init-consoles.ps1 -All        # All platforms
-./scripts/init-consoles.ps1 -PS5 -XSX   # Specific platforms
+```bash
+pwsh ./scripts/init-consoles.ps1 -All        # All platforms
+pwsh ./scripts/init-consoles.ps1 -PS5 -XSX   # Specific platforms
 ```
 
 This builds extensions and integrates them into `sample/Platforms/{Platform}/`:
@@ -139,13 +139,13 @@ Refer to `Building for Consoles` in `CONTRIBUTING.md` for build instructions.
 
 To work with the Unreal project, it has to be properly set up (symlink plugin source code into `sample/Plugins`, download dependencies).
 
-```powershell
+```bash
 # Initialize (first-time setup - downloads SDK dependencies via GitHub CLI, CI provides pre-built binaries)
-./scripts/init-win.ps1      # Windows
-./scripts/init.sh           # macOS/Linux
+pwsh ./scripts/init-win.ps1      # Windows
+./scripts/init.sh                # macOS/Linux
 
 # Build platform SDKs locally (optional - useful when testing unreleased native SDK changes)
-./scripts/build-deps.ps1 -All
+pwsh ./scripts/build-deps.ps1 -All
 ```
 
 Supported Unreal Engine versions are listed in `scripts/packaging/engine-versions.txt`. When using an engine built from source, the `.uproject` file will contain a GUID instead of a version number in the `EngineAssociation` field.
@@ -158,9 +158,9 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - Package plugin and update snapshot after adding/removing files:
 
-```powershell
-./scripts/packaging/pack.ps1
-./scripts/packaging/test-contents.ps1 accept
+```bash
+pwsh ./scripts/packaging/pack.ps1
+pwsh ./scripts/packaging/test-contents.ps1 accept
 ```
 
 ### Code Style
@@ -186,13 +186,13 @@ Since building requires Unreal Engine, check the `UNREAL_ENGINE_ROOT` environmen
 
 By default, build `Development` configuration for host target platform.
 
-```powershell
+```bash
 # Example: Build and package the sample project (Win64, Development)
-& "$env:UNREAL_ENGINE_ROOT\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun `
-    -project="$PWD\sample\SentryPlayground.uproject" `
-    -archivedirectory="$PWD\sample\dist" `
-    -platform=Win64 `
-    -clientconfig=Development `
+# Use RunUAT.bat on Windows and RunUAT.sh on Mac/Linux
+"$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.bat" BuildCookRun \
+    -project="$PWD/sample/SentryPlayground.uproject" \
+    -archivedirectory="$PWD/sample/dist" \
+    -platform=Win64 -clientconfig=Development \
     -build -cook -stage -package -archive -nop4
 ```
 
@@ -200,14 +200,16 @@ By default, build `Development` configuration for host target platform.
 
 **Unit Tests**
 
-```powershell
-& "$env:UNREAL_ENGINE_ROOT\Engine\Binaries\Win64\UnrealEditor.exe" "$PWD\sample\SentryPlayground.uproject" `
-    -ExecCmds="Automation RunTests Sentry;quit" `
-    -TestExit="Automation Test Queue Empty" `
+```bash
+# Use UnrealEditor.exe on Windows and UnrealEditor on Mac/Linux
+"$UNREAL_ENGINE_ROOT/Engine/Binaries/Win64/UnrealEditor.exe" \
+    "$PWD/sample/SentryPlayground.uproject" \
+    -ExecCmds="Automation RunTests Sentry;quit" \
+    -TestExit="Automation Test Queue Empty" \
     -Unattended -NoPause -NoSplash -NullRHI
 ```
 
-Note: For older UE4 versions, the editor binary is `UE4Editor.exe`; for UE5 it's `UnrealEditor.exe`.
+Note: For older UE4 versions, the editor binary name is `UE4Editor`; for UE5 it's `UnrealEditor`.
 
 Test results are written to `sample/Saved/Automation/`.
 
@@ -267,7 +269,7 @@ When implementing features that wrap native SDK functionality, check APIs in the
 
 ### Reading Environment Variables
 
-When checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
+On Windwos, when checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
 
 ```powershell
 [System.Environment]::GetEnvironmentVariable('VAR_NAME')
