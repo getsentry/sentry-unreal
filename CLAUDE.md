@@ -60,9 +60,29 @@ sentry-java (Java/Kotlin SDK)
 Null/                         # Stubs for unsupported platforms
 ```
 
+### Public API
+
+**Core:**
+- `SentrySubsystem` - Main SDK entry point (initialize, capture events, manage scope)
+- `SentrySettings` - Plugin configuration (DSN, options, feature toggles)
+- `SentryLibrary` - Blueprint function library for instantiating Sentry objects
+
+**Sentry Entities:**
+- `SentryEvent`, `SentryBreadcrumb`, `SentryScope`, `SentryUser`, `SentryAttachment`, `SentryHint`, `SentryFeedback` - Data objects representing Sentry concepts
+
+**Performance Monitoring:**
+- `SentryTransaction`, `SentrySpan`, `SentryTransactionContext`, `SentrySamplingContext` - Tracing and performance measurement
+
+**Callbacks:**
+- `SentryBeforeSendHandler`, `SentryBeforeBreadcrumbHandler`, `SentryBeforeLogHandler`, `SentryTraceSampler` - Hooks for customizing SDK behavior
+
+**Utilities:**
+- `SentryVariant` - Universal value type for passing data to Sentry APIs (tags, context, etc.)
+- `SentryOutputDevice` / `SentryErrorOutputDevice` - UE log output integration
+
 ### Platform Implementation Pattern
 
-- Public API in `SentrySubsystem` is platform-agnostic
+- Public API is platform-agnostic
 - Platform-specific implementations in `Private/{Platform}/` directories
 - Abstract interfaces in `Interface/` define contracts
 - Wrapper classes translate platform-specific SDKs to Unreal APIs
@@ -71,8 +91,8 @@ Null/                         # Stubs for unsupported platforms
 
 The `sample/` directory contains `SentryPlayground` demo game used for manual testing (demo UI) and CI integration tests.
 
-- **Integration test logic**: `Source/SentryPlayground/SentryPlaygroundGameInstance.cpp`
-- **Sentry configuration**: `Config/DefaultEngine.ini` under `[/Script/Sentry.SentrySettings]` section
+- **Integration test logic**: `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp`
+- **Sentry configuration**: `sample/Config/DefaultEngine.ini` under `[/Script/Sentry.SentrySettings]` section
 - **Logs**: `sample/Saved/Logs/` - runtime logs, useful for debugging
 
 Refer to `sample/README.md` for detailed documentation.
@@ -83,7 +103,7 @@ Console support (PlayStation, Xbox, Switch) is provided via private plugin exten
 
 **Extension paths**
 
-Path to extensions source code may be set via environment variables - check them first, only ask to provide path explicitly if these aren't available or invalid.
+Path to extensions source code may be set via environment variables. When working on console-related tasks, check them first, only ask to provide path explicitly if these aren't available or invalid.
 
 - `SENTRY_PLAYSTATION_PATH` → PS5
 - `SENTRY_XBOX_PATH` → XSX, XB1
@@ -128,20 +148,24 @@ To work with the Unreal project, it has to be properly set up (symlink plugin so
 ./scripts/build-deps.ps1 -All
 ```
 
-### Code Guidelines
+Supported Unreal Engine versions are listed in `scripts/packaging/engine-versions.txt`. When using an engine built from source, the `.uproject` file will contain a GUID instead of a version number in the `EngineAssociation` field.
+
+### Common Instructions
 
 - New plugin features often wrap existing native SDK functionality. Before implementation, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple).
 
-Check APIs in this order:
+Check the APIs in the order below, proceeding to the next source only if the previous one is unavailable or lacks sufficient context:
 
-1. **ThirdParty headers** - `plugin-dev/Source/ThirdParty/{platform}/` contains SDK headers
+1. **ThirdParty headers** - `plugin-dev/Source/ThirdParty/{Platform}/` contains SDK headers
 
-2. **Local source** (if available via env vars):
+2. **Repo submodules** - `modules/` contains `sentry-native` and `sentry-java` sources
+
+3. **Local source** - Check env vars specifying local repository path; if not set, prompt user; if not provided, proceed to next source:
     - `SENTRY_NATIVE_PATH` - sentry-native repository
     - `SENTRY_COCOA_PATH` - sentry-cocoa repository
     - `SENTRY_JAVA_PATH` - sentry-java repository
 
-3. **GitHub** - Fetch from repositories listed in `Related Code & Repositories` section as last resort
+4. **GitHub** - Fetch from repositories listed in `Related Code & Repositories` section as last resort
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
@@ -151,8 +175,6 @@ Check APIs in this order:
 ./scripts/packaging/pack.ps1
 ./scripts/packaging/test-contents.ps1 accept
 ```
-
-- If the build, test, or script execution fails, try to understand the root cause of the error and suggest a fix.
 
 ### Code Style
 
@@ -212,13 +234,17 @@ Test source:
 
 The integration test infrastructure is built on top of the [Pester](https://github.com/pester/pester) framework and the [app-runner](https://github.com/getsentry/app-runner) PowerShell module, which provides tooling to launch the test application on different platforms/devices, parse its output, and communicate with the Sentry API to fetch the data required to verify test results.
 
-The exact version of the `app-runner` module used for testing is specified by a commit SHA in `integration-test\CMakeLists.txt`.
+The exact version of the `app-runner` module used for testing is specified by a commit SHA in `integration-test/CMakeLists.txt`.
 
 The integration tests expect the sample application to be pre-built using the `Development` configuration, as this is required for the application to generate the log files that the tests parse to verify output. The sample application logic is defined in `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp` and the test scenario triggered at startup is determined by command-line input arguments.
 
-Sample application output and data fetched from the Sentry API can be found in `integration-test\output` - these artifacts are useful for debugging and investigating test failures.
+Sample application output and data fetched from the Sentry API can be found in `integration-test/output` - these artifacts are useful for debugging and investigating test failures.
 
 Pester documentation: https://pester.dev/docs/quick-start
+
+### Troubleshooting
+
+- If the build, test, or script execution fails, try to understand the root cause of the error and suggest a fix. Check logs for additional issue insights.
 
 ## Related Code & Repositories
 
