@@ -189,6 +189,7 @@ By default, build `Development` configuration for host target platform.
 ```bash
 # Example: Build and package the sample project (Win64, Development)
 # Use RunUAT.bat on Windows and RunUAT.sh on Mac/Linux
+# Run this command from the repository root dir to properly resolve project path
 "$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.bat" BuildCookRun \
     -project="$PWD/sample/SentryPlayground.uproject" \
     -archivedirectory="$PWD/sample/dist" \
@@ -202,8 +203,10 @@ By default, build `Development` configuration for host target platform.
 
 ```bash
 # Use UnrealEditor.exe on Windows and UnrealEditor on Mac/Linux
+# Run this command from the repository root dir to properly resolve project path
 "$UNREAL_ENGINE_ROOT/Engine/Binaries/Win64/UnrealEditor.exe" \
     "$PWD/sample/SentryPlayground.uproject" \
+    -ReportExportPath="$PWD/sample/Saved/Automation" \
     -ExecCmds="Automation RunTests Sentry;quit" \
     -TestExit="Automation Test Queue Empty" \
     -Unattended -NoPause -NoSplash -NullRHI
