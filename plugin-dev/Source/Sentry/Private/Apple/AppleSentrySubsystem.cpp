@@ -223,7 +223,7 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 
 	for (const auto& pair : Attributes)
 	{
-		SentryLogAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+		SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
 		if (attribute != nil)
 		{
 			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];

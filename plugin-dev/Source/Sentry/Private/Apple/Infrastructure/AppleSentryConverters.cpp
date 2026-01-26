@@ -163,18 +163,18 @@ SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgra
 	return trace;
 }
 
-SentryLogAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)
+SentryAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)
 {
 	switch (variant.GetType())
 	{
 	case ESentryVariantType::Integer:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithInteger:variant.GetValue<int32>()];
+		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithInteger:variant.GetValue<int32>()];
 	case ESentryVariantType::Float:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithDouble:(double)variant.GetValue<float>()];
+		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithDouble:(double)variant.GetValue<float>()];
 	case ESentryVariantType::Bool:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithBoolean:variant.GetValue<bool>()];
+		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithBoolean:variant.GetValue<bool>()];
 	case ESentryVariantType::String:
-		return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
+		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
 	case ESentryVariantType::Array:
 	{
 		// Convert array to native and then to JSON string representation
@@ -184,7 +184,7 @@ SentryLogAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSent
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
+			return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithString:jsonString];
 		}
 		else
 		{
@@ -200,7 +200,7 @@ SentryLogAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSent
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryLogAttribute) alloc] initWithString:jsonString];
+			return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithString:jsonString];
 		}
 		else
 		{
@@ -402,7 +402,7 @@ SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 	return nativeLevel;
 }
 
-FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryLogAttribute* attribute)
+FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryAttribute* attribute)
 {
 	if (!attribute)
 	{

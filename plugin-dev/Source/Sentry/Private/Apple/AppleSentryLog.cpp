@@ -66,7 +66,7 @@ ESentryLevel FAppleSentryLog::GetLevel() const
 
 void FAppleSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
 {
-	SentryLogAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(value);
+	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(value);
 
 	if (!attribute)
 	{
@@ -78,7 +78,7 @@ void FAppleSentryLog::SetAttribute(const FString& key, const FSentryVariant& val
 
 FSentryVariant FAppleSentryLog::GetAttribute(const FString& key) const
 {
-	SentryLogAttribute* attribute = [LogApple.attributes objectForKey:key.GetNSString()];
+	SentryAttribute* attribute = [LogApple.attributes objectForKey:key.GetNSString()];
 
 	if (!attribute)
 	{
@@ -90,7 +90,7 @@ FSentryVariant FAppleSentryLog::GetAttribute(const FString& key) const
 
 bool FAppleSentryLog::TryGetAttribute(const FString& key, FSentryVariant& value) const
 {
-	SentryLogAttribute* attribute = [LogApple.attributes objectForKey:key.GetNSString()];
+	SentryAttribute* attribute = [LogApple.attributes objectForKey:key.GetNSString()];
 
 	if (!attribute)
 	{
