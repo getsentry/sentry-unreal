@@ -28,8 +28,13 @@ void SentryTraceSamplingSpec::Define()
 	{
 		SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
-		if (SentrySubsystem && !SentrySubsystem->IsEnabled())
+		if (SentrySubsystem)
 		{
+			if (SentrySubsystem->IsEnabled())
+			{
+				SentrySubsystem->Close();
+			}
+
 			SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
 			{
 				Settings->EnableTracing = true;
