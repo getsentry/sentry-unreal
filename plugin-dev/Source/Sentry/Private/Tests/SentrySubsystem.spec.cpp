@@ -1,8 +1,8 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
+#include "SentrySettings.h"
 #include "SentrySpan.h"
 #include "SentryTests.h"
 #include "SentryTransaction.h"

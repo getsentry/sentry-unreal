@@ -50,8 +50,6 @@ void SentryTraceSamplingSpec::Define()
 	{
 		It("should execute callback and provide a valid sampling context", [this]()
 		{
-			
-
 			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.BindLambda([this](USentrySamplingContext* SamplingContext)
 			{
 				TestNotNull("Sampling context should not be null", SamplingContext);
