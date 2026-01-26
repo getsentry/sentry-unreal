@@ -17,6 +17,7 @@ TDelegate<void(USentrySamplingContext*)> UTraceSamplingTestHandler::OnTraceSampl
 #if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentryTraceSamplingSpec, "Sentry.SentryTraceSampling", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
+	USentrySubsystem* SentrySubsystem;
 	USentryTransactionContext* TransactionContext;
 	FSentryTransactionOptions TransactionOptions;
 END_DEFINE_SPEC(SentryTraceSamplingSpec)
@@ -25,6 +26,23 @@ void SentryTraceSamplingSpec::Define()
 {
 	BeforeEach([this]()
 	{
+		SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+		if (SentrySubsystem)
+		{
+			if (SentrySubsystem->IsEnabled())
+			{
+				SentrySubsystem->Close();
+			}
+
+			SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
+			{
+				Settings->EnableTracing = true;
+				Settings->SamplingType = ESentryTracesSamplingType::TracesSampler;
+				Settings->TracesSampler = UTraceSamplingTestHandler::StaticClass();
+			}));
+		}
+
 		TransactionContext = USentryTransactionContext::Create(
 			MakeShareable(new FPlatformSentryTransactionContext(TEXT("Test transaction"), TEXT("Test operation"))));
 
@@ -37,15 +55,6 @@ void SentryTraceSamplingSpec::Define()
 	{
 		It("should execute callback and provide a valid sampling context", [this]()
 		{
-			USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-
-			SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
-			{
-				Settings->EnableTracing = true;
-				Settings->SamplingType = ESentryTracesSamplingType::TracesSampler;
-				Settings->TracesSampler = UTraceSamplingTestHandler::StaticClass();
-			}));
-
 			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.BindLambda([this](USentrySamplingContext* SamplingContext)
 			{
 				TestNotNull("Sampling context should not be null", SamplingContext);
@@ -83,9 +92,12 @@ void SentryTraceSamplingSpec::Define()
 			}
 
 			UTraceSamplingTestHandler::OnTraceSamplingTestHandler.Unbind();
-
-			SentrySubsystem->Close();
 		});
+	});
+
+	AfterEach([this]
+	{
+		SentrySubsystem->Close();
 	});
 }
 

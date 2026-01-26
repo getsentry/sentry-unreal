@@ -166,7 +166,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 
 void FAppleSentrySubsystem::Close()
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) flush:3000];
+	[SENTRY_APPLE_CLASS(SentrySDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentrySDK) close];
 }
 
@@ -205,7 +205,7 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 
 	for (const auto& pair : Attributes)
 	{
-		SentryLogAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+		SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
 		if (attribute != nil)
 		{
 			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];

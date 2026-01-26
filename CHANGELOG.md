@@ -6,14 +6,27 @@
 
 - Add message category attribute to structured logs for better filtering ([#1199](https://github.com/getsentry/sentry-unreal/pull/1199))
 
+### Fixes
+
+- Infinite loop in `FSentryErrorOutputDevice::Serialize` on re-entrant assert ([#1197](https://github.com/getsentry/sentry-unreal/pull/1197))
+
 ### Dependencies
 
 - Bump CLI from v3.0.3 to v3.1.0 ([#1192](https://github.com/getsentry/sentry-unreal/pull/1192))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#310)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.0.3...3.1.0)
-- Bump Java SDK (Android) from v8.29.0 to v8.30.0 ([#1196](https://github.com/getsentry/sentry-unreal/pull/1196))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8300)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.29.0...8.30.0)
+- Bump Java SDK (Android) from v8.29.0 to v8.31.0 ([#1196](https://github.com/getsentry/sentry-unreal/pull/1196), [#1202](https://github.com/getsentry/sentry-unreal/pull/1202))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8310)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.29.0...8.31.0)
+- Bump Cocoa SDK (iOS and Mac) from v9.1.0 to v9.2.0 ([#1201](https://github.com/getsentry/sentry-unreal/pull/1201))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#920)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.1.0...9.2.0)
+- Bump Native SDK from v0.12.3 to v0.12.4 ([#1209](https://github.com/getsentry/sentry-unreal/pull/1209))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0124)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.3...0.12.4)
+- Bump Android Gradle Plugin from v5.12.2 to v6.0.0 ([#1208](https://github.com/getsentry/sentry-unreal/pull/1208))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#600)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/5.12.2...6.0.0)
 
 ## 1.5.0
 
