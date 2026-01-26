@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
+#include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
 #include "SentrySpan.h"
@@ -29,7 +30,10 @@ void SentrySubsystemSpec::Define()
 
 		if (SentrySubsystem && !SentrySubsystem->IsEnabled())
 		{
-			SentrySubsystem->Initialize();
+			SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
+			{
+				Settings->EnableTracing = false;
+			}));
 		}
 	});
 

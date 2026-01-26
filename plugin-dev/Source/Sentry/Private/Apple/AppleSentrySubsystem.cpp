@@ -166,7 +166,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 
 void FAppleSentrySubsystem::Close()
 {
-	[SENTRY_APPLE_CLASS(SentrySDK) flush:3000];
+	[SENTRY_APPLE_CLASS(SentrySDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentrySDK) close];
 }
 
