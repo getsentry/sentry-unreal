@@ -505,6 +505,9 @@ private:
 	/** Add custom Sentry output device to intercept errors */
 	void ConfigureErrorOutputDevice();
 
+	/** Add a structured log message with formatting */
+	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
+
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
 

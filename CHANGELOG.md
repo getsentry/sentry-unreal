@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add message category attribute to structured logs for better filtering ([#1199](https://github.com/getsentry/sentry-unreal/pull/1199))
+
 ### Fixes
 
 - Infinite loop in `FSentryErrorOutputDevice::Serialize` on re-entrant assert ([#1197](https://github.com/getsentry/sentry-unreal/pull/1197))

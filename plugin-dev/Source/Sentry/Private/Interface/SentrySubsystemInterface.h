@@ -38,7 +38,7 @@ public:
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) = 0;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) = 0;
-	virtual void AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes) = 0;
+	virtual void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;

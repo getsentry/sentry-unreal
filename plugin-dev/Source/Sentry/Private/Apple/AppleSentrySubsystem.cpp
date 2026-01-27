@@ -199,26 +199,8 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
-void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes)
+void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Ignore Empty Bodies
-	if (Body.IsEmpty())
-	{
-		return;
-	}
-
-	// Format body with category (keep current behavior)
-	NSString* FormattedMessage;
-	if (!Category.IsEmpty())
-	{
-		FString FullMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
-		FormattedMessage = FullMessage.GetNSString();
-	}
-	else
-	{
-		FormattedMessage = Body.GetNSString();
-	}
-
 	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
 
 	for (const auto& pair : Attributes)
@@ -234,20 +216,20 @@ void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, cons
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] fatal:FormattedMessage attributes:attributesDict];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] fatal:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Error:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] error:FormattedMessage attributes:attributesDict];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] error:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Warning:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] warn:FormattedMessage attributes:attributesDict];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] warn:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Info:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:FormattedMessage attributes:attributesDict];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Debug:
 	default:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:FormattedMessage attributes:attributesDict];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:Message.GetNSString() attributes:attributesDict];
 		break;
 	}
 }

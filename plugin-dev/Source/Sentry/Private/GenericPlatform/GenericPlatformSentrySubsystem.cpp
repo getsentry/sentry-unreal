@@ -483,26 +483,9 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
 }
 
-void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category, const TMap<FString, FSentryVariant>& Attributes)
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Ignore Empty Bodies
-	if (Body.IsEmpty())
-	{
-		return;
-	}
-
-	// Format body with category if provided
-	FString FormattedMessage;
-	if (!Category.IsEmpty())
-	{
-		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
-	}
-	else
-	{
-		FormattedMessage = Body;
-	}
-
-	FTCHARToUTF8 MessageUtf8(*FormattedMessage);
+	FTCHARToUTF8 MessageUtf8(*Message);
 
 	// Only create attributes object if we have per-log attributes.
 	// Passing null preserves global attributes set via SetAttribute().
