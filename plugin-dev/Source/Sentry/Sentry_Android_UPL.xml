@@ -127,6 +127,7 @@
 
             dependencies {
                 implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
+                implementation "com.google.protobuf:protobuf-javalite:3.25.8"
             }
 
             repositories {
