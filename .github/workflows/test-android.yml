@@ -172,14 +172,12 @@ jobs:
       - name: Build Android package (Shipping)
         id: build-android-shipping
         env:
-          SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY: true
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
           docker exec -w /workspace/checkout/sample \
             -e TMPDIR=/home/gh/.cache/tmp \
-            -e SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY="$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY" \
             -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             -e SENTRY_ORG="$SENTRY_ORG" \
             -e SENTRY_PROJECT="$SENTRY_PROJECT" \
