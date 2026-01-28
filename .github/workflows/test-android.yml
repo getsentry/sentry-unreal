@@ -168,7 +168,7 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
             -platform=Android \
-            -clientconfig=Development \
+            -clientconfig=Development+Shipping \
             -nop4 \
             -cook \
             -iterate \
