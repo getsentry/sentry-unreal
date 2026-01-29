@@ -150,17 +150,34 @@ jobs:
             mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
             cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "
 
-      - name: Build Android package
-        id: build-android
+      - name: Build Android package (Development)
+        id: build-android-dev
+        run: |
+          docker exec -w /workspace/checkout/sample \
+            -e TMPDIR=/home/gh/.cache/tmp \
+            unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+            -project=/workspace/checkout/sample/SentryPlayground.uproject \
+            -archivedirectory=/workspace/checkout/sample/Builds \
+            -platform=Android \
+            -clientconfig=Development \
+            -nop4 \
+            -cook \
+            -iterate \
+            -build \
+            -stage \
+            -prereqs \
+            -package \
+            -archive
+      
+      - name: Build Android package (Shipping)
+        id: build-android-shipping
         env:
-          SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY: true
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
           docker exec -w /workspace/checkout/sample \
             -e TMPDIR=/home/gh/.cache/tmp \
-            -e SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY="$SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY" \
             -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             -e SENTRY_ORG="$SENTRY_ORG" \
             -e SENTRY_PROJECT="$SENTRY_PROJECT" \
@@ -168,7 +185,8 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
             -platform=Android \
-            -clientconfig=Development \
+            -distribution \
+            -clientconfig=Shipping \
             -nop4 \
             -cook \
             -iterate \
@@ -186,7 +204,7 @@ jobs:
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect build logs on failure
-        if: ${{ always() && steps.build-android.outcome == 'failure' }}
+        if: ${{ always() && (steps.build-android-dev.outcome == 'failure' || steps.build-android-shipping.outcome == 'failure') }}
         uses: actions/upload-artifact@v4
         with:
           name: UE ${{ inputs.unreal-version }} Android build logs
@@ -194,7 +212,7 @@ jobs:
             checkout/sample/Saved/Logs
 
       - name: Upload Android build
-        if: ${{ success() && steps.build-android.outcome == 'success' }}
+        if: ${{ success() && (steps.build-android-dev.outcome == 'success' && steps.build-android-shipping.outcome == 'success') }}
         uses: actions/upload-artifact@v4
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Android)
