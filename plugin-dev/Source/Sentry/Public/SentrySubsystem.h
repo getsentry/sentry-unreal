@@ -6,6 +6,7 @@
 #include "Subsystems/EngineSubsystem.h"
 
 #include "SentryDataTypes.h"
+#include "SentryMeasurementUnit.h"
 #include "SentryScope.h"
 #include "SentryTransactionOptions.h"
 #include "SentryVariant.h"
@@ -202,6 +203,48 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Emits a Counter metric.
+	 * Counters track a value that can only be incremented.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to increment by (default 1.0).
+	 * @param Unit The unit of measurement for the metric value.
+	 * @param Attributes Structured attributes to attach to the metric.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void MetricCount(const FString& Key, float Value = 1.0f,
+		FSentryMeasurementUnit Unit = FSentryMeasurementUnit(),
+		const TMap<FString, FSentryVariant>& Attributes = TMap<FString, FSentryVariant>());
+
+	/**
+	 * Emits a Distribution metric.
+	 * Distributions track the statistical distribution of values.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to record.
+	 * @param Unit The unit of measurement for the metric value.
+	 * @param Attributes Structured attributes to attach to the metric.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void MetricDistribution(const FString& Key, float Value,
+		FSentryMeasurementUnit Unit = FSentryMeasurementUnit(),
+		const TMap<FString, FSentryVariant>& Attributes = TMap<FString, FSentryVariant>());
+
+	/**
+	 * Emits a Gauge metric.
+	 * Gauges track a value that can go up and down.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The current gauge value.
+	 * @param Unit The unit of measurement for the metric value.
+	 * @param Attributes Structured attributes to attach to the metric.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void MetricGauge(const FString& Key, float Value,
+		FSentryMeasurementUnit Unit = FSentryMeasurementUnit(),
+		const TMap<FString, FSentryVariant>& Attributes = TMap<FString, FSentryVariant>());
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.

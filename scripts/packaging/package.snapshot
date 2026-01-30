@@ -184,6 +184,7 @@ Source/Sentry/Private/SentryFeedback.cpp
 Source/Sentry/Private/SentryHint.cpp
 Source/Sentry/Private/SentryLibrary.cpp
 Source/Sentry/Private/SentryLog.cpp
+Source/Sentry/Private/SentryMeasurementUnit.cpp
 Source/Sentry/Private/SentryModule.cpp
 Source/Sentry/Private/SentryOutputDevice.cpp
 Source/Sentry/Private/SentrySamplingContext.cpp
@@ -238,6 +239,7 @@ Source/Sentry/Public/SentryHint.h
 Source/Sentry/Public/SentryImplWrapper.h
 Source/Sentry/Public/SentryLibrary.h
 Source/Sentry/Public/SentryLog.h
+Source/Sentry/Public/SentryMeasurementUnit.h
 Source/Sentry/Public/SentryModule.h
 Source/Sentry/Public/SentryOutputDevice.h
 Source/Sentry/Public/SentrySamplingContext.h

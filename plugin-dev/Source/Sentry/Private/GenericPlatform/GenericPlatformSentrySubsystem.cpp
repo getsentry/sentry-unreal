@@ -524,6 +524,21 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 	}
 }
 
+void FGenericPlatformSentrySubsystem::AddMetricCounter(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not supported on this platform."));
+}
+
+void FGenericPlatformSentrySubsystem::AddMetricDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not supported on this platform."));
+}
+
+void FGenericPlatformSentrySubsystem::AddMetricGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not supported on this platform."));
+}
+
 void FGenericPlatformSentrySubsystem::ClearBreadcrumbs()
 {
 	// Not implemented in sentry-native

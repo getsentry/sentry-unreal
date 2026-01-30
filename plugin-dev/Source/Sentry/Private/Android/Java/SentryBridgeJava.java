@@ -39,6 +39,7 @@ import io.sentry.SentryLogEvent;
 import io.sentry.SentryLogEventAttributeValue;
 import io.sentry.logger.SentryLogParameters;
 import io.sentry.SentryLogLevel;
+import io.sentry.metrics.SentryMetricsParameters;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
@@ -347,6 +348,31 @@ public class SentryBridgeJava {
         }
 
 		return value;
+	}
+
+	public static void metricCount(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {
+		String effectiveUnit = (unit != null && !unit.isEmpty()) ? unit : null;
+		SentryMetricsParameters params = createMetricsParams(attributesMap);
+		Sentry.metrics().count(key, value, effectiveUnit, params);
+	}
+
+	public static void metricDistribution(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {
+		String effectiveUnit = (unit != null && !unit.isEmpty()) ? unit : null;
+		SentryMetricsParameters params = createMetricsParams(attributesMap);
+		Sentry.metrics().distribution(key, value, effectiveUnit, params);
+	}
+
+	public static void metricGauge(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {
+		String effectiveUnit = (unit != null && !unit.isEmpty()) ? unit : null;
+		SentryMetricsParameters params = createMetricsParams(attributesMap);
+		Sentry.metrics().gauge(key, value, effectiveUnit, params);
+	}
+
+	private static SentryMetricsParameters createMetricsParams(final HashMap<String, Object> attributesMap) {
+		if (attributesMap == null || attributesMap.isEmpty()) {
+			return SentryMetricsParameters.create((Map<String, Object>) null);
+		}
+		return SentryMetricsParameters.create(attributesMap);
 	}
 
 	public static void removeLogAttribute(final SentryLogEvent logEvent, final String key) {

@@ -289,6 +289,36 @@ void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap
 	AddLog(Message, ESentryLevel::Fatal, Attributes, Category);
 }
 
+void USentrySubsystem::MetricCount(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddMetricCounter(Key, Value, Unit.ToString(), Attributes);
+}
+
+void USentrySubsystem::MetricDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddMetricDistribution(Key, Value, Unit.ToString(), Attributes);
+}
+
+void USentrySubsystem::MetricGauge(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddMetricGauge(Key, Value, Unit.ToString(), Attributes);
+}
+
 void USentrySubsystem::ClearBreadcrumbs()
 {
 	check(SubsystemNativeImpl);
