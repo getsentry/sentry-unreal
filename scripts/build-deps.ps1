@@ -133,7 +133,7 @@ function buildSentryCocoaIos()
 
     # Extract the built XCFramework
     $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-ios"
-    extractXCFramework "$CocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
+    extractXCFramework "$CocoaPath/XCFrameworkBuildPath/Sentry-Dynamic.xcframework.zip" $tempExtractDir
 
     # Prepare output directories
     $iosOutDir = "$outDir/IOS"
@@ -198,7 +198,7 @@ function buildSentryCocoaMac()
 
     # Extract the built XCFramework
     $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-mac"
-    extractXCFramework "$CocoaPath/Carthage/Sentry-Dynamic.xcframework.zip" $tempExtractDir
+    extractXCFramework "$CocoaPath/XCFrameworkBuildPath/Sentry-Dynamic.xcframework.zip" $tempExtractDir
 
     # Prepare output directories
     $macOutDir = "$outDir/Mac"
