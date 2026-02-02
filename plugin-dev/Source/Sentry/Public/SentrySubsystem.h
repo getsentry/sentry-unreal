@@ -211,12 +211,20 @@ public:
 	 * @param Key The name of the metric.
 	 * @param Value The value to increment by (default 1.0).
 	 * @param Unit The unit of measurement for the metric value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddCount(const FString& Key, float Value = 1.0f, FSentryMeasurementUnit Unit = FSentryMeasurementUnit());
+
+	/**
+	 * Emits a Counter metric with attributes.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to increment by.
+	 * @param Unit The unit of measurement for the metric value.
 	 * @param Attributes Structured attributes to attach to the metric.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
-	void MetricCount(const FString& Key, float Value = 1.0f,
-		FSentryMeasurementUnit Unit = FSentryMeasurementUnit(),
-		const TMap<FString, FSentryVariant>& Attributes = TMap<FString, FSentryVariant>());
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddCountWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
 	 * Emits a Distribution metric.
@@ -225,12 +233,20 @@ public:
 	 * @param Key The name of the metric.
 	 * @param Value The value to record.
 	 * @param Unit The unit of measurement for the metric value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit = FSentryMeasurementUnit());
+
+	/**
+	 * Emits a Distribution metric with attributes.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to record.
+	 * @param Unit The unit of measurement for the metric value.
 	 * @param Attributes Structured attributes to attach to the metric.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
-	void MetricDistribution(const FString& Key, float Value,
-		FSentryMeasurementUnit Unit = FSentryMeasurementUnit(),
-		const TMap<FString, FSentryVariant>& Attributes = TMap<FString, FSentryVariant>());
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddDistributionWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
 	 * Emits a Gauge metric.
@@ -239,12 +255,20 @@ public:
 	 * @param Key The name of the metric.
 	 * @param Value The current gauge value.
 	 * @param Unit The unit of measurement for the metric value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddGauge(const FString& Key, float Value, FSentryMeasurementUnit Unit = FSentryMeasurementUnit());
+
+	/**
+	 * Emits a Gauge metric with attributes.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The current gauge value.
+	 * @param Unit The unit of measurement for the metric value.
 	 * @param Attributes Structured attributes to attach to the metric.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
-	void MetricGauge(const FString& Key, float Value,
-		FSentryMeasurementUnit Unit = FSentryMeasurementUnit(),
-		const TMap<FString, FSentryVariant>& Attributes = TMap<FString, FSentryVariant>());
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddGaugeWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.

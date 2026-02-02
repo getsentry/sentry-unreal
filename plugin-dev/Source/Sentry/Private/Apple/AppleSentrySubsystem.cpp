@@ -234,21 +234,21 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 	}
 }
 
-void FAppleSentrySubsystem::AddMetricCounter(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAppleSentrySubsystem::AddCount(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	// Expected API once sentry-cocoa adds ObjC metrics bridge:
 	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString() value:@(Value) unit:Unit.GetNSString() attributes:attributesDict];
 	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
 }
 
-void FAppleSentrySubsystem::AddMetricDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	// Expected API once sentry-cocoa adds ObjC metrics bridge:
 	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] distributionWithKey:Key.GetNSString() value:@(Value) unit:Unit.GetNSString() attributes:attributesDict];
 	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
 }
 
-void FAppleSentrySubsystem::AddMetricGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	// Expected API once sentry-cocoa adds ObjC metrics bridge:
 	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] gaugeWithKey:Key.GetNSString() value:@(Value) unit:Unit.GetNSString() attributes:attributesDict];

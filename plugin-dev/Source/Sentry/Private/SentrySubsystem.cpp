@@ -289,34 +289,49 @@ void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap
 	AddLog(Message, ESentryLevel::Fatal, Attributes, Category);
 }
 
-void USentrySubsystem::MetricCount(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+void USentrySubsystem::AddCount(const FString& Key, float Value, FSentryMeasurementUnit Unit)
 {
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddMetricCounter(Key, Value, Unit.ToString(), Attributes);
+	AddCountWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
 }
 
-void USentrySubsystem::MetricDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+void USentrySubsystem::AddCountWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
 
-	SubsystemNativeImpl->AddMetricDistribution(Key, Value, Unit.ToString(), Attributes);
+	SubsystemNativeImpl->AddCount(Key, Value, Unit.ToString(), Attributes);
 }
 
-void USentrySubsystem::MetricGauge(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+void USentrySubsystem::AddDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit)
+{
+	AddDistributionWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
+}
+
+void USentrySubsystem::AddDistributionWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
 
-	SubsystemNativeImpl->AddMetricGauge(Key, Value, Unit.ToString(), Attributes);
+	SubsystemNativeImpl->AddDistribution(Key, Value, Unit.ToString(), Attributes);
+}
+
+void USentrySubsystem::AddGauge(const FString& Key, float Value, FSentryMeasurementUnit Unit)
+{
+	AddGaugeWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
+}
+
+void USentrySubsystem::AddGaugeWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddGauge(Key, Value, Unit.ToString(), Attributes);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()

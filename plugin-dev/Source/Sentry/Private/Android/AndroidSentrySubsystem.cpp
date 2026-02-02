@@ -193,7 +193,7 @@ void FAndroidSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level,
 	}
 }
 
-void FAndroidSentrySubsystem::AddMetricCounter(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAndroidSentrySubsystem::AddCount(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricCount",
@@ -203,7 +203,7 @@ void FAndroidSentrySubsystem::AddMetricCounter(const FString& Key, float Value, 
 		attributesMap->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddMetricDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAndroidSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricDistribution",
@@ -213,7 +213,7 @@ void FAndroidSentrySubsystem::AddMetricDistribution(const FString& Key, float Va
 		attributesMap->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddMetricGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAndroidSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricGauge",
