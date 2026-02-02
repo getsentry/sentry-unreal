@@ -524,7 +524,7 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 	}
 }
 
-void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not supported on this platform."));
 }
