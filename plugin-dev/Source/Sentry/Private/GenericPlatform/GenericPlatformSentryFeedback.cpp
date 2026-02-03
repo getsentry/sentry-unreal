@@ -81,13 +81,16 @@ void FGenericPlatformSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment>
 
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
-	if (!platformAttachment->GetPath().IsEmpty())
+	if (platformAttachment)
 	{
-		AddFileAttachment(platformAttachment);
-	}
-	else
-	{
-		AddByteAttachment(platformAttachment);
+		if (!platformAttachment->GetPath().IsEmpty())
+		{
+			AddFileAttachment(platformAttachment);
+		}
+		else
+		{
+			AddByteAttachment(platformAttachment);
+		}
 	}
 }
 
