@@ -8,6 +8,8 @@
 #include "Android/AndroidSentryFeedback.h"
 #elif PLATFORM_APPLE
 #include "Apple/AppleSentryFeedback.h"
+#elif USE_SENTRY_NATIVE && PLATFORM_MICROSOFT
+#include "Microsoft/MicrosoftSentryFeedback.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryFeedback.h"
 #else

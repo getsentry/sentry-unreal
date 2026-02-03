@@ -6,6 +6,16 @@
 
 #if USE_SENTRY_NATIVE
 
+FMicrosoftSentryFeedback::FMicrosoftSentryFeedback()
+	: FGenericPlatformSentryFeedback()
+{
+}
+
+FMicrosoftSentryFeedback::FMicrosoftSentryFeedback(const FString& message)
+	: FGenericPlatformSentryFeedback(message)
+{
+}
+
 void FMicrosoftSentryFeedback::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment)
 {
 	sentry_attachment_t* nativeAttachment =

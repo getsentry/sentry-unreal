@@ -40,6 +40,8 @@ private:
 	sentry_value_t Feedback;
 };
 
+#if !PLATFORM_MICROSOFT
 typedef FGenericPlatformSentryFeedback FPlatformSentryFeedback;
+#endif
 
 #endif
