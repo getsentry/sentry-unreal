@@ -28,13 +28,13 @@ public:
 	virtual FString GetAssociatedEvent() const override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 
-	sentry_feedback_hint_t* GetHintNativeObject();
+	sentry_hint_t* GetHintNativeObject();
 
 protected:
 	virtual void AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment);
 	virtual void AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment);
 
-	sentry_feedback_hint_t* Hint;
+	sentry_hint_t* Hint;
 
 private:
 	sentry_value_t Feedback;

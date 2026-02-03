@@ -9,7 +9,7 @@
 void FMicrosoftSentryFeedback::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment)
 {
 	sentry_attachment_t* nativeAttachment =
-		sentry_feedback_hint_attach_filew(Hint, *attachment->GetPath());
+		sentry_hint_attach_filew(Hint, *attachment->GetPath());
 
 	if (!attachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filenamew(nativeAttachment, *attachment->GetFilename());
@@ -25,7 +25,7 @@ void FMicrosoftSentryFeedback::AddByteAttachment(TSharedPtr<FGenericPlatformSent
 	const TArray<uint8>& byteBuf = attachment->GetDataByRef();
 
 	sentry_attachment_t* nativeAttachment =
-		sentry_feedback_hint_attach_bytesw(Hint, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), *attachment->GetFilename());
+		sentry_hint_attach_bytesw(Hint, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), *attachment->GetFilename());
 
 	if (!attachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));

@@ -76,7 +76,7 @@ void FGenericPlatformSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment>
 {
 	if (!Hint)
 	{
-		Hint = sentry_feedback_hint_new();
+		Hint = sentry_hint_new();
 	}
 
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
@@ -91,7 +91,7 @@ void FGenericPlatformSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment>
 	}
 }
 
-sentry_feedback_hint_t* FGenericPlatformSentryFeedback::GetHintNativeObject()
+sentry_hint_t* FGenericPlatformSentryFeedback::GetHintNativeObject()
 {
 	return Hint;
 }
@@ -99,7 +99,7 @@ sentry_feedback_hint_t* FGenericPlatformSentryFeedback::GetHintNativeObject()
 void FGenericPlatformSentryFeedback::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment)
 {
 	sentry_attachment_t* nativeAttachment =
-		sentry_feedback_hint_attach_file(Hint, TCHAR_TO_UTF8(*attachment->GetPath()));
+		sentry_hint_attach_file(Hint, TCHAR_TO_UTF8(*attachment->GetPath()));
 
 	if (!attachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetFilename()));
@@ -115,7 +115,7 @@ void FGenericPlatformSentryFeedback::AddByteAttachment(TSharedPtr<FGenericPlatfo
 	const TArray<uint8>& byteBuf = attachment->GetDataByRef();
 
 	sentry_attachment_t* nativeAttachment =
-		sentry_feedback_hint_attach_bytes(Hint, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
+		sentry_hint_attach_bytes(Hint, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
 
 	if (!attachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
