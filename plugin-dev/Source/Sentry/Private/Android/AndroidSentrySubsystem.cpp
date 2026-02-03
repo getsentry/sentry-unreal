@@ -6,6 +6,7 @@
 #include "AndroidSentryBreadcrumb.h"
 #include "AndroidSentryEvent.h"
 #include "AndroidSentryFeedback.h"
+#include "AndroidSentryHint.h"
 #include "AndroidSentryId.h"
 #include "AndroidSentryTransaction.h"
 #include "AndroidSentryTransactionContext.h"
@@ -292,8 +293,10 @@ void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedba
 {
 	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);
 
-	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureFeedback", "(Lio/sentry/protocol/Feedback;)Lio/sentry/protocol/SentryId;",
-		feedbackAndroid->GetJObject());
+	TSharedPtr<FAndroidSentryHint> hintAndroid = feedbackAndroid->GetHint();
+
+	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureFeedback", "(Lio/sentry/protocol/Feedback;Lio/sentry/Hint;)Lio/sentry/protocol/SentryId;",
+		feedbackAndroid->GetJObject(), hintAndroid ? hintAndroid->GetJObject() : nullptr);
 }
 
 void FAndroidSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)

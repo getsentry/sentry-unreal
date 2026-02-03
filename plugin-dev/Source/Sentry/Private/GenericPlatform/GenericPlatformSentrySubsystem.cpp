@@ -651,7 +651,8 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 void FGenericPlatformSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FGenericPlatformSentryFeedback> Feedback = StaticCastSharedPtr<FGenericPlatformSentryFeedback>(feedback);
-	sentry_capture_feedback(Feedback->GetNativeObject());
+
+	sentry_capture_feedback_with_hint(Feedback->GetNativeObject(), Feedback->GetHintNativeObject());
 }
 
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
