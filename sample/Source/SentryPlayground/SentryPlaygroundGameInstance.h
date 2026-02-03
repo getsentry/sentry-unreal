@@ -20,9 +20,11 @@ public:
 	virtual void Init() override;
 
 private:
-	void RunIntegrationTest(const TCHAR* CommandLine);
-	void RunCrashTest();
+	void RunIntegrationTest(const FString& CommandLine);
+	void RunCrashTest(ESentryAppTerminationType CrashType);
 	void RunMessageTest();
+	void RunLogTest();
+	void RunInitOnly();
 
 	void ConfigureTestContext();
 

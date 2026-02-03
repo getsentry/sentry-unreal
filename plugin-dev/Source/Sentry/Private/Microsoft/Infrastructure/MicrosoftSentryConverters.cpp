@@ -1,12 +1,16 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "WindowsSentryConverters.h"
+#include "MicrosoftSentryConverters.h"
 
 #if USE_SENTRY_NATIVE
 
-/* static */ void FWindowsSentryConverters::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
+/* static */ void FMicrosoftSentryConverters::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
 {
 	EXCEPTION_RECORD* ExceptionRecord = crashContext->exception_ptrs.ExceptionRecord;
+	if (!ExceptionRecord)
+	{
+		return;
+	}
 
 	FString ErrorString = TEXT("Unhandled Exception: ");
 

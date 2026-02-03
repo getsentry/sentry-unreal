@@ -52,15 +52,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
 
-	FString MessageBuf = FString(buffer);
-
-#if !NO_LOGGING
-	const FName SentryCategoryName(LogSentrySdk.GetCategoryName());
-#else
-	const FName SentryCategoryName(TEXT("LogSentrySdk"));
-#endif
-
-	GLog->CategorizedLogf(SentryCategoryName, FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), *MessageBuf);
+	GLog->CategorizedLogf(TEXT("LogSentryInternal"), FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), StringCast<TCHAR>(buffer).Get());
 }
 
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
@@ -207,7 +199,14 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 {
 	if (isScreenshotAttachmentEnabled)
 	{
-		TryCaptureScreenshot();
+		if (IsScreenshotSupported())
+		{
+			TryCaptureScreenshot();
+		}
+		else
+		{
+			UE_LOG(LogSentrySdk, Verbose, TEXT("Screenshot capturing is not supported on the current platform"));
+		}
 	}
 
 	if (GIsGPUCrashed && isGpuDumpAttachmentEnabled)
@@ -244,6 +243,11 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 	}
 
 	return parent_sampled != nullptr ? *parent_sampled : 0.0;
+}
+
+bool FGenericPlatformSentrySubsystem::IsScreenshotSupported() const
+{
+	return false;
 }
 
 void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
@@ -344,7 +348,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	if (settings->UseProxy)
 	{
-		sentry_options_set_proxy(options, TCHAR_TO_ANSI(*settings->ProxyUrl));
+		sentry_options_set_proxy(options, TCHAR_TO_UTF8(*settings->ProxyUrl));
 	}
 
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
@@ -361,10 +365,10 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureCertsPath(options);
 	ConfigureNetworkConnectFunc(options);
 
-	sentry_options_set_dsn(options, TCHAR_TO_ANSI(*settings->GetEffectiveDsn()));
-	sentry_options_set_release(options, TCHAR_TO_ANSI(*settings->GetEffectiveRelease()));
-	sentry_options_set_environment(options, TCHAR_TO_ANSI(*settings->GetEffectiveEnvironment()));
-	sentry_options_set_dist(options, TCHAR_TO_ANSI(*settings->Dist));
+	sentry_options_set_dsn(options, TCHAR_TO_UTF8(*settings->GetEffectiveDsn()));
+	sentry_options_set_release(options, TCHAR_TO_UTF8(*settings->GetEffectiveRelease()));
+	sentry_options_set_environment(options, TCHAR_TO_UTF8(*settings->GetEffectiveEnvironment()));
+	sentry_options_set_dist(options, TCHAR_TO_UTF8(*settings->Dist));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
@@ -375,8 +379,9 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
-	sentry_options_set_logger_enabled_when_crashed(options, false);
+	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
+	sentry_options_set_logs_with_attributes(options, true);
 
 	if (settings->bRequireUserConsent)
 	{
@@ -478,46 +483,43 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
 }
 
-void FGenericPlatformSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Ignore Empty Bodies
-	if (Body.IsEmpty())
-	{
-		return;
-	}
+	FTCHARToUTF8 MessageUtf8(*Message);
 
-	// Format body with category if provided
-	FString FormattedMessage;
-	if (!Category.IsEmpty())
+	// Only create attributes object if we have per-log attributes.
+	// Passing null preserves global attributes set via SetAttribute().
+	sentry_value_t attributes;
+	if (Attributes.Num() > 0)
 	{
-		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
+		attributes = sentry_value_new_object();
+		for (auto it = Attributes.CreateConstIterator(); it; ++it)
+		{
+			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		}
 	}
 	else
 	{
-		FormattedMessage = Body;
+		attributes = sentry_value_new_null();
 	}
 
-	auto MessageCStrConverter = StringCast<ANSICHAR>(*FormattedMessage);
-	const char* MessageCStr = MessageCStrConverter.Get();
-
-	// Use level-specific sentry logging functions
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		sentry_log_fatal(MessageCStr);
+		sentry_log_fatal(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Error:
-		sentry_log_error(MessageCStr);
+		sentry_log_error(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Warning:
-		sentry_log_warn(MessageCStr);
+		sentry_log_warn(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Info:
-		sentry_log_info(MessageCStr);
+		sentry_log_info(MessageUtf8.Get(), attributes);
 		break;
 	case ESentryLevel::Debug:
 	default:
-		sentry_log_debug(MessageCStr);
+		sentry_log_debug(MessageUtf8.Get(), attributes);
 		break;
 	}
 }
@@ -637,7 +639,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
 
-	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_ANSI(*type), TCHAR_TO_ANSI(*message));
+	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_UTF8(*type), TCHAR_TO_UTF8(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
 	sentry_value_set_stacktrace(exceptionEvent, nullptr, 0);
@@ -712,6 +714,17 @@ void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
 	}
 }
 
+void FGenericPlatformSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	sentry_value_t attribute = FGenericPlatformSentryConverters::VariantToAttributeNative(value);
+	sentry_set_attribute(TCHAR_TO_UTF8(*key), attribute);
+}
+
+void FGenericPlatformSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	sentry_remove_attribute(TCHAR_TO_UTF8(*key));
+}
+
 void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)
 {
 	sentry_set_level(FGenericPlatformSentryConverters::SentryLevelToNative(level));
@@ -748,6 +761,11 @@ EUserConsent FGenericPlatformSentrySubsystem::GetUserConsent() const
 	default:
 		return EUserConsent::Unknown;
 	}
+}
+
+bool FGenericPlatformSentrySubsystem::IsUserConsentRequired() const
+{
+	return sentry_user_consent_is_required() == 1;
 }
 
 TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)
@@ -815,7 +833,7 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 {
 	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("<unlabeled transaction>"), TEXT("default")));
 
-	sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "sentry-trace", TCHAR_TO_ANSI(*sentryTrace));
+	sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "sentry-trace", TCHAR_TO_UTF8(*sentryTrace));
 
 	// currently `sentry-native` doesn't have API for `sentry_transaction_context_t` to set `baggageHeaders`
 

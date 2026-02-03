@@ -42,6 +42,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, EnableAutoCrashCapturing(true)
 	, DatabaseLocation(ESentryDatabaseLocation::ProjectUserDirectory)
 	, CrashpadWaitForUpload(false)
+	, EnableOnCrashLogging(false)
 	, InAppInclude()
 	, InAppExclude()
 	, EnableAppNotRespondingTracking(false)
@@ -62,6 +63,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, DiagnosticLevel(ESentryCliLogLevel::Info)
 	, UseLegacyGradlePlugin(false)
 	, CrashReporterUrl()
+	, EnableCrashReporterContextPropagation(true)
 	, bRequireUserConsent(false)
 	, bDefaultUserConsentGiven(true)
 	, bIsDirty(false)
@@ -91,7 +93,8 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, IncludeSources) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseLegacyGradlePlugin) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, DiagnosticLevel) ||
-		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl))
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterContextPropagation))
 	{
 		return;
 	}

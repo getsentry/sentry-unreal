@@ -26,6 +26,7 @@
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
+#include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
 
 #include "Interface/SentrySubsystemInterface.h"
@@ -240,62 +241,52 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 
 void USentrySubsystem::LogDebug(const FString& Message, const FString& Category)
 {
-	check(SubsystemNativeImpl);
+	AddLog(Message, ESentryLevel::Debug, TMap<FString, FSentryVariant>(), Category);
+}
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Debug, Category);
+void USentrySubsystem::LogDebugWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	AddLog(Message, ESentryLevel::Debug, Attributes, Category);
 }
 
 void USentrySubsystem::LogInfo(const FString& Message, const FString& Category)
 {
-	check(SubsystemNativeImpl);
+	AddLog(Message, ESentryLevel::Info, TMap<FString, FSentryVariant>(), Category);
+}
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Info, Category);
+void USentrySubsystem::LogInfoWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	AddLog(Message, ESentryLevel::Info, Attributes, Category);
 }
 
 void USentrySubsystem::LogWarning(const FString& Message, const FString& Category)
 {
-	check(SubsystemNativeImpl);
+	AddLog(Message, ESentryLevel::Warning, TMap<FString, FSentryVariant>(), Category);
+}
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Warning, Category);
+void USentrySubsystem::LogWarningWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	AddLog(Message, ESentryLevel::Warning, Attributes, Category);
 }
 
 void USentrySubsystem::LogError(const FString& Message, const FString& Category)
 {
-	check(SubsystemNativeImpl);
+	AddLog(Message, ESentryLevel::Error, TMap<FString, FSentryVariant>(), Category);
+}
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Error, Category);
+void USentrySubsystem::LogErrorWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	AddLog(Message, ESentryLevel::Error, Attributes, Category);
 }
 
 void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
 {
-	check(SubsystemNativeImpl);
+	AddLog(Message, ESentryLevel::Fatal, TMap<FString, FSentryVariant>(), Category);
+}
 
-	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
-	{
-		return;
-	}
-
-	SubsystemNativeImpl->AddLog(Message, ESentryLevel::Fatal, Category);
+void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	AddLog(Message, ESentryLevel::Fatal, Attributes, Category);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()
@@ -551,6 +542,30 @@ void USentrySubsystem::RemoveTag(const FString& Key)
 	SubsystemNativeImpl->RemoveTag(Key);
 }
 
+void USentrySubsystem::SetAttribute(const FString& Key, const FSentryVariant& Value)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->SetAttribute(Key, Value);
+}
+
+void USentrySubsystem::RemoveAttribute(const FString& Key)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->RemoveAttribute(Key);
+}
+
 void USentrySubsystem::SetLevel(ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
@@ -621,6 +636,18 @@ EUserConsent USentrySubsystem::GetUserConsent() const
 	}
 
 	return SubsystemNativeImpl->GetUserConsent();
+}
+
+bool USentrySubsystem::IsUserConsentRequired() const
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return false;
+	}
+
+	return SubsystemNativeImpl->IsUserConsentRequired();
 }
 
 USentryTransaction* USentrySubsystem::StartTransaction(const FString& Name, const FString& Operation, bool BindToScope)
@@ -994,7 +1021,9 @@ void USentrySubsystem::ConfigureOutputDevice()
 	if (OutputDevice)
 	{
 		GLog->AddOutputDevice(OutputDevice.Get());
+#if UE_VERSION_OLDER_THAN(5, 7, 0)
 		GLog->SerializeBacklog(OutputDevice.Get());
+#endif
 	}
 }
 
@@ -1009,6 +1038,36 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 			SubsystemNativeImpl->HandleAssert();
 		});
 		GError = OutputDeviceError.Get();
+	}
+}
+
+void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (Message.IsEmpty())
+	{
+		return;
+	}
+
+	if (!Category.IsEmpty())
+	{
+		const FString FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Message);
+
+		TMap<FString, FSentryVariant> FinalAttributes = Attributes;
+		if (!Attributes.Contains(TEXT("category")))
+		{
+			FinalAttributes.Add(TEXT("category"), Category);
+		}
+
+		SubsystemNativeImpl->AddLog(FormattedMessage, Level, FinalAttributes);
+	}
+	else
+	{
+		SubsystemNativeImpl->AddLog(Message, Level, Attributes);
 	}
 }
 

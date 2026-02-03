@@ -334,12 +334,16 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process."))
 	bool CrashpadWaitForUpload;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use."))
+	bool EnableOnCrashLogging;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
 		Meta = (DisplayName = "In-app includes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that belong to the app."))
 	TArray<FString> InAppInclude;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
-		Meta = (DisplayName = "In-app excludes (for Android/Apple only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
+		Meta = (DisplayName = "In-app excludes (for Android only)", Tooltip = "A list of string prefixes of module names that don't belong to the app."))
 	TArray<FString> InAppExclude;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
@@ -416,6 +420,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
 		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
+		Meta = (DisplayName = "Allow Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Crash Reporter."))
+	bool EnableCrashReporterContextPropagation;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Consent",
 		Meta = (DisplayName = "Require User Consent (for Windows/Linux only)", ToolTip = "True if user's consent is required before uploading crash data. Currently this feature is supported for Windows and Linux only."))

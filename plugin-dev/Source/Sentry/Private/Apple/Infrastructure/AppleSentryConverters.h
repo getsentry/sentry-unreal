@@ -16,7 +16,7 @@ class FAppleSentryConverters
 public:
 	/** Conversions to native Mac/iOS types */
 	static SentryLevel SentryLevelToNative(ESentryLevel level);
-	static SentryStructuredLogLevel SentryStructuredLogLevelToNative(ESentryLevel level);
+	static SentryLogLevel SentryLogLevelToNative(ESentryLevel level);
 	static NSDictionary* StringMapToNative(const TMap<FString, FString>& map);
 	static NSArray* StringArrayToNative(const TArray<FString>& array);
 	static NSData* ByteDataToNative(const TArray<uint8>& array);
@@ -24,10 +24,11 @@ public:
 	static NSArray* VariantArrayToNative(const TArray<FSentryVariant>& variantArray);
 	static NSDictionary* VariantMapToNative(const TMap<FString, FSentryVariant>& variantMap);
 	static SentryStacktrace* CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
+	static SentryAttribute* VariantToAttributeNative(const FSentryVariant& variant);
 
 	/** Conversions from native Mac/iOS types */
 	static ESentryLevel SentryLevelToUnreal(SentryLevel level);
-	static ESentryLevel SentryStructuredLogLevelToUnreal(SentryStructuredLogLevel level);
+	static ESentryLevel SentryLogLevelToUnreal(SentryLogLevel level);
 	static TMap<FString, FString> StringMapToUnreal(NSDictionary* dict);
 	static TArray<FString> StringArrayToUnreal(NSArray* array);
 	static TArray<uint8> ByteDataToUnreal(NSData* data);
@@ -37,4 +38,5 @@ public:
 
 	/** Other conversions */
 	static SentryLevel StringToSentryLevel(NSString* string);
+	static FSentryVariant SentryAttributeToVariant(SentryAttribute* attribute);
 };

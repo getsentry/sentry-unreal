@@ -25,7 +25,7 @@ public:
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override;
-	virtual void AddLog(const FString& Body, ESentryLevel Level, const FString& Category) override;
+	virtual void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes) override;
 	virtual void ClearBreadcrumbs() override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override;
@@ -41,12 +41,15 @@ public:
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;
+	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;
+	virtual void RemoveAttribute(const FString& key) override;
 	virtual void SetLevel(ESentryLevel level) override;
 	virtual void StartSession() override;
 	virtual void EndSession() override;
 	virtual void GiveUserConsent() override;
 	virtual void RevokeUserConsent() override;
 	virtual EUserConsent GetUserConsent() const override;
+	virtual bool IsUserConsentRequired() const override;
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation, bool bindToScope) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context, bool bindToScope) override;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope) override;
@@ -80,6 +83,8 @@ protected:
 	virtual sentry_value_t OnBeforeLog(sentry_value_t log, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
+
+	virtual bool IsScreenshotSupported() const;
 
 	void InitCrashReporter(const FString& release, const FString& environment);
 

@@ -26,23 +26,17 @@ jobs:
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground/Plugins/sentry/Binaries/Linux/crashpad_handler
 
-      - name: Install Pester
-        shell: pwsh
-        run: |
-          Install-Module -Name Pester -Force -SkipPublisherCheck
-
       - name: Run integration tests
         id: run-integration-tests
         shell: pwsh
+        working-directory: integration-test
         env:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground.sh
         run: |
-          cd integration-test
-          mkdir build
           cmake -B build -S .
-          Invoke-Pester Integration.Tests.ps1 -CI
+          Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}

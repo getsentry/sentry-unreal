@@ -33,7 +33,12 @@ import io.sentry.exception.ExceptionMechanismException;
 import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
+import io.sentry.SentryAttributeType;
+import io.sentry.SentryAttributes;
 import io.sentry.SentryLogEvent;
+import io.sentry.SentryLogEventAttributeValue;
+import io.sentry.logger.SentryLogParameters;
+import io.sentry.SentryLogLevel;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
@@ -97,11 +102,11 @@ public class SentryBridgeJava {
 							}
 						});
 					}
-                    if (settingJson.has("beforeSendHandler")) {
+					if (settingJson.has("beforeSendHandler")) {
 						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
 								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), settingJson.getLong("beforeSendHandler")));
 					}
-                    else {
+					else {
 						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
 								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot")));
 					}
@@ -257,24 +262,102 @@ public class SentryBridgeJava {
 		Sentry.getGlobalScope().clearAttachments();
 	}
 
-	public static void addLogFatal(final String message) {
-		Sentry.logger().fatal(message);
+	public static void addLogFatal(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.FATAL, message, attributesMap);
 	}
 
-	public static void addLogError(final String message) {
-		Sentry.logger().error(message);
+	public static void addLogError(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.ERROR, message, attributesMap);
 	}
 
-	public static void addLogWarn(final String message) {
-		Sentry.logger().warn(message);
+	public static void addLogWarn(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.WARN, message, attributesMap);
 	}
 
-	public static void addLogInfo(final String message) {
-		Sentry.logger().info(message);
+	public static void addLogInfo(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.INFO, message, attributesMap);
 	}
 
-	public static void addLogDebug(final String message) {
-		Sentry.logger().debug(message);
+	public static void addLogDebug(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.DEBUG, message, attributesMap);
+	}
+
+	private static void addLog(final SentryLogLevel level, final String message, final HashMap<String, Object> attributesMap) {
+		if (attributesMap != null && !attributesMap.isEmpty()) {
+			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+			SentryLogParameters params = SentryLogParameters.create(attributes);
+			Sentry.logger().log(level, params, message);
+		} else {
+			Sentry.logger().log(level, message);
+		}
+	}
+
+	public static void setLogAttribute(final SentryLogEvent logEvent, final String key, final Object value) {
+		if (logEvent == null || key == null || value == null) {
+			return;
+		}
+
+		SentryLogEventAttributeValue attributeValue;
+
+		if (value instanceof String) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value);
+		} else if (value instanceof Integer) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.INTEGER, value);
+		} else if (value instanceof Boolean) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.BOOLEAN, value);
+		} else if (value instanceof Float) {
+            // Unreal's variant doesn't support Double so manual conversion is required
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
+		} else {
+			// Unsupported type (e.g. ArrayList, HashMap) - convert to JSON string for consistency with other platforms
+			String jsonString;
+			if (value instanceof java.util.List) {
+				jsonString = new JSONArray((java.util.List<?>) value).toString();
+			} else if (value instanceof java.util.Map) {
+				jsonString = new JSONObject((java.util.Map<?, ?>) value).toString();
+			} else {
+				jsonString = value.toString();
+			}
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, jsonString);
+		}
+
+		logEvent.setAttribute(key, attributeValue);
+	}
+
+	public static Object getLogAttribute(final SentryLogEvent logEvent, final String key) {
+		if (logEvent == null || key == null) {
+			return null;
+		}
+
+		Map<String, SentryLogEventAttributeValue> attributes = logEvent.getAttributes();
+		if (attributes == null) {
+			return null;
+		}
+
+		SentryLogEventAttributeValue attributeValue = attributes.get(key);
+		if (attributeValue == null) {
+			return null;
+		}
+
+        Object value = attributeValue.getValue();
+
+        if (value instanceof Double) {
+            // Unreal's variant doesn't support Double so manual conversion is required
+            return ((Double) attributeValue.getValue()).floatValue();
+        }
+
+		return value;
+	}
+
+	public static void removeLogAttribute(final SentryLogEvent logEvent, final String key) {
+		if (logEvent == null || key == null) {
+			return;
+		}
+
+		Map<String, SentryLogEventAttributeValue> attributes = logEvent.getAttributes();
+		if (attributes != null) {
+			attributes.remove(key);
+		}
 	}
 
 	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
@@ -323,11 +406,11 @@ public class SentryBridgeJava {
 				}
 			}
 
-            if (beforeSendAddr != 0) {
+			if (beforeSendAddr != 0) {
 				return onBeforeSend(beforeSendAddr, event, hint);
 			}
-            return event;
-        }
+			return event;
+		}
 	}
 
 	private static class SentryUnrealBeforeLogCallback implements SentryOptions.Logs.BeforeSendLogCallback {

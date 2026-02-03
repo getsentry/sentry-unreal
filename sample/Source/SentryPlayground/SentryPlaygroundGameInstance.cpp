@@ -18,20 +18,26 @@ void USentryPlaygroundGameInstance::Init()
 {
 	Super::Init();
 
-	const TCHAR* CommandLine = FCommandLine::Get();
+	FString CommandLine = FCommandLine::Get();
+
+	UE_LOG(LogSentrySample, Display, TEXT("Starting app with commandline: %s\n"), *CommandLine);
 
 	// Check for expected test parameters to decide between running integration tests
 	// or launching the sample app with UI for manual testing
-	if (FParse::Param(FCommandLine::Get(), TEXT("crash-capture")) || 
-		FParse::Param(FCommandLine::Get(), TEXT("message-capture")))
+	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
+		FParse::Param(*CommandLine, TEXT("crash-stack-overflow")) ||
+		FParse::Param(*CommandLine, TEXT("crash-memory-corruption")) ||
+		FParse::Param(*CommandLine, TEXT("message-capture")) ||
+		FParse::Param(*CommandLine, TEXT("log-capture")) ||
+		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
 	}
 }
 
-void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
+void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLine)
 {
-	UE_LOG(LogSentrySample, Display, TEXT("Running integration test for command: %s\n"), CommandLine);
+	UE_LOG(LogSentrySample, Display, TEXT("Running integration test for command: %s\n"), *CommandLine);
 
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 	if (!SentrySubsystem)
@@ -39,16 +45,6 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 		CompleteTestWithResult(TEXT("sentry-error"), false, TEXT("Invalid Sentry subsystem"));
 		return;
 	}
-
-	SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
-	{
-		// Override options set in config file if needed
-		FString Dsn;
-		if (FParse::Value(CommandLine, TEXT("dsn="), Dsn))
-		{
-			Settings->Dsn = Dsn;
-		}
-	}));
 
 	if (!SentrySubsystem->IsEnabled())
 	{
@@ -64,17 +60,33 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const TCHAR* CommandLine)
 	SentrySubsystem->AddBreadcrumbWithParams(
 		TEXT("Context configuration finished"), TEXT("Test"), TEXT("info"), TMap<FString, FSentryVariant>(), ESentryLevel::Info);
 
-	if (FParse::Param(CommandLine, TEXT("crash-capture")))
+	if (FParse::Param(*CommandLine, TEXT("crash-capture")))
 	{
-		RunCrashTest();
+		RunCrashTest(ESentryAppTerminationType::NullPointer);
 	}
-	else if (FParse::Param(CommandLine, TEXT("message-capture")))
+	else if (FParse::Param(*CommandLine, TEXT("crash-stack-overflow")))
+	{
+		RunCrashTest(ESentryAppTerminationType::StackOverflow);
+	}
+	else if (FParse::Param(*CommandLine, TEXT("crash-memory-corruption")))
+	{
+		RunCrashTest(ESentryAppTerminationType::MemoryCorruption);
+	}
+	else if (FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
 		RunMessageTest();
 	}
+	else if (FParse::Param(*CommandLine, TEXT("log-capture")))
+	{
+		RunLogTest();
+	}
+	else if (FParse::Param(*CommandLine, TEXT("init-only")))
+	{
+		RunInitOnly();
+	}
 }
 
-void USentryPlaygroundGameInstance::RunCrashTest()
+void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType CrashType)
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
@@ -83,14 +95,23 @@ void USentryPlaygroundGameInstance::RunCrashTest()
 
 	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#else
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#endif
 
 	// Flush logs to ensure output is captured before crash
 	GLog->Flush();
 
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
-	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::NullPointer);
+#if PLATFORM_ANDROID
+	FPlatformProcess::Sleep(1.0f);
+#endif
+
+	USentryPlaygroundUtils::Terminate(CrashType);
 }
 
 void USentryPlaygroundGameInstance::RunMessageTest()
@@ -110,6 +131,40 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	SentrySubsystem->Close();
 
 	CompleteTestWithResult(TEXT("message-capture"), !EventId.IsEmpty(), TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunLogTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	const FString LogMessage = TEXT("Integration test structured log");
+	const FString LogCategory = TEXT("LogSentryTest");
+
+	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	TMap<FString, FSentryVariant> Attributes;
+	Attributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+
+	SentrySubsystem->LogWarningWithAttributes(LogMessage, Attributes, LogCategory);
+
+	UE_LOG(LogSentrySample, Display, TEXT("LOG_TRIGGERED: %s\n"), *TestId);
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	FPlatformProcess::Sleep(1.0f);
+
+	CompleteTestWithResult(TEXT("log-capture"), true, TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunInitOnly()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	CompleteTestWithResult(TEXT("init-only"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::ConfigureTestContext()

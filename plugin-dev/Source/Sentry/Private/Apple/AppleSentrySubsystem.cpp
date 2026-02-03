@@ -64,7 +64,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
-			options.experimental.enableLogs = settings->EnableStructuredLogging;
+			options.enableLogs = settings->EnableStructuredLogging;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
@@ -85,10 +85,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
-			}
-			for (auto it = settings->InAppExclude.CreateConstIterator(); it; ++it)
-			{
-				[options addInAppExclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
@@ -170,6 +166,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 
 void FAppleSentrySubsystem::Close()
 {
+	[SENTRY_APPLE_CLASS(SentrySDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentrySDK) close];
 }
 
@@ -202,44 +199,37 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	[SENTRY_APPLE_CLASS(SentrySDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
-void FAppleSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Ignore Empty Bodies
-	if (Body.IsEmpty())
+	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
+
+	for (const auto& pair : Attributes)
 	{
-		return;
+		SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+		if (attribute != nil)
+		{
+			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+		}
 	}
 
-	// Format body with category
-	NSString* FormattedMessage;
-	if (!Category.IsEmpty())
-	{
-		FString FullMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
-		FormattedMessage = FullMessage.GetNSString();
-	}
-	else
-	{
-		FormattedMessage = Body.GetNSString();
-	}
-
-	// Use level-specific Apple Sentry SDK logging functions
+	// Use level-specific Apple Sentry SDK logging functions with attributes
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] fatal:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] fatal:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Error:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] error:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] error:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Warning:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] warn:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] warn:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Info:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] info:Message.GetNSString() attributes:attributesDict];
 		break;
 	case ESentryLevel::Debug:
 	default:
-		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:FormattedMessage];
+		[[SENTRY_APPLE_CLASS(SentrySDK) logger] debug:Message.GetNSString() attributes:attributesDict];
 		break;
 	}
 }
@@ -380,6 +370,21 @@ void FAppleSentrySubsystem::RemoveTag(const FString& key)
 	}];
 }
 
+void FAppleSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		id attrValue = FAppleSentryConverters::VariantToNative(value);
+		[scope setAttributeValue:attrValue forKey:key.GetNSString()];
+	}];
+}
+
+void FAppleSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		[scope removeAttributeForKey:key.GetNSString()];
+	}];
+}
+
 void FAppleSentrySubsystem::SetLevel(ESentryLevel level)
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
@@ -413,6 +418,12 @@ EUserConsent FAppleSentrySubsystem::GetUserConsent() const
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("GetUserConsent is not supported on Mac/iOS. Returning default `Unknown` value."));
 	return EUserConsent::Unknown;
+}
+
+bool FAppleSentrySubsystem::IsUserConsentRequired() const
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("IsUserConsentRequired is not supported on Mac/iOS. Returning default `false` value."));
+	return false;
 }
 
 TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)
@@ -499,7 +510,7 @@ void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> event
 
 	SentryId* id = StaticCastSharedPtr<FAppleSentryId>(eventId)->GetNativeObject();
 
-	SentryEnvelopeHeader* envelopeHeader = [[SENTRY_APPLE_CLASS(SentryEnvelopeHeader) alloc] initWithId:id sdkInfo:nil traceContext:nil];
+	SentryEnvelopeHeader* envelopeHeader = [[SENTRY_APPLE_CLASS(SentryEnvelopeHeader) alloc] initWithId:id traceContext:nil];
 
 	SentryEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryEnvelope) alloc] initWithHeader:envelopeHeader singleItem:envelopeItem];
 

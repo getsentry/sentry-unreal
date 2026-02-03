@@ -4,6 +4,8 @@
 
 #if USE_SENTRY_NATIVE
 
+#include "Infrastructure/GenericPlatformSentryConverters.h"
+
 FGenericPlatformSentryLog::FGenericPlatformSentryLog()
 {
 	Log = sentry_value_new_object();
@@ -35,8 +37,7 @@ void FGenericPlatformSentryLog::SetBody(const FString& body)
 FString FGenericPlatformSentryLog::GetBody() const
 {
 	sentry_value_t body = sentry_value_get_by_key(Log, "body");
-	const char* bodyStr = sentry_value_as_string(body);
-	return FString(bodyStr ? bodyStr : "");
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(body)));
 }
 
 void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
@@ -71,11 +72,6 @@ ESentryLevel FGenericPlatformSentryLog::GetLevel() const
 	sentry_value_t levelValue = sentry_value_get_by_key(Log, "level");
 	const char* levelStr = sentry_value_as_string(levelValue);
 
-	if (!levelStr)
-	{
-		return ESentryLevel::Debug; // default
-	}
-
 	if (FCStringAnsi::Strcmp(levelStr, "fatal") == 0)
 		return ESentryLevel::Fatal;
 	else if (FCStringAnsi::Strcmp(levelStr, "error") == 0)
@@ -90,6 +86,81 @@ ESentryLevel FGenericPlatformSentryLog::GetLevel() const
 		return ESentryLevel::Debug;
 	else
 		return ESentryLevel::Debug; // default
+}
+
+void FGenericPlatformSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	sentry_value_t attributes = sentry_value_get_by_key(Log, "attributes");
+	if (sentry_value_is_null(attributes))
+	{
+		attributes = sentry_value_new_object();
+		sentry_value_set_by_key(Log, "attributes", attributes);
+	}
+
+	sentry_value_t attribute = FGenericPlatformSentryConverters::VariantToAttributeNative(value);
+	sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*key), attribute);
+}
+
+FSentryVariant FGenericPlatformSentryLog::GetAttribute(const FString& key) const
+{
+	sentry_value_t attributes = sentry_value_get_by_key(Log, "attributes");
+	if (sentry_value_is_null(attributes))
+	{
+		return FSentryVariant();
+	}
+
+	sentry_value_t attribute = sentry_value_get_by_key(attributes, TCHAR_TO_UTF8(*key));
+	if (sentry_value_is_null(attribute))
+	{
+		return FSentryVariant();
+	}
+
+	sentry_value_t attributeValue = sentry_value_get_by_key(attribute, "value");
+	return FGenericPlatformSentryConverters::VariantToUnreal(attributeValue);
+}
+
+bool FGenericPlatformSentryLog::TryGetAttribute(const FString& key, FSentryVariant& value) const
+{
+	sentry_value_t attributes = sentry_value_get_by_key(Log, "attributes");
+	if (sentry_value_is_null(attributes))
+	{
+		return false;
+	}
+
+	sentry_value_t attribute = sentry_value_get_by_key(attributes, TCHAR_TO_UTF8(*key));
+	if (sentry_value_is_null(attribute))
+	{
+		return false;
+	}
+
+	sentry_value_t attributeValue = sentry_value_get_by_key(attribute, "value");
+	if (sentry_value_is_null(attributeValue))
+	{
+		return false;
+	}
+
+	value = FGenericPlatformSentryConverters::VariantToUnreal(attributeValue);
+
+	return true;
+}
+
+void FGenericPlatformSentryLog::RemoveAttribute(const FString& key)
+{
+	sentry_value_t attributes = sentry_value_get_by_key(Log, "attributes");
+	if (sentry_value_is_null(attributes))
+	{
+		return;
+	}
+
+	sentry_value_remove_by_key(attributes, TCHAR_TO_UTF8(*key));
+}
+
+void FGenericPlatformSentryLog::AddAttributes(const TMap<FString, FSentryVariant>& attributes)
+{
+	for (const auto& pair : attributes)
+	{
+		SetAttribute(pair.Key, pair.Value);
+	}
 }
 
 #endif // USE_SENTRY_NATIVE

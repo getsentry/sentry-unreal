@@ -39,6 +39,26 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	ESentryLevel GetLevel() const;
 
+	/** Sets an attribute of the log. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetAttribute(const FString& Key, const FSentryVariant& Value);
+
+	/** Gets an attribute of the log. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	FSentryVariant GetAttribute(const FString& Key) const;
+
+	/** Tries to get an attribute of the log. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	bool TryGetAttribute(const FString& Key, FSentryVariant& Value) const;
+
+	/** Removes the attribute of the log with the specified key. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveAttribute(const FString& Key);
+
+	/** Adds attributes to the log. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddAttributes(const TMap<FString, FSentryVariant>& Attributes);
+
 private:
 	UPROPERTY()
 	FString Body;
