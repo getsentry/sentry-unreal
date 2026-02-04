@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add Metrics API support ([#1214](https://github.com/getsentry/sentry-unreal/pull/1214))
+
 ## 1.6.0
 
 ### Features
