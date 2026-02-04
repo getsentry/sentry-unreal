@@ -213,7 +213,7 @@ public:
 	 * @param Unit The unit of measurement for the metric value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddCount(const FString& Key, int32 Value = 1, FSentryMeasurementUnit Unit = FSentryMeasurementUnit());
+	void AddCount(const FString& Key, int32 Value, FSentryMeasurementUnit Unit);
 
 	/**
 	 * Emits a Counter metric with attributes.
@@ -235,7 +235,7 @@ public:
 	 * @param Unit The unit of measurement for the metric value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit = FSentryMeasurementUnit());
+	void AddDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit);
 
 	/**
 	 * Emits a Distribution metric with attributes.
@@ -257,7 +257,7 @@ public:
 	 * @param Unit The unit of measurement for the metric value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddGauge(const FString& Key, float Value, FSentryMeasurementUnit Unit = FSentryMeasurementUnit());
+	void AddGauge(const FString& Key, float Value, FSentryMeasurementUnit Unit);
 
 	/**
 	 * Emits a Gauge metric with attributes.
