@@ -382,6 +382,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
 	sentry_options_set_logs_with_attributes(options, true);
+	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 
 	if (settings->bRequireUserConsent)
 	{
@@ -526,17 +527,60 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 
 void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not supported on this platform."));
+	// Note: sentry-native's count API doesn't accept a unit parameter
+	sentry_value_t attributes;
+	if (Attributes.Num() > 0)
+	{
+		attributes = sentry_value_new_object();
+		for (auto it = Attributes.CreateConstIterator(); it; ++it)
+		{
+			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		}
+	}
+	else
+	{
+		attributes = sentry_value_new_null();
+	}
+
+	sentry_metrics_count(TCHAR_TO_UTF8(*Key), Value, attributes);
 }
 
 void FGenericPlatformSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not supported on this platform."));
+	sentry_value_t attributes;
+	if (Attributes.Num() > 0)
+	{
+		attributes = sentry_value_new_object();
+		for (auto it = Attributes.CreateConstIterator(); it; ++it)
+		{
+			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		}
+	}
+	else
+	{
+		attributes = sentry_value_new_null();
+	}
+
+	sentry_metrics_distribution(TCHAR_TO_UTF8(*Key), Value, Unit.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Unit), attributes);
 }
 
 void FGenericPlatformSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not supported on this platform."));
+	sentry_value_t attributes;
+	if (Attributes.Num() > 0)
+	{
+		attributes = sentry_value_new_object();
+		for (auto it = Attributes.CreateConstIterator(); it; ++it)
+		{
+			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
+		}
+	}
+	else
+	{
+		attributes = sentry_value_new_null();
+	}
+
+	sentry_metrics_gauge(TCHAR_TO_UTF8(*Key), Value, Unit.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Unit), attributes);
 }
 
 void FGenericPlatformSentrySubsystem::ClearBreadcrumbs()
