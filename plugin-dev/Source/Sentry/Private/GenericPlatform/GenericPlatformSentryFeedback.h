@@ -8,6 +8,8 @@
 
 #if USE_SENTRY_NATIVE
 
+class FGenericPlatformSentryAttachment;
+
 class FGenericPlatformSentryFeedback : public ISentryFeedback
 {
 public:
@@ -24,11 +26,22 @@ public:
 	virtual FString GetContactEmail() const override;
 	virtual void SetAssociatedEvent(const FString& eventId) override;
 	virtual FString GetAssociatedEvent() const override;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+
+	sentry_hint_t* GetHintNativeObject();
+
+protected:
+	virtual void AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment);
+	virtual void AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment);
+
+	sentry_hint_t* Hint;
 
 private:
 	sentry_value_t Feedback;
 };
 
+#if !PLATFORM_MICROSOFT
 typedef FGenericPlatformSentryFeedback FPlatformSentryFeedback;
+#endif
 
 #endif

@@ -152,7 +152,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 ### Common Instructions
 
-- New plugin features often wrap existing native SDK functionality. Before implementation, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple). Refer to `Native SDK API Lookup Order` in Quick References for where to find SDK APIs.
+- Before implementating new plugin features that wrap existing native SDK functionality, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple). Refer to `Native SDK API Lookup Order` in Quick References for where to find SDK APIs.
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
@@ -228,6 +228,8 @@ The integration test infrastructure is built on top of the [Pester](https://gith
 
 The exact version of the `app-runner` module used for testing is specified by a commit SHA in `integration-test/CMakeLists.txt`.
 
+If deeper insight into how the `app-runner` module works is required, use the `SENTRY_APP_RUNNER` environment variable to locate its source code.
+
 The integration tests expect the sample application to be pre-built using the `Development` configuration, as this is required for the application to generate the log files that the tests parse to verify output. The sample application logic is defined in `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp` and the test scenario triggered at startup is determined by command-line input arguments.
 
 Sample application output and data fetched from the Sentry API can be found in `integration-test/output` - these artifacts are useful for debugging and investigating test failures.
@@ -272,7 +274,7 @@ When implementing features that wrap native SDK functionality, check APIs in the
 
 ### Reading Environment Variables
 
-On Windwos, when checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
+On Windows, when checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
 
 ```powershell
 [System.Environment]::GetEnvironmentVariable('VAR_NAME')

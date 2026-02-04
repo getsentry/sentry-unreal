@@ -154,6 +154,8 @@ Source/Sentry/Private/Microsoft/Infrastructure/MicrosoftSentryConverters.cpp
 Source/Sentry/Private/Microsoft/Infrastructure/MicrosoftSentryConverters.h
 Source/Sentry/Private/Microsoft/MicrosoftSentryCrashLogger.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentryCrashLogger.h
+Source/Sentry/Private/Microsoft/MicrosoftSentryFeedback.cpp
+Source/Sentry/Private/Microsoft/MicrosoftSentryFeedback.h
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
