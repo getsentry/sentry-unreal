@@ -223,7 +223,7 @@ public:
 	 * @param Unit The unit of measurement for the metric value.
 	 * @param Attributes Structured attributes to attach to the metric.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void AddCountWithAttributes(const FString& Key, int32 Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
@@ -245,7 +245,7 @@ public:
 	 * @param Unit The unit of measurement for the metric value.
 	 * @param Attributes Structured attributes to attach to the metric.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void AddDistributionWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
@@ -267,7 +267,7 @@ public:
 	 * @param Unit The unit of measurement for the metric value.
 	 * @param Attributes Structured attributes to attach to the metric.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void AddGaugeWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
