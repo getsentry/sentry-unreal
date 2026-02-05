@@ -326,13 +326,11 @@ Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-i
 Source/ThirdParty/IOS/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.swiftinterface
 Source/ThirdParty/IOS/Sentry.framework/PrivacyInfo.xcprivacy
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryAsynchronousOperation.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryBaseIntegration.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryBreadcrumb+Private.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashReportConverter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryCrashReportSink.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryDateUtils.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFormatter.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryIntegrationProtocol.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryLogC.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
@@ -377,7 +375,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryAppStartMeasurement.h
 Source/ThirdParty/Mac/include/Sentry/SentryAsynchronousOperation.h
 Source/ThirdParty/Mac/include/Sentry/SentryAttachment.h
 Source/ThirdParty/Mac/include/Sentry/SentryBaggage.h
-Source/ThirdParty/Mac/include/Sentry/SentryBaseIntegration.h
 Source/ThirdParty/Mac/include/Sentry/SentryBreadcrumb.h
 Source/ThirdParty/Mac/include/Sentry/SentryBreadcrumb+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryCrashExceptionApplication.h
@@ -394,7 +391,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryFrame.h
 Source/ThirdParty/Mac/include/Sentry/SentryGeo.h
 Source/ThirdParty/Mac/include/Sentry/SentryHttpStatusCodeRange.h
 Source/ThirdParty/Mac/include/Sentry/SentryId.h
-Source/ThirdParty/Mac/include/Sentry/SentryIntegrationProtocol.h
 Source/ThirdParty/Mac/include/Sentry/SentryInternalSerializable.h
 Source/ThirdParty/Mac/include/Sentry/SentryLevel.h
 Source/ThirdParty/Mac/include/Sentry/SentryLogC.h
