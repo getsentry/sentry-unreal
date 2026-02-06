@@ -527,7 +527,7 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 
 void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
-	sentry_value_t attributes;
+	sentry_value_t attributes = sentry_value_new_null();
 	if (Attributes.Num() > 0)
 	{
 		attributes = sentry_value_new_object();
@@ -535,10 +535,6 @@ void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, 
 		{
 			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
 		}
-	}
-	else
-	{
-		attributes = sentry_value_new_null();
 	}
 
 	sentry_metrics_count(TCHAR_TO_UTF8(*Key), Value, attributes);
@@ -546,7 +542,7 @@ void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, 
 
 void FGenericPlatformSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	sentry_value_t attributes;
+	sentry_value_t attributes = sentry_value_new_null();
 	if (Attributes.Num() > 0)
 	{
 		attributes = sentry_value_new_object();
@@ -554,10 +550,6 @@ void FGenericPlatformSentrySubsystem::AddDistribution(const FString& Key, float 
 		{
 			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
 		}
-	}
-	else
-	{
-		attributes = sentry_value_new_null();
 	}
 
 	sentry_metrics_distribution(TCHAR_TO_UTF8(*Key), Value, Unit.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Unit), attributes);
@@ -565,7 +557,7 @@ void FGenericPlatformSentrySubsystem::AddDistribution(const FString& Key, float 
 
 void FGenericPlatformSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	sentry_value_t attributes;
+	sentry_value_t attributes = sentry_value_new_null();
 	if (Attributes.Num() > 0)
 	{
 		attributes = sentry_value_new_object();
@@ -573,10 +565,6 @@ void FGenericPlatformSentrySubsystem::AddGauge(const FString& Key, float Value, 
 		{
 			sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), FGenericPlatformSentryConverters::VariantToAttributeNative(it.Value()));
 		}
-	}
-	else
-	{
-		attributes = sentry_value_new_null();
 	}
 
 	sentry_metrics_gauge(TCHAR_TO_UTF8(*Key), Value, Unit.IsEmpty() ? nullptr : TCHAR_TO_UTF8(*Unit), attributes);
