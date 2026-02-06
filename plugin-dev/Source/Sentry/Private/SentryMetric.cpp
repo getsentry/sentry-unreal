@@ -8,7 +8,7 @@
 
 void USentryMetric::Initialize()
 {
-	NativeImpl = MakeShareable(new FPlatformSentryMetric);
+	NativeImpl = CreateSharedSentryMetric();
 }
 
 void USentryMetric::SetName(const FString& InName)
