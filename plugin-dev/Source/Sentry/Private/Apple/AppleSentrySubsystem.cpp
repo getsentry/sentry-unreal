@@ -236,49 +236,61 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 
 void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
-	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
-	for (const auto& pair : Attributes)
-	{
-		SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
-		if (attribute != nil)
-		{
-			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
-		}
-	}
+	// Expected API once sentry-cocoa adds ObjC metrics bridge:
 
-	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString() value:(NSUInteger)Value attributes:attributesDict];
+	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()]; 
+	// for (const auto& pair : Attributes)
+	// {
+	// 	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+	// 	if (attribute != nil)
+	// 	{
+	// 		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+	// 	}
+	// }
+	//
+	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString() value:(NSUInteger)Value attributes:attributesDict];
+
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
 }
 
 void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
-	for (const auto& pair : Attributes)
-	{
-		SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
-		if (attribute != nil)
-		{
-			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
-		}
-	}
+	// Expected API once sentry-cocoa adds ObjC metrics bridge:
 
-	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
-	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] distributionWithKey:Key.GetNSString() value:(double)Value unit:effectiveUnit attributes:attributesDict];
+	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
+	// for (const auto& pair : Attributes)
+	// {
+	// 	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+	// 	if (attribute != nil)
+	// 	{
+	// 		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+	// 	}
+	// }
+	//
+	// NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
+	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] distributionWithKey:Key.GetNSString() value:(double)Value unit:effectiveUnit attributes:attributesDict];
+
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
 }
 
 void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
-	for (const auto& pair : Attributes)
-	{
-		SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
-		if (attribute != nil)
-		{
-			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
-		}
-	}
+	// Expected API once sentry-cocoa adds ObjC metrics bridge:
 
-	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
-	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] gaugeWithKey:Key.GetNSString() value:(double)Value unit:effectiveUnit attributes:attributesDict];
+	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
+	// for (const auto& pair : Attributes)
+	// {
+	// 	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
+	// 	if (attribute != nil)
+	// 	{
+	// 		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+	// 	}
+	// }
+	//
+	// NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
+	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] gaugeWithKey:Key.GetNSString() value:(double)Value unit:effectiveUnit attributes:attributesDict];
+
+	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()
