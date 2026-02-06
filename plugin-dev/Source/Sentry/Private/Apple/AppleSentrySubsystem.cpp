@@ -238,7 +238,7 @@ void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap
 {
 	// Expected API once sentry-cocoa adds ObjC metrics bridge:
 
-	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()]; 
+	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
 	// for (const auto& pair : Attributes)
 	// {
 	// 	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
