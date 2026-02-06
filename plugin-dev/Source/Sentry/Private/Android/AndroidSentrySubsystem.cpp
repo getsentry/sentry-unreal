@@ -206,7 +206,7 @@ void FAndroidSentrySubsystem::AddDistribution(const FString& Key, float Value, c
 {
 	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricDistribution", "(Ljava/lang/String;DLjava/lang/String;Ljava/util/HashMap;)V",
-		*FSentryJavaObjectWrapper::GetJString(Key), (double)Value, *FSentryJavaObjectWrapper::GetJString(Unit),	attributesMap->GetJObject());
+		*FSentryJavaObjectWrapper::GetJString(Key), (double)Value, *FSentryJavaObjectWrapper::GetJString(Unit), attributesMap->GetJObject());
 }
 
 void FAndroidSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
