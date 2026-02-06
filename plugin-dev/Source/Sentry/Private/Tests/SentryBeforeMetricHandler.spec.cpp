@@ -33,6 +33,7 @@ void SentryBeforeMetricHandlerSpec::Define()
 
 			SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
 			{
+				Settings->EnableMetrics = true;
 				Settings->BeforeMetricHandler = UTestBeforeMetricHandler::StaticClass();
 			}));
 
