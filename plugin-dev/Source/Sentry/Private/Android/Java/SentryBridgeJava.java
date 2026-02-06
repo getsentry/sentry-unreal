@@ -300,61 +300,25 @@ public class SentryBridgeJava {
 	}
 
 	public static void setLogAttribute(final SentryLogEvent logEvent, final String key, final Object value) {
-		if (logEvent == null || key == null || value == null) {
+		if (logEvent == null) {
 			return;
 		}
-
-		SentryLogEventAttributeValue attributeValue;
-
-		if (value instanceof String) {
-			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value);
-		} else if (value instanceof Integer) {
-			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.INTEGER, value);
-		} else if (value instanceof Boolean) {
-			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.BOOLEAN, value);
-		} else if (value instanceof Float) {
-            // Unreal's variant doesn't support Double so manual conversion is required
-			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
-		} else {
-			// Unsupported type (e.g. ArrayList, HashMap) - convert to JSON string for consistency with other platforms
-			String jsonString;
-			if (value instanceof java.util.List) {
-				jsonString = new JSONArray((java.util.List<?>) value).toString();
-			} else if (value instanceof java.util.Map) {
-				jsonString = new JSONObject((java.util.Map<?, ?>) value).toString();
-			} else {
-				jsonString = value.toString();
-			}
-			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, jsonString);
-		}
-
-		logEvent.setAttribute(key, attributeValue);
+		setAttributeInternal(key, value, logEvent::setAttribute);
 	}
 
 	public static Object getLogAttribute(final SentryLogEvent logEvent, final String key) {
-		if (logEvent == null || key == null) {
+		if (logEvent == null) {
 			return null;
 		}
-
-		Map<String, SentryLogEventAttributeValue> attributes = logEvent.getAttributes();
-		if (attributes == null) {
-			return null;
-		}
-
-		SentryLogEventAttributeValue attributeValue = attributes.get(key);
-		if (attributeValue == null) {
-			return null;
-		}
-
-        Object value = attributeValue.getValue();
-
-        if (value instanceof Double) {
-            // Unreal's variant doesn't support Double so manual conversion is required
-            return ((Double) attributeValue.getValue()).floatValue();
-        }
-
-		return value;
+		return getAttributeInternal(key, logEvent.getAttributes());
 	}
+
+    public static void removeLogAttribute(final SentryLogEvent logEvent, final String key) {
+        if (logEvent == null) {
+            return;
+        }
+        removeAttributeInternal(key, logEvent.getAttributes());
+    }
 
 	public static void metricCount(final String key, final double value, final HashMap<String, Object> attributesMap) {
 		SentryMetricsParameters params = createMetricsParams(attributesMap);
@@ -381,19 +345,33 @@ public class SentryBridgeJava {
 		return SentryMetricsParameters.create(attributesMap);
 	}
 
-	public static void removeLogAttribute(final SentryLogEvent logEvent, final String key) {
-		if (logEvent == null || key == null) {
+	public static void setMetricAttribute(final SentryMetricsEvent metricEvent, final String key, final Object value) {
+		if (metricEvent == null) {
 			return;
 		}
-
-		Map<String, SentryLogEventAttributeValue> attributes = logEvent.getAttributes();
-		if (attributes != null) {
-			attributes.remove(key);
-		}
+		setAttributeInternal(key, value, metricEvent::setAttribute);
 	}
 
-	public static void setMetricAttribute(final SentryMetricsEvent metricEvent, final String key, final Object value) {
-		if (metricEvent == null || key == null || value == null) {
+	public static Object getMetricAttribute(final SentryMetricsEvent metricEvent, final String key) {
+		if (metricEvent == null) {
+			return null;
+		}
+		return getAttributeInternal(key, metricEvent.getAttributes());
+	}
+
+	public static void removeMetricAttribute(final SentryMetricsEvent metricEvent, final String key) {
+		if (metricEvent == null) {
+			return;
+		}
+		removeAttributeInternal(key, metricEvent.getAttributes());
+	}
+
+	private interface AttributeSetter {
+		void setAttribute(String key, SentryLogEventAttributeValue value);
+	}
+
+	private static void setAttributeInternal(final String key, final Object value, AttributeSetter setter) {
+		if (key == null || value == null) {
 			return;
 		}
 
@@ -421,16 +399,11 @@ public class SentryBridgeJava {
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, jsonString);
 		}
 
-		metricEvent.setAttribute(key, attributeValue);
+		setter.setAttribute(key, attributeValue);
 	}
 
-	public static Object getMetricAttribute(final SentryMetricsEvent metricEvent, final String key) {
-		if (metricEvent == null || key == null) {
-			return null;
-		}
-
-		Map<String, SentryLogEventAttributeValue> attributes = metricEvent.getAttributes();
-		if (attributes == null) {
+	private static Object getAttributeInternal(final String key, final Map<String, SentryLogEventAttributeValue> attributes) {
+		if (key == null || attributes == null) {
 			return null;
 		}
 
@@ -443,21 +416,17 @@ public class SentryBridgeJava {
 
 		if (value instanceof Double) {
 			// Unreal's variant doesn't support Double so manual conversion is required
-			return ((Double) attributeValue.getValue()).floatValue();
+			return ((Double) value).floatValue();
 		}
 
 		return value;
 	}
 
-	public static void removeMetricAttribute(final SentryMetricsEvent metricEvent, final String key) {
-		if (metricEvent == null || key == null) {
+	private static void removeAttributeInternal(final String key, final Map<String, SentryLogEventAttributeValue> attributes) {
+		if (key == null || attributes == null) {
 			return;
 		}
-
-		Map<String, SentryLogEventAttributeValue> attributes = metricEvent.getAttributes();
-		if (attributes != null) {
-			attributes.remove(key);
-		}
+		attributes.remove(key);
 	}
 
 	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
