@@ -4,6 +4,7 @@
 
 #include "SentryDataTypes.h"
 #include "SentryImplWrapper.h"
+#include "SentryUnit.h"
 #include "SentryVariant.h"
 
 #include "SentryMetric.generated.h"
@@ -49,11 +50,11 @@ public:
 
 	/** Sets the metric unit. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetUnit(const FString& Unit);
+	void SetUnit(const FSentryUnit& Unit);
 
 	/** Gets the metric unit. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetUnit() const;
+	FSentryUnit GetUnit() const;
 
 	/** Sets an attribute of the metric. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")

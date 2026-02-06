@@ -62,6 +62,9 @@ struct SENTRY_API FSentryUnit
 	/** Converts the unit to its string representation. */
 	FString ToString() const;
 
+	/** Gets the predefined unit type. Returns None for custom units. */
+	ESentryUnit GetUnitType() const;
+
 private:
 	ESentryUnit Unit;
 	FString CustomUnit;
@@ -83,4 +86,12 @@ public:
 	/** Creates a measurement unit from a custom string. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	static FSentryUnit MakeSentryCustomUnit(const FString& Unit);
+
+	/** Converts the unit to its string representation. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	static FString ToString(const FSentryUnit& Unit);
+
+	/** Gets the predefined unit type. Returns None for custom units. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	static ESentryUnit GetUnitType(const FSentryUnit& Unit);
 };

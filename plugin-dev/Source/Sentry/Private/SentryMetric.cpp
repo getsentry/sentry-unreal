@@ -56,18 +56,18 @@ float USentryMetric::GetValue() const
 	return 0.0f;
 }
 
-void USentryMetric::SetUnit(const FString& InUnit)
+void USentryMetric::SetUnit(const FSentryUnit& InUnit)
 {
 	if (NativeImpl)
-		NativeImpl->SetUnit(InUnit);
+		NativeImpl->SetUnit(InUnit.ToString());
 }
 
-FString USentryMetric::GetUnit() const
+FSentryUnit USentryMetric::GetUnit() const
 {
 	if (NativeImpl)
-		return NativeImpl->GetUnit();
+		return FSentryUnit(NativeImpl->GetUnit());
 
-	return FString();
+	return FSentryUnit();
 }
 
 void USentryMetric::SetAttribute(const FString& Key, const FSentryVariant& Value)

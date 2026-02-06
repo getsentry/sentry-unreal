@@ -32,6 +32,11 @@ FString FSentryUnit::ToString() const
 	return StaticEnum<ESentryUnit>()->GetNameStringByValue(static_cast<int64>(Unit)).ToLower();
 }
 
+ESentryUnit FSentryUnit::GetUnitType() const
+{
+	return Unit;
+}
+
 FSentryUnit USentryUnitHelper::MakeSentryUnit(ESentryUnit Unit)
 {
 	return FSentryUnit(Unit);
@@ -40,4 +45,14 @@ FSentryUnit USentryUnitHelper::MakeSentryUnit(ESentryUnit Unit)
 FSentryUnit USentryUnitHelper::MakeSentryCustomUnit(const FString& Unit)
 {
 	return FSentryUnit(Unit);
+}
+
+FString USentryUnitHelper::ToString(const FSentryUnit& Unit)
+{
+	return Unit.ToString();
+}
+
+ESentryUnit USentryUnitHelper::GetUnitType(const FSentryUnit& Unit)
+{
+	return Unit.GetUnitType();
 }
