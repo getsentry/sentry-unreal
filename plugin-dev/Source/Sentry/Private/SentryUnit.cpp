@@ -46,4 +46,3 @@ FString USentryUnitHelper::ToString(const FSentryUnit& Unit)
 {
 	return Unit.ToString();
 }
-
