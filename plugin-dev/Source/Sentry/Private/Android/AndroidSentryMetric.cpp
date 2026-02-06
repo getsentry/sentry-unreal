@@ -64,8 +64,8 @@ float FAndroidSentryMetric::GetValue() const
 	}
 
 	FSentryJavaObjectWrapper valueWrapper(SentryJavaClasses::Double, *valueObject);
-	FSentryJavaMethod doubleValueMethod = valueWrapper.GetMethod("doubleValue", "()D");
-	return static_cast<float>(valueWrapper.CallMethod<double>(doubleValueMethod));
+	FSentryJavaMethod floatValueMethod = valueWrapper.GetMethod("floatValue", "()F");
+	return valueWrapper.CallMethod<float>(floatValueMethod);
 }
 
 void FAndroidSentryMetric::SetUnit(const FString& unit)
