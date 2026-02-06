@@ -352,7 +352,8 @@ public class SentryBridgeJava {
 
 	public static void metricCount(final String key, final double value, final HashMap<String, Object> attributesMap) {
 		SentryMetricsParameters params = createMetricsParams(attributesMap);
-		Sentry.metrics().count(key, value, params);
+        // Currently counters do not support unit param so pass null
+		Sentry.metrics().count(key, value, null, params);
 	}
 
 	public static void metricDistribution(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {
