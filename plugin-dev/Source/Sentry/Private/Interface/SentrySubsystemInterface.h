@@ -39,7 +39,7 @@ public:
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) = 0;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) = 0;
 	virtual void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes) = 0;
-	virtual void AddCount(const FString& Key, int32 Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes) = 0;
+	virtual void AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes) = 0;
 	virtual void AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes) = 0;
 	virtual void AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes) = 0;
 	virtual void ClearBreadcrumbs() = 0;

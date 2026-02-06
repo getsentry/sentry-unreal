@@ -210,21 +210,19 @@ public:
 	 *
 	 * @param Key The name of the metric.
 	 * @param Value The value to increment by (default 1).
-	 * @param Unit The unit of measurement for the metric value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void AddCount(const FString& Key, int32 Value, FSentryMeasurementUnit Unit);
+	void AddCount(const FString& Key, int32 Value);
 
 	/**
 	 * Emits a Counter metric with attributes.
 	 *
 	 * @param Key The name of the metric.
 	 * @param Value The value to increment by.
-	 * @param Unit The unit of measurement for the metric value.
 	 * @param Attributes Structured attributes to attach to the metric.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
-	void AddCountWithAttributes(const FString& Key, int32 Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes);
+	void AddCountWithAttributes(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
 	 * Emits a Distribution metric.

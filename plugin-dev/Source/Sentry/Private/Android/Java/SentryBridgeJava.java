@@ -350,10 +350,9 @@ public class SentryBridgeJava {
 		return value;
 	}
 
-	public static void metricCount(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {
-		String effectiveUnit = (unit != null && !unit.isEmpty()) ? unit : null;
+	public static void metricCount(final String key, final double value, final HashMap<String, Object> attributesMap) {
 		SentryMetricsParameters params = createMetricsParams(attributesMap);
-		Sentry.metrics().count(key, value, effectiveUnit, params);
+		Sentry.metrics().count(key, value, params);
 	}
 
 	public static void metricDistribution(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {

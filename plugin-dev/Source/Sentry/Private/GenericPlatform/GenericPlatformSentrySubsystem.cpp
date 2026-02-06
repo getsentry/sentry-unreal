@@ -525,9 +525,8 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 	}
 }
 
-void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Note: sentry-native's count API doesn't accept a unit parameter
 	sentry_value_t attributes;
 	if (Attributes.Num() > 0)
 	{

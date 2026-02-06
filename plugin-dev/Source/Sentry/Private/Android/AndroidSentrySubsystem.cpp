@@ -194,13 +194,12 @@ void FAndroidSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level,
 	}
 }
 
-void FAndroidSentrySubsystem::AddCount(const FString& Key, int32 Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAndroidSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricCount",
-		"(Ljava/lang/String;DLjava/lang/String;Ljava/util/HashMap;)V",
+		"(Ljava/lang/String;DLjava/util/HashMap;)V",
 		*FSentryJavaObjectWrapper::GetJString(Key), (double)Value,
-		*FSentryJavaObjectWrapper::GetJString(Unit),
 		attributesMap->GetJObject());
 }
 

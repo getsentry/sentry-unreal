@@ -234,7 +234,7 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 	}
 }
 
-void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
 	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
 	for (const auto& pair : Attributes)
@@ -246,8 +246,7 @@ void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const FStr
 		}
 	}
 
-	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
-	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString() value:(NSUInteger)Value unit:effectiveUnit attributes:attributesDict];
+	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString() value:(NSUInteger)Value attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)

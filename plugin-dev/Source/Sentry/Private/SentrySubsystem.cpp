@@ -289,19 +289,19 @@ void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap
 	AddLog(Message, ESentryLevel::Fatal, Attributes, Category);
 }
 
-void USentrySubsystem::AddCount(const FString& Key, int32 Value, FSentryMeasurementUnit Unit)
+void USentrySubsystem::AddCount(const FString& Key, int32 Value)
 {
-	AddCountWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
+	AddCountWithAttributes(Key, Value, TMap<FString, FSentryVariant>());
 }
 
-void USentrySubsystem::AddCountWithAttributes(const FString& Key, int32 Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+void USentrySubsystem::AddCountWithAttributes(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
 		return;
 	}
 
-	SubsystemNativeImpl->AddCount(Key, Value, Unit.ToString(), Attributes);
+	SubsystemNativeImpl->AddCount(Key, Value, Attributes);
 }
 
 void USentrySubsystem::AddDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit)
