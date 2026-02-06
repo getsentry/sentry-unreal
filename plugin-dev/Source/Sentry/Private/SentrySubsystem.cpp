@@ -304,12 +304,12 @@ void USentrySubsystem::AddCountWithAttributes(const FString& Key, int32 Value, c
 	SubsystemNativeImpl->AddCount(Key, Value, Attributes);
 }
 
-void USentrySubsystem::AddDistribution(const FString& Key, float Value, FSentryMeasurementUnit Unit)
+void USentrySubsystem::AddDistribution(const FString& Key, float Value, FSentryUnit Unit)
 {
 	AddDistributionWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
 }
 
-void USentrySubsystem::AddDistributionWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+void USentrySubsystem::AddDistributionWithAttributes(const FString& Key, float Value, FSentryUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
@@ -319,12 +319,12 @@ void USentrySubsystem::AddDistributionWithAttributes(const FString& Key, float V
 	SubsystemNativeImpl->AddDistribution(Key, Value, Unit.ToString(), Attributes);
 }
 
-void USentrySubsystem::AddGauge(const FString& Key, float Value, FSentryMeasurementUnit Unit)
+void USentrySubsystem::AddGauge(const FString& Key, float Value, FSentryUnit Unit)
 {
 	AddGaugeWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
 }
 
-void USentrySubsystem::AddGaugeWithAttributes(const FString& Key, float Value, FSentryMeasurementUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
+void USentrySubsystem::AddGaugeWithAttributes(const FString& Key, float Value, FSentryUnit Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
