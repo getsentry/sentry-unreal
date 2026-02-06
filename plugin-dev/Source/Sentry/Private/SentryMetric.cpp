@@ -25,30 +25,33 @@ FString USentryMetric::GetName() const
 	return FString();
 }
 
-void USentryMetric::SetType(const FString& InType)
+void USentryMetric::SetType(ESentryMetricType InType)
 {
+	if (InType == ESentryMetricType::Unknown)
+		return;
+
 	if (NativeImpl)
-		NativeImpl->SetType(InType);
+		NativeImpl->SetType(MetricTypeToString(InType));
 }
 
-FString USentryMetric::GetType() const
+ESentryMetricType USentryMetric::GetType() const
 {
 	if (NativeImpl)
-		return NativeImpl->GetType();
+		return StringToMetricType(NativeImpl->GetType());
 
-	return FString();
+	return ESentryMetricType::Unknown;
 }
 
 void USentryMetric::SetValue(float InValue)
 {
 	if (NativeImpl)
-		NativeImpl->SetValue((double)InValue);
+		NativeImpl->SetValue(InValue);
 }
 
 float USentryMetric::GetValue() const
 {
 	if (NativeImpl)
-		return (float)NativeImpl->GetValue();
+		return NativeImpl->GetValue();
 
 	return 0.0f;
 }
@@ -99,4 +102,31 @@ void USentryMetric::AddAttributes(const TMap<FString, FSentryVariant>& Attribute
 {
 	if (NativeImpl)
 		NativeImpl->AddAttributes(Attributes);
+}
+
+FString USentryMetric::MetricTypeToString(ESentryMetricType Type)
+{
+	switch (Type)
+	{
+	case ESentryMetricType::Counter:
+		return TEXT("counter");
+	case ESentryMetricType::Gauge:
+		return TEXT("gauge");
+	case ESentryMetricType::Distribution:
+		return TEXT("distribution");
+	default:
+		return TEXT("");
+	}
+}
+
+ESentryMetricType USentryMetric::StringToMetricType(const FString& Type)
+{
+	if (Type == TEXT("counter"))
+		return ESentryMetricType::Counter;
+	if (Type == TEXT("gauge"))
+		return ESentryMetricType::Gauge;
+	if (Type == TEXT("distribution"))
+		return ESentryMetricType::Distribution;
+
+	return ESentryMetricType::Unknown;
 }

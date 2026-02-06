@@ -17,8 +17,8 @@ public:
 	virtual FString GetName() const = 0;
 	virtual void SetType(const FString& type) = 0;
 	virtual FString GetType() const = 0;
-	virtual void SetValue(double value) = 0;
-	virtual double GetValue() const = 0;
+	virtual void SetValue(float value) = 0;
+	virtual float GetValue() const = 0;
 	virtual void SetUnit(const FString& unit) = 0;
 	virtual FString GetUnit() const = 0;
 

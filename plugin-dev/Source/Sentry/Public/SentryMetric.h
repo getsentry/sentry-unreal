@@ -33,11 +33,11 @@ public:
 
 	/** Sets the metric type (counter, gauge, distribution). */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetType(const FString& Type);
+	void SetType(ESentryMetricType Type);
 
 	/** Gets the metric type. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	FString GetType() const;
+	ESentryMetricType GetType() const;
 
 	/** Sets the metric value. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -74,4 +74,8 @@ public:
 	/** Adds attributes to the metric. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void AddAttributes(const TMap<FString, FSentryVariant>& Attributes);
+
+private:
+	static FString MetricTypeToString(ESentryMetricType Type);
+	static ESentryMetricType StringToMetricType(const FString& Type);
 };

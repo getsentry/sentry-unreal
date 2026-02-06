@@ -49,23 +49,23 @@ FString FAndroidSentryMetric::GetType() const
 	return CallMethod<FString>(GetTypeMethod);
 }
 
-void FAndroidSentryMetric::SetValue(double value)
+void FAndroidSentryMetric::SetValue(float value)
 {
-	TSharedPtr<FSentryJavaObjectWrapper> javaDouble = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::Double, "(D)V", value));
+	TSharedPtr<FSentryJavaObjectWrapper> javaDouble = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::Double, "(D)V", static_cast<double>(value)));
 	CallMethod<void>(SetValueMethod, javaDouble->GetJObject());
 }
 
-double FAndroidSentryMetric::GetValue() const
+float FAndroidSentryMetric::GetValue() const
 {
 	auto valueObject = CallObjectMethod<jobject>(GetValueMethod);
 	if (!valueObject)
 	{
-		return 0.0;
+		return 0.0f;
 	}
 
 	FSentryJavaObjectWrapper valueWrapper(SentryJavaClasses::Double, *valueObject);
 	FSentryJavaMethod doubleValueMethod = valueWrapper.GetMethod("doubleValue", "()D");
-	return valueWrapper.CallMethod<double>(doubleValueMethod);
+	return static_cast<float>(valueWrapper.CallMethod<double>(doubleValueMethod));
 }
 
 void FAndroidSentryMetric::SetUnit(const FString& unit)

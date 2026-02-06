@@ -14,8 +14,8 @@ public:
 	virtual FString GetName() const override { return FString(); }
 	virtual void SetType(const FString& type) override {}
 	virtual FString GetType() const override { return FString(); }
-	virtual void SetValue(double value) override {}
-	virtual double GetValue() const override { return 0.0; }
+	virtual void SetValue(float value) override {}
+	virtual float GetValue() const override { return 0.0f; }
 	virtual void SetUnit(const FString& unit) override {}
 	virtual FString GetUnit() const override { return FString(); }
 

@@ -18,8 +18,8 @@ public:
 	virtual FString GetName() const override;
 	virtual void SetType(const FString& type) override;
 	virtual FString GetType() const override;
-	virtual void SetValue(double value) override;
-	virtual double GetValue() const override;
+	virtual void SetValue(float value) override;
+	virtual float GetValue() const override;
 	virtual void SetUnit(const FString& unit) override;
 	virtual FString GetUnit() const override;
 

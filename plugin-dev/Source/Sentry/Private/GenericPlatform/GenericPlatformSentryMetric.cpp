@@ -43,15 +43,30 @@ FString FGenericPlatformSentryMetric::GetType() const
 	return FString(UTF8_TO_TCHAR(sentry_value_as_string(type)));
 }
 
-void FGenericPlatformSentryMetric::SetValue(double value)
+void FGenericPlatformSentryMetric::SetValue(float value)
 {
-	sentry_value_set_by_key(Metric, "value", sentry_value_new_double(value));
+	if (GetType() == TEXT("counter"))
+	{
+		sentry_value_set_by_key(Metric, "value", sentry_value_new_int64(value));
+	}
+	else
+	{
+		sentry_value_set_by_key(Metric, "value", sentry_value_new_double(value));
+	}
 }
 
-double FGenericPlatformSentryMetric::GetValue() const
+float FGenericPlatformSentryMetric::GetValue() const
 {
 	sentry_value_t value = sentry_value_get_by_key(Metric, "value");
-	return sentry_value_as_double(value);
+
+	if (sentry_value_get_type(value) == SENTRY_VALUE_TYPE_INT64)
+	{
+		return static_cast<float>(sentry_value_as_int64(value));
+	}
+	else
+	{
+		return static_cast<float>(sentry_value_as_double(value));
+	}
 }
 
 void FGenericPlatformSentryMetric::SetUnit(const FString& unit)
