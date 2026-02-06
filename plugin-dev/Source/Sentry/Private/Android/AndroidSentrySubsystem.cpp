@@ -67,6 +67,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
+	SettingsJson->SetBoolField(TEXT("enableMetrics"), settings->EnableMetrics);
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);

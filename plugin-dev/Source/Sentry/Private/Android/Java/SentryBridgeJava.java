@@ -77,6 +77,7 @@ public class SentryBridgeJava {
 					}
 					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
 					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));
+					options.getMetrics().setEnabled(settingJson.getBoolean("enableMetrics"));
 					if(settingJson.has("tracesSampleRate")) {
 						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
 					}
