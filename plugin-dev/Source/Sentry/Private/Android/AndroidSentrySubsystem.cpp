@@ -45,7 +45,7 @@ FAndroidSentrySubsystem::~FAndroidSentrySubsystem()
 	SentryJavaClasses::ClearJavaClassRefsCache();
 }
 
-void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler)
+void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler)
 {
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 
@@ -87,6 +87,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	if (beforeLogHandler != nullptr)
 	{
 		SettingsJson->SetNumberField(TEXT("beforeLogHandler"), (jlong)beforeLogHandler);
+	}
+	if (beforeMetricHandler != nullptr)
+	{
+		SettingsJson->SetNumberField(TEXT("beforeMetricHandler"), (jlong)beforeMetricHandler);
 	}
 
 	FString SettingsJsonStr;

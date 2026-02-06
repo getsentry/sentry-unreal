@@ -22,6 +22,7 @@ class USentrySettings;
 class USentryBeforeSendHandler;
 class USentryBeforeLogHandler;
 class USentryBeforeBreadcrumbHandler;
+class USentryBeforeMetricHandler;
 class USentryTraceSampler;
 
 DECLARE_DELEGATE_OneParam(FSentryScopeDelegate, TSharedPtr<ISentryScope>);
@@ -32,7 +33,7 @@ public:
 	virtual ~ISentrySubsystem() = default;
 
 	/** Methods that map directly to the platform's Sentry SDK API */
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;

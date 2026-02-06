@@ -7,6 +7,7 @@
 #include "GenericPlatformSentryFeedback.h"
 #include "GenericPlatformSentryId.h"
 #include "GenericPlatformSentryLog.h"
+#include "GenericPlatformSentryMetric.h"
 #include "GenericPlatformSentrySamplingContext.h"
 #include "GenericPlatformSentryScope.h"
 #include "GenericPlatformSentryTransaction.h"
@@ -15,11 +16,13 @@
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
+#include "SentryBeforeMetricHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryLog.h"
+#include "SentryMetric.h"
 #include "SentryModule.h"
 #include "SentrySamplingContext.h"
 #include "SentrySettings.h"
@@ -113,6 +116,16 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	return log;
 }
 
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeMetric(sentry_value_t metric, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeMetric(metric, closure);
+	}
+
+	return metric;
+}
+
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
 {
 	if (!closure || this != closure)
@@ -193,6 +206,33 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 	USentryLog* ProcessedLogData = Handler->HandleBeforeLog(LogData);
 
 	return ProcessedLogData ? log : sentry_value_new_null();
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t metric, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return metric;
+	}
+
+	USentryBeforeMetricHandler* Handler = GetBeforeMetricHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return metric;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return metric;
+	}
+
+	// Create USentryMetric object using the metric wrapper
+	USentryMetric* MetricData = USentryMetric::Create(MakeShareable(new FGenericPlatformSentryMetric(metric)));
+
+	USentryMetric* ProcessedMetricData = Handler->HandleBeforeMetric(MetricData);
+
+	return ProcessedMetricData ? metric : sentry_value_new_null();
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
@@ -307,11 +347,12 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 {
 }
 
-void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler)
+void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler)
 {
 	beforeSend = beforeSendHandler;
 	beforeBreadcrumb = beforeBreadcrumbHandler;
 	beforeLog = beforeLogHandler;
+	beforeMetric = beforeMetricHandler;
 	sampler = traceSampler;
 
 	sentry_options_t* options = sentry_options_new();
@@ -383,6 +424,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
 	sentry_options_set_logs_with_attributes(options, true);
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
+	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
 
 	if (settings->bRequireUserConsent)
 	{
@@ -855,6 +897,11 @@ USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadc
 USentryBeforeLogHandler* FGenericPlatformSentrySubsystem::GetBeforeLogHandler() const
 {
 	return beforeLog;
+}
+
+USentryBeforeMetricHandler* FGenericPlatformSentrySubsystem::GetBeforeMetricHandler() const
+{
+	return beforeMetric;
 }
 
 USentryTraceSampler* FGenericPlatformSentrySubsystem::GetTraceSampler() const

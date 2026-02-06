@@ -19,7 +19,7 @@ class FGenericPlatformSentrySubsystem : public ISentrySubsystem
 public:
 	FGenericPlatformSentrySubsystem();
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
@@ -64,6 +64,7 @@ public:
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler() const;
 	USentryBeforeLogHandler* GetBeforeLogHandler() const;
+	USentryBeforeMetricHandler* GetBeforeMetricHandler() const;
 	USentryTraceSampler* GetTraceSampler() const;
 
 	void TryCaptureScreenshot();
@@ -84,6 +85,7 @@ protected:
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	virtual sentry_value_t OnBeforeLog(sentry_value_t log, void* closure);
+	virtual sentry_value_t OnBeforeMetric(sentry_value_t metric, void* closure);
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
@@ -103,12 +105,14 @@ private:
 	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
 	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure);
 	static sentry_value_t HandleBeforeLog(sentry_value_t log, void* closure);
+	static sentry_value_t HandleBeforeMetric(sentry_value_t metric, void* closure);
 	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure);
 
 	USentryBeforeSendHandler* beforeSend;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;
 	USentryBeforeLogHandler* beforeLog;
+	USentryBeforeMetricHandler* beforeMetric;
 	USentryTraceSampler* sampler;
 
 	TSharedPtr<FGenericPlatformSentryCrashReporter> crashReporter;

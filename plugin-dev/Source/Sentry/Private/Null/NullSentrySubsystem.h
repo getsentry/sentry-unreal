@@ -9,7 +9,7 @@ class FNullSentrySubsystem : public ISentrySubsystem
 public:
 	virtual ~FNullSentrySubsystem() override = default;
 
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) override {}
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) override {}
 	virtual void Close() override {}
 	virtual bool IsEnabled() override { return false; }
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override { return ESentryCrashedLastRun::NotEvaluated; }

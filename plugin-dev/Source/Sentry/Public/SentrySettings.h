@@ -12,6 +12,7 @@
 class USentryBeforeSendHandler;
 class USentryBeforeBreadcrumbHandler;
 class USentryBeforeLogHandler;
+class USentryBeforeMetricHandler;
 class USentryTraceSampler;
 
 UENUM(BlueprintType)
@@ -325,6 +326,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
 		Meta = (DisplayName = "Custom `beforeLog` event handler", ToolTip = "Custom handler for processing structured logs before sending them to Sentry."))
 	TSubclassOf<USentryBeforeLogHandler> BeforeLogHandler;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
+		Meta = (DisplayName = "Custom `beforeMetric` event handler", ToolTip = "Custom handler for processing metrics before sending them to Sentry."))
+	TSubclassOf<USentryBeforeMetricHandler> BeforeMetricHandler;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Windows",
 		Meta = (DisplayName = "Override Windows default crash capturing mechanism (UE 5.2+)", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter."))

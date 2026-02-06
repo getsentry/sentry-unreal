@@ -4,6 +4,7 @@
 #include "Android/AndroidSentryEvent.h"
 #include "Android/AndroidSentryHint.h"
 #include "Android/AndroidSentryLog.h"
+#include "Android/AndroidSentryMetric.h"
 #include "Android/AndroidSentrySamplingContext.h"
 #include "Android/AndroidSentryScope.h"
 #include "Android/AndroidSentrySubsystem.h"
@@ -15,12 +16,14 @@
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
+#include "SentryBeforeMetricHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryHint.h"
 #include "SentryLog.h"
+#include "SentryMetric.h"
 #include "SentrySamplingContext.h"
 #include "SentryTraceSampler.h"
 
@@ -98,6 +101,23 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* en
 	USentryLog* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
 
 	return ProcessedLogData ? logEvent : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeMetric(JNIEnv* env, jclass clazz, jlong objAddr, jobject metricEvent)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Metric will be sent without calling a `onBeforeMetric` handler
+		return metricEvent;
+	}
+
+	USentryBeforeMetricHandler* handler = reinterpret_cast<USentryBeforeMetricHandler*>(objAddr);
+
+	USentryMetric* MetricDataToProcess = USentryMetric::Create(MakeShareable(new FAndroidSentryMetric(metricEvent)));
+
+	USentryMetric* ProcessedMetricData = handler->HandleBeforeMetric(MetricDataToProcess);
+
+	return ProcessedMetricData ? metricEvent : nullptr;
 }
 
 JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
