@@ -22,7 +22,7 @@
 #include "GenericPlatform/GenericPlatformMisc.h"
 #endif
 
-void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
+void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryBeforeMetricHandler* BeforeMetricHandler, USentryTraceSampler* TraceSampler)
 {
 	// Initialize crash logger if enabled
 	if (Settings->EnableOnCrashLogging)
@@ -39,7 +39,7 @@ void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings
 		}
 	}
 
-	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
+	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, BeforeMetricHandler, TraceSampler);
 
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)
 	if (IsEnabled())

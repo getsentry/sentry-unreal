@@ -11,7 +11,7 @@
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryBeforeMetricHandler* BeforeMetricHandler, USentryTraceSampler* TraceSampler) override;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;

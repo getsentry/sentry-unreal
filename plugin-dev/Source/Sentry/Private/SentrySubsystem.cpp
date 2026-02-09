@@ -4,6 +4,7 @@
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
+#include "SentryBeforeMetricHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
@@ -113,12 +114,17 @@ void USentrySubsystem::Initialize()
 			? NewObject<USentryBeforeLogHandler>(this, static_cast<UClass*>(Settings->BeforeLogHandler))
 			: nullptr;
 
+	BeforeMetricHandler =
+		Settings->BeforeMetricHandler != nullptr
+			? NewObject<USentryBeforeMetricHandler>(this, static_cast<UClass*>(Settings->BeforeMetricHandler))
+			: nullptr;
+
 	TraceSampler =
 		Settings->TracesSampler != nullptr
 			? NewObject<USentryTraceSampler>(this, static_cast<UClass*>(Settings->TracesSampler))
 			: nullptr;
 
-	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
+	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, BeforeMetricHandler, TraceSampler);
 
 	if (!SubsystemNativeImpl->IsEnabled())
 	{
@@ -287,6 +293,51 @@ void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
 void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
 	AddLog(Message, ESentryLevel::Fatal, Attributes, Category);
+}
+
+void USentrySubsystem::AddCount(const FString& Key, int32 Value)
+{
+	AddCountWithAttributes(Key, Value, TMap<FString, FSentryVariant>());
+}
+
+void USentrySubsystem::AddCountWithAttributes(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddCount(Key, Value, Attributes);
+}
+
+void USentrySubsystem::AddDistribution(const FString& Key, float Value, const FSentryUnit& Unit)
+{
+	AddDistributionWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
+}
+
+void USentrySubsystem::AddDistributionWithAttributes(const FString& Key, float Value, const FSentryUnit& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddDistribution(Key, Value, Unit.ToString(), Attributes);
+}
+
+void USentrySubsystem::AddGauge(const FString& Key, float Value, const FSentryUnit& Unit)
+{
+	AddGaugeWithAttributes(Key, Value, Unit, TMap<FString, FSentryVariant>());
+}
+
+void USentrySubsystem::AddGaugeWithAttributes(const FString& Key, float Value, const FSentryUnit& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->AddGauge(Key, Value, Unit.ToString(), Attributes);
 }
 
 void USentrySubsystem::ClearBreadcrumbs()

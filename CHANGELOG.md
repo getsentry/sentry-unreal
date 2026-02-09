@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add Metrics API support ([#1214](https://github.com/getsentry/sentry-unreal/pull/1214))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.3.0 to v9.4.0 ([#1218](https://github.com/getsentry/sentry-unreal/pull/1218))

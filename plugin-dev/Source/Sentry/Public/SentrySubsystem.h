@@ -8,6 +8,7 @@
 #include "SentryDataTypes.h"
 #include "SentryScope.h"
 #include "SentryTransactionOptions.h"
+#include "SentryUnit.h"
 #include "SentryVariant.h"
 
 #include "SentrySubsystem.generated.h"
@@ -20,6 +21,7 @@ class USentryUser;
 class USentryBeforeSendHandler;
 class USentryBeforeBreadcrumbHandler;
 class USentryBeforeLogHandler;
+class USentryBeforeMetricHandler;
 class USentryTransaction;
 class USentryTraceSampler;
 class USentryTransactionContext;
@@ -202,6 +204,70 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
 	void LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Emits a Counter metric.
+	 * Counters track a value that can only be incremented.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to increment by (default 1).
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddCount(const FString& Key, int32 Value);
+
+	/**
+	 * Emits a Counter metric with attributes.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to increment by.
+	 * @param Attributes Structured attributes to attach to the metric.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void AddCountWithAttributes(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes);
+
+	/**
+	 * Emits a Distribution metric.
+	 * Distributions track the statistical distribution of values.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to record.
+	 * @param Unit The unit of measurement for the metric value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddDistribution(const FString& Key, float Value, const FSentryUnit& Unit);
+
+	/**
+	 * Emits a Distribution metric with attributes.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The value to record.
+	 * @param Unit The unit of measurement for the metric value.
+	 * @param Attributes Structured attributes to attach to the metric.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void AddDistributionWithAttributes(const FString& Key, float Value, const FSentryUnit& Unit, const TMap<FString, FSentryVariant>& Attributes);
+
+	/**
+	 * Emits a Gauge metric.
+	 * Gauges track a value that can go up and down.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The current gauge value.
+	 * @param Unit The unit of measurement for the metric value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void AddGauge(const FString& Key, float Value, const FSentryUnit& Unit);
+
+	/**
+	 * Emits a Gauge metric with attributes.
+	 *
+	 * @param Key The name of the metric.
+	 * @param Value The current gauge value.
+	 * @param Unit The unit of measurement for the metric value.
+	 * @param Attributes Structured attributes to attach to the metric.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void AddGaugeWithAttributes(const FString& Key, float Value, const FSentryUnit& Unit, const TMap<FString, FSentryVariant>& Attributes);
 
 	/**
 	 * Clear all breadcrumbs of the current Scope.
@@ -521,6 +587,9 @@ private:
 
 	UPROPERTY()
 	USentryBeforeLogHandler* BeforeLogHandler;
+
+	UPROPERTY()
+	USentryBeforeMetricHandler* BeforeMetricHandler;
 
 	UPROPERTY()
 	USentryTraceSampler* TraceSampler;

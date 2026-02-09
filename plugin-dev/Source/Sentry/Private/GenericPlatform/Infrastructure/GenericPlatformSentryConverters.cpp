@@ -156,6 +156,22 @@ sentry_value_t FGenericPlatformSentryConverters::VariantToAttributeNative(const 
 	return sentry_value_new_attribute(value, nullptr);
 }
 
+sentry_value_t FGenericPlatformSentryConverters::VariantMapToAttributesNative(const TMap<FString, FSentryVariant>& map)
+{
+	if (map.Num() == 0)
+	{
+		return sentry_value_new_null();
+	}
+
+	sentry_value_t attributes = sentry_value_new_object();
+	for (auto it = map.CreateConstIterator(); it; ++it)
+	{
+		sentry_value_set_by_key(attributes, TCHAR_TO_UTF8(*it.Key()), VariantToAttributeNative(it.Value()));
+	}
+
+	return attributes;
+}
+
 sentry_value_t FGenericPlatformSentryConverters::AddressToNative(uint64 address)
 {
 	char buffer[32];
