@@ -66,7 +66,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
 	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidCrashBackend != ESentryAndroidCrashBackend::TombstoneOnly);
-	SettingsJson->SetBoolField(TEXT("enableTombstone"), 
+	SettingsJson->SetBoolField(TEXT("enableTombstone"),
 		settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneOnly || settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneMergedWithNdk);
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
