@@ -57,7 +57,6 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("autoSessionTracking"), settings->EnableAutoSessionTracking);
 	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);
 	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->AttachStacktrace);
-	SettingsJson->SetBoolField(TEXT("enableThreads"), settings->AttachThreads);
 	SettingsJson->SetBoolField(TEXT("debug"), settings->Debug);
 	SettingsJson->SetNumberField(TEXT("sampleRate"), settings->SampleRate);
 	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);
@@ -66,6 +65,9 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppExclude));
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
+	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidCrashBackend != ESentryAndroidCrashBackend::TombstoneOnly);
+	SettingsJson->SetBoolField(TEXT("enableTombstone"), 
+		settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneOnly || settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneMergedWithNdk);
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
 	SettingsJson->SetBoolField(TEXT("enableMetrics"), settings->EnableMetrics);

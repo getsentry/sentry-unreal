@@ -65,7 +65,6 @@ public class SentryBridgeJava {
 					options.setEnableAutoSessionTracking(settingJson.getBoolean("autoSessionTracking"));
 					options.setSessionTrackingIntervalMillis(settingJson.getLong("sessionTimeout"));
 					options.setAttachStacktrace(settingJson.getBoolean("enableStackTrace"));
-					options.setAttachThreads(settingJson.getBoolean("enableThreads"));
 					options.setDebug(settingJson.getBoolean("debug"));
 					options.setSampleRate(settingJson.getDouble("sampleRate"));
 					options.setMaxBreadcrumbs(settingJson.getInt("maxBreadcrumbs"));
@@ -79,6 +78,8 @@ public class SentryBridgeJava {
 						options.addInAppExclude(Excludes.getString(i));
 					}
 					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
+                    options.setEnableNdk(settingJson.getBoolean("enableNdk"));
+                    options.setTombstoneEnabled(settingJson.getBoolean("enableTombstone"));
 					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));
 					options.getMetrics().setEnabled(settingJson.getBoolean("enableMetrics"));
 					if(settingJson.has("tracesSampleRate")) {

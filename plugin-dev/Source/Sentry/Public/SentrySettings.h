@@ -43,6 +43,17 @@ enum class ESentryDatabaseLocation : uint8
 	ProjectUserDirectory
 };
 
+UENUM(BlueprintType)
+enum class ESentryAndroidCrashBackend : uint8
+{
+	// Capture crashes using the sentry-native NDK signal handler only
+	NdkSignalHandler,
+	// Capture crashes using Android tombstones only
+	TombstoneOnly,
+	// Capture crashes using NDK integration with additional context merged from tombstones (recommended)
+	TombstoneMergedWithNdk,
+};
+
 USTRUCT(BlueprintType)
 struct FAutomaticBreadcrumbs
 {
@@ -244,10 +255,6 @@ class SENTRY_API USentrySettings : public UObject
 	bool AttachStacktrace;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Attach information about all threads to captured events (for Android only)", ToolTip = "Flag indicating whether to attach information about all threads automatically to captured events, not just the crashing thread."))
-	bool AttachThreads;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach personally identifiable information", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
 	bool SendDefaultPii;
 
@@ -362,6 +369,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
 		Meta = (DisplayName = "Enable ANR error tracking", Tooltip = "Flag indicating whether to enable tracking of ANR (app not responding) errors."))
 	bool EnableAppNotRespondingTracking;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Mobile",
+		Meta = (DisplayName = "Android crash capturing backend", ToolTip = "Mechanism used to capture Android crashes and enrich them with additional context."))
+	ESentryAndroidCrashBackend AndroidCrashBackend;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
 		Meta = (DisplayName = "Enable tracing", ToolTip = "Flag indicating whether to enable tracing for performance monitoring."))
