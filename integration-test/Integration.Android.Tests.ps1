@@ -191,7 +191,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
     Context "Crash Capture Tests" {
         BeforeAll {
-            # Crash event is sent during the MESSAGE run (Run 2)
+            # Crash event is sent during the INIT-ONLY run (Run 2)
             # But the crash_id comes from the CRASH run (Run 1)
             $script:CrashResult = $global:AndroidCrashResult
             $script:CrashEvent = $null
@@ -203,7 +203,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
                 Write-Host "Crash ID captured: $($eventIds[0])" -ForegroundColor Cyan
                 $crashId = $eventIds[0]
     
-                # Fetch crash event using the tag (event was sent during message run)
+                # Fetch crash event using the tag (event was sent during init-only run)
                 try {
                     $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
                     Write-Host "Crash event fetched from Sentry successfully" -ForegroundColor Green
@@ -223,7 +223,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $eventIds.Count | Should -Be 1
         }
     
-        It "Should capture crash event in Sentry (uploaded during next run)" {
+        It "Should capture crash event in Sentry (uploaded during init-only run)" {
             $script:CrashEvent | Should -Not -BeNullOrEmpty
         }
     
