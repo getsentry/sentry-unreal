@@ -335,6 +335,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # Override default project settings to avoid double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableStructuredLogging=True"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
 
             # -log-capture triggers integration test log scenario in the sample app
             $script:LogResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-log-capture') + $appArgs) -join ' ')
@@ -349,7 +350,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
                 # Fetch logs from Sentry with automatic polling
                 try {
-                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed')
                 }
                 catch {
                     Write-Host "Warning: $_" -ForegroundColor Red
@@ -392,6 +393,16 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         It "Should have test_id attribute matching captured ID" {
             $log = $script:CapturedLogs[0]
             $log.test_id | Should -Be $script:TestId
+        }
+
+        It "Should have attribute added by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.handler_added | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.to_be_removed | Should -BeNullOrEmpty
         }
     }
 }

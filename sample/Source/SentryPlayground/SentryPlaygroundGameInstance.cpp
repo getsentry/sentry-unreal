@@ -144,6 +144,7 @@ void USentryPlaygroundGameInstance::RunLogTest()
 
 	TMap<FString, FSentryVariant> Attributes;
 	Attributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	Attributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
 
 	SentrySubsystem->LogWarningWithAttributes(LogMessage, Attributes, LogCategory);
 
