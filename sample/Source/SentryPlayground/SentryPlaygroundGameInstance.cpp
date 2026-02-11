@@ -127,6 +127,10 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
 #endif
 
+#if PLATFORM_ANDROID
+	FPlatformProcess::Sleep(1.0f);
+#endif
+
 	// Ensure events were flushed
 	SentrySubsystem->Close();
 
@@ -160,6 +164,10 @@ void USentryPlaygroundGameInstance::RunLogTest()
 void USentryPlaygroundGameInstance::RunInitOnly()
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+#if PLATFORM_ANDROID
+	FPlatformProcess::Sleep(1.0f);
+#endif
 
 	// Ensure events were flushed
 	SentrySubsystem->Close();
