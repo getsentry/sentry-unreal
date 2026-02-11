@@ -1,0 +1,130 @@
+name: Build UE Android Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: Select Unreal Engine version
+        required: true
+        type: choice
+        options:
+        - 4.27
+        - 5.1
+        - 5.2
+        - 5.3
+        - 5.4
+        - 5.5
+        - 5.6
+        - 5.7
+      ue_repo:
+        description: Set Unreal Engine repository
+        required: true
+        type: string
+        default: 'https://github.com/getsentry/UnrealEngine.git'
+      clean_disk:
+        description: Clean up disk space before Docker build
+        required: true
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: 'Build for UE ${{ inputs.ue_version }} (Android)'
+    runs-on: ubuntu-latest-32-cores
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Building docker images for Android requires extra disk space for SDK/NDK
+      - name: Clean up disk space before Docker build
+        if: ${{ inputs.clean_disk == true }}
+        run: |
+          # time df -h
+          sudo time swapoff -a
+          sudo time rm -f /swapfile
+          sudo time rm -rf /usr/local/lib/android
+          sudo time rm -rf /usr/share/dotnet
+          sudo time rm -rf /usr/share/swift
+          sudo time rm -rf /usr/local/share/powershell
+          sudo time rm -rf /usr/local/.ghcup
+          sudo time rm -rf /usr/local/lib/node_modules
+          sudo time rm -rf /usr/local/share/boost
+          sudo time rm -rf /usr/lib/google-cloud-sdk
+          sudo time rm -rf /usr/lib/jvm
+          sudo time rm -rf /opt/pipx
+          sudo time rm -rf /opt/ghc
+          sudo time rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo time apt-get clean
+          sudo time rm -rf /var/lib/apt/lists/*
+          # time docker rmi $(docker image ls -aq)
+          # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
+          df -h
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.8'
+          architecture: 'x64'
+
+      - name: Install latest ue4-docker from PyPI
+        run: pip install ue4-docker
+
+      - name: Configure unreal-docker
+        run: |
+          ue4-docker setup
+
+      - name: Set Linux ARM platform name based on UE version
+        id: set_linux_arm_platform
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+        run: |
+          # UE 4.27 uses "LinuxAArch64", UE 5.x uses "LinuxArm64"
+          if [[ "$UE_VERSION" == "4.27" ]]; then
+            echo "platform_name=LinuxAArch64" >> $GITHUB_OUTPUT
+          else
+            echo "platform_name=LinuxArm64" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Unreal Engine Docker image with Android support
+        env:
+          UE_REPO: ${{ inputs.ue_repo }}
+          UE_VERSION: ${{ inputs.ue_version }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          LINUX_ARM_PLATFORM: ${{ steps.set_linux_arm_platform.outputs.platform_name }}
+        run: |
+          ue4-docker build custom -repo="$UE_REPO" -branch="$UE_VERSION" \
+          -basetag ubuntu22.04 \
+          -suffix "$UE_VERSION" \
+          -username="$DOCKER_USERNAME" \
+          -password="$DOCKER_TOKEN" \
+          --linux \
+          --target minimal \
+          --exclude debug \
+          --exclude templates \
+          --exclude ddc \
+          --prerequisites-dockerfile="./docker/ue-android-prerequisites-$UE_VERSION.dockerfile" \
+          --opt gitdependencies_args="--exclude=Mac --exclude=Win32 --exclude=Win64 --exclude=$LINUX_ARM_PLATFORM" \
+          --opt buildgraph_args="-set:HostPlatformOnly=false -set:WithAndroid=true -set:With${LINUX_ARM_PLATFORM}=false -set:WithClient=false -set:WithServer=false"
+
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push Docker image with pre-built Unreal Engine
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+        run: |
+          docker tag "adamrehn/ue4-minimal:custom-$UE_VERSION" "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-android"
+          docker push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-android"

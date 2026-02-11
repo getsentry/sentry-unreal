@@ -1,0 +1,52 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+
+jobs:
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      SAUCE_REGION: us-west-1
+      SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
+      SAUCE_SESSION_NAME: UE ${{ inputs.unreal-version }} Android Integration Test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download sample build
+        uses: actions/download-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Android)
+          path: sample-build
+
+      - name: Run integration tests
+        id: run-integration-tests
+        shell: pwsh
+        working-directory: integration-test
+        env:
+          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground-arm64.apk
+        run: |
+          cmake -B build -S .
+          Invoke-Pester Integration.Android.Tests.ps1 -CI
+
+      - name: Upload integration test output
+        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} integration test output (Android)
+          path: |
+            integration-test/output/
+          retention-days: 14
+          

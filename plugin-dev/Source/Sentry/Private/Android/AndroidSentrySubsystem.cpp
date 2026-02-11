@@ -6,6 +6,7 @@
 #include "AndroidSentryBreadcrumb.h"
 #include "AndroidSentryEvent.h"
 #include "AndroidSentryFeedback.h"
+#include "AndroidSentryHint.h"
 #include "AndroidSentryId.h"
 #include "AndroidSentryTransaction.h"
 #include "AndroidSentryTransactionContext.h"
@@ -44,7 +45,7 @@ FAndroidSentrySubsystem::~FAndroidSentrySubsystem()
 	SentryJavaClasses::ClearJavaClassRefsCache();
 }
 
-void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler)
+void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler)
 {
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 
@@ -67,6 +68,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
+	SettingsJson->SetBoolField(TEXT("enableMetrics"), settings->EnableMetrics);
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);
@@ -86,6 +88,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	if (beforeLogHandler != nullptr)
 	{
 		SettingsJson->SetNumberField(TEXT("beforeLogHandler"), (jlong)beforeLogHandler);
+	}
+	if (beforeMetricHandler != nullptr)
+	{
+		SettingsJson->SetNumberField(TEXT("beforeMetricHandler"), (jlong)beforeMetricHandler);
 	}
 
 	FString SettingsJsonStr;
@@ -112,6 +118,7 @@ void FAndroidSentrySubsystem::Close()
 		OnHandleSystemErrorDelegateHandle.Reset();
 	}
 
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "flush", "(J)V", (jlong)3000);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "close", "()V");
 }
 
@@ -163,50 +170,55 @@ void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, co
 		breadcrumbAndroid->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddLog(const FString& Body, ESentryLevel Level, const FString& Category)
+void FAndroidSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Ignore Empty Bodies
-	if (Body.IsEmpty())
-	{
-		return;
-	}
+	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
 
-	// Format body with category
-	FString FormattedMessage;
-	if (!Category.IsEmpty())
-	{
-		FormattedMessage = FString::Printf(TEXT("[%s] %s"), *Category, *Body);
-	}
-	else
-	{
-		FormattedMessage = Body;
-	}
-
-	// Use level-specific Android Sentry SDK logging functions via Java bridge
 	switch (Level)
 	{
 	case ESentryLevel::Fatal:
-		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogFatal", "(Ljava/lang/String;)V",
-			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogFatal", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
 	case ESentryLevel::Error:
-		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogError", "(Ljava/lang/String;)V",
-			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogError", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
 	case ESentryLevel::Warning:
-		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogWarn", "(Ljava/lang/String;)V",
-			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogWarn", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
 	case ESentryLevel::Info:
-		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogInfo", "(Ljava/lang/String;)V",
-			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogInfo", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
 	case ESentryLevel::Debug:
 	default:
-		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogDebug", "(Ljava/lang/String;)V",
-			*FSentryJavaObjectWrapper::GetJString(FormattedMessage));
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogDebug", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
 	}
+}
+
+void FAndroidSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
+{
+	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricCount", "(Ljava/lang/String;DLjava/util/HashMap;)V",
+		*FSentryJavaObjectWrapper::GetJString(Key), static_cast<double>(Value), attributesMap->GetJObject());
+}
+
+void FAndroidSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricDistribution", "(Ljava/lang/String;DLjava/lang/String;Ljava/util/HashMap;)V",
+		*FSentryJavaObjectWrapper::GetJString(Key), static_cast<double>(Value), *FSentryJavaObjectWrapper::GetJString(Unit), attributesMap->GetJObject());
+}
+
+void FAndroidSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "metricGauge", "(Ljava/lang/String;DLjava/lang/String;Ljava/util/HashMap;)V",
+		*FSentryJavaObjectWrapper::GetJString(Key), static_cast<double>(Value), *FSentryJavaObjectWrapper::GetJString(Unit), attributesMap->GetJObject());
 }
 
 void FAndroidSentrySubsystem::ClearBreadcrumbs()
@@ -308,8 +320,10 @@ void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedba
 {
 	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);
 
-	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureFeedback", "(Lio/sentry/protocol/Feedback;)Lio/sentry/protocol/SentryId;",
-		feedbackAndroid->GetJObject());
+	TSharedPtr<FAndroidSentryHint> hintAndroid = feedbackAndroid->GetHint();
+
+	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureFeedback", "(Lio/sentry/protocol/Feedback;Lio/sentry/Hint;)Lio/sentry/protocol/SentryId;",
+		feedbackAndroid->GetJObject(), hintAndroid ? hintAndroid->GetJObject() : nullptr);
 }
 
 void FAndroidSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
@@ -341,6 +355,16 @@ void FAndroidSentrySubsystem::RemoveTag(const FString& key)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "removeTag", "(Ljava/lang/String;)V",
 		*FSentryJavaObjectWrapper::GetJString(key));
+}
+
+void FAndroidSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	// No-op: Android SDK doesn't support global log attributes
+}
+
+void FAndroidSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	// No-op: Android SDK doesn't support global log attributes
 }
 
 void FAndroidSentrySubsystem::SetLevel(ESentryLevel level)
@@ -375,6 +399,12 @@ EUserConsent FAndroidSentrySubsystem::GetUserConsent() const
 {
 	UE_LOG(LogSentrySdk, Log, TEXT("GetUserConsent is not supported on Android. Returning default `Unknown` value."));
 	return EUserConsent::Unknown;
+}
+
+bool FAndroidSentrySubsystem::IsUserConsentRequired() const
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("IsUserConsentRequired is not supported on Android. Returning default `false` value."));
+	return false;
 }
 
 TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)

@@ -31,3 +31,12 @@ enum class EUserConsent : uint8
 	Given,
 	Unknown
 };
+
+UENUM(BlueprintType)
+enum class ESentryMetricType : uint8
+{
+	Unknown,
+	Counter,
+	Gauge,
+	Distribution
+};

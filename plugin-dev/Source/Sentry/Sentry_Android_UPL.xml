@@ -22,21 +22,6 @@
                 <setBool result="bUploadSymbols" value="$B(bUploadSymbolsAutomatically)"/>
             </false>
         </if>
-
-        <setBoolIsEqual result="bEngineMajorVersionEqual5" arg1="$I(EngineMajorVersion)" arg2="5" />
-        <setBoolIsGreaterEqual result="bEngineMinorVersionGreaterEqual5" arg1="$I(EngineMinorVersion)" arg2="5" />
-
-        <!-- In UE 5.5 and newer there's no need to bump the default Gradle version (8.7+) as it's compatible with Sentry gradle plugin anyway -->
-        <setBoolAnd result="bHasModernGradle" arg1="$B(bEngineMajorVersionEqual5)" arg2="$B(bEngineMinorVersionGreaterEqual5)"/>
-
-        <if condition="bHasModernGradle">
-            <true>
-                <log text="In UE 5.5 and newer using legacy Sentry gradle plugin in not supported."/>
-                <setBool result="bUseLegacyGradlePlugin" value="false"/>
-            </true>
-        </if>
-
-        <setBoolOr result="bSkipGradleOverride" arg1="$B(bUseLegacyGradlePlugin)" arg2="$B(bHasModernGradle)"/>
     </init>
 
     <prebuildCopies>
@@ -49,7 +34,7 @@
             <true>
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
-                <if condition="bSkipGradleOverride">
+                <if condition="bUseLegacyGradlePlugin">
                     <false>
                         <log text="Modifying engine's Gradle version used by replacing gradle-wrapper.properties"/>
                         <copyFile src="$S(PluginDir)/../../Gradle/gradle-wrapper.properties" dst="$S(BuildDir)/gradle/gradle/wrapper/gradle-wrapper.properties" />
@@ -63,6 +48,7 @@
         <addElements tag="application">
             <meta-data android:name="io.sentry.auto-init" android:value="false"/>
             <meta-data android:name="io.sentry.sdk.name" android:value="sentry.java.android.unreal"/>
+            <meta-data android:name="io.sentry.ndk.scope-sync.enable" android:value="true"/>
         </addElements>
     </androidManifestUpdates>
 
@@ -75,6 +61,7 @@
 
     <proguardAdditions>
         <insert>
+            -dontwarn android.app.ApplicationStartInfo
             -dontwarn io.sentry.unreal.**
             -keep class io.sentry.** { *; }
             -keep interface io.sentry.** { *; }
@@ -126,6 +113,7 @@
 
             dependencies {
                 implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
+                implementation "com.google.protobuf:protobuf-javalite:3.25.8"
             }
 
             repositories {
@@ -185,7 +173,7 @@
                         <insert>
                             dependencies {
                                 classpath 'com.android.tools.build:gradle:7.4.2'
-                                classpath 'io.sentry:sentry-android-gradle-plugin:5.12.2' // current
+                                classpath 'io.sentry:sentry-android-gradle-plugin:6.0.0' // current
                             }
                         </insert>
                     </false>

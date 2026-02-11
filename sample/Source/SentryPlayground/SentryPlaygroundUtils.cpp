@@ -2,6 +2,7 @@
 
 #include "SentryPlaygroundUtils.h"
 
+#include "CoreGlobals.h"
 #include "Engine/Engine.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -11,6 +12,7 @@
 #include "Async/Async.h"
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
+#include "SentryErrorOutputDevice.h"
 #include "SentryGCCallback.h"
 
 #if PLATFORM_MICROSOFT
@@ -61,6 +63,13 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 				}
 			}
 			break;
+		case ESentryAppTerminationType::MemoryCorruption:
+			{
+				void* ptr = FMemory::Malloc(1024);
+				FMemory::Free(ptr);
+				FMemory::Free(ptr);
+			}
+			break;
 		case ESentryAppTerminationType::RenderThreadCrash:
 			GEngine->Exec(nullptr, TEXT("Debug RenderCrash"));
 			break;
@@ -78,6 +87,24 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			{
 				char *assertPtr = nullptr;
 				check(assertPtr != nullptr);
+			}
+			break;
+		case ESentryAppTerminationType::AssertReentrant:
+			{
+				FSentryErrorOutputDevice* SentryErrorDevice = static_cast<FSentryErrorOutputDevice*>(GError);
+				if (SentryErrorDevice)
+				{
+					SentryErrorDevice->OnAssert.AddLambda([](const FString& Message)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("OnAssert handler called, triggering reentrant assert..."));
+
+						char* reentrantPtr = nullptr;
+						check(reentrantPtr != nullptr);
+					});
+				}
+
+				char* initialPtr = nullptr;
+				check(initialPtr != nullptr);
 			}
 			break;
 		case ESentryAppTerminationType::Ensure:

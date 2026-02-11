@@ -1,0 +1,220 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest-4-cores
+
+    steps:
+      - name: Free disk space
+        run: |
+          # time df -h
+          sudo time swapoff -a
+          sudo time rm -f /swapfile
+          sudo time rm -rf /usr/local/lib/android
+          sudo time rm -rf /usr/share/dotnet
+          sudo time rm -rf /usr/share/swift
+          sudo time rm -rf /usr/local/share/powershell
+          sudo time rm -rf /usr/local/.ghcup
+          sudo time rm -rf /usr/local/lib/node_modules
+          sudo time rm -rf /usr/local/share/boost
+          sudo time rm -rf /usr/lib/google-cloud-sdk
+          sudo time rm -rf /usr/lib/jvm
+          sudo time rm -rf /opt/pipx
+          sudo time rm -rf /opt/ghc
+          sudo time rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo time apt-get clean
+          sudo time rm -rf /var/lib/apt/lists/*
+          # time docker rmi $(docker image ls -aq)
+          # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
+          df -h
+
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start Docker container
+        env:
+          WORKSPACE_PATH: ${{ github.workspace }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+          DISALLOW_RAW_POINTERS: ${{ inputs.unreal-version == '4.27' && 'false' || 'true' }}
+        run: |
+          # We start the container with the user ID of the parent GH action user to avoid permission issues on volume.
+          # For UE 5.4 we have to enable ipv6 to fix container startup issues. See https://github.com/adamrehn/ue4-docker/issues/357
+          uid=$(id -u) # the GH action user ID
+          gid=1000     # the ue4 group in the docker container
+          user='gh'
+          set -x
+          docker network create --ipv6 --subnet 2001:0DB8::/112 ip6net
+          docker run -td \
+            --name unreal \
+            --volume "$WORKSPACE_PATH:/workspace" \
+            --workdir /workspace \
+            --user $uid:$gid \
+            --env HOME="/home/$user" \
+            --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+            --env DISALLOW_RAW_POINTERS=$DISALLOW_RAW_POINTERS \
+            --network ip6net -p 80:80 \
+            ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-android
+          docker logout ghcr.io
+          # Add the user so it has a home directory (needed to run tests later on)
+          docker exec --user root unreal useradd -u $uid -g $gid --create-home $user
+          # Ensure the gh user owns their home directory (needed for clang++ to write temp files)
+          docker exec --user root unreal chown -R $uid:$gid /home/$user
+          # Ensure CA certs are in the right directory (needed for running tests)
+          docker exec --user root unreal bash -c "
+            mkdir -p /etc/pki/tls/certs ;
+            cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt "
+
+      # Chown some paths to the GH user to make UE5 work properly. We can't just chown the whole UnrealEngine or
+      # docker would implicitly have to copy it to the container and we would run out of space on the GH runner.
+      - name: Chown Docker container paths
+        env:
+          ENGINE_PATH: ${{ inputs.unreal-version == '4.27' && 'Programs/UnrealPak/Saved' || 'Binaries/ThirdParty/DotNet' }}
+        run: |
+          uid=$(id -u) # the GH action user ID
+          docker exec --user root unreal bash -c "
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Mono/Linux ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/\"$ENGINE_PATH\" ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/USD/UsdResources/Linux ;
+            chown -R $uid /home/ue4/UnrealEngine/Engine/Programs/AutomationTool ;
+            chown -R $uid /home/ue4/android-sdk ;
+            mkdir -p /home/ue4/UnrealEngine/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Epic ;
+            mkdir -p /home/ue4/UnrealEngine/Engine/Source/Epic/UnrealEngine && chown -R $uid /home/ue4/UnrealEngine/Engine/Source/Epic ;
+            mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun ;
+            mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/Android/a/UnrealGame/Development/BuildSettings/Gen && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/Android/a/UnrealGame/Development/BuildSettings/Gen ;
+            mkdir -p /home/ue4/.config/Epic/UnrealEngine && chown -R $uid /home/ue4/.config ;
+            mkdir -p /home/ue4/UnrealEngine/UnrealTrace && chown -R $uid /home/ue4/UnrealEngine/UnrealTrace ;
+            mkdir -p /home/ue4/.gradle && chown -R $uid /home/ue4/.gradle ;            
+            mkdir -p /home/gh/.cache/tmp && chown -R $uid /home/gh/.cache ;            
+            mkdir -p /home/gh/Library/Logs && chown -R $uid /home/gh/Library "
+
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.sha }}
+
+      - uses: actions/checkout@v4
+        with:
+          path: checkout
+          submodules: recursive
+
+      - name: Extract package to sample/Plugins
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: unzip sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
+
+      - name: Compute DDC cache key
+        id: ddc-cache-key
+        run: |
+          HASH="${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
+          KEY="ue-${{ inputs.unreal-version }}-android-ddc-${HASH}"
+          echo "key=${KEY}" >> $GITHUB_OUTPUT
+          echo "DDC cache key: ${KEY}"
+
+      - name: Configure project-local DDC
+        shell: pwsh
+        run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
+
+      - name: Restore cached DDC
+        id: cache-ddc
+        uses: actions/cache/restore@v4
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+          restore-keys: |
+            ue-${{ inputs.unreal-version }}-android-ddc
+
+      - name: Set permissions for sample
+        # sentry-native requires write access to sample project directory in order to initialize itself properly
+        run: docker exec -w /workspace/checkout unreal chmod -R +x sample
+
+      - name: Set execute permission for Python3
+        # Python3 is needed for post-build symbol upload script
+        run: docker exec --user root unreal chmod +x /home/ue4/UnrealEngine/Engine/Binaries/ThirdParty/Python3/Linux/bin/python3
+
+      - name: Update engine's build configuration
+        run: |
+          docker exec unreal bash -c "
+            mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
+            cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "
+
+      - name: Build Android package (Development)
+        id: build-android-dev
+        run: |
+          docker exec -w /workspace/checkout/sample \
+            -e TMPDIR=/home/gh/.cache/tmp \
+            unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+            -project=/workspace/checkout/sample/SentryPlayground.uproject \
+            -archivedirectory=/workspace/checkout/sample/Builds \
+            -platform=Android \
+            -clientconfig=Development \
+            -nop4 \
+            -cook \
+            -iterate \
+            -build \
+            -stage \
+            -prereqs \
+            -package \
+            -archive
+      
+      - name: Build Android package (Shipping)
+        id: build-android-shipping
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          docker exec -w /workspace/checkout/sample \
+            -e TMPDIR=/home/gh/.cache/tmp \
+            -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+            -e SENTRY_ORG="$SENTRY_ORG" \
+            -e SENTRY_PROJECT="$SENTRY_PROJECT" \
+            unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+            -project=/workspace/checkout/sample/SentryPlayground.uproject \
+            -archivedirectory=/workspace/checkout/sample/Builds \
+            -platform=Android \
+            -distribution \
+            -clientconfig=Shipping \
+            -nop4 \
+            -cook \
+            -iterate \
+            -build \
+            -stage \
+            -prereqs \
+            -package \
+            -archive
+
+      - name: Save DDC to cache
+        if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+
+      - name: Collect build logs on failure
+        if: ${{ always() && (steps.build-android-dev.outcome == 'failure' || steps.build-android-shipping.outcome == 'failure') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} Android build logs
+          path: |
+            checkout/sample/Saved/Logs
+
+      - name: Upload Android build
+        if: ${{ success() && (steps.build-android-dev.outcome == 'success' && steps.build-android-shipping.outcome == 'success') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Android)
+          path: checkout/sample/Builds/Android/
+          retention-days: 1

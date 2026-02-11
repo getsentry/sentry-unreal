@@ -22,6 +22,7 @@ class USentrySettings;
 class USentryBeforeSendHandler;
 class USentryBeforeLogHandler;
 class USentryBeforeBreadcrumbHandler;
+class USentryBeforeMetricHandler;
 class USentryTraceSampler;
 
 DECLARE_DELEGATE_OneParam(FSentryScopeDelegate, TSharedPtr<ISentryScope>);
@@ -32,13 +33,16 @@ public:
 	virtual ~ISentrySubsystem() = default;
 
 	/** Methods that map directly to the platform's Sentry SDK API */
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) = 0;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) = 0;
-	virtual void AddLog(const FString& Body, ESentryLevel Level, const FString& Category) = 0;
+	virtual void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes) = 0;
+	virtual void AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes) = 0;
+	virtual void AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes) = 0;
+	virtual void AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes) = 0;
 	virtual void ClearBreadcrumbs() = 0;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
 	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
@@ -54,12 +58,15 @@ public:
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) = 0;
 	virtual void SetTag(const FString& key, const FString& value) = 0;
 	virtual void RemoveTag(const FString& key) = 0;
+	virtual void SetAttribute(const FString& key, const FSentryVariant& value) = 0;
+	virtual void RemoveAttribute(const FString& key) = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;
 	virtual void StartSession() = 0;
 	virtual void EndSession() = 0;
 	virtual void GiveUserConsent() = 0;
 	virtual void RevokeUserConsent() = 0;
 	virtual EUserConsent GetUserConsent() const = 0;
+	virtual bool IsUserConsentRequired() const = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation, bool bindToScope) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context, bool bindToScope) = 0;
 	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope) = 0;

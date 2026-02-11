@@ -4,14 +4,15 @@
 
 #if USE_SENTRY_NATIVE
 
-#include "Misc/EngineVersionComparison.h"
+#include "MicrosoftSentryCrashLogger.h"
 
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
 
 class FMicrosoftSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) override;
+	virtual void Close() override;
 
 protected:
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) override;
@@ -19,6 +20,12 @@ protected:
 
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void AddByteAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+
+	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
+
+private:
+	/** Crash logger for safe stack trace logging during crashes */
+	TUniquePtr<FMicrosoftSentryCrashLogger> CrashLogger;
 };
 
 #endif // USE_SENTRY_NATIVE

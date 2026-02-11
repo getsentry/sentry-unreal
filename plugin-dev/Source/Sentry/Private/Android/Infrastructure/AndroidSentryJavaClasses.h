@@ -29,6 +29,7 @@ struct SentryJavaClasses
 	const static FSentryJavaClass SentryTraceHeader;
 	const static FSentryJavaClass SentryLogEvent;
 	const static FSentryJavaClass SentryLogLevel;
+	const static FSentryJavaClass SentryMetricsEvent;
 
 	// System Java classes
 	const static FSentryJavaClass ArrayList;

@@ -5,6 +5,8 @@
 
 $ErrorActionPreference = "Stop"
 
+. $PSScriptRoot/pack-utils.ps1
+
 $projectRoot = "$PSScriptRoot/../.."
 
 $accept = $args.Count -gt 0 -and $args[0] -eq "accept"
@@ -20,14 +22,11 @@ function testFiles()
         exit 2
     }
 
-    # TODO: Extract this functionality to share between `test-contents.ps1` and `pack.ps1`
-    # See https://github.com/getsentry/sentry-unreal/issues/820 for more details.
-    $pluginSpec = Get-Content "plugin-dev/Sentry.uplugin"
-    $version = [regex]::Match("$pluginSpec", '"VersionName": "([^"]+)"').Groups[1].Value
+    $pluginVersion = Get-PluginVersion
 
-    Write-Host "Searching version $version release packages..."
+    Write-Host "Searching version $pluginVersion release packages..."
 
-    $packages = Get-ChildItem -Path "$projectRoot/*" -Include "sentry-unreal-$version-engine*.zip"
+    $packages = Get-ChildItem -Path "$projectRoot/*" -Include "sentry-unreal-$pluginVersion-engine*.zip"
     $expectedPackagesCount = (Get-Content "$PSScriptRoot/engine-versions.txt").Length
     if ($packages.Length -ne $expectedPackagesCount)
     {

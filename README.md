@@ -9,7 +9,7 @@
 Sentry SDK for Unreal Engine
 ===========
 
-This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for both desktop and mobile. Also, it [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
+This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for both desktop, mobile and consoles. Also, it [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
 
 ## Downloads
 
@@ -36,6 +36,7 @@ The SDK compiles with three latest engine versions.
 
 Blog posts:
 * [Building the Sentry Unreal Engine SDK with GitHub Actions](https://blog.sentry.io/building-the-sentry-unreal-engine-sdk-with-github-actions/)
+* [Game Console Support GA](https://blog.sentry.io/error-monitoring-and-crash-reporting-for-gaming-consoles/)
 
 ## Known Limitations
 
@@ -77,4 +78,4 @@ Please see the [contribution guide](./CONTRIBUTING.md).
 * [![Discussions](https://img.shields.io/github/discussions/getsentry/sentry-unreal.svg)](https://github.com/getsentry/sentry-unreal/discussions)
 * [![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/PXa5Apfe7K)  
 * [![Stack Overflow](https://img.shields.io/badge/stack%20overflow-sentry-green.svg)](http://stackoverflow.com/questions/tagged/sentry)
-* [![Twitter Follow](https://img.shields.io/twitter/follow/getsentry?label=getsentry&style=social)](https://twitter.com/intent/follow?screen_name=getsentry)
+* [![X Follow](https://img.shields.io/twitter/follow/sentry?label=sentry&style=social)](https://x.com/intent/follow?screen_name=sentry)

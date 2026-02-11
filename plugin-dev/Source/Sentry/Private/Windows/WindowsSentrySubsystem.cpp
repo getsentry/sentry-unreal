@@ -5,24 +5,19 @@
 #if USE_SENTRY_NATIVE
 
 #include "SentryDefines.h"
+#include "SentrySettings.h"
+
 #include "Utils/SentryPlatformDetectionUtils.h"
 
-#include "Misc/OutputDeviceRedirector.h"
 #include "Misc/Paths.h"
-#include "Windows/Infrastructure/WindowsSentryConverters.h"
-#include "Windows/WindowsPlatformStackWalk.h"
 
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
-#include <winternl.h>
-
-void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler)
+void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryBeforeMetricHandler* BeforeMetricHandler, USentryTraceSampler* TraceSampler)
 {
 	// Detect Wine/Proton before initializing
 	WineProtonInfo = FSentryPlatformDetectionUtils::DetectWineProton();
 
-	// Call parent implementation
-	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, TraceSampler);
+	// Call parent implementation (handles crash logger initialization)
+	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, BeforeMetricHandler, TraceSampler);
 
 	// Add Wine/Proton context for all events if detected
 	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
@@ -102,8 +97,8 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	// Context and tags are already set globally during InitWithSettings
-	// Just call parent implementation
+	// Windows-specific crash handling can go here if needed in the future
+	// For now, just delegate to parent which handles the crash logger
 	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
 }
 

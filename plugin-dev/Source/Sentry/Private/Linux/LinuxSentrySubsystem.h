@@ -9,7 +9,7 @@
 class FLinuxSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) override;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
@@ -18,6 +18,8 @@ protected:
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
 
 	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler"); }
+
+	virtual bool IsScreenshotSupported() const override { return true; }
 };
 
 typedef FLinuxSentrySubsystem FPlatformSentrySubsystem;

@@ -4,13 +4,14 @@
 
 #if USE_SENTRY_NATIVE
 
-#include "Microsoft/MicrosoftSentrySubsystem.h"
 #include "Utils/SentryPlatformInfo.h"
+
+#include "Microsoft/MicrosoftSentrySubsystem.h"
 
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryTraceSampler* TraceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryBeforeMetricHandler* BeforeMetricHandler, USentryTraceSampler* TraceSampler) override;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
@@ -18,6 +19,8 @@ protected:
 	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler.exe"); }
 
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
+
+	virtual bool IsScreenshotSupported() const override { return true; }
 
 private:
 	/** Wine/Proton detection info */

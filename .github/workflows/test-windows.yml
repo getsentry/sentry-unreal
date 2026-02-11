@@ -82,13 +82,11 @@ jobs:
         id: run-tests
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }}
-          SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY: true
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
           docker exec `
-            -e SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY="$env:SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY" `
             -e SENTRY_AUTH_TOKEN="$env:SENTRY_AUTH_TOKEN" `
             -e SENTRY_ORG="$env:SENTRY_ORG" `
             -e SENTRY_PROJECT="$env:SENTRY_PROJECT" `

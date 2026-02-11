@@ -2,6 +2,7 @@
 
 #include "SentrySubsystem.h"
 #include "SentryEvent.h"
+#include "SentrySettings.h"
 #include "SentrySpan.h"
 #include "SentryTests.h"
 #include "SentryTransaction.h"
@@ -29,7 +30,10 @@ void SentrySubsystemSpec::Define()
 
 		if (SentrySubsystem && !SentrySubsystem->IsEnabled())
 		{
-			SentrySubsystem->Initialize();
+			SentrySubsystem->InitializeWithSettings(FConfigureSettingsNativeDelegate::CreateLambda([=](USentrySettings* Settings)
+			{
+				Settings->EnableTracing = false;
+			}));
 		}
 	});
 

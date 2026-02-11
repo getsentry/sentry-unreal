@@ -20,6 +20,7 @@ public:
 	virtual FString GetContactEmail() const override { return TEXT(""); }
 	virtual void SetAssociatedEvent(const FString& eventId) override {}
 	virtual FString GetAssociatedEvent() const override { return TEXT(""); }
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override {}
 };
 
 typedef FNullSentryFeedback FPlatformSentryFeedback;
