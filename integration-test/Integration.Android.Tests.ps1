@@ -337,7 +337,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
                 # Fetch logs from Sentry with automatic polling
                 try {
-                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed')
                 }
                 catch {
                     Write-Host "Warning: $_" -ForegroundColor Red
@@ -388,15 +388,8 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $log.'to_be_removed' | Should -BeNullOrEmpty
         }
 
-        It "Should have global attribute set on subsystem" {
-            $log = $script:CapturedLogs[0]
-            $log.'global_attr' | Should -Be 'global_value'
-        }
-
-        It "Should not have global attribute that was removed from subsystem" {
-            $log = $script:CapturedLogs[0]
-            $log.'global_removed' | Should -BeNullOrEmpty
-        }
+        # Note: Global log attributes (SetAttribute/RemoveAttribute on subsystem) are not supported
+        # on Android (sentry-java) - the implementation is a no-op. These are tested in desktop tests only.
     }
 }
 
