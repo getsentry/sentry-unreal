@@ -5,7 +5,7 @@
 ### Features
 
 - Add Metrics API support ([#1214](https://github.com/getsentry/sentry-unreal/pull/1214))
-- Add pluging settings allowing to attach all threads info to captured events (Android) ([#1137](https://github.com/getsentry/sentry-unreal/pull/1137))
+- Add Android tombstone support allowing to attach all threads info to captured crashes ([#1137](https://github.com/getsentry/sentry-unreal/pull/1137))
 
 ### Dependencies
 
