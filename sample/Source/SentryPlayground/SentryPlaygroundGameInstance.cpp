@@ -165,6 +165,10 @@ void USentryPlaygroundGameInstance::RunInitOnly()
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
+#if PLATFORM_ANDROID
+	FPlatformProcess::Sleep(1.0f);
+#endif
+
 	// Ensure events were flushed
 	SentrySubsystem->Close();
 
