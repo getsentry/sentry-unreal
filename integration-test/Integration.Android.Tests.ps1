@@ -337,7 +337,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
                 # Fetch logs from Sentry with automatic polling
                 try {
-                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed')
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
                 }
                 catch {
                     Write-Host "Warning: $_" -ForegroundColor Red
@@ -386,6 +386,16 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should not have attribute removed by BeforeLogHandler" {
             $log = $script:CapturedLogs[0]
             $log.'to_be_removed' | Should -BeNullOrEmpty
+        }
+
+        It "Should have global attribute set on subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.'global_attr' | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.'global_removed' | Should -BeNullOrEmpty
         }
     }
 }
