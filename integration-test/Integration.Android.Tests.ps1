@@ -173,7 +173,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
-        $metricIntentArgs = "-e cmdline '-metric-capture -ini:Engine:[/Script/Sentry.SentrySettings]:EnableMetrics=True'"
+        $metricIntentArgs = "-e cmdline '-metric-capture -ini:Engine:[/Script/Sentry.SentrySettings]:EnableMetrics=True -ini:Engine:[/Script/Sentry.SentrySettings]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler'"
         $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
 
         Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
@@ -392,7 +392,9 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
     Context "Metrics Capture Tests" {
         BeforeAll {
             $script:MetricResult = $global:AndroidMetricResult
-            $script:CapturedMetrics = @()
+            $script:CapturedCounterMetrics = @()
+            $script:CapturedDistributionMetrics = @()
+            $script:CapturedGaugeMetrics = @()
             $script:TestId = $null
 
             # Parse test ID from output (format: METRIC_TRIGGERED: <test-id>)
@@ -401,12 +403,28 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
                 $script:TestId = ($metricTriggeredLines[0] -split 'METRIC_TRIGGERED: ')[-1].Trim()
                 Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
 
-                # Fetch metrics from Sentry with automatic polling
+                # Fetch all three metric types from Sentry with automatic polling
+                $metricFields = @('handler_added', 'to_be_removed')
+
                 try {
-                    $script:CapturedMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId
+                    $script:CapturedCounterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
                 }
                 catch {
-                    Write-Host "Warning: $_" -ForegroundColor Red
+                    Write-Host "Warning (counter): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedDistributionMetrics = Get-SentryTestMetric -MetricName 'test.integration.distribution' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (distribution): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedGaugeMetrics = Get-SentryTestMetric -MetricName 'test.integration.gauge' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (gauge): $_" -ForegroundColor Red
                 }
             }
             else {
@@ -424,28 +442,67 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $testResultLine | Should -Match '"success"\s*:\s*true'
         }
 
-        It "Should capture metric in Sentry" {
-            $script:CapturedMetrics | Should -Not -BeNullOrEmpty
-            $script:CapturedMetrics.Count | Should -BeGreaterThan 0
+        # Counter metric assertions
+        It "Should capture counter metric in Sentry" {
+            $script:CapturedCounterMetrics | Should -Not -BeNullOrEmpty
         }
 
-        It "Should have correct metric name" {
-            $metric = $script:CapturedMetrics[0]
+        It "Should have correct counter metric name and type" {
+            $metric = $script:CapturedCounterMetrics[0]
             $metric.'metric.name' | Should -Be 'test.integration.counter'
-        }
-
-        It "Should have correct metric type" {
-            $metric = $script:CapturedMetrics[0]
             $metric.'metric.type' | Should -Be 'counter'
         }
 
-        It "Should have correct metric value" {
-            $metric = $script:CapturedMetrics[0]
+        It "Should have correct counter metric value" {
+            $metric = $script:CapturedCounterMetrics[0]
             $metric.value | Should -Be 1.0
         }
 
+        # Distribution metric assertions
+        It "Should capture distribution metric in Sentry" {
+            $script:CapturedDistributionMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct distribution metric name and type" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.distribution'
+            $metric.'metric.type' | Should -Be 'distribution'
+        }
+
+        It "Should have correct distribution metric value" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.value | Should -Be 42.5
+        }
+
+        # Gauge metric assertions
+        It "Should capture gauge metric in Sentry" {
+            $script:CapturedGaugeMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct gauge metric name and type" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.gauge'
+            $metric.'metric.type' | Should -Be 'gauge'
+        }
+
+        It "Should have correct gauge metric value" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.value | Should -Be 15.0
+        }
+
+        # BeforeMetricHandler attribute assertions (verified on counter, applies to all)
+        It "Should have attribute added by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'to_be_removed' | Should -BeNullOrEmpty
+        }
+
         It "Should have test_id attribute matching captured ID" {
-            $metric = $script:CapturedMetrics[0]
+            $metric = $script:CapturedCounterMetrics[0]
             $metric.test_id | Should -Be $script:TestId
         }
     }

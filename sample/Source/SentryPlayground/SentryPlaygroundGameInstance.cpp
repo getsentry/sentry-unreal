@@ -7,6 +7,7 @@
 #include "SentrySettings.h"
 #include "SentryPlaygroundUtils.h"
 #include "SentryUser.h"
+#include "SentryUnit.h"
 
 #include "CoreGlobals.h"
 #include "HAL/Platform.h"
@@ -168,10 +169,21 @@ void USentryPlaygroundGameInstance::RunMetricTest()
 
 	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
-	TMap<FString, FSentryVariant> Attributes;
-	Attributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	TMap<FString, FSentryVariant> CounterAttributes;
+	CounterAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	CounterAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
 
-	SentrySubsystem->AddCountWithAttributes(TEXT("test.integration.counter"), 1, Attributes);
+	TMap<FString, FSentryVariant> DistributionAttributes;
+	DistributionAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	DistributionAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	TMap<FString, FSentryVariant> GaugeAttributes;
+	GaugeAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	GaugeAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	SentrySubsystem->AddCountWithAttributes(TEXT("test.integration.counter"), 1, CounterAttributes);
+	SentrySubsystem->AddDistributionWithAttributes(TEXT("test.integration.distribution"), 42.5f, FSentryUnit(ESentryUnit::Millisecond), DistributionAttributes);
+	SentrySubsystem->AddGaugeWithAttributes(TEXT("test.integration.gauge"), 15.0f, FSentryUnit(ESentryUnit::Byte), GaugeAttributes);
 
 	UE_LOG(LogSentrySample, Display, TEXT("METRIC_TRIGGERED: %s\n"), *TestId);
 
