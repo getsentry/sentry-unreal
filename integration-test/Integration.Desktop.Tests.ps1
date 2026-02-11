@@ -395,7 +395,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
-    Context "Metrics Capture Tests" {
+    # Metrics are not supported on Apple platforms (macOS/iOS)
+    Context "Metrics Capture Tests" -Skip:$IsMacOS {
         BeforeAll {
             $script:MetricResult = $null
             $script:CapturedMetrics = @()
