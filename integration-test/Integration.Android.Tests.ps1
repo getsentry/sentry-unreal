@@ -167,6 +167,16 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
 
         Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 4: Metric test - captures custom metric
+        # ==========================================
+
+        Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
+        $metricIntentArgs = "-e cmdline '-metric-capture -ini:Engine:[/Script/Sentry.SentrySettings]:EnableMetrics=True'"
+        $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
+
+        Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
     }
 
     AfterAll {
@@ -376,6 +386,67 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have test_id attribute matching captured ID" {
             $log = $script:CapturedLogs[0]
             $log.'test_id' | Should -Be $script:TestId
+        }
+    }
+
+    Context "Metrics Capture Tests" {
+        BeforeAll {
+            $script:MetricResult = $global:AndroidMetricResult
+            $script:CapturedMetrics = @()
+            $script:TestId = $null
+
+            # Parse test ID from output (format: METRIC_TRIGGERED: <test-id>)
+            $metricTriggeredLines = @($script:MetricResult.Output | Where-Object { $_ -match 'METRIC_TRIGGERED: ' })
+            if ($metricTriggeredLines.Count -gt 0) {
+                $script:TestId = ($metricTriggeredLines[0] -split 'METRIC_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
+
+                # Fetch metrics from Sentry with automatic polling
+                try {
+                    $script:CapturedMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId
+                }
+                catch {
+                    Write-Host "Warning: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No METRIC_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output METRIC_TRIGGERED with test ID" {
+            $script:TestId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:MetricResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture metric in Sentry" {
+            $script:CapturedMetrics | Should -Not -BeNullOrEmpty
+            $script:CapturedMetrics.Count | Should -BeGreaterThan 0
+        }
+
+        It "Should have correct metric name" {
+            $metric = $script:CapturedMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.counter'
+        }
+
+        It "Should have correct metric type" {
+            $metric = $script:CapturedMetrics[0]
+            $metric.'metric.type' | Should -Be 'counter'
+        }
+
+        It "Should have correct metric value" {
+            $metric = $script:CapturedMetrics[0]
+            $metric.value | Should -Be 1.0
+        }
+
+        It "Should have test_id attribute matching captured ID" {
+            $metric = $script:CapturedMetrics[0]
+            $metric.test_id | Should -Be $script:TestId
         }
     }
 }
