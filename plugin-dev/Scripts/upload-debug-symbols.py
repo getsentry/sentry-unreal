@@ -5,6 +5,7 @@ import os
 import platform
 import subprocess
 import time
+import json
 
 
 def log(message):
@@ -92,6 +93,48 @@ def run_cmd_with_retry(cmd, max_retries=3, retry_delay_sec=2):
         break
 
     return result
+
+
+def get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config):
+    # For Development builds use short name: {TargetName}.target
+    if target_config == "Development":
+        short_path = os.path.join(project_binaries_path, f"{target_name}.target")
+        if os.path.exists(short_path):
+            return short_path
+
+    # For Non-Development use full name: {TargetName}-{Platform}-{Config}.target
+    full_path = os.path.join(project_binaries_path, f"{target_name}-{target_platform}-{target_config}.target")
+    if os.path.exists(full_path):
+        return full_path
+
+    return None
+
+
+def collect_symbol_files_from_receipt(receipt_path, project_dir):
+    try:
+        with open(receipt_path, 'r', encoding='utf-8') as f:
+            receipt = json.load(f)
+    except Exception as e:
+        log(f"Error parsing build receipt {receipt_path}: {e}")
+        return []
+
+    symbol_types = {'SymbolFile', 'Executable'}
+    files = []
+
+    for product in receipt.get('BuildProducts', []):
+        if product.get('Type') not in symbol_types:
+            continue
+
+        path = product.get('Path', '')
+        # Resolve $(ProjectDir) placeholder
+        path = path.replace('$(ProjectDir)', project_dir)
+        # Normalize path separators
+        path = os.path.normpath(path)
+
+        if os.path.exists(path):
+            files.append(path)
+
+    return files
 
 
 def main():
@@ -212,16 +255,38 @@ def main():
             log("Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...")
             return 0
 
+    # Find target's build receipt and collect symbol files
+    receipt_path = get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config)
+
+    if receipt_path:
+        symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir)
+        log(f"Found {len(symbol_files)} symbol file(s) for target '{target_name}'")
+    else:
+        symbol_files = []
+        log(f"Build receipt not found for target '{target_name}'. Falling back to directory upload.")
+
     # Construct the upload command
-    upload_cmd = [
-        cli_exec,
-        'debug-files',
-        'upload',
-        *cli_args,
-        '--log-level', cli_log_level,
-        project_binaries_path,
-        plugin_binaries_path
-    ]
+    if symbol_files:
+        # Upload specific files from the receipt (includes plugin binaries)
+        upload_cmd = [
+            cli_exec,
+            'debug-files',
+            'upload',
+            *cli_args,
+            '--log-level', cli_log_level,
+            *symbol_files
+        ]
+    else:
+        # Fallback: upload entire binaries directory (legacy behavior)
+        upload_cmd = [
+            cli_exec,
+            'debug-files',
+            'upload',
+            *cli_args,
+            '--log-level', cli_log_level,
+            project_binaries_path,
+            plugin_binaries_path
+        ]
 
     try:
         # Execute the upload command with retry logic to avoid linker file locking issues
