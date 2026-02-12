@@ -147,9 +147,21 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
 
         # ==========================================
-        # RUN 2: Message test - uploads crash from Run 1 + captures message
+        # RUN 2: Init-only - flushes crash event from Run 1
         # ==========================================
-        # Currently we need to run again so that Sentry sends the crash event captured during the previous app session.
+        # The crash is captured but NOT uploaded immediately on Android,
+        # so we need to run the app again to send it to Sentry.
+        # -init-only allows starting the app to flush captured events and quit right after.
+
+        Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
+        $initOnlyIntentArgs = "-e cmdline -init-only"
+        $global:AndroidInitOnlyResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $initOnlyIntentArgs
+
+        Write-Host "Init-only exit code: $($global:AndroidInitOnlyResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 3: Message test - captures message
+        # ==========================================
 
         Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
         $messageIntentArgs = "-e cmdline -message-capture"
@@ -158,7 +170,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 
         # ==========================================
-        # RUN 3: Log test - captures structured log
+        # RUN 4: Log test - captures structured log
         # ==========================================
 
         Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
@@ -189,7 +201,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
     Context "Crash Capture Tests" {
         BeforeAll {
-            # Crash event is sent during the MESSAGE run (Run 2)
+            # Crash event is sent during the INIT-ONLY run (Run 2)
             # But the crash_id comes from the CRASH run (Run 1)
             $script:CrashResult = $global:AndroidCrashResult
             $script:CrashEvent = $null
@@ -201,7 +213,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
                 Write-Host "Crash ID captured: $($eventIds[0])" -ForegroundColor Cyan
                 $crashId = $eventIds[0]
     
-                # Fetch crash event using the tag (event was sent during message run)
+                # Fetch crash event using the tag (event was sent during init-only run)
                 try {
                     $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
                     Write-Host "Crash event fetched from Sentry successfully" -ForegroundColor Green
@@ -221,7 +233,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $eventIds.Count | Should -Be 1
         }
     
-        It "Should capture crash event in Sentry (uploaded during next run)" {
+        It "Should capture crash event in Sentry (uploaded during init-only run)" {
             $script:CrashEvent | Should -Not -BeNullOrEmpty
         }
     
