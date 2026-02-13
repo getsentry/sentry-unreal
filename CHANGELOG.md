@@ -5,6 +5,7 @@
 ### Features
 
 - Add Metrics API support ([#1214](https://github.com/getsentry/sentry-unreal/pull/1214))
+- Add offline caching support for native platforms (WIndows/Linux/Xbox) ([#1231](https://github.com/getsentry/sentry-unreal/pull/1231))
 - Add Android tombstone support allowing to attach all threads info to captured crashes ([#1137](https://github.com/getsentry/sentry-unreal/pull/1137))
 
 ### Dependencies
