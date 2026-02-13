@@ -255,38 +255,28 @@ def main():
             log("Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...")
             return 0
 
-    # Find target's build receipt and collect symbol files
+    # Find target's build receipt
     receipt_path = get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config)
 
-    if receipt_path:
-        symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir)
-        log(f"Found {len(symbol_files)} symbol file(s) for target '{target_name}'")
-    else:
-        symbol_files = []
-        log(f"Build receipt not found for target '{target_name}'. Falling back to directory upload.")
+    if not receipt_path:
+        log(f"Error: Build receipt not found for target '{target_name}'. Skipping...")
+        return 1
 
-    # Construct the upload command
-    if symbol_files:
-        # Upload specific files from the receipt (includes plugin binaries)
-        upload_cmd = [
-            cli_exec,
-            'debug-files',
-            'upload',
-            *cli_args,
-            '--log-level', cli_log_level,
-            *symbol_files
-        ]
-    else:
-        # Fallback: upload entire binaries directory (legacy behavior)
-        upload_cmd = [
-            cli_exec,
-            'debug-files',
-            'upload',
-            *cli_args,
-            '--log-level', cli_log_level,
-            project_binaries_path,
-            plugin_binaries_path
-        ]
+    # Extract symbol files from build receipt and resolve paths
+    symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir)
+
+    if not symbol_files:
+        log(f"No symbol files found in build receipt for target '{target_name}'. Skipping...")
+        return 0
+
+    upload_cmd = [
+        cli_exec,
+        'debug-files',
+        'upload',
+        *cli_args,
+        '--log-level', cli_log_level,
+        *symbol_files
+    ]
 
     try:
         # Execute the upload command with retry logic to avoid linker file locking issues
