@@ -161,7 +161,6 @@ def main():
     project_dir = os.path.dirname(os.path.abspath(project_file))
 
     project_binaries_path = os.path.join(project_dir, 'Binaries', target_platform)
-    plugin_binaries_path = os.path.join(plugin_dir, 'Source', 'ThirdParty', target_platform)
 
     config_path = os.path.join(project_dir, 'Config', 'DefaultEngine.ini')
 
@@ -260,7 +259,7 @@ def main():
 
     if not receipt_path:
         log(f"Error: Build receipt not found for target '{target_name}'. Skipping...")
-        return 1
+        return 0
 
     # Extract symbol files from build receipt and resolve paths
     symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir)
