@@ -359,13 +359,13 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOnCrashLogging;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
-		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only."))
-	bool EnableOfflineCaching;
+		Meta = (DisplayName = "Max cached items", ToolTip = "Maximum number of envelopes to keep in the cache directory. On startup, oldest entries are removed until the count is within this limit.",
+			ClampMin = 0))
+	int32 CacheMaxItems;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
-		Meta = (DisplayName = "Max cached items", ToolTip = "Maximum number of items in the cache directory. On startup, oldest entries are removed until the count is within this limit. Set to 0 for no limit.",
-			EditCondition = "EnableOfflineCaching", ClampMin = 0))
-	int32 CacheMaxItems;
+		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))
+	bool EnableOfflineCaching;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
 		Meta = (DisplayName = "Max cache size (bytes)", ToolTip = "Maximum total size in bytes for the cache directory. On startup, oldest entries are removed until the size is within this limit. Set to 0 for no limit.",

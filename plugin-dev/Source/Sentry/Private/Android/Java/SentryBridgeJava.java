@@ -82,6 +82,7 @@ public class SentryBridgeJava {
                     options.setTombstoneEnabled(settingJson.getBoolean("enableTombstone"));
 					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));
 					options.getMetrics().setEnabled(settingJson.getBoolean("enableMetrics"));
+					options.setMaxCacheItems(settingJson.getInt("maxCacheItems"));
 					if(settingJson.has("tracesSampleRate")) {
 						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
 					}

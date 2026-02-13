@@ -62,6 +62,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.debug = settings->Debug;
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
+			options.maxCacheItems = settings->CacheMaxItems;
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
 			options.enableLogs = settings->EnableStructuredLogging;
