@@ -24,6 +24,7 @@ private:
 	void RunCrashTest(ESentryAppTerminationType CrashType);
 	void RunMessageTest();
 	void RunLogTest();
+	void RunMetricTest();
 	void RunInitOnly();
 
 	void ConfigureTestContext();
