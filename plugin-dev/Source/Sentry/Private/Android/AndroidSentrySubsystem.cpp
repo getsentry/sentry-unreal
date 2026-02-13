@@ -71,7 +71,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
 	SettingsJson->SetBoolField(TEXT("enableMetrics"), settings->EnableMetrics);
-	SettingsJson->SetNumberField(TEXT("maxCacheItems"), settings->CacheMaxItems);
+	if (settings->EnableOfflineCaching)
+	{
+		SettingsJson->SetNumberField(TEXT("maxCacheItems"), settings->CacheMaxItems);
+	}
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);

@@ -62,7 +62,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 			options.debug = settings->Debug;
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
-			options.maxCacheItems = settings->CacheMaxItems;
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
 			options.enableLogs = settings->EnableStructuredLogging;
@@ -89,6 +88,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				[options addInAppInclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
+			if (settings->EnableOfflineCaching)
+			{
+				options.maxCacheItems = settings->CacheMaxItems;
+			}
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{
 				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
