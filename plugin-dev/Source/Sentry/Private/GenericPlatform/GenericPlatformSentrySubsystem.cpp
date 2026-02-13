@@ -432,6 +432,14 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		sentry_options_set_require_user_consent(options, 1);
 	}
 
+	if (settings->EnableOfflineCaching)
+	{
+		sentry_options_set_cache_keep(options, 1);
+		sentry_options_set_cache_max_items(options, settings->CacheMaxItems);
+		sentry_options_set_cache_max_size(options, settings->CacheMaxSize);
+		sentry_options_set_cache_max_age(options, settings->CacheMaxAge);
+	}
+
 	int initResult = sentry_init(options);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
