@@ -152,8 +152,14 @@ void USentryPlaygroundGameInstance::RunLogTest()
 
 	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
+	SentrySubsystem->SetAttribute(TEXT("global_attr"), FSentryVariant(TEXT("global_value")));
+
+	SentrySubsystem->SetAttribute(TEXT("global_removed"), FSentryVariant(TEXT("should_not_appear")));
+	SentrySubsystem->RemoveAttribute(TEXT("global_removed"));
+
 	TMap<FString, FSentryVariant> Attributes;
 	Attributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	Attributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
 
 	SentrySubsystem->LogWarningWithAttributes(LogMessage, Attributes, LogCategory);
 
