@@ -7,6 +7,10 @@
 - Add Metrics API support ([#1214](https://github.com/getsentry/sentry-unreal/pull/1214))
 - Add Android tombstone support allowing to attach all threads info to captured crashes ([#1137](https://github.com/getsentry/sentry-unreal/pull/1137))
 
+### Fixes
+
+- Fix symbol upload to include only debug files for the current build target ([#1228](https://github.com/getsentry/sentry-unreal/pull/1228))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.3.0 to v9.4.1 ([#1218](https://github.com/getsentry/sentry-unreal/pull/1218), [#1227](https://github.com/getsentry/sentry-unreal/pull/1227))
