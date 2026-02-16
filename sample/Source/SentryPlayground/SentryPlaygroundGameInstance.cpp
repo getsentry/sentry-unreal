@@ -6,8 +6,11 @@
 #include "SentrySubsystem.h"
 #include "SentrySettings.h"
 #include "SentryPlaygroundUtils.h"
+#include "SentryBreadcrumb.h"
+#include "SentryScope.h"
 #include "SentryUser.h"
 #include "SentryUnit.h"
+#include "SentryVariant.h"
 
 #include "CoreGlobals.h"
 #include "HAL/Platform.h"
@@ -124,7 +127,29 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
-	FString EventId = SentrySubsystem->CaptureMessage(TEXT("Integration test message"));
+	FString EventId = SentrySubsystem->CaptureMessageWithScope(TEXT("Integration test message"), FConfigureScopeNativeDelegate::CreateLambda([](USentryScope* Scope)
+		{
+			// Local scope tag
+			Scope->SetTag(TEXT("scope.locality"), TEXT("local"));
+
+			// Local scope extras (one persists, one for beforeSend to remove)
+			Scope->SetExtra(TEXT("local_extra"), FSentryVariant(TEXT("local_extra_value")));
+			Scope->SetExtra(TEXT("extra_to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+			// Local scope context
+			TMap<FString, FSentryVariant> LocalContext;
+			LocalContext.Add(TEXT("local_key"), FSentryVariant(TEXT("local_value")));
+			Scope->SetContext(TEXT("local_context"), LocalContext);
+
+			// Local scope breadcrumb
+			USentryBreadcrumb* Breadcrumb = NewObject<USentryBreadcrumb>();
+			Breadcrumb->Initialize();
+			Breadcrumb->SetMessage(TEXT("Local scope breadcrumb"));
+			Breadcrumb->SetCategory(TEXT("test"));
+			Breadcrumb->SetType(TEXT("info"));
+			Scope->AddBreadcrumb(Breadcrumb);
+		}),
+		ESentryLevel::Info);
 
 	// Workaround for duplicated log messages in UE 4.27 on Linux
 #if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -232,6 +257,20 @@ void USentryPlaygroundGameInstance::ConfigureTestContext()
 	SentrySubsystem->SetUser(User);
 
 	SentrySubsystem->SetTag(TEXT("test.suite"), TEXT("integration"));
+
+	// Tag to be removed by beforeSend handler
+	SentrySubsystem->SetTag(TEXT("tag_to_be_removed"), TEXT("original_value"));
+
+	// Global context
+	TMap<FString, FSentryVariant> TestContext;
+	TestContext.Add(TEXT("context_key"), FSentryVariant(TEXT("context_value")));
+	SentrySubsystem->SetContext(TEXT("test_context"), TestContext);
+
+	// Context to be removed by beforeSend handler
+	TMap<FString, FSentryVariant> ContextRemovedByHandler;
+	ContextRemovedByHandler.Add(TEXT("key"), FSentryVariant(TEXT("original_value")));
+	SentrySubsystem->SetContext(TEXT("context_removed_by_handler"), ContextRemovedByHandler);
+
 }
 
 void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestName, bool Result, const FString& Message)
