@@ -88,6 +88,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, US
 				[options addInAppInclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
+			if (settings->EnableOfflineCaching)
+			{
+				options.maxCacheItems = settings->CacheMaxItems;
+			}
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{
 				options.tracesSampleRate = [NSNumber numberWithFloat:settings->TracesSampleRate];
