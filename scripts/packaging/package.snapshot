@@ -214,7 +214,6 @@ Source/Sentry/Private/Tests/SentryFeedback.spec.cpp
 Source/Sentry/Private/Tests/SentryLog.spec.cpp
 Source/Sentry/Private/Tests/SentryMetric.spec.cpp
 Source/Sentry/Private/Tests/SentryScope.spec.cpp
-Source/Sentry/Private/Tests/SentryScopeBeforeSendHandler.h
 Source/Sentry/Private/Tests/SentrySubsystem.spec.cpp
 Source/Sentry/Private/Tests/SentryTests.h
 Source/Sentry/Private/Tests/SentryTraceSampling.spec.cpp
