@@ -1,14 +1,12 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentrySubsystem.h"
-#include "SentryEvent.h"
 #include "SentrySettings.h"
 #include "SentrySpan.h"
 #include "SentryTests.h"
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
 
-#include "HAL/PlatformSentryEvent.h"
 #include "HAL/PlatformSentryTransactionContext.h"
 
 #include "Engine/Engine.h"
@@ -35,45 +33,6 @@ void SentrySubsystemSpec::Define()
 				Settings->EnableTracing = false;
 			}));
 		}
-	});
-
-	Describe("Capture Message", [this]()
-	{
-		It("should return a non-null Event ID if message captured", [this]()
-		{
-			FString eventId = SentrySubsystem->CaptureMessage(FString(TEXT("Automation: Sentry test message")), ESentryLevel::Debug);
-			TestFalse("Event ID is non-empty", eventId.IsEmpty());
-		});
-
-		It("should always return non-null Event ID if scoped version used", [this]()
-		{
-			const FConfigureScopeNativeDelegate testDelegate;
-			FString eventId = SentrySubsystem->CaptureMessageWithScope(FString(TEXT("Automation: Sentry test message with scope")), testDelegate, ESentryLevel::Debug);
-			TestFalse("Event ID is non-empty", eventId.IsEmpty());
-		});
-	});
-
-	Describe("Capture Event", [this]()
-	{
-		It("should return a non-null Event ID if event captured", [this]()
-		{
-			USentryEvent* testEvent = USentryEvent::Create(CreateSharedSentryEvent());
-			testEvent->SetMessage(TEXT("Automation: Sentry test event message"));
-
-			FString eventId = SentrySubsystem->CaptureEvent(testEvent);
-			TestFalse("Event ID is non-empty", eventId.IsEmpty());
-		});
-
-		It("should always return non-null Event ID if scoped version used", [this]()
-		{
-			USentryEvent* testEvent = USentryEvent::Create(CreateSharedSentryEvent());
-			testEvent->SetMessage(TEXT("Automation: Sentry test event message"));
-
-			const FConfigureScopeNativeDelegate testDelegate;
-
-			FString eventId = SentrySubsystem->CaptureEventWithScope(testEvent, testDelegate);
-			TestFalse("Event ID is non-empty", eventId.IsEmpty());
-		});
 	});
 
 	Describe("Transaction", [this]()

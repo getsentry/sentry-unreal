@@ -241,6 +241,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             # Override default project settings to avoid double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
 
             # -message-capture triggers integration test message scenario in the sample app
             $script:MessageResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-message-capture') + $appArgs) -join ' ')
@@ -311,9 +312,60 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have breadcrumbs" {
-            $script:MessageEvent.breadcrumbs | Should -Not -BeNullOrEmpty
-            $script:MessageEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        It "Should have global breadcrumbs" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Integration test started' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Context configuration finished' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeSendHandler assertions
+        It "Should have tag added by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'before_send.handled' }).value | Should -Be 'true'
+        }
+
+        It "Should not have tag removed by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            $tags | Where-Object { $_.key -eq 'tag_to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have extra added by BeforeSendHandler" {
+            $script:MessageEvent.context.handler_added | Should -Be 'added_value'
+        }
+
+        It "Should not have extra removed by BeforeSendHandler" {
+            $script:MessageEvent.context.extra_to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should not have context removed by BeforeSendHandler" {
+            $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
+        }
+
+        # Global scope context assertions
+        It "Should have custom context from global scope" {
+            $script:MessageEvent.contexts.test_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.test_context.context_key | Should -Be 'context_value'
+        }
+
+        # Local scope enrichment assertions
+        It "Should have local scope tag" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'scope.locality' }).value | Should -Be 'local'
+        }
+
+        It "Should have local scope extra" {
+            $script:MessageEvent.context.local_extra | Should -Be 'local_extra_value'
+        }
+
+        It "Should have local scope context" {
+            $script:MessageEvent.contexts.local_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.local_context.local_key | Should -Be 'local_value'
+        }
+
+        It "Should have local scope breadcrumb" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Local scope breadcrumb' -and $_.category -eq 'test' } | Should -Not -BeNullOrEmpty
         }
     }
 
