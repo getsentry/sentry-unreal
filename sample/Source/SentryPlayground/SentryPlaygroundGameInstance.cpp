@@ -7,6 +7,7 @@
 #include "SentrySettings.h"
 #include "SentryPlaygroundUtils.h"
 #include "SentryUser.h"
+#include "SentryUnit.h"
 
 #include "CoreGlobals.h"
 #include "HAL/Platform.h"
@@ -29,6 +30,7 @@ void USentryPlaygroundGameInstance::Init()
 		FParse::Param(*CommandLine, TEXT("crash-memory-corruption")) ||
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
 		FParse::Param(*CommandLine, TEXT("log-capture")) ||
+		FParse::Param(*CommandLine, TEXT("metric-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
@@ -79,6 +81,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	else if (FParse::Param(*CommandLine, TEXT("log-capture")))
 	{
 		RunLogTest();
+	}
+	else if (FParse::Param(*CommandLine, TEXT("metric-capture")))
+	{
+		RunMetricTest();
 	}
 	else if (FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -165,6 +171,38 @@ void USentryPlaygroundGameInstance::RunLogTest()
 	FPlatformProcess::Sleep(1.0f);
 
 	CompleteTestWithResult(TEXT("log-capture"), true, TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunMetricTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	TMap<FString, FSentryVariant> CounterAttributes;
+	CounterAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	CounterAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	TMap<FString, FSentryVariant> DistributionAttributes;
+	DistributionAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	DistributionAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	TMap<FString, FSentryVariant> GaugeAttributes;
+	GaugeAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	GaugeAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	SentrySubsystem->AddCountWithAttributes(TEXT("test.integration.counter"), 1, CounterAttributes);
+	SentrySubsystem->AddDistributionWithAttributes(TEXT("test.integration.distribution"), 42.5f, FSentryUnit(ESentryUnit::Millisecond), DistributionAttributes);
+	SentrySubsystem->AddGaugeWithAttributes(TEXT("test.integration.gauge"), 15.0f, FSentryUnit(ESentryUnit::Byte), GaugeAttributes);
+
+	UE_LOG(LogSentrySample, Display, TEXT("METRIC_TRIGGERED: %s\n"), *TestId);
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	FPlatformProcess::Sleep(1.0f);
+
+	CompleteTestWithResult(TEXT("metric-capture"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::RunInitOnly()
