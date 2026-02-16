@@ -144,7 +144,6 @@ void SentryScopeSpec::Define()
 			TestTrue("Scope extras", SentryScope->GetExtras().Num() == 0);
 		});
 	});
-
 }
 
 #endif
