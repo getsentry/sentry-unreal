@@ -160,6 +160,14 @@ The integration tests cover:
 
 **Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
 
+### Tracing Capture Tests
+- Application exits cleanly
+- Trace ID is captured from output
+- Transaction appears in Sentry with correct name and operation
+- Transaction tags are present
+- Child spans exist with correct operations and descriptions
+- Span hierarchy (parent-child relationships) is correct
+
 ## Output
 
 Test outputs are saved to `integration-test/output/`:

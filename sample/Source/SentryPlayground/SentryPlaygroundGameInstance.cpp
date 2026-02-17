@@ -10,6 +10,8 @@
 #include "SentryScope.h"
 #include "SentryUser.h"
 #include "SentryUnit.h"
+#include "SentrySpan.h"
+#include "SentryTransaction.h"
 #include "SentryVariant.h"
 
 #include "CoreGlobals.h"
@@ -34,6 +36,7 @@ void USentryPlaygroundGameInstance::Init()
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
 		FParse::Param(*CommandLine, TEXT("log-capture")) ||
 		FParse::Param(*CommandLine, TEXT("metric-capture")) ||
+		FParse::Param(*CommandLine, TEXT("tracing-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
@@ -88,6 +91,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	else if (FParse::Param(*CommandLine, TEXT("metric-capture")))
 	{
 		RunMetricTest();
+	}
+	else if (FParse::Param(*CommandLine, TEXT("tracing-capture")))
+	{
+		RunTracingTest();
 	}
 	else if (FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -228,6 +235,59 @@ void USentryPlaygroundGameInstance::RunMetricTest()
 	FPlatformProcess::Sleep(1.0f);
 
 	CompleteTestWithResult(TEXT("metric-capture"), true, TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunTracingTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	USentryTransaction* Transaction = SentrySubsystem->StartTransaction(
+		TEXT("integration.tracing.test"), TEXT("e2e.test"));
+
+	Transaction->SetTag(TEXT("test.type"), TEXT("tracing"));
+	Transaction->SetTag(TEXT("test.suite"), TEXT("integration"));
+
+	TMap<FString, FSentryVariant> TransactionData;
+	TransactionData.Add(TEXT("data_key"), FSentryVariant(TEXT("data_value")));
+	Transaction->SetData(TEXT("test_data"), TransactionData);
+
+	USentrySpan* ChildSpan = Transaction->StartChildSpan(
+		TEXT("e2e.child"), TEXT("Child span description"));
+	ChildSpan->SetTag(TEXT("span.level"), TEXT("child"));
+
+	USentrySpan* GrandchildSpan = ChildSpan->StartChild(
+		TEXT("e2e.grandchild"), TEXT("Grandchild span description"));
+	GrandchildSpan->SetTag(TEXT("span.level"), TEXT("grandchild"));
+
+	GrandchildSpan->Finish();
+	ChildSpan->Finish();
+
+	FString TraceKey;
+	FString TraceValue;
+	Transaction->GetTrace(TraceKey, TraceValue);
+
+	// Parse trace ID from sentry-trace header format: <trace-id>-<span-id>-<sampled>
+	FString TraceId;
+	FString Remainder;
+	TraceValue.Split(TEXT("-"), &TraceId, &Remainder);
+
+	Transaction->Finish();
+
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("TRACE_CAPTURED: %s\n"), *TraceId);
+#else
+	UE_LOG(LogSentrySample, Display, TEXT("TRACE_CAPTURED: %s\n"), *TraceId);
+#endif
+
+#if PLATFORM_ANDROID
+	FPlatformProcess::Sleep(1.0f);
+#endif
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	CompleteTestWithResult(TEXT("tracing-capture"), !TraceId.IsEmpty(), TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::RunInitOnly()
