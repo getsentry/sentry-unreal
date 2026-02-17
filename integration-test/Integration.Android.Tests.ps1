@@ -194,7 +194,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
-        $tracingIntentArgs = "-e cmdline -tracing-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampleRate=1.0"
+        $tracingIntentArgs = "-e cmdline -tracing-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
         $global:AndroidTracingResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $tracingIntentArgs
 
         Write-Host "Tracing test exit code: $($global:AndroidTracingResult.ExitCode)" -ForegroundColor Cyan
@@ -646,6 +646,20 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
+        It "Should not have tag removed from transaction" {
+            $tags = $script:TransactionEvent.tags
+            $tags | Where-Object { $_.key -eq 'tag_to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have transaction data" {
+            $script:TransactionEvent.contexts.trace.data.test_data | Should -Not -BeNullOrEmpty
+            $script:TransactionEvent.contexts.trace.data.test_data.data_key | Should -Be 'data_value'
+        }
+
+        It "Should not have data removed from transaction" {
+            $script:TransactionEvent.contexts.trace.data.data_to_be_removed | Should -BeNullOrEmpty
+        }
+
         It "Should have child spans" {
             $script:TransactionEvent.spans | Should -Not -BeNullOrEmpty
             $script:TransactionEvent.spans.Count | Should -BeGreaterOrEqual 2
@@ -655,6 +669,12 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
             $childSpan | Should -Not -BeNullOrEmpty
             $childSpan.description | Should -Be 'Child span description'
+        }
+
+        It "Should have data on child span" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $childSpan.data.span_data | Should -Not -BeNullOrEmpty
+            $childSpan.data.span_data.span_key | Should -Be 'span_value'
         }
 
         It "Should have grandchild span with correct operation and description" {
