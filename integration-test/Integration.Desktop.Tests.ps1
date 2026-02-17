@@ -675,7 +675,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
 
         It "Should have correct transaction name" {
-            $script:TransactionEvent.transaction | Should -Be 'integration.tracing.test'
+            $script:TransactionEvent.title | Should -Be 'integration.tracing.test'
         }
 
         It "Should have correct transaction operation" {
@@ -690,7 +690,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
         It "Should not have tag removed from transaction" {
             $tags = $script:TransactionEvent.tags
-            $tags | Where-Object { $_.key -eq 'tag_to_be_removed' } | Should -BeNullOrEmpty
+            $tags | Where-Object { $_.key -eq 'tracing.to_be_removed' } | Should -BeNullOrEmpty
         }
 
         It "Should have transaction data" {

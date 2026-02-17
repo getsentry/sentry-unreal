@@ -257,8 +257,8 @@ void USentryPlaygroundGameInstance::RunTracingTest()
 	// Tags
 	Transaction->SetTag(TEXT("test.type"), TEXT("tracing"));
 	Transaction->SetTag(TEXT("test.suite"), TEXT("integration"));
-	Transaction->SetTag(TEXT("tag_to_be_removed"), TEXT("original_value"));
-	Transaction->RemoveTag(TEXT("tag_to_be_removed"));
+	Transaction->SetTag(TEXT("tracing.to_be_removed"), TEXT("original_value"));
+	Transaction->RemoveTag(TEXT("tracing.to_be_removed"));
 
 	// Data
 	TMap<FString, FSentryVariant> TransactionData;
@@ -283,8 +283,8 @@ void USentryPlaygroundGameInstance::RunTracingTest()
 	USentrySpan* GrandchildSpan = ChildSpan->StartChild(
 		TEXT("e2e.grandchild"), TEXT("Grandchild span description"));
 	GrandchildSpan->SetTag(TEXT("span.level"), TEXT("grandchild"));
-	GrandchildSpan->SetTag(TEXT("tag_to_be_removed"), TEXT("original_value"));
-	GrandchildSpan->RemoveTag(TEXT("tag_to_be_removed"));
+	GrandchildSpan->SetTag(TEXT("tracing.to_be_removed"), TEXT("original_value"));
+	GrandchildSpan->RemoveTag(TEXT("tracing.to_be_removed"));
 
 	GrandchildSpan->Finish();
 	ChildSpan->Finish();
