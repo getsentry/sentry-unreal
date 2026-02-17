@@ -58,7 +58,7 @@ void FAndroidSentrySpan::SetTag(const FString& key, const FString& value)
 
 void FAndroidSentrySpan::RemoveTag(const FString& key)
 {
-	SetTag(key, TEXT(""));
+	CallMethod<void>(SetTagMethod, *GetJString(key), nullptr);
 }
 
 void FAndroidSentrySpan::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
