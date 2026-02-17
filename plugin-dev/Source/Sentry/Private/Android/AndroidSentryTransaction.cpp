@@ -65,7 +65,7 @@ void FAndroidSentryTransaction::SetTag(const FString& key, const FString& value)
 
 void FAndroidSentryTransaction::RemoveTag(const FString& key)
 {
-	SetTag(key, TEXT(""));
+	CallMethod<void>(SetTagMethod, *GetJString(key), nullptr);
 }
 
 void FAndroidSentryTransaction::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
