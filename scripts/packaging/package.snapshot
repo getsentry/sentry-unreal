@@ -221,6 +221,7 @@ Source/Sentry/Private/Tests/SentryTraceSamplingHandler.h
 Source/Sentry/Private/Tests/SentryUnicodeStrings.spec.cpp
 Source/Sentry/Private/Tests/SentryUser.spec.cpp
 Source/Sentry/Private/Tests/SentryVariant.spec.cpp
+Source/Sentry/Private/Utils/SentryCallbackHandlers.h
 Source/Sentry/Private/Utils/SentryCallbackUtils.cpp
 Source/Sentry/Private/Utils/SentryCallbackUtils.h
 Source/Sentry/Private/Utils/SentryFileUtils.cpp

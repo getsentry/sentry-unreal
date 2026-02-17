@@ -45,8 +45,14 @@ FAndroidSentrySubsystem::~FAndroidSentrySubsystem()
 	SentryJavaClasses::ClearJavaClassRefsCache();
 }
 
-void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler)
+void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
+	USentryBeforeSendHandler* beforeSendHandler = callbackHandlers.BeforeSendHandler;
+	USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler = callbackHandlers.BeforeBreadcrumbHandler;
+	USentryBeforeLogHandler* beforeLogHandler = callbackHandlers.BeforeLogHandler;
+	USentryBeforeMetricHandler* beforeMetricHandler = callbackHandlers.BeforeMetricHandler;
+	USentryTraceSampler* traceSampler = callbackHandlers.TraceSampler;
+
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);

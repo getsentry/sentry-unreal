@@ -7,7 +7,7 @@
 class FMacSentrySubsystem : public FAppleSentrySubsystem
 {
 public:
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) override;
+	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
 	virtual void Close() override;
 
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;

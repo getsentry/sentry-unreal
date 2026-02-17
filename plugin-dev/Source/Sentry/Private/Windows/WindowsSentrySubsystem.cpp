@@ -11,13 +11,13 @@
 
 #include "Misc/Paths.h"
 
-void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryBeforeMetricHandler* BeforeMetricHandler, USentryTraceSampler* TraceSampler)
+void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers)
 {
 	// Detect Wine/Proton before initializing
 	WineProtonInfo = FSentryPlatformDetectionUtils::DetectWineProton();
 
 	// Call parent implementation (handles crash logger initialization)
-	FMicrosoftSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, BeforeMetricHandler, TraceSampler);
+	FMicrosoftSentrySubsystem::InitWithSettings(Settings, CallbackHandlers);
 
 	// Add Wine/Proton context for all events if detected
 	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
