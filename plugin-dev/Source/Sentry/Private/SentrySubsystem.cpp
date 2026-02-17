@@ -17,9 +17,9 @@
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
 
-#include "Utils/SentryCallbackHandlers.h"
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
+#include "Utils/SentryCallbackHandlers.h"
 
 #include "CoreGlobals.h"
 #include "Engine/World.h"
