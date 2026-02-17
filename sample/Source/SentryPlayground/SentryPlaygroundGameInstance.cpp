@@ -6,7 +6,11 @@
 #include "SentrySubsystem.h"
 #include "SentrySettings.h"
 #include "SentryPlaygroundUtils.h"
+#include "SentryBreadcrumb.h"
+#include "SentryScope.h"
 #include "SentryUser.h"
+#include "SentryUnit.h"
+#include "SentryVariant.h"
 
 #include "CoreGlobals.h"
 #include "HAL/Platform.h"
@@ -29,6 +33,7 @@ void USentryPlaygroundGameInstance::Init()
 		FParse::Param(*CommandLine, TEXT("crash-memory-corruption")) ||
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
 		FParse::Param(*CommandLine, TEXT("log-capture")) ||
+		FParse::Param(*CommandLine, TEXT("metric-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
@@ -80,6 +85,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	{
 		RunLogTest();
 	}
+	else if (FParse::Param(*CommandLine, TEXT("metric-capture")))
+	{
+		RunMetricTest();
+	}
 	else if (FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunInitOnly();
@@ -118,7 +127,29 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
-	FString EventId = SentrySubsystem->CaptureMessage(TEXT("Integration test message"));
+	FString EventId = SentrySubsystem->CaptureMessageWithScope(TEXT("Integration test message"), FConfigureScopeNativeDelegate::CreateLambda([](USentryScope* Scope)
+		{
+			// Local scope tag
+			Scope->SetTag(TEXT("scope.locality"), TEXT("local"));
+
+			// Local scope extras (one persists, one for beforeSend to remove)
+			Scope->SetExtra(TEXT("local_extra"), FSentryVariant(TEXT("local_extra_value")));
+			Scope->SetExtra(TEXT("extra_to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+			// Local scope context
+			TMap<FString, FSentryVariant> LocalContext;
+			LocalContext.Add(TEXT("local_key"), FSentryVariant(TEXT("local_value")));
+			Scope->SetContext(TEXT("local_context"), LocalContext);
+
+			// Local scope breadcrumb
+			USentryBreadcrumb* Breadcrumb = NewObject<USentryBreadcrumb>();
+			Breadcrumb->Initialize();
+			Breadcrumb->SetMessage(TEXT("Local scope breadcrumb"));
+			Breadcrumb->SetCategory(TEXT("test"));
+			Breadcrumb->SetType(TEXT("info"));
+			Scope->AddBreadcrumb(Breadcrumb);
+		}),
+		ESentryLevel::Info);
 
 	// Workaround for duplicated log messages in UE 4.27 on Linux
 #if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -146,8 +177,14 @@ void USentryPlaygroundGameInstance::RunLogTest()
 
 	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
+	SentrySubsystem->SetAttribute(TEXT("global_attr"), FSentryVariant(TEXT("global_value")));
+
+	SentrySubsystem->SetAttribute(TEXT("global_removed"), FSentryVariant(TEXT("should_not_appear")));
+	SentrySubsystem->RemoveAttribute(TEXT("global_removed"));
+
 	TMap<FString, FSentryVariant> Attributes;
 	Attributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	Attributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
 
 	SentrySubsystem->LogWarningWithAttributes(LogMessage, Attributes, LogCategory);
 
@@ -159,6 +196,38 @@ void USentryPlaygroundGameInstance::RunLogTest()
 	FPlatformProcess::Sleep(1.0f);
 
 	CompleteTestWithResult(TEXT("log-capture"), true, TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunMetricTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	TMap<FString, FSentryVariant> CounterAttributes;
+	CounterAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	CounterAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	TMap<FString, FSentryVariant> DistributionAttributes;
+	DistributionAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	DistributionAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	TMap<FString, FSentryVariant> GaugeAttributes;
+	GaugeAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
+	GaugeAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));
+
+	SentrySubsystem->AddCountWithAttributes(TEXT("test.integration.counter"), 1, CounterAttributes);
+	SentrySubsystem->AddDistributionWithAttributes(TEXT("test.integration.distribution"), 42.5f, FSentryUnit(ESentryUnit::Millisecond), DistributionAttributes);
+	SentrySubsystem->AddGaugeWithAttributes(TEXT("test.integration.gauge"), 15.0f, FSentryUnit(ESentryUnit::Byte), GaugeAttributes);
+
+	UE_LOG(LogSentrySample, Display, TEXT("METRIC_TRIGGERED: %s\n"), *TestId);
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	FPlatformProcess::Sleep(1.0f);
+
+	CompleteTestWithResult(TEXT("metric-capture"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::RunInitOnly()
@@ -188,6 +257,20 @@ void USentryPlaygroundGameInstance::ConfigureTestContext()
 	SentrySubsystem->SetUser(User);
 
 	SentrySubsystem->SetTag(TEXT("test.suite"), TEXT("integration"));
+
+	// Tag to be removed by beforeSend handler
+	SentrySubsystem->SetTag(TEXT("tag_to_be_removed"), TEXT("original_value"));
+
+	// Global context
+	TMap<FString, FSentryVariant> TestContext;
+	TestContext.Add(TEXT("context_key"), FSentryVariant(TEXT("context_value")));
+	SentrySubsystem->SetContext(TEXT("test_context"), TestContext);
+
+	// Context to be removed by beforeSend handler
+	TMap<FString, FSentryVariant> ContextRemovedByHandler;
+	ContextRemovedByHandler.Add(TEXT("key"), FSentryVariant(TEXT("original_value")));
+	SentrySubsystem->SetContext(TEXT("context_removed_by_handler"), ContextRemovedByHandler);
+
 }
 
 void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestName, bool Result, const FString& Message)

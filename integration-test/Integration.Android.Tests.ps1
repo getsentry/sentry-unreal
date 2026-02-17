@@ -164,7 +164,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-        $messageIntentArgs = "-e cmdline -message-capture"
+        $messageIntentArgs = "-e cmdline -message-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
         $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $messageIntentArgs
 
         Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
@@ -174,11 +174,20 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-        # Use single quotes around the entire cmdline value to prevent shell interpretation of special chars
-        $logIntentArgs = "-e cmdline '-log-capture -ini:Engine:[/Script/Sentry.SentrySettings]:EnableStructuredLogging=True'"
+        $logIntentArgs = "-e cmdline -log-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableStructuredLogging=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
         $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
 
         Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 4: Metric test - captures custom metric
+        # ==========================================
+
+        Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
+        $metricIntentArgs = "-e cmdline -metric-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableMetrics=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
+        $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
+
+        Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
     }
 
     AfterAll {
@@ -329,9 +338,60 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have breadcrumbs" {
-            $script:MessageEvent.breadcrumbs | Should -Not -BeNullOrEmpty
-            $script:MessageEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        It "Should have global breadcrumbs" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Integration test started' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Context configuration finished' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeSendHandler assertions
+        It "Should have tag added by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'before_send.handled' }).value | Should -Be 'true'
+        }
+
+        It "Should not have tag removed by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            $tags | Where-Object { $_.key -eq 'tag_to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have extra added by BeforeSendHandler" {
+            $script:MessageEvent.context.handler_added | Should -Be 'added_value'
+        }
+
+        It "Should not have extra removed by BeforeSendHandler" {
+            $script:MessageEvent.context.extra_to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should not have context removed by BeforeSendHandler" {
+            $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
+        }
+
+        # Global scope context assertions
+        It "Should have custom context from global scope" {
+            $script:MessageEvent.contexts.test_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.test_context.context_key | Should -Be 'context_value'
+        }
+
+        # Local scope enrichment assertions
+        It "Should have local scope tag" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'scope.locality' }).value | Should -Be 'local'
+        }
+
+        It "Should have local scope extra" {
+            $script:MessageEvent.context.local_extra | Should -Be 'local_extra_value'
+        }
+
+        It "Should have local scope context" {
+            $script:MessageEvent.contexts.local_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.local_context.local_key | Should -Be 'local_value'
+        }
+
+        It "Should have local scope breadcrumb" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Local scope breadcrumb' -and $_.category -eq 'test' } | Should -Not -BeNullOrEmpty
         }
     }
 
@@ -349,7 +409,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
                 # Fetch logs from Sentry with automatic polling
                 try {
-                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed')
                 }
                 catch {
                     Write-Host "Warning: $_" -ForegroundColor Red
@@ -388,6 +448,137 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have test_id attribute matching captured ID" {
             $log = $script:CapturedLogs[0]
             $log.'test_id' | Should -Be $script:TestId
+        }
+
+        It "Should have attribute added by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.'to_be_removed' | Should -BeNullOrEmpty
+        }
+
+        # Note: Global log attributes (SetAttribute/RemoveAttribute on subsystem) are not supported
+        # on Android (sentry-java) - the implementation is a no-op. These are tested in desktop tests only.
+    }
+
+    Context "Metrics Capture Tests" {
+        BeforeAll {
+            $script:MetricResult = $global:AndroidMetricResult
+            $script:CapturedCounterMetrics = @()
+            $script:CapturedDistributionMetrics = @()
+            $script:CapturedGaugeMetrics = @()
+            $script:TestId = $null
+
+            # Parse test ID from output (format: METRIC_TRIGGERED: <test-id>)
+            $metricTriggeredLines = @($script:MetricResult.Output | Where-Object { $_ -match 'METRIC_TRIGGERED: ' })
+            if ($metricTriggeredLines.Count -gt 0) {
+                $script:TestId = ($metricTriggeredLines[0] -split 'METRIC_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
+
+                # Fetch all three metric types from Sentry with automatic polling
+                $metricFields = @('handler_added', 'to_be_removed')
+
+                try {
+                    $script:CapturedCounterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (counter): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedDistributionMetrics = Get-SentryTestMetric -MetricName 'test.integration.distribution' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (distribution): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedGaugeMetrics = Get-SentryTestMetric -MetricName 'test.integration.gauge' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (gauge): $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No METRIC_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output METRIC_TRIGGERED with test ID" {
+            $script:TestId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:MetricResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        # Counter metric assertions
+        It "Should capture counter metric in Sentry" {
+            $script:CapturedCounterMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct counter metric name and type" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.counter'
+            $metric.'metric.type' | Should -Be 'counter'
+        }
+
+        It "Should have correct counter metric value" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.value | Should -Be 1.0
+        }
+
+        # Distribution metric assertions
+        It "Should capture distribution metric in Sentry" {
+            $script:CapturedDistributionMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct distribution metric name and type" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.distribution'
+            $metric.'metric.type' | Should -Be 'distribution'
+        }
+
+        It "Should have correct distribution metric value" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.value | Should -Be 42.5
+        }
+
+        # Gauge metric assertions
+        It "Should capture gauge metric in Sentry" {
+            $script:CapturedGaugeMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct gauge metric name and type" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.gauge'
+            $metric.'metric.type' | Should -Be 'gauge'
+        }
+
+        It "Should have correct gauge metric value" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.value | Should -Be 15.0
+        }
+
+        # BeforeMetricHandler attribute assertions (verified on counter, applies to all)
+        It "Should have attribute added by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'to_be_removed' | Should -BeNullOrEmpty
+        }
+
+        It "Should have test_id attribute matching captured ID" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.test_id | Should -Be $script:TestId
         }
     }
 }
