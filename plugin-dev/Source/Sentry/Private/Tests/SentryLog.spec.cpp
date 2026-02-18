@@ -59,7 +59,8 @@ void SentryLogSpec::Define()
 			SentryLog->SetLevel(ESentryLevel::Fatal);
 			TestEqual("Fatal level", SentryLog->GetLevel(), ESentryLevel::Fatal);
 
-			// Test Info level
+			// Test invalid level falls back to Debug
+			AddExpectedError(TEXT("Unknown Sentry level value used"), EAutomationExpectedErrorFlags::Contains, 0);
 			SentryLog->SetLevel(static_cast<ESentryLevel>(18));
 			TestEqual("Invalid level - default Debug", SentryLog->GetLevel(), ESentryLevel::Debug);
 		});
