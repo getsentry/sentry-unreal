@@ -118,7 +118,7 @@ def collect_symbol_files_from_receipt(receipt_path, project_dir):
         log(f"Error parsing build receipt {receipt_path}: {e}")
         return []
 
-    symbol_types = {'SymbolFile', 'Executable'}
+    symbol_types = {'SymbolFile', 'Executable', 'DynamicLibrary'}
     files = []
 
     for product in receipt.get('BuildProducts', []):
