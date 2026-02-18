@@ -348,13 +348,13 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 {
 }
 
-void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler)
+void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
-	beforeSend = beforeSendHandler;
-	beforeBreadcrumb = beforeBreadcrumbHandler;
-	beforeLog = beforeLogHandler;
-	beforeMetric = beforeMetricHandler;
-	sampler = traceSampler;
+	beforeSend = callbackHandlers.BeforeSendHandler;
+	beforeBreadcrumb = callbackHandlers.BeforeBreadcrumbHandler;
+	beforeLog = callbackHandlers.BeforeLogHandler;
+	beforeMetric = callbackHandlers.BeforeMetricHandler;
+	sampler = callbackHandlers.TraceSampler;
 
 	sentry_options_t* options = sentry_options_new();
 
