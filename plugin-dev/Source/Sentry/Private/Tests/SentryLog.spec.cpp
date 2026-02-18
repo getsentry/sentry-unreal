@@ -3,6 +3,7 @@
 #include "SentryLog.h"
 #include "SentryTests.h"
 
+#include "HAL/Platform.h"
 #include "Misc/AutomationTest.h"
 
 #include "HAL/PlatformSentryLog.h"
@@ -59,7 +60,10 @@ void SentryLogSpec::Define()
 			SentryLog->SetLevel(ESentryLevel::Fatal);
 			TestEqual("Fatal level", SentryLog->GetLevel(), ESentryLevel::Fatal);
 
-			// Test Info level
+			// Test invalid level falls back to Debug
+#if PLATFORM_APPLE
+			AddExpectedError(TEXT("Unknown Sentry level value used"), EAutomationExpectedErrorFlags::Contains, 0);
+#endif
 			SentryLog->SetLevel(static_cast<ESentryLevel>(18));
 			TestEqual("Invalid level - default Debug", SentryLog->GetLevel(), ESentryLevel::Debug);
 		});

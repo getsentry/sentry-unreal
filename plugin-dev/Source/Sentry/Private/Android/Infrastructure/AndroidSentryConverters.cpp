@@ -331,6 +331,10 @@ TArray<uint8> FAndroidSentryConverters::ByteArrayToUnreal(jbyteArray byteArray)
 
 FSentryVariant FAndroidSentryConverters::VariantToUnreal(jobject variant)
 {
+	if (variant == nullptr)
+	{
+		return FSentryVariant();
+	}
 	if (FSentryJavaObjectWrapper::IsInstanceOf(SentryJavaClasses::Integer, variant))
 	{
 		FSentryJavaObjectWrapper NativeIntVariant(SentryJavaClasses::Integer, variant);

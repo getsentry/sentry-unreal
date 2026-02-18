@@ -309,6 +309,10 @@ TArray<uint8> FAppleSentryConverters::ByteDataToUnreal(NSData* data)
 
 FSentryVariant FAppleSentryConverters::VariantToUnreal(id variant)
 {
+	if (variant == nil)
+	{
+		return FSentryVariant();
+	}
 	if ([variant isKindOfClass:[NSNumber class]])
 	{
 		NSNumber* number = (NSNumber*)variant;
