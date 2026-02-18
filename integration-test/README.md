@@ -160,6 +160,38 @@ The integration tests cover:
 
 **Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
 
+### Structured Logging Tests
+- Application exits cleanly
+- Test ID is captured from output
+- TEST_RESULT indicates success
+- Structured log appears in Sentry with correct message and severity
+- Test ID attribute matches captured ID
+- Attribute added by BeforeLogHandler is present
+- Attribute removed by BeforeLogHandler is absent
+- Global attribute set on subsystem is present
+- Global attribute removed from subsystem is absent
+
+**Note**: Global log attributes (`SetAttribute`/`RemoveAttribute`) are not supported on Android (sentry-java) and are only tested on desktop.
+
+### Metrics Capture Tests
+- Application exits cleanly
+- Test ID is captured from output
+- TEST_RESULT indicates success
+- Counter, distribution, and gauge metrics appear in Sentry with correct names, types, and values
+- Attribute added by BeforeMetricHandler is present
+- Attribute removed by BeforeMetricHandler is absent
+- Test ID attribute matches captured ID
+
+**Note**: Metrics are not supported on Apple platforms (macOS/iOS) and the test is skipped accordingly.
+
+### Tracing Capture Tests
+- Application exits cleanly
+- Trace ID is captured from output
+- Transaction appears in Sentry with correct name and operation
+- Transaction tags are present
+- Child spans exist with correct operations and descriptions
+- Span hierarchy (parent-child relationships) is correct
+
 ## Output
 
 Test outputs are saved to `integration-test/output/`:

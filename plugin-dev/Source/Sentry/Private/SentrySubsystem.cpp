@@ -16,8 +16,10 @@
 #include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
+
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
+#include "Utils/SentryCallbackHandlers.h"
 
 #include "CoreGlobals.h"
 #include "Engine/World.h"
@@ -124,7 +126,14 @@ void USentrySubsystem::Initialize()
 			? NewObject<USentryTraceSampler>(this, static_cast<UClass*>(Settings->TracesSampler))
 			: nullptr;
 
-	SubsystemNativeImpl->InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, BeforeMetricHandler, TraceSampler);
+	FSentryCallbackHandlers CallbackHandlers;
+	CallbackHandlers.BeforeSendHandler = BeforeSendHandler;
+	CallbackHandlers.BeforeBreadcrumbHandler = BeforeBreadcrumbHandler;
+	CallbackHandlers.BeforeLogHandler = BeforeLogHandler;
+	CallbackHandlers.BeforeMetricHandler = BeforeMetricHandler;
+	CallbackHandlers.TraceSampler = TraceSampler;
+
+	SubsystemNativeImpl->InitWithSettings(Settings, CallbackHandlers);
 
 	if (!SubsystemNativeImpl->IsEnabled())
 	{

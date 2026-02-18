@@ -13,9 +13,9 @@
 
 #if USE_SENTRY_NATIVE
 
-void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, USentryBeforeSendHandler* BeforeSendHandler, USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler, USentryBeforeLogHandler* BeforeLogHandler, USentryBeforeMetricHandler* BeforeMetricHandler, USentryTraceSampler* TraceSampler)
+void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers)
 {
-	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, BeforeSendHandler, BeforeBreadcrumbHandler, BeforeLogHandler, BeforeMetricHandler, TraceSampler);
+	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, CallbackHandlers);
 
 	if (Settings->EnableCrashReporterContextPropagation)
 	{

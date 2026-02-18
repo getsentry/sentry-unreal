@@ -214,13 +214,11 @@ Source/Sentry/Private/Tests/SentryFeedback.spec.cpp
 Source/Sentry/Private/Tests/SentryLog.spec.cpp
 Source/Sentry/Private/Tests/SentryMetric.spec.cpp
 Source/Sentry/Private/Tests/SentryScope.spec.cpp
-Source/Sentry/Private/Tests/SentrySubsystem.spec.cpp
 Source/Sentry/Private/Tests/SentryTests.h
-Source/Sentry/Private/Tests/SentryTraceSampling.spec.cpp
-Source/Sentry/Private/Tests/SentryTraceSamplingHandler.h
 Source/Sentry/Private/Tests/SentryUnicodeStrings.spec.cpp
 Source/Sentry/Private/Tests/SentryUser.spec.cpp
 Source/Sentry/Private/Tests/SentryVariant.spec.cpp
+Source/Sentry/Private/Utils/SentryCallbackHandlers.h
 Source/Sentry/Private/Utils/SentryCallbackUtils.cpp
 Source/Sentry/Private/Utils/SentryCallbackUtils.h
 Source/Sentry/Private/Utils/SentryFileUtils.cpp

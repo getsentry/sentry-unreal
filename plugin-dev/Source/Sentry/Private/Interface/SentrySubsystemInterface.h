@@ -8,6 +8,8 @@
 #include "SentryTransactionOptions.h"
 #include "SentryVariant.h"
 
+#include "Utils/SentryCallbackHandlers.h"
+
 class ISentryAttachment;
 class ISentryBreadcrumb;
 class ISentryEvent;
@@ -19,11 +21,6 @@ class ISentryId;
 class ISentryScope;
 
 class USentrySettings;
-class USentryBeforeSendHandler;
-class USentryBeforeLogHandler;
-class USentryBeforeBreadcrumbHandler;
-class USentryBeforeMetricHandler;
-class USentryTraceSampler;
 
 DECLARE_DELEGATE_OneParam(FSentryScopeDelegate, TSharedPtr<ISentryScope>);
 
@@ -33,7 +30,7 @@ public:
 	virtual ~ISentrySubsystem() = default;
 
 	/** Methods that map directly to the platform's Sentry SDK API */
-	virtual void InitWithSettings(const USentrySettings* settings, USentryBeforeSendHandler* beforeSendHandler, USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler, USentryBeforeLogHandler* beforeLogHandler, USentryBeforeMetricHandler* beforeMetricHandler, USentryTraceSampler* traceSampler) = 0;
+	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) = 0;
 	virtual void Close() = 0;
 	virtual bool IsEnabled() = 0;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() = 0;

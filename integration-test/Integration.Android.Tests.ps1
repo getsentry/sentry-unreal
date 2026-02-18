@@ -188,6 +188,16 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
 
         Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 5: Tracing test - captures transaction
+        # ==========================================
+
+        Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
+        $tracingIntentArgs = "-e cmdline -tracing-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+        $global:AndroidTracingResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $tracingIntentArgs
+
+        Write-Host "Tracing test exit code: $($global:AndroidTracingResult.ExitCode)" -ForegroundColor Cyan
     }
 
     AfterAll {
@@ -579,6 +589,104 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have test_id attribute matching captured ID" {
             $metric = $script:CapturedCounterMetrics[0]
             $metric.test_id | Should -Be $script:TestId
+        }
+    }
+
+    Context "Tracing Capture Tests" {
+        BeforeAll {
+            $script:TracingResult = $global:AndroidTracingResult
+            $script:TransactionEvent = $null
+            $script:TraceId = $null
+
+            # Parse trace ID from output (format: TRACE_CAPTURED: <trace-id>)
+            $traceLines = @($script:TracingResult.Output | Where-Object { $_ -match 'TRACE_CAPTURED: ' })
+            if ($traceLines.Count -gt 0) {
+                $script:TraceId = ($traceLines[0] -split 'TRACE_CAPTURED: ')[-1].Trim()
+                Write-Host "Captured Trace ID: $($script:TraceId)" -ForegroundColor Cyan
+
+                # Fetch transaction from Sentry using Get-SentryTestTransaction
+                try {
+                    $script:TransactionEvent = Get-SentryTestTransaction -TraceId $script:TraceId
+                    Write-Host "Transaction fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch transaction from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No TRACE_CAPTURED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output TRACE_CAPTURED with trace ID" {
+            $script:TraceId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:TracingResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture transaction in Sentry" {
+            $script:TransactionEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct transaction name" {
+            $script:TransactionEvent.title | Should -Be 'integration.tracing.test'
+        }
+
+        It "Should have correct transaction operation" {
+            $script:TransactionEvent.contexts.trace.op | Should -Be 'e2e.test'
+        }
+
+        It "Should have test tags on transaction" {
+            $tags = $script:TransactionEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.type' }).value | Should -Be 'tracing'
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should not have tag removed from transaction" {
+            $tags = $script:TransactionEvent.tags
+            $tags | Where-Object { $_.key -eq 'tracing.to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have transaction data" {
+            $script:TransactionEvent.contexts.trace.data.test_data | Should -Not -BeNullOrEmpty
+            $script:TransactionEvent.contexts.trace.data.test_data.data_key | Should -Be 'data_value'
+        }
+
+        It "Should not have data removed from transaction" {
+            $script:TransactionEvent.contexts.trace.data.data_to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should have child spans" {
+            $script:TransactionEvent.spans | Should -Not -BeNullOrEmpty
+            $script:TransactionEvent.spans.Count | Should -BeGreaterOrEqual 2
+        }
+
+        It "Should have child span with correct operation and description" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $childSpan | Should -Not -BeNullOrEmpty
+            $childSpan.description | Should -Be 'Child span description'
+        }
+
+        It "Should have data on child span" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $childSpan.data.span_data | Should -Not -BeNullOrEmpty
+            $childSpan.data.span_data.span_key | Should -Be 'span_value'
+        }
+
+        It "Should have grandchild span with correct operation and description" {
+            $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
+            $grandchildSpan | Should -Not -BeNullOrEmpty
+            $grandchildSpan.description | Should -Be 'Grandchild span description'
+        }
+
+        It "Should have correct span hierarchy" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
+            $grandchildSpan.parent_span_id | Should -Be $childSpan.span_id
         }
     }
 }
