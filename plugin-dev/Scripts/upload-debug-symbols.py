@@ -5,6 +5,7 @@ import os
 import platform
 import subprocess
 import time
+import json
 
 
 def log(message):
@@ -94,6 +95,48 @@ def run_cmd_with_retry(cmd, max_retries=3, retry_delay_sec=2):
     return result
 
 
+def get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config):
+    # For Development builds use short name: {TargetName}.target
+    if target_config == "Development":
+        short_path = os.path.join(project_binaries_path, f"{target_name}.target")
+        if os.path.exists(short_path):
+            return short_path
+
+    # For Non-Development use full name: {TargetName}-{Platform}-{Config}.target
+    full_path = os.path.join(project_binaries_path, f"{target_name}-{target_platform}-{target_config}.target")
+    if os.path.exists(full_path):
+        return full_path
+
+    return None
+
+
+def collect_symbol_files_from_receipt(receipt_path, project_dir):
+    try:
+        with open(receipt_path, 'r', encoding='utf-8') as f:
+            receipt = json.load(f)
+    except Exception as e:
+        log(f"Error parsing build receipt {receipt_path}: {e}")
+        return []
+
+    symbol_types = {'SymbolFile', 'Executable', 'DynamicLibrary'}
+    files = []
+
+    for product in receipt.get('BuildProducts', []):
+        if product.get('Type') not in symbol_types:
+            continue
+
+        path = product.get('Path', '')
+        # Resolve $(ProjectDir) placeholder
+        path = path.replace('$(ProjectDir)', project_dir)
+        # Normalize path separators
+        path = os.path.normpath(path)
+
+        if os.path.exists(path):
+            files.append(path)
+
+    return files
+
+
 def main():
     target_platform = sys.argv[1]
     target_name = sys.argv[2]
@@ -118,7 +161,6 @@ def main():
     project_dir = os.path.dirname(os.path.abspath(project_file))
 
     project_binaries_path = os.path.join(project_dir, 'Binaries', target_platform)
-    plugin_binaries_path = os.path.join(plugin_dir, 'Source', 'ThirdParty', target_platform)
 
     config_path = os.path.join(project_dir, 'Config', 'DefaultEngine.ini')
 
@@ -212,15 +254,27 @@ def main():
             log("Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...")
             return 0
 
-    # Construct the upload command
+    # Find target's build receipt
+    receipt_path = get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config)
+
+    if not receipt_path:
+        log(f"Error: Build receipt not found for target '{target_name}'. Skipping...")
+        return 0
+
+    # Extract symbol files from build receipt and resolve paths
+    symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir)
+
+    if not symbol_files:
+        log(f"No symbol files found in build receipt for target '{target_name}'. Skipping...")
+        return 0
+
     upload_cmd = [
         cli_exec,
         'debug-files',
         'upload',
         *cli_args,
         '--log-level', cli_log_level,
-        project_binaries_path,
-        plugin_binaries_path
+        *symbol_files
     ]
 
     try:
