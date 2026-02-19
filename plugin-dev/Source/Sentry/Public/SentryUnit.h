@@ -10,7 +10,7 @@
 /**
  * Predefined measurement units for Sentry metrics.
  */
-UENUM(BlueprintType)
+UENUM(BlueprintType, meta = (ScriptName = "SentryUnitEnum"))
 enum class ESentryUnit : uint8
 {
 	None,
