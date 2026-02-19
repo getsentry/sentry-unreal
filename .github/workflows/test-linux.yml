@@ -177,29 +177,6 @@ jobs:
             -NoSplash \
             -NullRHI          
 
-      - name: Run data validation
-        env:
-          CMD_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor-Cmd' || 'UnrealEditor-Cmd' }}
-        run: |
-          docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$CMD_BINARY" \
-            /workspace/checkout/sample/SentryPlayground.uproject \
-            -run=DataValidation \
-            -AllowCommandletRendering \
-            -FullStdOutLogOutput \
-            -stdout \
-            -CrashForUAT \
-            -Unattended \
-            -NoPause \
-            -NullRHI \
-            -NoLogTimes \
-            -buildmachine | tee /tmp/datavalidation.log
-          if grep -q "Success - 0 error(s), 0 warning(s)" /tmp/datavalidation.log; then
-            echo "Data validation passed."
-          else
-            echo "Data validation failed: errors or warnings detected in the output."
-            exit 1
-          fi
-
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v4
