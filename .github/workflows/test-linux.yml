@@ -188,7 +188,9 @@ jobs:
             -FullStdOutLogOutput \
             -stdout \
             -CrashForUAT \
-            -unattended \
+            -Unattended \
+            -NoPause \
+            -NullRHI \
             -NoLogTimes \
             -buildmachine | tee /tmp/datavalidation.log
           if grep -q "Success - 0 error(s), 0 warning(s)" /tmp/datavalidation.log; then
