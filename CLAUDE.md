@@ -170,6 +170,7 @@ pwsh ./scripts/packaging/test-contents.ps1 accept
 - Use `.clang-format`
 - No BOM (Byte Order Mark) in source files
 - Files must end with a single empty line (newline at EOF)
+- Avoid giving a `UENUM` and a `USTRUCT`/`UCLASS` the same base name after prefix stripping (e.g., `ESentryFoo` + `FSentryFoo` both become `SentryFoo` in Python). If unavoidable, add `meta = (ScriptName = "...")` to the `UENUM` to resolve the collision.
 
 ### Security
 
