@@ -6,6 +6,12 @@
 
 - Fix symbol upload to include only debug files for the current build target ([#1228](https://github.com/getsentry/sentry-unreal/pull/1228))
 
+### Dependencies
+
+- Bump Java SDK from v8.32.0 to v8.33.0 ([#1238](https://github.com/getsentry/sentry-unreal/pull/1238))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8330)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.32.0...8.33.0)
+
 ## 1.7.0
 
 ### Features
