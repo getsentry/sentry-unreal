@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add automatic screenshot attachments to ensure events on Windows and Linux ([#1243](https://github.com/getsentry/sentry-unreal/pull/1243))
+
 ### Fixes
 
 - Fix symbol upload to include only debug files for the current build target ([#1228](https://github.com/getsentry/sentry-unreal/pull/1228))
