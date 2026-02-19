@@ -697,7 +697,34 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 
 	sentry_value_set_stacktrace(exceptionEvent, nullptr, 0);
 
-	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
+	FString ScreenshotPath;
+
+	if (isScreenshotAttachmentEnabled && IsScreenshotSupported())
+	{
+		ScreenshotPath = GetScreenshotPath();
+		if (!SentryScreenshotUtils::CaptureScreenshot(ScreenshotPath))
+		{
+			ScreenshotPath.Empty();
+		}
+	}
+
+	if (ScreenshotPath.IsEmpty())
+	{
+		sentry_uuid_t id = sentry_capture_event(exceptionEvent);
+		return MakeShareable(new FGenericPlatformSentryId(id));
+	}
+
+	sentry_scope_t* scope = sentry_local_scope_new();
+
+	sentry_attachment_t* screenshotAttachment =
+		sentry_scope_attach_file(scope, TCHAR_TO_UTF8(*ScreenshotPath));
+	sentry_attachment_set_filename(screenshotAttachment, "screenshot.png");
+	sentry_attachment_set_content_type(screenshotAttachment, "image/png");
+
+	sentry_uuid_t id = sentry_capture_event_with_scope(exceptionEvent, scope);
+
+	IFileManager::Get().Delete(*ScreenshotPath);
+
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
