@@ -117,9 +117,11 @@ jobs:
 
       - name: Compute DDC cache key
         id: ddc-cache-key
+        env:
+          HASH: ${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
         run: |
-          HASH="${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}"
-          KEY="ue-${{ inputs.unreal-version }}-android-ddc-${HASH}"
+          KEY="ue-${UNREAL_VERSION}-android-ddc-${HASH}"
           echo "key=${KEY}" >> $GITHUB_OUTPUT
           echo "DDC cache key: ${KEY}"
 
