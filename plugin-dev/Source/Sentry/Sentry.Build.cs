@@ -103,6 +103,7 @@ public class Sentry : ModuleRules
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler.exe"));
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_wer.dll"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_wer.dll"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter.exe"));
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_compat.lib"));
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_snapshot.lib"));
@@ -132,6 +133,7 @@ public class Sentry : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
+			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter"));
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_client.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_compat.a"));

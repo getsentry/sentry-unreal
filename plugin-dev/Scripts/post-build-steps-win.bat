@@ -19,6 +19,9 @@ if "%TARGET_PLATFORM%"=="Linux" (
   if not exist "%LINUX_BIN_DIR%\crashpad_handler" (
     copy /Y "%LINUX_SOURCE_DIR%\crashpad_handler" "%LINUX_BIN_DIR%\"
   )
+  if not exist "%LINUX_BIN_DIR%\Sentry.CrashReporter" (
+    copy /Y "%LINUX_SOURCE_DIR%\Sentry.CrashReporter" "%LINUX_BIN_DIR%\"
+  )
 )
 
 set "WIN64_BIN_DIR=%PLUGIN_DIR%\Binaries\Win64"
@@ -32,6 +35,9 @@ if "%TARGET_PLATFORM%"=="Win64" (
   )
   if not exist "%WIN64_BIN_DIR%\crashpad_wer.dll" (
     copy /Y "%WIN64_SOURCE_DIR%\crashpad_wer.dll" "%WIN64_BIN_DIR%\"
+  )
+  if not exist "%WIN64_BIN_DIR%\Sentry.CrashReporter.exe" (
+    copy /Y "%WIN64_SOURCE_DIR%\Sentry.CrashReporter.exe" "%WIN64_BIN_DIR%\"
   )
 )
 

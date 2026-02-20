@@ -95,6 +95,17 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 	}
 }
 
+void FWindowsSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Options)
+{
+	const FString CrashReporterPath = GetCrashReporterPath();
+	if (!FPaths::FileExists(CrashReporterPath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("External crash reporter executable couldn't be found at: %s"), *CrashReporterPath);
+		return;
+	}
+	sentry_options_set_external_crash_reporter_pathw(Options, *CrashReporterPath);
+}
+
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
 	// Windows-specific crash handling can go here if needed in the future

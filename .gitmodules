@@ -5,3 +5,7 @@ url = https://github.com/getsentry/sentry-java.git
 [submodule "modules/sentry-native"]
 path = modules/sentry-native
 url = https://github.com/getsentry/sentry-native.git
+
+[submodule "modules/sentry-crash-reporter"]
+path = modules/sentry-crash-reporter
+url = https://github.com/getsentry/sentry-crash-reporter.git

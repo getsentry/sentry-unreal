@@ -351,6 +351,7 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwizzle.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryUser+Private.h
 Source/ThirdParty/IOS/Sentry.framework/Sentry
 Source/ThirdParty/Linux/bin/crashpad_handler
+Source/ThirdParty/Linux/bin/Sentry.CrashReporter
 Source/ThirdParty/Linux/include/sentry.h
 Source/ThirdParty/Linux/lib/libcrashpad_client.a
 Source/ThirdParty/Linux/lib/libcrashpad_compat.a
@@ -436,6 +437,7 @@ Source/ThirdParty/Mac/include/Sentry/SentryUser+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
 Source/ThirdParty/Win64/bin/crashpad_handler.exe
 Source/ThirdParty/Win64/bin/crashpad_wer.dll
+Source/ThirdParty/Win64/bin/Sentry.CrashReporter.exe
 Source/ThirdParty/Win64/include/sentry.h
 Source/ThirdParty/Win64/lib/crashpad_client.lib
 Source/ThirdParty/Win64/lib/crashpad_compat.lib
