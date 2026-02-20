@@ -358,6 +358,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use."))
 	bool EnableOnCrashLogging;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Enable external crash reporter",
+			ToolTip = "When enabled, a crash reporter dialog is shown to the user after a crash, allowing them to provide feedback before submitting the crash report. Supported on Windows and Linux only."))
+	bool EnableExternalCrashReporter;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
 		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))
 	bool EnableOfflineCaching;

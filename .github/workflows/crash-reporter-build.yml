@@ -1,0 +1,58 @@
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      runtimeId:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runsOn }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get submodule status
+        shell: bash
+        run: git submodule status --cached modules/sentry-crash-reporter | tee submodule-status
+
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: plugin-dev/Source/ThirdParty/${{ inputs.target }}/bin/Sentry.CrashReporter*
+          key: crash-reporter=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-crash-reporter.sh', '.github/workflows/crash-reporter-build.yml') }}
+
+      - name: Setup .NET 9
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install Uno workloads
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          dotnet tool install -g uno.check
+          uno-check -v --ci --non-interactive --fix --target desktop --skip vswin --skip vsmac --skip xcode --skip vswinworkloads --skip androidemulator --skip dotnetnewunotemplates
+
+      - name: Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          git submodule update --init modules/sentry-crash-reporter
+          ./scripts/build-crash-reporter.sh \
+            modules/sentry-crash-reporter \
+            plugin-dev/Source/ThirdParty/${{ inputs.target }}/bin \
+            ${{ inputs.runtimeId }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CrashReporter-${{ inputs.target }}
+          path: plugin-dev/Source/ThirdParty/${{ inputs.target }}/bin/Sentry.CrashReporter*
+          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
