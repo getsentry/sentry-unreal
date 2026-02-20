@@ -8,4 +8,4 @@ url = https://github.com/getsentry/sentry-native.git
 
 [submodule "modules/sentry-crash-reporter"]
 path = modules/sentry-crash-reporter
-url = https://github.com/getsentry/sentry-crash-reporter.git
+url = https://github.com/getsentry/sentry-desktop-crash-reporter.git
