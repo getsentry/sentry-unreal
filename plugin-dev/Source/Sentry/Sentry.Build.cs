@@ -46,6 +46,16 @@ public class Sentry : ModuleRules
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
 
+		// Initial value must match the UPROPERTY default in SentrySettings to handle the case
+		// when the user hasn't explicitly configured it and no entry exists in the .ini file
+		bool bEnableExternalCrashReporter = false;
+
+		if (Target.ProjectFile != null)
+		{
+			ConfigHierarchy EngineConfig = ConfigCache.ReadHierarchy(ConfigHierarchyType.Engine, DirectoryReference.FromFile(Target.ProjectFile), Target.Platform);
+			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
+		}
+
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
@@ -100,10 +110,13 @@ public class Sentry : ModuleRules
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "sentry.lib"));
 
-
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler.exe"));
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_wer.dll"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_wer.dll"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter.exe"));
+
+			if (bEnableExternalCrashReporter)
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter.exe"));
+			}
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_compat.lib"));
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_snapshot.lib"));
@@ -133,7 +146,11 @@ public class Sentry : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 
 			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter"));
+
+			if (bEnableExternalCrashReporter)
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter"));
+			}
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_client.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_compat.a"));
