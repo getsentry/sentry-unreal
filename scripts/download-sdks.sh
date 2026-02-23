@@ -34,4 +34,6 @@ done
 echo "Downloading Crash Reporter binaries ..."
 gh run download $runId -n "CrashReporter-Win64" -D Win64/bin
 gh run download $runId -n "CrashReporter-Linux" -D Linux/bin
+gh run download $runId -n "CrashReporter-LinuxArm64" -D LinuxArm64/bin
 chmod +x Linux/bin/Sentry.CrashReporter
+chmod +x LinuxArm64/bin/Sentry.CrashReporter
