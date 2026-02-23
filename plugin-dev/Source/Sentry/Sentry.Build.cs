@@ -143,6 +143,7 @@ public class Sentry : ModuleRules
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libmini_chromium.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_mpack.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libunwind.a"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
