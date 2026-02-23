@@ -362,6 +362,7 @@ Source/ThirdParty/Linux/lib/libcrashpad_tools.a
 Source/ThirdParty/Linux/lib/libcrashpad_util.a
 Source/ThirdParty/Linux/lib/libmini_chromium.a
 Source/ThirdParty/Linux/lib/libsentry.a
+Source/ThirdParty/Linux/lib/libunwind.a
 Source/ThirdParty/LinuxArm64/bin/crashpad_handler
 Source/ThirdParty/LinuxArm64/include/sentry.h
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_client.a
@@ -374,6 +375,7 @@ Source/ThirdParty/LinuxArm64/lib/libcrashpad_tools.a
 Source/ThirdParty/LinuxArm64/lib/libcrashpad_util.a
 Source/ThirdParty/LinuxArm64/lib/libmini_chromium.a
 Source/ThirdParty/LinuxArm64/lib/libsentry.a
+Source/ThirdParty/LinuxArm64/lib/libunwind.a
 Source/ThirdParty/Mac/bin/sentry.dylib
 Source/ThirdParty/Mac/include/Sentry/PrivateSentrySDKOnly.h
 Source/ThirdParty/Mac/include/Sentry/PrivatesHeader.h
