@@ -39,6 +39,7 @@ Here's a breakdown of the important sample project files and folders:
 │       ├── 📄 SentryPlaygroundGameInstance.cpp/.h  # Logic for running integration tests
 │       ├── 📄 SentryPlaygroundUtils.cpp/.h         # Utilities for triggering different types of crashes
 │       ├── 📄 CppBeforeSendHandler.cpp/.h          # Example C++ implementation of `beforeSend` hook handler
+│       ├── 📄 CppBeforeBreadcrumbHandler.cpp/.h    # Example C++ implementation of `beforeBreadcrumb` hook handler
 │       └── 📄 SentryGCCallback.cpp/.h              # Utility for capturing events during garbage collection
 ├── 📁 Content/
 │   ├── 📁 Maps/

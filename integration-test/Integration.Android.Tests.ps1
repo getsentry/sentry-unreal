@@ -164,7 +164,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-        $messageIntentArgs = "-e cmdline -message-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
+        $messageIntentArgs = "-e cmdline -message-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
         $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $messageIntentArgs
 
         Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
@@ -285,6 +285,18 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
+
+        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
+            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
+            $modified | Should -Not -BeNullOrEmpty
+            $modified.data.handler_key | Should -Be 'handler_value'
+        }
     }
 
     Context "Message Capture Tests" {
@@ -402,6 +414,19 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have local scope breadcrumb" {
             $breadcrumbs = $script:MessageEvent.breadcrumbs.values
             $breadcrumbs | Where-Object { $_.message -eq 'Local scope breadcrumb' -and $_.category -eq 'test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeBreadcrumbHandler assertions
+        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
+            $modified | Should -Not -BeNullOrEmpty
+            $modified.data.handler_key | Should -Be 'handler_value'
         }
     }
 
