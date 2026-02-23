@@ -70,11 +70,11 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure)
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure)
 {
 	if (closure)
 	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeBreadcrumb(breadcrumb, hint, closure);
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeBreadcrumb(breadcrumb, closure);
 	}
 	else
 	{
@@ -152,10 +152,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 	return ProcessedEvent ? event : sentry_value_new_null();
 }
 
-// Currently this handler is not set anywhere since the Unreal SDK doesn't use `sentry_add_breadcrumb` directly and relies on
-// custom scope implementation to store breadcrumbs instead.
-// The support for it will be enabled with https://github.com/getsentry/sentry-native/pull/1166
-sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* hint, void* closure)
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure)
 {
 	if (!closure || this != closure)
 	{
@@ -417,6 +414,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
+	sentry_options_set_before_breadcrumb(options, HandleBeforeBreadcrumb, this);
 	sentry_options_set_before_send_log(options, HandleBeforeLog, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
@@ -502,15 +500,6 @@ ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	if (beforeBreadcrumb != nullptr)
-	{
-		sentry_value_t processedBreadcrumb = HandleBeforeBreadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject(), nullptr, this);
-		if (sentry_value_is_null(processedBreadcrumb))
-		{
-			return;
-		}
-	}
-
 	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject());
 }
 
@@ -523,16 +512,7 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	Breadcrumb->SetData(Data);
 	Breadcrumb->SetLevel(Level);
 
-	if (beforeBreadcrumb != nullptr)
-	{
-		sentry_value_t processdBreadcrumb = HandleBeforeBreadcrumb(Breadcrumb->GetNativeObject(), nullptr, this);
-		if (sentry_value_is_null(processdBreadcrumb))
-		{
-			return;
-		}
-	}
-
-	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(Breadcrumb)->GetNativeObject());
+	sentry_add_breadcrumb(Breadcrumb->GetNativeObject());
 }
 
 void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
