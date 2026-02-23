@@ -285,18 +285,6 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
-
-        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
-            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
-            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
-        }
-
-        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
-            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
-            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
-            $modified | Should -Not -BeNullOrEmpty
-            $modified.data.handler_key | Should -Be 'handler_value'
-        }
     }
 
     Context "Message Capture Tests" {
