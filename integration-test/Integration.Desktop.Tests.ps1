@@ -137,6 +137,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"               # Prevents double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableOnCrashLogging=True"     # Enables crash logging
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableAutoLogAttachment=True"  # Enables log attachment
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
 
             # $crashTypeArg triggers specific crash type scenario in the sample app
             $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
@@ -223,6 +224,18 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
+
+        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
+            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
+            $modified | Should -Not -BeNullOrEmpty
+            $modified.data.handler_key | Should -Be 'handler_value'
+        }
     }
 
     Context "Message Capture Tests" {
@@ -242,6 +255,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # Override default project settings to avoid double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
 
             # -message-capture triggers integration test message scenario in the sample app
             $script:MessageResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-message-capture') + $appArgs) -join ' ')
@@ -366,6 +380,19 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         It "Should have local scope breadcrumb" {
             $breadcrumbs = $script:MessageEvent.breadcrumbs.values
             $breadcrumbs | Where-Object { $_.message -eq 'Local scope breadcrumb' -and $_.category -eq 'test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeBreadcrumbHandler assertions
+        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
+            $modified | Should -Not -BeNullOrEmpty
+            $modified.data.handler_key | Should -Be 'handler_value'
         }
     }
 

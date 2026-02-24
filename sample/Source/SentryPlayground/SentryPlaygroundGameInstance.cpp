@@ -358,6 +358,15 @@ void USentryPlaygroundGameInstance::ConfigureTestContext()
 	ContextRemovedByHandler.Add(TEXT("key"), FSentryVariant(TEXT("original_value")));
 	SentrySubsystem->SetContext(TEXT("context_removed_by_handler"), ContextRemovedByHandler);
 
+	// Breadcrumb to be discarded by beforeBreadcrumb handler
+	SentrySubsystem->AddBreadcrumbWithParams(
+		TEXT("Breadcrumb to be discarded"), TEXT("Test"), TEXT("info"),
+		TMap<FString, FSentryVariant>(), ESentryLevel::Info);
+
+	// Breadcrumb to be modified by beforeBreadcrumb handler (data added by handler)
+	SentrySubsystem->AddBreadcrumbWithParams(
+		TEXT("Breadcrumb to be modified"), TEXT("Test"), TEXT("info"),
+		TMap<FString, FSentryVariant>(), ESentryLevel::Info);
 }
 
 void USentryPlaygroundGameInstance::CompleteTestWithResult(const FString& TestName, bool Result, const FString& Message)
