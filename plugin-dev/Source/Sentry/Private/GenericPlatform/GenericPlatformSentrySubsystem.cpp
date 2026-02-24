@@ -414,7 +414,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
-	sentry_options_set_before_breadcrumb(options, HandleBeforeBreadcrumb, this);
 	sentry_options_set_before_send_log(options, HandleBeforeLog, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, 3000);
@@ -424,6 +423,11 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_logs_with_attributes(options, true);
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
+
+	if (beforeBreadcrumb)
+	{
+		sentry_options_set_before_breadcrumb(options, HandleBeforeBreadcrumb, this);
+	}
 
 	if (settings->bRequireUserConsent)
 	{
