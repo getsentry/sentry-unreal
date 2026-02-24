@@ -76,11 +76,14 @@ protected:
 	virtual void ConfigureCertsPath(sentry_options_t* Options) {}
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) {}
 	virtual void ConfigureNetworkConnectFunc(sentry_options_t* Options) {}
+	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) {}
 
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;
+	FString GetCrashReporterPath() const;
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
+	virtual FString GetCrashReporterExecutableName() const { return TEXT("invalid"); }
 
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure);

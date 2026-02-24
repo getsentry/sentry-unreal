@@ -48,8 +48,29 @@ jobs:
       target: Win64
       runsOn: windows-2022
 
+  crash-reporter-win64:
+    uses: ./.github/workflows/crash-reporter-build.yml
+    with:
+      target: Win64
+      runsOn: windows-latest
+      runtimeId: win-x64
+
+  crash-reporter-linux:
+    uses: ./.github/workflows/crash-reporter-build.yml
+    with:
+      target: Linux
+      runsOn: ubuntu-latest
+      runtimeId: linux-x64
+
+  crash-reporter-linux-arm64:
+    uses: ./.github/workflows/crash-reporter-build.yml
+    with:
+      target: LinuxArm64
+      runsOn: ubuntu-latest
+      runtimeId: linux-arm64
+
   package-preparation:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-sdk]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-sdk, crash-reporter-win64, crash-reporter-linux, crash-reporter-linux-arm64]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -92,6 +113,21 @@ jobs:
           name: Win64-sdk
           path: plugin-dev/Source/ThirdParty/Win64
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: CrashReporter-Win64
+          path: plugin-dev/Source/ThirdParty/Win64/bin
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: CrashReporter-Linux
+          path: plugin-dev/Source/ThirdParty/Linux/bin
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: CrashReporter-LinuxArm64
+          path: plugin-dev/Source/ThirdParty/LinuxArm64/bin
+
       # Workaround for https://github.com/actions/download-artifact/issues/14
       # Adding execute permission for crashpad before preparing final packages
       # allows to avoid issues with plugin initialization on Unix-based systems.
@@ -99,7 +135,9 @@ jobs:
         shell: pwsh
         run: |
           chmod +x plugin-dev/Source/ThirdParty/Linux/bin/crashpad_handler
+          chmod +x plugin-dev/Source/ThirdParty/Linux/bin/Sentry.CrashReporter
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/bin/crashpad_handler
+          chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/bin/Sentry.CrashReporter
 
       - name: Prepare Sentry packages for release
         shell: pwsh

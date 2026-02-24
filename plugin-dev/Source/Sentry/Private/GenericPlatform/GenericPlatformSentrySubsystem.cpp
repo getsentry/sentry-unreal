@@ -404,6 +404,11 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureCertsPath(options);
 	ConfigureNetworkConnectFunc(options);
 
+	if (settings->EnableExternalCrashReporter)
+	{
+		ConfigureCrashReporterPath(options);
+	}
+
 	sentry_options_set_dsn(options, TCHAR_TO_UTF8(*settings->GetEffectiveDsn()));
 	sentry_options_set_release(options, TCHAR_TO_UTF8(*settings->GetEffectiveRelease()));
 	sentry_options_set_environment(options, TCHAR_TO_UTF8(*settings->GetEffectiveEnvironment()));
@@ -966,6 +971,12 @@ FString FGenericPlatformSentrySubsystem::GetHandlerPath() const
 	const FString HandlerFullPath = FPaths::ConvertRelativePathToFull(HandlerPath);
 
 	return HandlerFullPath;
+}
+
+FString FGenericPlatformSentrySubsystem::GetCrashReporterPath() const
+{
+	const FString CrashReporterPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), GetCrashReporterExecutableName());
+	return FPaths::ConvertRelativePathToFull(CrashReporterPath);
 }
 
 FString FGenericPlatformSentrySubsystem::GetDatabasePath() const

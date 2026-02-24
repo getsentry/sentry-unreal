@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add desktop external crash reporter integration ([#1248](https://github.com/getsentry/sentry-unreal/pull/1248))
 - Add automatic screenshot attachments to ensure events on Windows and Linux ([#1243](https://github.com/getsentry/sentry-unreal/pull/1243))
 
 ### Fixes

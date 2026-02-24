@@ -30,3 +30,10 @@ for sdk in "${sdks[@]}"; do
     gh run download $runId -n "$sdk-sdk" -D $sdk
     find $sdk -name "crashpad_handler" -exec chmod +x {} \;
 done
+
+echo "Downloading Crash Reporter binaries ..."
+gh run download $runId -n "CrashReporter-Win64" -D Win64/bin
+gh run download $runId -n "CrashReporter-Linux" -D Linux/bin
+gh run download $runId -n "CrashReporter-LinuxArm64" -D LinuxArm64/bin
+chmod +x Linux/bin/Sentry.CrashReporter
+chmod +x LinuxArm64/bin/Sentry.CrashReporter
