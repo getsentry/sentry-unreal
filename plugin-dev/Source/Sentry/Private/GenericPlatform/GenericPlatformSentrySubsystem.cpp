@@ -24,8 +24,8 @@
 #include "SentryLog.h"
 #include "SentryMetric.h"
 #include "SentryModule.h"
-#include "SentrySamplingContext.h"
 #include "SentryOutputDevice.h"
+#include "SentrySamplingContext.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryTraceSampler.h"
@@ -61,8 +61,8 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	// When emitted within a GLog call chain, write sentry-native debug messages directly to the log file
 	// to avoid GLog's FOutputDeviceRedirector re-entrancy deadlock
 	FOutputDevice* OutputTarget = FSentryOutputDevice::IsSerializing()
-		? FGenericPlatformOutputDevices::GetLog()
-		: GLog;
+									  ? FGenericPlatformOutputDevices::GetLog()
+									  : GLog;
 
 	if (OutputTarget)
 	{
