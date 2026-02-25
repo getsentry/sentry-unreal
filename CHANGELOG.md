@@ -11,6 +11,7 @@
 
 - Fix symbol upload to include only debug files for the current build target ([#1228](https://github.com/getsentry/sentry-unreal/pull/1228))
 - Fix `ESentryUnit` enum Python name collision ([#1244](https://github.com/getsentry/sentry-unreal/pull/1244))
+- Fix `GLog` re-entrancy deadlock in Native SDK debug logger callback ([#1256](https://github.com/getsentry/sentry-unreal/pull/1256))
 
 ### Dependencies
 

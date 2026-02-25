@@ -12,6 +12,8 @@ class FSentryOutputDevice : public FOutputDevice
 public:
 	FSentryOutputDevice();
 
+	static bool IsSerializing();
+
 	virtual void Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category) override;
 
 	virtual bool CanBeUsedOnAnyThread() const override;
