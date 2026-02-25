@@ -7,7 +7,10 @@
 #include "SentrySubsystem.h"
 
 #include "Engine/Engine.h"
+#include "Templates/UnrealTemplate.h"
 #include "Utils/SentryLogUtils.h"
+
+static thread_local bool bIsSerializing = false;
 
 FSentryOutputDevice::FSentryOutputDevice()
 {
@@ -30,8 +33,15 @@ FSentryOutputDevice::FSentryOutputDevice()
 	bSendBreadcrumbsWithStructuredLogging = Settings->bSendBreadcrumbsWithStructuredLogging;
 }
 
+bool FSentryOutputDevice::IsSerializing()
+{
+	return bIsSerializing;
+}
+
 void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
+	TGuardValue<bool> IsSerializingGuard(bIsSerializing, true);
+
 	// Filter internal log messages coming from the underlying platform-specific Sentry SDKs
 	if (Category.IsEqual(TEXT("LogSentryInternal")))
 	{

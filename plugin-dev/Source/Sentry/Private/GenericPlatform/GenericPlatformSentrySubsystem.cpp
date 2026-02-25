@@ -25,6 +25,7 @@
 #include "SentryMetric.h"
 #include "SentryModule.h"
 #include "SentrySamplingContext.h"
+#include "SentryOutputDevice.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryTraceSampler.h"
@@ -55,7 +56,18 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	char buffer[512];
 	vsnprintf(buffer, 512, message, args);
 
-	GLog->CategorizedLogf(TEXT("LogSentryInternal"), FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("%s"), StringCast<TCHAR>(buffer).Get());
+	auto ConvertedMessage = StringCast<TCHAR>(buffer);
+
+	// When emitted within a GLog call chain, write sentry-native debug messages directly to the log file
+	// to avoid GLog's FOutputDeviceRedirector re-entrancy deadlock
+	FOutputDevice* OutputTarget = FSentryOutputDevice::IsSerializing()
+		? FGenericPlatformOutputDevices::GetLog()
+		: GLog;
+
+	if (OutputTarget)
+	{
+		OutputTarget->Serialize(ConvertedMessage.Get(), FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("LogSentryInternal"));
+	}
 }
 
 /* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
