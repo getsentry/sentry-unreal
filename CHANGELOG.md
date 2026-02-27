@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix debug symbol upload for build products located in the engine directory ([#1262](https://github.com/getsentry/sentry-unreal/pull/1262))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.5.0 to v9.5.1 ([#1257](https://github.com/getsentry/sentry-unreal/pull/1257))
