@@ -110,7 +110,7 @@ def get_target_receipt_path(project_binaries_path, target_name, target_platform,
     return None
 
 
-def collect_symbol_files_from_receipt(receipt_path, project_dir):
+def collect_symbol_files_from_receipt(receipt_path, project_dir, engine_dir):
     try:
         with open(receipt_path, 'r', encoding='utf-8') as f:
             receipt = json.load(f)
@@ -126,8 +126,9 @@ def collect_symbol_files_from_receipt(receipt_path, project_dir):
             continue
 
         path = product.get('Path', '')
-        # Resolve $(ProjectDir) placeholder
+        # Resolve $(ProjectDir) and $(EngineDir) placeholders
         path = path.replace('$(ProjectDir)', project_dir)
+        path = path.replace('$(EngineDir)', engine_dir)
         # Normalize path separators
         path = os.path.normpath(path)
 
@@ -144,6 +145,7 @@ def main():
     target_config = sys.argv[4]
     project_file = sys.argv[5]
     plugin_dir = sys.argv[6]
+    engine_dir = sys.argv[7]
 
     log("Start debug symbols upload")
 
@@ -262,7 +264,7 @@ def main():
         return 0
 
     # Extract symbol files from build receipt and resolve paths
-    symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir)
+    symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir, engine_dir)
 
     if not symbol_files:
         log(f"No symbol files found in build receipt for target '{target_name}'. Skipping...")
