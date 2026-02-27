@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix symbol upload configuration warning in plugin settings menu ([#1261](https://github.com/getsentry/sentry-unreal/pull/1261))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.5.0 to v9.5.1 ([#1257](https://github.com/getsentry/sentry-unreal/pull/1257))
