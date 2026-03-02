@@ -160,6 +160,7 @@ void USentrySubsystem::Initialize()
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
 
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (Settings->EnableHangTracking)
 	{
 		FThreadHeartBeat::Get().GetOnHangDelegate().BindLambda(
@@ -169,6 +170,7 @@ void USentrySubsystem::Initialize()
 			SubsystemNativeImpl->CaptureHang(HungThreadId);
 		});
 	}
+#endif
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -212,10 +214,12 @@ void USentrySubsystem::Close()
 		OnEnsureDelegate.Reset();
 	}
 
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (FThreadHeartBeat* HB = FThreadHeartBeat::GetNoInit())
 	{
 		HB->GetOnHangDelegate().Unbind();
 	}
+#endif
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
