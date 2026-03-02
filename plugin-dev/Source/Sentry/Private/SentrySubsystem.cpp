@@ -163,7 +163,7 @@ void USentrySubsystem::Initialize()
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (Settings->EnableHangTracking)
 	{
-		FThreadHeartBeat::Get().GetOnHangDelegate().BindLambda( [this](uint32 HungThreadId)
+		FThreadHeartBeat::Get().GetOnHangDelegate().BindLambda([this](uint32 HungThreadId)
 		{
 			verify(SubsystemNativeImpl);
 			SubsystemNativeImpl->CaptureHang(HungThreadId);
