@@ -9,15 +9,15 @@
 Sentry SDK for Unreal Engine
 ===========
 
-This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for both desktop, mobile and consoles. Also, it [has a stable support for the Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
+This project is an SDK for Unreal Engine that wraps different Sentry's SDKs for both desktop, mobile and consoles. Also, it has a stable support for the [Unreal Engine crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/).
 
 ## Downloads
 
 The SDK can be downloaded from the [Releases] page, which also lists the
-changelog of every version, or from the [UE Marketplace] page via Epic Games launcher.
+changelog of every version, or from the [FAB] page via Epic Games launcher.
 
 [releases]: https://github.com/getsentry/sentry-unreal/releases
-[UE Marketplace]: https://www.unrealengine.com/marketplace/en-US/product/sentry-01
+[FAB]: https://www.unrealengine.com/marketplace/en-US/product/sentry-01
 
 ## Supported Platforms and Unreal Engine version
 
@@ -40,9 +40,9 @@ Blog posts:
 
 ## Known Limitations
 
-- On all platforms captured crashes are uploaded to Sentry only after relaunching the crashed app since the in-process handler cannot do this within the same session. The only exceptions are Windows (if using the GitHub package) and Linux for which the out-of-process crashpad handler is used and crashes are uploaded immediately.
+- On all platforms captured crashes are uploaded to Sentry only after relaunching the crashed app since the in-process handler cannot do this within the same session. The only exceptions are Windows and Linux for which the out-of-process crashpad handler is used and crashes are uploaded immediately.
 
-- To automatically capture crashes in Windows game builds that were made using engine versions prior to UE 5.2, the [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/) first.
+- To automatically capture crashes in Windows game builds that were made using engine versions prior to UE 5.2, the [Crash Reporter has to be configured](https://docs.sentry.io/platforms/unreal/setup-crashreport/) or engine source code [modifications](https://github.com/EpicGames/UnrealEngine/pull/7976) must be applied.
   
 - Using UGS binaries requires tagging of files to ensure the crashpad_handler.exe is present. For inclusion in build graph, you'd want something like this: 
 ```
@@ -53,15 +53,15 @@ Blog posts:
 
 - In UE 5.2 or newer game log attached to crashes captured with `sentry-native` integration instead of [crash reporter](https://docs.sentry.io/platforms/unreal/setup-crashreport/) could be truncated. This is caused by current `crashpad` behavior which sends crashes to Sentry right away while UE is still about to write some bits of information to the log file.
 
-- Only crash events captured on Android contain the full callstack. Events that were captured manually won't have the native C++ part there.
+- Only crash events captured on Android contain the full callstack. Non-fatal events that were captured manually won't include the native C++ portion of the stack trace.
 
-- `BeforeSendHandler` and `BeforeBreadcrumbHandler` hooks will not be invoked during garbage collection.
+- Callbacks that are registered as hooks (such as `BeforeSendHandler`) will not be invoked during garbage collection.
 
-- It may be required to upgrade the C++ standard library (`libstdc++`) on older Linux distributions (such as Ubuntu 18.04 and 20.04) to ensure crashpad handler proper functionality within the deployment environment. This can be achieved with something like this:
+- It may be required to upgrade the C++ standard library (`libstdc++`) on older Linux distributions (such as Ubuntu 18.04 and 20.04) to ensure crashpad handler proper functionality within the deployment environment. In addition, crashpad handler requires `libcurl` to be available at runtime. This can be achieved with something like this:
 ```
 sudo apt-get update
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt-get install -y libstdc++6
+sudo apt-get install -y libstdc++6 libcurl4
 ```
 
 - Plugin supports Linux arm64 platform for UE 5.0 and newer.
