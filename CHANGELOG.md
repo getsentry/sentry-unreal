@@ -5,12 +5,16 @@
 ### Fixes
 
 - Fix debug symbol upload for build products located in the engine directory ([#1262](https://github.com/getsentry/sentry-unreal/pull/1262))
+- Fix symbol upload configuration warning in plugin settings menu ([#1261](https://github.com/getsentry/sentry-unreal/pull/1261))
 
 ### Dependencies
 
 - Bump Cocoa SDK from v9.5.0 to v9.5.1 ([#1257](https://github.com/getsentry/sentry-unreal/pull/1257))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#951)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.5.0...9.5.1)
+- Bump Native SDK from v0.13.0 to v0.13.1 ([#1263](https://github.com/getsentry/sentry-unreal/pull/1263))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0131)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.13.0...0.13.1)
 
 ## 1.8.0
 

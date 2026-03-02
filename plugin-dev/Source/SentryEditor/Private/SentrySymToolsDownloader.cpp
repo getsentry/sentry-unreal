@@ -54,8 +54,7 @@ ESentrySymToolsStatus FSentrySymToolsDownloader::GetStatus()
 		return ESentrySymToolsStatus::Downloading;
 	}
 
-	if (FPaths::FileExists(GetSentryCliPath()) && FPaths::FileExists(GetSymUploadScriptPath()) &&
-		HasExecutePermission(GetSentryCliPath()) && HasExecutePermission(GetSymUploadScriptPath()))
+	if (FPaths::FileExists(GetSentryCliPath()) && FPaths::FileExists(GetSymUploadScriptPath()) && HasExecutePermission(GetSentryCliPath()))
 	{
 		return ESentrySymToolsStatus::Configured;
 	}
