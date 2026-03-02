@@ -22,6 +22,7 @@
 #include "Utils/SentryCallbackHandlers.h"
 
 #include "CoreGlobals.h"
+#include "HAL/ThreadHeartBeat.h"
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
@@ -158,6 +159,16 @@ void USentrySubsystem::Initialize()
 		FString EnsureMessage = GErrorHist;
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
+
+	if (Settings->EnableHangTracking)
+	{
+		FThreadHeartBeat::Get().GetOnHangDelegate().BindLambda(
+			[this](uint32 HungThreadId)
+			{
+				verify(SubsystemNativeImpl);
+				SubsystemNativeImpl->CaptureHang(HungThreadId);
+			});
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -199,6 +210,11 @@ void USentrySubsystem::Close()
 	{
 		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
 		OnEnsureDelegate.Reset();
+	}
+
+	if (FThreadHeartBeat* HB = FThreadHeartBeat::GetNoInit())
+	{
+		HB->GetOnHangDelegate().Unbind();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())

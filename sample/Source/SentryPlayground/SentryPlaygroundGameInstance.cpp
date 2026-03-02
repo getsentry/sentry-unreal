@@ -40,6 +40,7 @@ void USentryPlaygroundGameInstance::Init()
 		FParse::Param(*CommandLine, TEXT("log-capture")) ||
 		FParse::Param(*CommandLine, TEXT("metric-capture")) ||
 		FParse::Param(*CommandLine, TEXT("tracing-capture")) ||
+		FParse::Param(*CommandLine, TEXT("hang-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
@@ -98,6 +99,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	else if (FParse::Param(*CommandLine, TEXT("tracing-capture")))
 	{
 		RunTracingTest();
+	}
+	else if (FParse::Param(*CommandLine, TEXT("hang-capture")))
+	{
+		RunHangTest();
 	}
 	else if (FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -315,6 +320,27 @@ void USentryPlaygroundGameInstance::RunTracingTest()
 	SentrySubsystem->Close();
 
 	CompleteTestWithResult(TEXT("tracing-capture"), !TraceId.IsEmpty(), TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunHangTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+
+	// Flush logs to ensure output is captured before hang
+	GLog->Flush();
+
+	SentrySubsystem->SetTag(TEXT("test.hang_id"), EventId);
+
+	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::Hang);
+
+	// If the process survives the hang, report success
+	SentrySubsystem->Close();
+
+	CompleteTestWithResult(TEXT("hang-capture"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::RunInitOnly()

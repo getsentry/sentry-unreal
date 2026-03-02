@@ -296,8 +296,32 @@ bool FGenericPlatformSentryEvent::IsCrash() const
 
 bool FGenericPlatformSentryEvent::IsAnr() const
 {
-	// ANR error tracking is not available in `sentry-native`
-	return false;
+	sentry_value_t exception = sentry_value_get_by_key(Event, "exception");
+	if (sentry_value_is_null(exception))
+	{
+		return false;
+	}
+
+	sentry_value_t values = sentry_value_get_by_key(exception, "values");
+	if (sentry_value_is_null(values) || sentry_value_get_length(values) != 1)
+	{
+		return false;
+	}
+
+	sentry_value_t firstException = sentry_value_get_by_index(values, 0);
+	if (sentry_value_is_null(firstException))
+	{
+		return false;
+	}
+
+	const char* type = sentry_value_as_string(sentry_value_get_by_key(firstException, "type"));
+	bool isAppHangException = type && FCStringAnsi::Strcmp(type, "App Hanging") == 0;
+
+	sentry_value_t mechanism = sentry_value_get_by_key(firstException, "mechanism");
+	const char* mechanismType = sentry_value_as_string(sentry_value_get_by_key(mechanism, "type"));
+	bool isAppHangMechanism = mechanismType && FCStringAnsi::Strcmp(mechanismType, "AppHang") == 0;
+
+	return isAppHangException && isAppHangMechanism;
 }
 
 #endif

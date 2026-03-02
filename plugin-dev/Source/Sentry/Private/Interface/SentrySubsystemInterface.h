@@ -49,6 +49,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) = 0;
+	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) = 0;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) = 0;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) = 0;
 	virtual void RemoveUser() = 0;

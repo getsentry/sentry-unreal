@@ -318,14 +318,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Override release name", ToolTip = "Release name which will be used for enriching events.", EditCondition = "OverrideReleaseName"))
 	FString Release;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (InlineEditConditionToggle))
-	bool UseProxy;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
-		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
-	FString ProxyUrl;
-
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
 		Meta = (DisplayName = "Custom `beforeSend` event handler", ToolTip = "Custom handler for processing events before sending them to Sentry."))
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
@@ -347,6 +339,14 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableAutoCrashCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+	Meta = (InlineEditConditionToggle))
+	bool UseProxy;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
+		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
+	FString ProxyUrl;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Sentry database location", ToolTip = "Location where Sentry stores its internal/temporary files."))
 	ESentryDatabaseLocation DatabaseLocation;
 
@@ -362,6 +362,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable external crash reporter",
 			ToolTip = "When enabled, a crash reporter dialog is shown to the user after a crash, allowing them to provide feedback before submitting the crash report. Supported on Windows and Linux only."))
 	bool EnableExternalCrashReporter;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+	Meta = (DisplayName = "Enable hang tracking",
+		ToolTip = "Track application hangs (unresponsive game thread) using Unreal Engine's built-in FThreadHeartBeat. Only effective in packaged builds."))
+	bool EnableHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
 		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))

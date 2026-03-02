@@ -26,6 +26,7 @@ private:
 	void RunLogTest();
 	void RunMetricTest();
 	void RunTracingTest();
+	void RunHangTest();
 	void RunInitOnly();
 
 	void ConfigureTestContext();

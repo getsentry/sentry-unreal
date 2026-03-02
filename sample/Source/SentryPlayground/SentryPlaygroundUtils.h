@@ -22,7 +22,8 @@ enum class ESentryAppTerminationType : uint8
 	Assert,
 	AssertReentrant,
 	Ensure,
-	Fatal
+	Fatal,
+	Hang
 };
 
 UCLASS()
