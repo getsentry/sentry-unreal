@@ -339,7 +339,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableAutoCrashCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-	Meta = (InlineEditConditionToggle))
+		Meta = (InlineEditConditionToggle))
 	bool UseProxy;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
@@ -364,8 +364,8 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableExternalCrashReporter;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-	Meta = (DisplayName = "Enable hang tracking",
-		ToolTip = "Track application hangs (unresponsive game thread) using Unreal Engine's built-in FThreadHeartBeat. Only effective in packaged builds."))
+		Meta = (DisplayName = "Enable hang tracking",
+			ToolTip = "Track application hangs (unresponsive game thread) using Unreal Engine's built-in FThreadHeartBeat. Only effective in packaged builds."))
 	bool EnableHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",

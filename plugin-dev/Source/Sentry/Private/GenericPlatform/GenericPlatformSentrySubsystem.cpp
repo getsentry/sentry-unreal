@@ -42,10 +42,10 @@
 #include "Engine/Engine.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
-#include "HAL/PlatformStackWalk.h"
-#include "Misc/EngineVersionComparison.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformStackWalk.h"
 #include "Misc/CoreDelegates.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectThreadContext.h"
 

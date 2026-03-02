@@ -22,10 +22,10 @@
 #include "Utils/SentryCallbackHandlers.h"
 
 #include "CoreGlobals.h"
-#include "HAL/ThreadHeartBeat.h"
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
+#include "HAL/ThreadHeartBeat.h"
 #include "Misc/App.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
@@ -164,10 +164,10 @@ void USentrySubsystem::Initialize()
 	{
 		FThreadHeartBeat::Get().GetOnHangDelegate().BindLambda(
 			[this](uint32 HungThreadId)
-			{
-				verify(SubsystemNativeImpl);
-				SubsystemNativeImpl->CaptureHang(HungThreadId);
-			});
+		{
+			verify(SubsystemNativeImpl);
+			SubsystemNativeImpl->CaptureHang(HungThreadId);
+		});
 	}
 }
 
