@@ -43,6 +43,6 @@ if "%TARGET_PLATFORM%"=="Win64" (
 
 REM Call Python script for debug symbol upload
 "%ENGINE_DIR%\Binaries\ThirdParty\Python3\Win64\python.exe" "%PLUGIN_DIR%\Scripts\upload-debug-symbols.py" ^
-  %TARGET_PLATFORM% %TARGET_NAME% %TARGET_TYPE% %TARGET_CONFIGURATION% "%PROJECT_FILE%" "%PLUGIN_DIR%"
+  %TARGET_PLATFORM% %TARGET_NAME% %TARGET_TYPE% %TARGET_CONFIGURATION% "%PROJECT_FILE%" "%PLUGIN_DIR%" "%ENGINE_DIR%"
 
 endlocal
