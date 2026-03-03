@@ -32,10 +32,10 @@ Look for the built application in `sample/dist/` first (the default output of `/
 
 | Platform               | Expected path                              |
 |------------------------|--------------------------------------------|
-| Windows                | `sample/dist/SentryPlayground.exe`       |
-| Linux                  | `sample/dist/SentryPlayground.sh`        |
-| Android (emulator)     | `sample/dist/SentryPlayground-x64.apk`   |
-| Android (device/cloud) | `sample/dist/SentryPlayground-arm64.apk` |
+| Windows                | `sample/dist/SentryPlayground.exe`         |
+| Linux                  | `sample/dist/SentryPlayground.sh`          |
+| Android (emulator)     | `sample/dist/SentryPlayground-x64.apk`     |
+| Android (device/cloud) | `sample/dist/SentryPlayground-arm64.apk`   |
 
 Resolve `SENTRY_UNREAL_TEST_APP_PATH` in this order:
 
