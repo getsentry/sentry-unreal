@@ -9,24 +9,32 @@ Prerequisite: the project must be built first. If unsure whether it's been built
 
 1. Check the `UNREAL_ENGINE_ROOT` environment variable (use PowerShell `.NET` method on Windows: `[System.Environment]::GetEnvironmentVariable('UNREAL_ENGINE_ROOT')`). If unset or the path doesn't exist, ask the user for the engine path.
 
-2. Determine the engine version by reading the `EngineAssociation` field in `sample/SentryPlayground.uproject` (e.g., `"EngineAssociation": "5.7"` - UE5. `"EngineAssociation": "4.27"` - UE4). Select the editor binary based on host OS and engine version:
+2. Determine the engine version by reading the `EngineAssociation` field in `sample/SentryPlayground.uproject` (e.g., `"EngineAssociation": "5.7"` - UE5, `"EngineAssociation": "4.27"` - UE4). Select the editor binary based on host OS and engine version:
 
-- UE5 on Windows: `UnrealEditor.exe`
-- UE5 on macOS/Linux: `UnrealEditor`
-- UE4 on Windows: `UE4Editor.exe`
-- UE4 on macOS/Linux: `UE4Editor`
+| Host OS | UE5 binary path                          | UE4 binary path                       |
+|---------|------------------------------------------|---------------------------------------|
+| Windows | `Engine/Binaries/Win64/UnrealEditor.exe` | `Engine/Binaries/Win64/UE4Editor.exe` |
+| macOS   | `Engine/Binaries/Mac/UnrealEditor`       | `Engine/Binaries/Mac/UE4Editor`       |
+| Linux   | `Engine/Binaries/Linux/UnrealEditor`     | `Engine/Binaries/Linux/UE4Editor`     |
 
 3. Run the automation command from the repository root:
 
 ```bash
+# Windows UE5
 "$UNREAL_ENGINE_ROOT/Engine/Binaries/Win64/UnrealEditor.exe" \
     "$PWD/sample/SentryPlayground.uproject" \
     -ReportExportPath="$PWD/sample/Saved/Automation" \
     -ExecCmds="Automation RunTests Sentry;quit" \
     -TestExit="Automation Test Queue Empty" \
     -Unattended -NoPause -NoSplash -NullRHI
-```
 
-Replace `Win64/UnrealEditor.exe` with the appropriate binary path for the host OS (e.g., `Mac/UnrealEditor` on macOS, `Linux/UnrealEditor` on Linux).
+# macOS UE5
+"$UNREAL_ENGINE_ROOT/Engine/Binaries/Mac/UnrealEditor" \
+    "$PWD/sample/SentryPlayground.uproject" \
+    -ReportExportPath="$PWD/sample/Saved/Automation" \
+    -ExecCmds="Automation RunTests Sentry;quit" \
+    -TestExit="Automation Test Queue Empty" \
+    -Unattended -NoPause -NoSplash -NullRHI
+```
 
 4. Report that test results are written to `sample/Saved/Automation/`.

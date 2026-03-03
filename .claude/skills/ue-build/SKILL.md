@@ -31,13 +31,21 @@ Build the SentryPlayground sample project.
 5. Run the build command from the repository root:
 
 ```bash
+# Windows
 "$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.bat" BuildCookRun \
     -project="$PWD/sample/SentryPlayground.uproject" \
     -archivedirectory="$PWD/sample/dist" \
     -platform=Win64 -clientconfig=Development \
     -build -cook -stage -package -archive -nop4
+
+# macOS
+"$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
+    -project="$PWD/sample/SentryPlayground.uproject" \
+    -archivedirectory="$PWD/sample/dist" \
+    -platform=Mac -clientconfig=Development \
+    -build -cook -stage -package -archive -nop4
 ```
 
-Replace `RunUAT.bat` with `RunUAT.sh` on macOS/Linux, and substitute the platform and config values as determined above.
+Substitute the platform and config values as determined above.
 
-For Android Shipping builds, add the `-distribution` flag.
+For Android `Shipping` builds, add the `-distribution` flag.

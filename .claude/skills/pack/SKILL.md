@@ -3,7 +3,7 @@ name: pack
 description: Package plugin and update file snapshot
 ---
 
-Package the Sentry plugin and update the file snapshot. Use this after adding or removing files from the plugin.
+Package the Sentry plugin and update the file snapshot. Use this after adding or removing files under `plugin-dev/`.
 
 1. Run the packaging script:
 
