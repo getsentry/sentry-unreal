@@ -33,7 +33,7 @@ Build the SentryPlayground sample project.
 ```bash
 "$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.bat" BuildCookRun \
     -project="$PWD/sample/SentryPlayground.uproject" \
-    -archivedirectory="$PWD/sample/Builds" \
+    -archivedirectory="$PWD/sample/dist" \
     -platform=Win64 -clientconfig=Development \
     -build -cook -iterate -stage -prereqs -package -archive -nop4
 ```

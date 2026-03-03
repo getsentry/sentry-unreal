@@ -14,7 +14,7 @@ Before running tests, verify the following are available:
 - **PowerShell 7+** (Core edition)
 - **CMake 3.20+**
 - **Pester 5+** - if not installed: `Install-Module -Name Pester -Force -SkipPublisherCheck`
-- **Pre-built SentryPlayground application** in `Development` configuration. If not built, suggest running `/ue-build` first.
+- **Pre-built SentryPlayground application** in `Development` configuration (`Shipping` builds lack log output required by tests). If not built, suggest running `/ue-build` first.
 
 ## Steps
 
@@ -28,18 +28,18 @@ cd integration-test && cmake -B build -S .
 
 ### 2. Locate the test application
 
-Look for the built application in `sample/Builds/` first (the default output of `/ue-build`):
+Look for the built application in `sample/dist/` first (the default output of `/ue-build`):
 
 | Platform               | Expected path                              |
 |------------------------|--------------------------------------------|
-| Windows                | `sample/Builds/SentryPlayground.exe`       |
-| Linux                  | `sample/Builds/SentryPlayground.sh`        |
-| Android (emulator)     | `sample/Builds/SentryPlayground-x64.apk`   |
-| Android (device/cloud) | `sample/Builds/SentryPlayground-arm64.apk` |
+| Windows                | `sample/dist/SentryPlayground.exe`       |
+| Linux                  | `sample/dist/SentryPlayground.sh`        |
+| Android (emulator)     | `sample/dist/SentryPlayground-x64.apk`   |
+| Android (device/cloud) | `sample/dist/SentryPlayground-arm64.apk` |
 
 Resolve `SENTRY_UNREAL_TEST_APP_PATH` in this order:
 
-1. If the expected file exists in `sample/Builds/`, set the env var to its absolute path.
+1. If the expected file exists in `sample/dist/`, set the env var to its absolute path.
 2. Otherwise, if `SENTRY_UNREAL_TEST_APP_PATH` is already set, use its current value.
 3. Otherwise, ask the user for the path and set the env var to their input.
 
@@ -75,9 +75,9 @@ If the platform is unclear, ask the user.
 
 Execute from the `integration-test/` directory:
 
-```powershell
+```bash
 cd integration-test
-Invoke-Pester Integration.Desktop.Tests.ps1
+pwsh Invoke-Pester Integration.Desktop.Tests.ps1
 ```
 
 Replace the test file name for Android as needed.
