@@ -30,12 +30,13 @@ cd integration-test && cmake -B build -S .
 
 Look for the built application in `sample/dist/` first (the default output of `/ue-build`):
 
-| Platform               | Expected path                              |
-|------------------------|--------------------------------------------|
-| Windows                | `sample/dist/SentryPlayground.exe`         |
-| Linux                  | `sample/dist/SentryPlayground.sh`          |
-| Android (emulator)     | `sample/dist/SentryPlayground-x64.apk`     |
-| Android (device/cloud) | `sample/dist/SentryPlayground-arm64.apk`   |
+| Platform               | Expected path                                                          |
+|------------------------|------------------------------------------------------------------------|
+| Windows                | `sample/dist/SentryPlayground.exe`                                     |
+| macOS                  | `sample/dist/Mac/SentryPlayground.app/Contents/MacOS/SentryPlayground` |
+| Linux                  | `sample/dist/SentryPlayground.sh`                                      |
+| Android (emulator)     | `sample/dist/SentryPlayground-x64.apk`                                 |
+| Android (device/cloud) | `sample/dist/SentryPlayground-arm64.apk`                               |
 
 Resolve `SENTRY_UNREAL_TEST_APP_PATH` in this order:
 
@@ -77,7 +78,7 @@ Execute from the `integration-test/` directory:
 
 ```bash
 cd integration-test
-pwsh Invoke-Pester Integration.Desktop.Tests.ps1
+pwsh -Command "Invoke-Pester ./Integration.Desktop.Tests.ps1"
 ```
 
 Replace the test file name for Android as needed.

@@ -9,11 +9,12 @@ Prerequisite: the project must be built first. If unsure whether it's been built
 
 1. Check the `UNREAL_ENGINE_ROOT` environment variable (use PowerShell `.NET` method on Windows: `[System.Environment]::GetEnvironmentVariable('UNREAL_ENGINE_ROOT')`). If unset or the path doesn't exist, ask the user for the engine path.
 
-2. Select the editor binary based on host OS and engine version:
-   - UE5 on Windows: `UnrealEditor.exe`
-   - UE5 on macOS/Linux: `UnrealEditor`
-   - UE4 on Windows: `UE4Editor.exe`
-   - UE4 on macOS/Linux: `UE4Editor`
+2. Determine the engine version by reading the `EngineAssociation` field in `sample/SentryPlayground.uproject` (e.g., `"EngineAssociation": "5.7"` - UE5. `"EngineAssociation": "4.27"` - UE4). Select the editor binary based on host OS and engine version:
+
+- UE5 on Windows: `UnrealEditor.exe`
+- UE5 on macOS/Linux: `UnrealEditor`
+- UE4 on Windows: `UE4Editor.exe`
+- UE4 on macOS/Linux: `UE4Editor`
 
 3. Run the automation command from the repository root:
 

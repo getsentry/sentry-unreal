@@ -212,11 +212,25 @@ When implementing features that wrap native SDK functionality, check APIs in the
     - [sentry-cocoa](https://github.com/getsentry/sentry-cocoa)
     - [sentry-java](https://github.com/getsentry/sentry-java)
 
+### Reading Environment Variables
+
+On Windows, when checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
+
+```powershell
+[System.Environment]::GetEnvironmentVariable('VAR_NAME')
+```
+
 ### Useful Resources
 
 - Main SDK documentation: https://develop.sentry.dev/sdk/overview/
 - Internal contributing guide: https://docs.sentry.io/internal/contributing/
 - Unreal Engine SDK documentation: https://docs.sentry.io/platforms/unreal/
+
+### Other Related Code & Repositories
+
+- [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
+- [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
+- [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
 
 ## Maintaining This Document
 

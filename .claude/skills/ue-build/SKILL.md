@@ -35,11 +35,9 @@ Build the SentryPlayground sample project.
     -project="$PWD/sample/SentryPlayground.uproject" \
     -archivedirectory="$PWD/sample/dist" \
     -platform=Win64 -clientconfig=Development \
-    -build -cook -iterate -stage -prereqs -package -archive -nop4
+    -build -cook -stage -package -archive -nop4
 ```
 
 Replace `RunUAT.bat` with `RunUAT.sh` on macOS/Linux, and substitute the platform and config values as determined above.
 
 For Android Shipping builds, add the `-distribution` flag.
-
-Note: For UE4, the editor binary is named `UE4Editor`; for UE5 it's `UnrealEditor`.
