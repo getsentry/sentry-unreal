@@ -78,7 +78,7 @@ Execute from the `integration-test/` directory:
 
 ```bash
 cd integration-test
-pwsh -Command "Invoke-Pester ./Integration.Desktop.Tests.ps1"
+pwsh -Command 'Invoke-Pester ./Integration.Desktop.Tests.ps1'
 ```
 
 Replace the test file name for Android as needed.

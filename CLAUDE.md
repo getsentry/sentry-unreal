@@ -228,6 +228,9 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 
 ### Other Related Code & Repositories
 
+- [sentry-native](https://github.com/getsentry/sentry-native): crash and error monitoring on Windows/Linux and game consoles
+- [sentry-java](https://github.com/getsentry/sentry-java): crash and error monitoring on Android
+- [sentry-cocoa](https://github.com/getsentry/sentry-cocoa): crash and error monitoring on macOS and iOS
 - [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests

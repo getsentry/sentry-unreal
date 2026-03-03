@@ -24,11 +24,7 @@ Build the SentryPlayground sample project.
 
 3. Determine the build configuration: use `Development` by default, or `Shipping` if the user mentions it.
 
-4. Select the UAT script based on host OS:
-   - Windows: `RunUAT.bat`
-   - macOS/Linux: `RunUAT.sh`
-
-5. Run the build command from the repository root:
+4. Run the build command from the repository root:
 
 ```bash
 # Windows
