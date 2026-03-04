@@ -29,6 +29,7 @@ class USentryTransactionContext;
 class ISentrySubsystem;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
+class FSentryHangWatcher;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -602,4 +603,6 @@ private:
 
 	FDelegateHandle OnAssertDelegate;
 	FDelegateHandle OnEnsureDelegate;
+
+	TSharedPtr<FSentryHangWatcher> HangWatcher;
 };

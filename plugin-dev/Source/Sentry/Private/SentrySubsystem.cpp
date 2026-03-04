@@ -25,7 +25,7 @@
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
-#include "HAL/ThreadHeartBeat.h"
+#include "Utils/SentryHangWatcher.h"
 #include "Misc/App.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
@@ -163,11 +163,8 @@ void USentrySubsystem::Initialize()
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (Settings->EnableHangTracking)
 	{
-		FThreadHeartBeat::Get().GetOnHangDelegate().BindLambda([this](uint32 HungThreadId)
-		{
-			verify(SubsystemNativeImpl);
-			SubsystemNativeImpl->CaptureHang(HungThreadId);
-		});
+		HangWatcher = MakeShared<FSentryHangWatcher>(SubsystemNativeImpl, Settings->HangTimeoutDuration);
+		HangWatcher->Start();
 	}
 #endif
 }
@@ -214,9 +211,10 @@ void USentrySubsystem::Close()
 	}
 
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
-	if (FThreadHeartBeat* HeartBeat = FThreadHeartBeat::GetNoInit())
+	if (HangWatcher.IsValid())
 	{
-		HeartBeat->GetOnHangDelegate().Unbind();
+		HangWatcher->Stop();
+		HangWatcher.Reset();
 	}
 #endif
 

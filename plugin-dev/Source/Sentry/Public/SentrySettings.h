@@ -368,6 +368,13 @@ class SENTRY_API USentrySettings : public UObject
 			ToolTip = "Track application hangs (unresponsive game thread) using Unreal Engine's built-in FThreadHeartBeat. Only effective in packaged builds."))
 	bool EnableHangTracking;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Hang timeout (seconds)",
+			ToolTip = "Duration in seconds that the game thread must be unresponsive before a hang event is captured.",
+			EditCondition = "EnableHangTracking",
+			ClampMin = 5.0f, ClampMax = 60.0f))
+	float HangTimeoutDuration;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
 		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))
 	bool EnableOfflineCaching;

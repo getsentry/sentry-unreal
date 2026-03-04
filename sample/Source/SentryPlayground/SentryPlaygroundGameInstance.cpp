@@ -337,7 +337,6 @@ void USentryPlaygroundGameInstance::RunHangTest()
 
 	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::Hang);
 
-	// If the process survives the hang, report success
 	SentrySubsystem->Close();
 
 	CompleteTestWithResult(TEXT("hang-capture"), true, TEXT("Test complete"));

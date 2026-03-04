@@ -119,8 +119,8 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			}
 			break;
 		case ESentryAppTerminationType::Hang:
-			UE_LOG(LogTemp, Warning, TEXT("Triggering hang: blocking game thread for 35 seconds..."));
-			FPlatformProcess::Sleep(35.0f);
+			UE_LOG(LogTemp, Warning, TEXT("Triggering hang: blocking game thread for 10 seconds..."));
+			FPlatformProcess::Sleep(10.0f);
 			UE_LOG(LogTemp, Warning, TEXT("Hang period ended."));
 			break;
 		default:
