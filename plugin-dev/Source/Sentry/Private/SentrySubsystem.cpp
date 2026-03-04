@@ -163,7 +163,11 @@ void USentrySubsystem::Initialize()
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (Settings->EnableHangTracking)
 	{
-		HangWatcher = MakeShared<FSentryHangWatcher>(SubsystemNativeImpl, Settings->HangTimeoutDuration);
+		HangWatcher = MakeShared<FSentryHangWatcher>(Settings->HangTimeoutDuration);
+		HangWatcher->OnHangDetected.BindLambda([this](uint32 HungThreadId, double HangDuration)
+		{
+			SubsystemNativeImpl->CaptureHang(HungThreadId);
+		});
 		HangWatcher->Start();
 	}
 #endif

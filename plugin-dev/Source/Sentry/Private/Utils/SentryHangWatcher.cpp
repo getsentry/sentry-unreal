@@ -4,8 +4,6 @@
 
 #include "SentryDefines.h"
 
-#include "Interface/SentrySubsystemInterface.h"
-
 #include "HAL/RunnableThread.h"
 #include "HAL/Event.h"
 #include "HAL/PlatformProcess.h"
@@ -13,9 +11,8 @@
 
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 
-FSentryHangWatcher::FSentryHangWatcher(TSharedPtr<ISentrySubsystem> InSubsystem, float InHangTimeoutSeconds)
-	: SubsystemImpl(InSubsystem)
-	, HangTimeoutSeconds(InHangTimeoutSeconds)
+FSentryHangWatcher::FSentryHangWatcher(float InHangTimeoutSeconds)
+	: HangTimeoutSeconds(InHangTimeoutSeconds)
 	, LastHeartbeatTime(FPlatformTime::Seconds())
 	, bRunning(false)
 	, WatcherThread(nullptr)
@@ -104,11 +101,12 @@ uint32 FSentryHangWatcher::Run()
 		{
 			const uint32 GameThreadId = GGameThreadId;
 
-			UE_LOG(LogSentrySdk, Warning, TEXT("Game thread hang detected (unresponsive for %.1fs). Capturing hang event."),
+			UE_LOG(LogSentrySdk, Warning, TEXT("Game thread hang detected (unresponsive for %.1fs)."),
 				TimeSinceLastHeartbeat);
 
-			SubsystemImpl->CaptureHang(GameThreadId);
+			OnHangDetected.ExecuteIfBound(GameThreadId, TimeSinceLastHeartbeat);
 
+			// Wait until the game thread recovers before watching for the next hang
 			while (bRunning)
 			{
 				WakeEvent->Wait(PollIntervalMs);
