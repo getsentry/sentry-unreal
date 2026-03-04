@@ -4,8 +4,8 @@
 
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 
-#include "SentryDefines.h"
 #include "Interface/SentrySubsystemInterface.h"
+#include "SentryDefines.h"
 
 #include "HAL/Event.h"
 #include "HAL/PlatformProcess.h"
@@ -45,10 +45,10 @@ void FSentryHangWatcher::Start()
 	// Register a ticker callback on the game thread that updates our heartbeat timestamp every tick
 	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
 		[this](float DeltaTime) -> bool
-		{
-			LastHeartbeatTime = FPlatformTime::Seconds();
-			return true;
-		}));
+	{
+		LastHeartbeatTime = FPlatformTime::Seconds();
+		return true;
+	}));
 
 	WatcherThread = FRunnableThread::Create(this, TEXT("SentryHangWatcher"), 0, TPri_BelowNormal);
 

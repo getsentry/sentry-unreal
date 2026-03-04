@@ -25,13 +25,13 @@
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
-#include "Utils/SentryHangWatcher.h"
 #include "Misc/App.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
+#include "Utils/SentryHangWatcher.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 

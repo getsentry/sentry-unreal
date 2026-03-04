@@ -7,10 +7,10 @@
 
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 
+#include "Containers/Ticker.h"
 #include "HAL/Runnable.h"
 #include "HAL/RunnableThread.h"
 #include "HAL/ThreadSafeBool.h"
-#include "Containers/Ticker.h"
 
 class ISentrySubsystem;
 
