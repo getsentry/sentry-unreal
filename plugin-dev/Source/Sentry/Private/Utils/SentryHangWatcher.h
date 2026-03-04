@@ -3,14 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Ticker.h"
+#include "HAL/Runnable.h"
+
+#include "HAL/ThreadSafeBool.h"
 #include "Misc/EngineVersionComparison.h"
 
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
-
-#include "Containers/Ticker.h"
-#include "HAL/Runnable.h"
-#include "HAL/RunnableThread.h"
-#include "HAL/ThreadSafeBool.h"
 
 class ISentrySubsystem;
 
@@ -49,4 +48,4 @@ private:
 	FEvent* WakeEvent;
 };
 
-#endif // !UE_VERSION_OLDER_THAN(5, 0, 0)
+#endif

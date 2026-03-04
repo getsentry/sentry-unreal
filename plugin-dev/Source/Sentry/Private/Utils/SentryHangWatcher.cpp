@@ -2,14 +2,16 @@
 
 #include "Utils/SentryHangWatcher.h"
 
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
-
-#include "Interface/SentrySubsystemInterface.h"
 #include "SentryDefines.h"
 
+#include "Interface/SentrySubsystemInterface.h"
+
+#include "HAL/RunnableThread.h"
 #include "HAL/Event.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformTime.h"
+
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 
 FSentryHangWatcher::FSentryHangWatcher(TSharedPtr<ISentrySubsystem> InSubsystem, float InHangTimeoutSeconds)
 	: SubsystemImpl(InSubsystem)
@@ -43,8 +45,7 @@ void FSentryHangWatcher::Start()
 	bRunning = true;
 
 	// Register a ticker callback on the game thread that updates our heartbeat timestamp every tick
-	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
-		[this](float DeltaTime) -> bool
+	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this](float DeltaTime) -> bool
 	{
 		LastHeartbeatTime = FPlatformTime::Seconds();
 		return true;
@@ -85,7 +86,6 @@ void FSentryHangWatcher::Stop()
 
 uint32 FSentryHangWatcher::Run()
 {
-	// Poll interval — how often we check whether the game thread is still ticking
 	const uint32 PollIntervalMs = 1000;
 
 	while (bRunning)
@@ -109,7 +109,6 @@ uint32 FSentryHangWatcher::Run()
 
 			SubsystemImpl->CaptureHang(GameThreadId);
 
-			// Wait until the game thread recovers before watching for the next hang
 			while (bRunning)
 			{
 				WakeEvent->Wait(PollIntervalMs);
@@ -127,4 +126,4 @@ uint32 FSentryHangWatcher::Run()
 	return 0;
 }
 
-#endif // !UE_VERSION_OLDER_THAN(5, 0, 0)
+#endif
