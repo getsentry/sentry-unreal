@@ -59,6 +59,13 @@ void FSentryHangWatcher::Start()
 		return;
 	}
 
+	if (HangTimeoutSeconds < EngineStuckDuration)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Hang timeout (%.1fs) is less than engine's StuckDuration (%.1fs). Adjusting to %.1fs."),
+			HangTimeoutSeconds, EngineStuckDuration, EngineStuckDuration);
+		HangTimeoutSeconds = EngineStuckDuration;
+	}
+
 	bRunning = true;
 
 	HeartBeat.GetOnThreadStuck().BindRaw(this, &FSentryHangWatcher::OnThreadStuck);

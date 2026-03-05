@@ -369,8 +369,8 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Hang timeout (seconds)", ToolTip = "Duration in seconds that the game thread must be unresponsive before a hang event is captured.",
-			EditCondition = "EnableHangTracking", ClampMin = 5.0f, ClampMax = 60.0f))
+		Meta = (DisplayName = "Hang timeout (seconds)", ToolTip = "Duration in seconds that a thread must be unresponsive before a hang event is captured.",
+			EditCondition = "EnableHangTracking", ClampMin = 1.0f))
 	float HangTimeoutDuration;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
