@@ -65,6 +65,7 @@ void FSentryHangWatcher::Start()
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Hang timeout (%.1fs) is less than engine's StuckDuration (%.1fs). Adjusting to %.1fs."),
 			HangTimeoutSeconds, EngineStuckDuration, EngineStuckDuration);
+
 		HangTimeoutSeconds = EngineStuckDuration;
 	}
 
@@ -118,6 +119,11 @@ void FSentryHangWatcher::Stop()
 
 void FSentryHangWatcher::OnThreadStuck(uint32 ThreadId)
 {
+	if (StuckThreadId == ThreadId)
+	{
+		return;
+	}
+
 	UE_LOG(LogSentrySdk, Log, TEXT("Thread %u reported stuck by engine heartbeat."), ThreadId);
 
 	StuckThreadId = ThreadId;
