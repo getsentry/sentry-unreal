@@ -757,7 +757,11 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungTh
 		Frames[i] = reinterpret_cast<void*>(BackTrace[i]);
 	}
 
-	sentry_value_set_stacktrace(exception, Frames.GetData(), Depth);
+	if (Frames.Num() > 0)
+	{
+		sentry_value_set_stacktrace(exception, Frames.GetData(), Frames.Num());
+	}
+
 	sentry_event_add_exception(event, exception);
 
 	sentry_uuid_t id = sentry_capture_event(event);
