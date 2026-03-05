@@ -5,11 +5,13 @@
 #include "SentryDefines.h"
 
 #include "HAL/Event.h"
+#include "HAL/IConsoleManager.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "HAL/ThreadHeartBeat.h"
 
 #include "Misc/ConfigCacheIni.h"
+#include "Misc/EngineVersionComparison.h"
 
 static const uint32 InvalidThreadId = (uint32)-1;
 
@@ -65,6 +67,17 @@ void FSentryHangWatcher::Start()
 			HangTimeoutSeconds, EngineStuckDuration, EngineStuckDuration);
 		HangTimeoutSeconds = EngineStuckDuration;
 	}
+
+	// In UE 5.3 and older, OnStuck/OnUnstuck delegates only fire when the
+	// AttemptStuckThreadResuscitation CVar is true (defaults to false).
+	// UE 5.4+ removed this gate entirely. Enable it so delegates fire.
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+	IConsoleVariable* ResuscitationCVar = IConsoleManager::Get().FindConsoleVariable(TEXT("AttemptStuckThreadResuscitation"));
+	if (ResuscitationCVar)
+	{
+		ResuscitationCVar->Set(true);
+	}
+#endif
 
 	bRunning = true;
 
