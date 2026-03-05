@@ -400,6 +400,12 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 	return id;
 }
 
+TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureHang(uint32 HungThreadId)
+{
+	// Hang tracking is handled by the native Apple SDK via built-in App Hang detection (see EnableAppNotRespondingTracking setting)
+	return nullptr;
+}
+
 void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAppleSentryFeedback> feedbackApple = StaticCastSharedPtr<FAppleSentryFeedback>(feedback);
