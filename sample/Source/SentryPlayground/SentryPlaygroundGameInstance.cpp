@@ -19,6 +19,7 @@
 
 #include "CoreGlobals.h"
 #include "HAL/Platform.h"
+#include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/CommandLine.h"
 #include "Engine/Engine.h"
@@ -335,11 +336,17 @@ void USentryPlaygroundGameInstance::RunHangTest()
 
 	SentrySubsystem->SetTag(TEXT("test.hang_id"), EventId);
 
-	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::Hang);
+	// Defer the hang trigger until after engine loop init so that the heartbeat
+	// monitor thread is running and threads have registered their heartbeats
+	FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this]()
+	{
+		USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::Hang);
 
-	SentrySubsystem->Close();
+		USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+		SentrySubsystem->Close();
 
-	CompleteTestWithResult(TEXT("hang-capture"), true, TEXT("Test complete"));
+		CompleteTestWithResult(TEXT("hang-capture"), true, TEXT("Test complete"));
+	});
 }
 
 void USentryPlaygroundGameInstance::RunInitOnly()

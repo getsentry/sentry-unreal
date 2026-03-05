@@ -7,18 +7,30 @@
 #include "HAL/RunnableThread.h"
 #include "HAL/Event.h"
 #include "HAL/PlatformProcess.h"
-#include "HAL/PlatformTime.h"
+#include "HAL/ThreadHeartBeat.h"
+#include "Misc/ConfigCacheIni.h"
 
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
 
+static const uint32 InvalidThreadId = (uint32)-1;
+
 FSentryHangWatcher::FSentryHangWatcher(float InHangTimeoutSeconds)
 	: HangTimeoutSeconds(InHangTimeoutSeconds)
-	, LastHeartbeatTime(FPlatformTime::Seconds())
+	, EngineStuckDuration(1.0f)
+	, StuckThreadId(InvalidThreadId)
 	, bRunning(false)
 	, WatcherThread(nullptr)
 	, WakeEvent(nullptr)
 {
 	WakeEvent = FPlatformProcess::GetSynchEventFromPool(false);
+
+	// Read engine's StuckDuration from config (same source as FThreadHeartBeat)
+	double ConfigStuckDuration = 1.0;
+	if (GConfig)
+	{
+		GConfig->GetDouble(TEXT("Core.System"), TEXT("StuckDuration"), ConfigStuckDuration, GEngineIni);
+	}
+	EngineStuckDuration = (float)ConfigStuckDuration;
 }
 
 FSentryHangWatcher::~FSentryHangWatcher()
@@ -39,18 +51,25 @@ void FSentryHangWatcher::Start()
 		return;
 	}
 
+	FThreadHeartBeat& HeartBeat = FThreadHeartBeat::Get();
+
+	const double HangDuration = HeartBeat.GetHangDuration();
+	if (HangDuration <= 0.0)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Engine's HangDuration is 0 — heartbeat monitor thread is not running. "
+			"Set HangDuration > 0 in [Core.System] to enable hang tracking."));
+		return;
+	}
+
 	bRunning = true;
 
-	// Register a ticker callback on the game thread that updates our heartbeat timestamp every tick
-	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this](float DeltaTime) -> bool
-	{
-		LastHeartbeatTime = FPlatformTime::Seconds();
-		return true;
-	}));
+	HeartBeat.GetOnThreadStuck().BindRaw(this, &FSentryHangWatcher::OnThreadStuck);
+	HeartBeat.GetOnThreadUnstuck().BindRaw(this, &FSentryHangWatcher::OnThreadUnstuck);
 
 	WatcherThread = FRunnableThread::Create(this, TEXT("SentryHangWatcher"), 0, TPri_BelowNormal);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("Hang watcher started (timeout: %.1fs)."), HangTimeoutSeconds);
+	UE_LOG(LogSentrySdk, Log, TEXT("Hang watcher started (timeout: %.1fs, engine stuck duration: %.1fs, engine hang duration: %.1fs)."),
+		HangTimeoutSeconds, EngineStuckDuration, HangDuration);
 }
 
 void FSentryHangWatcher::Stop()
@@ -62,11 +81,9 @@ void FSentryHangWatcher::Stop()
 
 	bRunning = false;
 
-	if (TickerHandle.IsValid())
-	{
-		FTSTicker::GetCoreTicker().RemoveTicker(TickerHandle);
-		TickerHandle.Reset();
-	}
+	FThreadHeartBeat& HeartBeat = FThreadHeartBeat::Get();
+	HeartBeat.GetOnThreadStuck().Unbind();
+	HeartBeat.GetOnThreadUnstuck().Unbind();
 
 	if (WakeEvent)
 	{
@@ -81,42 +98,65 @@ void FSentryHangWatcher::Stop()
 	}
 }
 
+void FSentryHangWatcher::OnThreadStuck(uint32 ThreadId)
+{
+	UE_LOG(LogSentrySdk, Log, TEXT("Thread %u reported stuck by engine heartbeat."), ThreadId);
+
+	StuckThreadId = ThreadId;
+	WakeEvent->Trigger();
+}
+
+void FSentryHangWatcher::OnThreadUnstuck(uint32 ThreadId)
+{
+	if (StuckThreadId == InvalidThreadId)
+	{
+		return;
+	}
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Thread %u recovered (unstuck)."), ThreadId);
+
+	StuckThreadId = InvalidThreadId;
+}
+
 uint32 FSentryHangWatcher::Run()
 {
-	const uint32 PollIntervalMs = 1000;
-
 	while (bRunning)
 	{
-		WakeEvent->Wait(PollIntervalMs);
+		// Wait for a thread to be reported stuck
+		WakeEvent->Wait(MAX_uint32);
 
 		if (!bRunning)
 		{
 			break;
 		}
 
-		const double CurrentTime = FPlatformTime::Seconds();
-		const double TimeSinceLastHeartbeat = CurrentTime - LastHeartbeatTime;
+		// A thread was reported stuck — wait the remaining time before capturing
+		const float RemainingWaitSeconds = FMath::Max(HangTimeoutSeconds - EngineStuckDuration, 0.0f);
+		const uint32 RemainingWaitMs = (uint32)(RemainingWaitSeconds * 1000.0f);
 
-		if (TimeSinceLastHeartbeat >= HangTimeoutSeconds)
+		if (RemainingWaitMs > 0)
 		{
-			const uint32 GameThreadId = GGameThreadId;
+			WakeEvent->Wait(RemainingWaitMs);
+		}
 
-			UE_LOG(LogSentrySdk, Warning, TEXT("Game thread hang detected (unresponsive for %.1fs)."),
-				TimeSinceLastHeartbeat);
+		if (!bRunning)
+		{
+			break;
+		}
 
-			OnHangDetected.ExecuteIfBound(GameThreadId, TimeSinceLastHeartbeat);
+		// Check if the thread is still stuck
+		const uint32 CurrentStuckThread = StuckThreadId;
+		if (CurrentStuckThread != InvalidThreadId)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Thread %u hang detected (unresponsive for %.1fs)."),
+				CurrentStuckThread, HangTimeoutSeconds);
 
-			// Wait until the game thread recovers before watching for the next hang
-			while (bRunning)
+			OnHangDetected.ExecuteIfBound(CurrentStuckThread, (double)HangTimeoutSeconds);
+
+			// Wait until this stuck episode resolves before watching for the next one
+			while (bRunning && StuckThreadId != InvalidThreadId)
 			{
-				WakeEvent->Wait(PollIntervalMs);
-
-				const double RecoveryTime = FPlatformTime::Seconds();
-				if ((RecoveryTime - LastHeartbeatTime) < HangTimeoutSeconds)
-				{
-					UE_LOG(LogSentrySdk, Log, TEXT("Game thread recovered."));
-					break;
-				}
+				WakeEvent->Wait(1000);
 			}
 		}
 	}
