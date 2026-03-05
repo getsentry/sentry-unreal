@@ -160,7 +160,6 @@ void USentrySubsystem::Initialize()
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
 
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (Settings->EnableHangTracking)
 	{
 		HangWatcher = MakeShared<FSentryHangWatcher>(Settings->HangTimeoutDuration);
@@ -170,7 +169,6 @@ void USentrySubsystem::Initialize()
 		});
 		HangWatcher->Start();
 	}
-#endif
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -214,13 +212,11 @@ void USentrySubsystem::Close()
 		OnEnsureDelegate.Reset();
 	}
 
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 	if (HangWatcher.IsValid())
 	{
 		HangWatcher->Stop();
 		HangWatcher.Reset();
 	}
-#endif
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{

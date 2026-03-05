@@ -8,9 +8,8 @@
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "HAL/ThreadHeartBeat.h"
-#include "Misc/ConfigCacheIni.h"
 
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+#include "Misc/ConfigCacheIni.h"
 
 static const uint32 InvalidThreadId = (uint32)-1;
 
@@ -56,8 +55,7 @@ void FSentryHangWatcher::Start()
 	const double HangDuration = HeartBeat.GetHangDuration();
 	if (HangDuration <= 0.0)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Engine's HangDuration is 0 — heartbeat monitor thread is not running. "
-										   "Set HangDuration > 0 in [Core.System] to enable hang tracking."));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Engine's HangDuration is 0 — heartbeat monitor thread is not running. Set HangDuration > 0 in [Core.System] to enable hang tracking."));
 		return;
 	}
 
@@ -148,8 +146,7 @@ uint32 FSentryHangWatcher::Run()
 		const uint32 CurrentStuckThread = StuckThreadId;
 		if (CurrentStuckThread != InvalidThreadId)
 		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Thread %u hang detected (unresponsive for %.1fs)."),
-				CurrentStuckThread, HangTimeoutSeconds);
+			UE_LOG(LogSentrySdk, Warning, TEXT("Thread %u hang detected (unresponsive for %.1fs)."), CurrentStuckThread, HangTimeoutSeconds);
 
 			OnHangDetected.ExecuteIfBound(CurrentStuckThread, (double)HangTimeoutSeconds);
 
@@ -163,5 +160,3 @@ uint32 FSentryHangWatcher::Run()
 
 	return 0;
 }
-
-#endif

@@ -4,11 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HAL/Runnable.h"
-
 #include "HAL/ThreadSafeBool.h"
-#include "Misc/EngineVersionComparison.h"
-
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 
 DECLARE_DELEGATE_TwoParams(FOnHangDetected, uint32 /*HungThreadId*/, double /*HangDuration*/);
 
@@ -53,5 +49,3 @@ private:
 	FRunnableThread* WatcherThread;
 	FEvent* WakeEvent;
 };
-
-#endif
