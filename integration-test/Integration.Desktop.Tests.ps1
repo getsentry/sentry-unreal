@@ -776,6 +776,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableHangTracking=True"
 
             # -hang-capture triggers hang test scenario in the sample app
             $script:HangResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-hang-capture') + $appArgs) -join ' ')
