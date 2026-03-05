@@ -733,7 +733,6 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungThreadId)
 {
-	// Capture the hung thread's stack trace
 	const uint32 MaxDepth = 128;
 	uint64 BackTrace[MaxDepth];
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -742,18 +741,15 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungTh
 	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(HungThreadId, BackTrace, MaxDepth);
 #endif
 
-	// Create event at error level (hangs are non-fatal)
 	sentry_value_t event = sentry_value_new_event();
 	sentry_value_set_by_key(event, "level", sentry_value_new_string("error"));
 
-	// Create exception with mechanism matching sentry-cocoa's AppHang pattern
 	sentry_value_t exception = sentry_value_new_exception("App Hanging", "Application not responding");
 
 	sentry_value_t mechanism = sentry_value_new_object();
 	sentry_value_set_by_key(mechanism, "type", sentry_value_new_string("AppHang"));
 	sentry_value_set_by_key(exception, "mechanism", mechanism);
 
-	// Attach the hung thread's stack frames to the exception
 	TArray<void*> Frames;
 	Frames.SetNum(Depth);
 	for (uint32 i = 0; i < Depth; i++)
