@@ -4,9 +4,9 @@
 
 #include "SentryDefines.h"
 
-#include "HAL/RunnableThread.h"
 #include "HAL/Event.h"
 #include "HAL/PlatformProcess.h"
+#include "HAL/RunnableThread.h"
 #include "HAL/ThreadHeartBeat.h"
 #include "Misc/ConfigCacheIni.h"
 
@@ -57,7 +57,7 @@ void FSentryHangWatcher::Start()
 	if (HangDuration <= 0.0)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Engine's HangDuration is 0 — heartbeat monitor thread is not running. "
-			"Set HangDuration > 0 in [Core.System] to enable hang tracking."));
+										   "Set HangDuration > 0 in [Core.System] to enable hang tracking."));
 		return;
 	}
 
