@@ -572,6 +572,9 @@ private:
 	/** Add custom Sentry output device to intercept errors */
 	void ConfigureErrorOutputDevice();
 
+	/** Set up hang watcher for detecting unresponsive threads */
+	void ConfigureHangTracking();
+
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 

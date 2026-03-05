@@ -162,12 +162,7 @@ void USentrySubsystem::Initialize()
 
 	if (Settings->EnableHangTracking)
 	{
-		HangWatcher = MakeShared<FSentryHangWatcher>(Settings->HangTimeoutDuration);
-		HangWatcher->OnHangDetected.BindLambda([this](uint32 HungThreadId, double HangDuration)
-		{
-			SubsystemNativeImpl->CaptureHang(HungThreadId);
-		});
-		HangWatcher->Start();
+		ConfigureHangTracking();
 	}
 }
 
@@ -1116,6 +1111,19 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 		});
 		GError = OutputDeviceError.Get();
 	}
+}
+
+void USentrySubsystem::ConfigureHangTracking()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	check(Settings);
+
+	HangWatcher = MakeShared<FSentryHangWatcher>(Settings->HangTimeoutDuration);
+	HangWatcher->OnHangDetected.BindLambda([this](uint32 HungThreadId, double HangDuration)
+	{
+		SubsystemNativeImpl->CaptureHang(HungThreadId);
+	});
+	HangWatcher->Start();
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
