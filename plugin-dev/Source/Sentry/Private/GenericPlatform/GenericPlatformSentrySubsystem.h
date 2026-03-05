@@ -61,6 +61,7 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	virtual void HandleAssert() override {}
+	virtual bool IsHangTrackingSupported() const override { return false; }
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler() const;

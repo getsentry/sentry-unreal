@@ -406,6 +406,11 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureHang(uint32 HungThreadId)
 	return nullptr;
 }
 
+bool FAppleSentrySubsystem::IsHangTrackingSupported() const
+{
+	return false;
+}
+
 void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAppleSentryFeedback> feedbackApple = StaticCastSharedPtr<FAppleSentryFeedback>(feedback);

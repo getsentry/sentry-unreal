@@ -334,6 +334,11 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureHang(uint32 HungThreadId)
 	return nullptr;
 }
 
+bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
+{
+	return false;
+}
+
 void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);

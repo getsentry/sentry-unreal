@@ -160,7 +160,7 @@ void USentrySubsystem::Initialize()
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
 
-	if (Settings->EnableHangTracking)
+	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported())
 	{
 		ConfigureHangTracking();
 	}

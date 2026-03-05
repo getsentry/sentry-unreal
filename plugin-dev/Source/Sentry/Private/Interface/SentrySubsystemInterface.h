@@ -73,4 +73,5 @@ public:
 
 	/** Unreal-specific methods that are not part of the platform's Sentry SDK API */
 	virtual void HandleAssert() = 0;
+	virtual bool IsHangTrackingSupported() const = 0;
 };
