@@ -329,7 +329,12 @@ void USentryPlaygroundGameInstance::RunHangTest()
 
 	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#else
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#endif
 
 	// Flush logs to ensure output is captured before hang
 	GLog->Flush();
