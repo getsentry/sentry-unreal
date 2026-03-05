@@ -113,7 +113,7 @@ void FSentryHangWatcher::OnThreadStuck(uint32 ThreadId)
 
 void FSentryHangWatcher::OnThreadUnstuck(uint32 ThreadId)
 {
-	if (StuckThreadId == InvalidThreadId)
+	if (StuckThreadId != ThreadId)
 	{
 		return;
 	}
@@ -121,6 +121,7 @@ void FSentryHangWatcher::OnThreadUnstuck(uint32 ThreadId)
 	UE_LOG(LogSentrySdk, Log, TEXT("Thread %u recovered (unstuck)."), ThreadId);
 
 	StuckThreadId = InvalidThreadId;
+	WakeEvent->Trigger();
 }
 
 uint32 FSentryHangWatcher::Run()
