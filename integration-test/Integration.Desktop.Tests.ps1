@@ -530,7 +530,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
 
                 # Fetch all three metric types from Sentry with automatic polling
-                $metricFields = @('handler_added', 'to_be_removed')
+                $metricFields = @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
 
                 try {
                     $script:CapturedCounterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
@@ -634,6 +634,16 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         It "Should have test_id attribute matching captured ID" {
             $metric = $script:CapturedCounterMetrics[0]
             $metric.test_id | Should -Be $script:TestId
+        }
+
+        It "Should have global attribute set on subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_attr | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_removed | Should -BeNullOrEmpty
         }
     }
 
