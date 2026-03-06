@@ -220,6 +220,11 @@ void USentryPlaygroundGameInstance::RunMetricTest()
 
 	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
 
+	SentrySubsystem->SetAttribute(TEXT("global_attr"), FSentryVariant(TEXT("global_value")));
+
+	SentrySubsystem->SetAttribute(TEXT("global_removed"), FSentryVariant(TEXT("should_not_appear")));
+	SentrySubsystem->RemoveAttribute(TEXT("global_removed"));
+
 	TMap<FString, FSentryVariant> CounterAttributes;
 	CounterAttributes.Add(TEXT("test_id"), FSentryVariant(TestId));
 	CounterAttributes.Add(TEXT("to_be_removed"), FSentryVariant(TEXT("original_value")));

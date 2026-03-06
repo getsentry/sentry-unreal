@@ -432,7 +432,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
                 # Fetch logs from Sentry with automatic polling
                 try {
-                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed')
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
                 }
                 catch {
                     Write-Host "Warning: $_" -ForegroundColor Red
@@ -483,8 +483,15 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $log.'to_be_removed' | Should -BeNullOrEmpty
         }
 
-        # Note: Global log attributes (SetAttribute/RemoveAttribute on subsystem) are not supported
-        # on Android (sentry-java) - the implementation is a no-op. These are tested in desktop tests only.
+        It "Should have global attribute set on subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.global_attr | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.global_removed | Should -BeNullOrEmpty
+        }
     }
 
     Context "Metrics Capture Tests" {
@@ -502,7 +509,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
                 Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
 
                 # Fetch all three metric types from Sentry with automatic polling
-                $metricFields = @('handler_added', 'to_be_removed')
+                $metricFields = @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
 
                 try {
                     $script:CapturedCounterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
@@ -602,6 +609,16 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have test_id attribute matching captured ID" {
             $metric = $script:CapturedCounterMetrics[0]
             $metric.test_id | Should -Be $script:TestId
+        }
+
+        It "Should have global attribute set on subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_attr | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_removed | Should -BeNullOrEmpty
         }
     }
 

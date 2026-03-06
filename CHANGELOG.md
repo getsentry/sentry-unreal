@@ -5,6 +5,7 @@
 ### Features
 
 - Add app hang tracking for desktop platforms ([#1270](https://github.com/getsentry/sentry-unreal/pull/1270))
+- Add global attributes support for Android ([#1274](https://github.com/getsentry/sentry-unreal/pull/1274))
 
 ### Fixes
 

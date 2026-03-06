@@ -210,6 +210,14 @@ public class SentryBridgeJava {
 		});
 	}
 
+	public static void setAttribute(final String key, final Object value) {
+		Sentry.setAttribute(key, value);
+	}
+
+	public static void removeAttribute(final String key) {
+		Sentry.removeAttribute(key);
+	}
+
 	public static void setLevel(final SentryLevel level) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override
