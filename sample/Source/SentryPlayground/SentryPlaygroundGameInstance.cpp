@@ -19,6 +19,7 @@
 
 #include "CoreGlobals.h"
 #include "HAL/Platform.h"
+#include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/CommandLine.h"
 #include "Engine/Engine.h"
@@ -40,6 +41,7 @@ void USentryPlaygroundGameInstance::Init()
 		FParse::Param(*CommandLine, TEXT("log-capture")) ||
 		FParse::Param(*CommandLine, TEXT("metric-capture")) ||
 		FParse::Param(*CommandLine, TEXT("tracing-capture")) ||
+		FParse::Param(*CommandLine, TEXT("hang-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
 		RunIntegrationTest(CommandLine);
@@ -98,6 +100,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	else if (FParse::Param(*CommandLine, TEXT("tracing-capture")))
 	{
 		RunTracingTest();
+	}
+	else if (FParse::Param(*CommandLine, TEXT("hang-capture")))
+	{
+		RunHangTest();
 	}
 	else if (FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -320,6 +326,37 @@ void USentryPlaygroundGameInstance::RunTracingTest()
 	SentrySubsystem->Close();
 
 	CompleteTestWithResult(TEXT("tracing-capture"), !TraceId.IsEmpty(), TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunHangTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#else
+	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#endif
+
+	// Flush logs to ensure output is captured before hang
+	GLog->Flush();
+
+	SentrySubsystem->SetTag(TEXT("test.hang_id"), EventId);
+
+	// Defer the hang trigger until after engine loop init so that the heartbeat
+	// monitor thread is running and threads have registered their heartbeats
+	FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this]()
+	{
+		USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::Hang);
+
+		USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+		SentrySubsystem->Close();
+
+		CompleteTestWithResult(TEXT("hang-capture"), true, TEXT("Test complete"));
+	});
 }
 
 void USentryPlaygroundGameInstance::RunInitOnly()

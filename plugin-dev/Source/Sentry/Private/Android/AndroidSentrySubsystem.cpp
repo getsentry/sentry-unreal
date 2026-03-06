@@ -328,6 +328,17 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEnsure(const FString& type
 	return MakeShareable(new FAndroidSentryId(*id));
 }
 
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureHang(uint32 HungThreadId)
+{
+	// Hang tracking is handled by the native Android SDK via built-in ANR detection (see EnableAppNotRespondingTracking setting)
+	return nullptr;
+}
+
+bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
+{
+	return false;
+}
+
 void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);

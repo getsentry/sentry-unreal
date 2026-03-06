@@ -31,6 +31,7 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
+#include "Utils/SentryHangWatcher.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -158,6 +159,11 @@ void USentrySubsystem::Initialize()
 		FString EnsureMessage = GErrorHist;
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
+
+	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported())
+	{
+		ConfigureHangTracking();
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -199,6 +205,12 @@ void USentrySubsystem::Close()
 	{
 		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
 		OnEnsureDelegate.Reset();
+	}
+
+	if (HangWatcher.IsValid())
+	{
+		HangWatcher->Stop();
+		HangWatcher.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1099,6 +1111,19 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 		});
 		GError = OutputDeviceError.Get();
 	}
+}
+
+void USentrySubsystem::ConfigureHangTracking()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	check(Settings);
+
+	HangWatcher = MakeShared<FSentryHangWatcher>(Settings->HangTimeoutDuration);
+	HangWatcher->OnHangDetected.BindLambda([this](uint32 HungThreadId, double HangDuration)
+	{
+		SubsystemNativeImpl->CaptureHang(HungThreadId);
+	});
+	HangWatcher->Start();
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)

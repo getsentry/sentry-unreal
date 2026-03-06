@@ -43,7 +43,9 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformStackWalk.h"
 #include "Misc/CoreDelegates.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectThreadContext.h"
 
@@ -726,6 +728,43 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 
 	IFileManager::Get().Delete(*ScreenshotPath);
 
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungThreadId)
+{
+	const uint32 MaxDepth = 128;
+	uint64 BackTrace[MaxDepth];
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(HungThreadId, BackTrace, MaxDepth, nullptr);
+#else
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(HungThreadId, BackTrace, MaxDepth);
+#endif
+
+	sentry_value_t event = sentry_value_new_event();
+	sentry_value_set_by_key(event, "level", sentry_value_new_string("error"));
+
+	sentry_value_t exception = sentry_value_new_exception("App Hanging", "Application not responding");
+
+	sentry_value_t mechanism = sentry_value_new_object();
+	sentry_value_set_by_key(mechanism, "type", sentry_value_new_string("AppHang"));
+	sentry_value_set_by_key(exception, "mechanism", mechanism);
+
+	TArray<void*> Frames;
+	Frames.SetNum(Depth);
+	for (uint32 i = 0; i < Depth; i++)
+	{
+		Frames[i] = reinterpret_cast<void*>(BackTrace[i]);
+	}
+
+	if (Frames.Num() > 0)
+	{
+		sentry_value_set_stacktrace(exception, Frames.GetData(), Frames.Num());
+	}
+
+	sentry_event_add_exception(event, exception);
+
+	sentry_uuid_t id = sentry_capture_event(event);
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
