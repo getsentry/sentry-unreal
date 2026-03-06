@@ -156,12 +156,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
-- Package plugin and update snapshot after adding/removing files:
-
-```bash
-pwsh ./scripts/packaging/pack.ps1
-pwsh ./scripts/packaging/test-contents.ps1 accept
-```
+- Package plugin and update snapshot after adding/removing files (see `/pack` skill).
 
 ### Code Style
 
@@ -172,89 +167,23 @@ pwsh ./scripts/packaging/test-contents.ps1 accept
 - Files must end with a single empty line (newline at EOF)
 - Avoid giving a `UENUM` and a `USTRUCT`/`UCLASS` the same base name after prefix stripping (e.g., `ESentryFoo` + `FSentryFoo` both become `SentryFoo` in Python). If unavoidable, add `meta = (ScriptName = "...")` to the `UENUM` to resolve the collision.
 
+### Project Build & Testing
+
+Build and test workflows are available as skills:
+
+- `/ue-build` - Build sample project for a target platform
+- `/ue-unit-test` - Run Sentry unit tests
+- `/ue-integration-test` - Run integration tests
+
 ### Security
 
 - Never commit secrets, credentials, API keys, or tokens to the repository
 - Never print or display environment variables that may contain secrets (passwords, API keys, auth tokens, DSNs)
 - When checking environment variables, only verify if they are set (non-empty), don't output their values
 
-### Project Build
-
-Since building requires Unreal Engine, check the `UNREAL_ENGINE_ROOT` environment variable for the engine installation path. If `UNREAL_ENGINE_ROOT` is not set or the path doesn't exist, ask for the engine path explicitly. Once provided, reuse the same path for the remainder of the session unless told otherwise.
-
-- Build configurations: `Development`, `Shipping`
-- Target platforms: `Win64`, `Mac`, `Android`, `IOS`, `Linux`, `LinuxArm64`, `XSX`, `XB1`, `PS5`, `Switch`
-
-By default, build `Development` configuration for host target platform.
-
-```bash
-# Example: Build and package the sample project (Win64, Development)
-# Use RunUAT.bat on Windows and RunUAT.sh on Mac/Linux
-# Run this command from the repository root dir to properly resolve project path
-"$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.bat" BuildCookRun \
-    -project="$PWD/sample/SentryPlayground.uproject" \
-    -archivedirectory="$PWD/sample/dist" \
-    -platform=Win64 -clientconfig=Development \
-    -build -cook -stage -package -archive -nop4
-```
-
-### Running Tests
-
-**Unit Tests**
-
-```bash
-# Use UnrealEditor.exe on Windows and UnrealEditor on Mac/Linux
-# Run this command from the repository root dir to properly resolve project path
-"$UNREAL_ENGINE_ROOT/Engine/Binaries/Win64/UnrealEditor.exe" \
-    "$PWD/sample/SentryPlayground.uproject" \
-    -ReportExportPath="$PWD/sample/Saved/Automation" \
-    -ExecCmds="Automation RunTests Sentry;quit" \
-    -TestExit="Automation Test Queue Empty" \
-    -Unattended -NoPause -NoSplash -NullRHI
-```
-
-Note: For older UE4 versions, the editor binary name is `UE4Editor`; for UE5 it's `UnrealEditor`.
-
-Test results are written to `sample/Saved/Automation/`.
-
-**Integration Tests**
-
-Refer to detailed instructions on how to set up and run integration tests in `integration-test/README.md`.
-
-Test source:
-- `integration-test/Integration.Desktop.Tests.ps1` (Windows, Linux, Mac)
-- `integration-test/Integration.Android.Tests.ps1` (Android)
-
-The integration test infrastructure is built on top of the [Pester](https://github.com/pester/pester) framework and the [app-runner](https://github.com/getsentry/app-runner) PowerShell module, which provides tooling to launch the test application on different platforms/devices, parse its output, and communicate with the Sentry API to fetch the data required to verify test results.
-
-The exact version of the `app-runner` module used for testing is specified by a commit SHA in `integration-test/CMakeLists.txt`.
-
-If deeper insight into how the `app-runner` module works is required, use the `SENTRY_APP_RUNNER` environment variable to locate its source code.
-
-The integration tests expect the sample application to be pre-built using the `Development` configuration, as this is required for the application to generate the log files that the tests parse to verify output. The sample application logic is defined in `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp` and the test scenario triggered at startup is determined by command-line input arguments.
-
-Sample application output and data fetched from the Sentry API can be found in `integration-test/output` - these artifacts are useful for debugging and investigating test failures.
-
-Pester documentation: https://pester.dev/docs/quick-start
-
 ### Troubleshooting
 
 - If the build, test, or script execution fails, try to understand the root cause of the error and suggest a fix. Check logs for additional issue insights.
-
-## Related Code & Repositories
-
-- [sentry-native](https://github.com/getsentry/sentry-native): crash and error monitoring on Windows/Linux and game consoles
-- [sentry-java](https://github.com/getsentry/sentry-java): crash and error monitoring on Android
-- [sentry-cocoa](https://github.com/getsentry/sentry-cocoa): crash and error monitoring on macOS and iOS
-- [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
-- [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
-- [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
-
-## Useful Resources
-
-- Main SDK documentation: https://develop.sentry.dev/sdk/overview/
-- Internal contributing guide: https://docs.sentry.io/internal/contributing/
-- Unreal Engine SDK documentation: https://docs.sentry.io/platforms/unreal/
 
 ## Quick References & Tips
 
@@ -262,16 +191,26 @@ Pester documentation: https://pester.dev/docs/quick-start
 
 When implementing features that wrap native SDK functionality, check APIs in the following order (proceed to next source only if previous is unavailable or lacks context):
 
-1. **ThirdParty headers** - `plugin-dev/Source/ThirdParty/{Platform}/` contains SDK headers
+1. **ThirdParty headers** - pre-built SDK headers and libraries:
+    - `plugin-dev/Source/ThirdParty/Win64/` - sentry-native (C headers + .lib)
+    - `plugin-dev/Source/ThirdParty/Linux/`, `LinuxArm64/` - sentry-native (C headers + .a)
+    - `plugin-dev/Source/ThirdParty/Mac/` - sentry-cocoa (Objective-C headers)
+    - `plugin-dev/Source/ThirdParty/IOS/` - sentry-cocoa (Objective-C framework)
+    - `plugin-dev/Source/ThirdParty/Android/` - sentry-java (.aar/.jar)
 
-2. **Repo submodules** - `modules/` contains `sentry-native` and `sentry-java` sources
+2. **Repo submodules** - full SDK sources in `modules/`:
+    - `modules/sentry-native` - sentry-native submodule
+    - `modules/sentry-java` - sentry-java submodule
 
 3. **Local source** - Check env vars specifying local repository path; if not set, prompt user; if not provided, proceed to next source:
     - `SENTRY_NATIVE_PATH` - sentry-native repository
     - `SENTRY_COCOA_PATH` - sentry-cocoa repository
     - `SENTRY_JAVA_PATH` - sentry-java repository
 
-4. **GitHub** - Fetch from repositories listed in `Related Code & Repositories` section as last resort
+4. **GitHub** - Fetch from GitHub as last resort:
+    - [sentry-native](https://github.com/getsentry/sentry-native)
+    - [sentry-cocoa](https://github.com/getsentry/sentry-cocoa)
+    - [sentry-java](https://github.com/getsentry/sentry-java)
 
 ### Reading Environment Variables
 
@@ -281,8 +220,22 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 [System.Environment]::GetEnvironmentVariable('VAR_NAME')
 ```
 
+### Useful Resources
+
+- Main SDK documentation: https://develop.sentry.dev/sdk/overview/
+- Internal contributing guide: https://docs.sentry.io/internal/contributing/
+- Unreal Engine SDK documentation: https://docs.sentry.io/platforms/unreal/
+
+### Other Related Code & Repositories
+
+- [sentry-native](https://github.com/getsentry/sentry-native): crash and error monitoring on Windows/Linux and game consoles
+- [sentry-java](https://github.com/getsentry/sentry-java): crash and error monitoring on Android
+- [sentry-cocoa](https://github.com/getsentry/sentry-cocoa): crash and error monitoring on macOS and iOS
+- [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
+- [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
+- [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
+
 ## Maintaining This Document
 
 - When completing a task that reveals new patterns, conventions, best practices, or solutions to recurring issues not yet documented here, suggest adding these insights to `CLAUDE.md`.
-
 - When using compaction (which condenses context by summarizing older messages), make sure to re-read `CLAUDE.md` afterward to keep it fully available in context.
