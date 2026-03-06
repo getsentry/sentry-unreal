@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add global attributes support for Android ([#1274](https://github.com/getsentry/sentry-unreal/pull/1274))
+
 ### Fixes
 
 - Fix debug symbol upload for build products located in the engine directory ([#1262](https://github.com/getsentry/sentry-unreal/pull/1262))
