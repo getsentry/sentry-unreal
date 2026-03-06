@@ -6,6 +6,7 @@
 
 - Fix debug symbol upload for build products located in the engine directory ([#1262](https://github.com/getsentry/sentry-unreal/pull/1262))
 - Fix symbol upload configuration warning in plugin settings menu ([#1261](https://github.com/getsentry/sentry-unreal/pull/1261))
+- Fix screenshot capture error messages during commandlet execution ([#1273](https://github.com/getsentry/sentry-unreal/pull/1273))
 
 ### Dependencies
 
