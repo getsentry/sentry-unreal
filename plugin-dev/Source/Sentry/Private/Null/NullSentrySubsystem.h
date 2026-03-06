@@ -28,6 +28,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override { return nullptr; }
+	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override { return nullptr; }
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override {}
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override {}
 	virtual void RemoveUser() override {}
@@ -50,6 +51,7 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override { return nullptr; }
 
 	virtual void HandleAssert() override {}
+	virtual bool IsHangTrackingSupported() const override { return false; }
 };
 
 typedef FNullSentrySubsystem FPlatformSentrySubsystem;

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add app hang tracking for desktop platforms ([#1270](https://github.com/getsentry/sentry-unreal/pull/1270))
+
 ### Fixes
 
 - Fix debug symbol upload for build products located in the engine directory ([#1262](https://github.com/getsentry/sentry-unreal/pull/1262))

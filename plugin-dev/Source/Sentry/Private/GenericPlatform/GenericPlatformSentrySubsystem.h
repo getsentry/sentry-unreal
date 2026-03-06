@@ -38,6 +38,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
+	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
 	virtual void RemoveUser() override;
@@ -60,6 +61,7 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	virtual void HandleAssert() override {}
+	virtual bool IsHangTrackingSupported() const override { return false; }
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler() const;

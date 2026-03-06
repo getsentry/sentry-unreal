@@ -29,6 +29,7 @@ class USentryTransactionContext;
 class ISentrySubsystem;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
+class FSentryHangWatcher;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -571,6 +572,9 @@ private:
 	/** Add custom Sentry output device to intercept errors */
 	void ConfigureErrorOutputDevice();
 
+	/** Set up hang watcher for detecting unresponsive threads */
+	void ConfigureHangTracking();
+
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 
@@ -602,4 +606,6 @@ private:
 
 	FDelegateHandle OnAssertDelegate;
 	FDelegateHandle OnEnsureDelegate;
+
+	TSharedPtr<FSentryHangWatcher> HangWatcher;
 };
