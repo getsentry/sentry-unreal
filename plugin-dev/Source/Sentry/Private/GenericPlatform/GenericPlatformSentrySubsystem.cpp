@@ -246,7 +246,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	if (isScreenshotAttachmentEnabled)
+	if (isScreenshotAttachmentEnabled && !IsRunningCommandlet())
 	{
 		if (IsScreenshotSupported())
 		{
@@ -700,7 +700,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 
 	FString ScreenshotPath;
 
-	if (isScreenshotAttachmentEnabled && IsScreenshotSupported())
+	if (isScreenshotAttachmentEnabled && !IsRunningCommandlet() && IsScreenshotSupported())
 	{
 		ScreenshotPath = GetScreenshotPath();
 		if (!SentryScreenshotUtils::CaptureScreenshot(ScreenshotPath))
