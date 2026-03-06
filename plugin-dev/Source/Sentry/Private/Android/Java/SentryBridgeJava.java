@@ -399,17 +399,13 @@ public class SentryBridgeJava {
 		} else if (value instanceof Float) {
 			// Unreal's variant doesn't support Double so manual conversion is required
 			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
+		} else if (value instanceof java.util.Collection) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.ARRAY, value);
+		} else if (value instanceof java.util.Map) {
+			// Maps are not directly supported as attribute type - convert to JSON string
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, new JSONObject((java.util.Map<?, ?>) value).toString());
 		} else {
-			// Unsupported type (e.g. ArrayList, HashMap) - convert to JSON string for consistency with other platforms
-			String jsonString;
-			if (value instanceof java.util.List) {
-				jsonString = new JSONArray((java.util.List<?>) value).toString();
-			} else if (value instanceof java.util.Map) {
-				jsonString = new JSONObject((java.util.Map<?, ?>) value).toString();
-			} else {
-				jsonString = value.toString();
-			}
-			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, jsonString);
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value.toString());
 		}
 
 		setter.setAttribute(key, attributeValue);
