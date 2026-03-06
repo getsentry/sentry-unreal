@@ -371,12 +371,18 @@ void FAndroidSentrySubsystem::RemoveTag(const FString& key)
 
 void FAndroidSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
 {
-	// No-op: Android SDK doesn't support global log attributes
+	TSharedPtr<FSentryJavaObjectWrapper> nativeValue = FAndroidSentryConverters::VariantToNative(value);
+	if (nativeValue.IsValid())
+	{
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setAttribute", "(Ljava/lang/String;Ljava/lang/Object;)V",
+			*FSentryJavaObjectWrapper::GetJString(key), nativeValue->GetJObject());
+	}
 }
 
 void FAndroidSentrySubsystem::RemoveAttribute(const FString& key)
 {
-	// No-op: Android SDK doesn't support global log attributes
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "removeAttribute", "(Ljava/lang/String;)V",
+		*FSentryJavaObjectWrapper::GetJString(key));
 }
 
 void FAndroidSentrySubsystem::SetLevel(ESentryLevel level)
