@@ -212,6 +212,18 @@ When implementing features that wrap native SDK functionality, check APIs in the
     - [sentry-cocoa](https://github.com/getsentry/sentry-cocoa)
     - [sentry-java](https://github.com/getsentry/sentry-java)
 
+### Unreal Engine Source Lookup
+
+When researching how Unreal Engine implements specific features (subsystems, modules, plugins, build pipeline, etc.), check the `UNREAL_ENGINE_ROOT` environment variable for the path to a local UE source tree. Key source locations within the engine:
+
+- `Engine/Source/Runtime/` - Core runtime modules (Core, CoreUObject, Engine, etc.)
+- `Engine/Source/Editor/` - Editor modules
+- `Engine/Source/Developer/` - Developer tools and utilities
+- `Engine/Source/Programs/` - Standalone programs (UnrealBuildTool, AutomationTool, etc.)
+- `Engine/Plugins/` - Built-in engine plugins
+
+If the env var is not set, ask the user for the path before falling back to online documentation.
+
 ### Reading Environment Variables
 
 On Windows, when checking env vars via PowerShell through the Bash tool, use the .NET method with single-quoted strings to avoid shell interpolation issues:
