@@ -37,10 +37,13 @@ void USentryPlaygroundGameInstance::Init()
 	if (FParse::Param(*CommandLine, TEXT("crash-capture")) ||
 		FParse::Param(*CommandLine, TEXT("crash-stack-overflow")) ||
 		FParse::Param(*CommandLine, TEXT("crash-memory-corruption")) ||
+		FParse::Param(*CommandLine, TEXT("crash-assert")) ||
+		FParse::Param(*CommandLine, TEXT("crash-oom")) ||
 		FParse::Param(*CommandLine, TEXT("message-capture")) ||
 		FParse::Param(*CommandLine, TEXT("log-capture")) ||
 		FParse::Param(*CommandLine, TEXT("metric-capture")) ||
 		FParse::Param(*CommandLine, TEXT("tracing-capture")) ||
+		FParse::Param(*CommandLine, TEXT("ensure-capture")) ||
 		FParse::Param(*CommandLine, TEXT("hang-capture")) ||
 		FParse::Param(*CommandLine, TEXT("init-only")))
 	{
@@ -85,6 +88,14 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	{
 		RunCrashTest(ESentryAppTerminationType::MemoryCorruption);
 	}
+	else if (FParse::Param(*CommandLine, TEXT("crash-assert")))
+	{
+		RunCrashTest(ESentryAppTerminationType::Assert);
+	}
+	else if (FParse::Param(*CommandLine, TEXT("crash-oom")))
+	{
+		RunCrashTest(ESentryAppTerminationType::OutOfMemory);
+	}
 	else if (FParse::Param(*CommandLine, TEXT("message-capture")))
 	{
 		RunMessageTest();
@@ -100,6 +111,10 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 	else if (FParse::Param(*CommandLine, TEXT("tracing-capture")))
 	{
 		RunTracingTest();
+	}
+	else if (FParse::Param(*CommandLine, TEXT("ensure-capture")))
+	{
+		RunEnsureTest();
 	}
 	else if (FParse::Param(*CommandLine, TEXT("hang-capture")))
 	{
@@ -326,6 +341,30 @@ void USentryPlaygroundGameInstance::RunTracingTest()
 	SentrySubsystem->Close();
 
 	CompleteTestWithResult(TEXT("tracing-capture"), !TraceId.IsEmpty(), TEXT("Test complete"));
+}
+
+void USentryPlaygroundGameInstance::RunEnsureTest()
+{
+	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
+
+	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	SentrySubsystem->SetTag(TEXT("test.ensure_id"), EventId);
+
+	// Trigger ensure - this is non-fatal and will be captured by the error output device
+	USentryPlaygroundUtils::Terminate(ESentryAppTerminationType::Ensure);
+
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#else
+	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#endif
+
+	// Ensure events were flushed
+	SentrySubsystem->Close();
+
+	CompleteTestWithResult(TEXT("ensure-capture"), true, TEXT("Test complete"));
 }
 
 void USentryPlaygroundGameInstance::RunHangTest()
