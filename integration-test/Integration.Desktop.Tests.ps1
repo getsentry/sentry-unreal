@@ -48,10 +48,11 @@ BeforeDiscovery {
 
     # Define crash types to test
     $TestCrashTypes = @(
-        @{ Name = 'NullPointer'; Arg = '-crash-capture' }
-        @{ Name = 'StackOverflow'; Arg = '-crash-stack-overflow' }
-        @{ Name = 'Assert'; Arg = '-crash-assert' }
-        @{ Name = 'OutOfMemory'; Arg = '-crash-oom' }
+        @{ Name = 'NullPointer';       Arg = '-crash-capture';            Type = 'Crash'       }
+        @{ Name = 'StackOverflow';     Arg = '-crash-stack-overflow';     Type = 'Crash'       }
+        @{ Name = 'MemoryCorruption';  Arg = '-crash-memory-corruption';  Type = 'Assert'      }
+        @{ Name = 'Assert';            Arg = '-crash-assert';             Type = 'Assert'      }
+        @{ Name = 'OutOfMemory';       Arg = '-crash-oom';                Type = 'OutOfMemory' }
     )
 }
 
@@ -221,11 +222,9 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:($Platform -eq 'MacOS') {
+        It "Should have CrashType tag" -Skip:($Platform -ne 'Windows') {
             $tags = $script:CrashEvent.tags
-            $crashTypeMap = @{ 'Assert' = 'Assert'; 'OutOfMemory' = 'OutOfMemory' }
-            $expectedCrashType = if ($crashTypeMap.ContainsKey($crashTypeName)) { $crashTypeMap[$crashTypeName] } else { 'Crash' }
-            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $expectedCrashType
+            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $Type
         }
 
         It "Should have breadcrumbs" {

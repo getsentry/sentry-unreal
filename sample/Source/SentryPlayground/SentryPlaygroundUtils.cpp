@@ -19,6 +19,10 @@
 #include "Microsoft/WindowsHWrapper.h"
 #endif
 
+#if PLATFORM_LINUX
+#include <sys/resource.h>
+#endif
+
 void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 {
 	switch (Type)
@@ -55,6 +59,14 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			break;
 		case ESentryAppTerminationType::OutOfMemory:
 			{
+#if PLATFORM_LINUX
+				// Limit virtual address space so mmap fails immediately instead of
+				// succeeding due to overcommit and later triggering the OOM killer.
+				struct rlimit limit;
+				getrlimit(RLIMIT_AS, &limit);
+				limit.rlim_cur = limit.rlim_cur + 512 * 1024 * 1024;
+				setrlimit(RLIMIT_AS, &limit);
+#endif
 				const size_t BlockSize = 1024 * 1024 * 1024;
 				while (true)
 				{
