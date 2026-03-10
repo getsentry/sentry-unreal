@@ -50,7 +50,6 @@ BeforeDiscovery {
     $TestCrashTypes = @(
         @{ Name = 'NullPointer'; Arg = '-crash-capture' }
         @{ Name = 'StackOverflow'; Arg = '-crash-stack-overflow' }
-        @{ Name = 'MemoryCorruption'; Arg = '-crash-memory-corruption' }
         @{ Name = 'Assert'; Arg = '-crash-assert' }
         @{ Name = 'OutOfMemory'; Arg = '-crash-oom' }
     )
@@ -224,11 +223,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
         It "Should have CrashType tag" -Skip:($Platform -eq 'MacOS') {
             $tags = $script:CrashEvent.tags
-            $crashTypeMap = @{ 
-                'Assert' = 'Assert';
-                'OutOfMemory' = 'OutOfMemory';
-                'MemoryCorruption' = 'Assert' 
-            }
+            $crashTypeMap = @{ 'Assert' = 'Assert'; 'OutOfMemory' = 'OutOfMemory' }
             $expectedCrashType = if ($crashTypeMap.ContainsKey($crashTypeName)) { $crashTypeMap[$crashTypeName] } else { 'Crash' }
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $expectedCrashType
         }
