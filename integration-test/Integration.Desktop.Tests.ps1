@@ -54,6 +54,11 @@ BeforeDiscovery {
         @{ Name = 'Assert';            Arg = '-crash-assert';             Type = 'Assert'      }
         @{ Name = 'OutOfMemory';       Arg = '-crash-oom';                Type = 'OutOfMemory' }
     )
+
+    if ($IsLinux) {
+        # Skipp OutOfMemory test on Linux due to overcommit behavior which prevents reliable triggering of OOM condition in tests
+        $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
+    }
 }
 
 BeforeAll {
