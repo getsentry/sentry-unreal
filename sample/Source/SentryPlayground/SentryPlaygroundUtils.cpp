@@ -19,6 +19,7 @@
 #include "Microsoft/WindowsHWrapper.h"
 #endif
 
+
 void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 {
 	switch (Type)
@@ -55,11 +56,10 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			break;
 		case ESentryAppTerminationType::OutOfMemory:
 			{
-				size_t Count = 1024;
+				const size_t BlockSize = 1024 * 1024 * 1024;
 				while (true)
 				{
-					void* _ = FMemory::Malloc(Count);
-					Count *= 2;
+					void* _ = FMemory::Malloc(BlockSize);
 				}
 			}
 			break;

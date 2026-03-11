@@ -6,6 +6,7 @@
 
 - Add app hang tracking for desktop platforms ([#1270](https://github.com/getsentry/sentry-unreal/pull/1270))
 - Add global attributes support for Android ([#1274](https://github.com/getsentry/sentry-unreal/pull/1274))
+- Add `CrashType` tag to crash events on native platforms (Windows, Linux, Xbox) ([#1277](https://github.com/getsentry/sentry-unreal/pull/1277))
 
 ### Fixes
 

@@ -3,10 +3,9 @@
 #pragma once
 
 #include "Convenience/GenericPlatformSentryInclude.h"
+#include "GenericPlatform/GenericPlatformCrashContext.h"
 
 #include "Interface/SentrySubsystemInterface.h"
-
-#include "HAL/CriticalSection.h"
 
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
@@ -96,10 +95,15 @@ protected:
 
 	virtual bool IsScreenshotSupported() const;
 
+	virtual ECrashContextType ResolveCrashType() const;
+
 	void InitCrashReporter(const FString& release, const FString& environment);
 
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment);
 	virtual void AddByteAttachment(TSharedPtr<ISentryAttachment> attachment);
+
+	void SetEventCrashType(sentry_value_t event, ECrashContextType crashType);
+	void SetEventTag(sentry_value_t event, const char* key, const char* value);
 
 	TArray<TSharedPtr<FGenericPlatformSentryAttachment>> attachments;
 

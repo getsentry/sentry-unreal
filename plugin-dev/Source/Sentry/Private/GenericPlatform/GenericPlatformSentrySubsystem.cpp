@@ -43,7 +43,9 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformMemory.h"
 #include "HAL/PlatformStackWalk.h"
+#include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
@@ -289,6 +291,8 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		TryCaptureGpuDump();
 	}
 
+	SetEventCrashType(event, ResolveCrashType());
+
 	// At this point crash events are handled the same way as non-fatal ones,
 	// so we defer to `OnBeforeSend` to invoke the custom `beforeSend` handler (if configured)
 	return OnBeforeSend(event, nullptr, closure, true);
@@ -329,6 +333,31 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 bool FGenericPlatformSentrySubsystem::IsScreenshotSupported() const
 {
 	return false;
+}
+
+// Best-effort heuristic: determines crash type by polling global flags that are set before
+// the exception/signal is raised. These flags are process-wide (not per-thread), so in theory
+// a race is possible if two different crash types occur simultaneously. In practice, once any
+// of these conditions triggers, the process is on its way down already and a second, different crash
+// is unlikely to race into on_crash first.
+ECrashContextType FGenericPlatformSentrySubsystem::ResolveCrashType() const
+{
+	if (FGenericPlatformMemory::bIsOOM)
+	{
+		return ECrashContextType::OutOfMemory;
+	}
+
+	if (GIsGPUCrashed)
+	{
+		return ECrashContextType::GPUCrash;
+	}
+
+	if (FDebug::HasAsserted())
+	{
+		return ECrashContextType::Assert;
+	}
+
+	return ECrashContextType::Crash;
 }
 
 void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
@@ -372,6 +401,22 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 	platformAttachment->SetNativeObject(nativeAttachment);
 
 	attachments.Add(platformAttachment);
+}
+
+void FGenericPlatformSentrySubsystem::SetEventCrashType(sentry_value_t event, ECrashContextType crashType)
+{
+	SetEventTag(event, "CrashType", TCHAR_TO_UTF8(FGenericCrashContext::GetCrashTypeString(crashType)));
+}
+
+void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const char* key, const char* value)
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		eventTags = sentry_value_new_object();
+		sentry_value_set_by_key(event, "tags", eventTags);
+	}
+	sentry_value_set_by_key(eventTags, key, sentry_value_new_string(value));
 }
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
@@ -725,6 +770,8 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
 
+	SetEventCrashType(exceptionEvent, ECrashContextType::Ensure);
+
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_UTF8(*type), TCHAR_TO_UTF8(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
@@ -763,6 +810,17 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungThreadId)
 {
+	sentry_value_t exceptionEvent = sentry_value_new_event();
+
+	SetEventCrashType(exceptionEvent, ECrashContextType::Hang);
+
+	sentry_value_t nativeException = sentry_value_new_exception("App Hanging", "Application not responding");
+
+	sentry_value_t mechanism = sentry_value_new_object();
+	sentry_value_set_by_key(mechanism, "type", sentry_value_new_string("AppHang"));
+
+	sentry_value_set_by_key(nativeException, "mechanism", mechanism);
+
 	const uint32 MaxDepth = 128;
 	uint64 BackTrace[MaxDepth];
 #if !UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -770,15 +828,6 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungTh
 #else
 	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(HungThreadId, BackTrace, MaxDepth);
 #endif
-
-	sentry_value_t event = sentry_value_new_event();
-	sentry_value_set_by_key(event, "level", sentry_value_new_string("error"));
-
-	sentry_value_t exception = sentry_value_new_exception("App Hanging", "Application not responding");
-
-	sentry_value_t mechanism = sentry_value_new_object();
-	sentry_value_set_by_key(mechanism, "type", sentry_value_new_string("AppHang"));
-	sentry_value_set_by_key(exception, "mechanism", mechanism);
 
 	TArray<void*> Frames;
 	Frames.SetNum(Depth);
@@ -789,12 +838,12 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungTh
 
 	if (Frames.Num() > 0)
 	{
-		sentry_value_set_stacktrace(exception, Frames.GetData(), Frames.Num());
+		sentry_value_set_stacktrace(nativeException, Frames.GetData(), Frames.Num());
 	}
 
-	sentry_event_add_exception(event, exception);
+	sentry_event_add_exception(exceptionEvent, nativeException);
 
-	sentry_uuid_t id = sentry_capture_event(event);
+	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
