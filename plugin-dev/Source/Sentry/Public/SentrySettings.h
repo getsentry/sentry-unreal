@@ -426,6 +426,18 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
 	TSubclassOf<USentryTraceSampler> TracesSampler;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
+		Meta = (DisplayName = "Enable automatic performance monitoring",
+			ToolTip = "Automatically emit frame time metrics (game.frame.duration distribution and game.frame.slow counter) every frame. Requires metrics to be enabled.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoPerformanceMonitoring;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
+		Meta = (DisplayName = "Slow frame threshold (ms)",
+			ToolTip = "Frame duration in milliseconds above which a frame is counted as slow. Default 33.3ms corresponds to below 30 FPS.",
+			EditCondition = "EnableAutoPerformanceMonitoring && EnableMetrics", ClampMin = 1.0f))
+	float SlowFrameThresholdMs;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
 		Meta = (DisplayName = "Editor DSN", ToolTip = "The Editor DSN (Data Source Name) if you want to isolate editor crashes from packaged game crashes, defaults to Dsn if not provided."))
 	FString EditorDsn;

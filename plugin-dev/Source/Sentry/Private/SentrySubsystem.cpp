@@ -31,6 +31,7 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
+#include "Utils/SentryFrameTracker.h"
 #include "Utils/SentryHangWatcher.h"
 
 #include "Interface/SentrySubsystemInterface.h"
@@ -164,6 +165,11 @@ void USentrySubsystem::Initialize()
 	{
 		ConfigureHangTracking();
 	}
+
+	if (Settings->EnableMetrics && Settings->EnableAutoPerformanceMonitoring)
+	{
+		ConfigureFrameTracking();
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -211,6 +217,12 @@ void USentrySubsystem::Close()
 	{
 		HangWatcher->Stop();
 		HangWatcher.Reset();
+	}
+
+	if (FrameTracker.IsValid())
+	{
+		FrameTracker->Stop();
+		FrameTracker.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1124,6 +1136,15 @@ void USentrySubsystem::ConfigureHangTracking()
 		SubsystemNativeImpl->CaptureHang(HungThreadId);
 	});
 	HangWatcher->Start();
+}
+
+void USentrySubsystem::ConfigureFrameTracking()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	check(Settings);
+
+	FrameTracker = MakeShared<FSentryFrameTracker>(Settings->SlowFrameThresholdMs);
+	FrameTracker->Start();
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)

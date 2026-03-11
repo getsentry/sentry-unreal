@@ -30,6 +30,7 @@ class ISentrySubsystem;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
 class FSentryHangWatcher;
+class FSentryFrameTracker;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -575,6 +576,9 @@ private:
 	/** Set up hang watcher for detecting unresponsive threads */
 	void ConfigureHangTracking();
 
+	/** Set up automatic frame time tracking */
+	void ConfigureFrameTracking();
+
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 
@@ -608,4 +612,5 @@ private:
 	FDelegateHandle OnEnsureDelegate;
 
 	TSharedPtr<FSentryHangWatcher> HangWatcher;
+	TSharedPtr<FSentryFrameTracker> FrameTracker;
 };
