@@ -134,6 +134,7 @@ public class Sentry : ModuleRules
 
 			PublicSystemLibraries.Add("winhttp.lib");
 			PublicSystemLibraries.Add("version.lib");
+			PublicSystemLibraries.Add("Synchronization.lib");
 		}
 #if UE_5_0_OR_LATER
 		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
