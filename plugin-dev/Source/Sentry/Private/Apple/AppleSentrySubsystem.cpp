@@ -111,6 +111,12 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 						return nil;
 					}
 
+					TSentryCallbackGuard<USentryTraceSampler> ReentrancyGuard;
+					if (ReentrancyGuard.IsReentrant())
+					{
+						return nil;
+					}
+
 					USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new FAppleSentrySamplingContext(samplingContext)));
 
 					float samplingValue;
@@ -123,6 +129,12 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
+						return breadcrumb;
+					}
+
+					TSentryCallbackGuard<USentryBeforeBreadcrumbHandler> ReentrancyGuard;
+					if (ReentrancyGuard.IsReentrant())
+					{
 						return breadcrumb;
 					}
 
@@ -142,6 +154,12 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 						return log;
 					}
 
+					TSentryCallbackGuard<USentryBeforeLogHandler> ReentrancyGuard;
+					if (ReentrancyGuard.IsReentrant())
+					{
+						return log;
+					}
+
 					USentryLog* LogToProcess = USentryLog::Create(MakeShareable(new FAppleSentryLog(log)));
 
 					USentryLog* ProcessedLog = beforeLogHandler->HandleBeforeLog(LogToProcess);
@@ -155,6 +173,12 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Event will be sent without calling a `onBeforeSend` handler
+						return event;
+					}
+
+					TSentryCallbackGuard<USentryBeforeSendHandler> ReentrancyGuard;
+					if (ReentrancyGuard.IsReentrant())
+					{
 						return event;
 					}
 

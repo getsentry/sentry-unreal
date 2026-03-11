@@ -58,6 +58,12 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 		return event;
 	}
 
+	TSentryCallbackGuard<USentryBeforeSendHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return event;
+	}
+
 	USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
 
 	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAndroidSentryEvent(event)));
@@ -73,6 +79,12 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNI
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
+		return breadcrumb;
+	}
+
+	TSentryCallbackGuard<USentryBeforeBreadcrumbHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
 		return breadcrumb;
 	}
 
@@ -94,6 +106,12 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* en
 		return logEvent;
 	}
 
+	TSentryCallbackGuard<USentryBeforeLogHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return logEvent;
+	}
+
 	USentryBeforeLogHandler* handler = reinterpret_cast<USentryBeforeLogHandler*>(objAddr);
 
 	USentryLog* LogDataToProcess = USentryLog::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
@@ -111,6 +129,12 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeMetric(JNIEnv*
 		return metricEvent;
 	}
 
+	TSentryCallbackGuard<USentryBeforeMetricHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return metricEvent;
+	}
+
 	USentryBeforeMetricHandler* handler = reinterpret_cast<USentryBeforeMetricHandler*>(objAddr);
 
 	USentryMetric* MetricDataToProcess = USentryMetric::Create(MakeShareable(new FAndroidSentryMetric(metricEvent)));
@@ -125,6 +149,12 @@ JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv*
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		// Falling back to default sampling value without calling a custom sampling function
+		return -1.0f;
+	}
+
+	TSentryCallbackGuard<USentryTraceSampler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
 		return -1.0f;
 	}
 

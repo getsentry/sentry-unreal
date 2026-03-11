@@ -159,6 +159,12 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
+	TSentryCallbackGuard<USentryBeforeSendHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return event;
+	}
+
 	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
 
 	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, nullptr);
@@ -181,6 +187,12 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 	}
 
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return breadcrumb;
+	}
+
+	TSentryCallbackGuard<USentryBeforeBreadcrumbHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
 	{
 		return breadcrumb;
 	}
@@ -211,6 +223,12 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 		return log;
 	}
 
+	TSentryCallbackGuard<USentryBeforeLogHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return log;
+	}
+
 	// Create USentryLog object using the log wrapper
 	USentryLog* LogData = USentryLog::Create(MakeShareable(new FGenericPlatformSentryLog(log)));
 
@@ -234,6 +252,12 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 	}
 
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return metric;
+	}
+
+	TSentryCallbackGuard<USentryBeforeMetricHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
 	{
 		return metric;
 	}
@@ -280,6 +304,12 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 	}
 
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	TSentryCallbackGuard<USentryTraceSampler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
 	{
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
