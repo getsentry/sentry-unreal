@@ -227,7 +227,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:($Platform -ne 'Windows') {
+        It "Should have CrashType tag" -Skip:($Name -eq 'MemoryCorruption') {
             $tags = $script:CrashEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $Type
         }
