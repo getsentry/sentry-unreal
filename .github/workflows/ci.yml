@@ -65,8 +65,8 @@ jobs:
     uses: ./.github/workflows/crash-reporter-build.yml
     with:
       target: WinArm64
-      runsOn: windows-latest
-      runtimeId: windows-11-arm
+      runsOn: windows-11-arm
+      runtimeId: win11-arm64
 
   crash-reporter-linux:
     uses: ./.github/workflows/crash-reporter-build.yml
