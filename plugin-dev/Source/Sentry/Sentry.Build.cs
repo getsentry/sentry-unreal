@@ -109,8 +109,8 @@ public class Sentry : ModuleRules
 #if UE_5_2_OR_LATER
 			if (Target.Architecture == UnrealArch.Arm64)
 			{
-				PlatformThirdPartyPath = PlatformThirdPartyPath.Replace("Win64", "WinArm64");
-				PlatformBinariesPath = PlatformBinariesPath.Replace("Win64", "WinArm64");
+				PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", "WinArm64"));
+				PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", "WinArm64"));
 			}
 #endif
 
