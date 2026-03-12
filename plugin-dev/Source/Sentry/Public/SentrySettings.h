@@ -214,6 +214,60 @@ struct FEnableBuildTargets
 	bool bEnableProgram = true;
 };
 
+USTRUCT(BlueprintType)
+struct FSentryCrashReporterAppearance
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (InlineEditConditionToggle))
+	bool bOverrideWindowTitle = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Window title", ToolTip = "Custom title for the crash reporter window.", EditCondition = "bOverrideWindowTitle"))
+	FString WindowTitle;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (InlineEditConditionToggle))
+	bool bOverrideHeaderText = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Header text", ToolTip = "Header text shown in the crash reporter dialog.", EditCondition = "bOverrideHeaderText"))
+	FString HeaderText;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (InlineEditConditionToggle))
+	bool bOverrideHeaderDescription = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Header description", ToolTip = "Description text shown below the header. Leave empty to hide.", EditCondition = "bOverrideHeaderDescription"))
+	FString HeaderDescription;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (InlineEditConditionToggle))
+	bool bOverrideSubmitButtonLabel = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Submit button label", ToolTip = "Label for the submit/send button.", EditCondition = "bOverrideSubmitButtonLabel"))
+	FString SubmitButtonLabel;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (InlineEditConditionToggle))
+	bool bOverrideCancelButtonLabel = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Cancel button label", ToolTip = "Label for the cancel button. Set to empty string to hide the button.", EditCondition = "bOverrideCancelButtonLabel"))
+	FString CancelButtonLabel;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (InlineEditConditionToggle))
+	bool bOverrideAccentColor = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Accent color", ToolTip = "Primary accent color for the crash reporter UI. Alpha channel is ignored.", EditCondition = "bOverrideAccentColor"))
+	FColor AccentColor = FColor(0, 120, 212);
+};
+
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -362,6 +416,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable external crash reporter",
 			ToolTip = "When enabled, a crash reporter dialog is shown to the user after a crash, allowing them to provide feedback before submitting the crash report. Supported on Windows and Linux only."))
 	bool EnableExternalCrashReporter;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
+		Meta = (DisplayName = "Crash reporter appearance", ToolTip = "Customize the appearance of the external crash reporter dialog.",
+			EditCondition = "EnableExternalCrashReporter"))
+	FSentryCrashReporterAppearance CrashReporterAppearance;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Enable hang tracking",

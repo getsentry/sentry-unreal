@@ -79,6 +79,8 @@ protected:
 	virtual void ConfigureNetworkConnectFunc(sentry_options_t* Options) {}
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) {}
 
+	void ConfigureCrashReporterAppearance(const USentrySettings* Settings);
+
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;

@@ -19,6 +19,11 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 	// Call parent implementation (handles crash logger initialization)
 	FMicrosoftSentrySubsystem::InitWithSettings(Settings, CallbackHandlers);
 
+	if (Settings->EnableExternalCrashReporter)
+	{
+		ConfigureCrashReporterAppearance(Settings);
+	}
+
 	// Add Wine/Proton context for all events if detected
 	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
 	{

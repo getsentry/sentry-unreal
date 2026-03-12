@@ -39,10 +39,14 @@
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+
 #include "Engine/Engine.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
 #include "HAL/PlatformMemory.h"
 #include "HAL/PlatformStackWalk.h"
 #include "Misc/AssertionMacros.h"
@@ -1093,6 +1097,58 @@ void FGenericPlatformSentrySubsystem::TryCaptureGpuDump()
 		MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
 
 	AddFileAttachment(GpuDumpAttachment);
+}
+
+void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USentrySettings* Settings)
+{
+	const FSentryCrashReporterAppearance& Appearance = Settings->CrashReporterAppearance;
+
+	TSharedPtr<FJsonObject> AppConfigObject = MakeShareable(new FJsonObject);
+
+	if (Appearance.bOverrideWindowTitle)
+	{
+		AppConfigObject->SetStringField(TEXT("WindowTitle"), Appearance.WindowTitle);
+	}
+	if (Appearance.bOverrideHeaderText)
+	{
+		AppConfigObject->SetStringField(TEXT("HeaderText"), Appearance.HeaderText);
+	}
+	if (Appearance.bOverrideHeaderDescription)
+	{
+		AppConfigObject->SetStringField(TEXT("HeaderDescription"), Appearance.HeaderDescription);
+	}
+	if (Appearance.bOverrideSubmitButtonLabel)
+	{
+		AppConfigObject->SetStringField(TEXT("SubmitButton"), Appearance.SubmitButtonLabel);
+	}
+	if (Appearance.bOverrideCancelButtonLabel)
+	{
+		AppConfigObject->SetStringField(TEXT("CancelButton"), Appearance.CancelButtonLabel);
+	}
+	if (Appearance.bOverrideAccentColor)
+	{
+		const FString ColorHex = FString::Printf(TEXT("#%02X%02X%02X"), Appearance.AccentColor.R, Appearance.AccentColor.G, Appearance.AccentColor.B);
+		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
+	}
+
+	if (AppConfigObject->Values.Num() == 0)
+	{
+		return;
+	}
+
+	TSharedPtr<FJsonObject> RootObject = MakeShareable(new FJsonObject);
+	RootObject->SetObjectField(TEXT("AppConfig"), AppConfigObject);
+
+	FString JsonString;
+	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonString);
+	FJsonSerializer::Serialize(RootObject.ToSharedRef(), JsonWriter);
+
+	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));
+
+	if (!FFileHelper::SaveStringToFile(JsonString, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Failed to write crash reporter appearance config to: %s"), *FilePath);
+	}
 }
 
 FString FGenericPlatformSentrySubsystem::GetHandlerPath() const
