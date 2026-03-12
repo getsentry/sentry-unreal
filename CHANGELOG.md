@@ -17,9 +17,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.5.0 to v9.6.0 ([#1257](https://github.com/getsentry/sentry-unreal/pull/1257), [#1269](https://github.com/getsentry/sentry-unreal/pull/1269))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#960)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.5.0...9.6.0)
+- Bump Cocoa SDK from v9.5.0 to v9.7.0 ([#1257](https://github.com/getsentry/sentry-unreal/pull/1257), [#1269](https://github.com/getsentry/sentry-unreal/pull/1269), [#1283](https://github.com/getsentry/sentry-unreal/pull/1283))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#970)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.5.0...9.7.0)
 - Bump Native SDK from v0.13.0 to v0.13.2 ([#1263](https://github.com/getsentry/sentry-unreal/pull/1263), [#1276](https://github.com/getsentry/sentry-unreal/pull/1276))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0132)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.13.0...0.13.2)
