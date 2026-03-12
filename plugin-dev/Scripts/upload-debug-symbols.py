@@ -107,6 +107,13 @@ def get_target_receipt_path(project_binaries_path, target_name, target_platform,
     if os.path.exists(full_path):
         return full_path
 
+    # For Windows arm64 use full name that includes the arch suffix
+    # Since target architecture is not exposed to the post-build scripts we need to check for the arm64-specific receipt file manually as a fallback
+    if target_platform == "Win64":
+        arm64_path = os.path.join(project_binaries_path, f"{target_name}-{target_platform}-{target_config}arm64.target")
+        if os.path.exists(arm64_path):
+            return arm64_path
+
     return None
 
 
