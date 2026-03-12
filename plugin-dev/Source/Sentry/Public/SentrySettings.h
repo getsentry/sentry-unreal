@@ -240,7 +240,7 @@ struct FSentryCrashReporterAppearance
 	bool bOverrideHeaderDescription = false;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Header description", ToolTip = "Description text shown below the header. Leave empty to hide.", EditCondition = "bOverrideHeaderDescription"))
+		Meta = (DisplayName = "Header description (leave empty to hide the text)", ToolTip = "Description text shown below the header. Leave empty to hide.", EditCondition = "bOverrideHeaderDescription"))
 	FString HeaderDescription;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
@@ -256,7 +256,7 @@ struct FSentryCrashReporterAppearance
 	bool bOverrideCancelButtonLabel = false;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Cancel button label", ToolTip = "Label for the cancel button. Set to empty string to hide the button.", EditCondition = "bOverrideCancelButtonLabel"))
+		Meta = (DisplayName = "Cancel button label (leave empty to hide the button)", ToolTip = "Label for the cancel button. Set to empty string to hide the button.", EditCondition = "bOverrideCancelButtonLabel"))
 	FString CancelButtonLabel;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
