@@ -8,6 +8,7 @@
 - Add global attributes support for Android ([#1274](https://github.com/getsentry/sentry-unreal/pull/1274))
 - Add `CrashType` tag to crash events on native platforms (Windows, Linux, Xbox) ([#1277](https://github.com/getsentry/sentry-unreal/pull/1277))
 - Add Sentry Crash Reporter customization utils ([#1286](https://github.com/getsentry/sentry-unreal/pull/1286))
+- Add Windows ARM64 platform support ([1284](https://github.com/getsentry/sentry-unreal/pull/1284))
 
 ### Fixes
 
