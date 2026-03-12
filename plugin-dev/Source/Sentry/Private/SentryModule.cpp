@@ -91,14 +91,28 @@ FString FSentryModule::GetBinariesPath()
 {
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
-	return FPaths::Combine(PluginDir, TEXT("Binaries"), FPlatformProcess::GetBinariesSubdirectory());
+	// Windows ARM64 binaries are currently stored in Win64 dir so we need to set the right platform manually
+#if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
+	const FString PlatformDir = TEXT("WinArm64");
+#else
+	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
+#endif
+
+	return FPaths::Combine(PluginDir, TEXT("Binaries"), PlatformDir);
 }
 
 FString FSentryModule::GetThirdPartyPath()
 {
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
-	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), FPlatformProcess::GetBinariesSubdirectory());
+	// Windows ARM64 binaries are still currently in Win64 dir so we need to set the right platform manually
+#if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
+	const FString PlatformDir = TEXT("WinArm64");
+#else
+	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
+#endif
+
+	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), PlatformDir);
 }
 
 FString FSentryModule::GetPluginVersion()

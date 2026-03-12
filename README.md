@@ -64,7 +64,7 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt-get install -y libstdc++6 libcurl4
 ```
 
-- Plugin supports Linux arm64 platform for UE 5.0 and newer.
+- Plugin supports Linux arm64 platform for UE 5.0+ and Windows arm64 for UE 5.2+.
 
 - Fast-fail crash capturing is currently supported only in packaged game builds. When a fast-fail crash occurs the `HandleBeforeSend` hook will not be invoked and any custom event pre-processing will be skipped.
 
