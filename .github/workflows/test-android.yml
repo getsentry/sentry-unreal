@@ -101,11 +101,11 @@ jobs:
             mkdir -p /home/gh/Library/Logs && chown -R $uid /home/gh/Library "
 
       - name: Download package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{ github.sha }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: checkout
           submodules: recursive
@@ -207,7 +207,7 @@ jobs:
 
       - name: Collect build logs on failure
         if: ${{ always() && (steps.build-android-dev.outcome == 'failure' || steps.build-android-shipping.outcome == 'failure') }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} Android build logs
           path: |
@@ -215,7 +215,7 @@ jobs:
 
       - name: Upload Android build
         if: ${{ success() && (steps.build-android-dev.outcome == 'success' && steps.build-android-shipping.outcome == 'success') }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Android)
           path: checkout/sample/Builds/Android/
