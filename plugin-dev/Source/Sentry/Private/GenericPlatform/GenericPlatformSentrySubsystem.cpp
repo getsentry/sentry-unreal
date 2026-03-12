@@ -1131,8 +1131,11 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
 	}
 
+	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));
+
 	if (AppConfigObject->Values.Num() == 0)
 	{
+		IFileManager::Get().Delete(*FilePath);
 		return;
 	}
 
@@ -1142,8 +1145,6 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 	FString JsonString;
 	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonString);
 	FJsonSerializer::Serialize(RootObject.ToSharedRef(), JsonWriter);
-
-	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));
 
 	if (!FFileHelper::SaveStringToFile(JsonString, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
 	{
