@@ -91,7 +91,7 @@ FString FSentryModule::GetBinariesPath()
 {
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
-	// As of UE 5.7, Windows ARM64 binaries are still stored in Win64 dir so we need to set the right platform manually
+	// Windows ARM64 binaries are currently stored in Win64 dir so we need to set the right platform manually
 #if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
 	const FString PlatformDir = TEXT("WinArm64")
 #else
@@ -105,7 +105,7 @@ FString FSentryModule::GetThirdPartyPath()
 {
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 
-	// As of UE 5.7, Windows ARM64 binaries are still stored in Win64 dir so we need to set the right platform manually
+	// Windows ARM64 binaries are still currently in Win64 dir so we need to set the right platform manually
 #if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
 	const FString PlatformDir = TEXT("WinArm64")
 #else
