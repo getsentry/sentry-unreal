@@ -93,7 +93,7 @@ FString FSentryModule::GetBinariesPath()
 
 	// Windows ARM64 binaries are currently stored in Win64 dir so we need to set the right platform manually
 #if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
-	const FString PlatformDir = TEXT("WinArm64")
+	const FString PlatformDir = TEXT("WinArm64");
 #else
 	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
 #endif
@@ -107,7 +107,7 @@ FString FSentryModule::GetThirdPartyPath()
 
 	// Windows ARM64 binaries are still currently in Win64 dir so we need to set the right platform manually
 #if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
-	const FString PlatformDir = TEXT("WinArm64")
+	const FString PlatformDir = TEXT("WinArm64");
 #else
 	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
 #endif
