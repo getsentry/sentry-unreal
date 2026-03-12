@@ -52,7 +52,7 @@ jobs:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: Win64
-      runsOn: windows-11-arm64
+      runsOn: windows-11-arm
 
   crash-reporter-win64:
     uses: ./.github/workflows/crash-reporter-build.yml
@@ -118,6 +118,11 @@ jobs:
         with:
           name: Win64-sdk
           path: plugin-dev/Source/ThirdParty/Win64
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: WinArm64-sdk
+          path: plugin-dev/Source/ThirdParty/WinArm64
 
       - uses: actions/download-artifact@v4
         with:
