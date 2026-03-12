@@ -48,6 +48,12 @@ jobs:
       target: Win64
       runsOn: windows-2022
 
+  windows-arm64-sdk:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Win64
+      runsOn: windows-11-arm64
+
   crash-reporter-win64:
     uses: ./.github/workflows/crash-reporter-build.yml
     with:
@@ -70,7 +76,7 @@ jobs:
       runtimeId: linux-arm64
 
   package-preparation:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-sdk, crash-reporter-win64, crash-reporter-linux, crash-reporter-linux-arm64]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-sdk, windows-arm64-sdk, crash-reporter-win64, crash-reporter-linux, crash-reporter-linux-arm64]
     name: Package
     runs-on: ubuntu-latest
     steps:
