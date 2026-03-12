@@ -418,7 +418,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableExternalCrashReporter;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
-		Meta = (DisplayName = "Crash reporter appearance", ToolTip = "Customize the appearance of the external crash reporter dialog.",
+		Meta = (DisplayName = "External crash reporter appearance", ToolTip = "Customize the appearance of the external crash reporter dialog.",
 			EditCondition = "EnableExternalCrashReporter"))
 	FSentryCrashReporterAppearance CrashReporterAppearance;
 
