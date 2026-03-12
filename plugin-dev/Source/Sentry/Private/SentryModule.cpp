@@ -98,7 +98,7 @@ FString FSentryModule::GetBinariesPath()
 	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
 #endif
 
-		return FPaths::Combine(PluginDir, TEXT("Binaries"), PlatformDir);
+	return FPaths::Combine(PluginDir, TEXT("Binaries"), PlatformDir);
 }
 
 FString FSentryModule::GetThirdPartyPath()
@@ -112,7 +112,7 @@ FString FSentryModule::GetThirdPartyPath()
 	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
 #endif
 
-		return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), PlatformDir);
+	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), PlatformDir);
 }
 
 FString FSentryModule::GetPluginVersion()
