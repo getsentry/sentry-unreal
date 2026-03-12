@@ -122,7 +122,7 @@ jobs:
 
       - name: Restore cached DDC
         id: cache-ddc
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
@@ -179,7 +179,7 @@ jobs:
 
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
