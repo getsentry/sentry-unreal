@@ -51,7 +51,7 @@ jobs:
   windows-arm64-sdk:
     uses: ./.github/workflows/sdk-build.yml
     with:
-      target: Win64
+      target: WinArm64
       runsOn: windows-11-arm
 
   crash-reporter-win64:
