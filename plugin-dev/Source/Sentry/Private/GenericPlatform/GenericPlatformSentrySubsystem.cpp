@@ -46,12 +46,12 @@
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/ExceptionHandling.h"
 #include "HAL/FileManager.h"
-#include "Misc/FileHelper.h"
 #include "HAL/PlatformMemory.h"
 #include "HAL/PlatformStackWalk.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectThreadContext.h"
 
