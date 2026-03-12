@@ -61,6 +61,13 @@ jobs:
       runsOn: windows-latest
       runtimeId: win-x64
 
+  crash-reporter-win-arm64:
+    uses: ./.github/workflows/crash-reporter-build.yml
+    with:
+      target: WinArm64
+      runsOn: windows-latest
+      runtimeId: windows-11-arm
+
   crash-reporter-linux:
     uses: ./.github/workflows/crash-reporter-build.yml
     with:
@@ -76,7 +83,7 @@ jobs:
       runtimeId: linux-arm64
 
   package-preparation:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-sdk, windows-arm64-sdk, crash-reporter-win64, crash-reporter-linux, crash-reporter-linux-arm64]
+    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk, linux-arm64-sdk, windows-sdk, windows-arm64-sdk, crash-reporter-win64, crash-reporter-win-arm64, crash-reporter-linux, crash-reporter-linux-arm64]
     name: Package
     runs-on: ubuntu-latest
     steps:
