@@ -106,6 +106,14 @@ public class Sentry : ModuleRules
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Microsoft"));
 
+#if UE_5_2_OR_LATER
+			if (Target.Architecture == UnrealArch.Arm64)
+			{
+				PlatformThirdPartyPath = PlatformThirdPartyPath.Replace("Win64", "WinArm64");
+				PlatformBinariesPath = PlatformBinariesPath.Replace("Win64", "WinArm64");
+			}
+#endif
+
 			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "sentry.lib"));
