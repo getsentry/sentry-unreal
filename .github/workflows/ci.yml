@@ -138,6 +138,11 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
+          name: CrashReporter-WinArm64
+          path: plugin-dev/Source/ThirdParty/WinArm64/bin
+
+      - uses: actions/download-artifact@v4
+        with:
           name: CrashReporter-Linux
           path: plugin-dev/Source/ThirdParty/Linux/bin
 
