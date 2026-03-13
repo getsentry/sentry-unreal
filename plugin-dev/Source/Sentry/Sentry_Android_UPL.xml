@@ -62,7 +62,6 @@
     <proguardAdditions>
         <insert>
             -dontwarn android.app.ApplicationStartInfo
-            -dontwarn com.abovevacant.epitaph.**
             -dontwarn io.sentry.unreal.**
             -keep class io.sentry.** { *; }
             -keep interface io.sentry.** { *; }
@@ -114,7 +113,7 @@
 
             dependencies {
                 implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
-                implementation "com.google.protobuf:protobuf-javalite:3.25.8"
+                implementation "com.abovevacant:epitaph:0.1.0"
             }
 
             repositories {
