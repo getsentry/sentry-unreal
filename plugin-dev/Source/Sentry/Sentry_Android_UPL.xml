@@ -62,6 +62,7 @@
     <proguardAdditions>
         <insert>
             -dontwarn android.app.ApplicationStartInfo
+            -dontwarn com.abovevacant.epitaph.**
             -dontwarn io.sentry.unreal.**
             -keep class io.sentry.** { *; }
             -keep interface io.sentry.** { *; }
