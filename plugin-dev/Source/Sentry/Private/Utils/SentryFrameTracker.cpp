@@ -14,8 +14,9 @@
 #include "Misc/CoreDelegates.h"
 #include "UnrealEngine.h"
 
-FSentryFrameTracker::FSentryFrameTracker(float InSlowFrameThresholdMs)
-	: SlowFrameThresholdMs(InSlowFrameThresholdMs)
+FSentryFrameTracker::FSentryFrameTracker(int32 InSampleInterval)
+	: SampleInterval(FMath::Max(InSampleInterval, 1))
+	, FrameCount(0)
 	, FrameStartTime(0.0)
 {
 	CacheAttributes();
@@ -36,7 +37,7 @@ void FSentryFrameTracker::Start()
 	BeginFrameHandle = FCoreDelegates::OnBeginFrame.AddRaw(this, &FSentryFrameTracker::OnBeginFrame);
 	EndFrameHandle = FCoreDelegates::OnEndFrame.AddRaw(this, &FSentryFrameTracker::OnEndFrame);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("Frame tracker started (slow frame threshold: %.1fms)."), SlowFrameThresholdMs);
+	UE_LOG(LogSentrySdk, Log, TEXT("Frame tracker started (sample interval: %d frames)."), SampleInterval);
 }
 
 void FSentryFrameTracker::Stop()
@@ -66,6 +67,13 @@ void FSentryFrameTracker::OnEndFrame()
 		return;
 	}
 
+	++FrameCount;
+
+	if (FrameCount % SampleInterval != 0)
+	{
+		return;
+	}
+
 	const float FrameTimeMs = static_cast<float>((FPlatformTime::Seconds() - FrameStartTime) * 1000.0);
 
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
@@ -79,11 +87,6 @@ void FSentryFrameTracker::OnEndFrame()
 		FrameTimeMs,
 		FSentryUnit(ESentryUnit::Millisecond),
 		MetricAttributes);
-
-	if (FrameTimeMs > SlowFrameThresholdMs)
-	{
-		Sentry->AddCountWithAttributes(TEXT("game.frame.slow"), 1, MetricAttributes);
-	}
 }
 
 void FSentryFrameTracker::CacheAttributes()

@@ -1143,7 +1143,7 @@ void USentrySubsystem::ConfigureFrameTracking()
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	FrameTracker = MakeShared<FSentryFrameTracker>(Settings->SlowFrameThresholdMs);
+	FrameTracker = MakeShared<FSentryFrameTracker>(Settings->FrameTimeSampleInterval);
 	FrameTracker->Start();
 }
 

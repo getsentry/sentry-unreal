@@ -487,15 +487,15 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
 		Meta = (DisplayName = "Enable automatic performance monitoring",
-			ToolTip = "Automatically emit frame time metrics (game.frame.duration distribution and game.frame.slow counter) every frame. Requires metrics to be enabled.",
+			ToolTip = "Automatically emit frame time distribution metric (game.frame.duration) using engine frame boundary delegates. Requires metrics to be enabled.",
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoPerformanceMonitoring;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
-		Meta = (DisplayName = "Slow frame threshold (ms)",
-			ToolTip = "Frame duration in milliseconds above which a frame is counted as slow. Default 33.3ms corresponds to below 30 FPS.",
-			EditCondition = "EnableAutoPerformanceMonitoring && EnableMetrics", ClampMin = 1.0f))
-	float SlowFrameThresholdMs;
+		Meta = (DisplayName = "Frame time sample interval",
+			ToolTip = "Emit frame time metrics every Nth frame. Higher values reduce network overhead. At 60 FPS, a value of 30 emits ~2 metrics per second.",
+			EditCondition = "EnableAutoPerformanceMonitoring && EnableMetrics", ClampMin = 1))
+	int32 FrameTimeSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
 		Meta = (DisplayName = "Editor DSN", ToolTip = "The Editor DSN (Data Source Name) if you want to isolate editor crashes from packaged game crashes, defaults to Dsn if not provided."))
