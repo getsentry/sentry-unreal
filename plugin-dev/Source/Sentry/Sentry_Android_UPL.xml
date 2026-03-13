@@ -34,13 +34,13 @@
             <true>
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
                 <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
-                <if condition="bUseLegacyGradlePlugin">
-                    <false>
-                        <log text="Modifying engine's Gradle version used by replacing gradle-wrapper.properties"/>
-                        <copyFile src="$S(PluginDir)/../../Gradle/gradle-wrapper.properties" dst="$S(BuildDir)/gradle/gradle/wrapper/gradle-wrapper.properties" />
-                    </false>
-                </if>
             </true>
+        </if>
+        <if condition="bUseLegacyGradlePlugin">
+            <false>
+                <log text="Modifying engine's Gradle version used by replacing gradle-wrapper.properties"/>
+                <copyFile src="$S(PluginDir)/../../Gradle/gradle-wrapper.properties" dst="$S(BuildDir)/gradle/gradle/wrapper/gradle-wrapper.properties" />
+            </false>
         </if>
     </prebuildCopies>
 
@@ -170,7 +170,7 @@
             <false>
                 <insert>
                     dependencies {
-                        classpath 'com.android.tools.build:gradle:8.5.2'
+                        classpath 'com.android.tools.build:gradle:7.4.2'
                     }
                 </insert>
             </false>
