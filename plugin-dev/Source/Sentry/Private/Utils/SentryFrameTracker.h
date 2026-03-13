@@ -9,8 +9,9 @@
  * Tracks frame timing and emits performance metrics automatically.
  *
  * Hooks into FCoreDelegates::OnBeginFrame / OnEndFrame to measure frame duration
- * on the game thread. Emits game.frame.duration (distribution, milliseconds)
- * every Nth frame (configurable sample interval).
+ * on the game thread. Emits every Nth frame (configurable sample interval):
+ * - game.frame.duration (distribution, milliseconds) — actual frame work time
+ * - game.fps (gauge) — engine-smoothed average FPS (from GAverageFPS)
  *
  * Hardware attributes (GPU, CPU cores, RAM, resolution) are cached once on start
  * and attached to every metric emission.

@@ -14,6 +14,8 @@
 #include "Misc/CoreDelegates.h"
 #include "UnrealEngine.h"
 
+extern ENGINE_API float GAverageFPS;
+
 FSentryFrameTracker::FSentryFrameTracker(int32 InSampleInterval)
 	: SampleInterval(FMath::Max(InSampleInterval, 1))
 	, FrameCount(0)
@@ -86,6 +88,12 @@ void FSentryFrameTracker::OnEndFrame()
 		TEXT("game.frame.duration"),
 		FrameTimeMs,
 		FSentryUnit(ESentryUnit::Millisecond),
+		MetricAttributes);
+
+	Sentry->AddGaugeWithAttributes(
+		TEXT("game.fps"),
+		GAverageFPS,
+		FSentryUnit(ESentryUnit::None),
 		MetricAttributes);
 }
 
