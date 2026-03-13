@@ -156,6 +156,22 @@
     </baseBuildGradleAdditions>
 
     <buildscriptGradleAdditions>
+        <if condition="bUseLegacyGradlePlugin">
+            <true>
+                <insert>
+                    dependencies {
+                        classpath 'com.android.tools.build:gradle:3.5.4'
+                    }
+                </insert>
+            </true>
+            <false>
+                <insert>
+                    dependencies {
+                        classpath 'com.android.tools.build:gradle:8.5.2'
+                    }
+                </insert>
+            </false>
+        </if>
         <if condition="bUploadSymbols">
             <true>
                 <if condition="bUseLegacyGradlePlugin">
@@ -163,17 +179,14 @@
                         <log text="Using legacy Sentry Gradle plugin for Android debug symbol upload."/>
                         <insert>
                             dependencies {
-                                classpath 'com.android.tools.build:gradle:3.5.4'
                                 classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5' // legacy
                             }
                         </insert>
                     </true>
                     <false>
                         <log text="Using Sentry Gradle plugin for Android debug symbol upload."/>
-                        <log text="Enable legacy Sentry Gradle plugin in project settings in case current version conflicts with other plugins (for UE 5.4 and older)."/>
                         <insert>
                             dependencies {
-                                classpath 'com.android.tools.build:gradle:7.4.2'
                                 classpath 'io.sentry:sentry-android-gradle-plugin:6.1.0' // current
                             }
                         </insert>
