@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-2022
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -23,7 +23,7 @@ jobs:
           Start-Process -FilePath "$env:TEMP\DirectX\DXSETUP.exe" -ArgumentList "/silent" -Wait
 
       - name: Download sample build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Windows)
           path: sample-build
@@ -41,7 +41,7 @@ jobs:
 
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} integration test output (Windows)
           path: |

@@ -16,7 +16,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Select properties file
         id: env
@@ -30,7 +30,7 @@ jobs:
           fi
           echo "path=plugin-dev/Source/ThirdParty/$TARGET" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: cache
         with:
           path: |
@@ -47,7 +47,7 @@ jobs:
           mkdir -p "$DOWNLOAD_PATH"
           "$DOWNLOAD_SCRIPT" "$CACHE_LOCATION" "$DOWNLOAD_PATH"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.target }}-sdk
           path: ${{ steps.env.outputs.path }}

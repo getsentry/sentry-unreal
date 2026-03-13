@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Building docker images for Android requires extra disk space for SDK/NDK
       - name: Clean up disk space before Docker build
@@ -69,7 +69,7 @@ jobs:
           df -h
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12.8'
           architecture: 'x64'
@@ -116,7 +116,7 @@ jobs:
           --opt buildgraph_args="-set:HostPlatformOnly=false -set:WithAndroid=true -set:With${LINUX_ARM_PLATFORM}=false -set:WithClient=false -set:WithServer=false"
 
       - name: Log in to GitHub package registry
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
