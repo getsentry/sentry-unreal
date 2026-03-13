@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Log in to GitHub package registry
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -35,11 +35,11 @@ jobs:
             ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
 
       - name: Download package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{ github.sha }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: checkout
           submodules: recursive
@@ -68,7 +68,7 @@ jobs:
 
       - name: Restore cached DDC
         id: cache-ddc
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
@@ -115,14 +115,14 @@ jobs:
 
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} sample test report (Windows)
           path: |
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload sample build
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Windows)
           path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/

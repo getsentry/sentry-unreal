@@ -38,7 +38,7 @@ jobs:
           df -h
 
       - name: Log in to GitHub package registry
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -101,11 +101,11 @@ jobs:
             mkdir -p /home/gh/Library/Logs && chown -R $uid /home/gh/Library "
 
       - name: Download package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{ github.sha }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: checkout
           submodules: recursive
@@ -131,7 +131,7 @@ jobs:
 
       - name: Restore cached DDC
         id: cache-ddc
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
@@ -200,14 +200,14 @@ jobs:
 
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect build logs on failure
         if: ${{ always() && (steps.build-android-dev.outcome == 'failure' || steps.build-android-shipping.outcome == 'failure') }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} Android build logs
           path: |
@@ -215,7 +215,7 @@ jobs:
 
       - name: Upload Android build
         if: ${{ success() && (steps.build-android-dev.outcome == 'success' && steps.build-android-shipping.outcome == 'success') }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Android)
           path: checkout/sample/Builds/Android/

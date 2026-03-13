@@ -17,6 +17,11 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, co
 {
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, CallbackHandlers);
 
+	if (Settings->EnableExternalCrashReporter)
+	{
+		ConfigureCrashReporterAppearance(Settings);
+	}
+
 	if (Settings->EnableCrashReporterContextPropagation)
 	{
 		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());

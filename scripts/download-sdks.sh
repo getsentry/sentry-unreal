@@ -23,7 +23,7 @@ if [[ "$runId" == "" ]]; then
     exit 1
 fi
 
-declare -a sdks=("Android" "IOS" "Linux" "LinuxArm64" "Mac" "Win64")
+declare -a sdks=("Android" "IOS" "Linux" "LinuxArm64" "Mac" "Win64" "WinArm64")
 for sdk in "${sdks[@]}"; do
     echo "Downloading $sdk SDK to $PWD/$sdk ..."
     rm -rf "./$sdk"
@@ -33,6 +33,7 @@ done
 
 echo "Downloading Crash Reporter binaries ..."
 gh run download $runId -n "CrashReporter-Win64" -D Win64/bin
+gh run download $runId -n "CrashReporter-WinArm64" -D WinArm64/bin
 gh run download $runId -n "CrashReporter-Linux" -D Linux/bin
 gh run download $runId -n "CrashReporter-LinuxArm64" -D LinuxArm64/bin
 chmod +x Linux/bin/Sentry.CrashReporter

@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Building docker images for newer UE versions may require extra disk space
       - name: Clean up disk space before Docker build
@@ -64,7 +64,7 @@ jobs:
           fi
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12.8'
           architecture: 'x64'
@@ -106,7 +106,7 @@ jobs:
           --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
 
       - name: Log in to GitHub package registry
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}

@@ -7,6 +7,8 @@
 - Add app hang tracking for desktop platforms ([#1270](https://github.com/getsentry/sentry-unreal/pull/1270))
 - Add global attributes support for Android ([#1274](https://github.com/getsentry/sentry-unreal/pull/1274))
 - Add `CrashType` tag to crash events on native platforms (Windows, Linux, Xbox) ([#1277](https://github.com/getsentry/sentry-unreal/pull/1277))
+- Add Sentry Crash Reporter customization utils ([#1286](https://github.com/getsentry/sentry-unreal/pull/1286))
+- Add Windows ARM64 platform support ([1284](https://github.com/getsentry/sentry-unreal/pull/1284))
 
 ### Fixes
 
@@ -17,18 +19,18 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.5.0 to v9.6.0 ([#1257](https://github.com/getsentry/sentry-unreal/pull/1257), [#1269](https://github.com/getsentry/sentry-unreal/pull/1269))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#960)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.5.0...9.6.0)
+- Bump Cocoa SDK from v9.5.0 to v9.7.0 ([#1257](https://github.com/getsentry/sentry-unreal/pull/1257), [#1269](https://github.com/getsentry/sentry-unreal/pull/1269), [#1283](https://github.com/getsentry/sentry-unreal/pull/1283))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#970)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.5.0...9.7.0)
 - Bump Native SDK from v0.13.0 to v0.13.2 ([#1263](https://github.com/getsentry/sentry-unreal/pull/1263), [#1276](https://github.com/getsentry/sentry-unreal/pull/1276))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0132)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.13.0...0.13.2)
-- Bump CLI from v3.2.2 to v3.3.2 ([#1265](https://github.com/getsentry/sentry-unreal/pull/1265), [#1268](https://github.com/getsentry/sentry-unreal/pull/1268), [#1280](https://github.com/getsentry/sentry-unreal/pull/1280))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#332)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/3.2.2...3.3.2)
-- Bump Java SDK from v8.33.0 to v8.34.1 ([#1272](https://github.com/getsentry/sentry-unreal/pull/1272))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8341)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.33.0...8.34.1)
+- Bump CLI from v3.2.2 to v3.3.3 ([#1265](https://github.com/getsentry/sentry-unreal/pull/1265), [#1268](https://github.com/getsentry/sentry-unreal/pull/1268), [#1280](https://github.com/getsentry/sentry-unreal/pull/1280), [#1282](https://github.com/getsentry/sentry-unreal/pull/1282))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#333)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.2.2...3.3.3)
+- Bump Java SDK from v8.33.0 to v8.35.0 ([#1272](https://github.com/getsentry/sentry-unreal/pull/1272), [#1285](https://github.com/getsentry/sentry-unreal/pull/1285))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8350)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.33.0...8.35.0)
 
 ## 1.8.0
 
