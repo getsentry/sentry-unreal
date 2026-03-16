@@ -131,7 +131,7 @@ jobs:
           name: WinArm64-sdk
           path: plugin-dev/Source/ThirdParty/WinArm64
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: CrashReporter-Win64
           path: plugin-dev/Source/ThirdParty/Win64/bin
@@ -141,7 +141,7 @@ jobs:
           name: CrashReporter-WinArm64
           path: plugin-dev/Source/ThirdParty/WinArm64/bin
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: CrashReporter-Linux
           path: plugin-dev/Source/ThirdParty/Linux/bin
