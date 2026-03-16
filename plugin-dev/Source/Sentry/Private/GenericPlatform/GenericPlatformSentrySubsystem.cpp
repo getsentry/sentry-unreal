@@ -1130,6 +1130,10 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 		const FString ColorHex = FString::Printf(TEXT("#%02X%02X%02X"), Appearance.AccentColor.R, Appearance.AccentColor.G, Appearance.AccentColor.B);
 		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
 	}
+	if (!Appearance.bWindowClosable)
+	{
+		AppConfigObject->SetBoolField(TEXT("WindowClosable"), false);
+	}
 
 	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));
 

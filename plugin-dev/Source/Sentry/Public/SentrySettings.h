@@ -266,6 +266,10 @@ struct FSentryCrashReporterAppearance
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Accent color", ToolTip = "Primary accent color for the crash reporter UI. Alpha channel is ignored.", EditCondition = "bOverrideAccentColor"))
 	FColor AccentColor = FColor(0, 120, 212);
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Window closable", ToolTip = "When disabled, the user cannot close the crash reporter window without submitting the report. The native close button is disabled and the cancel button is hidden."))
+	bool bWindowClosable = true;
 };
 
 /**
