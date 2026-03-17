@@ -17,11 +17,13 @@
  * - game.perf.gpu (distribution, milliseconds) — GPU frame time
  *
  * Hardware attributes (GPU, CPU cores, RAM, resolution) are cached once on construction.
+ * Map attribute is updated dynamically on level load.
  */
 class FSentryPerformanceConsumer : public IPerformanceDataConsumer
 {
 public:
 	FSentryPerformanceConsumer();
+	~FSentryPerformanceConsumer();
 
 	// IPerformanceDataConsumer
 	virtual void StartCharting() override;
@@ -30,8 +32,11 @@ public:
 
 private:
 	void CacheAttributes();
+	void OnMapLoaded(UWorld* World);
 
 	int32 SampleInterval;
 	uint64 FrameCount;
 	TMap<FString, FSentryVariant> MetricAttributes;
+
+	FDelegateHandle PostLoadMapHandle;
 };
