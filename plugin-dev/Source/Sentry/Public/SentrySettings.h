@@ -344,6 +344,16 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable metrics", ToolTip = "Flag indicating whether to enable the Sentry metrics API for tracking counters, distributions, and gauges."))
 	bool EnableMetrics;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS). Requires metrics to be enabled.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoFrameTimeMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Sample interval (frames)", ToolTip = "Emit performance metrics every Nth frame. Higher values reduce network and storage overhead at the cost of granularity. At 60 FPS, a value of 30 emits ~2 samples per second.",
+			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 1))
+	int32 FrameTimeSampleInterval;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
 	int32 MaxBreadcrumbs;
@@ -484,18 +494,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Traces sampler", ToolTip = "Custom handler for determining traces sample rate based on the sampling context.",
 			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
 	TSubclassOf<USentryTraceSampler> TracesSampler;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
-		Meta = (DisplayName = "Enable automatic performance monitoring",
-			ToolTip = "Automatically emit frame time distribution metric (game.frame.duration) using engine frame boundary delegates. Requires metrics to be enabled.",
-			EditCondition = "EnableMetrics"))
-	bool EnableAutoPerformanceMonitoring;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Performance Monitoring",
-		Meta = (DisplayName = "Frame time sample interval",
-			ToolTip = "Emit frame time metrics every Nth frame. Higher values reduce network overhead. At 60 FPS, a value of 30 emits ~2 metrics per second.",
-			EditCondition = "EnableAutoPerformanceMonitoring && EnableMetrics", ClampMin = 1))
-	int32 FrameTimeSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Misc",
 		Meta = (DisplayName = "Editor DSN", ToolTip = "The Editor DSN (Data Source Name) if you want to isolate editor crashes from packaged game crashes, defaults to Dsn if not provided."))

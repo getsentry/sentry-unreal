@@ -14,7 +14,6 @@
 #include "GenericPlatform/GenericPlatformMemory.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/CoreDelegates.h"
-#include "UObject/CoreDelegates.h"
 #include "UnrealEngine.h"
 
 extern ENGINE_API float GAverageFPS;

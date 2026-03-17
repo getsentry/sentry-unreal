@@ -167,7 +167,7 @@ void USentrySubsystem::Initialize()
 		ConfigureHangTracking();
 	}
 
-	if (Settings->EnableMetrics && Settings->EnableAutoPerformanceMonitoring)
+	if (Settings->EnableMetrics && Settings->EnableAutoFrameTimeMetrics)
 	{
 		ConfigurePerformanceConsumer();
 	}
