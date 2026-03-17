@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add `SetRelease` and `SetEnvironment` setters ([#1292](https://github.com/getsentry/sentry-unreal/pull/1292))
+
 ## 1.9.0
 
 ### Features
