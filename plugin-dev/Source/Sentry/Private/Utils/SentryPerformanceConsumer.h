@@ -21,7 +21,7 @@
 class FSentryPerformanceConsumer : public IPerformanceDataConsumer
 {
 public:
-	FSentryPerformanceConsumer(int32 InSampleInterval);
+	FSentryPerformanceConsumer();
 
 	// IPerformanceDataConsumer
 	virtual void StartCharting() override;

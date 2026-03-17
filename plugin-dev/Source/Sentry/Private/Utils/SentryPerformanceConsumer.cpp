@@ -3,6 +3,8 @@
 #include "Utils/SentryPerformanceConsumer.h"
 
 #include "SentryDefines.h"
+#include "SentryModule.h"
+#include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryUnit.h"
 
@@ -14,10 +16,15 @@
 
 extern ENGINE_API float GAverageFPS;
 
-FSentryPerformanceConsumer::FSentryPerformanceConsumer(int32 InSampleInterval)
-	: SampleInterval(FMath::Max(InSampleInterval, 1))
+FSentryPerformanceConsumer::FSentryPerformanceConsumer()
+	: SampleInterval(1)
 	, FrameCount(0)
 {
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	check(Settings);
+
+	SampleInterval = FMath::Max(Settings->FrameTimeSampleInterval, 1);
+
 	CacheAttributes();
 }
 

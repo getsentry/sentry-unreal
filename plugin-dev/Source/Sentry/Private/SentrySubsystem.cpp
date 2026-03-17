@@ -1145,10 +1145,7 @@ void USentrySubsystem::ConfigureHangTracking()
 
 void USentrySubsystem::ConfigurePerformanceConsumer()
 {
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	check(Settings);
-
-	PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>(Settings->FrameTimeSampleInterval);
+	PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>();
 
 	if (GEngine)
 	{
