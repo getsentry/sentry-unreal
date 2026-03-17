@@ -84,17 +84,8 @@ void FSentryFrameTracker::OnEndFrame()
 		return;
 	}
 
-	Sentry->AddDistributionWithAttributes(
-		TEXT("game.frame.duration"),
-		FrameTimeMs,
-		FSentryUnit(ESentryUnit::Millisecond),
-		MetricAttributes);
-
-	Sentry->AddGaugeWithAttributes(
-		TEXT("game.fps"),
-		GAverageFPS,
-		FSentryUnit(ESentryUnit::None),
-		MetricAttributes);
+	Sentry->AddDistributionWithAttributes(TEXT("game.frame.duration"), FrameTimeMs, FSentryUnit(ESentryUnit::Millisecond), MetricAttributes);
+	Sentry->AddGaugeWithAttributes(TEXT("game.fps"), GAverageFPS, FSentryUnit(ESentryUnit::None), MetricAttributes);
 }
 
 void FSentryFrameTracker::CacheAttributes()
