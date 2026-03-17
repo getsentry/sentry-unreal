@@ -338,6 +338,14 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $script:MessageEvent.message.formatted | Should -Match 'Integration test message'
         }
 
+        It "Should have overridden release" {
+            $script:MessageEvent.release | Should -Be 'test-release@1.0.0'
+        }
+
+        It "Should have overridden environment" {
+            $script:MessageEvent.environment | Should -Be 'test-environment'
+        }
+
         It "Should have user context" {
             $script:MessageEvent.user | Should -Not -BeNullOrEmpty
             $script:MessageEvent.user.username | Should -Be 'TestUser'
