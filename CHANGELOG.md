@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add configurable setting to disable closing of Sentry Crash Reporter window ([#1291](https://github.com/getsentry/sentry-unreal/pull/1291))
+
 ## 1.9.0
 
 ### Features
