@@ -31,8 +31,9 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
-#include "Utils/SentryFrameTracker.h"
+#include "Engine/Engine.h"
 #include "Utils/SentryHangWatcher.h"
+#include "Utils/SentryPerformanceConsumer.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -168,7 +169,7 @@ void USentrySubsystem::Initialize()
 
 	if (Settings->EnableMetrics && Settings->EnableAutoPerformanceMonitoring)
 	{
-		ConfigureFrameTracking();
+		ConfigurePerformanceConsumer();
 	}
 }
 
@@ -219,10 +220,14 @@ void USentrySubsystem::Close()
 		HangWatcher.Reset();
 	}
 
-	if (FrameTracker.IsValid())
+	if (PerformanceConsumer.IsValid())
 	{
-		FrameTracker->Stop();
-		FrameTracker.Reset();
+		if (GEngine)
+		{
+			GEngine->RemovePerformanceDataConsumer(PerformanceConsumer);
+		}
+
+		PerformanceConsumer.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1138,13 +1143,17 @@ void USentrySubsystem::ConfigureHangTracking()
 	HangWatcher->Start();
 }
 
-void USentrySubsystem::ConfigureFrameTracking()
+void USentrySubsystem::ConfigurePerformanceConsumer()
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	FrameTracker = MakeShared<FSentryFrameTracker>(Settings->FrameTimeSampleInterval);
-	FrameTracker->Start();
+	PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>(Settings->FrameTimeSampleInterval);
+
+	if (GEngine)
+	{
+		GEngine->AddPerformanceDataConsumer(PerformanceConsumer);
+	}
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
