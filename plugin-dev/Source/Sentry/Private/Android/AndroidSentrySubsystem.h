@@ -40,6 +40,8 @@ public:
 	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;
 	virtual void RemoveAttribute(const FString& key) override;
 	virtual void SetLevel(ESentryLevel level) override;
+	virtual void SetRelease(const FString& release) override;
+	virtual void SetEnvironment(const FString& environment) override;
 	virtual void StartSession() override;
 	virtual void EndSession() override;
 	virtual void GiveUserConsent() override;

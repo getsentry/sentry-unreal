@@ -427,6 +427,26 @@ public:
 	void SetLevel(ESentryLevel Level);
 
 	/**
+	 * Sets the release version.
+	 * To apply the new release value, start a new session after calling this function.
+	 *
+	 * @param Release The release version string.
+	 *
+	 * @note On Apple platforms (macOS/iOS), this method is a no-op.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetRelease(const FString& Release);
+
+	/**
+	 * Sets the environment.
+	 * To apply the new environment value, start a new session after calling this function.
+	 *
+	 * @param Environment The environment string (e.g. "production", "staging").
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetEnvironment(const FString& Environment);
+
+	/**
 	 * Starts a new session.
 	 * If there's a running session, it ends it before starting the new one.
 	 * This method can be used in combination with @EndSession to manually track sessions.

@@ -158,6 +158,13 @@ void USentryPlaygroundGameInstance::RunMessageTest()
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
+	// Override release and environment to verify SetRelease/SetEnvironment work post-init
+	SentrySubsystem->SetRelease(TEXT("test-release@1.0.0"));
+	SentrySubsystem->SetEnvironment(TEXT("test-environment"));
+
+	// Start a new session to apply the new release and environment values
+	SentrySubsystem->StartSession();
+
 	FString EventId = SentrySubsystem->CaptureMessageWithScope(TEXT("Integration test message"), FConfigureScopeNativeDelegate::CreateLambda([](USentryScope* Scope)
 		{
 			// Local scope tag

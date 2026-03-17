@@ -933,6 +933,26 @@ void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)
 	sentry_set_level(FGenericPlatformSentryConverters::SentryLevelToNative(level));
 }
 
+void FGenericPlatformSentrySubsystem::SetRelease(const FString& release)
+{
+	sentry_set_release(TCHAR_TO_UTF8(*release));
+
+	if (crashReporter)
+	{
+		crashReporter->SetRelease(release);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetEnvironment(const FString& environment)
+{
+	sentry_set_environment(TCHAR_TO_UTF8(*environment));
+
+	if (crashReporter)
+	{
+		crashReporter->SetEnvironment(environment);
+	}
+}
+
 void FGenericPlatformSentrySubsystem::StartSession()
 {
 	sentry_start_session();
@@ -1129,6 +1149,10 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 	{
 		const FString ColorHex = FString::Printf(TEXT("#%02X%02X%02X"), Appearance.AccentColor.R, Appearance.AccentColor.G, Appearance.AccentColor.B);
 		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
+	}
+	if (!Appearance.bWindowClosable)
+	{
+		AppConfigObject->SetBoolField(TEXT("WindowClosable"), false);
 	}
 
 	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));

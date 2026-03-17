@@ -667,6 +667,30 @@ void USentrySubsystem::SetLevel(ESentryLevel Level)
 	SubsystemNativeImpl->SetLevel(Level);
 }
 
+void USentrySubsystem::SetRelease(const FString& Release)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->SetRelease(Release);
+}
+
+void USentrySubsystem::SetEnvironment(const FString& Environment)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->SetEnvironment(Environment);
+}
+
 void USentrySubsystem::StartSession()
 {
 	check(SubsystemNativeImpl);
