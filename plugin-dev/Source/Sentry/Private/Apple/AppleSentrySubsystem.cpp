@@ -497,6 +497,18 @@ void FAppleSentrySubsystem::SetLevel(ESentryLevel level)
 	}];
 }
 
+void FAppleSentrySubsystem::SetRelease(const FString& release)
+{
+	// sentry-cocoa does not provide a public API to change release after initialization
+}
+
+void FAppleSentrySubsystem::SetEnvironment(const FString& environment)
+{
+	[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		[scope setEnvironment:environment.GetNSString()];
+	}];
+}
+
 void FAppleSentrySubsystem::StartSession()
 {
 	[SENTRY_APPLE_CLASS(SentrySDK) startSession];

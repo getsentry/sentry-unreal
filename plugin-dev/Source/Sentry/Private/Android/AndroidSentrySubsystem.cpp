@@ -402,6 +402,18 @@ void FAndroidSentrySubsystem::SetLevel(ESentryLevel level)
 		FAndroidSentryConverters::SentryLevelToNative(level)->GetJObject());
 }
 
+void FAndroidSentrySubsystem::SetRelease(const FString& release)
+{
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setRelease", "(Ljava/lang/String;)V",
+		*FSentryJavaObjectWrapper::GetJString(release));
+}
+
+void FAndroidSentrySubsystem::SetEnvironment(const FString& environment)
+{
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setEnvironment", "(Ljava/lang/String;)V",
+		*FSentryJavaObjectWrapper::GetJString(environment));
+}
+
 void FAndroidSentrySubsystem::StartSession()
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "startSession", "()V", nullptr);
