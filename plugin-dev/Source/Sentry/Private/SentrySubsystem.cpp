@@ -22,6 +22,7 @@
 #include "Utils/SentryCallbackHandlers.h"
 
 #include "CoreGlobals.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
@@ -31,7 +32,6 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
-#include "Engine/Engine.h"
 #include "Utils/SentryHangWatcher.h"
 #include "Utils/SentryPerformanceConsumer.h"
 

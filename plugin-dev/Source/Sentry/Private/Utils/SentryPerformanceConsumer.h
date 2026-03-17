@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "ChartCreation.h"
+#include "CoreMinimal.h"
 #include "SentryVariant.h"
 
 /**
