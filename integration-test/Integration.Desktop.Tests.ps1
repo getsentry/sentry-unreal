@@ -537,11 +537,11 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
 
         It "Should have overridden release" -Skip:($Platform -eq 'MacOS') {
-            $script:MessageEvent.release | Should -Be 'test-release@1.0.0'
+            $script:MessageEvent.release.version | Should -Be 'test-release@1.0.0'
         }
 
         It "Should have overridden environment" {
-            $script:MessageEvent.environment | Should -Be 'test-environment'
+            ($script:MessageEvent.tags | Where-Object { $_.key -eq 'environment' }).value | Should -Be 'test-environment'
         }
 
         It "Should have user context" {
