@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add `SetRelease` and `SetEnvironment` setters ([#1292](https://github.com/getsentry/sentry-unreal/pull/1292))
 - Add configurable setting to disable closing of Sentry Crash Reporter window ([#1291](https://github.com/getsentry/sentry-unreal/pull/1291))
 
 ## 1.9.0

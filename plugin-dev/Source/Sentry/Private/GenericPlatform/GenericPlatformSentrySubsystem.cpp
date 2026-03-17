@@ -933,6 +933,26 @@ void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)
 	sentry_set_level(FGenericPlatformSentryConverters::SentryLevelToNative(level));
 }
 
+void FGenericPlatformSentrySubsystem::SetRelease(const FString& release)
+{
+	sentry_set_release(TCHAR_TO_UTF8(*release));
+
+	if (crashReporter)
+	{
+		crashReporter->SetRelease(release);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetEnvironment(const FString& environment)
+{
+	sentry_set_environment(TCHAR_TO_UTF8(*environment));
+
+	if (crashReporter)
+	{
+		crashReporter->SetEnvironment(environment);
+	}
+}
+
 void FGenericPlatformSentrySubsystem::StartSession()
 {
 	sentry_start_session();

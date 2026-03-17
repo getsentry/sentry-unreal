@@ -59,6 +59,8 @@ public:
 	virtual void SetAttribute(const FString& key, const FSentryVariant& value) = 0;
 	virtual void RemoveAttribute(const FString& key) = 0;
 	virtual void SetLevel(ESentryLevel level) = 0;
+	virtual void SetRelease(const FString& release) = 0;
+	virtual void SetEnvironment(const FString& environment) = 0;
 	virtual void StartSession() = 0;
 	virtual void EndSession() = 0;
 	virtual void GiveUserConsent() = 0;

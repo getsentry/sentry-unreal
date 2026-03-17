@@ -227,6 +227,16 @@ public class SentryBridgeJava {
 		});
 	}
 
+	public static void setRelease(final String release) {
+		SentryOptions options = getOptions();
+		options.setRelease(release);
+	}
+
+	public static void setEnvironment(final String environment) {
+		SentryOptions options = getOptions();
+		options.setEnvironment(environment);
+	}
+
 	public static SentryOptions getOptions() {
 		IScopes scopes = Sentry.getCurrentScopes();
 		return scopes.getOptions();
