@@ -79,6 +79,7 @@ protected:
 	virtual void ConfigureCertsPath(sentry_options_t* Options) {}
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) {}
 	virtual void ConfigureNetworkConnectFunc(sentry_options_t* Options) {}
+	virtual void ConfigureStackCaptureStrategy(sentry_options_t* Options) {}
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) {}
 
 	void ConfigureCrashReporterAppearance(const USentrySettings* Settings);
@@ -108,6 +109,8 @@ protected:
 
 	void SetEventCrashType(sentry_value_t event, ECrashContextType crashType);
 	void SetEventTag(sentry_value_t event, const char* key, const char* value);
+
+	bool bUseNativeBackend;
 
 	TArray<TSharedPtr<FGenericPlatformSentryAttachment>> attachments;
 

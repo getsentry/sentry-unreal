@@ -80,19 +80,26 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 	}
 }
 
+FString FWindowsSentrySubsystem::GetHandlerExecutableName() const
+{
+	return bUseNativeBackend ? TEXT("sentry-crash.exe") : TEXT("crashpad_handler.exe");
+}
+
 void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 {
 	const FString HandlerPath = GetHandlerPath();
 
 	if (!FPaths::FileExists(HandlerPath))
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Crashpad executable couldn't be found."));
+		UE_LOG(LogSentrySdk, Error, TEXT("Crash handler executable couldn't be found at: %s"), *HandlerPath);
 		return;
 	}
 
 	sentry_options_set_handler_pathw(Options, *HandlerPath);
+}
 
-	// Enable stack capture adjustment for Wine/Proton
+void FWindowsSentrySubsystem::ConfigureStackCaptureStrategy(sentry_options_t* Options)
+{
 	if (WineProtonInfo.bIsRunningUnderWine)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Enabling Crashpad stack capture adjustment for Wine/Proton compatibility"));

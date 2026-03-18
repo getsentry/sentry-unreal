@@ -276,8 +276,11 @@ function buildSentryNative()
 
     Write-Host "Building Sentry Native for Windows using local repository at: $NativePath"
 
-    Push-Location -Path $NativePath
+    $platformDir = "$outDir/Win64"
 
+    # Build Crashpad backend
+    Write-Host "Building Crashpad backend..."
+    Push-Location -Path $NativePath
     try
     {
         cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
@@ -290,25 +293,41 @@ function buildSentryNative()
         Pop-Location
     }
 
-    $nativeOutDir = "$outDir/Win64"
-    $nativeOutDirLibs = "$nativeOutDir/lib"
-    $nativeOutDirBinaries = "$nativeOutDir/bin"
-    $nativeOutDirIncludes = "$nativeOutDir/include"
+    $crashpadDir = "$platformDir/Crashpad"
+    if (Test-Path $crashpadDir) { Remove-Item $crashpadDir -Recurse -Force }
+    New-Item "$crashpadDir/lib" -ItemType Directory -Force > $null
+    New-Item "$crashpadDir/bin" -ItemType Directory -Force > $null
+    New-Item "$crashpadDir/include" -ItemType Directory -Force > $null
 
-    if (Test-Path $nativeOutDir)
+    Get-ChildItem -Path "$NativePath/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination "$crashpadDir/lib"
+    Copy-Item "$NativePath/install/bin/crashpad_handler.exe" -Destination "$crashpadDir/bin"
+    Copy-Item "$NativePath/install/bin/crashpad_wer.dll" -Destination "$crashpadDir/bin"
+    Copy-Item "$NativePath/install/include/sentry.h" -Destination "$crashpadDir/include"
+
+    # Build Native backend
+    Write-Host "Building Native backend..."
+    Push-Location -Path $NativePath
+    try
     {
-        Remove-Item $nativeOutDir -Recurse -Force
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
+        cmake --build "build_native" --target sentry --config RelWithDebInfo --parallel
+        cmake --build "build_native" --target sentry-crash --config RelWithDebInfo --parallel
+        cmake --install "build_native" --prefix "install_native" --config RelWithDebInfo
+    }
+    finally
+    {
+        Pop-Location
     }
 
-    New-Item $nativeOutDir -ItemType Directory > $null
-    New-Item $nativeOutDirLibs -ItemType Directory > $null
-    New-Item $nativeOutDirBinaries -ItemType Directory > $null
-    New-Item $nativeOutDirIncludes -ItemType Directory > $null
+    $nativeDir = "$platformDir/Native"
+    if (Test-Path $nativeDir) { Remove-Item $nativeDir -Recurse -Force }
+    New-Item "$nativeDir/lib" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/bin" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/include" -ItemType Directory -Force > $null
 
-    Get-ChildItem -Path "$NativePath/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination $nativeOutDirLibs
-    Copy-Item "$NativePath/install/bin/crashpad_handler.exe" -Destination $nativeOutDirBinaries
-    Copy-Item "$NativePath/install/bin/crashpad_wer.dll" -Destination $nativeOutDirBinaries
-    Copy-Item "$NativePath/install/include/sentry.h" -Destination $nativeOutDirIncludes
+    Get-ChildItem -Path "$NativePath/install_native/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination "$nativeDir/lib"
+    Copy-Item "$NativePath/install_native/bin/sentry-crash.exe" -Destination "$nativeDir/bin"
+    Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
 }
 
 # Build SDKs based on flags

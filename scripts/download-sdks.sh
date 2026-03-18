@@ -23,18 +23,36 @@ if [[ "$runId" == "" ]]; then
     exit 1
 fi
 
-declare -a sdks=("Android" "IOS" "Linux" "LinuxArm64" "Mac" "Win64" "WinArm64")
-for sdk in "${sdks[@]}"; do
+# Non-native platforms: single artifact per platform
+declare -a otherSdks=("Android" "IOS" "Mac")
+for sdk in "${otherSdks[@]}"; do
     echo "Downloading $sdk SDK to $PWD/$sdk ..."
     rm -rf "./$sdk"
     gh run download $runId -n "$sdk-sdk" -D $sdk
-    find $sdk -name "crashpad_handler" -exec chmod +x {} \;
+done
+
+# Native platforms: two backend variants per platform
+declare -a nativePlatforms=("Linux" "LinuxArm64" "Win64" "WinArm64")
+for platform in "${nativePlatforms[@]}"; do
+    for backend in crashpad native; do
+        backendDir=$(echo "$backend" | sed 's/.*/\u&/')
+        targetDir="$platform/$backendDir"
+        echo "Downloading $platform-$backend SDK to $PWD/$targetDir ..."
+        rm -rf "./$targetDir"
+        gh run download $runId -n "$platform-$backend-sdk" -D "$targetDir"
+    done
+done
+
+# Set permissions for Linux executables
+for platform in Linux LinuxArm64; do
+    chmod +x "$platform/Crashpad/bin/crashpad_handler"
+    chmod +x "$platform/Native/bin/sentry-crash"
 done
 
 echo "Downloading Crash Reporter binaries ..."
-gh run download $runId -n "CrashReporter-Win64" -D Win64/bin
-gh run download $runId -n "CrashReporter-WinArm64" -D WinArm64/bin
-gh run download $runId -n "CrashReporter-Linux" -D Linux/bin
-gh run download $runId -n "CrashReporter-LinuxArm64" -D LinuxArm64/bin
-chmod +x Linux/bin/Sentry.CrashReporter
-chmod +x LinuxArm64/bin/Sentry.CrashReporter
+gh run download $runId -n "CrashReporter-Win64" -D Win64
+gh run download $runId -n "CrashReporter-WinArm64" -D WinArm64
+gh run download $runId -n "CrashReporter-Linux" -D Linux
+gh run download $runId -n "CrashReporter-LinuxArm64" -D LinuxArm64
+chmod +x Linux/Sentry.CrashReporter
+chmod +x LinuxArm64/Sentry.CrashReporter

@@ -18,7 +18,7 @@ protected:
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) override;
 
-	virtual FString GetHandlerExecutableName() const override { return TEXT("crashpad_handler"); }
+	virtual FString GetHandlerExecutableName() const override;
 	virtual FString GetCrashReporterExecutableName() const override { return TEXT("Sentry.CrashReporter"); }
 
 	virtual bool IsScreenshotSupported() const override { return true; }
