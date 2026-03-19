@@ -168,6 +168,8 @@ public class Sentry : ModuleRules
 
 			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libsentry.a"));
 
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libunwind.a"));
+
 			if (bUseNativeBackend)
 			{
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry-crash"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "sentry-crash"));
@@ -185,7 +187,6 @@ public class Sentry : ModuleRules
 				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_util.a"));
 				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libmini_chromium.a"));
 				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_mpack.a"));
-				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libunwind.a"));
 			}
 
 			if (bEnableExternalCrashReporter)
