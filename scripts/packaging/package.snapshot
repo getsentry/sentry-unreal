@@ -352,7 +352,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwift.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySwizzle.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryUser+Private.h
 Source/ThirdParty/IOS/Sentry.framework/Sentry
-Source/ThirdParty/Linux/Sentry.CrashReporter
 Source/ThirdParty/Linux/Crashpad/bin/crashpad_handler
 Source/ThirdParty/Linux/Crashpad/include/sentry.h
 Source/ThirdParty/Linux/Crashpad/lib/libcrashpad_client.a
@@ -369,7 +368,8 @@ Source/ThirdParty/Linux/Crashpad/lib/libunwind.a
 Source/ThirdParty/Linux/Native/bin/sentry-crash
 Source/ThirdParty/Linux/Native/include/sentry.h
 Source/ThirdParty/Linux/Native/lib/libsentry.a
-Source/ThirdParty/LinuxArm64/Sentry.CrashReporter
+Source/ThirdParty/Linux/Native/lib/libunwind.a
+Source/ThirdParty/Linux/Sentry.CrashReporter
 Source/ThirdParty/LinuxArm64/Crashpad/bin/crashpad_handler
 Source/ThirdParty/LinuxArm64/Crashpad/include/sentry.h
 Source/ThirdParty/LinuxArm64/Crashpad/lib/libcrashpad_client.a
@@ -386,6 +386,8 @@ Source/ThirdParty/LinuxArm64/Crashpad/lib/libunwind.a
 Source/ThirdParty/LinuxArm64/Native/bin/sentry-crash
 Source/ThirdParty/LinuxArm64/Native/include/sentry.h
 Source/ThirdParty/LinuxArm64/Native/lib/libsentry.a
+Source/ThirdParty/LinuxArm64/Native/lib/libunwind.a
+Source/ThirdParty/LinuxArm64/Sentry.CrashReporter
 Source/ThirdParty/Mac/bin/sentry.dylib
 Source/ThirdParty/Mac/include/Sentry/PrivateSentrySDKOnly.h
 Source/ThirdParty/Mac/include/Sentry/PrivatesHeader.h
@@ -446,7 +448,6 @@ Source/ThirdParty/Mac/include/Sentry/SentryTransactionContext.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
-Source/ThirdParty/Win64/Sentry.CrashReporter.exe
 Source/ThirdParty/Win64/Crashpad/bin/crashpad_handler.exe
 Source/ThirdParty/Win64/Crashpad/bin/crashpad_wer.dll
 Source/ThirdParty/Win64/Crashpad/include/sentry.h
@@ -465,7 +466,7 @@ Source/ThirdParty/Win64/Crashpad/lib/sentry.lib
 Source/ThirdParty/Win64/Native/bin/sentry-crash.exe
 Source/ThirdParty/Win64/Native/include/sentry.h
 Source/ThirdParty/Win64/Native/lib/sentry.lib
-Source/ThirdParty/WinArm64/Sentry.CrashReporter.exe
+Source/ThirdParty/Win64/Sentry.CrashReporter.exe
 Source/ThirdParty/WinArm64/Crashpad/bin/crashpad_handler.exe
 Source/ThirdParty/WinArm64/Crashpad/bin/crashpad_wer.dll
 Source/ThirdParty/WinArm64/Crashpad/include/sentry.h
@@ -484,3 +485,4 @@ Source/ThirdParty/WinArm64/Crashpad/lib/sentry.lib
 Source/ThirdParty/WinArm64/Native/bin/sentry-crash.exe
 Source/ThirdParty/WinArm64/Native/include/sentry.h
 Source/ThirdParty/WinArm64/Native/lib/sentry.lib
+Source/ThirdParty/WinArm64/Sentry.CrashReporter.exe
