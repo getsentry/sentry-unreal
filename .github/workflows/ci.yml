@@ -290,28 +290,32 @@ jobs:
 
   integration-test-linux:
     needs: [test-linux]
-    name: Linux UE ${{ matrix.unreal }}
+    name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unreal: ['4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7']
+        backend: [crashpad, native]
     uses: ./.github/workflows/integration-test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
+      backend: ${{ matrix.backend }}
 
   integration-test-windows:
     needs: [test-windows]
-    name: Windows UE ${{ matrix.unreal }}
+    name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
         unreal: ['5.2', '5.3', '5.4', '5.5', '5.6', '5.7']
+        backend: [crashpad, native]
     uses: ./.github/workflows/integration-test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
+      backend: ${{ matrix.backend }}
 
   integration-test-android:
     needs: [test-android]
