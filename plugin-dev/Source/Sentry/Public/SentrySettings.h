@@ -348,6 +348,16 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable metrics", ToolTip = "Flag indicating whether to enable the Sentry metrics API for tracking counters, distributions, and gauges."))
 	bool EnableMetrics;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS). Requires metrics to be enabled.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoFrameTimeMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Sample interval (frames)", ToolTip = "Emit performance metrics every Nth frame. Higher values reduce network and storage overhead at the cost of granularity. At 60 FPS, a value of 30 emits ~2 samples per second.",
+			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 1))
+	int32 FrameTimeSampleInterval;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
 	int32 MaxBreadcrumbs;
