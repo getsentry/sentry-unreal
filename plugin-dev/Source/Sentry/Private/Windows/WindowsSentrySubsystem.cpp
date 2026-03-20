@@ -100,7 +100,7 @@ void FWindowsSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 
 void FWindowsSentrySubsystem::ConfigureStackCaptureStrategy(sentry_options_t* Options)
 {
-	if (WineProtonInfo.bIsRunningUnderWine)
+	if (WineProtonInfo.bIsRunningUnderWine && !bUseNativeBackend)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Enabling Crashpad stack capture adjustment for Wine/Proton compatibility"));
 		sentry_options_set_crashpad_limit_stack_capture_to_sp(Options, 1);

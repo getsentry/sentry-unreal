@@ -139,7 +139,10 @@ jobs:
       - name: Enable native backend
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
         run: |
-          Add-Content -Path "checkout/sample/Config/DefaultEngine.ini" -Value "`nUseNativeBackend=True"
+          $content = Get-Content -Path "checkout/sample/Config/DefaultEngine.ini"
+          $index = ($content | Select-String -Pattern '^\[/Script/Sentry\.SentrySettings\]').LineNumber
+          $content = $content[0..($index-1)] + "UseNativeBackend=True" + $content[$index..($content.Length-1)]
+          $content | Set-Content -Path "checkout/sample/Config/DefaultEngine.ini"
 
       - name: Build and test (Native)
         id: run-tests-native

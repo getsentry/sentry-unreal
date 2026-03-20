@@ -203,8 +203,7 @@ jobs:
       - name: Enable native backend
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
         run: |
-          echo "" >> checkout/sample/Config/DefaultEngine.ini
-          echo "UseNativeBackend=True" >> checkout/sample/Config/DefaultEngine.ini
+          sed -i '/^\[\/Script\/Sentry\.SentrySettings\]/a UseNativeBackend=True' checkout/sample/Config/DefaultEngine.ini
 
       - name: Build and test (Native)
         id: run-tests-native
