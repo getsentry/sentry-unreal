@@ -75,7 +75,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
-			options.onCrashedLastRun = ^(SentryEvent* event) {
+			options.onLastRunStatusDetermined = ^(SentryLastRunStatus status, SentryEvent* event) {
+				if (status != SentryLastRunStatusDidCrash || event == nil)
+				{
+					return;
+				}
 				if (settings->AttachScreenshot)
 				{
 					// If a screenshot was captured during assertion/crash in the previous app run
