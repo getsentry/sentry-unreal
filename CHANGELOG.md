@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add automatic frame time metrics ([#1293](https://github.com/getsentry/sentry-unreal/pull/1293))
+
 ### Dependencies
 
 - Bump Java SDK from v8.34.1 to v8.36.0 ([#1294](https://github.com/getsentry/sentry-unreal/pull/1294))

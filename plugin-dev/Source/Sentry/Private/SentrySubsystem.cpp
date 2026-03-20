@@ -22,6 +22,7 @@
 #include "Utils/SentryCallbackHandlers.h"
 
 #include "CoreGlobals.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
@@ -32,6 +33,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
 #include "Utils/SentryHangWatcher.h"
+#include "Utils/SentryPerformanceConsumer.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -164,6 +166,11 @@ void USentrySubsystem::Initialize()
 	{
 		ConfigureHangTracking();
 	}
+
+	if (Settings->EnableMetrics && Settings->EnableAutoFrameTimeMetrics)
+	{
+		ConfigurePerformanceConsumer();
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -211,6 +218,16 @@ void USentrySubsystem::Close()
 	{
 		HangWatcher->Stop();
 		HangWatcher.Reset();
+	}
+
+	if (PerformanceConsumer.IsValid())
+	{
+		if (GEngine)
+		{
+			GEngine->RemovePerformanceDataConsumer(PerformanceConsumer);
+		}
+
+		PerformanceConsumer.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1148,6 +1165,16 @@ void USentrySubsystem::ConfigureHangTracking()
 		SubsystemNativeImpl->CaptureHang(HungThreadId);
 	});
 	HangWatcher->Start();
+}
+
+void USentrySubsystem::ConfigurePerformanceConsumer()
+{
+	PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>();
+
+	if (GEngine)
+	{
+		GEngine->AddPerformanceDataConsumer(PerformanceConsumer);
+	}
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
