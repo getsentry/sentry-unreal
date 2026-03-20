@@ -10,7 +10,7 @@
  * Consumes per-frame performance data from the engine's FPerformanceTrackingSystem.
  *
  * Registered via GEngine->AddPerformanceDataConsumer(). Emits sampled metrics:
- * - game.perf.duration (distribution, milliseconds) — frame time from engine tracking
+ * - game.perf.frame_time (distribution, milliseconds) — frame time from engine tracking
  * - game.perf.fps (gauge) — engine-smoothed average FPS
  * - game.perf.game_thread (distribution, milliseconds) — game thread work time
  * - game.perf.render_thread (distribution, milliseconds) — render thread work time

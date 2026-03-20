@@ -62,7 +62,7 @@ void FSentryPerformanceConsumer::ProcessFrame(const FFrameData& FrameData)
 
 	const FSentryUnit Ms(ESentryUnit::Millisecond);
 
-	Sentry->AddDistributionWithAttributes(TEXT("game.perf.frame_duration"), FrameData.TrueDeltaSeconds * 1000.0f, Ms, MetricAttributes);
+	Sentry->AddDistributionWithAttributes(TEXT("game.perf.frame_time"), FrameData.TrueDeltaSeconds * 1000.0f, Ms, MetricAttributes);
 	Sentry->AddDistributionWithAttributes(TEXT("game.perf.game_thread"), FrameData.GameThreadTimeSeconds * 1000.0f, Ms, MetricAttributes);
 	Sentry->AddDistributionWithAttributes(TEXT("game.perf.render_thread"), FrameData.RenderThreadTimeSeconds * 1000.0f, Ms, MetricAttributes);
 	Sentry->AddDistributionWithAttributes(TEXT("game.perf.gpu"), FrameData.GPUTimeSeconds * 1000.0f, Ms, MetricAttributes);
