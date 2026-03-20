@@ -35,7 +35,7 @@ done
 declare -a nativePlatforms=("Linux" "LinuxArm64" "Win64" "WinArm64")
 for platform in "${nativePlatforms[@]}"; do
     for backend in crashpad native; do
-        backendDir=$(echo "$backend" | sed 's/.*/\u&/')
+        backendDir="$(tr '[:lower:]' '[:upper:]' <<< "${backend:0:1}")${backend:1}"
         targetDir="$platform/$backendDir"
         echo "Downloading $platform-$backend SDK to $PWD/$targetDir ..."
         rm -rf "./$targetDir"
