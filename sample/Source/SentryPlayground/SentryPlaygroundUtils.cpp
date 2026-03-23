@@ -56,10 +56,11 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			break;
 		case ESentryAppTerminationType::OutOfMemory:
 			{
-				const size_t BlockSize = 1024 * 1024 * 1024;
+				size_t Count = 1024;
 				while (true)
 				{
-					void* _ = FMemory::Malloc(BlockSize);
+					void* _ = FMemory::Malloc(Count);
+					Count *= 2;
 				}
 			}
 			break;
