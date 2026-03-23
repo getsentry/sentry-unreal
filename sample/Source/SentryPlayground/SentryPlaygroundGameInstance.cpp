@@ -129,8 +129,6 @@ void USentryPlaygroundGameInstance::RunIntegrationTest(const FString& CommandLin
 
 void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType CrashType)
 {
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
 
 	// Because we don't get the real crash event ID, create a fake one and set it as a tag
@@ -140,7 +138,7 @@ void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType Crash
 
 	// Workaround for duplicated log messages in UE 4.27 on Linux
 #if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
-	if (Settings->UseNativeBackend)
+	if (FSentryModule::Get().GetSettings()->UseNativeBackend)
 	{
 		// When using native backend, crashing process can terminate before engine’s GLog is flushed
 		// To ensure the event ID is not lost it is printed directly to stdout so the test script can reliably capture it

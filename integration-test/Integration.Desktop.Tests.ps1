@@ -46,6 +46,17 @@ BeforeDiscovery {
     $currentPlatform | Should -Not -Be $null
     $TestTargets += Get-TestTarget -Platform $currentPlatform -ProviderName $currentPlatform
 
+    # Detect native backend by checking which crash handler binary exists in the packaged build
+    $appDir = Split-Path $env:SENTRY_UNREAL_TEST_APP_PATH
+    $pluginBinDir = Join-Path $appDir "SentryPlayground/Plugins/sentry/Binaries"
+    if ($IsWindows) {
+        $IsNativeBackend = Test-Path (Join-Path $pluginBinDir "Win64/sentry-crash.exe")
+    } elseif ($IsLinux) {
+        $IsNativeBackend = Test-Path (Join-Path $pluginBinDir "Linux/sentry-crash")
+    } else {
+        $IsNativeBackend = $false
+    }
+
     # Define crash types to test
     $TestCrashTypes = @(
         @{ Name = 'NullPointer';       Arg = '-crash-capture';            Type = 'Crash'       }
@@ -55,8 +66,10 @@ BeforeDiscovery {
         @{ Name = 'OutOfMemory';       Arg = '-crash-oom';                Type = 'OutOfMemory' }
     )
 
-    if ($IsLinux) {
-        # Skipp OutOfMemory test on Linux due to overcommit behavior which prevents reliable triggering of OOM condition in tests
+    if ($IsLinux -or $IsNativeBackend) {
+        # Skip OutOfMemory test:
+        # - Memory overcommit makes OOM conditions unreliable to trigger in tests on Linux
+        # - Native backend does not currently support OOM capture (see https://github.com/getsentry/sentry-native/issues/1590)
         $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
     }
 }
