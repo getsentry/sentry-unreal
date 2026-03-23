@@ -31,6 +31,7 @@ class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
 class FSentryHangWatcher;
 class FSentryPerformanceConsumer;
+class FSentryPerformanceMetricAttributes;
 class FSentryGCListener;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
@@ -633,6 +634,7 @@ private:
 	FDelegateHandle OnEnsureDelegate;
 
 	TSharedPtr<FSentryHangWatcher> HangWatcher;
+	TSharedPtr<FSentryPerformanceMetricAttributes> PerformanceMetricAttributes;
 	TSharedPtr<FSentryPerformanceConsumer> PerformanceConsumer;
 	TSharedPtr<FSentryGCListener> GCListener;
 };

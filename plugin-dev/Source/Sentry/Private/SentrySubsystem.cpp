@@ -35,6 +35,7 @@
 #include "Utils/SentryGCListener.h"
 #include "Utils/SentryHangWatcher.h"
 #include "Utils/SentryPerformanceConsumer.h"
+#include "Utils/SentryPerformanceMetricAttributes.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -168,6 +169,11 @@ void USentrySubsystem::Initialize()
 		ConfigureHangTracking();
 	}
 
+	if (Settings->EnableMetrics && (Settings->EnableAutoFrameTimeMetrics || Settings->EnableGCMetrics))
+	{
+		PerformanceMetricAttributes = MakeShared<FSentryPerformanceMetricAttributes>();
+	}
+
 	if (Settings->EnableMetrics && Settings->EnableAutoFrameTimeMetrics)
 	{
 		ConfigurePerformanceConsumer();
@@ -175,7 +181,7 @@ void USentrySubsystem::Initialize()
 
 	if (Settings->EnableMetrics && Settings->EnableGCMetrics)
 	{
-		GCListener = MakeShared<FSentryGCListener>();
+		GCListener = MakeShared<FSentryGCListener>(PerformanceMetricAttributes);
 	}
 }
 
@@ -239,6 +245,11 @@ void USentrySubsystem::Close()
 	if (GCListener.IsValid())
 	{
 		GCListener.Reset();
+	}
+
+	if (PerformanceMetricAttributes.IsValid())
+	{
+		PerformanceMetricAttributes.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1180,7 +1191,7 @@ void USentrySubsystem::ConfigureHangTracking()
 
 void USentrySubsystem::ConfigurePerformanceConsumer()
 {
-	PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>();
+	PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>(PerformanceMetricAttributes);
 
 	if (GEngine)
 	{

@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SentryVariant.h"
+
+class FSentryPerformanceMetricAttributes;
 
 /**
  * Listens for garbage collection events and emits GC pause duration as a metric.
@@ -13,27 +14,21 @@
  * game-thread-blocking pause that impacts gameplay.
  *
  * Emits: game.perf.gc_time (distribution, milliseconds)
- *
- * Hardware attributes (GPU, CPU cores, RAM, resolution) are cached once on construction.
- * Map attribute is updated dynamically on level load.
  */
 class FSentryGCListener
 {
 public:
-	FSentryGCListener();
+	explicit FSentryGCListener(TSharedPtr<FSentryPerformanceMetricAttributes> InMetricAttributes);
 	~FSentryGCListener();
 
 private:
 	void OnGCStarted();
 	void OnPostGC();
-	void CacheAttributes();
-	void OnMapLoaded(UWorld* World);
 
 	double GCStartTime;
 
-	TMap<FString, FSentryVariant> MetricAttributes;
+	TSharedPtr<FSentryPerformanceMetricAttributes> MetricAttributes;
 
 	FDelegateHandle GCStartedHandle;
 	FDelegateHandle PostGCHandle;
-	FDelegateHandle PostLoadMapHandle;
 };
