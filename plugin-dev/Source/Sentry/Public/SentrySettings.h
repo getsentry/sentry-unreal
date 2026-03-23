@@ -358,6 +358,11 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 1))
 	int32 FrameTimeSampleInterval;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect GC pause metrics", ToolTip = "Emit a metric for each garbage collection pause duration. GC pauses are a common source of hitches in Unreal Engine games.",
+			EditCondition = "EnableMetrics"))
+	bool EnableGCMetrics;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
 	int32 MaxBreadcrumbs;

@@ -32,6 +32,7 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
+#include "Utils/SentryGCListener.h"
 #include "Utils/SentryHangWatcher.h"
 #include "Utils/SentryPerformanceConsumer.h"
 
@@ -171,6 +172,11 @@ void USentrySubsystem::Initialize()
 	{
 		ConfigurePerformanceConsumer();
 	}
+
+	if (Settings->EnableMetrics && Settings->EnableGCMetrics)
+	{
+		GCListener = MakeShared<FSentryGCListener>();
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -228,6 +234,11 @@ void USentrySubsystem::Close()
 		}
 
 		PerformanceConsumer.Reset();
+	}
+
+	if (GCListener.IsValid())
+	{
+		GCListener.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
