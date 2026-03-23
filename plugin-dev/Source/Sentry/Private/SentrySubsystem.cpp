@@ -179,10 +179,12 @@ void USentrySubsystem::Initialize()
 		ConfigurePerformanceConsumer();
 	}
 
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
 	if (Settings->EnableMetrics && Settings->EnableGCMetrics)
 	{
 		GCListener = MakeShared<FSentryGCListener>(PerformanceMetricAttributes);
 	}
+#endif
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
