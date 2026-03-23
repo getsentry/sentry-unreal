@@ -137,7 +137,7 @@ void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType Crash
 
 	// Workaround for duplicated log messages in UE 4.27 on Linux
 #if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
-	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+	FPlatformMisc::LowLevelOutputDebugStringf(TEXT("EVENT_CAPTURED: %s\n"), *EventId);
 #else
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
 #endif
@@ -147,7 +147,7 @@ void USentryPlaygroundGameInstance::RunCrashTest(ESentryAppTerminationType Crash
 
 	SentrySubsystem->SetTag(TEXT("test.crash_id"), EventId);
 
-#if PLATFORM_ANDROID || PLATFORM_LINUX
+#if PLATFORM_ANDROID
 	FPlatformProcess::Sleep(1.0f);
 #endif
 
