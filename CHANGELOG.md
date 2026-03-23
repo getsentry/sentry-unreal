@@ -5,6 +5,7 @@
 ### Features
 
 - Add automatic frame time metrics ([#1293](https://github.com/getsentry/sentry-unreal/pull/1293))
+- Add automatic GC pause metrics ([#1302](https://github.com/getsentry/sentry-unreal/pull/1302))
 
 ### Dependencies
 
