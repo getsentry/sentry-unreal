@@ -55,9 +55,9 @@ BeforeDiscovery {
         @{ Name = 'OutOfMemory';       Arg = '-crash-oom';                Type = 'OutOfMemory' }
     )
 
-    if ($IsLinux) {
-        # Skipp OutOfMemory test on Linux due to overcommit behavior which prevents reliable triggering of OOM condition in tests
-        $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
+    # On non-Windows platforms, OOM termination results in a generic crash signal rather than a distinct exception type
+    if (-not $IsWindows) {
+        ($TestCrashTypes | Where-Object { $_.Name -eq 'OutOfMemory' }).Type = 'Crash'
     }
 }
 
@@ -144,7 +144,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"               # Prevents double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableOnCrashLogging=True"     # Enables crash logging
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableAutoLogAttachment=True"  # Enables log attachment
-            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
 
             # $crashTypeArg triggers specific crash type scenario in the sample app
             $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
