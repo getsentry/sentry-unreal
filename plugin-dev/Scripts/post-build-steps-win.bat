@@ -11,33 +11,35 @@ set "PLUGIN_DIR=%~6"
 set "ENGINE_DIR=%~7"
 
 set "LINUX_BIN_DIR=%PLUGIN_DIR%\Binaries\Linux"
-set "LINUX_SOURCE_DIR=%PLUGIN_DIR%\Source\ThirdParty\Linux\bin"
+set "LINUX_CRASHPAD_DIR=%PLUGIN_DIR%\Source\ThirdParty\Linux\Crashpad\bin"
+set "LINUX_PLATFORM_DIR=%PLUGIN_DIR%\Source\ThirdParty\Linux"
 
 REM Copy crashpad handler to plugin's Binaries\Linux for cross-compilation on Windows
 if "%TARGET_PLATFORM%"=="Linux" (
   if not exist "%LINUX_BIN_DIR%" (mkdir "%LINUX_BIN_DIR%")
   if not exist "%LINUX_BIN_DIR%\crashpad_handler" (
-    copy /Y "%LINUX_SOURCE_DIR%\crashpad_handler" "%LINUX_BIN_DIR%\"
+    copy /Y "%LINUX_CRASHPAD_DIR%\crashpad_handler" "%LINUX_BIN_DIR%\"
   )
   if not exist "%LINUX_BIN_DIR%\Sentry.CrashReporter" (
-    copy /Y "%LINUX_SOURCE_DIR%\Sentry.CrashReporter" "%LINUX_BIN_DIR%\"
+    copy /Y "%LINUX_PLATFORM_DIR%\Sentry.CrashReporter" "%LINUX_BIN_DIR%\"
   )
 )
 
 set "WIN64_BIN_DIR=%PLUGIN_DIR%\Binaries\Win64"
-set "WIN64_SOURCE_DIR=%PLUGIN_DIR%\Source\ThirdParty\Win64\bin"
+set "WIN64_CRASHPAD_DIR=%PLUGIN_DIR%\Source\ThirdParty\Win64\Crashpad\bin"
+set "WIN64_PLATFORM_DIR=%PLUGIN_DIR%\Source\ThirdParty\Win64"
 
 REM Copy crashpad binaries to plugin's Binaries\Win64 (FAB compatibility)
 if "%TARGET_PLATFORM%"=="Win64" (
   if not exist "%WIN64_BIN_DIR%" (mkdir "%WIN64_BIN_DIR%")
   if not exist "%WIN64_BIN_DIR%\crashpad_handler.exe" (
-    copy /Y "%WIN64_SOURCE_DIR%\crashpad_handler.exe" "%WIN64_BIN_DIR%\"
+    copy /Y "%WIN64_CRASHPAD_DIR%\crashpad_handler.exe" "%WIN64_BIN_DIR%\"
   )
   if not exist "%WIN64_BIN_DIR%\crashpad_wer.dll" (
-    copy /Y "%WIN64_SOURCE_DIR%\crashpad_wer.dll" "%WIN64_BIN_DIR%\"
+    copy /Y "%WIN64_CRASHPAD_DIR%\crashpad_wer.dll" "%WIN64_BIN_DIR%\"
   )
   if not exist "%WIN64_BIN_DIR%\Sentry.CrashReporter.exe" (
-    copy /Y "%WIN64_SOURCE_DIR%\Sentry.CrashReporter.exe" "%WIN64_BIN_DIR%\"
+    copy /Y "%WIN64_PLATFORM_DIR%\Sentry.CrashReporter.exe" "%WIN64_BIN_DIR%\"
   )
 )
 

@@ -4,6 +4,10 @@ on:
       unreal-version:
         required: true
         type: string
+      backend:
+        required: false
+        type: string
+        default: "crashpad"
 
 jobs:
   integration-test:
@@ -25,7 +29,7 @@ jobs:
       - name: Download sample build
         uses: actions/download-artifact@v7
         with:
-          name: UE ${{ inputs.unreal-version }} sample build (Windows)
+          name: UE ${{ inputs.unreal-version }} sample build (Windows, ${{ inputs.backend }})
           path: sample-build
 
       - name: Run integration tests
@@ -43,7 +47,7 @@ jobs:
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
         uses: actions/upload-artifact@v7
         with:
-          name: UE ${{ inputs.unreal-version }} integration test output (Windows)
+          name: UE ${{ inputs.unreal-version }} integration test output (Windows, ${{ inputs.backend }})
           path: |
             integration-test/output/
             sample-build/SentryPlayground/Saved/Logs/

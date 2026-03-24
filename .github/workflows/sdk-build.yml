@@ -10,6 +10,10 @@ on:
       container:
         required: false
         type: string
+      backend:
+        required: false
+        type: string
+        default: ""
 
 jobs:
   build:
@@ -38,6 +42,7 @@ jobs:
         id: env
         env:
           TARGET: ${{ inputs.target }}
+          BACKEND: ${{ inputs.backend }}
         run: |
           if [[ "$TARGET" == "Android" ]]; then
             submodule="modules/sentry-java"
@@ -45,13 +50,24 @@ jobs:
             submodule="modules/sentry-native"
           fi
           echo "submodule=$submodule" >> $GITHUB_OUTPUT
-          echo "path=plugin-dev/Source/ThirdParty/$TARGET" >> $GITHUB_OUTPUT
-          echo "buildScript=scripts/build-$(echo "$TARGET" | tr '[:upper:]' '[:lower:]').sh" >> $GITHUB_OUTPUT
+
+          if [[ -n "$BACKEND" ]]; then
+            buildScript="scripts/build-$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')-${BACKEND}.sh"
+            artifactName="${TARGET}-${BACKEND}-sdk"
+            path="plugin-dev/Source/ThirdParty/$TARGET/$(echo "$BACKEND" | sed 's/.*/\u&/')"
+          else
+            buildScript="scripts/build-$(echo "$TARGET" | tr '[:upper:]' '[:lower:]').sh"
+            artifactName="${TARGET}-sdk"
+            path="plugin-dev/Source/ThirdParty/$TARGET"
+          fi
+          echo "path=$path" >> $GITHUB_OUTPUT
+          echo "buildScript=$buildScript" >> $GITHUB_OUTPUT
+          echo "artifactName=$artifactName" >> $GITHUB_OUTPUT
 
       - name: Get submodule status
         env:
           SUBMODULE: ${{ steps.env.outputs.submodule }}
-        run: |          
+        run: |
           git submodule status --cached "$SUBMODULE" | tee submodule-status
 
       - uses: actions/cache@v5
@@ -59,7 +75,7 @@ jobs:
         with:
           path: |
             ${{ steps.env.outputs.path }}
-          key: sdk=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk-build.yml') }}
+          key: sdk=${{ steps.env.outputs.artifactName }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk-build.yml') }}
 
       - name: Install Linux/LinuxArm64 Dependencies
         if: ${{ (inputs.target == 'Linux' || inputs.target == 'LinuxArm64') && steps.cache.outputs.cache-hit != 'true' }}
@@ -99,6 +115,6 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: ${{ inputs.target }}-sdk
+          name: ${{ steps.env.outputs.artifactName }}
           path: ${{ steps.env.outputs.path }}
           retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
