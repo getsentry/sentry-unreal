@@ -165,22 +165,22 @@ jobs:
           name: LinuxArm64-native-sdk
           path: plugin-dev/Source/ThirdParty/LinuxArm64/Native
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Win64-crashpad-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Crashpad
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Win64-native-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Native
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: WinArm64-crashpad-sdk
           path: plugin-dev/Source/ThirdParty/WinArm64/Crashpad
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: WinArm64-native-sdk
           path: plugin-dev/Source/ThirdParty/WinArm64/Native

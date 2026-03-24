@@ -177,7 +177,7 @@ jobs:
 
       - name: Collect native sample test info
         if: ${{ always() && steps.run-tests-native.outcome == 'failure' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample test report (Windows, native)
           path: |
@@ -185,7 +185,7 @@ jobs:
 
       - name: Upload sample build (Native)
         if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Windows, native)
           path: checkout/sample/Builds-Native/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
