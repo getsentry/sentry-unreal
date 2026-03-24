@@ -55,11 +55,6 @@ void FSentryGCListener::OnGCStarted()
 
 void FSentryGCListener::OnPostGC()
 {
-	if (GCStartTime <= 0.0)
-	{
-		return;
-	}
-
 	const float PauseMs = static_cast<float>((FPlatformTime::Seconds() - GCStartTime) * 1000.0);
 
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
