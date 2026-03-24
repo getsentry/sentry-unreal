@@ -166,10 +166,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableAutoLogAttachment=True"  # Enables log attachment
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
 
-            if ($IsNativeBackend) {
-                $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:CrashReportingMode=NativeStackwalking"
-            }
-
             # $crashTypeArg triggers specific crash type scenario in the sample app
             $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
 
