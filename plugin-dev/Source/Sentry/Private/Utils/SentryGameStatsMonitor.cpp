@@ -25,7 +25,10 @@ FSentryGameStatsMonitor::FSentryGameStatsMonitor(TSharedPtr<FSentryPerformanceMe
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	TickerHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSentryGameStatsMonitor::OnTick), IntervalSeconds);
 #else
-	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(TEXT("SentryGameStatsMonitor"), IntervalSeconds, [this](float DeltaTime) { return OnTick(DeltaTime); });
+	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(TEXT("SentryGameStatsMonitor"), IntervalSeconds, [this](float DeltaTime)
+	{
+		return OnTick(DeltaTime);
+	});
 #endif
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Game stats monitor started (interval: %.0fs)."), IntervalSeconds);

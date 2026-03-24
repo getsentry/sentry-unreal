@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Containers/Ticker.h"
+#include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
 
 class FSentryPerformanceMetricAttributes;
