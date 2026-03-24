@@ -223,12 +223,16 @@ Source/Sentry/Private/Utils/SentryCallbackUtils.cpp
 Source/Sentry/Private/Utils/SentryCallbackUtils.h
 Source/Sentry/Private/Utils/SentryFileUtils.cpp
 Source/Sentry/Private/Utils/SentryFileUtils.h
+Source/Sentry/Private/Utils/SentryGCListener.cpp
+Source/Sentry/Private/Utils/SentryGCListener.h
 Source/Sentry/Private/Utils/SentryHangWatcher.cpp
 Source/Sentry/Private/Utils/SentryHangWatcher.h
 Source/Sentry/Private/Utils/SentryLogUtils.cpp
 Source/Sentry/Private/Utils/SentryLogUtils.h
 Source/Sentry/Private/Utils/SentryPerformanceConsumer.cpp
 Source/Sentry/Private/Utils/SentryPerformanceConsumer.h
+Source/Sentry/Private/Utils/SentryPerformanceMetricAttributes.cpp
+Source/Sentry/Private/Utils/SentryPerformanceMetricAttributes.h
 Source/Sentry/Private/Utils/SentryPlatformDetectionUtils.cpp
 Source/Sentry/Private/Utils/SentryPlatformDetectionUtils.h
 Source/Sentry/Private/Utils/SentryPlatformInfo.h
