@@ -122,7 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: recursive
 
@@ -130,77 +130,77 @@ jobs:
         shell: pwsh
         run: ./scripts/download-cli.ps1
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Android-sdk
           path: plugin-dev/Source/ThirdParty/Android
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: IOS-sdk
           path: plugin-dev/Source/ThirdParty/IOS
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Mac-sdk
           path: plugin-dev/Source/ThirdParty/Mac
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Linux-crashpad-sdk
           path: plugin-dev/Source/ThirdParty/Linux/Crashpad
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Linux-native-sdk
           path: plugin-dev/Source/ThirdParty/Linux/Native
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: LinuxArm64-crashpad-sdk
           path: plugin-dev/Source/ThirdParty/LinuxArm64/Crashpad
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: LinuxArm64-native-sdk
           path: plugin-dev/Source/ThirdParty/LinuxArm64/Native
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Win64-crashpad-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Crashpad
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: Win64-native-sdk
           path: plugin-dev/Source/ThirdParty/Win64/Native
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: WinArm64-crashpad-sdk
           path: plugin-dev/Source/ThirdParty/WinArm64/Crashpad
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: WinArm64-native-sdk
           path: plugin-dev/Source/ThirdParty/WinArm64/Native
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: CrashReporter-Win64
           path: plugin-dev/Source/ThirdParty/Win64
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: CrashReporter-WinArm64
           path: plugin-dev/Source/ThirdParty/WinArm64
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: CrashReporter-Linux
           path: plugin-dev/Source/ThirdParty/Linux
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: CrashReporter-LinuxArm64
           path: plugin-dev/Source/ThirdParty/LinuxArm64
@@ -223,7 +223,7 @@ jobs:
         run: ./scripts/packaging/pack.ps1
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
@@ -237,10 +237,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Download packages
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: ${{ github.sha }}
 
