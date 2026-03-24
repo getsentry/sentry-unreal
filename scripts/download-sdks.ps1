@@ -34,8 +34,9 @@ if (-not (Test-Path $outDir))
     New-Item $outDir -ItemType Directory > $null
 }
 
-$sdks = @("Android", "IOS", "Linux", "LinuxArm64", "Mac", "Win64", "WinArm64")
-foreach ($sdk in $sdks)
+# Non-native platforms: single artifact per platform
+$otherSdks = @("Android", "IOS", "Mac")
+foreach ($sdk in $otherSdks)
 {
     $sdkDir = "$outDir/$sdk"
 
@@ -48,8 +49,27 @@ foreach ($sdk in $sdks)
     gh run download $runId -n "$sdk-sdk" -D $sdkDir
 }
 
+# Native platforms: two backend variants per platform
+$nativePlatforms = @("Linux", "LinuxArm64", "Win64", "WinArm64")
+foreach ($platform in $nativePlatforms)
+{
+    foreach ($backend in @("crashpad", "native"))
+    {
+        $backendDir = if ($backend -eq "crashpad") { "Crashpad" } else { "Native" }
+        $targetDir = "$outDir/$platform/$backendDir"
+
+        Write-Host "Downloading $platform-$backend SDK to $targetDir ..."
+        if (Test-Path $targetDir)
+        {
+            Remove-Item "$targetDir" -Recurse
+        }
+
+        gh run download $runId -n "$platform-$backend-sdk" -D $targetDir
+    }
+}
+
 Write-Host "Downloading Crash Reporter binaries ..."
-gh run download $runId -n "CrashReporter-Win64" -D "$outDir/Win64/bin"
-gh run download $runId -n "CrashReporter-WinArm64" -D "$outDir/WinArm64/bin"
-gh run download $runId -n "CrashReporter-Linux" -D "$outDir/Linux/bin"
-gh run download $runId -n "CrashReporter-LinuxArm64" -D "$outDir/LinuxArm64/bin"
+gh run download $runId -n "CrashReporter-Win64" -D "$outDir/Win64"
+gh run download $runId -n "CrashReporter-WinArm64" -D "$outDir/WinArm64"
+gh run download $runId -n "CrashReporter-Linux" -D "$outDir/Linux"
+gh run download $runId -n "CrashReporter-LinuxArm64" -D "$outDir/LinuxArm64"

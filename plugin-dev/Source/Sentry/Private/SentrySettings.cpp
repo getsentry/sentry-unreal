@@ -30,6 +30,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, EnableMetrics(false)
 	, EnableAutoFrameTimeMetrics(false)
 	, FrameTimeSampleInterval(30)
+	, EnableAutoGCMetrics(false)
 	, MaxBreadcrumbs(100)
 	, AutomaticBreadcrumbs()
 	, AutomaticBreadcrumbsForLogs()
@@ -44,6 +45,9 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, UseProxy(false)
 	, ProxyUrl()
 	, DatabaseLocation(ESentryDatabaseLocation::ProjectUserDirectory)
+	, UseNativeBackend(false)
+	, MinidumpMode(ESentryMinidumpMode::Smart)
+	, CrashReportingMode(ESentryCrashReportingMode::NativeStackwalkingWithMinidump)
 	, CrashpadWaitForUpload(false)
 	, EnableOnCrashLogging(false)
 	, EnableExternalCrashReporter(false)
@@ -97,6 +101,7 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	}
 
 	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, InitAutomatically) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseNativeBackend) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadSymbolsAutomatically) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, ProjectName) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, OrgName) ||

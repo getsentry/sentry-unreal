@@ -202,6 +202,38 @@ sentry_value_t FGenericPlatformSentryConverters::CallstackToNative(const TArray<
 	return stacktrace;
 }
 
+sentry_minidump_mode_t FGenericPlatformSentryConverters::MinidumpModeToNative(ESentryMinidumpMode mode)
+{
+	switch (mode)
+	{
+	case ESentryMinidumpMode::StackOnly:
+		return SENTRY_MINIDUMP_MODE_STACK_ONLY;
+	case ESentryMinidumpMode::Smart:
+		return SENTRY_MINIDUMP_MODE_SMART;
+	case ESentryMinidumpMode::Full:
+		return SENTRY_MINIDUMP_MODE_FULL;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown minidump mode value used. Smart will be returned."));
+		return SENTRY_MINIDUMP_MODE_SMART;
+	}
+}
+
+sentry_crash_reporting_mode_t FGenericPlatformSentryConverters::CrashReportingModeToNative(ESentryCrashReportingMode mode)
+{
+	switch (mode)
+	{
+	case ESentryCrashReportingMode::Minidump:
+		return SENTRY_CRASH_REPORTING_MODE_MINIDUMP;
+	case ESentryCrashReportingMode::NativeStackwalking:
+		return SENTRY_CRASH_REPORTING_MODE_NATIVE;
+	case ESentryCrashReportingMode::NativeStackwalkingWithMinidump:
+		return SENTRY_CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown crash reporting mode value used. NativeStackwalkingWithMinidump will be returned."));
+		return SENTRY_CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP;
+	}
+}
+
 ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_value_t level)
 {
 	FString levelStr = FString(UTF8_TO_TCHAR(sentry_value_as_string(level)));

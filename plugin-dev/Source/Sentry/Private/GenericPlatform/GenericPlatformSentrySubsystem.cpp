@@ -424,7 +424,8 @@ void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const ch
 }
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
-	: beforeSend(nullptr)
+	: bUseNativeBackend(false)
+	, beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
 	, beforeLog(nullptr)
 	, beforeMetric(nullptr)
@@ -440,6 +441,8 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 
 void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
+	bUseNativeBackend = settings->UseNativeBackend;
+
 	beforeSend = callbackHandlers.BeforeSendHandler;
 	beforeBreadcrumb = callbackHandlers.BeforeBreadcrumbHandler;
 	beforeLog = callbackHandlers.BeforeLogHandler;
@@ -496,6 +499,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureDatabasePath(options);
 	ConfigureCertsPath(options);
 	ConfigureNetworkConnectFunc(options);
+	ConfigureStackCaptureStrategy(options);
 
 	if (settings->EnableExternalCrashReporter)
 	{
@@ -521,6 +525,12 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_logs_with_attributes(options, true);
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
+
+	if (bUseNativeBackend)
+	{
+		sentry_options_set_minidump_mode(options, FGenericPlatformSentryConverters::MinidumpModeToNative(settings->MinidumpMode));
+		sentry_options_set_crash_reporting_mode(options, FGenericPlatformSentryConverters::CrashReportingModeToNative(settings->CrashReportingMode));
+	}
 
 	if (beforeBreadcrumb)
 	{

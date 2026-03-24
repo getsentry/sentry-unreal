@@ -25,7 +25,7 @@ jobs:
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         id: cache
         with:
-          path: plugin-dev/Source/ThirdParty/${{ inputs.target }}/bin/Sentry.CrashReporter*
+          path: plugin-dev/Source/ThirdParty/${{ inputs.target }}/Sentry.CrashReporter*
           key: crash-reporter=${{ inputs.target }}-${{ hashFiles('submodule-status', 'scripts/build-crash-reporter.sh', '.github/workflows/crash-reporter-build.yml') }}
 
       - name: Setup .NET 9
@@ -48,11 +48,11 @@ jobs:
           git submodule update --init modules/sentry-crash-reporter
           ./scripts/build-crash-reporter.sh \
             modules/sentry-crash-reporter \
-            plugin-dev/Source/ThirdParty/${{ inputs.target }}/bin \
+            plugin-dev/Source/ThirdParty/${{ inputs.target }} \
             ${{ inputs.runtimeId }}
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: CrashReporter-${{ inputs.target }}
-          path: plugin-dev/Source/ThirdParty/${{ inputs.target }}/bin/Sentry.CrashReporter*
+          path: plugin-dev/Source/ThirdParty/${{ inputs.target }}/Sentry.CrashReporter*
           retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}

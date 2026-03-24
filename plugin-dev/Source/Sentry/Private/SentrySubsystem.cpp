@@ -32,8 +32,10 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 #include "SentryAttachment.h"
+#include "Utils/SentryGCListener.h"
 #include "Utils/SentryHangWatcher.h"
 #include "Utils/SentryPerformanceConsumer.h"
+#include "Utils/SentryPerformanceMetricAttributes.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -167,9 +169,9 @@ void USentrySubsystem::Initialize()
 		ConfigureHangTracking();
 	}
 
-	if (Settings->EnableMetrics && Settings->EnableAutoFrameTimeMetrics)
+	if (Settings->EnableMetrics)
 	{
-		ConfigurePerformanceConsumer();
+		ConfigurePerformanceMetrics();
 	}
 }
 
@@ -228,6 +230,16 @@ void USentrySubsystem::Close()
 		}
 
 		PerformanceConsumer.Reset();
+	}
+
+	if (GCListener.IsValid())
+	{
+		GCListener.Reset();
+	}
+
+	if (PerformanceMetricAttributes.IsValid())
+	{
+		PerformanceMetricAttributes.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1167,14 +1179,41 @@ void USentrySubsystem::ConfigureHangTracking()
 	HangWatcher->Start();
 }
 
-void USentrySubsystem::ConfigurePerformanceConsumer()
+void USentrySubsystem::ConfigurePerformanceMetrics()
 {
-	PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>();
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	check(Settings);
 
-	if (GEngine)
+	bool bTrackPerformanceMetrics = false;
+
+	bTrackPerformanceMetrics |= Settings->EnableAutoFrameTimeMetrics;
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
+	bTrackPerformanceMetrics |= Settings->EnableAutoGCMetrics;
+#endif
+
+	if (!bTrackPerformanceMetrics)
 	{
-		GEngine->AddPerformanceDataConsumer(PerformanceConsumer);
+		return;
 	}
+
+	PerformanceMetricAttributes = MakeShared<FSentryPerformanceMetricAttributes>();
+
+	if (Settings->EnableAutoFrameTimeMetrics)
+	{
+		PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>(PerformanceMetricAttributes);
+
+		if (GEngine)
+		{
+			GEngine->AddPerformanceDataConsumer(PerformanceConsumer);
+		}
+	}
+
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
+	if (Settings->EnableAutoGCMetrics)
+	{
+		GCListener = MakeShared<FSentryGCListener>(PerformanceMetricAttributes);
+	}
+#endif
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
