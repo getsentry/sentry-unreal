@@ -33,6 +33,7 @@ class FSentryHangWatcher;
 class FSentryPerformanceConsumer;
 class FSentryPerformanceMetricAttributes;
 class FSentryGCListener;
+class FSentryGameStatsMonitor;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -634,7 +635,9 @@ private:
 	FDelegateHandle OnEnsureDelegate;
 
 	TSharedPtr<FSentryHangWatcher> HangWatcher;
+
 	TSharedPtr<FSentryPerformanceMetricAttributes> PerformanceMetricAttributes;
 	TSharedPtr<FSentryPerformanceConsumer> PerformanceConsumer;
 	TSharedPtr<FSentryGCListener> GCListener;
+	TSharedPtr<FSentryGameStatsMonitor> GameStatsMonitor;
 };

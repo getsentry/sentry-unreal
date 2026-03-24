@@ -223,6 +223,8 @@ Source/Sentry/Private/Utils/SentryCallbackUtils.cpp
 Source/Sentry/Private/Utils/SentryCallbackUtils.h
 Source/Sentry/Private/Utils/SentryFileUtils.cpp
 Source/Sentry/Private/Utils/SentryFileUtils.h
+Source/Sentry/Private/Utils/SentryGameStatsMonitor.cpp
+Source/Sentry/Private/Utils/SentryGameStatsMonitor.h
 Source/Sentry/Private/Utils/SentryGCListener.cpp
 Source/Sentry/Private/Utils/SentryGCListener.h
 Source/Sentry/Private/Utils/SentryHangWatcher.cpp
