@@ -2,6 +2,7 @@
 
 #include "SentrySubsystem.h"
 
+#include "SentryAttachment.h"
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
 #include "SentryBeforeMetricHandler.h"
@@ -16,10 +17,21 @@
 #include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
-
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
+
+#include "Interface/SentrySubsystemInterface.h"
+
+#include "HAL/PlatformSentryFeedback.h"
+#include "HAL/PlatformSentryId.h"
+#include "HAL/PlatformSentrySubsystem.h"
+
 #include "Utils/SentryCallbackHandlers.h"
+#include "Utils/SentryGCListener.h"
+#include "Utils/SentryGameStatsMonitor.h"
+#include "Utils/SentryHangWatcher.h"
+#include "Utils/SentryPerformanceConsumer.h"
+#include "Utils/SentryPerformanceMetricAttributes.h"
 
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
@@ -31,17 +43,6 @@
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
-#include "SentryAttachment.h"
-#include "Utils/SentryGCListener.h"
-#include "Utils/SentryHangWatcher.h"
-#include "Utils/SentryPerformanceConsumer.h"
-#include "Utils/SentryPerformanceMetricAttributes.h"
-
-#include "Interface/SentrySubsystemInterface.h"
-
-#include "HAL/PlatformSentryFeedback.h"
-#include "HAL/PlatformSentryId.h"
-#include "HAL/PlatformSentrySubsystem.h"
 
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -235,6 +236,11 @@ void USentrySubsystem::Close()
 	if (GCListener.IsValid())
 	{
 		GCListener.Reset();
+	}
+
+	if (GameStatsMonitor.IsValid())
+	{
+		GameStatsMonitor.Reset();
 	}
 
 	if (PerformanceMetricAttributes.IsValid())
@@ -1187,6 +1193,7 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 	bool bTrackPerformanceMetrics = false;
 
 	bTrackPerformanceMetrics |= Settings->EnableAutoFrameTimeMetrics;
+	bTrackPerformanceMetrics |= Settings->EnableAutoGameStatsMetrics;
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
 	bTrackPerformanceMetrics |= Settings->EnableAutoGCMetrics;
 #endif
@@ -1206,6 +1213,11 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 		{
 			GEngine->AddPerformanceDataConsumer(PerformanceConsumer);
 		}
+	}
+
+	if (Settings->EnableAutoGameStatsMetrics)
+	{
+		GameStatsMonitor = MakeShared<FSentryGameStatsMonitor>(PerformanceMetricAttributes);
 	}
 
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)

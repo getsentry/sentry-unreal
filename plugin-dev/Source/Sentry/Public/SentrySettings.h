@@ -359,6 +359,16 @@ class SENTRY_API USentrySettings : public UObject
 	int32 FrameTimeSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	Meta = (DisplayName = "Collect game stats metrics", ToolTip = "Periodically collect game stats such as process memory usage and active UObject count. Requires metrics to be enabled.",
+		EditCondition = "EnableMetrics"))
+	bool EnableAutoGameStatsMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Sample interval (seconds)", ToolTip = "How often to sample game stats metrics (memory, UObject count). Default: 60 seconds.",
+			EditCondition = "EnableAutoGameStatsMetrics && EnableMetrics", ClampMin = 1))
+	int32 GameStatsSampleIntervalSeconds;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
 		Meta = (DisplayName = "Collect GC pause metrics (UE 5.5+)", ToolTip = "Emit a metric for each garbage collection pause duration. GC pauses are a common source of hitches in Unreal Engine games. Requires Unreal Engine 5.5 or later.",
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoGCMetrics;
