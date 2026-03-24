@@ -35,11 +35,11 @@ jobs:
             ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
 
       - name: Download package
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: ${{ github.sha }}
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: checkout
           submodules: recursive
@@ -68,7 +68,7 @@ jobs:
 
       - name: Restore cached DDC
         id: cache-ddc
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
@@ -115,14 +115,14 @@ jobs:
 
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample test report (Windows)
           path: |
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload sample build
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Windows)
           path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
