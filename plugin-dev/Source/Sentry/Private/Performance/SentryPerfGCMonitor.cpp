@@ -1,18 +1,18 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "Utils/SentryGCListener.h"
+#include "Performance/SentryPerfGCMonitor.h"
+#include "Performance/SentryPerfMetricAttributes.h"
 
 #include "SentryDefines.h"
 #include "SentrySubsystem.h"
 #include "SentryUnit.h"
-#include "Utils/SentryPerformanceMetricAttributes.h"
 
 #include "Engine/Engine.h"
 #include "HAL/PlatformTime.h"
 #include "Misc/EngineVersionComparison.h"
 #include "UObject/UObjectGlobals.h"
 
-FSentryGCListener::FSentryGCListener(TSharedPtr<FSentryPerformanceMetricAttributes> InMetricAttributes)
+FSentryPerfGCMonitor::FSentryPerfGCMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes)
 	: GCStartTime(0.0)
 	, MetricAttributes(InMetricAttributes)
 {
@@ -20,16 +20,16 @@ FSentryGCListener::FSentryGCListener(TSharedPtr<FSentryPerformanceMetricAttribut
 	// GC pause. GetPreGarbageCollectDelegate fires before lock acquisition, so on older engine versions the
 	// measurement may include time spent waiting for async threads to release the GC lock.
 #if UE_VERSION_OLDER_THAN(5, 5, 0)
-	GCStartedHandle = FCoreUObjectDelegates::GetPreGarbageCollectDelegate().AddRaw(this, &FSentryGCListener::OnGCStarted);
+	GCStartedHandle = FCoreUObjectDelegates::GetPreGarbageCollectDelegate().AddRaw(this, &FSentryPerfGCMonitor::OnGCStarted);
 #else
-	GCStartedHandle = FCoreUObjectDelegates::GetGarbageCollectStartedDelegate().AddRaw(this, &FSentryGCListener::OnGCStarted);
+	GCStartedHandle = FCoreUObjectDelegates::GetGarbageCollectStartedDelegate().AddRaw(this, &FSentryPerfGCMonitor::OnGCStarted);
 #endif
-	PostGCHandle = FCoreUObjectDelegates::GetPostGarbageCollect().AddRaw(this, &FSentryGCListener::OnPostGC);
+	PostGCHandle = FCoreUObjectDelegates::GetPostGarbageCollect().AddRaw(this, &FSentryPerfGCMonitor::OnPostGC);
 
-	UE_LOG(LogSentrySdk, Log, TEXT("GC listener started."));
+	UE_LOG(LogSentrySdk, Log, TEXT("GC monitor started."));
 }
 
-FSentryGCListener::~FSentryGCListener()
+FSentryPerfGCMonitor::~FSentryPerfGCMonitor()
 {
 	if (GCStartedHandle.IsValid())
 	{
@@ -48,12 +48,12 @@ FSentryGCListener::~FSentryGCListener()
 	}
 }
 
-void FSentryGCListener::OnGCStarted()
+void FSentryPerfGCMonitor::OnGCStarted()
 {
 	GCStartTime = FPlatformTime::Seconds();
 }
 
-void FSentryGCListener::OnPostGC()
+void FSentryPerfGCMonitor::OnPostGC()
 {
 	const float PauseMs = static_cast<float>((FPlatformTime::Seconds() - GCStartTime) * 1000.0);
 

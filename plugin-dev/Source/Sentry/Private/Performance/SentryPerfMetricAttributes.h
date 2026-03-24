@@ -6,7 +6,7 @@
 #include "SentryVariant.h"
 
 /**
- * Caches hardware and environment attributes shared by all performance metric listeners.
+ * Caches hardware and environment attributes shared by all performance metric monitors.
  *
  * Attributes cached once on construction:
  * - gpu.name, cpu.cores, ram.gb, res.x, res.y
@@ -14,11 +14,11 @@
  * Attributes updated dynamically:
  * - map (on level load via PostLoadMapWithWorld delegate)
  */
-class FSentryPerformanceMetricAttributes
+class FSentryPerfMetricAttributes
 {
 public:
-	FSentryPerformanceMetricAttributes();
-	~FSentryPerformanceMetricAttributes();
+	FSentryPerfMetricAttributes();
+	~FSentryPerfMetricAttributes();
 
 	const TMap<FString, FSentryVariant>& GetAttributes() const;
 

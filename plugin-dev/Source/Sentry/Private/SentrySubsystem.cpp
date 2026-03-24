@@ -27,11 +27,12 @@
 #include "HAL/PlatformSentrySubsystem.h"
 
 #include "Utils/SentryCallbackHandlers.h"
-#include "Utils/SentryGCListener.h"
-#include "Utils/SentryGameStatsMonitor.h"
 #include "Utils/SentryHangWatcher.h"
-#include "Utils/SentryPerformanceConsumer.h"
-#include "Utils/SentryPerformanceMetricAttributes.h"
+
+#include "Performance/SentryPerfFrameTimeMonitor.h"
+#include "Performance/SentryPerfGCMonitor.h"
+#include "Performance/SentryPerfGameStatsMonitor.h"
+#include "Performance/SentryPerfMetricAttributes.h"
 
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
@@ -223,29 +224,29 @@ void USentrySubsystem::Close()
 		HangWatcher.Reset();
 	}
 
-	if (PerformanceConsumer.IsValid())
+	if (PerfFrameTimeMonitor.IsValid())
 	{
 		if (GEngine)
 		{
-			GEngine->RemovePerformanceDataConsumer(PerformanceConsumer);
+			GEngine->RemovePerformanceDataConsumer(PerfFrameTimeMonitor);
 		}
 
-		PerformanceConsumer.Reset();
+		PerfFrameTimeMonitor.Reset();
 	}
 
-	if (GCListener.IsValid())
+	if (PerfGCMonitor.IsValid())
 	{
-		GCListener.Reset();
+		PerfGCMonitor.Reset();
 	}
 
-	if (GameStatsMonitor.IsValid())
+	if (PerfGameStatsMonitor.IsValid())
 	{
-		GameStatsMonitor.Reset();
+		PerfGameStatsMonitor.Reset();
 	}
 
-	if (PerformanceMetricAttributes.IsValid())
+	if (PerfMetricAttributes.IsValid())
 	{
-		PerformanceMetricAttributes.Reset();
+		PerfMetricAttributes.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1203,27 +1204,27 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 		return;
 	}
 
-	PerformanceMetricAttributes = MakeShared<FSentryPerformanceMetricAttributes>();
+	PerfMetricAttributes = MakeShared<FSentryPerfMetricAttributes>();
 
 	if (Settings->EnableAutoFrameTimeMetrics)
 	{
-		PerformanceConsumer = MakeShared<FSentryPerformanceConsumer>(PerformanceMetricAttributes);
+		PerfFrameTimeMonitor = MakeShared<FSentryPerfFrameTimeMonitor>(PerfMetricAttributes);
 
 		if (GEngine)
 		{
-			GEngine->AddPerformanceDataConsumer(PerformanceConsumer);
+			GEngine->AddPerformanceDataConsumer(PerfFrameTimeMonitor);
 		}
 	}
 
 	if (Settings->EnableAutoGameStatsMetrics)
 	{
-		GameStatsMonitor = MakeShared<FSentryGameStatsMonitor>(PerformanceMetricAttributes);
+		PerfGameStatsMonitor = MakeShared<FSentryPerfGameStatsMonitor>(PerfMetricAttributes);
 	}
 
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
 	if (Settings->EnableAutoGCMetrics)
 	{
-		GCListener = MakeShared<FSentryGCListener>(PerformanceMetricAttributes);
+		PerfGCMonitor = MakeShared<FSentryPerfGCMonitor>(PerfMetricAttributes);
 	}
 #endif
 }
