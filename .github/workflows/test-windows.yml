@@ -101,7 +101,7 @@ jobs:
             -iterate `
             -build `
             -stage `
-            -prereqss `
+            -prereqs `
             -package `
             -archive
           docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `
@@ -163,7 +163,7 @@ jobs:
             -iterate `
             -build `
             -stage `
-            -prereqss `
+            -prereqs `
             -package `
             -archive
           docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `

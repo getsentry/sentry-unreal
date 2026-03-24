@@ -164,7 +164,7 @@ jobs:
             -iterate \
             -build \
             -stage \
-            -prereqss \
+            -prereqs \
             -package \
             -archive
           docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \
@@ -227,7 +227,7 @@ jobs:
             -iterate \
             -build \
             -stage \
-            -prereqss \
+            -prereqs \
             -package \
             -archive
           docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \
