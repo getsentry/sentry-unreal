@@ -635,6 +635,7 @@ private:
 	FDelegateHandle OnEnsureDelegate;
 
 	TSharedPtr<FSentryHangWatcher> HangWatcher;
+
 	TSharedPtr<FSentryPerformanceMetricAttributes> PerformanceMetricAttributes;
 	TSharedPtr<FSentryPerformanceConsumer> PerformanceConsumer;
 	TSharedPtr<FSentryGCListener> GCListener;

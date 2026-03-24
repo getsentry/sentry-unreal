@@ -20,7 +20,7 @@ FSentryGameStatsMonitor::FSentryGameStatsMonitor(TSharedPtr<FSentryPerformanceMe
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	const float IntervalSeconds = static_cast<float>(FMath::Max(Settings->GameStatsSampleIntervalSeconds, 1));
+	const float IntervalSeconds = static_cast<float>(FMath::Max(Settings->GameStatsSampleInterval, 1));
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	TickerHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSentryGameStatsMonitor::OnTick), IntervalSeconds);
