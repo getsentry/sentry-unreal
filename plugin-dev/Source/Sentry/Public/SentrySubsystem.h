@@ -598,8 +598,8 @@ private:
 	/** Set up hang watcher for detecting unresponsive threads */
 	void ConfigureHangTracking();
 
-	/** Set up performance consumer for automatic frame time and per-thread metrics */
-	void ConfigurePerformanceConsumer();
+	/** Set up automatic performance metrics (frame time, GC pause time, etc.) */
+	void ConfigurePerformanceMetrics();
 
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
