@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "Utils/SentryGameStatsMonitor.h"
-#include "Utils/SentryPerformanceMetricAttributes.h"
+#include "Performance/SentryPerfGameStatsMonitor.h"
+#include "Performance/SentryPerfMetricAttributes.h"
 
 #include "SentryDefines.h"
 #include "SentryModule.h"
@@ -14,7 +14,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "UObject/UObjectArray.h"
 
-FSentryGameStatsMonitor::FSentryGameStatsMonitor(TSharedPtr<FSentryPerformanceMetricAttributes> InMetricAttributes)
+FSentryPerfGameStatsMonitor::FSentryPerfGameStatsMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes)
 	: MetricAttributes(InMetricAttributes)
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
@@ -23,9 +23,9 @@ FSentryGameStatsMonitor::FSentryGameStatsMonitor(TSharedPtr<FSentryPerformanceMe
 	const float IntervalSeconds = static_cast<float>(FMath::Max(Settings->GameStatsSampleInterval, 1));
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-	TickerHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSentryGameStatsMonitor::OnTick), IntervalSeconds);
+	TickerHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSentryPerfGameStatsMonitor::OnTick), IntervalSeconds);
 #else
-	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(TEXT("SentryGameStatsMonitor"), IntervalSeconds, [this](float DeltaTime)
+	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(TEXT("SentryPerfGameStatsMonitor"), IntervalSeconds, [this](float DeltaTime)
 	{
 		return OnTick(DeltaTime);
 	});
@@ -34,7 +34,7 @@ FSentryGameStatsMonitor::FSentryGameStatsMonitor(TSharedPtr<FSentryPerformanceMe
 	UE_LOG(LogSentrySdk, Log, TEXT("Game stats monitor started (interval: %.0fs)."), IntervalSeconds);
 }
 
-FSentryGameStatsMonitor::~FSentryGameStatsMonitor()
+FSentryPerfGameStatsMonitor::~FSentryPerfGameStatsMonitor()
 {
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	FTicker::GetCoreTicker().RemoveTicker(TickerHandle);
@@ -43,7 +43,7 @@ FSentryGameStatsMonitor::~FSentryGameStatsMonitor()
 #endif
 }
 
-bool FSentryGameStatsMonitor::OnTick(float DeltaTime)
+bool FSentryPerfGameStatsMonitor::OnTick(float DeltaTime)
 {
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
 	if (!Sentry || !Sentry->IsEnabled())

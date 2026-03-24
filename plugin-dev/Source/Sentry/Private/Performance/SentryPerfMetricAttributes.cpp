@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "Utils/SentryPerformanceMetricAttributes.h"
+#include "Performance/SentryPerfMetricAttributes.h"
 
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -9,14 +9,14 @@
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "UnrealEngine.h"
 
-FSentryPerformanceMetricAttributes::FSentryPerformanceMetricAttributes()
+FSentryPerfMetricAttributes::FSentryPerfMetricAttributes()
 {
 	CacheAttributes();
 
-	PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddRaw(this, &FSentryPerformanceMetricAttributes::OnMapLoaded);
+	PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddRaw(this, &FSentryPerfMetricAttributes::OnMapLoaded);
 }
 
-FSentryPerformanceMetricAttributes::~FSentryPerformanceMetricAttributes()
+FSentryPerfMetricAttributes::~FSentryPerfMetricAttributes()
 {
 	if (PostLoadMapHandle.IsValid())
 	{
@@ -25,12 +25,12 @@ FSentryPerformanceMetricAttributes::~FSentryPerformanceMetricAttributes()
 	}
 }
 
-const TMap<FString, FSentryVariant>& FSentryPerformanceMetricAttributes::GetAttributes() const
+const TMap<FString, FSentryVariant>& FSentryPerfMetricAttributes::GetAttributes() const
 {
 	return Attributes;
 }
 
-void FSentryPerformanceMetricAttributes::OnMapLoaded(UWorld* World)
+void FSentryPerfMetricAttributes::OnMapLoaded(UWorld* World)
 {
 	if (World)
 	{
@@ -38,7 +38,7 @@ void FSentryPerformanceMetricAttributes::OnMapLoaded(UWorld* World)
 	}
 }
 
-void FSentryPerformanceMetricAttributes::CacheAttributes()
+void FSentryPerfMetricAttributes::CacheAttributes()
 {
 	FGPUDriverInfo GpuDriverInfo = FPlatformMisc::GetGPUDriverInfo(FPlatformMisc::GetPrimaryGPUBrand());
 	if (GpuDriverInfo.IsValid())

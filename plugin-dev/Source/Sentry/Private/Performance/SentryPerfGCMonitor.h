@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-class FSentryPerformanceMetricAttributes;
+class FSentryPerfMetricAttributes;
 
 /**
  * Listens for garbage collection events and emits GC pause duration as a metric.
@@ -15,11 +15,11 @@ class FSentryPerformanceMetricAttributes;
  *
  * Emits: game.perf.gc_time (distribution, milliseconds)
  */
-class FSentryGCListener
+class FSentryPerfGCMonitor
 {
 public:
-	explicit FSentryGCListener(TSharedPtr<FSentryPerformanceMetricAttributes> InMetricAttributes);
-	~FSentryGCListener();
+	explicit FSentryPerfGCMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes);
+	~FSentryPerfGCMonitor();
 
 private:
 	void OnGCStarted();
@@ -27,7 +27,7 @@ private:
 
 	double GCStartTime;
 
-	TSharedPtr<FSentryPerformanceMetricAttributes> MetricAttributes;
+	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 
 	FDelegateHandle GCStartedHandle;
 	FDelegateHandle PostGCHandle;

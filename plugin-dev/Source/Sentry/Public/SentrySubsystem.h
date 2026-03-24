@@ -30,10 +30,10 @@ class ISentrySubsystem;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
 class FSentryHangWatcher;
-class FSentryPerformanceConsumer;
-class FSentryPerformanceMetricAttributes;
-class FSentryGCListener;
-class FSentryGameStatsMonitor;
+class FSentryPerfFrameTimeMonitor;
+class FSentryPerfMetricAttributes;
+class FSentryPerfGCMonitor;
+class FSentryPerfGameStatsMonitor;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -636,8 +636,8 @@ private:
 
 	TSharedPtr<FSentryHangWatcher> HangWatcher;
 
-	TSharedPtr<FSentryPerformanceMetricAttributes> PerformanceMetricAttributes;
-	TSharedPtr<FSentryPerformanceConsumer> PerformanceConsumer;
-	TSharedPtr<FSentryGCListener> GCListener;
-	TSharedPtr<FSentryGameStatsMonitor> GameStatsMonitor;
+	TSharedPtr<FSentryPerfMetricAttributes> PerfMetricAttributes;
+	TSharedPtr<FSentryPerfFrameTimeMonitor> PerfFrameTimeMonitor;
+	TSharedPtr<FSentryPerfGameStatsMonitor> PerfGameStatsMonitor;
+	TSharedPtr<FSentryPerfGCMonitor> PerfGCMonitor;
 };

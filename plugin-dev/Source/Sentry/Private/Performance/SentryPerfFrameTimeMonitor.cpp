@@ -1,18 +1,18 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "Utils/SentryPerformanceConsumer.h"
+#include "Performance/SentryPerfFrameTimeMonitor.h"
+#include "Performance/SentryPerfMetricAttributes.h"
 
 #include "SentryModule.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryUnit.h"
-#include "Utils/SentryPerformanceMetricAttributes.h"
 
 #include "Engine/Engine.h"
 
 extern ENGINE_API float GAverageFPS;
 
-FSentryPerformanceConsumer::FSentryPerformanceConsumer(TSharedPtr<FSentryPerformanceMetricAttributes> InMetricAttributes)
+FSentryPerfFrameTimeMonitor::FSentryPerfFrameTimeMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes)
 	: SampleInterval(1)
 	, FrameCount(0)
 	, MetricAttributes(InMetricAttributes)
@@ -23,11 +23,11 @@ FSentryPerformanceConsumer::FSentryPerformanceConsumer(TSharedPtr<FSentryPerform
 	SampleInterval = FMath::Max(Settings->FrameTimeSampleInterval, 1);
 }
 
-void FSentryPerformanceConsumer::StartCharting()
+void FSentryPerfFrameTimeMonitor::StartCharting()
 {
 }
 
-void FSentryPerformanceConsumer::ProcessFrame(const FFrameData& FrameData)
+void FSentryPerfFrameTimeMonitor::ProcessFrame(const FFrameData& FrameData)
 {
 	++FrameCount;
 
@@ -53,6 +53,6 @@ void FSentryPerformanceConsumer::ProcessFrame(const FFrameData& FrameData)
 	Sentry->AddGaugeWithAttributes(TEXT("game.perf.fps"), GAverageFPS, FSentryUnit(ESentryUnit::None), Attributes);
 }
 
-void FSentryPerformanceConsumer::StopCharting()
+void FSentryPerfFrameTimeMonitor::StopCharting()
 {
 }

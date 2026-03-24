@@ -5,7 +5,7 @@
 #include "ChartCreation.h"
 #include "CoreMinimal.h"
 
-class FSentryPerformanceMetricAttributes;
+class FSentryPerfMetricAttributes;
 
 /**
  * Consumes per-frame performance data from the engine's FPerformanceTrackingSystem.
@@ -17,10 +17,10 @@ class FSentryPerformanceMetricAttributes;
  * - game.perf.render_thread (distribution, milliseconds) — render thread work time
  * - game.perf.gpu (distribution, milliseconds) — GPU frame time
  */
-class FSentryPerformanceConsumer : public IPerformanceDataConsumer
+class FSentryPerfFrameTimeMonitor : public IPerformanceDataConsumer
 {
 public:
-	explicit FSentryPerformanceConsumer(TSharedPtr<FSentryPerformanceMetricAttributes> InMetricAttributes);
+	explicit FSentryPerfFrameTimeMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes);
 
 	// IPerformanceDataConsumer
 	virtual void StartCharting() override;
@@ -30,5 +30,5 @@ public:
 private:
 	int32 SampleInterval;
 	uint64 FrameCount;
-	TSharedPtr<FSentryPerformanceMetricAttributes> MetricAttributes;
+	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 };
