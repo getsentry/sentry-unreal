@@ -112,7 +112,7 @@ bool FSentryPlatformDetectionUtils::IsSteamDeck()
 		FString Family;
 		if (FWindowsPlatformMisc::QueryRegKey(HKEY_LOCAL_MACHINE, BiosKey, TEXT("SystemFamily"), Family) &&
 			(Family.Equals(TEXT("Aerith"), ESearchCase::CaseSensitive) ||
-			 Family.Equals(TEXT("Sephiroth"), ESearchCase::CaseSensitive)))
+				Family.Equals(TEXT("Sephiroth"), ESearchCase::CaseSensitive)))
 		{
 			UE_LOG(LogSentrySdk, Log, TEXT("Detected Steam Deck hardware via registry (family: %s)"), *Family);
 			return true;
@@ -224,7 +224,7 @@ TMap<FString, FString> FSentryPlatformDetectionUtils::ParseOsRelease()
 		// Strip enclosing quotes
 		if (Value.Len() >= 2 &&
 			((Value.StartsWith(TEXT("\"")) && Value.EndsWith(TEXT("\""))) ||
-			 (Value.StartsWith(TEXT("'")) && Value.EndsWith(TEXT("'")))))
+				(Value.StartsWith(TEXT("'")) && Value.EndsWith(TEXT("'")))))
 		{
 			Value = Value.Mid(1, Value.Len() - 2);
 		}
