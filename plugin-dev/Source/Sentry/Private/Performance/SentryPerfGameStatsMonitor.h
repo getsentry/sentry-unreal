@@ -15,7 +15,7 @@ class FSentryPerfMetricAttributes;
  *
  * Emits:
  * - game.perf.used_memory (gauge, bytes) — process physical memory usage
- * - game.perf.uobject_count (gauge) — number of active UObjects
+ * - game.perf.uobject_count (gauge) — number of active UObjects (UE 5.3+)
  */
 class FSentryPerfGameStatsMonitor
 {
