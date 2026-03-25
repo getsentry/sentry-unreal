@@ -21,16 +21,23 @@ public:
 	static FWineProtonInfo DetectWineProton();
 
 	/**
-	 * Detects if running on SteamOS by checking environment variables
-	 * Does not rely on file system access or hardware detection
+	 * Detects if running on Steam Deck hardware using SMBIOS/DMI data.
+	 * Checks manufacturer "Valve" with product family "Aerith" (LCD) or "Sephiroth" (OLED).
+	 * Works on native Linux (via /sys/class/dmi/id/) and on Windows under Wine/Proton (via registry).
+	 *
+	 * @return true if Steam Deck hardware is detected
+	 */
+	static bool IsSteamDeck();
+
+	/**
+	 * Detects if running on SteamOS by parsing /etc/os-release
 	 *
 	 * @return true if SteamOS is detected
 	 */
 	static bool IsSteamOS();
 
 	/**
-	 * Detects if running on Bazzite by checking environment variables
-	 * Does not rely on file system access or hardware detection
+	 * Detects if running on Bazzite by parsing /etc/os-release
 	 *
 	 * @return true if Bazzite is detected
 	 */
@@ -58,4 +65,10 @@ public:
 private:
 	/** Parses Wine version string to extract version and Proton information */
 	static void ParseWineVersion(const FString& VersionString, FWineProtonInfo& OutInfo);
+
+	/**
+	 * Parses /etc/os-release (or /run/host/etc/os-release) and returns a map of key-value pairs.
+	 * On Windows under Wine/Proton, reads from the Z: drive mapping.
+	 */
+	static TMap<FString, FString> ParseOsRelease();
 };
