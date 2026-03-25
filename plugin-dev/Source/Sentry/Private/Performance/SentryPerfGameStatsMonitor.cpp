@@ -56,8 +56,10 @@ bool FSentryPerfGameStatsMonitor::OnTick(float DeltaTime)
 	const FPlatformMemoryStats MemStats = FPlatformMemory::GetStats();
 	Sentry->AddGaugeWithAttributes(TEXT("game.perf.used_memory"), static_cast<float>(MemStats.UsedPhysical), FSentryUnit(ESentryUnit::Byte), Attributes);
 
+#if !UE_VERSION_OLDER_THAN(5, 3, 0)
 	const int32 UObjectCount = GUObjectArray.GetObjectArrayNumMinusAvailable();
 	Sentry->AddGaugeWithAttributes(TEXT("game.perf.uobject_count"), static_cast<float>(UObjectCount), FSentryUnit(ESentryUnit::None), Attributes);
+#endif
 
 	return true;
 }
