@@ -26,6 +26,8 @@ protected:
 	virtual bool IsScreenshotSupported() const override { return true; }
 	virtual bool IsHangTrackingSupported() const override { return true; }
 
+	virtual FString GetDeviceType() const override;
+
 private:
 	/** Wine/Proton detection info */
 	FWineProtonInfo WineProtonInfo;

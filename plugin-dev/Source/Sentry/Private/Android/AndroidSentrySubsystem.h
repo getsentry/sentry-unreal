@@ -55,6 +55,7 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	virtual void HandleAssert() override;
+	virtual FString GetDeviceType() const override { return TEXT("Handheld"); }
 
 	FString TryCaptureScreenshot() const;
 

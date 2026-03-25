@@ -10,6 +10,7 @@ public:
 	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
 
 	virtual void HandleAssert() override;
+	virtual FString GetDeviceType() const override { return TEXT("Handheld"); }
 
 	virtual FString TryCaptureScreenshot() const override;
 

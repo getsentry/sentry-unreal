@@ -77,6 +77,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
 	SettingsJson->SetBoolField(TEXT("enableMetrics"), settings->EnableMetrics);
+	SettingsJson->SetStringField(TEXT("deviceType"), GetDeviceType());
 	if (settings->EnableOfflineCaching)
 	{
 		SettingsJson->SetNumberField(TEXT("maxCacheItems"), settings->CacheMaxItems);
