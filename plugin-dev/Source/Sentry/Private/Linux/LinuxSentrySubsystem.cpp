@@ -120,7 +120,7 @@ void FLinuxSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Options
 
 FString FLinuxSentrySubsystem::GetDeviceType() const
 {
-	if (FSentryPlatformDetectionUtils::IsSteamOS() || FSentryPlatformDetectionUtils::IsBazzite())
+	if (FSentryPlatformDetectionUtils::IsSteamDeck())
 	{
 		return TEXT("Handheld");
 	}

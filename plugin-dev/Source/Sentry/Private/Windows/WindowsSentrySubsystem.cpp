@@ -127,7 +127,7 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 
 FString FWindowsSentrySubsystem::GetDeviceType() const
 {
-	if (WineProtonInfo.bIsRunningUnderWine && (FSentryPlatformDetectionUtils::IsSteamOS() || FSentryPlatformDetectionUtils::IsBazzite()))
+	if (FSentryPlatformDetectionUtils::IsSteamDeck())
 	{
 		return TEXT("Handheld");
 	}
