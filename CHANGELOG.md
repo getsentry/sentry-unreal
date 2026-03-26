@@ -11,9 +11,9 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.34.1 to v8.36.0 ([#1294](https://github.com/getsentry/sentry-unreal/pull/1294))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8360)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.34.1...8.36.0)
+- Bump Java SDK from v8.34.1 to v8.37.0 ([#1294](https://github.com/getsentry/sentry-unreal/pull/1294), [#1311](https://github.com/getsentry/sentry-unreal/pull/1311))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8370)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.34.1...8.37.0)
 - Bump Android Gradle Plugin from v6.1.0 to v6.2.0 ([#1296](https://github.com/getsentry/sentry-unreal/pull/1296))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#620)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.1.0...6.2.0)
