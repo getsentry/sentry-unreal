@@ -14,6 +14,8 @@ public:
 
 	virtual FString TryCaptureScreenshot() const override;
 
+	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
+
 protected:
 	virtual FString GetGameLogPath() const override;
 	virtual FString GetLatestGameLog() const override;

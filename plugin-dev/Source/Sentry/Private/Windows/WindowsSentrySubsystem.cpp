@@ -125,4 +125,14 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
 }
 
+FString FWindowsSentrySubsystem::GetDeviceType() const
+{
+	if (FSentryPlatformDetectionUtils::IsSteamDeck())
+	{
+		return TEXT("Handheld");
+	}
+
+	return FMicrosoftSentrySubsystem::GetDeviceType();
+}
+
 #endif // USE_SENTRY_NATIVE

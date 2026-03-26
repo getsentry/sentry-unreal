@@ -4,6 +4,8 @@
 
 #include "SentryDefines.h"
 
+#include "Misc/FileHelper.h"
+
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include "Windows/HideWindowsPlatformTypes.h"
@@ -81,74 +83,66 @@ FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
 	return Info;
 }
 
+bool FSentryPlatformDetectionUtils::IsSteamDeck()
+{
+#if PLATFORM_LINUX
+	FString Manufacturer;
+	FFileHelper::LoadFileToString(Manufacturer, TEXT("/sys/class/dmi/id/sys_vendor"));
+	Manufacturer.TrimStartAndEndInline();
+	if (!Manufacturer.Equals(TEXT("Valve"), ESearchCase::CaseSensitive))
+	{
+		return false;
+	}
+
+	FString Family;
+	FFileHelper::LoadFileToString(Family, TEXT("/sys/class/dmi/id/product_family"));
+	Family.TrimStartAndEndInline();
+	if (Family.Equals(TEXT("Aerith"), ESearchCase::CaseSensitive) ||
+		Family.Equals(TEXT("Sephiroth"), ESearchCase::CaseSensitive))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected Steam Deck hardware (family: %s)"), *Family);
+		return true;
+	}
+#elif PLATFORM_WINDOWS
+	FString Manufacturer;
+	const TCHAR* BiosKey = TEXT("Hardware\\Description\\System\\BIOS");
+	if (FWindowsPlatformMisc::QueryRegKey(HKEY_LOCAL_MACHINE, BiosKey, TEXT("SystemManufacturer"), Manufacturer) &&
+		Manufacturer.Equals(TEXT("Valve"), ESearchCase::CaseSensitive))
+	{
+		FString Family;
+		if (FWindowsPlatformMisc::QueryRegKey(HKEY_LOCAL_MACHINE, BiosKey, TEXT("SystemFamily"), Family) &&
+			(Family.Equals(TEXT("Aerith"), ESearchCase::CaseSensitive) ||
+				Family.Equals(TEXT("Sephiroth"), ESearchCase::CaseSensitive)))
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("Detected Steam Deck hardware via registry (family: %s)"), *Family);
+			return true;
+		}
+	}
+#endif
+	return false;
+}
+
 bool FSentryPlatformDetectionUtils::IsSteamOS()
 {
-	// Check for multiple SteamOS-specific indicators
-
-	// Check for explicit SteamOS variable (Gaming Mode)
-	FString SteamOSVar = FPlatformMisc::GetEnvironmentVariable(TEXT("SteamOS"));
-	if (!SteamOSVar.IsEmpty())
+	TMap<FString, FString> OsRelease = ParseOsRelease();
+	const FString* Name = OsRelease.Find(TEXT("NAME"));
+	if (Name && Name->Equals(TEXT("SteamOS"), ESearchCase::IgnoreCase))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via SteamOS environment variable"));
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via os-release"));
 		return true;
 	}
-
-	// Check for HOME directory containing "deck" user (common on Steam Deck/SteamOS)
-	FString HomeDir = FPlatformMisc::GetEnvironmentVariable(TEXT("HOME"));
-	if (HomeDir.Contains(TEXT("/home/deck"), ESearchCase::IgnoreCase))
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via HOME directory path"));
-		return true;
-	}
-
-	// Check for USER environment variable
-	FString UserVar = FPlatformMisc::GetEnvironmentVariable(TEXT("USER"));
-	if (UserVar.Equals(TEXT("deck"), ESearchCase::IgnoreCase))
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via USER environment variable (deck)"));
-		return true;
-	}
-
-	// Check for STEAM_RUNTIME (indicates Steam runtime environment)
-	FString SteamRuntime = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_RUNTIME"));
-	if (!SteamRuntime.IsEmpty() && (SteamRuntime.Contains(TEXT("steamrt")) || SteamRuntime.Contains(TEXT("steam-runtime"))))
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via STEAM_RUNTIME environment variable"));
-		return true;
-	}
-
-	// Check for SteamOS-specific XDG directories
-	FString XdgCurrentDesktop = FPlatformMisc::GetEnvironmentVariable(TEXT("XDG_CURRENT_DESKTOP"));
-	if (XdgCurrentDesktop.Contains(TEXT("gamescope"), ESearchCase::IgnoreCase))
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected SteamOS via XDG_CURRENT_DESKTOP (gamescope)"));
-		return true;
-	}
-
 	return false;
 }
 
 bool FSentryPlatformDetectionUtils::IsBazzite()
 {
-	// Bazzite sets specific environment variables
-	FString ImageName = FPlatformMisc::GetEnvironmentVariable(TEXT("IMAGE_NAME"));
-	FString ImageVendor = FPlatformMisc::GetEnvironmentVariable(TEXT("IMAGE_VENDOR"));
-	FString ImageFlavor = FPlatformMisc::GetEnvironmentVariable(TEXT("IMAGE_FLAVOR"));
-
-	// Check for Bazzite-specific image name
-	if (ImageName.Contains(TEXT("bazzite"), ESearchCase::IgnoreCase))
+	TMap<FString, FString> OsRelease = ParseOsRelease();
+	const FString* Name = OsRelease.Find(TEXT("NAME"));
+	if (Name && Name->Equals(TEXT("Bazzite"), ESearchCase::IgnoreCase))
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected Bazzite via IMAGE_NAME environment variable"));
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected Bazzite via os-release"));
 		return true;
 	}
-
-	// Check for Bazzite vendor
-	if (ImageVendor.Contains(TEXT("bazzite"), ESearchCase::IgnoreCase))
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Detected Bazzite via IMAGE_VENDOR environment variable"));
-		return true;
-	}
-
 	return false;
 }
 
@@ -175,6 +169,70 @@ FString FSentryPlatformDetectionUtils::GetRuntimeVersion(const FWineProtonInfo& 
 		return WineProtonInfo.ProtonBuildName;
 	}
 	return WineProtonInfo.Version;
+}
+
+TMap<FString, FString> FSentryPlatformDetectionUtils::ParseOsRelease()
+{
+	TMap<FString, FString> Fields;
+
+	// Determine the os-release file path.
+	// Prefer /run/host/etc/os-release (host OS when in Steam Runtime container),
+	// fall back to /etc/os-release.
+	FString Contents;
+	bool bLoaded = false;
+
+#if PLATFORM_WINDOWS
+	// Under Wine/Proton, Z:\ maps to the Linux root filesystem
+	bLoaded = FFileHelper::LoadFileToString(Contents, TEXT("Z:/run/host/etc/os-release"));
+	if (!bLoaded)
+	{
+		bLoaded = FFileHelper::LoadFileToString(Contents, TEXT("Z:/etc/os-release"));
+	}
+#elif PLATFORM_LINUX
+	bLoaded = FFileHelper::LoadFileToString(Contents, TEXT("/run/host/etc/os-release"));
+	if (!bLoaded)
+	{
+		bLoaded = FFileHelper::LoadFileToString(Contents, TEXT("/etc/os-release"));
+	}
+#endif
+
+	if (!bLoaded)
+	{
+		return Fields;
+	}
+
+	// Parse KEY=VALUE or KEY="VALUE" lines
+	TArray<FString> Lines;
+	Contents.ParseIntoArrayLines(Lines);
+	for (const FString& Line : Lines)
+	{
+		FString Trimmed = Line.TrimStartAndEnd();
+		if (Trimmed.IsEmpty() || Trimmed.StartsWith(TEXT("#")))
+		{
+			continue;
+		}
+
+		int32 EqPos;
+		if (!Trimmed.FindChar(TEXT('='), EqPos))
+		{
+			continue;
+		}
+
+		FString Key = Trimmed.Left(EqPos);
+		FString Value = Trimmed.Mid(EqPos + 1);
+
+		// Strip enclosing quotes
+		if (Value.Len() >= 2 &&
+			((Value.StartsWith(TEXT("\"")) && Value.EndsWith(TEXT("\""))) ||
+				(Value.StartsWith(TEXT("'")) && Value.EndsWith(TEXT("'")))))
+		{
+			Value = Value.Mid(1, Value.Len() - 2);
+		}
+
+		Fields.Add(Key, Value);
+	}
+
+	return Fields;
 }
 
 void FSentryPlatformDetectionUtils::ParseWineVersion(const FString& VersionString, FWineProtonInfo& OutInfo)

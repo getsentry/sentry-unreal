@@ -968,6 +968,7 @@ void USentrySubsystem::AddDeviceContext()
 	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();
 
 	TMap<FString, FSentryVariant> DeviceContext;
+	DeviceContext.Add(TEXT("device_type"), SubsystemNativeImpl->GetDeviceType());
 	DeviceContext.Add(TEXT("cpu_description"), FPlatformMisc::GetCPUBrand());
 	DeviceContext.Add(TEXT("number_of_cores"), FString::FromInt(FPlatformMisc::NumberOfCores()));
 	DeviceContext.Add(TEXT("number_of_cores_including_hyperthreads"), FString::FromInt(FPlatformMisc::NumberOfCoresIncludingHyperthreads()));

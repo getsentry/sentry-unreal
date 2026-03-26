@@ -23,6 +23,8 @@ protected:
 
 	virtual bool IsScreenshotSupported() const override { return true; }
 	virtual bool IsHangTrackingSupported() const override { return true; }
+
+	virtual FString GetDeviceType() const override;
 };
 
 typedef FLinuxSentrySubsystem FPlatformSentrySubsystem;

@@ -8,6 +8,7 @@
 - Add automatic frame time metrics ([#1293](https://github.com/getsentry/sentry-unreal/pull/1293))
 - Add automatic game stats metrics ([#1305](https://github.com/getsentry/sentry-unreal/pull/1305))
 - Add automatic GC pause metrics ([#1302](https://github.com/getsentry/sentry-unreal/pull/1302))
+- Add `device_type` to device context ([#1308](https://github.com/getsentry/sentry-unreal/pull/1308))
 
 ### Dependencies
 

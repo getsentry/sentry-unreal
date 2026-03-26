@@ -118,4 +118,14 @@ void FLinuxSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Options
 	sentry_options_set_external_crash_reporter_path(Options, TCHAR_TO_UTF8(*CrashReporterPath));
 }
 
+FString FLinuxSentrySubsystem::GetDeviceType() const
+{
+	if (FSentryPlatformDetectionUtils::IsSteamDeck())
+	{
+		return TEXT("Handheld");
+	}
+
+	return FGenericPlatformSentrySubsystem::GetDeviceType();
+}
+
 #endif // USE_SENTRY_NATIVE

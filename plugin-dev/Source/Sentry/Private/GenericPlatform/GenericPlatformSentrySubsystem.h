@@ -63,6 +63,7 @@ public:
 
 	virtual void HandleAssert() override {}
 	virtual bool IsHangTrackingSupported() const override { return false; }
+	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler() const;

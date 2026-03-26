@@ -386,6 +386,12 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
         }
 
+        # Device context assertions
+        It "Should have device_type in device context" {
+            $script:MessageEvent.contexts.device | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.device.device_type | Should -Be 'Handheld'
+        }
+
         # Global scope context assertions
         It "Should have custom context from global scope" {
             $script:MessageEvent.contexts.test_context | Should -Not -BeNullOrEmpty
