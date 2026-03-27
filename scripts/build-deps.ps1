@@ -11,7 +11,7 @@
 #   .\build-deps.ps1 -Cocoa -Java                          # Build only Cocoa and Java
 #   .\build-deps.ps1 -Native -NativePath "C:\custom\path"  # Build Native with custom path
 #   .\build-deps.ps1 -All -CocoaPath "C:\custom\path"      # Build all with custom Cocoa path
-#   .\build-deps.ps1 -CrashReporter                        # Build crash reporter from submodule
+#   .\build-deps.ps1 -CrashReporter                        # Build crash reporter
 #
 # Environment variables (used as fallback if custom paths not provided):
 #   SENTRY_COCOA_PATH - Path to local sentry-cocoa repository
