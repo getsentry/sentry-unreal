@@ -435,5 +435,13 @@ if ($buildJava)
 
 if ($buildCrashReporter)
 {
-    buildSentryCrashReporter
+    if ([string]::IsNullOrEmpty($CrashReporterPath))
+    {
+        Write-Warning "Crash Reporter build requested but path is not set."
+        Write-Warning "Provide -CrashReporterPath parameter or set SENTRY_CRASH_REPORTER_PATH environment variable."
+    }
+    else
+    {
+        buildSentryCrashReporter
+    }
 }
