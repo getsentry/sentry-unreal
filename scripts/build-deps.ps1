@@ -4,7 +4,7 @@
 # * sentry-native - for Windows support (can be built only on Windows)
 # * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
 # * sentry-java - for Android support (can be built both on Windows and MacOS)
-# * sentry-crash-reporter - external crash reporter (can be built on Windows and MacOS)
+# * sentry-crash-reporter - external crash reporter (can be built on Windows, MacOS and Linux)
 #
 # Usage:
 #   .\build-deps.ps1 -All                                  # Build all SDKs for current platform
@@ -355,6 +355,21 @@ function buildSentryCrashReporter()
         $runtimeId = "win-x64"
         $platformDir = "Win64"
         $executableName = "Sentry.CrashReporter.exe"
+    }
+    elseif ($IsLinux)
+    {
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+        if ($arch -eq [System.Runtime.InteropServices.Architecture]::Arm64)
+        {
+            $runtimeId = "linux-arm64"
+            $platformDir = "LinuxArm64"
+        }
+        else
+        {
+            $runtimeId = "linux-x64"
+            $platformDir = "Linux"
+        }
+        $executableName = "Sentry.CrashReporter"
     }
     else
     {
