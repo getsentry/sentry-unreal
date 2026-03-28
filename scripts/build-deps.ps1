@@ -4,26 +4,31 @@
 # * sentry-native - for Windows support (can be built only on Windows)
 # * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
 # * sentry-java - for Android support (can be built both on Windows and MacOS)
+# * sentry-crash-reporter - external crash reporter (can be built on Windows, MacOS and Linux)
 #
 # Usage:
 #   .\build-deps.ps1 -All                                  # Build all SDKs for current platform
 #   .\build-deps.ps1 -Cocoa -Java                          # Build only Cocoa and Java
 #   .\build-deps.ps1 -Native -NativePath "C:\custom\path"  # Build Native with custom path
 #   .\build-deps.ps1 -All -CocoaPath "C:\custom\path"      # Build all with custom Cocoa path
+#   .\build-deps.ps1 -CrashReporter                        # Build crash reporter
 #
 # Environment variables (used as fallback if custom paths not provided):
 #   SENTRY_COCOA_PATH - Path to local sentry-cocoa repository
 #   SENTRY_NATIVE_PATH - Path to local sentry-native repository
 #   SENTRY_JAVA_PATH - Path to local sentry-java repository
+#   SENTRY_CRASH_REPORTER_PATH - Path to local sentry-crash-reporter repository
 
 param(
     [switch]$All,
     [switch]$Cocoa,
     [switch]$Native,
     [switch]$Java,
+    [switch]$CrashReporter,
     [string]$CocoaPath,
     [string]$NativePath,
-    [string]$JavaPath
+    [string]$JavaPath,
+    [string]$CrashReporterPath
 )
 
 Set-StrictMode -Version latest
@@ -43,28 +48,32 @@ if ($All)
     {
         $Native = $true
         $Java = $true
+        $CrashReporter = $true
     }
     else
     {
         $Cocoa = $true
         $Java = $true
+        $CrashReporter = $true
     }
 }
 
 # Check if at least one SDK is selected
-if (-not ($Cocoa -or $Native -or $Java))
+if (-not ($Cocoa -or $Native -or $Java -or $CrashReporter))
 {
-    Write-Host "Error: No SDK specified. Use -All or specify individual SDKs (-Cocoa, -Native, -Java)" -ForegroundColor Red
+    Write-Host "Error: No SDK specified. Use -All or specify individual SDKs (-Cocoa, -Native, -Java, -CrashReporter)" -ForegroundColor Red
     Write-Host ""
     Write-Host "Examples:"
     Write-Host "  .\build-deps.ps1 -All"
     Write-Host "  .\build-deps.ps1 -Cocoa -Java"
     Write-Host "  .\build-deps.ps1 -Native -NativePath 'D:\projects\sentry-native'"
+    Write-Host "  .\build-deps.ps1 -CrashReporter"
     Write-Host ""
     Write-Host "Environment variables (used as fallback):"
-    Write-Host "  SENTRY_COCOA_PATH  - Path to local sentry-cocoa repository"
-    Write-Host "  SENTRY_NATIVE_PATH - Path to local sentry-native repository"
-    Write-Host "  SENTRY_JAVA_PATH   - Path to local sentry-java repository"
+    Write-Host "  SENTRY_COCOA_PATH           - Path to local sentry-cocoa repository"
+    Write-Host "  SENTRY_NATIVE_PATH          - Path to local sentry-native repository"
+    Write-Host "  SENTRY_JAVA_PATH            - Path to local sentry-java repository"
+    Write-Host "  SENTRY_CRASH_REPORTER_PATH  - Path to local sentry-crash-reporter repository"
     exit 1
 }
 
@@ -72,11 +81,13 @@ if (-not ($Cocoa -or $Native -or $Java))
 $buildCocoa = $Cocoa
 $buildNative = $Native
 $buildJava = $Java
+$buildCrashReporter = $CrashReporter
 
 # Resolve paths: use custom path if provided, otherwise fallback to environment variable
 if ([string]::IsNullOrEmpty($CocoaPath)) { $CocoaPath = $env:SENTRY_COCOA_PATH }
 if ([string]::IsNullOrEmpty($NativePath)) { $NativePath = $env:SENTRY_NATIVE_PATH }
 if ([string]::IsNullOrEmpty($JavaPath)) { $JavaPath = $env:SENTRY_JAVA_PATH }
+if ([string]::IsNullOrEmpty($CrashReporterPath)) { $CrashReporterPath = $env:SENTRY_CRASH_REPORTER_PATH }
 
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 
@@ -330,6 +341,72 @@ function buildSentryNative()
     Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
 }
 
+function buildSentryCrashReporter()
+{
+    if (-not (Test-Path $CrashReporterPath))
+    {
+        throw "Sentry Crash Reporter path does not exist: $CrashReporterPath"
+    }
+
+    Write-Host "Building Sentry Crash Reporter using local repository at: $CrashReporterPath"
+
+    if ($isWindowsPlatform)
+    {
+        $runtimeId = "win-x64"
+        $platformDir = "Win64"
+        $executableName = "Sentry.CrashReporter.exe"
+    }
+    elseif ($IsLinux)
+    {
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+        if ($arch -eq [System.Runtime.InteropServices.Architecture]::Arm64)
+        {
+            $runtimeId = "linux-arm64"
+            $platformDir = "LinuxArm64"
+        }
+        else
+        {
+            $runtimeId = "linux-x64"
+            $platformDir = "Linux"
+        }
+        $executableName = "Sentry.CrashReporter"
+    }
+    else
+    {
+        $runtimeId = "osx-arm64"
+        $platformDir = "Mac"
+        $executableName = "Sentry.CrashReporter"
+    }
+
+    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "sentry-crash-reporter-build"
+
+    if (Test-Path $tempDir)
+    {
+        Remove-Item $tempDir -Recurse -Force
+    }
+
+    dotnet publish `
+        -f net9.0-desktop `
+        -r $runtimeId `
+        "$CrashReporterPath/Sentry.CrashReporter/Sentry.CrashReporter.csproj" `
+        -o $tempDir
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Failed to build Sentry Crash Reporter"
+    }
+
+    $destDir = "$outDir/$platformDir"
+    New-Item $destDir -ItemType Directory -Force > $null
+
+    Copy-Item "$tempDir/$executableName" -Destination "$destDir/$executableName"
+
+    # Cleanup
+    Remove-Item $tempDir -Recurse -Force
+
+    Write-Host "Successfully built Sentry Crash Reporter for $platformDir"
+}
+
 # Build SDKs based on flags
 if ($buildCocoa)
 {
@@ -368,5 +445,18 @@ if ($buildJava)
     else
     {
         buildSentryJava
+    }
+}
+
+if ($buildCrashReporter)
+{
+    if ([string]::IsNullOrEmpty($CrashReporterPath))
+    {
+        Write-Warning "Crash Reporter build requested but path is not set."
+        Write-Warning "Provide -CrashReporterPath parameter or set SENTRY_CRASH_REPORTER_PATH environment variable."
+    }
+    else
+    {
+        buildSentryCrashReporter
     }
 }
