@@ -33,6 +33,7 @@
 #include "Performance/SentryPerfGCMonitor.h"
 #include "Performance/SentryPerfGameStatsMonitor.h"
 #include "Performance/SentryPerfMetricAttributes.h"
+#include "Performance/SentryPerfNetworkMonitor.h"
 
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
@@ -243,6 +244,16 @@ void USentrySubsystem::Close()
 	{
 		PerfGameStatsMonitor.Reset();
 	}
+
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+	if (OnNetDriverCreatedHandle.IsValid())
+	{
+		FWorldDelegates::OnNetDriverCreated.Remove(OnNetDriverCreatedHandle);
+		OnNetDriverCreatedHandle.Reset();
+	}
+
+	PerfNetworkMonitor.Reset();
+#endif
 
 	if (PerfMetricAttributes.IsValid())
 	{
@@ -1199,6 +1210,9 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
 	bTrackPerformanceMetrics |= Settings->EnableAutoGCMetrics;
 #endif
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+	bTrackPerformanceMetrics |= Settings->EnableAutoNetworkMetrics;
+#endif
 
 	if (!bTrackPerformanceMetrics)
 	{
@@ -1226,6 +1240,21 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 	if (Settings->EnableAutoGCMetrics)
 	{
 		PerfGCMonitor = MakeShared<FSentryPerfGCMonitor>(PerfMetricAttributes);
+	}
+#endif
+
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+	if (Settings->EnableAutoNetworkMetrics)
+	{
+		PerfNetworkMonitor = MakeShared<FSentryPerfNetworkMonitor>(PerfMetricAttributes);
+
+		OnNetDriverCreatedHandle = FWorldDelegates::OnNetDriverCreated.AddWeakLambda(this, [this](UWorld* World, UNetDriver* NetDriver)
+		{
+			if (PerfNetworkMonitor.IsValid() && NetDriver)
+			{
+				PerfNetworkMonitor->SetNetDriver(NetDriver);
+			}
+		});
 	}
 #endif
 }
