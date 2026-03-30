@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Subsystems/EngineSubsystem.h"
 
 #include "SentryDataTypes.h"
@@ -34,6 +35,10 @@ class FSentryPerfFrameTimeMonitor;
 class FSentryPerfMetricAttributes;
 class FSentryPerfGCMonitor;
 class FSentryPerfGameStatsMonitor;
+
+#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+class FSentryPerfNetworkMonitor;
+#endif
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -640,4 +645,9 @@ private:
 	TSharedPtr<FSentryPerfFrameTimeMonitor> PerfFrameTimeMonitor;
 	TSharedPtr<FSentryPerfGameStatsMonitor> PerfGameStatsMonitor;
 	TSharedPtr<FSentryPerfGCMonitor> PerfGCMonitor;
+
+#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+	TSharedPtr<FSentryPerfNetworkMonitor> PerfNetworkMonitor;
+	FDelegateHandle OnNetDriverCreatedHandle;
+#endif
 };

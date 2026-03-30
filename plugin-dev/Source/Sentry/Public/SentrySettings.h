@@ -373,6 +373,16 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoGCMetrics;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect network metrics (UE 5.4+)", ToolTip = "Emit network performance metrics (ping, bandwidth, packet loss, jitter) during active multiplayer sessions. Only active when a network driver is present. Requires Unreal Engine 5.4 or later.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoNetworkMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Network metrics sample interval (seconds)", ToolTip = "How often to sample network metrics. Default: 10 seconds.",
+			EditCondition = "EnableAutoNetworkMetrics && EnableMetrics", ClampMin = 1))
+	int32 NetworkMetricsSampleInterval;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
 	int32 MaxBreadcrumbs;
