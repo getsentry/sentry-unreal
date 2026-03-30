@@ -32,8 +32,8 @@
 #include "Performance/SentryPerfFrameTimeMonitor.h"
 #include "Performance/SentryPerfGCMonitor.h"
 #include "Performance/SentryPerfGameStatsMonitor.h"
-#include "Performance/SentryPerfNetworkMonitor.h"
 #include "Performance/SentryPerfMetricAttributes.h"
+#include "Performance/SentryPerfNetworkMonitor.h"
 
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"

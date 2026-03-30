@@ -19,22 +19,21 @@
 #include "Net/NetworkMetricsDatabase.h"
 #include "Net/NetworkMetricsDefs.h"
 
-const TArray<FSentryNetworkMetricMapping> FSentryPerfNetworkMonitor::MetricMappings =
-{
-	{ UE::Net::Metric::InRate,            TEXT("game.perf.net.in_rate"),             ESentryUnit::Byte,        false },
-	{ UE::Net::Metric::OutRate,           TEXT("game.perf.net.out_rate"),            ESentryUnit::Byte,        false },
-	{ UE::Net::Metric::InPackets,         TEXT("game.perf.net.in_packets"),          ESentryUnit::None,        false },
-	{ UE::Net::Metric::OutPackets,        TEXT("game.perf.net.out_packets"),         ESentryUnit::None,        false },
-	{ UE::Net::Metric::InPacketsLost,     TEXT("game.perf.net.in_packets_lost"),     ESentryUnit::None,        false },
-	{ UE::Net::Metric::OutPacketsLost,    TEXT("game.perf.net.out_packets_lost"),    ESentryUnit::None,        false },
-	{ UE::Net::Metric::Ping,              TEXT("game.perf.net.ping"),                ESentryUnit::Millisecond, false },
-	{ UE::Net::Metric::AverageJitterInMS, TEXT("game.perf.net.jitter"),              ESentryUnit::Millisecond, true },
-	{ UE::Net::Metric::NumClients,        TEXT("game.perf.net.num_clients"),         ESentryUnit::None,        false },
-	{ UE::Net::Metric::RawPingClientAvg,  TEXT("game.perf.net.ping_client_avg"),     ESentryUnit::Millisecond, true },
-	{ UE::Net::Metric::RawPingClientMax,  TEXT("game.perf.net.ping_client_max"),     ESentryUnit::Millisecond, false },
-	{ UE::Net::Metric::InRateClientAvg,   TEXT("game.perf.net.in_rate_client_avg"),  ESentryUnit::Byte,        false },
-	{ UE::Net::Metric::OutRateClientAvg,  TEXT("game.perf.net.out_rate_client_avg"), ESentryUnit::Byte,        false },
-	{ UE::Net::Metric::SatConnections,    TEXT("game.perf.net.sat_connections"),     ESentryUnit::None,        false },
+const TArray<FSentryNetworkMetricMapping> FSentryPerfNetworkMonitor::MetricMappings = {
+	{ UE::Net::Metric::InRate, TEXT("game.perf.net.in_rate"), ESentryUnit::Byte, false },
+	{ UE::Net::Metric::OutRate, TEXT("game.perf.net.out_rate"), ESentryUnit::Byte, false },
+	{ UE::Net::Metric::InPackets, TEXT("game.perf.net.in_packets"), ESentryUnit::None, false },
+	{ UE::Net::Metric::OutPackets, TEXT("game.perf.net.out_packets"), ESentryUnit::None, false },
+	{ UE::Net::Metric::InPacketsLost, TEXT("game.perf.net.in_packets_lost"), ESentryUnit::None, false },
+	{ UE::Net::Metric::OutPacketsLost, TEXT("game.perf.net.out_packets_lost"), ESentryUnit::None, false },
+	{ UE::Net::Metric::Ping, TEXT("game.perf.net.ping"), ESentryUnit::Millisecond, false },
+	{ UE::Net::Metric::AverageJitterInMS, TEXT("game.perf.net.jitter"), ESentryUnit::Millisecond, true },
+	{ UE::Net::Metric::NumClients, TEXT("game.perf.net.num_clients"), ESentryUnit::None, false },
+	{ UE::Net::Metric::RawPingClientAvg, TEXT("game.perf.net.ping_client_avg"), ESentryUnit::Millisecond, true },
+	{ UE::Net::Metric::RawPingClientMax, TEXT("game.perf.net.ping_client_max"), ESentryUnit::Millisecond, false },
+	{ UE::Net::Metric::InRateClientAvg, TEXT("game.perf.net.in_rate_client_avg"), ESentryUnit::Byte, false },
+	{ UE::Net::Metric::OutRateClientAvg, TEXT("game.perf.net.out_rate_client_avg"), ESentryUnit::Byte, false },
+	{ UE::Net::Metric::SatConnections, TEXT("game.perf.net.sat_connections"), ESentryUnit::None, false },
 };
 
 FSentryPerfNetworkMonitor::FSentryPerfNetworkMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes)
@@ -95,8 +94,8 @@ bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
 		}
 
 		const float Value = Mapping.bIsFloat
-			? MetricsDb->GetFloat(Mapping.UEName)
-			: static_cast<float>(MetricsDb->GetInt(Mapping.UEName));
+								? MetricsDb->GetFloat(Mapping.UEName)
+								: static_cast<float>(MetricsDb->GetInt(Mapping.UEName));
 
 		Sentry->AddGaugeWithAttributes(Mapping.SentryKey, Value, FSentryUnit(Mapping.Unit), Attributes);
 	}
