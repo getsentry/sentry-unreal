@@ -245,7 +245,7 @@ void USentrySubsystem::Close()
 		PerfGameStatsMonitor.Reset();
 	}
 
-#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
 	if (OnNetDriverCreatedHandle.IsValid())
 	{
 		FWorldDelegates::OnNetDriverCreated.Remove(OnNetDriverCreatedHandle);
@@ -1210,7 +1210,7 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
 	bTrackPerformanceMetrics |= Settings->EnableAutoGCMetrics;
 #endif
-#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
 	bTrackPerformanceMetrics |= Settings->EnableAutoNetworkMetrics;
 #endif
 
@@ -1243,7 +1243,7 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 	}
 #endif
 
-#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
 	if (Settings->EnableAutoNetworkMetrics)
 	{
 		PerfNetworkMonitor = MakeShared<FSentryPerfNetworkMonitor>(PerfMetricAttributes);

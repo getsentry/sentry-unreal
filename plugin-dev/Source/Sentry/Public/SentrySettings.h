@@ -374,7 +374,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableAutoGCMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
-		Meta = (DisplayName = "Collect network metrics (UE 5.4+)", ToolTip = "Emit network performance metrics (ping, bandwidth, packet loss, jitter) during active multiplayer sessions. Only active when a network driver is present. Requires Unreal Engine 5.4 or later.",
+		Meta = (DisplayName = "Collect network metrics (UE 5.7+)", ToolTip = "Emit network performance metrics (ping, bandwidth, packet loss, jitter) during active multiplayer sessions. Only active when a network driver is present. Requires Unreal Engine 5.7 or later.",
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoNetworkMetrics;
 

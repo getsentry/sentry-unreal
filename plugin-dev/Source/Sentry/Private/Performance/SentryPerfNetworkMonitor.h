@@ -8,7 +8,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "SentryUnit.h"
 
-#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
 
 class FSentryPerfMetricAttributes;
 
@@ -55,4 +55,4 @@ private:
 	static const TArray<FSentryNetworkMetricMapping> MetricMappings;
 };
 
-#endif // !UE_VERSION_OLDER_THAN(5, 4, 0)
+#endif // !UE_VERSION_OLDER_THAN(5, 7, 0)

@@ -36,7 +36,7 @@ class FSentryPerfMetricAttributes;
 class FSentryPerfGCMonitor;
 class FSentryPerfGameStatsMonitor;
 
-#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
 class FSentryPerfNetworkMonitor;
 #endif
 
@@ -646,7 +646,7 @@ private:
 	TSharedPtr<FSentryPerfGameStatsMonitor> PerfGameStatsMonitor;
 	TSharedPtr<FSentryPerfGCMonitor> PerfGCMonitor;
 
-#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
 	TSharedPtr<FSentryPerfNetworkMonitor> PerfNetworkMonitor;
 	FDelegateHandle OnNetDriverCreatedHandle;
 #endif

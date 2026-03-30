@@ -4,7 +4,7 @@
 
 #include "Misc/EngineVersionComparison.h"
 
-#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
 
 #include "Performance/SentryPerfMetricAttributes.h"
 
@@ -106,4 +106,4 @@ bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
 	return true;
 }
 
-#endif // !UE_VERSION_OLDER_THAN(5, 4, 0)
+#endif // !UE_VERSION_OLDER_THAN(5, 7, 0)
