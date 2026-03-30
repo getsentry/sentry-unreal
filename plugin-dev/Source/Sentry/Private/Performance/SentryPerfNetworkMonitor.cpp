@@ -61,7 +61,10 @@ void FSentryPerfNetworkMonitor::SetNetDriver(UNetDriver* InNetDriver)
 {
 	WeakNetDriver = InNetDriver;
 
-	UE_LOG(LogSentrySdk, Log, TEXT("Network metrics monitor attached to NetDriver '%s'."), *InNetDriver->GetName());
+	if (InNetDriver)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Network metrics monitor attached to NetDriver '%s'."), *InNetDriver->GetName());
+	}
 }
 
 bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
