@@ -75,10 +75,10 @@ BeforeDiscovery {
         $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
     }
 
-    if ($IsNativeBackend) {
-        # Native backend does not currently support OOM and some other memory-related errors capture (see https://github.com/getsentry/sentry-native/issues/1590)
-        $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -notin @('OutOfMemory', 'MemoryCorruption') }
-    }
+    # if ($IsNativeBackend) {
+    #     # Native backend does not currently support OOM and some other memory-related errors capture (see https://github.com/getsentry/sentry-native/issues/1590)
+    #     $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -notin @('OutOfMemory', 'MemoryCorruption') }
+    # }
 }
 
 BeforeAll {
