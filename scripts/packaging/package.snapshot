@@ -189,6 +189,8 @@ Source/Sentry/Private/Performance/SentryPerfGCMonitor.cpp
 Source/Sentry/Private/Performance/SentryPerfGCMonitor.h
 Source/Sentry/Private/Performance/SentryPerfMetricAttributes.cpp
 Source/Sentry/Private/Performance/SentryPerfMetricAttributes.h
+Source/Sentry/Private/Performance/SentryPerfNetworkMonitor.cpp
+Source/Sentry/Private/Performance/SentryPerfNetworkMonitor.h
 Source/Sentry/Private/SentryAttachment.cpp
 Source/Sentry/Private/SentryBeforeBreadcrumbHandler.cpp
 Source/Sentry/Private/SentryBeforeLogHandler.cpp
