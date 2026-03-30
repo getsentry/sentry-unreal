@@ -1248,7 +1248,7 @@ void USentrySubsystem::ConfigurePerformanceMetrics()
 	{
 		PerfNetworkMonitor = MakeShared<FSentryPerfNetworkMonitor>(PerfMetricAttributes);
 
-		OnNetDriverCreatedHandle = FWorldDelegates::OnNetDriverCreated.AddLambda([this](UWorld* World, UNetDriver* NetDriver)
+		OnNetDriverCreatedHandle = FWorldDelegates::OnNetDriverCreated.AddWeakLambda(this, [this](UWorld* World, UNetDriver* NetDriver)
 		{
 			if (PerfNetworkMonitor.IsValid() && NetDriver)
 			{
