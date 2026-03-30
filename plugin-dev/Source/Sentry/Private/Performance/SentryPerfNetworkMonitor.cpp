@@ -19,18 +19,7 @@
 #include "Net/NetworkMetricsDatabase.h"
 #include "Net/NetworkMetricsDefs.h"
 
-namespace
-{
-
-struct FMetricMapping
-{
-	FName UEName;
-	const TCHAR* SentryKey;
-	ESentryUnit Unit;
-	bool bIsFloat;
-};
-
-const FMetricMapping MetricMappings[] =
+const TArray<FSentryNetworkMetricMapping> FSentryPerfNetworkMonitor::MetricMappings =
 {
 	{ UE::Net::Metric::InRate,            TEXT("game.perf.net.in_rate"),             ESentryUnit::Byte,        false },
 	{ UE::Net::Metric::OutRate,           TEXT("game.perf.net.out_rate"),            ESentryUnit::Byte,        false },
@@ -47,8 +36,6 @@ const FMetricMapping MetricMappings[] =
 	{ UE::Net::Metric::OutRateClientAvg,  TEXT("game.perf.net.out_rate_client_avg"), ESentryUnit::Byte,        false },
 	{ UE::Net::Metric::SatConnections,    TEXT("game.perf.net.sat_connections"),     ESentryUnit::None,        false },
 };
-
-} // anonymous namespace
 
 FSentryPerfNetworkMonitor::FSentryPerfNetworkMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes)
 	: MetricAttributes(InMetricAttributes)
@@ -100,7 +87,7 @@ bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
 
 	const TMap<FString, FSentryVariant>& Attributes = MetricAttributes->GetAttributes();
 
-	for (const FMetricMapping& Mapping : MetricMappings)
+	for (const FSentryNetworkMetricMapping& Mapping : MetricMappings)
 	{
 		if (!MetricsDb->Contains(Mapping.UEName))
 		{

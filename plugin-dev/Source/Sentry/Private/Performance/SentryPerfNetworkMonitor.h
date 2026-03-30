@@ -6,10 +6,19 @@
 #include "CoreMinimal.h"
 #include "Engine/NetDriver.h"
 #include "Misc/EngineVersionComparison.h"
+#include "SentryUnit.h"
 
 #if !UE_VERSION_OLDER_THAN(5, 4, 0)
 
 class FSentryPerfMetricAttributes;
+
+struct FSentryNetworkMetricMapping
+{
+	FName UEName;
+	const TCHAR* SentryKey;
+	ESentryUnit Unit;
+	bool bIsFloat;
+};
 
 /**
  * Periodically polls network metrics from UNetDriver's UNetworkMetricsDatabase and emits them as Sentry metrics.
@@ -42,6 +51,8 @@ private:
 	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 	TWeakObjectPtr<UNetDriver> WeakNetDriver;
 	FTSTicker::FDelegateHandle TickerHandle;
+
+	static const TArray<FSentryNetworkMetricMapping> MetricMappings;
 };
 
 #endif // !UE_VERSION_OLDER_THAN(5, 4, 0)
