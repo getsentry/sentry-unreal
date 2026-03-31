@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Suppress superfluous warnings when detecting for SteamOS ([#1326](https://github.com/getsentry/sentry-unreal/pull/1326))
+
 ### Dependencies
 
 - Bump CLI from v3.3.4 to v3.3.5 ([#1323](https://github.com/getsentry/sentry-unreal/pull/1323))

@@ -87,7 +87,8 @@ bool FSentryPlatformDetectionUtils::IsSteamDeck()
 {
 #if PLATFORM_LINUX
 	FString Manufacturer;
-	FFileHelper::LoadFileToString(Manufacturer, TEXT("/sys/class/dmi/id/sys_vendor"));
+	FFileHelper::LoadFileToString(Manufacturer, TEXT("/sys/class/dmi/id/sys_vendor"),
+		FFileHelper::EHashOptions::None, EFileRead::FILEREAD_Silent);
 	Manufacturer.TrimStartAndEndInline();
 	if (!Manufacturer.Equals(TEXT("Valve"), ESearchCase::CaseSensitive))
 	{
