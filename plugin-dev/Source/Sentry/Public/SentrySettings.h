@@ -468,8 +468,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOnCrashLogging;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Out-of-process screenshot capturing (experimental)",
-			ToolTip = "When enabled, crash screenshots are captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only.",
+		Meta = (DisplayName = "Out-of-process screenshot capturing (Experimental)", ToolTip = "Flag indicating whether crash screenshots should be captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only. Requires `Attach screenshots` to be enabled.",
 			EditCondition = "AttachScreenshot"))
 	bool UseNativeScreenshotCapturing;
 
