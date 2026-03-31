@@ -44,12 +44,15 @@ jobs:
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+          RUNTIME_ID: ${{ inputs.runtimeId }}
         run: |
           git submodule update --init modules/sentry-crash-reporter
           ./scripts/build-crash-reporter.sh \
             modules/sentry-crash-reporter \
-            plugin-dev/Source/ThirdParty/${{ inputs.target }} \
-            ${{ inputs.runtimeId }}
+            plugin-dev/Source/ThirdParty/"$TARGET" \
+            "$RUNTIME_ID"
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
