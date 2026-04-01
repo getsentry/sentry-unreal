@@ -96,7 +96,8 @@ bool FSentryPlatformDetectionUtils::IsSteamDeck()
 	}
 
 	FString Family;
-	FFileHelper::LoadFileToString(Family, TEXT("/sys/class/dmi/id/product_family"));
+	FFileHelper::LoadFileToString(Family, TEXT("/sys/class/dmi/id/product_family"),
+		FFileHelper::EHashOptions::None, EFileRead::FILEREAD_Silent);
 	Family.TrimStartAndEndInline();
 	if (Family.Equals(TEXT("Aerith"), ESearchCase::CaseSensitive) ||
 		Family.Equals(TEXT("Sephiroth"), ESearchCase::CaseSensitive))
