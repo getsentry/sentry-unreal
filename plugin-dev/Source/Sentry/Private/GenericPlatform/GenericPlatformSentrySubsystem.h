@@ -82,6 +82,7 @@ protected:
 	virtual void ConfigureNetworkConnectFunc(sentry_options_t* Options) {}
 	virtual void ConfigureStackCaptureStrategy(sentry_options_t* Options) {}
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) {}
+	virtual void ConfigureScreenshotCapturing(sentry_options_t* Options) {}
 
 	void ConfigureCrashReporterAppearance(const USentrySettings* Settings);
 
@@ -100,6 +101,7 @@ protected:
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
 	virtual bool IsScreenshotSupported() const;
+	virtual bool IsOutOfProcessScreenshotEnabled() const { return false; }
 
 	virtual ECrashContextType ResolveCrashType() const;
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add out-of-process screenshot capturing on Windows ([#1325](https://github.com/getsentry/sentry-unreal/pull/1325))
+
 ### Fixes
 
 - Suppress superfluous warnings when detecting for SteamOS ([#1326](https://github.com/getsentry/sentry-unreal/pull/1326))
