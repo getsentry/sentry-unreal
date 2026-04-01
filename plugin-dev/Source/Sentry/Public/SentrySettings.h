@@ -319,10 +319,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs. Currently this feature is supported for Windows and Linux only."))
 	bool AttachScreenshot;
-	
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-	Meta = (DisplayName = "Enable out-of-process screenshot capturing (for Windows only, experimental)", ToolTip = "Flag indicating whether crash screenshots should be captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only. Requires `Attach screenshots` to be enabled.",
-		EditCondition = "AttachScreenshot"))
+		Meta = (DisplayName = "Enable out-of-process screenshot capturing (for Windows only, experimental)", ToolTip = "Flag indicating whether crash screenshots should be captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only. Requires `Attach screenshots` to be enabled.",
+			EditCondition = "AttachScreenshot"))
 	bool EnableOutOfProcessScreenshots;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
