@@ -278,7 +278,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	if (isScreenshotAttachmentEnabled && !IsNativeScreenshotEnabled() && !IsRunningCommandlet())
+	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
 		if (IsScreenshotSupported())
 		{
@@ -478,7 +478,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		// Clear screenshot captured during previous session if any
 		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("screenshots")), false, true);
 
-		if (settings->UseNativeScreenshotCapturing)
+		if (settings->EnableOutOfProcessScreenshots)
 		{
 			ConfigureScreenshotCapturing(options);
 		}

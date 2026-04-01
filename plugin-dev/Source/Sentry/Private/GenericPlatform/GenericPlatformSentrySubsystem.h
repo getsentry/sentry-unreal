@@ -101,7 +101,7 @@ protected:
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
 	virtual bool IsScreenshotSupported() const;
-	virtual bool IsNativeScreenshotEnabled() const { return false; }
+	virtual bool IsOutOfProcessScreenshotEnabled() const { return false; }
 
 	virtual ECrashContextType ResolveCrashType() const;
 

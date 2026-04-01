@@ -319,6 +319,11 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs. Currently this feature is supported for Windows and Linux only."))
 	bool AttachScreenshot;
+	
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+	Meta = (DisplayName = "Enable out-of-process screenshot capturing (for Windows only, experimental)", ToolTip = "Flag indicating whether crash screenshots should be captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only. Requires `Attach screenshots` to be enabled.",
+		EditCondition = "AttachScreenshot"))
+	bool EnableOutOfProcessScreenshots;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only."))
@@ -466,11 +471,6 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use."))
 	bool EnableOnCrashLogging;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Out-of-process screenshot capturing (Experimental)", ToolTip = "Flag indicating whether crash screenshots should be captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only. Requires `Attach screenshots` to be enabled.",
-			EditCondition = "AttachScreenshot"))
-	bool UseNativeScreenshotCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Enable external crash reporter",

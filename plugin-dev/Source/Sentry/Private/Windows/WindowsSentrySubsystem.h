@@ -25,7 +25,7 @@ protected:
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
 
 	virtual bool IsScreenshotSupported() const override { return true; }
-	virtual bool IsNativeScreenshotEnabled() const override { return bUseNativeScreenshot; }
+	virtual bool IsOutOfProcessScreenshotEnabled() const override { return bOutOfProcessScreenshots; }
 	virtual bool IsHangTrackingSupported() const override { return true; }
 
 	virtual FString GetDeviceType() const override;
@@ -35,7 +35,7 @@ private:
 	FWineProtonInfo WineProtonInfo;
 
 	/** Whether native out-of-process screenshot capturing is enabled */
-	bool bUseNativeScreenshot = false;
+	bool bOutOfProcessScreenshots = false;
 };
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;

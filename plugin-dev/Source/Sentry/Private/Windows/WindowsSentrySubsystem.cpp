@@ -13,7 +13,7 @@
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers)
 {
-	bUseNativeScreenshot = Settings->UseNativeScreenshotCapturing;
+	bOutOfProcessScreenshots = Settings->EnableOutOfProcessScreenshots;
 
 	// Detect Wine/Proton before initializing
 	WineProtonInfo = FSentryPlatformDetectionUtils::DetectWineProton();
@@ -122,7 +122,7 @@ void FWindowsSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Optio
 
 void FWindowsSentrySubsystem::ConfigureScreenshotCapturing(sentry_options_t* Options)
 {
-	if (bUseNativeScreenshot)
+	if (bOutOfProcessScreenshots)
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Native out-of-process screenshot capturing enabled"));
 		sentry_options_set_attach_screenshot(Options, 1);
