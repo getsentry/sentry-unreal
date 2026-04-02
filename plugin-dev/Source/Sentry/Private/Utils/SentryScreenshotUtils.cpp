@@ -30,7 +30,7 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 	FViewport* CurrentViewport = GameViewportClient->Viewport;
 	if (!CurrentViewport)
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Viewport which this Game Viewport Client is attached to is not valid"));
+		UE_LOG(LogSentrySdk, Error, TEXT("Current viewport required for screenshot capturing is not valid"));
 		return false;
 	}
 
