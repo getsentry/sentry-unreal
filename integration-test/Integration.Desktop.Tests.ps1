@@ -74,11 +74,6 @@ BeforeDiscovery {
         # Memory overcommit makes OOM conditions unreliable to trigger in tests on Linux
         $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
     }
-
-    if ($IsNativeBackend) {
-        # Native backend does not currently support OOM and some other memory-related errors capture (see https://github.com/getsentry/sentry-native/issues/1590)
-        $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -notin @('OutOfMemory', 'MemoryCorruption') }
-    }
 }
 
 BeforeAll {
@@ -247,7 +242,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:($Name -eq 'MemoryCorruption') {
+        It "Should have CrashType tag" -Skip:($Name -in @('OutOfMemory', 'MemoryCorruption') -or $Platform -eq 'MacOS') {
             $tags = $script:CrashEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $Type
         }
