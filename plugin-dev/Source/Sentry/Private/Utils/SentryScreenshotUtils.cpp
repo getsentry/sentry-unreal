@@ -27,7 +27,14 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
-	FIntVector ViewportSize(GameViewportClient->Viewport->GetSizeXY().X, GameViewportClient->Viewport->GetSizeXY().Y, 0);
+	FViewport* CurrentViewport = GameViewportClient->Viewport;
+	if (!CurrentViewport)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Current viewport required for screenshot capturing is not valid"));
+		return false;
+	}
+
+	FIntVector ViewportSize(CurrentViewport->GetSizeXY().X, CurrentViewport->GetSizeXY().Y, 0);
 
 	TArray<FColor>* Bitmap = new TArray<FColor>();
 	Bitmap->SetNumZeroed(ViewportSize.X * ViewportSize.Y);

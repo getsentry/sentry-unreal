@@ -9,6 +9,7 @@
 ### Fixes
 
 - Suppress superfluous warnings when detecting for SteamOS ([#1326](https://github.com/getsentry/sentry-unreal/pull/1326))
+- Fix intermittent crash when capturing screenshots due to invalid viewport ([#1331](https://github.com/getsentry/sentry-unreal/pull/1331))
 
 ### Dependencies
 
