@@ -2,6 +2,8 @@
 
 #include "AppleSentryFeedback.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "AppleSentryAttachment.h"
 #include "AppleSentryId.h"
 
@@ -95,3 +97,5 @@ SentryFeedback* FAppleSentryFeedback::CreateSentryFeedback(TSharedPtr<FAppleSent
 													 associatedEventId:id
 														   attachments:attachments];
 }
+
+#endif // !USE_SENTRY_NATIVE

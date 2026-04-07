@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryFeedbackInterface.h"
 
 @class SentryFeedback;
@@ -33,3 +35,5 @@ private:
 };
 
 typedef FAppleSentryFeedback FPlatformSentryFeedback;
+
+#endif // !USE_SENTRY_NATIVE

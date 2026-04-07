@@ -53,6 +53,7 @@ if ($All)
     else
     {
         $Cocoa = $true
+        $Native = $true
         $Java = $true
         $CrashReporter = $true
     }
@@ -341,6 +342,46 @@ function buildSentryNative()
     Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
 }
 
+function buildSentryNativeMac()
+{
+    if (-not (Test-Path $NativePath))
+    {
+        throw "Sentry Native path does not exist: $NativePath"
+    }
+
+    Write-Host "Building Sentry Native for macOS using local repository at: $NativePath"
+
+    $platformDir = "$outDir/Mac"
+
+    # Build Native backend (universal binary: x86_64 + arm64)
+    Write-Host "Building Native backend..."
+    Push-Location -Path $NativePath
+    try
+    {
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+            -D CMAKE_BUILD_TYPE=RelWithDebInfo -D "CMAKE_OSX_ARCHITECTURES=x86_64;arm64" -D CMAKE_OSX_DEPLOYMENT_TARGET=13.0
+        cmake --build "build_native" --target sentry --parallel
+        cmake --build "build_native" --target sentry-crash --parallel
+        cmake --install "build_native" --prefix "install_native"
+    }
+    finally
+    {
+        Pop-Location
+    }
+
+    $nativeDir = "$platformDir/Native"
+    if (Test-Path $nativeDir) { Remove-Item $nativeDir -Recurse -Force }
+    New-Item "$nativeDir/lib" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/bin" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/include" -ItemType Directory -Force > $null
+
+    Get-ChildItem -Path "$NativePath/install_native/lib" -Filter "*.a" -Recurse | Copy-Item -Destination "$nativeDir/lib"
+    Copy-Item "$NativePath/build_native/sentry-crash" -Destination "$nativeDir/bin"
+    Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
+
+    Write-Host "Successfully built Sentry Native for macOS"
+}
+
 function buildSentryCrashReporter()
 {
     if (-not (Test-Path $CrashReporterPath))
@@ -431,7 +472,18 @@ if ($buildNative)
     }
     else
     {
-        buildSentryNative
+        if ($isWindowsPlatform)
+        {
+            buildSentryNative
+        }
+        elseif ($IsMacOS)
+        {
+            buildSentryNativeMac
+        }
+        else
+        {
+            Write-Warning "Native SDK build is not supported on this platform from build-deps.ps1. Use the platform-specific build script instead."
+        }
     }
 }
 

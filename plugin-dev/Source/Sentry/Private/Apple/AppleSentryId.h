@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryIdInterface.h"
 
 @class SentryId;
@@ -23,3 +25,5 @@ private:
 };
 
 typedef FAppleSentryId FPlatformSentryId;
+
+#endif // !USE_SENTRY_NATIVE

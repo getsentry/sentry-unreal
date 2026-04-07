@@ -116,8 +116,22 @@ jobs:
       runsOn: ubuntu-latest
       runtimeId: linux-arm64
 
+  macos-sdk-native:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Mac
+      backend: native
+      runsOn: macos-latest
+
+  crash-reporter-mac:
+    uses: ./.github/workflows/crash-reporter-build.yml
+    with:
+      target: Mac
+      runsOn: macos-latest
+      runtimeId: osx-arm64
+
   package-preparation:
-    needs: [android-sdk, ios-sdk, macos-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native, crash-reporter-win64, crash-reporter-win-arm64, crash-reporter-linux, crash-reporter-linux-arm64]
+    needs: [android-sdk, ios-sdk, macos-sdk, macos-sdk-native, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native, crash-reporter-win64, crash-reporter-win-arm64, crash-reporter-linux, crash-reporter-linux-arm64, crash-reporter-mac]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -144,6 +158,11 @@ jobs:
         with:
           name: Mac-sdk
           path: plugin-dev/Source/ThirdParty/Mac
+
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: Mac-native-sdk
+          path: plugin-dev/Source/ThirdParty/Mac/Native
 
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
@@ -205,6 +224,11 @@ jobs:
           name: CrashReporter-LinuxArm64
           path: plugin-dev/Source/ThirdParty/LinuxArm64
 
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: CrashReporter-Mac
+          path: plugin-dev/Source/ThirdParty/Mac
+
       # Workaround for https://github.com/actions/download-artifact/issues/14
       # Adding execute permission for crashpad before preparing final packages
       # allows to avoid issues with plugin initialization on Unix-based systems.
@@ -217,6 +241,8 @@ jobs:
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Crashpad/bin/crashpad_handler
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Native/bin/sentry-crash
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Sentry.CrashReporter
+          chmod +x plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
+          chmod +x plugin-dev/Source/ThirdParty/Mac/Sentry.CrashReporter
 
       - name: Prepare Sentry packages for release
         shell: pwsh

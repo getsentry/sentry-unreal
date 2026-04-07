@@ -2,6 +2,8 @@
 
 #include "AppleSentryUser.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
@@ -76,3 +78,5 @@ TMap<FString, FString> FAppleSentryUser::GetData()
 {
 	return FAppleSentryConverters::StringMapToUnreal(UserApple.data);
 }
+
+#endif // !USE_SENTRY_NATIVE

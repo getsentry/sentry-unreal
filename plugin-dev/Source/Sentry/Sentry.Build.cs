@@ -78,19 +78,42 @@ public class Sentry : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
+			if (bUseNativeBackend)
+			{
+				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "Native", "include"));
 
-			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "Native", "lib", "libsentry.a"));
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry-crash"), Path.Combine(PlatformThirdPartyPath, "Native", "bin", "sentry-crash"));
 
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
-			PublicDefinitions.Add("COCOAPODS=0");
-			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
-			PublicDefinitions.Add("SENTRY_NO_UI_FRAMEWORK=0");
-			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
-			PublicDefinitions.Add("SDK_V9=0");
-			PublicDefinitions.Add("SWIFT_PACKAGE=0");
+				if (bEnableExternalCrashReporter)
+				{
+					RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter"));
+				}
+
+				PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+				PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
+
+				AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
+				AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
+				AddEngineThirdPartyPrivateStaticDependencies(Target, "nghttp2");
+			}
+			else
+			{
+				PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
+
+				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
+
+				PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
+				PublicDefinitions.Add("COCOAPODS=0");
+				PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
+				PublicDefinitions.Add("SENTRY_NO_UI_FRAMEWORK=0");
+				PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
+				PublicDefinitions.Add("SDK_V9=0");
+				PublicDefinitions.Add("SWIFT_PACKAGE=0");
+			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Android)
 		{

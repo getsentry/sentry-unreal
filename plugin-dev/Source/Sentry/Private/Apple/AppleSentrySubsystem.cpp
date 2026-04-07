@@ -2,6 +2,8 @@
 
 #include "AppleSentrySubsystem.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "AppleSentryAttachment.h"
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
@@ -699,3 +701,5 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 
 	return Screenshots[0];
 }
+
+#endif // !USE_SENTRY_NATIVE

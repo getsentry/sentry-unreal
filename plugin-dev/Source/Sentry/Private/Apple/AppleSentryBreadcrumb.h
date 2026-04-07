@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryBreadcrumbInterface.h"
 
 @class SentryBreadcrumb;
@@ -31,3 +33,5 @@ private:
 };
 
 typedef FAppleSentryBreadcrumb FPlatformSentryBreadcrumb;
+
+#endif // !USE_SENTRY_NATIVE

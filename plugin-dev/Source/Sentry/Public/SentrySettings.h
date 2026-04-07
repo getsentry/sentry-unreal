@@ -449,7 +449,7 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryDatabaseLocation DatabaseLocation;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Use native crash backend (Experimental)", ToolTip = "Use the experimental native backend for crash reporting on Windows and Linux instead of the default Crashpad backend. Requires rebuild after changing.",
+		Meta = (DisplayName = "Use native crash backend (Experimental)", ToolTip = "Use the experimental native backend for crash reporting on Windows, Linux, and macOS instead of the default backend (Crashpad on Windows/Linux, sentry-cocoa on macOS). Requires rebuild after changing.",
 			ConfigRestartRequired = true))
 	bool UseNativeBackend;
 

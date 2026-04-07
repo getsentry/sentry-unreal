@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentrySpanInterface.h"
 
 @protocol SentrySpan;
@@ -30,3 +32,5 @@ private:
 };
 
 typedef FAppleSentrySpan FPlatformSentrySpan;
+
+#endif // !USE_SENTRY_NATIVE
