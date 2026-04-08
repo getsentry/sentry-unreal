@@ -458,6 +458,10 @@ Source/ThirdParty/Mac/include/Sentry/SentryTransactionContext.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser.h
 Source/ThirdParty/Mac/include/Sentry/SentryUser+Private.h
 Source/ThirdParty/Mac/include/Sentry/SentryWithoutUIKit.h
+Source/ThirdParty/Mac/Native/bin/sentry-crash
+Source/ThirdParty/Mac/Native/include/sentry.h
+Source/ThirdParty/Mac/Native/lib/libsentry.a
+Source/ThirdParty/Mac/Sentry.CrashReporter
 Source/ThirdParty/Win64/Crashpad/bin/crashpad_handler.exe
 Source/ThirdParty/Win64/Crashpad/bin/crashpad_wer.dll
 Source/ThirdParty/Win64/Crashpad/include/sentry.h
