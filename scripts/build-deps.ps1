@@ -213,16 +213,16 @@ function buildSentryCocoaMac()
     extractXCFramework "$CocoaPath/XCFrameworkBuildPath/Sentry-Dynamic.xcframework.zip" $tempExtractDir
 
     # Prepare output directories
-    $macOutDir = "$outDir/Mac"
-    $macOutDirBinaries = "$macOutDir/bin"
-    $macOutDirIncludes = "$macOutDir/include/Sentry"
+    $macCocoaDir = "$outDir/Mac/Cocoa"
+    $macOutDirBinaries = "$macCocoaDir/bin"
+    $macOutDirIncludes = "$macCocoaDir/include/Sentry"
 
-    if (Test-Path $macOutDir)
+    if (Test-Path $macCocoaDir)
     {
-        Remove-Item $macOutDir -Recurse -Force
+        Remove-Item $macCocoaDir -Recurse -Force
     }
 
-    New-Item $macOutDir -ItemType Directory > $null
+    New-Item $macCocoaDir -ItemType Directory > $null
     New-Item $macOutDirBinaries -ItemType Directory > $null
     New-Item $macOutDirIncludes -ItemType Directory > $null
 

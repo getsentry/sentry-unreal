@@ -102,9 +102,9 @@ public class Sentry : ModuleRules
 			{
 				PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 
-				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "Cocoa", "include"));
 
-				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "sentry.dylib"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "Cocoa", "bin", "sentry.dylib"));
 
 				PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 				PublicDefinitions.Add("COCOAPODS=0");
