@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if USE_SENTRY_NATIVE
+#if USE_SENTRY_NATIVE && !SENTRY_WINGDK
 
 #include "Utils/SentryPlatformInfo.h"
 
@@ -40,4 +40,4 @@ private:
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;
 
-#endif // USE_SENTRY_NATIVE
+#endif // USE_SENTRY_NATIVE && !SENTRY_WINGDK
