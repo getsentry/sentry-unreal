@@ -5,6 +5,7 @@
 ### Features
 
 - Add out-of-process screenshot capturing on Windows ([#1325](https://github.com/getsentry/sentry-unreal/pull/1325))
+- Add WinGDK platform support ([#1337](https://github.com/getsentry/sentry-unreal/pull/1337))
 
 ### Fixes
 
