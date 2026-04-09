@@ -34,8 +34,8 @@ if (-not (Test-Path $outDir))
     New-Item $outDir -ItemType Directory > $null
 }
 
-# Non-native platforms: single artifact per platform
-$otherSdks = @("Android", "IOS", "Mac")
+# Mobile platforms: single artifact per platform
+$otherSdks = @("Android", "IOS")
 foreach ($sdk in $otherSdks)
 {
     $sdkDir = "$outDir/$sdk"
@@ -48,6 +48,21 @@ foreach ($sdk in $otherSdks)
 
     gh run download $runId -n "$sdk-sdk" -D $sdkDir
 }
+
+# Mac: cocoa SDK goes into Mac/Cocoa, native SDK into Mac/Native
+Write-Host "Downloading Mac Cocoa SDK to $outDir/Mac/Cocoa ..."
+if (Test-Path "$outDir/Mac/Cocoa")
+{
+    Remove-Item "$outDir/Mac/Cocoa" -Recurse
+}
+gh run download $runId -n "Mac-cocoa-sdk" -D "$outDir/Mac"
+
+Write-Host "Downloading Mac Native SDK to $outDir/Mac/Native ..."
+if (Test-Path "$outDir/Mac/Native")
+{
+    Remove-Item "$outDir/Mac/Native" -Recurse
+}
+gh run download $runId -n "Mac-native-sdk" -D "$outDir/Mac/Native"
 
 # Native platforms: two backend variants per platform
 $nativePlatforms = @("Linux", "LinuxArm64", "Win64", "WinArm64")
@@ -73,3 +88,4 @@ gh run download $runId -n "CrashReporter-Win64" -D "$outDir/Win64"
 gh run download $runId -n "CrashReporter-WinArm64" -D "$outDir/WinArm64"
 gh run download $runId -n "CrashReporter-Linux" -D "$outDir/Linux"
 gh run download $runId -n "CrashReporter-LinuxArm64" -D "$outDir/LinuxArm64"
+gh run download $runId -n "CrashReporter-Mac" -D "$outDir/Mac"

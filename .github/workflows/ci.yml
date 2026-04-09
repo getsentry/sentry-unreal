@@ -22,11 +22,19 @@ jobs:
       target: IOS
       runsOn: ubuntu-latest
 
-  macos-sdk:
+  macos-cocoa-sdk:
     uses: ./.github/workflows/sdk-download.yml
     with:
       target: Mac
+      backend: cocoa
       runsOn: ubuntu-latest
+
+  macos-native-sdk:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Mac
+      backend: native
+      runsOn: macos-latest
 
   linux-sdk-crashpad:
     uses: ./.github/workflows/sdk-build.yml
@@ -116,13 +124,6 @@ jobs:
       runsOn: ubuntu-latest
       runtimeId: linux-arm64
 
-  macos-sdk-native:
-    uses: ./.github/workflows/sdk-build.yml
-    with:
-      target: Mac
-      backend: native
-      runsOn: macos-latest
-
   crash-reporter-mac:
     uses: ./.github/workflows/crash-reporter-build.yml
     with:
@@ -131,7 +132,7 @@ jobs:
       runtimeId: osx-arm64
 
   package-preparation:
-    needs: [android-sdk, ios-sdk, macos-sdk, macos-sdk-native, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native, crash-reporter-win64, crash-reporter-win-arm64, crash-reporter-linux, crash-reporter-linux-arm64, crash-reporter-mac]
+    needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native, crash-reporter-win64, crash-reporter-win-arm64, crash-reporter-linux, crash-reporter-linux-arm64, crash-reporter-mac]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -156,7 +157,7 @@ jobs:
 
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
-          name: Mac-sdk
+          name: Mac-cocoa-sdk
           path: plugin-dev/Source/ThirdParty/Mac
 
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
