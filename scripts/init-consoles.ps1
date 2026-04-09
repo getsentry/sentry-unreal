@@ -3,7 +3,8 @@ param(
     [switch]$Switch,
     [switch]$PS5,
     [switch]$XSX,
-    [switch]$XB1
+    [switch]$XB1,
+    [switch]$WinGDK
 )
 
 Set-StrictMode -Version Latest
@@ -17,16 +18,17 @@ if ($All) {
     $PS5 = $true
     $XSX = $true
     $XB1 = $true
+    $WinGDK = $true
 }
 
 # Check if at least one platform is selected
-if (-not ($Switch -or $PS5 -or $XSX -or $XB1)) {
-    Write-Host "Error: No platform specified. Use -All or specify individual platforms (-Switch, -PS5, -XSX, -XB1)" -ForegroundColor Red
+if (-not ($Switch -or $PS5 -or $XSX -or $XB1 -or $WinGDK)) {
+    Write-Host "Error: No platform specified. Use -All or specify individual platforms (-Switch, -PS5, -XSX, -XB1, -WinGDK)" -ForegroundColor Red
     Write-Host ""
     Write-Host "Examples:"
     Write-Host "  ./scripts/init-consoles.ps1 -All"
     Write-Host "  ./scripts/init-consoles.ps1 -Switch -PS5"
-    Write-Host "  ./scripts/init-consoles.ps1 -XSX -XB1"
+    Write-Host "  ./scripts/init-consoles.ps1 -XSX -XB1 -WinGDK"
     Write-Host ""
     Write-Host "Environment variables required:"
     Write-Host "  SENTRY_SWITCH_PATH       - Path to sentry-switch repo"
@@ -52,6 +54,10 @@ $platformConfigs = @{
     'XB1' = @{
         EnvVar = 'SENTRY_XBOX_PATH'
         Enabled = $XB1
+    }
+    'WinGDK' = @{
+        EnvVar = 'SENTRY_XBOX_PATH'
+        Enabled = $WinGDK
     }
 }
 

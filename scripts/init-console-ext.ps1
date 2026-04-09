@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Switch', 'PS5', 'XSX', 'XB1')]
+    [ValidateSet('Switch', 'PS5', 'XSX', 'XB1', 'WinGDK')]
     [string]$Platform,
 
     [Parameter(Mandatory=$true)]
@@ -66,6 +66,12 @@ $platformConfig = @{
         BuildDir = 'xboxone-unreal'
         PlatformFolder = 'XB1'
         SourceDir = 'Sentry_XB1'
+    }
+    'WinGDK' = @{
+        Preset = 'wingdk-unreal'
+        BuildDir = 'wingdk-unreal'
+        PlatformFolder = 'WinGDK'
+        SourceDir = 'Sentry_WinGDK'
     }
 }
 
