@@ -14,6 +14,7 @@ public:
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) override;
+	virtual void ConfigureCertsPath(sentry_options_t* Options) override;
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) override;
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) override;
 

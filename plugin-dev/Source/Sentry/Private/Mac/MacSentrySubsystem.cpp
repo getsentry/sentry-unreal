@@ -49,6 +49,28 @@ void FMacSentrySubsystem::ConfigureDatabasePath(sentry_options_t* Options)
 	sentry_options_set_database_path(Options, TCHAR_TO_UTF8(*GetDatabasePath()));
 }
 
+void FMacSentrySubsystem::ConfigureCertsPath(sentry_options_t* Options)
+{
+	// UE's bundled libcurl uses OpenSSL which requires explicit CA certificate paths on macOS
+	static const char* KnownCertPaths[] = {
+		"/etc/ssl/cert.pem",
+	};
+
+	for (const char* BundlePath : KnownCertPaths)
+	{
+		FString FileName(BundlePath);
+
+		if (FPaths::FileExists(FileName))
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("Sentry transport will use the certificate found at %s for verification."), *FileName);
+			sentry_options_set_ca_certs(Options, BundlePath);
+			return;
+		}
+	}
+
+	UE_LOG(LogSentrySdk, Warning, TEXT("Could not find CA certificates in any known location. Sentry transport may not function properly for handled events"));
+}
+
 void FMacSentrySubsystem::ConfigureLogFileAttachment(sentry_options_t* Options)
 {
 	const FString LogFilePath = FGenericPlatformOutputDevices::GetAbsoluteLogFilename();
