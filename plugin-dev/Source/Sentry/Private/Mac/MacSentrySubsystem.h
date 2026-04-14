@@ -22,7 +22,7 @@ protected:
 	virtual FString GetCrashReporterExecutableName() const override { return TEXT("Sentry.CrashReporter"); }
 
 	virtual bool IsScreenshotSupported() const override { return true; }
-	virtual bool IsHangTrackingSupported() const override { return true; }
+	virtual bool IsHangTrackingSupported() const override { return false; }
 
 	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
 };
