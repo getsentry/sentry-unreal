@@ -530,6 +530,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_logs_with_attributes(options, true);
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
+	sentry_options_set_http_retry(options, 1);
 
 	if (bUseNativeBackend)
 	{
