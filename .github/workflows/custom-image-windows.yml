@@ -1,6 +1,7 @@
 name: Build UE Windows runner image
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     # Rebuild weekly on Monday at 06:00 UTC
