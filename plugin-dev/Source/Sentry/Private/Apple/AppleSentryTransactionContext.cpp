@@ -2,6 +2,8 @@
 
 #include "AppleSentryTransactionContext.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
 
@@ -34,3 +36,5 @@ SentryTransactionContext* FAppleSentryTransactionContext::GetNativeObject()
 {
 	return TransactionContext;
 }
+
+#endif // !USE_SENTRY_NATIVE

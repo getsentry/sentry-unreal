@@ -6,7 +6,7 @@
 
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentrySpan.h"
-#elif PLATFORM_APPLE
+#elif PLATFORM_APPLE && !USE_SENTRY_NATIVE
 #include "Apple/AppleSentrySpan.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentrySpan.h"

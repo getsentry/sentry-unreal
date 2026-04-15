@@ -1,6 +1,9 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryEvent.h"
+
+#if !USE_SENTRY_NATIVE
+
 #include "AppleSentryId.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
@@ -212,3 +215,5 @@ bool FAppleSentryEvent::IsAnr() const
 
 	return isErrorLevel && isAppHangException && isAppHangMechanism && isAppHangMessage;
 }
+
+#endif // !USE_SENTRY_NATIVE

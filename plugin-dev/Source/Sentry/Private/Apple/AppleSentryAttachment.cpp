@@ -2,6 +2,8 @@
 
 #include "AppleSentryAttachment.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
@@ -50,3 +52,5 @@ FString FAppleSentryAttachment::GetContentType() const
 {
 	return FString(AttachmentApple.contentType);
 }
+
+#endif // !USE_SENTRY_NATIVE

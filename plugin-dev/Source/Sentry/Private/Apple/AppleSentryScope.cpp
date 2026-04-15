@@ -2,6 +2,8 @@
 
 #include "AppleSentryScope.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "AppleSentryAttachment.h"
 #include "AppleSentryBreadcrumb.h"
 
@@ -226,3 +228,5 @@ void FAppleSentryScope::Clear()
 {
 	[ScopeApple clear];
 }
+
+#endif // !USE_SENTRY_NATIVE

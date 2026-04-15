@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryTransactionContextInterface.h"
 
 @class SentryTransactionContext;
@@ -23,3 +25,5 @@ private:
 };
 
 typedef FAppleSentryTransactionContext FPlatformSentryTransactionContext;
+
+#endif // !USE_SENTRY_NATIVE

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "HAL/Platform.h"
 
 #ifndef NS_SWIFT_SENDABLE
@@ -17,3 +19,5 @@
 #import <Sentry/Sentry.h>
 #import <Sentry/SentrySwift.h>
 #endif
+
+#endif // !USE_SENTRY_NATIVE

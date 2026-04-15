@@ -1,6 +1,9 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentrySamplingContext.h"
+
+#if !USE_SENTRY_NATIVE
+
 #include "AppleSentryTransactionContext.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
@@ -31,3 +34,5 @@ SentrySamplingContext* FAppleSentrySamplingContext::GetNativeObject()
 {
 	return SamplingContext;
 }
+
+#endif // !USE_SENTRY_NATIVE
