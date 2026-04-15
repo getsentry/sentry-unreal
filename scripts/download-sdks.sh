@@ -59,12 +59,3 @@ for platform in Linux LinuxArm64; do
 done
 chmod +x Mac/Native/bin/sentry-crash
 
-echo "Downloading Crash Reporter binaries ..."
-gh run download $runId -n "CrashReporter-Win64" -D Win64
-gh run download $runId -n "CrashReporter-WinArm64" -D WinArm64
-gh run download $runId -n "CrashReporter-Linux" -D Linux
-gh run download $runId -n "CrashReporter-LinuxArm64" -D LinuxArm64
-gh run download $runId -n "CrashReporter-Mac" -D Mac
-chmod +x Linux/Sentry.CrashReporter
-chmod +x LinuxArm64/Sentry.CrashReporter
-chmod +x Mac/Sentry.CrashReporter
