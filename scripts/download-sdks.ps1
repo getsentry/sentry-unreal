@@ -83,9 +83,3 @@ foreach ($platform in $nativePlatforms)
     }
 }
 
-Write-Host "Downloading Crash Reporter binaries ..."
-gh run download $runId -n "CrashReporter-Win64" -D "$outDir/Win64"
-gh run download $runId -n "CrashReporter-WinArm64" -D "$outDir/WinArm64"
-gh run download $runId -n "CrashReporter-Linux" -D "$outDir/Linux"
-gh run download $runId -n "CrashReporter-LinuxArm64" -D "$outDir/LinuxArm64"
-gh run download $runId -n "CrashReporter-Mac" -D "$outDir/Mac"

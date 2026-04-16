@@ -96,43 +96,8 @@ jobs:
       backend: native
       runsOn: windows-11-arm
 
-  crash-reporter-win64:
-    uses: ./.github/workflows/crash-reporter-build.yml
-    with:
-      target: Win64
-      runsOn: windows-latest
-      runtimeId: win-x64
-
-  crash-reporter-win-arm64:
-    uses: ./.github/workflows/crash-reporter-build.yml
-    with:
-      target: WinArm64
-      runsOn: windows-11-arm
-      runtimeId: win-arm64
-
-  crash-reporter-linux:
-    uses: ./.github/workflows/crash-reporter-build.yml
-    with:
-      target: Linux
-      runsOn: ubuntu-latest
-      runtimeId: linux-x64
-
-  crash-reporter-linux-arm64:
-    uses: ./.github/workflows/crash-reporter-build.yml
-    with:
-      target: LinuxArm64
-      runsOn: ubuntu-latest
-      runtimeId: linux-arm64
-
-  crash-reporter-mac:
-    uses: ./.github/workflows/crash-reporter-build.yml
-    with:
-      target: Mac
-      runsOn: macos-latest
-      runtimeId: osx-arm64
-
   package-preparation:
-    needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native, crash-reporter-win64, crash-reporter-win-arm64, crash-reporter-linux, crash-reporter-linux-arm64, crash-reporter-mac]
+    needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native]
     name: Package
     runs-on: ubuntu-latest
     steps:
@@ -205,30 +170,9 @@ jobs:
           name: WinArm64-native-sdk
           path: plugin-dev/Source/ThirdParty/WinArm64/Native
 
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: CrashReporter-Win64
-          path: plugin-dev/Source/ThirdParty/Win64
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: CrashReporter-WinArm64
-          path: plugin-dev/Source/ThirdParty/WinArm64
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: CrashReporter-Linux
-          path: plugin-dev/Source/ThirdParty/Linux
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: CrashReporter-LinuxArm64
-          path: plugin-dev/Source/ThirdParty/LinuxArm64
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: CrashReporter-Mac
-          path: plugin-dev/Source/ThirdParty/Mac
+      - name: Download Crash Reporter
+        shell: bash
+        run: ./scripts/download-crash-reporter.sh
 
       # Workaround for https://github.com/actions/download-artifact/issues/14
       # Adding execute permission for crashpad before preparing final packages
@@ -238,12 +182,9 @@ jobs:
         run: |
           chmod +x plugin-dev/Source/ThirdParty/Linux/Crashpad/bin/crashpad_handler
           chmod +x plugin-dev/Source/ThirdParty/Linux/Native/bin/sentry-crash
-          chmod +x plugin-dev/Source/ThirdParty/Linux/Sentry.CrashReporter
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Crashpad/bin/crashpad_handler
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Native/bin/sentry-crash
-          chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Sentry.CrashReporter
           chmod +x plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
-          chmod +x plugin-dev/Source/ThirdParty/Mac/Sentry.CrashReporter
 
       - name: Prepare Sentry packages for release
         shell: pwsh
