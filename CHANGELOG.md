@@ -29,6 +29,9 @@
 - Bump Android Gradle Plugin from v6.3.0 to v6.4.0 ([#1338](https://github.com/getsentry/sentry-unreal/pull/1338))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#640)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.3.0...6.4.0)
+- Bump Crash Reporter from v0.1.0 to v0.1.1 ([#1344](https://github.com/getsentry/sentry-unreal/pull/1344))
+  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#011)
+  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.1.0...0.1.1)
 
 ## 1.10.0
 
