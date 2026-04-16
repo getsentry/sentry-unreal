@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryLogInterface.h"
 
 @class SentryLog;
@@ -32,3 +34,5 @@ private:
 };
 
 typedef FAppleSentryLog FPlatformSentryLog;
+
+#endif // !USE_SENTRY_NATIVE

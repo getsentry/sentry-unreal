@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentrySamplingContextInterface.h"
 
 @class SentrySamplingContext;
@@ -22,3 +24,5 @@ private:
 };
 
 typedef FAppleSentrySamplingContext FPlatformSentrySamplingContext;
+
+#endif // !USE_SENTRY_NATIVE

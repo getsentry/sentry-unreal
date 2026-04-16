@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "SentryModule.h"
 
 // clang-format off
@@ -15,3 +17,5 @@
 #endif
 
 // clang-format on
+
+#endif // !USE_SENTRY_NATIVE

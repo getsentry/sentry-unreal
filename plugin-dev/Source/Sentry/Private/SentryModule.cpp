@@ -22,7 +22,7 @@ void FSentryModule::StartupModule()
 	SentrySettings = NewObject<USentrySettings>(GetTransientPackage(), "SentrySettings", RF_Standalone);
 	SentrySettings->AddToRoot();
 
-#if PLATFORM_MAC
+#if PLATFORM_MAC && !USE_SENTRY_NATIVE
 	// Load Sentry Cocoa dynamic library
 	FString LibraryPath = FPaths::Combine(GetBinariesPath(), TEXT("sentry.dylib"));
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(*LibraryPath);
@@ -47,7 +47,7 @@ void FSentryModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 
-#if PLATFORM_MAC
+#if PLATFORM_MAC && !USE_SENTRY_NATIVE
 	// Free sentry dynamic library
 	if (mDllHandleSentry)
 	{
@@ -141,7 +141,7 @@ bool FSentryModule::IsMarketplaceVersion()
 	return PluginPath.StartsWith(MarketplacePrefix);
 }
 
-#if PLATFORM_MAC
+#if PLATFORM_MAC && !USE_SENTRY_NATIVE
 
 void* FSentryModule::GetSentryLibHandle() const
 {

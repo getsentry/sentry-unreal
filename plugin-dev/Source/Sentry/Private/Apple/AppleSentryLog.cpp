@@ -2,6 +2,8 @@
 
 #include "AppleSentryLog.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
@@ -113,3 +115,5 @@ void FAppleSentryLog::AddAttributes(const TMap<FString, FSentryVariant>& attribu
 		SetAttribute(pair.Key, pair.Value);
 	}
 }
+
+#endif // !USE_SENTRY_NATIVE

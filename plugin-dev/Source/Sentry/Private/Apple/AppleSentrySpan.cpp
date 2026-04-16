@@ -2,6 +2,8 @@
 
 #include "AppleSentrySpan.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "SentryDefines.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
@@ -88,3 +90,5 @@ void FAppleSentrySpan::GetTrace(FString& name, FString& value)
 	name = TEXT("sentry-trace");
 	value = FString([traceHeader value]);
 }
+
+#endif // !USE_SENTRY_NATIVE

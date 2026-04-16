@@ -6,7 +6,7 @@
 
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryBreadcrumb.h"
-#elif PLATFORM_APPLE
+#elif PLATFORM_APPLE && !USE_SENTRY_NATIVE
 #include "Apple/AppleSentryBreadcrumb.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryBreadcrumb.h"

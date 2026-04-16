@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryScopeInterface.h"
 
 @class SentryScope;
@@ -46,3 +48,5 @@ private:
 };
 
 typedef FAppleSentryScope FPlatformSentryScope;
+
+#endif // !USE_SENTRY_NATIVE
