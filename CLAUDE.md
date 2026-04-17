@@ -92,9 +92,16 @@ Null/                         # Stubs for unsupported platforms
 
 The `sample/` directory contains `SentryPlayground` demo game used for manual testing (demo UI) and CI integration tests.
 
-- **Integration test logic**: `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp`
+- **Integration test dispatch**: `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp` — `CheckForPendingIntegrationTest` maps command-line switches (e.g. `-crash-capture`) to test factories
+- **Integration test implementations**: `sample/Source/SentryPlayground/IntegrationTests/` — one class per test, each extending `FSentryBaseIntegrationTest`
 - **Sentry configuration**: `sample/Config/DefaultEngine.ini` under `[/Script/Sentry.SentrySettings]` section
 - **Logs**: `sample/Saved/Logs/` - runtime logs, useful for debugging
+
+**Adding a new integration test:**
+
+1. Create `Sentry<Name>Test.{h,cpp}` under `IntegrationTests/` as a subclass of `FSentryBaseIntegrationTest` and implement `Run()`
+2. Add an entry to the dispatch table in `USentryPlaygroundGameInstance::CheckForPendingIntegrationTest` mapping the command-line switch to a factory lambda
+3. Document the switch in `sample/README.md` under the Integration Tests section
 
 Refer to `sample/README.md` for detailed documentation.
 

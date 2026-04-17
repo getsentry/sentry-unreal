@@ -1,26 +1,23 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryPlaygroundUtils.h"
+#include "SentryPlaygroundCrashUtils.h"
+
+#include "SentryGCCallback.h"
+
+#include "SentryErrorOutputDevice.h"
+#include "SentryEvent.h"
 
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
-#include "HAL/FileManager.h"
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
-#include "UObject/GarbageCollection.h"
+#include "HAL/PlatformProcess.h"
 #include "UObject/UObjectGlobals.h"
-#include "Async/Async.h"
-#include "SentrySubsystem.h"
-#include "SentryEvent.h"
-#include "SentryErrorOutputDevice.h"
-#include "SentryGCCallback.h"
 
 #if PLATFORM_MICROSOFT
 #include "Microsoft/WindowsHWrapper.h"
 #endif
 
 
-void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
+void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 {
 	switch (Type)
 	{
@@ -112,7 +109,7 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 				char *ensurePtr = nullptr;
 				ensure(ensurePtr != nullptr);
 			}
-		break;
+			break;
 		case ESentryAppTerminationType::Fatal:
 			{
 				UE_LOG(LogTemp, Fatal, TEXT("Fatal error!"));
@@ -125,48 +122,13 @@ void USentryPlaygroundUtils::Terminate(ESentryAppTerminationType Type)
 			break;
 		default:
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Uknown app termination type!"));
+				UE_LOG(LogTemp, Warning, TEXT("Unknown app termination type!"));
 			}
 			break;
 	}
 }
 
-TArray<uint8> USentryPlaygroundUtils::StringToBytesArray(const FString& InString)
-{
-	TArray<uint8> byteArray;
-	byteArray.AddUninitialized(InString.Len());
-
-	uint8* byteArrayPtr = byteArray.GetData();
-
-	int32 NumBytes = 0;
-	const TCHAR* CharPos = *InString;
-
-	while (*CharPos && NumBytes < TNumericLimits<int16>::Max())
-	{
-		byteArrayPtr[NumBytes] = (int8)(*CharPos);
-		CharPos++;
-		++NumBytes;
-	}
-
-	return byteArray;
-}
-
-FString USentryPlaygroundUtils::ByteArrayToString(const TArray<uint8>& Array)
-{
-	return BytesToString(Array.GetData(), Array.Num());
-}
-
-FString USentryPlaygroundUtils::SaveStringToFile(const FString& InString, const FString& Filename)
-{
-	FString filePath = FPaths::Combine(FPaths::ProjectPersistentDownloadDir(), Filename);
-
-	FFileHelper::SaveStringToFile(InString, *filePath);
-
-	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*filePath);
-}
-
-
-void USentryPlaygroundUtils::CaptureEventDuringGC()
+void USentryPlaygroundCrashUtils::CaptureEventDuringGC()
 {
 	FSentryGCCallback* GCCallback = new FSentryGCCallback();
 
@@ -188,4 +150,3 @@ void USentryPlaygroundUtils::CaptureEventDuringGC()
 
 	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
 }
-
