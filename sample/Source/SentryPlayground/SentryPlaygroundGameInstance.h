@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "SentryPlaygroundUtils.h"
-#include "SentrySubsystem.h"
 #include "SentryPlaygroundGameInstance.generated.h"
 
+class FSentryBaseIntegrationTest;
+class USentrySubsystem;
+
 /**
- * 
+ *
  */
 UCLASS()
 class SENTRYPLAYGROUND_API USentryPlaygroundGameInstance : public UGameInstance
@@ -20,20 +21,21 @@ public:
 	virtual void Init() override;
 
 private:
-	void RunIntegrationTest(const FString& CommandLine);
-	void RunCrashTest(ESentryAppTerminationType CrashType);
-	void RunMessageTest();
-	void RunLogTest();
-	void RunMetricTest();
-	void RunTracingTest();
-	void RunEnsureTest();
-	void RunHangTest();
-	void RunInitOnly();
+	/** Maps a command-line switch to a factory that builds the corresponding integration test. */
+	struct FIntegrationTestEntry
+	{
+		const TCHAR* Param;
+		TFunction<TSharedPtr<FSentryBaseIntegrationTest>()> MakeTest;
+	};
 
-	void ConfigureTestContext();
+	/**
+	 * Inspects the command line for a test-mode switch (e.g. `-crash-capture`).
+	 * Returns the matching test instance, or nullptr if no switch is present
+	 * in which case the game should launch normally into the sample UI.
+	 */
+	TSharedPtr<FSentryBaseIntegrationTest> CheckForPendingIntegrationTest(const FString& CommandLine) const;
 
-	void CompleteTestWithResult(const FString& TestName, bool Result, const FString& Message);
+	void RunIntegrationTest(TSharedRef<FSentryBaseIntegrationTest> Test);
 
-	/** Converts event ID to UUID format with hyphens (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX) */
-	static FString FormatEventIdWithHyphens(const FString& EventId);
+	void ConfigureTestContext(USentrySubsystem* Subsystem);
 };
