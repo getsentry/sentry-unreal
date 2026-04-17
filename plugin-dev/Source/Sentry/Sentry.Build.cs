@@ -173,6 +173,7 @@ public class Sentry : ModuleRules
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
+			PublicDefinitions.Add("SENTRY_WINGDK=0");
 			PublicSystemLibraries.Add("winhttp.lib");
 			PublicSystemLibraries.Add("version.lib");
 			PublicSystemLibraries.Add("Synchronization.lib");

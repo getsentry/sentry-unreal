@@ -31,6 +31,7 @@ The SDK currently supports and is tested on the following platforms:
 - PlayStation
 - Xbox
 - Nintendo Switch
+- WinGDK
 
 The SDK compiles with three latest engine versions.
 
