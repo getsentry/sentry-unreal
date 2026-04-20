@@ -282,10 +282,11 @@ void FSentrySettingsCustomization::DrawCrashReporterBrandingNotice(IDetailLayout
 	TSharedPtr<IPropertyHandle> AppearanceHandle = DetailBuilder.GetProperty(
 		GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterAppearance));
 	TSharedPtr<IPropertyHandle> OverrideHandle = AppearanceHandle.IsValid()
-		? AppearanceHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, bOverrideAppLogo))
-		: nullptr;
+													 ? AppearanceHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, bOverrideAppLogo))
+													 : nullptr;
 
-	auto IsOverrideEnabled = [OverrideHandle]() -> bool {
+	auto IsOverrideEnabled = [OverrideHandle]() -> bool
+	{
 		bool bEnabled = false;
 		if (OverrideHandle.IsValid())
 		{
