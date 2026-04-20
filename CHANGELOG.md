@@ -7,6 +7,7 @@
 - Add WinGDK platform support ([#1337](https://github.com/getsentry/sentry-unreal/pull/1337))
 - Add out-of-process screenshot capturing on Windows ([#1325](https://github.com/getsentry/sentry-unreal/pull/1325))
 - Add native backend support for Mac ([#1333](https://github.com/getsentry/sentry-unreal/pull/1333))
+- Add Crash Reporter logo customization ([#1349](https://github.com/getsentry/sentry-unreal/pull/1349))
 
 ### Fixes
 
