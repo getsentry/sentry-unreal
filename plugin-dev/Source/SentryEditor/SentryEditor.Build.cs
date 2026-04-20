@@ -27,7 +27,8 @@ public class SentryEditor : ModuleRules
                 "PropertyEditor",
                 "Projects",
                 "HTTP",
-                "UATHelper"
+                "UATHelper",
+                "SharedSettingsWidgets"
             }
         );
     }

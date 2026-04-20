@@ -10,6 +10,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "IUATHelperModule.h"
+#include "SExternalImageReference.h"
 
 #include "Engine/Engine.h"
 #include "Framework/Notifications/NotificationManager.h"
@@ -25,6 +26,7 @@
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Widgets/Text/SRichTextBlock.h"
@@ -66,6 +68,7 @@ void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 	DrawGeneralNotice(DetailBuilder);
 	DrawDebugSymbolsNotice(DetailBuilder);
 	DrawCrashReporterNotice(DetailBuilder);
+	DrawCrashReporterBrandingNotice(DetailBuilder);
 
 	SetPropertiesUpdateHandler(DetailBuilder);
 }
@@ -237,6 +240,85 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 					.Text(FText::FromString("Reset"))
 					.ToolTipText(FText::FromString(TEXT("Reset crash reporter settings to defaults.")))
 				]
+			]
+		];
+	// clang-format on
+}
+
+void FSentrySettingsCustomization::DrawCrashReporterBrandingNotice(IDetailLayoutBuilder& DetailBuilder)
+{
+	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Native"));
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	const ISlateStyle& Style = FEditorStyle::Get();
+#else
+	const ISlateStyle& Style = FAppStyle::Get();
+#endif
+
+	// clang-format off
+	CrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporterBranding")), false)
+		.WholeRowWidget
+		[
+			SNew(SBorder)
+			.Padding(1)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.Padding(FMargin(10, 10, 10, 10))
+				.FillWidth(1.0f)
+				[
+					SNew(SRichTextBlock)
+						.Text(FText::FromString(TEXT("The custom crash reporter logo is stored in <RichTextBlock.TextHighlight>Build/SentryCrashReporter/</> under your project. "
+							"Use the Browse button below to pick a PNG file — it will be copied to the convention folder automatically "
+							"and staged alongside the plugin during packaging. Enable <RichTextBlock.TextHighlight>Override default app logo</> above to activate the override.")))
+						.TextStyle(Style, "MessageLog")
+						.DecoratorStyleSet(&Style)
+						.AutoWrapText(true)
+				]
+			]
+		];
+	// clang-format on
+
+	TSharedPtr<IPropertyHandle> AppearanceHandle = DetailBuilder.GetProperty(
+		GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterAppearance));
+	TSharedPtr<IPropertyHandle> OverrideHandle = AppearanceHandle.IsValid()
+		? AppearanceHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, bOverrideAppLogo))
+		: nullptr;
+
+	auto IsOverrideEnabled = [OverrideHandle]() -> bool {
+		bool bEnabled = false;
+		if (OverrideHandle.IsValid())
+		{
+			OverrideHandle->GetValue(bEnabled);
+		}
+		return bEnabled;
+	};
+
+	const FString TargetImagePath = GetCrashReporterLogoPath(TEXT("Logo.png"));
+
+	TArray<FString> AllowedExtensions = { TEXT("png") };
+
+	// clang-format off
+	CrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporterLogo")), false)
+		.NameContent()
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(TEXT("App logo")))
+			.Font(DetailBuilder.GetDetailFont())
+			.ToolTipText(FText::FromString(TEXT("Pick a PNG image to replace the crash reporter's default logo.")))
+		]
+		.ValueContent()
+		.MaxDesiredWidth(400.0f)
+		.MinDesiredWidth(100.0f)
+		[
+			SNew(SBox)
+			.IsEnabled_Lambda(IsOverrideEnabled)
+			[
+				SNew(SExternalImageReference, FString(), TargetImagePath)
+				.FileDescription(FText::FromString(TEXT("crash reporter logo")))
+				.FileExtensions(AllowedExtensions)
+				.MaxDisplaySize(FVector2D(128.0f, 128.0f))
+				.DeleteTargetWhenDefaultChosen(true)
 			]
 		];
 	// clang-format on
@@ -601,6 +683,16 @@ FString FSentrySettingsCustomization::GetLinuxBinariesDirPath() const
 {
 	const FString PluginPath = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 	return FPaths::Combine(PluginPath, TEXT("Intermediate"), TEXT("Build"), TEXT("Linux"));
+}
+
+FString FSentrySettingsCustomization::GetCrashReporterBrandingDir() const
+{
+	return FPaths::Combine(FPaths::ProjectDir(), TEXT("Build"), TEXT("SentryCrashReporter"));
+}
+
+FString FSentrySettingsCustomization::GetCrashReporterLogoPath(const FString& FileName) const
+{
+	return FPaths::Combine(GetCrashReporterBrandingDir(), FileName);
 }
 
 int32 FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt() const
