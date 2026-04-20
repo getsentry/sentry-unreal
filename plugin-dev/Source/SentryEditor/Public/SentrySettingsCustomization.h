@@ -36,8 +36,8 @@ public:
 
 private:
 	void DrawGeneralNotice(IDetailLayoutBuilder& DetailBuilder);
-	void DrawCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder);
-	void DrawCrashReporterBrandingNotice(IDetailLayoutBuilder& DetailBuilder);
+	void DrawSentryCrashReporterSection(IDetailLayoutBuilder& DetailBuilder);
+	void DrawUnrealCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder);
 	void DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder);
 
 	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);

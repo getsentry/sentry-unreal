@@ -67,8 +67,10 @@ void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 {
 	DrawGeneralNotice(DetailBuilder);
 	DrawDebugSymbolsNotice(DetailBuilder);
-	DrawCrashReporterNotice(DetailBuilder);
-	DrawCrashReporterBrandingNotice(DetailBuilder);
+
+	DrawSentryCrashReporterSection(DetailBuilder);
+
+	DrawUnrealCrashReporterNotice(DetailBuilder);
 
 	SetPropertiesUpdateHandler(DetailBuilder);
 }
@@ -151,9 +153,128 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 #endif
 }
 
-void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder)
+void FSentrySettingsCustomization::DrawSentryCrashReporterSection(IDetailLayoutBuilder& DetailBuilder)
 {
-	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Crash Reporter"));
+	IDetailCategoryBuilder& SentryCrashReporterCategory = DetailBuilder.EditCategory(TEXT("Sentry Crash Reporter"));
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	const ISlateStyle& Style = FEditorStyle::Get();
+#else
+	const ISlateStyle& Style = FAppStyle::Get();
+#endif
+
+	// clang-format off
+	SentryCrashReporterCategory.AddCustomRow(FText::FromString(TEXT("SentryCrashReporter")), false)
+		.WholeRowWidget
+		[
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.Padding(1)
+			.AutoHeight()
+			[
+				SNew(SBorder)
+				.Padding(1)
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.Padding(FMargin(10, 10, 10, 10))
+					.FillWidth(1.0f)
+					[
+						SNew(SRichTextBlock)
+							.Text(FText::FromString(TEXT("Sentry Crash Reporter is a standalone application that can be used instead of the default Unreal Crash Reporter. "
+								"It lets users review crash details (tags, context, stacktrace) and submit feedback before the report is sent to Sentry. "
+								"Supported on all desktop platforms (on macOS the <RichTextBlock.TextHighlight>native crash backend</> must be enabled). "
+								"For symbolicated stacktraces in Shipping builds, enable \"Include Debug Files in Shipping Builds\" in packaging settings.")))
+							.TextStyle(Style, "MessageLog")
+							.DecoratorStyleSet(&Style)
+							.AutoWrapText(true)
+					]
+				]
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(0, 10, 0, 10))
+			.VAlign(VAlign_Top)
+			[
+				SNew(SRichTextBlock)
+				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/configuration/setup-crashreporter/#sentry-crash-reporter\">View the Sentry Crash Reporter setup documentation -></>")))
+				.AutoWrapText(true)
+				.DecoratorStyleSet(&FCoreStyle::Get())
+				+ SRichTextBlock::HyperlinkDecorator(TEXT("browser"), FSlateHyperlinkRun::FOnClick::CreateStatic(&OnDocumentationLinkClicked))
+			]
+		];
+	// clang-format on
+
+	SentryCrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporterBranding")), false)
+		.WholeRowWidget
+		[
+			SNew(SBorder)
+			.Padding(1)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.Padding(FMargin(10, 10, 10, 10))
+				.FillWidth(1.0f)
+				[
+					SNew(SRichTextBlock)
+						.Text(FText::FromString(TEXT("The custom crash reporter logo is stored in <RichTextBlock.TextHighlight>Build/SentryCrashReporter/</> under your project. "
+							"Use the Browse button below to pick a PNG file \u2014 it will be copied to the convention folder automatically "
+							"and staged alongside the plugin during packaging. Enable <RichTextBlock.TextHighlight>Override default app logo</> above to activate the override.")))
+						.TextStyle(Style, "MessageLog")
+						.DecoratorStyleSet(&Style)
+						.AutoWrapText(true)
+				]
+			]
+		];
+
+	TSharedPtr<IPropertyHandle> AppearanceHandle = DetailBuilder.GetProperty(
+		GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterAppearance));
+	TSharedPtr<IPropertyHandle> OverrideHandle = AppearanceHandle.IsValid()
+													 ? AppearanceHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, bOverrideAppLogo))
+													 : nullptr;
+
+	auto IsOverrideEnabled = [OverrideHandle]() -> bool
+	{
+		bool bEnabled = false;
+		if (OverrideHandle.IsValid())
+		{
+			OverrideHandle->GetValue(bEnabled);
+		}
+		return bEnabled;
+	};
+
+	const FString TargetImagePath = GetCrashReporterLogoPath(TEXT("Logo.png"));
+
+	TArray<FString> AllowedExtensions = { TEXT("png") };
+
+	// clang-format off
+	SentryCrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporterLogo")), false)
+		.NameContent()
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(TEXT("App logo")))
+			.Font(DetailBuilder.GetDetailFont())
+			.ToolTipText(FText::FromString(TEXT("Pick a PNG image to replace the crash reporter's default logo.")))
+		]
+		.ValueContent()
+		.MaxDesiredWidth(400.0f)
+		.MinDesiredWidth(100.0f)
+		[
+			SNew(SBox)
+			.IsEnabled_Lambda(IsOverrideEnabled)
+			[
+				SNew(SExternalImageReference, FString(), TargetImagePath)
+				.FileDescription(FText::FromString(TEXT("crash reporter logo")))
+				.FileExtensions(AllowedExtensions)
+				.MaxDisplaySize(FVector2D(128.0f, 128.0f))
+				.DeleteTargetWhenDefaultChosen(true)
+			]
+		];
+	// clang-format on
+}
+
+void FSentrySettingsCustomization::DrawUnrealCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder)
+{
+	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Unreal Crash Reporter"));
 
 	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
 
@@ -181,7 +302,7 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 					.FillWidth(1.0f)
 					[
 						SNew(SRichTextBlock)
-							.Text(FText::FromString(TEXT("In order to configure Crash Reporter use Sentry's Unreal Engine Endpoint from the Client Keys settings page. "
+							.Text(FText::FromString(TEXT("In order to configure Unreal Crash Reporter use Sentry's Unreal Engine Endpoint from the Client Keys settings page. "
 								"This will include which project within Sentry you want to see the crashes arriving in real time. "
 								"Note that it's accomplished by modifying the `CrashReportClient` section in the global <RichTextBlock.TextHighlight>DefaultEngine.ini</> file. "
 								"Changing the engine is necessary for this to work!")))
@@ -196,7 +317,7 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 			.VAlign(VAlign_Top)
 			[
 				SNew(SRichTextBlock)
-				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/setup-crashreporter/\">View the Crash Reporter setup documentation -></>")))
+				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/setup-crashreporter/\">View the Unreal Crash Reporter setup documentation -></>")))
 				.AutoWrapText(true)
 				.DecoratorStyleSet(&FCoreStyle::Get())
 				+ SRichTextBlock::HyperlinkDecorator(TEXT("browser"), FSlateHyperlinkRun::FOnClick::CreateStatic(&OnDocumentationLinkClicked))
@@ -245,85 +366,6 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 	// clang-format on
 }
 
-void FSentrySettingsCustomization::DrawCrashReporterBrandingNotice(IDetailLayoutBuilder& DetailBuilder)
-{
-	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Native"));
-
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-	const ISlateStyle& Style = FEditorStyle::Get();
-#else
-	const ISlateStyle& Style = FAppStyle::Get();
-#endif
-
-	// clang-format off
-	CrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporterBranding")), false)
-		.WholeRowWidget
-		[
-			SNew(SBorder)
-			.Padding(1)
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.Padding(FMargin(10, 10, 10, 10))
-				.FillWidth(1.0f)
-				[
-					SNew(SRichTextBlock)
-						.Text(FText::FromString(TEXT("The custom crash reporter logo is stored in <RichTextBlock.TextHighlight>Build/SentryCrashReporter/</> under your project. "
-							"Use the Browse button below to pick a PNG file — it will be copied to the convention folder automatically "
-							"and staged alongside the plugin during packaging. Enable <RichTextBlock.TextHighlight>Override default app logo</> above to activate the override.")))
-						.TextStyle(Style, "MessageLog")
-						.DecoratorStyleSet(&Style)
-						.AutoWrapText(true)
-				]
-			]
-		];
-	// clang-format on
-
-	TSharedPtr<IPropertyHandle> AppearanceHandle = DetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterAppearance));
-	TSharedPtr<IPropertyHandle> OverrideHandle = AppearanceHandle.IsValid()
-													 ? AppearanceHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, bOverrideAppLogo))
-													 : nullptr;
-
-	auto IsOverrideEnabled = [OverrideHandle]() -> bool
-	{
-		bool bEnabled = false;
-		if (OverrideHandle.IsValid())
-		{
-			OverrideHandle->GetValue(bEnabled);
-		}
-		return bEnabled;
-	};
-
-	const FString TargetImagePath = GetCrashReporterLogoPath(TEXT("Logo.png"));
-
-	TArray<FString> AllowedExtensions = { TEXT("png") };
-
-	// clang-format off
-	CrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporterLogo")), false)
-		.NameContent()
-		[
-			SNew(STextBlock)
-			.Text(FText::FromString(TEXT("App logo")))
-			.Font(DetailBuilder.GetDetailFont())
-			.ToolTipText(FText::FromString(TEXT("Pick a PNG image to replace the crash reporter's default logo.")))
-		]
-		.ValueContent()
-		.MaxDesiredWidth(400.0f)
-		.MinDesiredWidth(100.0f)
-		[
-			SNew(SBox)
-			.IsEnabled_Lambda(IsOverrideEnabled)
-			[
-				SNew(SExternalImageReference, FString(), TargetImagePath)
-				.FileDescription(FText::FromString(TEXT("crash reporter logo")))
-				.FileExtensions(AllowedExtensions)
-				.MaxDisplaySize(FVector2D(128.0f, 128.0f))
-				.DeleteTargetWhenDefaultChosen(true)
-			]
-		];
-	// clang-format on
-}
 
 void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder)
 {
