@@ -206,25 +206,18 @@ void FSentrySettingsCustomization::DrawSentryCrashReporterSection(IDetailLayoutB
 
 	SentryCrashReporterCategory.AddCustomRow(FText::FromString(TEXT("CrashReporterBranding")), false)
 		.WholeRowWidget
-		[
-			SNew(SBorder)
-			.Padding(1)
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.Padding(FMargin(10, 10, 10, 10))
-				.FillWidth(1.0f)
-				[
-					SNew(SRichTextBlock)
-						.Text(FText::FromString(TEXT("The custom crash reporter logo is stored in <RichTextBlock.TextHighlight>Build/SentryCrashReporter/</> under your project. "
-							"Use the Browse button below to pick a PNG file \u2014 it will be copied to the convention folder automatically "
-							"and staged alongside the plugin during packaging. Enable <RichTextBlock.TextHighlight>Override default app logo</> above to activate the override.")))
-						.TextStyle(Style, "MessageLog")
-						.DecoratorStyleSet(&Style)
-						.AutoWrapText(true)
-				]
-			]
-		];
+			[SNew(SBorder)
+					.Padding(1)
+						[SNew(SHorizontalBox) + SHorizontalBox::Slot()
+													.Padding(FMargin(10, 10, 10, 10))
+													.FillWidth(1.0f)
+														[SNew(SRichTextBlock)
+																.Text(FText::FromString(TEXT("The custom crash reporter logo is stored in <RichTextBlock.TextHighlight>Build/SentryCrashReporter/</> under your project. "
+																							 "Use the Browse button below to pick a PNG file \u2014 it will be copied to the convention folder automatically "
+																							 "and staged alongside the plugin during packaging. Enable <RichTextBlock.TextHighlight>Override default app logo</> above to activate the override.")))
+																.TextStyle(Style, "MessageLog")
+																.DecoratorStyleSet(&Style)
+																.AutoWrapText(true)]]];
 
 	TSharedPtr<IPropertyHandle> AppearanceHandle = DetailBuilder.GetProperty(
 		GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterAppearance));
@@ -365,7 +358,6 @@ void FSentrySettingsCustomization::DrawUnrealCrashReporterNotice(IDetailLayoutBu
 		];
 	// clang-format on
 }
-
 
 void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder)
 {
