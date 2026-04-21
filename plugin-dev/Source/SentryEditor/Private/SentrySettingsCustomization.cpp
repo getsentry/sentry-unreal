@@ -202,7 +202,6 @@ void FSentrySettingsCustomization::DrawSentryCrashReporterSection(IDetailLayoutB
 			]
 		];
 	// clang-format on
-
 }
 
 void FSentrySettingsCustomization::DrawUnrealCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder)
@@ -660,8 +659,6 @@ FString FSentrySettingsCustomization::GetLinuxBinariesDirPath() const
 	return FPaths::Combine(PluginPath, TEXT("Intermediate"), TEXT("Build"), TEXT("Linux"));
 }
 
-
-
 int32 FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt() const
 {
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
@@ -714,5 +711,3 @@ void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata)
 		FPlatformProcess::LaunchURL(**UrlPtr, nullptr, nullptr);
 	}
 }
-
-
