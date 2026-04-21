@@ -25,7 +25,6 @@
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
-#include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Widgets/Text/SRichTextBlock.h"
@@ -66,9 +65,7 @@ void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 {
 	DrawGeneralNotice(DetailBuilder);
 	DrawDebugSymbolsNotice(DetailBuilder);
-
 	DrawSentryCrashReporterSection(DetailBuilder);
-
 	DrawUnrealCrashReporterNotice(DetailBuilder);
 
 	SetPropertiesUpdateHandler(DetailBuilder);
