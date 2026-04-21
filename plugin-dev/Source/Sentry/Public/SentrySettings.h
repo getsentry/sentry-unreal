@@ -215,6 +215,16 @@ struct FEnableBuildTargets
 };
 
 USTRUCT(BlueprintType)
+struct FSentryCrashReporterImagery
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Override default app logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image."))
+	bool bOverrideAppLogo = false;
+};
+
+USTRUCT(BlueprintType)
 struct FSentryCrashReporterAppearance
 {
 	GENERATED_BODY()
@@ -270,6 +280,10 @@ struct FSentryCrashReporterAppearance
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Window closable", ToolTip = "When disabled, the user cannot close the crash reporter window without submitting the report. The native close button is disabled and the cancel button is hidden."))
 	bool bWindowClosable = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "App logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image. The file is stored in Build/SentryCrashReporter/ under your project and staged alongside the plugin during packaging."))
+	FSentryCrashReporterImagery Imagery;
 };
 
 /**

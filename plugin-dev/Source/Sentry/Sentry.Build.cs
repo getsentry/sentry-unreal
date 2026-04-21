@@ -89,6 +89,7 @@ public class Sentry : ModuleRules
 				if (bEnableExternalCrashReporter)
 				{
 					RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter"));
+					StageCrashReporterResources(Target);
 				}
 
 				PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
@@ -169,6 +170,7 @@ public class Sentry : ModuleRules
 			if (bEnableExternalCrashReporter)
 			{
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter.exe"));
+				StageCrashReporterResources(Target);
 			}
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
@@ -216,6 +218,7 @@ public class Sentry : ModuleRules
 			if (bEnableExternalCrashReporter)
 			{
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter"));
+				StageCrashReporterResources(Target);
 			}
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
@@ -235,6 +238,22 @@ public class Sentry : ModuleRules
 
 				Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/unreal/game-consoles/");
 			}
+		}
+	}
+
+	private void StageCrashReporterResources(ReadOnlyTargetRules Target)
+	{
+		if (Target.Type == TargetType.Editor)
+		{
+			return;
+		}
+
+		string ResourceProjectPath = Path.Combine(Path.GetDirectoryName(Target.ProjectFile.FullName), "Build", "SentryCrashReporter", "Logo.png");
+		string ResourceStagePath = Path.Combine(PluginDirectory, "Resources", "SentryCrashReporter", "Logo.png");
+
+		if (File.Exists(ResourceProjectPath))
+		{
+			RuntimeDependencies.Add(ResourceStagePath, ResourceProjectPath);
 		}
 	}
 }

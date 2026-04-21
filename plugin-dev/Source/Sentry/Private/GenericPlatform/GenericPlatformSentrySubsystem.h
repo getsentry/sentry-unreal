@@ -90,6 +90,7 @@ protected:
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;
 	FString GetCrashReporterPath() const;
+	FString GetCrashReporterLogoPath() const;
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
 	virtual FString GetCrashReporterExecutableName() const { return TEXT("invalid"); }
 

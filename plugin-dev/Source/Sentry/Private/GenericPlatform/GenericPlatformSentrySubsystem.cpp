@@ -1165,6 +1165,15 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 		const FString ColorHex = FString::Printf(TEXT("#%02X%02X%02X"), Appearance.AccentColor.R, Appearance.AccentColor.G, Appearance.AccentColor.B);
 		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
 	}
+	if (Appearance.Imagery.bOverrideAppLogo)
+	{
+		const FString LogoPath = GetCrashReporterLogoPath();
+		if (FPaths::FileExists(LogoPath))
+		{
+			AppConfigObject->SetStringField(TEXT("LogoLight"), LogoPath);
+			AppConfigObject->SetStringField(TEXT("LogoDark"), LogoPath);
+		}
+	}
 	if (!Appearance.bWindowClosable)
 	{
 		AppConfigObject->SetBoolField(TEXT("WindowClosable"), false);
@@ -1203,6 +1212,17 @@ FString FGenericPlatformSentrySubsystem::GetCrashReporterPath() const
 {
 	const FString CrashReporterPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), GetCrashReporterExecutableName());
 	return FPaths::ConvertRelativePathToFull(CrashReporterPath);
+}
+
+FString FGenericPlatformSentrySubsystem::GetCrashReporterLogoPath() const
+{
+#if WITH_EDITOR
+	const FString LogoDir = FPaths::Combine(FPaths::ProjectDir(), TEXT("Build"), TEXT("SentryCrashReporter"));
+#else
+	const FString LogoDir = FPaths::Combine(FSentryModule::Get().GetPluginPath(), TEXT("Resources"), TEXT("SentryCrashReporter"));
+#endif
+
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(LogoDir, TEXT("Logo.png")));
 }
 
 FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
