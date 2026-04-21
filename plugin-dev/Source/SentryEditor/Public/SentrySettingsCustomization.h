@@ -57,10 +57,6 @@ private:
 	FString GetCrcConfigPath() const;
 	// Gets path to plugin's Linux pre-compiled binaries directory
 	FString GetLinuxBinariesDirPath() const;
-	// Gets path to the project's crash reporter branding convention folder
-	FString GetCrashReporterBrandingDir() const;
-	// Gets path to a specific branding PNG inside the convention folder
-	FString GetCrashReporterLogoPath(const FString& FileName) const;
 
 	int32 GetGeneralSettingsStatusAsInt() const;
 	int32 GetLinuxBinariesStatusAsInt() const;

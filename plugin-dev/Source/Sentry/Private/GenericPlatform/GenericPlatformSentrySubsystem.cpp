@@ -1165,7 +1165,7 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 		const FString ColorHex = FString::Printf(TEXT("#%02X%02X%02X"), Appearance.AccentColor.R, Appearance.AccentColor.G, Appearance.AccentColor.B);
 		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
 	}
-	if (Appearance.bOverrideAppLogo)
+	if (Appearance.Imagery.bOverrideAppLogo)
 	{
 		const FString LogoPath = GetCrashReporterLogoPath();
 		if (FPaths::FileExists(LogoPath))

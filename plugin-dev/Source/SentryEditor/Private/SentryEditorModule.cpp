@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryEditorModule.h"
+#include "SentryCrashReporterImageryCustomization.h"
 #include "SentrySettings.h"
 #include "SentrySettingsCustomization.h"
 
@@ -17,6 +18,7 @@ void FSentryEditorModule::StartupModule()
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	PropertyModule.RegisterCustomClassLayout("SentrySettings", FOnGetDetailCustomizationInstance::CreateStatic(&FSentrySettingsCustomization::MakeInstance));
+	PropertyModule.RegisterCustomPropertyTypeLayout("SentryCrashReporterImagery", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FSentryCrashReporterImageryCustomization::MakeInstance));
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
