@@ -274,8 +274,8 @@ void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap
 	NSDictionary<NSString*, SentryAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
 
 	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString()
-	                            value:(NSUInteger)Value
-	                       attributes:attributesDict];
+													value:(NSUInteger)Value
+											   attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
@@ -284,9 +284,9 @@ void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, con
 	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
 
 	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] distributionWithKey:Key.GetNSString()
-	                                   value:(double)Value
-	                                    unit:effectiveUnit
-	                              attributes:attributesDict];
+														   value:(double)Value
+															unit:effectiveUnit
+													  attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
@@ -295,9 +295,9 @@ void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FStr
 	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
 
 	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] gaugeWithKey:Key.GetNSString()
-	                            value:(double)Value
-	                             unit:effectiveUnit
-	                       attributes:attributesDict];
+													value:(double)Value
+													 unit:effectiveUnit
+											   attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()
