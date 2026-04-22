@@ -9,11 +9,7 @@
 #endif
 
 #if PLATFORM_MAC
-#include <Sentry/PrivateSentrySDKOnly.h>
-#include <Sentry/Sentry.h>
-#include <Sentry/SentrySwift.h>
+#include <SentryObjC/SentryObjC.h>
 #elif PLATFORM_IOS
-#import <Sentry/PrivateSentrySDKOnly.h>
-#import <Sentry/Sentry.h>
-#import <Sentry/SentrySwift.h>
+#import <SentryObjC/SentryObjC.h>
 #endif

@@ -23,13 +23,13 @@ void FSentryModule::StartupModule()
 	SentrySettings->AddToRoot();
 
 #if PLATFORM_MAC
-	// Load Sentry Cocoa dynamic library
-	FString LibraryPath = FPaths::Combine(GetBinariesPath(), TEXT("sentry.dylib"));
+	// Load SentryObjC dynamic library (standalone framework with full SDK embedded)
+	FString LibraryPath = FPaths::Combine(GetBinariesPath(), TEXT("SentryObjC.dylib"));
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(*LibraryPath);
 
 	if (!mDllHandleSentry)
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to load sentry.dylib from %s"), *LibraryPath);
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to load SentryObjC.dylib from %s"), *LibraryPath);
 	}
 #endif
 
