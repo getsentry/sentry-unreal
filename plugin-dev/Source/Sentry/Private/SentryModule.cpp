@@ -12,6 +12,11 @@
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 
+// SENTRY_WINGDK is explicitly defined only for Windows/WinGDK, so default it to 0 for other platforms to avoid -Wundef
+#ifndef SENTRY_WINGDK
+#define SENTRY_WINGDK 0
+#endif
+
 #define LOCTEXT_NAMESPACE "FSentryModule"
 
 const FName FSentryModule::ModuleName = "Sentry";
@@ -94,8 +99,14 @@ FString FSentryModule::GetPluginPath()
 
 FString FSentryModule::GetBinariesPath()
 {
-	// Windows ARM64 binaries are currently stored in Win64 dir so we need to set the right platform manually
-#if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
+	// Unreal Engine currently stores Windows ARM64 binaries in the Win64 directory and does not distinguish by architecture,
+	// so when building the path to platform-specific plugin resources, the platform name must be set manually
+	// instead of relying on FPlatformProcess::GetBinariesSubdirectory().
+	// The same applies to WinGDK targets, which the engine treats as Win64 by default in this context.
+
+#if SENTRY_WINGDK
+	const FString PlatformDir = TEXT("WinGDK");
+#elif PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
 	const FString PlatformDir = TEXT("WinArm64");
 #else
 	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
@@ -106,8 +117,14 @@ FString FSentryModule::GetBinariesPath()
 
 FString FSentryModule::GetThirdPartyPath()
 {
-	// Windows ARM64 binaries are still currently in Win64 dir so we need to set the right platform manually
-#if PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
+	// Unreal Engine currently stores Windows ARM64 binaries in the Win64 directory and does not distinguish by architecture,
+	// so when building the path to platform-specific plugin resources, the platform name must be set manually
+	// instead of relying on FPlatformProcess::GetBinariesSubdirectory().
+	// The same applies to WinGDK targets, which the engine treats as Win64 by default in this context.
+
+#if SENTRY_WINGDK
+	const FString PlatformDir = TEXT("WinGDK");
+#elif PLATFORM_WINDOWS && PLATFORM_CPU_ARM_FAMILY
 	const FString PlatformDir = TEXT("WinArm64");
 #else
 	const FString PlatformDir = FPlatformProcess::GetBinariesSubdirectory();
