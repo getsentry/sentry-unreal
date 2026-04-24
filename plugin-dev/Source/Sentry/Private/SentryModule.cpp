@@ -14,7 +14,7 @@
 
 // SENTRY_WINGDK is explicitly defined only for Windows/WinGDK, so default it to 0 for other platforms to avoid -Wundef
 #ifndef SENTRY_WINGDK
-	#define SENTRY_WINGDK 0
+#define SENTRY_WINGDK 0
 #endif
 
 #define LOCTEXT_NAMESPACE "FSentryModule"
