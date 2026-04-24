@@ -15,6 +15,8 @@
 #include "SentryPlayground/IntegrationTests/SentryTracingTest.h"
 #include "SentryPlayground/Utils/SentryPlaygroundCrashUtils.h"
 
+#include "SentryModule.h"
+#include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryUser.h"
 #include "SentryVariant.h"
@@ -104,6 +106,9 @@ void USentryPlaygroundGameInstance::ConfigureTestContext(USentrySubsystem* Subsy
 	Subsystem->SetUser(User);
 
 	Subsystem->SetTag(TEXT("test.suite"), TEXT("integration"));
+
+	const bool bIsNativeBackend = FSentryModule::Get().GetSettings()->UseNativeBackend;
+	Subsystem->SetTag(TEXT("test.native_backend"), bIsNativeBackend ? TEXT("true") : TEXT("false"));
 
 	// Tag to be removed by beforeSend handler
 	Subsystem->SetTag(TEXT("tag_to_be_removed"), TEXT("original_value"));
