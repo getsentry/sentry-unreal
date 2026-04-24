@@ -212,18 +212,18 @@ SentryAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryV
 	}
 }
 
-SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(const FSentryVariant& variant)
+SentryObjCAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(const FSentryVariant& variant)
 {
 	switch (variant.GetType())
 	{
 	case ESentryVariantType::Integer:
-		return [SENTRY_APPLE_CLASS(SentryAttributeContent) integerWithValue:variant.GetValue<int32>()];
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) integerWithValue:variant.GetValue<int32>()];
 	case ESentryVariantType::Float:
-		return [SENTRY_APPLE_CLASS(SentryAttributeContent) doubleWithValue:(double)variant.GetValue<float>()];
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) doubleWithValue:(double)variant.GetValue<float>()];
 	case ESentryVariantType::Bool:
-		return [SENTRY_APPLE_CLASS(SentryAttributeContent) booleanWithValue:variant.GetValue<bool>()];
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) booleanWithValue:variant.GetValue<bool>()];
 	case ESentryVariantType::String:
-		return [SENTRY_APPLE_CLASS(SentryAttributeContent) stringWithValue:variant.GetValue<FString>().GetNSString()];
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringWithValue:variant.GetValue<FString>().GetNSString()];
 	case ESentryVariantType::Array:
 	{
 		const TArray<FSentryVariant>& arr = variant.GetValue<TArray<FSentryVariant>>();
@@ -252,7 +252,7 @@ SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(
 					{
 						[stringArr addObject:item.GetValue<FString>().GetNSString()];
 					}
-					return [SENTRY_APPLE_CLASS(SentryAttributeContent) stringArrayWithValue:stringArr];
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringArrayWithValue:stringArr];
 				}
 				case ESentryVariantType::Integer:
 				{
@@ -261,7 +261,7 @@ SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(
 					{
 						[intArr addObject:@(item.GetValue<int32>())];
 					}
-					return [SENTRY_APPLE_CLASS(SentryAttributeContent) integerArrayWithValue:intArr];
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) integerArrayWithValue:intArr];
 				}
 				case ESentryVariantType::Float:
 				{
@@ -270,7 +270,7 @@ SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(
 					{
 						[doubleArr addObject:@((double)item.GetValue<float>())];
 					}
-					return [SENTRY_APPLE_CLASS(SentryAttributeContent) doubleArrayWithValue:doubleArr];
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) doubleArrayWithValue:doubleArr];
 				}
 				case ESentryVariantType::Bool:
 				{
@@ -279,7 +279,7 @@ SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(
 					{
 						[boolArr addObject:@(item.GetValue<bool>())];
 					}
-					return [SENTRY_APPLE_CLASS(SentryAttributeContent) booleanArrayWithValue:boolArr];
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) booleanArrayWithValue:boolArr];
 				}
 				default:
 					break;
@@ -293,7 +293,7 @@ SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [SENTRY_APPLE_CLASS(SentryAttributeContent) stringWithValue:jsonString];
+			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringWithValue:jsonString];
 		}
 		return nil;
 	}
@@ -306,7 +306,7 @@ SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [SENTRY_APPLE_CLASS(SentryAttributeContent) stringWithValue:jsonString];
+			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringWithValue:jsonString];
 		}
 		return nil;
 	}
@@ -315,13 +315,13 @@ SentryAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(
 	}
 }
 
-NSDictionary<NSString*, SentryAttributeContent*>* FAppleSentryConverters::VariantMapToAttributeContentNative(const TMap<FString, FSentryVariant>& variantMap)
+NSDictionary<NSString*, SentryObjCAttributeContent*>* FAppleSentryConverters::VariantMapToAttributeContentNative(const TMap<FString, FSentryVariant>& variantMap)
 {
-	NSMutableDictionary<NSString*, SentryAttributeContent*>* dict = [NSMutableDictionary dictionaryWithCapacity:variantMap.Num()];
+	NSMutableDictionary<NSString*, SentryObjCAttributeContent*>* dict = [NSMutableDictionary dictionaryWithCapacity:variantMap.Num()];
 
 	for (auto it = variantMap.CreateConstIterator(); it; ++it)
 	{
-		SentryAttributeContent* content = VariantToAttributeContentNative(it.Value());
+		SentryObjCAttributeContent* content = VariantToAttributeContentNative(it.Value());
 		if (content != nil)
 		{
 			[dict setObject:content forKey:it.Key().GetNSString()];

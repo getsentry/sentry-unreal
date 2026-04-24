@@ -271,7 +271,7 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 
 void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
-	NSDictionary<NSString*, SentryAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
+	NSDictionary<NSString*, SentryObjCAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
 
 	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString()
 													value:(NSUInteger)Value
@@ -280,7 +280,7 @@ void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap
 
 void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	NSDictionary<NSString*, SentryAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
+	NSDictionary<NSString*, SentryObjCAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
 	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
 
 	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] distributionWithKey:Key.GetNSString()
@@ -291,7 +291,7 @@ void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, con
 
 void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	NSDictionary<NSString*, SentryAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
+	NSDictionary<NSString*, SentryObjCAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
 	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
 
 	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] gaugeWithKey:Key.GetNSString()
