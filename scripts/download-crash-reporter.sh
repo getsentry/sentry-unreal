@@ -43,6 +43,8 @@ downloadCrashReporter() {
     find "$tempDir" -name '._*' -delete 2>/dev/null || true
 
     mkdir -p "$targetDir/$platform"
+
+    rm -rf "$targetDir/$platform/$destName"
     mv "$tempDir/$archiveName" "$targetDir/$platform/$destName"
 
     if [[ -f "$targetDir/$platform/$destName" ]]; then
