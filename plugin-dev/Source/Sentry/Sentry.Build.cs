@@ -88,7 +88,7 @@ public class Sentry : ModuleRules
 
 				if (bEnableExternalCrashReporter)
 				{
-					RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter"));
+					RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.app", "..."), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter.app", "..."));
 					StageCrashReporterResources(Target);
 				}
 

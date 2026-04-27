@@ -416,7 +416,7 @@ function buildSentryCrashReporter()
     {
         $runtimeId = "osx-arm64"
         $platformDir = "Mac"
-        $executableName = "Sentry.CrashReporter"
+        $executableName = "Sentry.CrashReporter.app"
     }
 
     $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "sentry-crash-reporter-build"
@@ -427,7 +427,7 @@ function buildSentryCrashReporter()
     }
 
     dotnet publish `
-        -f net9.0-desktop `
+        -f net10.0-desktop `
         -r $runtimeId `
         "$CrashReporterPath/Sentry.CrashReporter/Sentry.CrashReporter.csproj" `
         -o $tempDir
@@ -440,7 +440,20 @@ function buildSentryCrashReporter()
     $destDir = "$outDir/$platformDir"
     New-Item $destDir -ItemType Directory -Force > $null
 
-    Copy-Item "$tempDir/$executableName" -Destination "$destDir/$executableName"
+    if ($IsMacOS)
+    {
+        $srcAppBundle = Get-ChildItem -Path $tempDir -Filter "*.app" -Directory | Select-Object -First 1
+        $destAppBundle = "$destDir/$executableName"
+        if (Test-Path $destAppBundle)
+        {
+            Remove-Item $destAppBundle -Recurse -Force
+        }
+        Copy-Item $srcAppBundle.FullName -Destination $destAppBundle -Recurse
+    }
+    else
+    {
+        Copy-Item "$tempDir/$executableName" -Destination "$destDir/$executableName"
+    }
 
     # Cleanup
     Remove-Item $tempDir -Recurse -Force

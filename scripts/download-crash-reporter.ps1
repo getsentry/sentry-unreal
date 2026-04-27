@@ -19,12 +19,20 @@ foreach ($platform in $platforms.Keys)
     if ($runtimeId.StartsWith("win-"))
     {
         $archiveUrl = "$baseUrl-$runtimeId.zip"
-        $executableName = "Sentry.CrashReporter.exe"
+        $archiveName = "Sentry.CrashReporter.exe"
+        $destName = "Sentry.CrashReporter.exe"
+    }
+    elseif ($runtimeId.StartsWith("osx-"))
+    {
+        $archiveUrl = "$baseUrl-$runtimeId.tar.gz"
+        $archiveName = "Sentry Crash Reporter.app"
+        $destName = "Sentry.CrashReporter.app"
     }
     else
     {
         $archiveUrl = "$baseUrl-$runtimeId.tar.gz"
-        $executableName = "Sentry.CrashReporter"
+        $archiveName = "Sentry.CrashReporter"
+        $destName = "Sentry.CrashReporter"
     }
 
     Write-Host "Downloading Crash Reporter for $platform ($runtimeId) ..."
@@ -52,14 +60,19 @@ foreach ($platform in $platforms.Keys)
     {
         $archivePath = "$tempDir/archive.tar.gz"
         Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
-        tar -xzf $archivePath -C $tempDir "./$executableName"
+        tar -xzf $archivePath -C $tempDir
     }
 
-    Copy-Item "$tempDir/$executableName" -Destination "$destDir/$executableName"
-
-    if (Get-Command 'chmod' -ErrorAction SilentlyContinue)
+    $destPath = "$destDir/$destName"
+    if (Test-Path $destPath)
     {
-        chmod +x "$destDir/$executableName"
+        Remove-Item $destPath -Recurse -Force
+    }
+    Copy-Item "$tempDir/$archiveName" -Destination $destPath -Recurse
+
+    if ((Get-Command 'chmod' -ErrorAction SilentlyContinue) -and (Test-Path $destPath -PathType Leaf))
+    {
+        chmod +x $destPath
     }
 
     Remove-Item $tempDir -Recurse -Force
