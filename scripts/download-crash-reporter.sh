@@ -14,10 +14,16 @@ downloadCrashReporter() {
 
     if [[ "$runtimeId" == win-* ]]; then
         local archiveUrl="$baseUrl-$runtimeId.zip"
-        local executableName="Sentry.CrashReporter.exe"
+        local archiveName="Sentry.CrashReporter.exe"
+        local destName="Sentry.CrashReporter.exe"
+    elif [[ "$runtimeId" == osx-* ]]; then
+        local archiveUrl="$baseUrl-$runtimeId.tar.gz"
+        local archiveName="Sentry Crash Reporter.app"
+        local destName="Sentry.CrashReporter.app"
     else
         local archiveUrl="$baseUrl-$runtimeId.tar.gz"
-        local executableName="Sentry.CrashReporter"
+        local archiveName="Sentry.CrashReporter"
+        local destName="Sentry.CrashReporter"
     fi
 
     echo "Downloading Crash Reporter for $platform ($runtimeId) ..."
@@ -27,15 +33,18 @@ downloadCrashReporter() {
 
     if [[ "$runtimeId" == win-* ]]; then
         curl -sL "$archiveUrl" -o "$tempDir/archive.zip"
-        unzip -qo "$tempDir/archive.zip" "$executableName" -d "$tempDir"
+        unzip -qo "$tempDir/archive.zip" "$archiveName" -d "$tempDir"
     else
         curl -sL "$archiveUrl" -o "$tempDir/archive.tar.gz"
-        tar -xzf "$tempDir/archive.tar.gz" -C "$tempDir" "./$executableName"
+        tar -xzf "$tempDir/archive.tar.gz" -C "$tempDir"
     fi
 
     mkdir -p "$targetDir/$platform"
-    mv "$tempDir/$executableName" "$targetDir/$platform/$executableName"
-    chmod +x "$targetDir/$platform/$executableName"
+    mv "$tempDir/$archiveName" "$targetDir/$platform/$destName"
+
+    if [[ -f "$targetDir/$platform/$destName" ]]; then
+        chmod +x "$targetDir/$platform/$destName"
+    fi
 
     rm -rf "$tempDir"
 }
