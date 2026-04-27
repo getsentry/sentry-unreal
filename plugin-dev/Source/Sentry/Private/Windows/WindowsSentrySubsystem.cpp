@@ -2,7 +2,7 @@
 
 #include "WindowsSentrySubsystem.h"
 
-#if USE_SENTRY_NATIVE
+#if USE_SENTRY_NATIVE && !SENTRY_WINGDK
 
 #include "SentryDefines.h"
 #include "SentrySettings.h"
@@ -146,4 +146,4 @@ FString FWindowsSentrySubsystem::GetDeviceType() const
 	return FMicrosoftSentrySubsystem::GetDeviceType();
 }
 
-#endif // USE_SENTRY_NATIVE
+#endif // USE_SENTRY_NATIVE && !SENTRY_WINGDK

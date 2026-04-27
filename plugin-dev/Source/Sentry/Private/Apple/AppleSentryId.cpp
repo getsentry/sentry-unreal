@@ -2,6 +2,8 @@
 
 #include "AppleSentryId.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
 
@@ -34,3 +36,5 @@ FString FAppleSentryId::ToString() const
 {
 	return FString(IdApple.sentryIdString);
 }
+
+#endif // !USE_SENTRY_NATIVE

@@ -61,7 +61,7 @@ void SentryLogSpec::Define()
 			TestEqual("Fatal level", SentryLog->GetLevel(), ESentryLevel::Fatal);
 
 			// Test invalid level falls back to Debug
-#if PLATFORM_APPLE
+#if PLATFORM_APPLE && !USE_SENTRY_NATIVE
 			AddExpectedError(TEXT("Unknown Sentry level value used"), EAutomationExpectedErrorFlags::Contains, 0);
 #endif
 			SentryLog->SetLevel(static_cast<ESentryLevel>(18));

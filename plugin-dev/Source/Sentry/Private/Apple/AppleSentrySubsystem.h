@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentrySubsystemInterface.h"
 
 class FAppleSentrySubsystem : public ISentrySubsystem
@@ -70,3 +72,5 @@ protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
 };
+
+#endif // !USE_SENTRY_NATIVE

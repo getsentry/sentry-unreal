@@ -40,3 +40,4 @@ function setupPluginLink([string] $projectDir)
 setupPluginLink "sample"
 . "$PSScriptRoot/download-sdks.ps1"
 . "$PSScriptRoot/download-cli.ps1"
+. "$PSScriptRoot/download-crash-reporter.ps1"

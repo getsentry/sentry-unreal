@@ -215,6 +215,16 @@ struct FEnableBuildTargets
 };
 
 USTRUCT(BlueprintType)
+struct FSentryCrashReporterImagery
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Override default app logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image."))
+	bool bOverrideAppLogo = false;
+};
+
+USTRUCT(BlueprintType)
 struct FSentryCrashReporterAppearance
 {
 	GENERATED_BODY()
@@ -270,6 +280,10 @@ struct FSentryCrashReporterAppearance
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Window closable", ToolTip = "When disabled, the user cannot close the crash reporter window without submitting the report. The native close button is disabled and the cancel button is hidden."))
 	bool bWindowClosable = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "App logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image. The file is stored in Build/SentryCrashReporter/ under your project and staged alongside the plugin during packaging."))
+	FSentryCrashReporterImagery Imagery;
 };
 
 /**
@@ -449,7 +463,7 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryDatabaseLocation DatabaseLocation;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Use native crash backend (Experimental)", ToolTip = "Use the experimental native backend for crash reporting on Windows and Linux instead of the default Crashpad backend. Requires rebuild after changing.",
+		Meta = (DisplayName = "Use native crash backend (Experimental)", ToolTip = "Use the experimental native backend for crash reporting on Windows, Linux, and macOS instead of the default backend (Crashpad on Windows/Linux, sentry-cocoa on macOS). Requires rebuild after changing.",
 			ConfigRestartRequired = true))
 	bool UseNativeBackend;
 
@@ -472,13 +486,13 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use."))
 	bool EnableOnCrashLogging;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Enable external crash reporter",
-			ToolTip = "When enabled, a crash reporter dialog is shown to the user after a crash, allowing them to provide feedback before submitting the crash report. Supported on Windows and Linux only."))
+	UPROPERTY(Config, EditAnywhere, Category = "Sentry Crash Reporter",
+		Meta = (DisplayName = "Enable Sentry Crash Reporter",
+			ToolTip = "When enabled, the Sentry Crash Reporter dialog is shown to the user after a crash, allowing them to review crash details and provide feedback before the report is submitted."))
 	bool EnableExternalCrashReporter;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
-		Meta = (DisplayName = "External crash reporter appearance", ToolTip = "Customize the appearance of the external crash reporter dialog.",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Sentry Crash Reporter",
+		Meta = (DisplayName = "Sentry Crash Reporter appearance", ToolTip = "Customize the appearance of the Sentry Crash Reporter dialog.",
 			EditCondition = "EnableExternalCrashReporter"))
 	FSentryCrashReporterAppearance CrashReporterAppearance;
 
@@ -594,12 +608,12 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "UploadSymbolsAutomatically"))
 	bool UseLegacyGradlePlugin;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
-		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
+	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
+		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Crash Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
-		Meta = (DisplayName = "Allow Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Crash Reporter."))
+	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
+		Meta = (DisplayName = "Allow Unreal Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Unreal Crash Reporter."))
 	bool EnableCrashReporterContextPropagation;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Consent",

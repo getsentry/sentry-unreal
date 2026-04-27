@@ -6,7 +6,7 @@
 
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryId.h"
-#elif PLATFORM_APPLE
+#elif PLATFORM_APPLE && !USE_SENTRY_NATIVE
 #include "Apple/AppleSentryId.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryId.h"

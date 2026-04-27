@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryAttachmentInterface.h"
 
 @class SentryAttachment;
@@ -25,3 +27,5 @@ private:
 };
 
 typedef FAppleSentryAttachment FPlatformSentryAttachment;
+
+#endif // !USE_SENTRY_NATIVE

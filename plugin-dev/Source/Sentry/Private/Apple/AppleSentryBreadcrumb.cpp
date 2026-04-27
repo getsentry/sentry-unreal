@@ -2,6 +2,8 @@
 
 #include "AppleSentryBreadcrumb.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "Convenience/AppleSentryInclude.h"
@@ -76,3 +78,5 @@ ESentryLevel FAppleSentryBreadcrumb::GetLevel() const
 {
 	return FAppleSentryConverters::SentryLevelToUnreal(BreadcrumbApple.level);
 }
+
+#endif // !USE_SENTRY_NATIVE

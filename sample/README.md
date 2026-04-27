@@ -22,7 +22,7 @@ This sample project demonstrates the capabilities of the Sentry Unreal Engine SD
 ### Setup
 
 - Clone or download the Sentry Unreal SDK repository
-- Copy or symlink the Sentry plugin sources to `sample/Plugins/Sentry/`
+- Provide the Sentry plugin under `sample/Plugins/Sentry/` — either extract a pre-made package from the [Releases page](https://github.com/getsentry/sentry-unreal/releases), or build locally from `plugin-dev/` sources (see [CONTRIBUTING.md](../CONTRIBUTING.md))
 - Open `SentryPlayground.uproject` in Unreal Engine
 - Configure your Sentry DSN in `Config/DefaultEngine.ini` or through the project settings menu
 - Play the `SentryDemo` level to begin testing
@@ -36,22 +36,41 @@ Here's a breakdown of the important sample project files and folders:
 ├── 📄 SentryPlayground.uproject                    # Engine version configuration, supports UE 4.27 and newer
 ├── 📁 Source/
 │   └── 📁 SentryPlayground/
-│       ├── 📄 SentryPlaygroundGameInstance.cpp/.h  # Logic for running integration tests
-│       ├── 📄 SentryPlaygroundUtils.cpp/.h         # Utilities for triggering different types of crashes
-│       ├── 📄 CppBeforeSendHandler.cpp/.h          # Example C++ implementation of `beforeSend` hook handler
-│       ├── 📄 CppBeforeBreadcrumbHandler.cpp/.h    # Example C++ implementation of `beforeBreadcrumb` hook handler
-│       └── 📄 SentryGCCallback.cpp/.h              # Utility for capturing events during garbage collection
+│       ├── 📄 SentryPlaygroundGameInstance.cpp/.h       # Dispatches integration tests based on command-line switches
+│       ├── 📄 SentryPlaygroundGameModeBase.cpp/.h       # Sample game mode
+│       ├── 📁 IntegrationTests/                         # One class per integration test, sharing a common base
+│       │   ├── 📄 SentryBaseIntegrationTest.cpp/.h      # Base class (FSentryBaseIntegrationTest) with shared helpers
+│       │   ├── 📄 SentryCrashTest.cpp/.h                # Crash scenarios (null ptr, stack overflow, OOM, etc.)
+│       │   ├── 📄 SentryMessageTest.cpp/.h              # Message capture with scope customization
+│       │   ├── 📄 SentryLogTest.cpp/.h                  # Structured log capture
+│       │   ├── 📄 SentryMetricTest.cpp/.h               # Counter/distribution/gauge metrics
+│       │   ├── 📄 SentryTracingTest.cpp/.h              # Transactions and spans
+│       │   ├── 📄 SentryEnsureTest.cpp/.h               # Non-fatal ensure() capture
+│       │   ├── 📄 SentryHangTest.cpp/.h                 # Application hang detection
+│       │   └── 📄 SentryInitOnlyTest.cpp/.h             # SDK init smoke test
+│       ├── 📁 Hooks/                                    # Example C++ implementations of SDK hook handlers
+│       │   ├── 📄 CppBeforeSendHandler.cpp/.h
+│       │   ├── 📄 CppBeforeBreadcrumbHandler.cpp/.h
+│       │   ├── 📄 CppBeforeLogHandler.cpp/.h
+│       │   ├── 📄 CppBeforeMetricHandler.cpp/.h
+│       │   └── 📄 CppTraceSampler.cpp/.h
+│       └── 📁 Utils/
+│           ├── 📄 SentryPlaygroundCrashUtils.cpp/.h     # Crash/ensure/hang trigger helpers + ESentryAppTerminationType enum
+│           ├── 📄 SentryPlaygroundBlueprintUtils.cpp/.h # Misc Blueprint-callable helpers (string/bytes/file)
+│           └── 📄 SentryGCCallback.cpp/.h               # Utility for capturing events during garbage collection
 ├── 📁 Content/
 │   ├── 📁 Maps/
-│   │   └── 📄 SentryDemo.umap                      # Main demo level)
+│   │   └── 📄 SentryDemo.umap                      # Main demo level
 │   ├── 📁 UI/
 │   │   └── 📄 W_SentryDemo.uasset                  # Demo UI widget for testing SDK features
 │   └── 📁 Misc/
 │       ├── 📄 BP_BeforeSendHandler.uasset          # Example Blueprint implementation of `beforeSend` hook handler
 │       ├── 📄 BP_BeforeBreadcrumbHandler.uasset    # Example Blueprint implementation of `beforeBreadcrumb` hook handler
-│       └── 📄 BP_TraceSampler.uasset               # Example Blueprint implementation of traces sampling function
+│       ├── 📄 BP_BeforeLogHandler.uasset           # Example Blueprint implementation of `beforeLog` hook handler
+│       ├── 📄 BP_BeforeMetricHandler.uasset        # Example Blueprint implementation of `beforeMetric` hook handler
+│       └── 📄 BP_TraceSampler.uasset               # Example Blueprint implementation of `tracesSampler` hook handler
 ├── 📁 Config/
-│   └── 📄 DefaultEngine.ini                        # Configuration file with Sentry plugin settings
+│   └── 📄 DefaultEngine.ini                        # Sentry plugin settings live here under `[/Script/Sentry.SentrySettings]`
 └── 📁 Plugins/                                     # Location for Sentry SDK sources - copy or symlink here
 ```
 
@@ -73,11 +92,28 @@ The `SentryPlaygroundGameInstance.cpp` file contains logic that parses command l
 # Windows - Crash capture test
 SentryPlayground.exe -nullrhi -unattended -log -crash-capture
 
-# Windows - Message capture test  
+# Windows - Message capture test
 SentryPlayground.exe -nullrhi -unattended -log -message-capture
 ```
 
-To run integration tests, specify which test to run using the appropriate argument (e.g., `-crash-capture` or `-message-capture`). The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
+The following test switches are supported:
+
+- `-crash-capture` - generic nullptr-dereferencing crash
+- `-crash-stack-overflow` - stack overflow crash
+- `-crash-memory-corruption` - memory corruption crash
+- `-crash-assert` - `check()` assertion failure
+- `-crash-oom` - out-of-memory crash
+- `-message-capture` - capture a message event
+- `-log-capture` - capture a structured log
+- `-metric-capture` - emit a metric
+- `-tracing-capture` - capture a transaction/span
+- `-ensure-capture` - trigger a non-fatal `ensure()`
+- `-hang-capture` - simulate an application hang
+- `-init-only` - initialize the SDK and exit without running a test action
+
+The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.
+
+After completing a test the game emits a single line to stdout in the form `TEST_RESULT: {"test":"<name>","success":<true|false>,"message":"<text>"}`, which the CI test harness parses to determine the outcome.
 
 Optionally, you can override Sentry plugin settings specified in the configuration `.ini` file by passing additional input arguments in the following format:
 
@@ -91,8 +127,10 @@ SentryPlayground.exe -nullrhi -unattended -log -crash-capture -ini:Engine:[/Scri
 
 The sample project contains example Blueprint implementations of various hook handlers under `Content -> Misc`:
 
-- `BP_BeforeSendHandler` - Example Blueprint implementation of event filtering
-- `BP_BeforeBreadcrumbHandler` - Custom breadcrumb processing logic
-- `BP_TraceSampler` - Performance monitoring sampling configuration
+- `BP_BeforeSendHandler` - Filter or modify events before they are sent
+- `BP_BeforeBreadcrumbHandler` - Filter or modify breadcrumbs before they are recorded
+- `BP_BeforeLogHandler` - Filter or modify structured logs before they are sent
+- `BP_BeforeMetricHandler` - Filter or modify metrics before they are emitted
+- `BP_TraceSampler` - Decide the sample rate for transactions
 
-These can be configured for the SDK to use in `Project Settings -> Plugins -> Sentry`.
+These can be configured for the SDK to use in `Project Settings -> Plugins -> Sentry -> Hooks`.

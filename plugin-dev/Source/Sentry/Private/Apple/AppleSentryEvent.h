@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryEventInterface.h"
 
 @class SentryEvent;
@@ -46,3 +48,5 @@ private:
 };
 
 typedef FAppleSentryEvent FPlatformSentryEvent;
+
+#endif // !USE_SENTRY_NATIVE

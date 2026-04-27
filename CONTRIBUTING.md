@@ -105,7 +105,7 @@ $env:SENTRY_XBOX_PATH = "D:\projects\sentry-xbox"
 ./scripts/init-consoles.ps1 -All
 
 # Option 2: Setup specific platforms
-./scripts/init-consoles.ps1 -Switch -PS5 -XSX -XB1
+./scripts/init-consoles.ps1 -Switch -PS5 -XSX -XB1 -WinGDK
 
 # Option 3: Setup individual platform without configuring environment variables
 ./scripts/init-console-ext.ps1 -Platform Switch -ExtensionPath D:\projects\sentry-switch

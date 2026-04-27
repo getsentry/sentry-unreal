@@ -28,6 +28,7 @@ jobs:
       - name: Configure env for Linux docker containers
         if: ${{ inputs.target == 'Linux' || inputs.target == 'LinuxArm64' }}
         run: |
+          sed -i 's|http://archive.ubuntu.com|http://azure.archive.ubuntu.com|g; s|http://security.ubuntu.com|http://azure.archive.ubuntu.com|g' /etc/apt/sources.list
           apt-get update
           apt-get -y install sudo
           apt-get -y install wget
