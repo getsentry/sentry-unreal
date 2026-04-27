@@ -2,6 +2,7 @@
 
 #include "SentrySubsystem.h"
 
+#include "SentryAttachment.h"
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
 #include "SentryBeforeMetricHandler.h"
@@ -16,12 +17,26 @@
 #include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
-
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
+
+#include "Interface/SentrySubsystemInterface.h"
+
+#include "HAL/PlatformSentryFeedback.h"
+#include "HAL/PlatformSentryId.h"
+#include "HAL/PlatformSentrySubsystem.h"
+
 #include "Utils/SentryCallbackHandlers.h"
+#include "Utils/SentryHangWatcher.h"
+
+#include "Performance/SentryPerfFrameTimeMonitor.h"
+#include "Performance/SentryPerfGCMonitor.h"
+#include "Performance/SentryPerfGameStatsMonitor.h"
+#include "Performance/SentryPerfMetricAttributes.h"
+#include "Performance/SentryPerfNetworkMonitor.h"
 
 #include "CoreGlobals.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "GenericPlatform/GenericPlatformDriver.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
@@ -30,14 +45,6 @@
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
-#include "SentryAttachment.h"
-#include "Utils/SentryHangWatcher.h"
-
-#include "Interface/SentrySubsystemInterface.h"
-
-#include "HAL/PlatformSentryFeedback.h"
-#include "HAL/PlatformSentryId.h"
-#include "HAL/PlatformSentrySubsystem.h"
 
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -164,6 +171,11 @@ void USentrySubsystem::Initialize()
 	{
 		ConfigureHangTracking();
 	}
+
+	if (Settings->EnableMetrics)
+	{
+		ConfigurePerformanceMetrics();
+	}
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -211,6 +223,41 @@ void USentrySubsystem::Close()
 	{
 		HangWatcher->Stop();
 		HangWatcher.Reset();
+	}
+
+	if (PerfFrameTimeMonitor.IsValid())
+	{
+		if (GEngine)
+		{
+			GEngine->RemovePerformanceDataConsumer(PerfFrameTimeMonitor);
+		}
+
+		PerfFrameTimeMonitor.Reset();
+	}
+
+	if (PerfGCMonitor.IsValid())
+	{
+		PerfGCMonitor.Reset();
+	}
+
+	if (PerfGameStatsMonitor.IsValid())
+	{
+		PerfGameStatsMonitor.Reset();
+	}
+
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+	if (OnNetDriverCreatedHandle.IsValid())
+	{
+		FWorldDelegates::OnNetDriverCreated.Remove(OnNetDriverCreatedHandle);
+		OnNetDriverCreatedHandle.Reset();
+	}
+
+	PerfNetworkMonitor.Reset();
+#endif
+
+	if (PerfMetricAttributes.IsValid())
+	{
+		PerfMetricAttributes.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -932,6 +979,7 @@ void USentrySubsystem::AddDeviceContext()
 	const FPlatformMemoryConstants& MemoryConstants = FPlatformMemory::GetConstants();
 
 	TMap<FString, FSentryVariant> DeviceContext;
+	DeviceContext.Add(TEXT("device_type"), SubsystemNativeImpl->GetDeviceType());
 	DeviceContext.Add(TEXT("cpu_description"), FPlatformMisc::GetCPUBrand());
 	DeviceContext.Add(TEXT("number_of_cores"), FString::FromInt(FPlatformMisc::NumberOfCores()));
 	DeviceContext.Add(TEXT("number_of_cores_including_hyperthreads"), FString::FromInt(FPlatformMisc::NumberOfCoresIncludingHyperthreads()));
@@ -1148,6 +1196,67 @@ void USentrySubsystem::ConfigureHangTracking()
 		SubsystemNativeImpl->CaptureHang(HungThreadId);
 	});
 	HangWatcher->Start();
+}
+
+void USentrySubsystem::ConfigurePerformanceMetrics()
+{
+	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
+	check(Settings);
+
+	bool bTrackPerformanceMetrics = false;
+
+	bTrackPerformanceMetrics |= Settings->EnableAutoFrameTimeMetrics;
+	bTrackPerformanceMetrics |= Settings->EnableAutoGameStatsMetrics;
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
+	bTrackPerformanceMetrics |= Settings->EnableAutoGCMetrics;
+#endif
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+	bTrackPerformanceMetrics |= Settings->EnableAutoNetworkMetrics;
+#endif
+
+	if (!bTrackPerformanceMetrics)
+	{
+		return;
+	}
+
+	PerfMetricAttributes = MakeShared<FSentryPerfMetricAttributes>();
+
+	if (Settings->EnableAutoFrameTimeMetrics)
+	{
+		PerfFrameTimeMonitor = MakeShared<FSentryPerfFrameTimeMonitor>(PerfMetricAttributes);
+
+		if (GEngine)
+		{
+			GEngine->AddPerformanceDataConsumer(PerfFrameTimeMonitor);
+		}
+	}
+
+	if (Settings->EnableAutoGameStatsMetrics)
+	{
+		PerfGameStatsMonitor = MakeShared<FSentryPerfGameStatsMonitor>(PerfMetricAttributes);
+	}
+
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
+	if (Settings->EnableAutoGCMetrics)
+	{
+		PerfGCMonitor = MakeShared<FSentryPerfGCMonitor>(PerfMetricAttributes);
+	}
+#endif
+
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+	if (Settings->EnableAutoNetworkMetrics)
+	{
+		PerfNetworkMonitor = MakeShared<FSentryPerfNetworkMonitor>(PerfMetricAttributes);
+
+		OnNetDriverCreatedHandle = FWorldDelegates::OnNetDriverCreated.AddWeakLambda(this, [this](UWorld* World, UNetDriver* NetDriver)
+		{
+			if (PerfNetworkMonitor.IsValid() && NetDriver)
+			{
+				PerfNetworkMonitor->SetNetDriver(NetDriver);
+			}
+		});
+	}
+#endif
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)

@@ -63,6 +63,7 @@ public:
 
 	virtual void HandleAssert() override {}
 	virtual bool IsHangTrackingSupported() const override { return false; }
+	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler() const;
@@ -79,7 +80,9 @@ protected:
 	virtual void ConfigureCertsPath(sentry_options_t* Options) {}
 	virtual void ConfigureLogFileAttachment(sentry_options_t* Options) {}
 	virtual void ConfigureNetworkConnectFunc(sentry_options_t* Options) {}
+	virtual void ConfigureStackCaptureStrategy(sentry_options_t* Options) {}
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) {}
+	virtual void ConfigureScreenshotCapturing(sentry_options_t* Options) {}
 
 	void ConfigureCrashReporterAppearance(const USentrySettings* Settings);
 
@@ -87,6 +90,7 @@ protected:
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;
 	FString GetCrashReporterPath() const;
+	FString GetCrashReporterLogoPath() const;
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
 	virtual FString GetCrashReporterExecutableName() const { return TEXT("invalid"); }
 
@@ -98,6 +102,7 @@ protected:
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
 	virtual bool IsScreenshotSupported() const;
+	virtual bool IsOutOfProcessScreenshotEnabled() const { return false; }
 
 	virtual ECrashContextType ResolveCrashType() const;
 
@@ -108,6 +113,8 @@ protected:
 
 	void SetEventCrashType(sentry_value_t event, ECrashContextType crashType);
 	void SetEventTag(sentry_value_t event, const char* key, const char* value);
+
+	bool bUseNativeBackend;
 
 	TArray<TSharedPtr<FGenericPlatformSentryAttachment>> attachments;
 

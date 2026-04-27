@@ -53,9 +53,22 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, co
 	}
 }
 
+FString FLinuxSentrySubsystem::GetHandlerExecutableName() const
+{
+	return bUseNativeBackend ? TEXT("sentry-crash") : TEXT("crashpad_handler");
+}
+
 void FLinuxSentrySubsystem::ConfigureHandlerPath(sentry_options_t* Options)
 {
-	sentry_options_set_handler_path(Options, TCHAR_TO_UTF8(*GetHandlerPath()));
+	const FString HandlerPath = GetHandlerPath();
+
+	if (!FPaths::FileExists(HandlerPath))
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Crash handler executable couldn't be found at: %s"), *HandlerPath);
+		return;
+	}
+
+	sentry_options_set_handler_path(Options, TCHAR_TO_UTF8(*HandlerPath));
 }
 
 void FLinuxSentrySubsystem::ConfigureDatabasePath(sentry_options_t* Options)
@@ -103,6 +116,16 @@ void FLinuxSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Options
 		return;
 	}
 	sentry_options_set_external_crash_reporter_path(Options, TCHAR_TO_UTF8(*CrashReporterPath));
+}
+
+FString FLinuxSentrySubsystem::GetDeviceType() const
+{
+	if (FSentryPlatformDetectionUtils::IsSteamDeck())
+	{
+		return TEXT("Handheld");
+	}
+
+	return FGenericPlatformSentrySubsystem::GetDeviceType();
 }
 
 #endif // USE_SENTRY_NATIVE

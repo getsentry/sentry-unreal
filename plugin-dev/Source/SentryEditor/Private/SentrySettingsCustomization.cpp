@@ -65,7 +65,8 @@ void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 {
 	DrawGeneralNotice(DetailBuilder);
 	DrawDebugSymbolsNotice(DetailBuilder);
-	DrawCrashReporterNotice(DetailBuilder);
+	DrawSentryCrashReporterSection(DetailBuilder);
+	DrawUnrealCrashReporterNotice(DetailBuilder);
 
 	SetPropertiesUpdateHandler(DetailBuilder);
 }
@@ -148,9 +149,61 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 #endif
 }
 
-void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder)
+void FSentrySettingsCustomization::DrawSentryCrashReporterSection(IDetailLayoutBuilder& DetailBuilder)
 {
-	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Crash Reporter"));
+	IDetailCategoryBuilder& SentryCrashReporterCategory = DetailBuilder.EditCategory(TEXT("Sentry Crash Reporter"));
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	const ISlateStyle& Style = FEditorStyle::Get();
+#else
+	const ISlateStyle& Style = FAppStyle::Get();
+#endif
+
+	// clang-format off
+	SentryCrashReporterCategory.AddCustomRow(FText::FromString(TEXT("SentryCrashReporter")), false)
+		.WholeRowWidget
+		[
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.Padding(1)
+			.AutoHeight()
+			[
+				SNew(SBorder)
+				.Padding(1)
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.Padding(FMargin(10, 10, 10, 10))
+					.FillWidth(1.0f)
+					[
+						SNew(SRichTextBlock)
+							.Text(FText::FromString(TEXT("Sentry Crash Reporter is a standalone application that can be used instead of the default Unreal Crash Reporter. "
+								"It lets users review crash details (tags, context, stacktrace) and submit feedback before the report is sent to Sentry. "
+								"Supported on all desktop platforms (on macOS the <RichTextBlock.TextHighlight>native crash backend</> must be enabled). "
+								"For symbolicated stacktraces in Shipping builds, enable \"Include Debug Files in Shipping Builds\" in packaging settings.")))
+							.TextStyle(Style, "MessageLog")
+							.DecoratorStyleSet(&Style)
+							.AutoWrapText(true)
+					]
+				]
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(0, 10, 0, 10))
+			.VAlign(VAlign_Top)
+			[
+				SNew(SRichTextBlock)
+				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/configuration/setup-crashreporter/#sentry-crash-reporter\">View the Sentry Crash Reporter setup documentation -></>")))
+				.AutoWrapText(true)
+				.DecoratorStyleSet(&FCoreStyle::Get())
+				+ SRichTextBlock::HyperlinkDecorator(TEXT("browser"), FSlateHyperlinkRun::FOnClick::CreateStatic(&OnDocumentationLinkClicked))
+			]
+		];
+	// clang-format on
+}
+
+void FSentrySettingsCustomization::DrawUnrealCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder)
+{
+	IDetailCategoryBuilder& CrashReporterCategory = DetailBuilder.EditCategory(TEXT("Unreal Crash Reporter"));
 
 	TSharedPtr<IPropertyHandle> CrashReporterUrlHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl));
 
@@ -178,7 +231,7 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 					.FillWidth(1.0f)
 					[
 						SNew(SRichTextBlock)
-							.Text(FText::FromString(TEXT("In order to configure Crash Reporter use Sentry's Unreal Engine Endpoint from the Client Keys settings page. "
+							.Text(FText::FromString(TEXT("In order to configure Unreal Crash Reporter use Sentry's Unreal Engine Endpoint from the Client Keys settings page. "
 								"This will include which project within Sentry you want to see the crashes arriving in real time. "
 								"Note that it's accomplished by modifying the `CrashReportClient` section in the global <RichTextBlock.TextHighlight>DefaultEngine.ini</> file. "
 								"Changing the engine is necessary for this to work!")))
@@ -193,7 +246,7 @@ void FSentrySettingsCustomization::DrawCrashReporterNotice(IDetailLayoutBuilder&
 			.VAlign(VAlign_Top)
 			[
 				SNew(SRichTextBlock)
-				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/setup-crashreporter/\">View the Crash Reporter setup documentation -></>")))
+				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/setup-crashreporter/\">View the Unreal Crash Reporter setup documentation -></>")))
 				.AutoWrapText(true)
 				.DecoratorStyleSet(&FCoreStyle::Get())
 				+ SRichTextBlock::HyperlinkDecorator(TEXT("browser"), FSlateHyperlinkRun::FOnClick::CreateStatic(&OnDocumentationLinkClicked))

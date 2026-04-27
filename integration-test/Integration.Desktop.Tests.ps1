@@ -40,11 +40,32 @@ BeforeDiscovery {
         }
     }
 
+    # Detect native backend by checking which crash handler binary exists in the packaged build
+    function Test-NativeBackend {
+        $appDir = Split-Path $env:SENTRY_UNREAL_TEST_APP_PATH
+        if ($IsMacOS) {
+            $pluginBinDir = Join-Path (Split-Path $appDir) "UE/SentryPlayground/Plugins/sentry/Binaries"
+        } else {
+            $pluginBinDir = Join-Path $appDir "SentryPlayground/Plugins/sentry/Binaries"
+        }
+        if ($IsWindows) {
+            return Test-Path (Join-Path $pluginBinDir "Win64/sentry-crash.exe")
+        } elseif ($IsLinux) {
+            return Test-Path (Join-Path $pluginBinDir "Linux/sentry-crash")
+        } elseif ($IsMacOS) {
+            return Test-Path (Join-Path $pluginBinDir "Mac/sentry-crash")
+        } else {
+            return $false
+        }
+    }
+
     # Only test the current desktop platform
     $TestTargets = @()
     $currentPlatform = Get-CurrentDesktopPlatform
     $currentPlatform | Should -Not -Be $null
     $TestTargets += Get-TestTarget -Platform $currentPlatform -ProviderName $currentPlatform
+
+    $script:IsNativeBackend = Test-NativeBackend
 
     # Define crash types to test
     $TestCrashTypes = @(
@@ -55,8 +76,8 @@ BeforeDiscovery {
         @{ Name = 'OutOfMemory';       Arg = '-crash-oom';                Type = 'OutOfMemory' }
     )
 
-    if ($IsLinux) {
-        # Skipp OutOfMemory test on Linux due to overcommit behavior which prevents reliable triggering of OOM condition in tests
+    if ($IsLinux -or ($IsMacOS -and $IsNativeBackend)) {
+        # Memory overcommit makes OOM conditions unreliable to trigger in tests on Linux and macOS with native backend
         $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
     }
 }
@@ -149,10 +170,11 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # $crashTypeArg triggers specific crash type scenario in the sample app
             $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
 
-            # On macOS, the crash is captured but not uploaded immediately (due to Cocoa's behavior),
+            # On macOS with Cocoa backend, the crash is captured but not uploaded immediately,
             # so we need to run the test app again to send it to Sentry.
-            # -init-only allows starting the app to flush captured events and quit right after
-            if ($Platform -eq 'MacOS') {
+            # -init-only allows starting the app to flush captured events and quit right after.
+            # With native backend, crashes are uploaded out-of-process so no relaunch is needed.
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
                 Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
             }
 
@@ -196,7 +218,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
         It "Should have correct event type and platform" {
             $script:CrashEvent.type | Should -Be 'error'
-            if ($Platform -eq 'MacOS') {
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
                 $script:CrashEvent.platform | Should -Be 'cocoa'
             }
             else {
@@ -227,7 +249,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:($Name -eq 'MemoryCorruption') {
+        It "Should have CrashType tag" -Skip:($Name -in @('OutOfMemory', 'MemoryCorruption') -or ($Platform -eq 'MacOS' -and -not $IsNativeBackend)) {
             $tags = $script:CrashEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $Type
         }
@@ -316,7 +338,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
         It "Should have correct event type and platform" {
             $script:EnsureEvent.type | Should -Be 'error'
-            if ($Platform -eq 'MacOS') {
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
                 $script:EnsureEvent.platform | Should -Be 'cocoa'
             }
             else {
@@ -350,7 +372,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:($Platform -eq 'MacOS') {
+        It "Should have CrashType tag" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
             $tags = $script:EnsureEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Ensure'
         }
@@ -523,7 +545,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
 
         It "Should have correct platform" {
-            if ($Platform -eq 'MacOS') {
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
                 $script:MessageEvent.platform | Should -Be 'cocoa'
             }
             else {
@@ -536,7 +558,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $script:MessageEvent.message.formatted | Should -Match 'Integration test message'
         }
 
-        It "Should have overridden release" -Skip:($Platform -eq 'MacOS') {
+        It "Should have overridden release" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
             $script:MessageEvent.release.version | Should -Be 'test-release@1.0.0'
         }
 
@@ -582,6 +604,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
         It "Should not have context removed by BeforeSendHandler" {
             $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
+        }
+
+        # Device context assertions
+        It "Should have device_type in device context" {
+            $script:MessageEvent.contexts.device | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.device.device_type | Should -Be 'Desktop'
         }
 
         # Global scope context assertions
@@ -723,8 +751,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
-    # Metrics are not supported on Apple platforms (macOS/iOS)
-    Context "Metrics Capture Tests" -Skip:$IsMacOS {
+    # Metrics are not supported on macOS with Cocoa backend
+    Context "Metrics Capture Tests" -Skip:($IsMacOS -and -not $IsNativeBackend) {
         BeforeAll {
             $script:MetricResult = $null
             $script:CapturedCounterMetrics = @()

@@ -38,15 +38,15 @@ rm -rf "SentryObjC.embeddedframework"
 rm "SentryObjC.embeddedframework.zip"
 
 # Prepare Mac artifacts
-if ! [ -d "$(dirname $sentryArtifactsDestination)/Mac" ]; then
-    mkdir "$(dirname $sentryArtifactsDestination)/Mac"
+if ! [ -d "$(dirname $sentryArtifactsDestination)/Mac/Cocoa" ]; then
+    mkdir -p "$(dirname $sentryArtifactsDestination)/Mac/Cocoa"
 else
-    rm -rf "$(dirname $sentryArtifactsDestination)/Mac/"*
+    rm -rf "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/"*
 fi
 
-mkdir "$(dirname $sentryArtifactsDestination)/Mac/bin"
-mkdir "$(dirname $sentryArtifactsDestination)/Mac/include"
+mkdir "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/bin"
+mkdir "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/include"
 
-cp "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_x86_64/SentryObjC.framework/SentryObjC" "$(dirname $sentryArtifactsDestination)/Mac/bin/SentryObjC.dylib"
+cp "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_x86_64/SentryObjC.framework/SentryObjC" "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/bin/SentryObjC.dylib"
 
-cp -rL "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_x86_64/SentryObjC.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/include/SentryObjC"
+cp -rL "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_x86_64/SentryObjC.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/include/SentryObjC"

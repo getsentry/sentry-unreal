@@ -92,11 +92,11 @@ jobs:
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun "
 
       - name: Download package
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: ${{ github.sha }}
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: checkout
           submodules: recursive
@@ -122,7 +122,7 @@ jobs:
 
       - name: Restore cached DDC
         id: cache-ddc
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
@@ -143,7 +143,7 @@ jobs:
             mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
             cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "
 
-      - name: Run tests
+      - name: Build and test (Crashpad)
         id: run-tests
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
@@ -164,7 +164,7 @@ jobs:
             -iterate \
             -build \
             -stage \
-            -prereqss \
+            -prereqs \
             -package \
             -archive
           docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \
@@ -175,27 +175,83 @@ jobs:
             -Unattended \
             -NoPause \
             -NoSplash \
-            -NullRHI          
+            -NullRHI
 
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect sample test info
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample test report (Linux)
           path: |
             checkout/sample/Saved/Automation
 
-      - name: Upload sample build
+      - name: Upload sample build (Crashpad)
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} sample build (Linux)
+          name: UE ${{ inputs.unreal-version }} sample build (Linux, crashpad)
           path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'LinuxNoEditor' || 'Linux' }}/
+          retention-days: 1
+
+      - name: Enable native backend
+        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        run: |
+          sed -i 's/UseNativeBackend=False/UseNativeBackend=True/' checkout/sample/Config/DefaultEngine.ini
+
+      - name: Build and test (Native)
+        id: run-tests-native
+        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        env:
+          EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          docker exec -w /workspace/checkout/sample \
+            -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+            -e SENTRY_ORG="$SENTRY_ORG" \
+            -e SENTRY_PROJECT="$SENTRY_PROJECT" \
+            unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+            -project=/workspace/checkout/sample/SentryPlayground.uproject \
+            -archivedirectory=/workspace/checkout/sample/Builds-Native \
+            -platform=Linux \
+            -nop4 \
+            -cook \
+            -iterate \
+            -build \
+            -stage \
+            -prereqs \
+            -package \
+            -archive
+          docker exec -w /workspace/checkout/sample unreal /home/ue4/UnrealEngine/Engine/Binaries/Linux/"$EDITOR_BINARY" \
+            /workspace/checkout/sample/SentryPlayground.uproject \
+            -ReportExportPath=/workspace/checkout/sample/Saved/Automation-Native \
+            -ExecCmds="Automation RunTests Sentry;quit" \
+            -TestExit="Automation Test Queue Empty" \
+            -Unattended \
+            -NoPause \
+            -NoSplash \
+            -NullRHI
+
+      - name: Collect native sample test info
+        if: ${{ always() && steps.run-tests-native.outcome == 'failure' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample test report (Linux, native)
+          path: |
+            checkout/sample/Saved/Automation-Native
+
+      - name: Upload sample build (Native)
+        if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Linux, native)
+          path: checkout/sample/Builds-Native/${{ inputs.unreal-version == '4.27' && 'LinuxNoEditor' || 'Linux' }}/
           retention-days: 1

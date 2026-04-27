@@ -21,6 +21,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, AttachStacktrace(true)
 	, SendDefaultPii(false)
 	, AttachScreenshot(false)
+	, EnableOutOfProcessScreenshots(false)
 	, AttachGpuDump(true)
 	, MaxAttachmentSize(20 * 1024 * 1024)
 	, EnableStructuredLogging(false)
@@ -28,6 +29,13 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, StructuredLoggingLevels()
 	, bSendBreadcrumbsWithStructuredLogging(false)
 	, EnableMetrics(false)
+	, EnableAutoFrameTimeMetrics(false)
+	, FrameTimeSampleInterval(30)
+	, EnableAutoGameStatsMetrics(false)
+	, GameStatsSampleInterval(60)
+	, EnableAutoGCMetrics(false)
+	, EnableAutoNetworkMetrics(false)
+	, NetworkMetricsSampleInterval(10)
 	, MaxBreadcrumbs(100)
 	, AutomaticBreadcrumbs()
 	, AutomaticBreadcrumbsForLogs()
@@ -42,6 +50,9 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, UseProxy(false)
 	, ProxyUrl()
 	, DatabaseLocation(ESentryDatabaseLocation::ProjectUserDirectory)
+	, UseNativeBackend(false)
+	, MinidumpMode(ESentryMinidumpMode::Smart)
+	, CrashReportingMode(ESentryCrashReportingMode::NativeStackwalkingWithMinidump)
 	, CrashpadWaitForUpload(false)
 	, EnableOnCrashLogging(false)
 	, EnableExternalCrashReporter(false)
@@ -95,6 +106,7 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	}
 
 	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, InitAutomatically) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseNativeBackend) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadSymbolsAutomatically) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, ProjectName) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, OrgName) ||

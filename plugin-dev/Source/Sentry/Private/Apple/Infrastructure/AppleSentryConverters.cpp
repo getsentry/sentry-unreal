@@ -2,6 +2,8 @@
 
 #include "AppleSentryConverters.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "SentryDefines.h"
 
 #include "Apple/AppleSentryScope.h"
@@ -559,3 +561,5 @@ FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryAttribute*
 		return FSentryVariant(FString([attribute.value description]));
 	}
 }
+
+#endif // !USE_SENTRY_NATIVE

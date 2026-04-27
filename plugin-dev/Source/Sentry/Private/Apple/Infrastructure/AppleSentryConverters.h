@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "SentryDataTypes.h"
 #include "SentryVariant.h"
 
@@ -42,3 +44,5 @@ public:
 	static SentryLevel StringToSentryLevel(NSString* string);
 	static FSentryVariant SentryAttributeToVariant(SentryAttribute* attribute);
 };
+
+#endif // !USE_SENTRY_NATIVE

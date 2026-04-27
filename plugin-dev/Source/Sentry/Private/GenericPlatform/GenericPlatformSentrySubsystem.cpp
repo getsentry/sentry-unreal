@@ -278,7 +278,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	if (isScreenshotAttachmentEnabled && !IsRunningCommandlet())
+	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
 		if (IsScreenshotSupported())
 		{
@@ -424,7 +424,8 @@ void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const ch
 }
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
-	: beforeSend(nullptr)
+	: bUseNativeBackend(false)
+	, beforeSend(nullptr)
 	, beforeBreadcrumb(nullptr)
 	, beforeLog(nullptr)
 	, beforeMetric(nullptr)
@@ -440,6 +441,8 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 
 void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
+	bUseNativeBackend = settings->UseNativeBackend;
+
 	beforeSend = callbackHandlers.BeforeSendHandler;
 	beforeBreadcrumb = callbackHandlers.BeforeBreadcrumbHandler;
 	beforeLog = callbackHandlers.BeforeLogHandler;
@@ -474,6 +477,11 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	{
 		// Clear screenshot captured during previous session if any
 		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("screenshots")), false, true);
+
+		if (settings->EnableOutOfProcessScreenshots)
+		{
+			ConfigureScreenshotCapturing(options);
+		}
 	}
 
 	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
@@ -496,6 +504,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureDatabasePath(options);
 	ConfigureCertsPath(options);
 	ConfigureNetworkConnectFunc(options);
+	ConfigureStackCaptureStrategy(options);
 
 	if (settings->EnableExternalCrashReporter)
 	{
@@ -521,6 +530,12 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_logs_with_attributes(options, true);
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
+
+	if (bUseNativeBackend)
+	{
+		sentry_options_set_minidump_mode(options, FGenericPlatformSentryConverters::MinidumpModeToNative(settings->MinidumpMode));
+		sentry_options_set_crash_reporting_mode(options, FGenericPlatformSentryConverters::CrashReportingModeToNative(settings->CrashReportingMode));
+	}
 
 	if (beforeBreadcrumb)
 	{
@@ -1150,6 +1165,15 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 		const FString ColorHex = FString::Printf(TEXT("#%02X%02X%02X"), Appearance.AccentColor.R, Appearance.AccentColor.G, Appearance.AccentColor.B);
 		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
 	}
+	if (Appearance.Imagery.bOverrideAppLogo)
+	{
+		const FString LogoPath = GetCrashReporterLogoPath();
+		if (FPaths::FileExists(LogoPath))
+		{
+			AppConfigObject->SetStringField(TEXT("LogoLight"), LogoPath);
+			AppConfigObject->SetStringField(TEXT("LogoDark"), LogoPath);
+		}
+	}
 	if (!Appearance.bWindowClosable)
 	{
 		AppConfigObject->SetBoolField(TEXT("WindowClosable"), false);
@@ -1188,6 +1212,17 @@ FString FGenericPlatformSentrySubsystem::GetCrashReporterPath() const
 {
 	const FString CrashReporterPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), GetCrashReporterExecutableName());
 	return FPaths::ConvertRelativePathToFull(CrashReporterPath);
+}
+
+FString FGenericPlatformSentrySubsystem::GetCrashReporterLogoPath() const
+{
+#if WITH_EDITOR
+	const FString LogoDir = FPaths::Combine(FPaths::ProjectDir(), TEXT("Build"), TEXT("SentryCrashReporter"));
+#else
+	const FString LogoDir = FPaths::Combine(FSentryModule::Get().GetPluginPath(), TEXT("Resources"), TEXT("SentryCrashReporter"));
+#endif
+
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(LogoDir, TEXT("Logo.png")));
 }
 
 FString FGenericPlatformSentrySubsystem::GetDatabasePath() const

@@ -4,26 +4,31 @@
 # * sentry-native - for Windows support (can be built only on Windows)
 # * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
 # * sentry-java - for Android support (can be built both on Windows and MacOS)
+# * sentry-crash-reporter - external crash reporter (can be built on Windows, MacOS and Linux)
 #
 # Usage:
 #   .\build-deps.ps1 -All                                  # Build all SDKs for current platform
 #   .\build-deps.ps1 -Cocoa -Java                          # Build only Cocoa and Java
 #   .\build-deps.ps1 -Native -NativePath "C:\custom\path"  # Build Native with custom path
 #   .\build-deps.ps1 -All -CocoaPath "C:\custom\path"      # Build all with custom Cocoa path
+#   .\build-deps.ps1 -CrashReporter                        # Build crash reporter
 #
 # Environment variables (used as fallback if custom paths not provided):
 #   SENTRY_COCOA_PATH - Path to local sentry-cocoa repository
 #   SENTRY_NATIVE_PATH - Path to local sentry-native repository
 #   SENTRY_JAVA_PATH - Path to local sentry-java repository
+#   SENTRY_CRASH_REPORTER_PATH - Path to local sentry-crash-reporter repository
 
 param(
     [switch]$All,
     [switch]$Cocoa,
     [switch]$Native,
     [switch]$Java,
+    [switch]$CrashReporter,
     [string]$CocoaPath,
     [string]$NativePath,
-    [string]$JavaPath
+    [string]$JavaPath,
+    [string]$CrashReporterPath
 )
 
 Set-StrictMode -Version latest
@@ -43,28 +48,33 @@ if ($All)
     {
         $Native = $true
         $Java = $true
+        $CrashReporter = $true
     }
     else
     {
         $Cocoa = $true
+        $Native = $true
         $Java = $true
+        $CrashReporter = $true
     }
 }
 
 # Check if at least one SDK is selected
-if (-not ($Cocoa -or $Native -or $Java))
+if (-not ($Cocoa -or $Native -or $Java -or $CrashReporter))
 {
-    Write-Host "Error: No SDK specified. Use -All or specify individual SDKs (-Cocoa, -Native, -Java)" -ForegroundColor Red
+    Write-Host "Error: No SDK specified. Use -All or specify individual SDKs (-Cocoa, -Native, -Java, -CrashReporter)" -ForegroundColor Red
     Write-Host ""
     Write-Host "Examples:"
     Write-Host "  .\build-deps.ps1 -All"
     Write-Host "  .\build-deps.ps1 -Cocoa -Java"
     Write-Host "  .\build-deps.ps1 -Native -NativePath 'D:\projects\sentry-native'"
+    Write-Host "  .\build-deps.ps1 -CrashReporter"
     Write-Host ""
     Write-Host "Environment variables (used as fallback):"
-    Write-Host "  SENTRY_COCOA_PATH  - Path to local sentry-cocoa repository"
-    Write-Host "  SENTRY_NATIVE_PATH - Path to local sentry-native repository"
-    Write-Host "  SENTRY_JAVA_PATH   - Path to local sentry-java repository"
+    Write-Host "  SENTRY_COCOA_PATH           - Path to local sentry-cocoa repository"
+    Write-Host "  SENTRY_NATIVE_PATH          - Path to local sentry-native repository"
+    Write-Host "  SENTRY_JAVA_PATH            - Path to local sentry-java repository"
+    Write-Host "  SENTRY_CRASH_REPORTER_PATH  - Path to local sentry-crash-reporter repository"
     exit 1
 }
 
@@ -72,11 +82,13 @@ if (-not ($Cocoa -or $Native -or $Java))
 $buildCocoa = $Cocoa
 $buildNative = $Native
 $buildJava = $Java
+$buildCrashReporter = $CrashReporter
 
 # Resolve paths: use custom path if provided, otherwise fallback to environment variable
 if ([string]::IsNullOrEmpty($CocoaPath)) { $CocoaPath = $env:SENTRY_COCOA_PATH }
 if ([string]::IsNullOrEmpty($NativePath)) { $NativePath = $env:SENTRY_NATIVE_PATH }
 if ([string]::IsNullOrEmpty($JavaPath)) { $JavaPath = $env:SENTRY_JAVA_PATH }
+if ([string]::IsNullOrEmpty($CrashReporterPath)) { $CrashReporterPath = $env:SENTRY_CRASH_REPORTER_PATH }
 
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 
@@ -201,16 +213,16 @@ function buildSentryCocoaMac()
     extractXCFramework "$CocoaPath/XCFrameworkBuildPath/Sentry-Dynamic.xcframework.zip" $tempExtractDir
 
     # Prepare output directories
-    $macOutDir = "$outDir/Mac"
-    $macOutDirBinaries = "$macOutDir/bin"
-    $macOutDirIncludes = "$macOutDir/include/Sentry"
+    $macCocoaDir = "$outDir/Mac/Cocoa"
+    $macOutDirBinaries = "$macCocoaDir/bin"
+    $macOutDirIncludes = "$macCocoaDir/include/Sentry"
 
-    if (Test-Path $macOutDir)
+    if (Test-Path $macCocoaDir)
     {
-        Remove-Item $macOutDir -Recurse -Force
+        Remove-Item $macCocoaDir -Recurse -Force
     }
 
-    New-Item $macOutDir -ItemType Directory > $null
+    New-Item $macCocoaDir -ItemType Directory > $null
     New-Item $macOutDirBinaries -ItemType Directory > $null
     New-Item $macOutDirIncludes -ItemType Directory > $null
 
@@ -276,8 +288,11 @@ function buildSentryNative()
 
     Write-Host "Building Sentry Native for Windows using local repository at: $NativePath"
 
-    Push-Location -Path $NativePath
+    $platformDir = "$outDir/Win64"
 
+    # Build Crashpad backend
+    Write-Host "Building Crashpad backend..."
+    Push-Location -Path $NativePath
     try
     {
         cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
@@ -290,25 +305,147 @@ function buildSentryNative()
         Pop-Location
     }
 
-    $nativeOutDir = "$outDir/Win64"
-    $nativeOutDirLibs = "$nativeOutDir/lib"
-    $nativeOutDirBinaries = "$nativeOutDir/bin"
-    $nativeOutDirIncludes = "$nativeOutDir/include"
+    $crashpadDir = "$platformDir/Crashpad"
+    if (Test-Path $crashpadDir) { Remove-Item $crashpadDir -Recurse -Force }
+    New-Item "$crashpadDir/lib" -ItemType Directory -Force > $null
+    New-Item "$crashpadDir/bin" -ItemType Directory -Force > $null
+    New-Item "$crashpadDir/include" -ItemType Directory -Force > $null
 
-    if (Test-Path $nativeOutDir)
+    Get-ChildItem -Path "$NativePath/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination "$crashpadDir/lib"
+    Copy-Item "$NativePath/install/bin/crashpad_handler.exe" -Destination "$crashpadDir/bin"
+    Copy-Item "$NativePath/install/bin/crashpad_wer.dll" -Destination "$crashpadDir/bin"
+    Copy-Item "$NativePath/install/include/sentry.h" -Destination "$crashpadDir/include"
+
+    # Build Native backend
+    Write-Host "Building Native backend..."
+    Push-Location -Path $NativePath
+    try
     {
-        Remove-Item $nativeOutDir -Recurse -Force
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
+        cmake --build "build_native" --target sentry --config RelWithDebInfo --parallel
+        cmake --build "build_native" --target sentry-crash --config RelWithDebInfo --parallel
+        cmake --install "build_native" --prefix "install_native" --config RelWithDebInfo
+    }
+    finally
+    {
+        Pop-Location
     }
 
-    New-Item $nativeOutDir -ItemType Directory > $null
-    New-Item $nativeOutDirLibs -ItemType Directory > $null
-    New-Item $nativeOutDirBinaries -ItemType Directory > $null
-    New-Item $nativeOutDirIncludes -ItemType Directory > $null
+    $nativeDir = "$platformDir/Native"
+    if (Test-Path $nativeDir) { Remove-Item $nativeDir -Recurse -Force }
+    New-Item "$nativeDir/lib" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/bin" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/include" -ItemType Directory -Force > $null
 
-    Get-ChildItem -Path "$NativePath/install/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination $nativeOutDirLibs
-    Copy-Item "$NativePath/install/bin/crashpad_handler.exe" -Destination $nativeOutDirBinaries
-    Copy-Item "$NativePath/install/bin/crashpad_wer.dll" -Destination $nativeOutDirBinaries
-    Copy-Item "$NativePath/install/include/sentry.h" -Destination $nativeOutDirIncludes
+    Get-ChildItem -Path "$NativePath/install_native/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination "$nativeDir/lib"
+    Copy-Item "$NativePath/install_native/bin/sentry-crash.exe" -Destination "$nativeDir/bin"
+    Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
+}
+
+function buildSentryNativeMac()
+{
+    if (-not (Test-Path $NativePath))
+    {
+        throw "Sentry Native path does not exist: $NativePath"
+    }
+
+    Write-Host "Building Sentry Native for macOS using local repository at: $NativePath"
+
+    $platformDir = "$outDir/Mac"
+
+    # Build Native backend (universal binary: x86_64 + arm64)
+    Write-Host "Building Native backend..."
+    Push-Location -Path $NativePath
+    try
+    {
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+            -D CMAKE_BUILD_TYPE=RelWithDebInfo -D "CMAKE_OSX_ARCHITECTURES=x86_64;arm64" -D CMAKE_OSX_DEPLOYMENT_TARGET=13.0
+        cmake --build "build_native" --target sentry --parallel
+        cmake --build "build_native" --target sentry-crash --parallel
+        cmake --install "build_native" --prefix "install_native"
+    }
+    finally
+    {
+        Pop-Location
+    }
+
+    $nativeDir = "$platformDir/Native"
+    if (Test-Path $nativeDir) { Remove-Item $nativeDir -Recurse -Force }
+    New-Item "$nativeDir/lib" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/bin" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/include" -ItemType Directory -Force > $null
+
+    Get-ChildItem -Path "$NativePath/install_native/lib" -Filter "*.a" -Recurse | Copy-Item -Destination "$nativeDir/lib"
+    Copy-Item "$NativePath/build_native/sentry-crash" -Destination "$nativeDir/bin"
+    Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
+
+    Write-Host "Successfully built Sentry Native for macOS"
+}
+
+function buildSentryCrashReporter()
+{
+    if (-not (Test-Path $CrashReporterPath))
+    {
+        throw "Sentry Crash Reporter path does not exist: $CrashReporterPath"
+    }
+
+    Write-Host "Building Sentry Crash Reporter using local repository at: $CrashReporterPath"
+
+    if ($isWindowsPlatform)
+    {
+        $runtimeId = "win-x64"
+        $platformDir = "Win64"
+        $executableName = "Sentry.CrashReporter.exe"
+    }
+    elseif ($IsLinux)
+    {
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+        if ($arch -eq [System.Runtime.InteropServices.Architecture]::Arm64)
+        {
+            $runtimeId = "linux-arm64"
+            $platformDir = "LinuxArm64"
+        }
+        else
+        {
+            $runtimeId = "linux-x64"
+            $platformDir = "Linux"
+        }
+        $executableName = "Sentry.CrashReporter"
+    }
+    else
+    {
+        $runtimeId = "osx-arm64"
+        $platformDir = "Mac"
+        $executableName = "Sentry.CrashReporter"
+    }
+
+    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "sentry-crash-reporter-build"
+
+    if (Test-Path $tempDir)
+    {
+        Remove-Item $tempDir -Recurse -Force
+    }
+
+    dotnet publish `
+        -f net9.0-desktop `
+        -r $runtimeId `
+        "$CrashReporterPath/Sentry.CrashReporter/Sentry.CrashReporter.csproj" `
+        -o $tempDir
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Failed to build Sentry Crash Reporter"
+    }
+
+    $destDir = "$outDir/$platformDir"
+    New-Item $destDir -ItemType Directory -Force > $null
+
+    Copy-Item "$tempDir/$executableName" -Destination "$destDir/$executableName"
+
+    # Cleanup
+    Remove-Item $tempDir -Recurse -Force
+
+    Write-Host "Successfully built Sentry Crash Reporter for $platformDir"
 }
 
 # Build SDKs based on flags
@@ -335,7 +472,18 @@ if ($buildNative)
     }
     else
     {
-        buildSentryNative
+        if ($isWindowsPlatform)
+        {
+            buildSentryNative
+        }
+        elseif ($IsMacOS)
+        {
+            buildSentryNativeMac
+        }
+        else
+        {
+            Write-Warning "Native SDK build is not supported on this platform from build-deps.ps1. Use the platform-specific build script instead."
+        }
     }
 }
 
@@ -349,5 +497,18 @@ if ($buildJava)
     else
     {
         buildSentryJava
+    }
+}
+
+if ($buildCrashReporter)
+{
+    if ([string]::IsNullOrEmpty($CrashReporterPath))
+    {
+        Write-Warning "Crash Reporter build requested but path is not set."
+        Write-Warning "Provide -CrashReporterPath parameter or set SENTRY_CRASH_REPORTER_PATH environment variable."
+    }
+    else
+    {
+        buildSentryCrashReporter
     }
 }

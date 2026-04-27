@@ -4,6 +4,10 @@ on:
       unreal-version:
         required: true
         type: string
+      backend:
+        required: false
+        type: string
+        default: "crashpad"
 
 jobs:
   integration-test:
@@ -11,7 +15,7 @@ jobs:
     runs-on: windows-2022
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: recursive
 
@@ -23,9 +27,9 @@ jobs:
           Start-Process -FilePath "$env:TEMP\DirectX\DXSETUP.exe" -ArgumentList "/silent" -Wait
 
       - name: Download sample build
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
-          name: UE ${{ inputs.unreal-version }} sample build (Windows)
+          name: UE ${{ inputs.unreal-version }} sample build (Windows, ${{ inputs.backend }})
           path: sample-build
 
       - name: Run integration tests
@@ -41,9 +45,9 @@ jobs:
 
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} integration test output (Windows)
+          name: UE ${{ inputs.unreal-version }} integration test output (Windows, ${{ inputs.backend }})
           path: |
             integration-test/output/
             sample-build/SentryPlayground/Saved/Logs/

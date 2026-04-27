@@ -2,6 +2,8 @@
 
 #include "AppleSentrySubsystem.h"
 
+#if !USE_SENTRY_NATIVE
+
 #include "AppleSentryAttachment.h"
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
@@ -75,7 +77,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 #if SENTRY_OBJC_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
-			options.onCrashedLastRun = ^(SentryEvent* event) {
+			options.onLastRunStatusDetermined = ^(SentryLastRunStatus status, SentryEvent* event) {
+				if (status != SentryLastRunStatusDidCrash || event == nil)
+				{
+					return;
+				}
 				if (settings->AttachScreenshot)
 				{
 					// If a screenshot was captured during assertion/crash in the previous app run
@@ -667,3 +673,5 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 
 	return Screenshots[0];
 }
+
+#endif // !USE_SENTRY_NATIVE

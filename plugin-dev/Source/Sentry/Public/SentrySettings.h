@@ -215,6 +215,16 @@ struct FEnableBuildTargets
 };
 
 USTRUCT(BlueprintType)
+struct FSentryCrashReporterImagery
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Override default app logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image."))
+	bool bOverrideAppLogo = false;
+};
+
+USTRUCT(BlueprintType)
 struct FSentryCrashReporterAppearance
 {
 	GENERATED_BODY()
@@ -270,6 +280,10 @@ struct FSentryCrashReporterAppearance
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Window closable", ToolTip = "When disabled, the user cannot close the crash reporter window without submitting the report. The native close button is disabled and the cancel button is hidden."))
 	bool bWindowClosable = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "App logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image. The file is stored in Build/SentryCrashReporter/ under your project and staged alongside the plugin during packaging."))
+	FSentryCrashReporterImagery Imagery;
 };
 
 /**
@@ -321,6 +335,11 @@ class SENTRY_API USentrySettings : public UObject
 	bool AttachScreenshot;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Enable out-of-process screenshot capturing (for Windows only, experimental)", ToolTip = "Flag indicating whether crash screenshots should be captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only. Requires `Attach screenshots` to be enabled.",
+			EditCondition = "AttachScreenshot"))
+	bool EnableOutOfProcessScreenshots;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only."))
 	bool AttachGpuDump;
 
@@ -347,6 +366,41 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics",
 		Meta = (DisplayName = "Enable metrics", ToolTip = "Flag indicating whether to enable the Sentry metrics API for tracking counters, distributions, and gauges."))
 	bool EnableMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS). Requires metrics to be enabled.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoFrameTimeMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Frame time sample interval (frames)", ToolTip = "Emit performance metrics every Nth frame. Higher values reduce network and storage overhead at the cost of granularity. At 60 FPS, a value of 30 emits ~2 samples per second.",
+			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 1))
+	int32 FrameTimeSampleInterval;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect game stats metrics", ToolTip = "Periodically collect game stats (e.g., process memory usage, active UObject count). Requires metrics to be enabled.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoGameStatsMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Game stats sample interval (seconds)", ToolTip = "How often to sample game stats metrics (memory, UObject count). Default: 60 seconds.",
+			EditCondition = "EnableAutoGameStatsMetrics && EnableMetrics", ClampMin = 1))
+	int32 GameStatsSampleInterval;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect GC pause metrics (UE 5.5+)", ToolTip = "Emit a metric for each garbage collection pause duration. GC pauses are a common source of hitches in Unreal Engine games. Requires Unreal Engine 5.5 or later.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoGCMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Collect network metrics (UE 5.7+)", ToolTip = "Emit network performance metrics (ping, bandwidth, packet loss, jitter) during active multiplayer sessions. Only active when a network driver is present. Requires Unreal Engine 5.7 or later.",
+			EditCondition = "EnableMetrics"))
+	bool EnableAutoNetworkMetrics;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+		Meta = (DisplayName = "Network metrics sample interval (seconds)", ToolTip = "How often to sample network metrics. Default: 10 seconds.",
+			EditCondition = "EnableAutoNetworkMetrics && EnableMetrics", ClampMin = 1))
+	int32 NetworkMetricsSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",
 		Meta = (DisplayName = "Max breadcrumbs", Tooltip = "Total amount of breadcrumbs that should be captured."))
@@ -409,20 +463,36 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryDatabaseLocation DatabaseLocation;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process."))
+		Meta = (DisplayName = "Use native crash backend (Experimental)", ToolTip = "Use the experimental native backend for crash reporting on Windows, Linux, and macOS instead of the default backend (Crashpad on Windows/Linux, sentry-cocoa on macOS). Requires rebuild after changing.",
+			ConfigRestartRequired = true))
+	bool UseNativeBackend;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Minidump capture mode", ToolTip = "Controls how much memory is captured in crash minidumps. Larger captures provide more debugging information but take longer to generate and upload.",
+			EditCondition = "UseNativeBackend"))
+	ESentryMinidumpMode MinidumpMode;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Crash reporting mode", ToolTip = "Controls how crash data is collected and sent to Sentry. Minidump mode sends raw dumps for server-side symbolication. Native stackwalking performs client-side unwinding for faster, smaller payloads.",
+			EditCondition = "UseNativeBackend"))
+	ESentryCrashReportingMode CrashReportingMode;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
+			EditCondition = "!UseNativeBackend"))
 	bool CrashpadWaitForUpload;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use."))
 	bool EnableOnCrashLogging;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Enable external crash reporter",
-			ToolTip = "When enabled, a crash reporter dialog is shown to the user after a crash, allowing them to provide feedback before submitting the crash report. Supported on Windows and Linux only."))
+	UPROPERTY(Config, EditAnywhere, Category = "Sentry Crash Reporter",
+		Meta = (DisplayName = "Enable Sentry Crash Reporter",
+			ToolTip = "When enabled, the Sentry Crash Reporter dialog is shown to the user after a crash, allowing them to review crash details and provide feedback before the report is submitted."))
 	bool EnableExternalCrashReporter;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
-		Meta = (DisplayName = "External crash reporter appearance", ToolTip = "Customize the appearance of the external crash reporter dialog.",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Sentry Crash Reporter",
+		Meta = (DisplayName = "Sentry Crash Reporter appearance", ToolTip = "Customize the appearance of the Sentry Crash Reporter dialog.",
 			EditCondition = "EnableExternalCrashReporter"))
 	FSentryCrashReporterAppearance CrashReporterAppearance;
 
@@ -538,12 +608,12 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "UploadSymbolsAutomatically"))
 	bool UseLegacyGradlePlugin;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
-		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Engine Crah Reporter should use in order to upload crash data to Sentry."))
+	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
+		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Crash Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Crash Reporter",
-		Meta = (DisplayName = "Allow Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Crash Reporter."))
+	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
+		Meta = (DisplayName = "Allow Unreal Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Unreal Crash Reporter."))
 	bool EnableCrashReporterContextPropagation;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Consent",

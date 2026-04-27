@@ -23,18 +23,39 @@ if [[ "$runId" == "" ]]; then
     exit 1
 fi
 
-declare -a sdks=("Android" "IOS" "Linux" "LinuxArm64" "Mac" "Win64" "WinArm64")
-for sdk in "${sdks[@]}"; do
+# Mobile platforms: single artifact per platform
+declare -a otherSdks=("Android" "IOS")
+for sdk in "${otherSdks[@]}"; do
     echo "Downloading $sdk SDK to $PWD/$sdk ..."
     rm -rf "./$sdk"
     gh run download $runId -n "$sdk-sdk" -D $sdk
-    find $sdk -name "crashpad_handler" -exec chmod +x {} \;
 done
 
-echo "Downloading Crash Reporter binaries ..."
-gh run download $runId -n "CrashReporter-Win64" -D Win64/bin
-gh run download $runId -n "CrashReporter-WinArm64" -D WinArm64/bin
-gh run download $runId -n "CrashReporter-Linux" -D Linux/bin
-gh run download $runId -n "CrashReporter-LinuxArm64" -D LinuxArm64/bin
-chmod +x Linux/bin/Sentry.CrashReporter
-chmod +x LinuxArm64/bin/Sentry.CrashReporter
+# Mac: cocoa SDK goes into Mac/Cocoa, native SDK into Mac/Native
+echo "Downloading Mac Cocoa SDK to $PWD/Mac/Cocoa ..."
+rm -rf "./Mac/Cocoa"
+gh run download $runId -n "Mac-cocoa-sdk" -D Mac
+
+echo "Downloading Mac Native SDK to $PWD/Mac/Native ..."
+rm -rf "./Mac/Native"
+gh run download $runId -n "Mac-native-sdk" -D Mac/Native
+
+# Native platforms: two backend variants per platform
+declare -a nativePlatforms=("Linux" "LinuxArm64" "Win64" "WinArm64")
+for platform in "${nativePlatforms[@]}"; do
+    for backend in crashpad native; do
+        backendDir="$(tr '[:lower:]' '[:upper:]' <<< "${backend:0:1}")${backend:1}"
+        targetDir="$platform/$backendDir"
+        echo "Downloading $platform-$backend SDK to $PWD/$targetDir ..."
+        rm -rf "./$targetDir"
+        gh run download $runId -n "$platform-$backend-sdk" -D "$targetDir"
+    done
+done
+
+# Set permissions for Linux/Mac executables
+for platform in Linux LinuxArm64; do
+    chmod +x "$platform/Crashpad/bin/crashpad_handler"
+    chmod +x "$platform/Native/bin/sentry-crash"
+done
+chmod +x Mac/Native/bin/sentry-crash
+

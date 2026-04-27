@@ -4,38 +4,14 @@
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "SentryPlaygroundUtils.generated.h"
-
-UENUM(BlueprintType)
-enum class ESentryAppTerminationType : uint8
-{
-	NullPointer,
-	ArrayOutOfBounds,
-	BadFunctionPtr,
-	InvalidMemoryAccess,
-	StackOverflow,
-	OutOfMemory,
-	MemoryCorruption,
-	FastFail,
-	RenderThreadCrash,
-	GpuDebugCrash,
-	Assert,
-	AssertReentrant,
-	Ensure,
-	Fatal,
-	Hang
-};
+#include "SentryPlaygroundBlueprintUtils.generated.h"
 
 UCLASS()
-class USentryPlaygroundUtils : public UBlueprintFunctionLibrary
+class USentryPlaygroundBlueprintUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-	
-public:
-	/** Crashes the application. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static void Terminate(ESentryAppTerminationType Type);
 
+public:
 	/** Converts string to byte array. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static TArray<uint8> StringToBytesArray(const FString& InString);
@@ -54,8 +30,4 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static FString SaveStringToFile(const FString& InString, const FString& Filename);
-
-	/** Forces garbage collection and captures Sentry event to test beforeSend hook limitation. */
-	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	static void CaptureEventDuringGC();
 };

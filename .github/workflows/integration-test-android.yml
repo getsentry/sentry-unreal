@@ -19,12 +19,12 @@ jobs:
       SAUCE_SESSION_NAME: UE ${{ inputs.unreal-version }} Android Integration Test
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: recursive
 
       - name: Download sample build
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Android)
           path: sample-build
@@ -43,7 +43,7 @@ jobs:
 
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} integration test output (Android)
           path: |

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Subsystems/EngineSubsystem.h"
 
 #include "SentryDataTypes.h"
@@ -30,6 +31,14 @@ class ISentrySubsystem;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
 class FSentryHangWatcher;
+class FSentryPerfFrameTimeMonitor;
+class FSentryPerfMetricAttributes;
+class FSentryPerfGCMonitor;
+class FSentryPerfGameStatsMonitor;
+
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+class FSentryPerfNetworkMonitor;
+#endif
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -595,6 +604,9 @@ private:
 	/** Set up hang watcher for detecting unresponsive threads */
 	void ConfigureHangTracking();
 
+	/** Set up automatic performance metrics (frame time, GC pause time, etc.) */
+	void ConfigurePerformanceMetrics();
+
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 
@@ -628,4 +640,14 @@ private:
 	FDelegateHandle OnEnsureDelegate;
 
 	TSharedPtr<FSentryHangWatcher> HangWatcher;
+
+	TSharedPtr<FSentryPerfMetricAttributes> PerfMetricAttributes;
+	TSharedPtr<FSentryPerfFrameTimeMonitor> PerfFrameTimeMonitor;
+	TSharedPtr<FSentryPerfGameStatsMonitor> PerfGameStatsMonitor;
+	TSharedPtr<FSentryPerfGCMonitor> PerfGCMonitor;
+
+#if !UE_VERSION_OLDER_THAN(5, 7, 0)
+	TSharedPtr<FSentryPerfNetworkMonitor> PerfNetworkMonitor;
+	FDelegateHandle OnNetDriverCreatedHandle;
+#endif
 };

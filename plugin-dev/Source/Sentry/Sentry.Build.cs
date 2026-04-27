@@ -46,14 +46,16 @@ public class Sentry : ModuleRules
 		string PlatformThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString()));
 		string PlatformBinariesPath = Path.GetFullPath(Path.Combine(PluginDirectory, "Binaries", Target.Platform.ToString()));
 
-		// Initial value must match the UPROPERTY default in SentrySettings to handle the case
-		// when the user hasn't explicitly configured it and no entry exists in the .ini file
+		// Initial values must match the UPROPERTY defaults in SentrySettings to handle the case
+		// when the user hasn't explicitly configured them and no entry exists in the .ini file
 		bool bEnableExternalCrashReporter = false;
+		bool bUseNativeBackend = false;
 
 		if (Target.ProjectFile != null)
 		{
 			ConfigHierarchy EngineConfig = ConfigCache.ReadHierarchy(ConfigHierarchyType.Engine, DirectoryReference.FromFile(Target.ProjectFile), Target.Platform);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
+			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "UseNativeBackend", out bUseNativeBackend);
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
@@ -77,20 +79,44 @@ public class Sentry : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
-			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
+			if (bUseNativeBackend)
+			{
+				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "Native", "include"));
 
-			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "Native", "lib", "libsentry.a"));
 
-			// SentryObjC is a standalone dylib that embeds the full SDK
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "SentryObjC.dylib"), Path.Combine(PlatformThirdPartyPath, "bin", "SentryObjC.dylib"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry-crash"), Path.Combine(PlatformThirdPartyPath, "Native", "bin", "sentry-crash"));
 
-			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
-			PublicDefinitions.Add("COCOAPODS=0");
-			PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
-			PublicDefinitions.Add("SENTRY_NO_UI_FRAMEWORK=0");
-			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
-			PublicDefinitions.Add("SDK_V9=0");
-			PublicDefinitions.Add("SWIFT_PACKAGE=0");
+				if (bEnableExternalCrashReporter)
+				{
+					RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter"));
+					StageCrashReporterResources(Target);
+				}
+
+				PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
+				PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
+
+				AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
+				AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
+				AddEngineThirdPartyPrivateStaticDependencies(Target, "nghttp2");
+			}
+			else
+			{
+				PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
+
+				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "Cocoa", "include"));
+
+				// SentryObjC is a standalone dylib that embeds the full SDK
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "SentryObjC.dylib"), Path.Combine(PlatformThirdPartyPath, "Cocoa", "bin", "sentry.dylib"));
+
+				PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
+				PublicDefinitions.Add("COCOAPODS=0");
+				PublicDefinitions.Add("SENTRY_NO_UIKIT=1");
+				PublicDefinitions.Add("SENTRY_NO_UI_FRAMEWORK=0");
+				PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
+				PublicDefinitions.Add("SDK_V9=0");
+				PublicDefinitions.Add("SWIFT_PACKAGE=0");
+			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
@@ -116,32 +142,42 @@ public class Sentry : ModuleRules
 			}
 #endif
 
-			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+			string Backend = bUseNativeBackend ? "Native" : "Crashpad";
 
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "sentry.lib"));
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, Backend, "include"));
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler.exe"));
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_wer.dll"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_wer.dll"));
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "sentry.lib"));
+
+			if (bUseNativeBackend)
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry-crash.exe"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "sentry-crash.exe"));
+			}
+			else
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler.exe"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "crashpad_handler.exe"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_wer.dll"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "crashpad_wer.dll"));
+
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_compat.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_snapshot.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_util.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "mini_chromium.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_client.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_zlib.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_getopt.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_tools.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_handler_lib.lib"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "crashpad_mpack.lib"));
+			}
 
 			if (bEnableExternalCrashReporter)
 			{
-				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter.exe"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter.exe"));
+				StageCrashReporterResources(Target);
 			}
-
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_compat.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_snapshot.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_util.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "mini_chromium.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_client.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_zlib.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_getopt.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_tools.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_handler_lib.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "crashpad_mpack.lib"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
-
+			PublicDefinitions.Add("SENTRY_WINGDK=0");
 			PublicSystemLibraries.Add("winhttp.lib");
 			PublicSystemLibraries.Add("version.lib");
 			PublicSystemLibraries.Add("Synchronization.lib");
@@ -154,26 +190,38 @@ public class Sentry : ModuleRules
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Linux"));
 
-			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "include"));
+			string Backend = bUseNativeBackend ? "Native" : "Crashpad";
 
-			RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, "bin", "crashpad_handler"));
+			PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, Backend, "include"));
+
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libsentry.a"));
+
+			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libunwind.a"));
+
+			if (bUseNativeBackend)
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry-crash"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "sentry-crash"));
+			}
+			else
+			{
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "crashpad_handler"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "crashpad_handler"));
+
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_client.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_compat.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_handler_lib.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_minidump.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_snapshot.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_tools.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_util.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libmini_chromium.a"));
+				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "libcrashpad_mpack.a"));
+			}
 
 			if (bEnableExternalCrashReporter)
 			{
-				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "bin", "Sentry.CrashReporter"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter"));
+				StageCrashReporterResources(Target);
 			}
-
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_client.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_compat.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_handler_lib.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_minidump.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_snapshot.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_tools.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_util.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libmini_chromium.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libsentry.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libcrashpad_mpack.a"));
-			PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, "lib", "libunwind.a"));
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=1");
 			PublicDefinitions.Add("SENTRY_BUILD_STATIC=1");
@@ -192,6 +240,22 @@ public class Sentry : ModuleRules
 
 				Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/unreal/game-consoles/");
 			}
+		}
+	}
+
+	private void StageCrashReporterResources(ReadOnlyTargetRules Target)
+	{
+		if (Target.Type == TargetType.Editor)
+		{
+			return;
+		}
+
+		string ResourceProjectPath = Path.Combine(Path.GetDirectoryName(Target.ProjectFile.FullName), "Build", "SentryCrashReporter", "Logo.png");
+		string ResourceStagePath = Path.Combine(PluginDirectory, "Resources", "SentryCrashReporter", "Logo.png");
+
+		if (File.Exists(ResourceProjectPath))
+		{
+			RuntimeDependencies.Add(ResourceStagePath, ResourceProjectPath);
 		}
 	}
 }

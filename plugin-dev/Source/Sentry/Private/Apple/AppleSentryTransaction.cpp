@@ -1,6 +1,9 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AppleSentryTransaction.h"
+
+#if !USE_SENTRY_NATIVE
+
 #include "AppleSentrySpan.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
@@ -95,3 +98,5 @@ void FAppleSentryTransaction::GetTrace(FString& name, FString& value)
 	name = TEXT("sentry-trace");
 	value = FString([traceHeader value]);
 }
+
+#endif // !USE_SENTRY_NATIVE

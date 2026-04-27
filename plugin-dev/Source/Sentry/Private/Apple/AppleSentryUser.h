@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if !USE_SENTRY_NATIVE
+
 #include "Interface/SentryUserInterface.h"
 
 @class SentryUser;
@@ -31,3 +33,5 @@ private:
 };
 
 typedef FAppleSentryUser FPlatformSentryUser;
+
+#endif // !USE_SENTRY_NATIVE

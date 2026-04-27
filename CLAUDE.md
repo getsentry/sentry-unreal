@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This project is the Sentry SDK for Unreal Engine which provides crash and error monitoring as well as performance tracking for games built with Unreal Engine. It wraps multiple Sentry SDKs for supported platforms (`sentry-native` for Windows/Linux/Xbox/PlayStation/Nintendo, `sentry-cocoa` for macOS/iOS, `sentry-java` for Android) into a single Unreal Engine plugin and extends them with Unreal Engine-specific functionality.
+This project is the Sentry SDK for Unreal Engine which provides crash and error monitoring as well as performance tracking for games built with Unreal Engine. It wraps multiple Sentry SDKs for supported platforms (`sentry-native` for Windows/Linux/Xbox/WinGDK/PlayStation/Nintendo, `sentry-cocoa` for macOS/iOS, `sentry-java` for Android) into a single Unreal Engine plugin and extends them with Unreal Engine-specific functionality.
 
 ## Plugin Architecture
 
@@ -28,7 +28,7 @@ plugin-dev/Source/
 │       ├── IOS/             # iOS overrides for Apple
 │       ├── Linux/           # Linux overrides for GenericPlatform
 │       ├── Mac/             # macOS overrides for Apple
-│       ├── Microsoft/       # Windows/Xbox base, overrides GenericPlatform
+│       ├── Microsoft/       # Windows/Xbox/WinGDK base, overrides GenericPlatform
 │       ├── Null/            # Stubs for unsupported platforms
 │       ├── Tests/           # Unit test specs
 │       ├── Utils/           # Common utilities
@@ -42,9 +42,10 @@ plugin-dev/Source/
 ```
 sentry-native (C/C++ SDK)
 ├── GenericPlatform/          # Base implementation for all sentry-native platforms
-│   ├── Microsoft/            # Shared Windows + Xbox code
+│   ├── Microsoft/            # Shared Windows + Xbox + WinGDK code
 │   │   ├── Windows/          # Windows-specific overrides
 │   │   └── Xbox/             # Xbox-specific overrides (private extension)
+│   │   └── WinGDK/           # WinGDK-specific overrides (private extension)
 │   ├── Linux/                # Linux-specific overrides
 │   ├── PlayStation/          # PlayStation-specific (private extension)
 │   └── Switch/               # Nintendo Switch-specific (private extension)
@@ -91,22 +92,29 @@ Null/                         # Stubs for unsupported platforms
 
 The `sample/` directory contains `SentryPlayground` demo game used for manual testing (demo UI) and CI integration tests.
 
-- **Integration test logic**: `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp`
+- **Integration test dispatch**: `sample/Source/SentryPlayground/SentryPlaygroundGameInstance.cpp` — `CheckForPendingIntegrationTest` maps command-line switches (e.g. `-crash-capture`) to test factories
+- **Integration test implementations**: `sample/Source/SentryPlayground/IntegrationTests/` — one class per test, each extending `FSentryBaseIntegrationTest`
 - **Sentry configuration**: `sample/Config/DefaultEngine.ini` under `[/Script/Sentry.SentrySettings]` section
 - **Logs**: `sample/Saved/Logs/` - runtime logs, useful for debugging
+
+**Adding a new integration test:**
+
+1. Create `Sentry<Name>Test.{h,cpp}` under `IntegrationTests/` as a subclass of `FSentryBaseIntegrationTest` and implement `Run()`
+2. Add an entry to the dispatch table in `USentryPlaygroundGameInstance::CheckForPendingIntegrationTest` mapping the command-line switch to a factory lambda
+3. Document the switch in `sample/README.md` under the Integration Tests section
 
 Refer to `sample/README.md` for detailed documentation.
 
 ## Console Support
 
-Console support (PlayStation, Xbox, Switch) is provided via private plugin extensions stored in separate repositories.
+Console support (PlayStation, Xbox/WinGDK, Switch) is provided via private plugin extensions stored in separate repositories.
 
 **Extension paths**
 
 Path to extensions source code may be set via environment variables. When working on console-related tasks, check them first, only ask to provide path explicitly if these aren't available or invalid.
 
 - `SENTRY_PLAYSTATION_PATH` → PS5
-- `SENTRY_XBOX_PATH` → XSX, XB1
+- `SENTRY_XBOX_PATH` → XSX, XB1, WinGDK
 - `SENTRY_SWITCH_PATH` → Switch
 
 **Setup console extensions:**
@@ -133,6 +141,12 @@ sentry-{platform}/unreal/
 
 Refer to `Building for Consoles` in `CONTRIBUTING.md` for build instructions.
 
+## Crash Reporter
+
+The plugin includes an optional external crash reporter - a .NET desktop application that shows a user-facing dialog when a crash occurs, allowing players to submit feedback and review crash details (tags, context, stacktrace). Supported on Windows and Linux (x64 and ARM64).
+
+- **Sources**: `modules/sentry-crash-reporter` submodule or local checkout via `SENTRY_CRASH_REPORTER_PATH` env var
+
 ## Development Guidelines
 
 ### Project Setup
@@ -144,7 +158,7 @@ To work with the Unreal project, it has to be properly set up (symlink plugin so
 pwsh ./scripts/init-win.ps1      # Windows
 ./scripts/init.sh                # macOS/Linux
 
-# Build platform SDKs locally (optional - useful when testing unreleased native SDK changes)
+# Build platform SDKs and other dependencies locally (optional - useful when testing unreleased changes)
 pwsh ./scripts/build-deps.ps1 -All
 ```
 
@@ -243,6 +257,7 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 - [sentry-native](https://github.com/getsentry/sentry-native): crash and error monitoring on Windows/Linux and game consoles
 - [sentry-java](https://github.com/getsentry/sentry-java): crash and error monitoring on Android
 - [sentry-cocoa](https://github.com/getsentry/sentry-cocoa): crash and error monitoring on macOS and iOS
+- [sentry-desktop-crash-reporter](https://github.com/getsentry/sentry-desktop-crash-reporter): external crash reporter dialog for Windows/Linux
 - [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
