@@ -39,6 +39,9 @@ downloadCrashReporter() {
         tar -xzf "$tempDir/archive.tar.gz" -C "$tempDir"
     fi
 
+    # Remove macOS resource fork files that GNU tar creates from code-signing xattrs
+    find "$tempDir" -name '._*' -delete 2>/dev/null || true
+
     mkdir -p "$targetDir/$platform"
     mv "$tempDir/$archiveName" "$targetDir/$platform/$destName"
 
