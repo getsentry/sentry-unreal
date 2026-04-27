@@ -463,6 +463,8 @@ Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryWithoutUIKit.h
 Source/ThirdParty/Mac/Native/bin/sentry-crash
 Source/ThirdParty/Mac/Native/include/sentry.h
 Source/ThirdParty/Mac/Native/lib/libsentry.a
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/_CodeSignature/CodeResources
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/CodeResources
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Info.plist
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrgcexp.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrjit.dylib
