@@ -19,7 +19,7 @@ protected:
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) override;
 
 	virtual FString GetHandlerExecutableName() const override;
-	virtual FString GetCrashReporterExecutableName() const override { return TEXT("Sentry.CrashReporter"); }
+	virtual FString GetCrashReporterExecutableName() const override { return TEXT("Sentry.CrashReporter.app"); }
 
 	virtual bool IsScreenshotSupported() const override { return true; }
 	virtual bool IsHangTrackingSupported() const override { return false; }
