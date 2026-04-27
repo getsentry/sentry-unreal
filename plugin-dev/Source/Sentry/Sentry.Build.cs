@@ -107,7 +107,7 @@ public class Sentry : ModuleRules
 				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "Cocoa", "include"));
 
 				// SentryObjC is a standalone dylib that embeds the full SDK
-				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "SentryObjC.dylib"), Path.Combine(PlatformThirdPartyPath, "Cocoa", "bin", "sentry.dylib"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "Cocoa", "bin", "SentryObjC.dylib"));
 
 				PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 				PublicDefinitions.Add("COCOAPODS=0");
