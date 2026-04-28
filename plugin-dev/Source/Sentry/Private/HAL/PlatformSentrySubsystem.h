@@ -2,6 +2,10 @@
 
 #pragma once
 
-#include "PlatformSentryDefines.h"
+#include "HAL/Platform.h"
 
-#include SENTRY_COMPILED_PLATFORM_HEADER(SentrySubsystem.h)
+#ifdef SENTRY_PLATFORM_NULL
+#include "Null/NullSentrySubsystem.h"
+#else
+#include COMPILED_PLATFORM_HEADER(SentrySubsystem.h)
+#endif
