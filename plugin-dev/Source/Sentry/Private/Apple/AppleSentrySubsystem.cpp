@@ -74,27 +74,28 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
 			options.enableLogs = settings->EnableStructuredLogging;
 			options.experimental.enableMetrics = settings->EnableMetrics;
-#if SENTRY_UIKIT_AVAILABLE
+#if SENTRY_OBJC_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
-			options.onLastRunStatusDetermined = ^(SentryLastRunStatus status, SentryEvent* event) {
-				if (status != SentryLastRunStatusDidCrash || event == nil)
-				{
-					return;
-				}
-				if (settings->AttachScreenshot)
-				{
-					// If a screenshot was captured during assertion/crash in the previous app run
-					// find the most recent one and upload it to Sentry.
-					UploadScreenshotForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestScreenshot());
-				}
-				if (settings->EnableAutoLogAttachment)
-				{
-					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
-					// find the most recent one and upload it to Sentry.
-					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
-				}
-			};
+			// TODO: restore after ObjC SDK will adopt onLastRunStatusDetermined
+			// options.onLastRunStatusDetermined = ^(SentryLastRunStatus status, SentryEvent* event) {
+			// 	if (status != SentryLastRunStatusDidCrash || event == nil)
+			// 	{
+			// 		return;
+			// 	}
+			// 	if (settings->AttachScreenshot)
+			// 	{
+			// 		// If a screenshot was captured during assertion/crash in the previous app run
+			// 		// find the most recent one and upload it to Sentry.
+			// 		UploadScreenshotForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestScreenshot());
+			// 	}
+			// 	if (settings->EnableAutoLogAttachment)
+			// 	{
+			// 		// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
+			// 		// find the most recent one and upload it to Sentry.
+			// 		UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
+			// 	}
+			// };
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
@@ -277,61 +278,33 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 
 void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Expected API once sentry-cocoa adds ObjC metrics bridge:
+	NSDictionary<NSString*, SentryObjCAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
 
-	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
-	// for (const auto& pair : Attributes)
-	// {
-	// 	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
-	// 	if (attribute != nil)
-	// 	{
-	// 		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
-	// 	}
-	// }
-	//
-	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString() value:(NSUInteger)Value attributes:attributesDict];
-
-	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
+	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] countWithKey:Key.GetNSString()
+													value:(NSUInteger)Value
+											   attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Expected API once sentry-cocoa adds ObjC metrics bridge:
+	NSDictionary<NSString*, SentryObjCAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
+	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
 
-	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
-	// for (const auto& pair : Attributes)
-	// {
-	// 	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
-	// 	if (attribute != nil)
-	// 	{
-	// 		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
-	// 	}
-	// }
-	//
-	// NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
-	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] distributionWithKey:Key.GetNSString() value:(double)Value unit:effectiveUnit attributes:attributesDict];
-
-	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
+	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] distributionWithKey:Key.GetNSString()
+														   value:(double)Value
+															unit:effectiveUnit
+													  attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
 {
-	// Expected API once sentry-cocoa adds ObjC metrics bridge:
+	NSDictionary<NSString*, SentryObjCAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
+	NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
 
-	// NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
-	// for (const auto& pair : Attributes)
-	// {
-	// 	SentryAttribute* attribute = FAppleSentryConverters::VariantToAttributeNative(pair.Value);
-	// 	if (attribute != nil)
-	// 	{
-	// 		[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
-	// 	}
-	// }
-	//
-	// NSString* effectiveUnit = Unit.IsEmpty() ? nil : Unit.GetNSString();
-	// [[SENTRY_APPLE_CLASS(SentrySDK) metrics] gaugeWithKey:Key.GetNSString() value:(double)Value unit:effectiveUnit attributes:attributesDict];
-
-	UE_LOG(LogSentrySdk, Verbose, TEXT("Metrics are not yet supported on Apple platforms."));
+	[[SENTRY_APPLE_CLASS(SentrySDK) metrics] gaugeWithKey:Key.GetNSString()
+													value:(double)Value
+													 unit:effectiveUnit
+											   attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()

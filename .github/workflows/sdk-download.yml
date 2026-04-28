@@ -51,6 +51,7 @@ jobs:
       - name: Download
         if: steps.cache.outputs.cache-hit != 'true'
         env:
+          GH_TOKEN: ${{ github.token }}
           DOWNLOAD_PATH: ${{ steps.env.outputs.path }}
           DOWNLOAD_SCRIPT: ${{ steps.env.outputs.downloadScript }}
           CACHE_LOCATION: ${{ steps.env.outputs.cacheLocation }}
