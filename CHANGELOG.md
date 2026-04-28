@@ -15,6 +15,7 @@
 
 - Suppress superfluous warnings when detecting for SteamOS ([#1326](https://github.com/getsentry/sentry-unreal/pull/1326))
 - Fix intermittent crash when capturing screenshots due to invalid viewport ([#1331](https://github.com/getsentry/sentry-unreal/pull/1331))
+- Fix SN-DBS distributed builds failing to pre-sync platform-specific headers ([#1361](https://github.com/getsentry/sentry-unreal/pull/1361))
 
 ### Dependencies
 
