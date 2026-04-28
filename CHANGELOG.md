@@ -5,8 +5,9 @@
 ### Features
 
 - Add WinGDK platform support ([#1337](https://github.com/getsentry/sentry-unreal/pull/1337))
+- Add consent-aware offline caching ([#1341](https://github.com/getsentry/sentry-unreal/pull/1341))
 - Add out-of-process screenshot capturing on Windows ([#1325](https://github.com/getsentry/sentry-unreal/pull/1325))
-- Add native backend support for Mac ([#1333](https://github.com/getsentry/sentry-unreal/pull/1333))
+- Add experimental native backend support for Mac ([#1333](https://github.com/getsentry/sentry-unreal/pull/1333))
 - Add a dedicated plugin settings section for Sentry Crash Reporter([#1350](https://github.com/getsentry/sentry-unreal/pull/1350))
 - Add Crash Reporter logo customization ([#1349](https://github.com/getsentry/sentry-unreal/pull/1349))
 
