@@ -2,6 +2,6 @@
 <root>
     <init>
         <log text="Sentry SDK iOS UPL initialization"/>
-        <copyDir src="$S(PluginDir)/../ThirdParty/IOS/Sentry.framework" dst="$S(BuildDir)/Frameworks/Sentry.framework" />
+        <copyDir src="$S(PluginDir)/../ThirdParty/IOS/SentryObjC.framework" dst="$S(BuildDir)/Frameworks/SentryObjC.framework" />
     </init>
 </root>
