@@ -36,6 +36,7 @@ plugin-dev/Source/ThirdParty/WinArm64
 plugin-dev/Source/ThirdParty/CLI/*
 !plugin-dev/Source/ThirdParty/.gitkeep
 !plugin-dev/Source/ThirdParty/CLI/.gitkeep
+modules/sentry-cocoa/*.xcframework*
 
 # Sample
 sample/.sentry-native

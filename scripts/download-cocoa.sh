@@ -13,8 +13,8 @@ if ! [ -d "$sentryCocoaCache" ]; then
 fi
 
 # TEMP PATCH: pull SentryObjC from sentry-cocoa CI artifact for Metrics API evaluation
-gh run download 24890645262 -R getsentry/sentry-cocoa \
-    -n "xcframework-ea03ca4e38bb6a0986deec9b16ae62b5b3db0fac-sentryobjc-dynamic" \
+gh run download 25110435184 -R getsentry/sentry-cocoa \
+    -n "xcframework-31709d31e3fb8b3cfe381df5ce5097adc3a02273-sentryobjc-dynamic" \
     -D "${sentryCocoaCache}"
 
 unzip -o "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework.zip" -d "${sentryCocoaCache}/"
