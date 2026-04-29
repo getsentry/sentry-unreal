@@ -73,29 +73,28 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
 			options.enableLogs = settings->EnableStructuredLogging;
-			options.experimental.enableMetrics = settings->EnableMetrics;
+			options.enableMetrics = settings->EnableMetrics;
 #if SENTRY_OBJC_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
-			// TODO: restore after ObjC SDK will adopt onLastRunStatusDetermined
-			// options.onLastRunStatusDetermined = ^(SentryLastRunStatus status, SentryEvent* event) {
-			// 	if (status != SentryLastRunStatusDidCrash || event == nil)
-			// 	{
-			// 		return;
-			// 	}
-			// 	if (settings->AttachScreenshot)
-			// 	{
-			// 		// If a screenshot was captured during assertion/crash in the previous app run
-			// 		// find the most recent one and upload it to Sentry.
-			// 		UploadScreenshotForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestScreenshot());
-			// 	}
-			// 	if (settings->EnableAutoLogAttachment)
-			// 	{
-			// 		// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
-			// 		// find the most recent one and upload it to Sentry.
-			// 		UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
-			// 	}
-			// };
+			options.onLastRunStatusDetermined = ^(SentryLastRunStatus status, SentryEvent* event) {
+				if (status != SentryLastRunStatusDidCrash || event == nil)
+				{
+					return;
+				}
+				if (settings->AttachScreenshot)
+				{
+					// If a screenshot was captured during assertion/crash in the previous app run
+					// find the most recent one and upload it to Sentry.
+					UploadScreenshotForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestScreenshot());
+				}
+				if (settings->EnableAutoLogAttachment)
+				{
+					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
+					// find the most recent one and upload it to Sentry.
+					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
+				}
+			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
