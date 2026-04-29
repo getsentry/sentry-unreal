@@ -294,6 +294,7 @@ Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
 Source/ThirdParty/CLI/sentry-cli-Windows-x86_64.exe
 Source/ThirdParty/IOS/SentryObjC.embeddedframework.zip
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/PrivateSentrySDKOnly.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/PrivatesHeader.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryAppStartMeasurement.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryAttachment.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryAttribute.h
@@ -327,11 +328,13 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryMetricsApiImpl.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryNSError.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjC.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCAttributeContent.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCBridging.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCMetric.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCMetricValue.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCRedactRegionType.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCUnit.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryOptions.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryProfilingConditionals.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryReplayApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryReplayOptions.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryRequest.h
@@ -343,6 +346,7 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentrySerializable.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentrySpan.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentrySpanContext.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentrySpanId.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentrySpanProtocol.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentrySpanStatus.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryStacktrace.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryThread.h
@@ -392,6 +396,7 @@ Source/ThirdParty/LinuxArm64/Native/lib/libunwind.a
 Source/ThirdParty/LinuxArm64/Sentry.CrashReporter
 Source/ThirdParty/Mac/Cocoa/bin/SentryObjC.dylib
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/PrivateSentrySDKOnly.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/PrivatesHeader.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryAppStartMeasurement.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryAttachment.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryAttribute.h
@@ -425,11 +430,13 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryMetricsApiImpl.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryNSError.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjC.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttributeContent.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCBridging.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetric.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricValue.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCRedactRegionType.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCUnit.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryOptions.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryProfilingConditionals.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryReplayApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryReplayOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryRequest.h
@@ -441,6 +448,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentrySerializable.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentrySpan.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentrySpanContext.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentrySpanId.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentrySpanProtocol.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentrySpanStatus.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryStacktrace.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryThread.h
