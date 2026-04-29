@@ -310,11 +310,13 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryEvent.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryException.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryExperimentalOptions.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryFeedback.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryFeedbackApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryFeedbackSource.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryFrame.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryGeo.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryHttpStatusCodeRange.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryId.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryLastRunStatus.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryLevel.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryLog.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryLogger.h
@@ -412,11 +414,13 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryEvent.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryException.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryExperimentalOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryFeedback.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryFeedbackApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryFeedbackSource.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryFrame.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryGeo.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryHttpStatusCodeRange.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryId.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryLastRunStatus.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryLevel.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryLog.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryLogger.h
