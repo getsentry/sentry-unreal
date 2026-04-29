@@ -347,6 +347,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Max attachment size in bytes", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed but this size is planned to be increased. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/"))
 	int32 MaxAttachmentSize;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Attachments",
+		Meta = (DisplayName = "Enable large attachments (for desktop and consoles only)", ToolTip = "When enabled, attachments above an internal size threshold are uploaded out-of-band via a separate request. When disabled, oversized attachments are rejected by Sentry. Currently supported on Windows, Linux, Mac (with native backend) and consoles."))
+	bool EnableLargeAttachments;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
 		Meta = (DisplayName = "Enable structured logging", ToolTip = "Flag indicating whether to enable structured logging that forwards UE_LOG calls to Sentry logger."))
 	bool EnableStructuredLogging;
