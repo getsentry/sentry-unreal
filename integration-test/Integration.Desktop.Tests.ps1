@@ -76,8 +76,8 @@ BeforeDiscovery {
         @{ Name = 'OutOfMemory';       Arg = '-crash-oom';                Type = 'OutOfMemory' }
     )
 
-    if ($IsLinux -or ($IsMacOS -and $IsNativeBackend)) {
-        # Memory overcommit makes OOM conditions unreliable to trigger in tests on Linux and macOS with native backend
+    if ($IsLinux -or $IsMacOS) {
+        # Memory overcommit makes OOM conditions unreliable to trigger in tests on Linux and macOS
         $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
     }
 }
@@ -752,7 +752,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
     }
 
     # Metrics are not supported on macOS with Cocoa backend
-    Context "Metrics Capture Tests" -Skip:($IsMacOS -and -not $IsNativeBackend) {
+    Context "Metrics Capture Tests" {
         BeforeAll {
             $script:MetricResult = $null
             $script:CapturedCounterMetrics = @()
