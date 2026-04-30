@@ -301,7 +301,6 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryAttribute.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryBaggage.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryBreadcrumb.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryDebugMeta.h
-Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryDefines.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryEnvelope.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryEnvelopeHeader.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryEnvelopeItem.h
@@ -331,6 +330,7 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryNSError.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjC.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCAttributeContent.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCBridging.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDefines.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCMetric.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCMetricValue.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCRedactRegionType.h
@@ -405,7 +405,6 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryAttribute.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryBaggage.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryBreadcrumb.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryDebugMeta.h
-Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryDefines.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryEnvelope.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryEnvelopeHeader.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryEnvelopeItem.h
@@ -435,6 +434,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryNSError.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjC.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttributeContent.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCBridging.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDefines.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetric.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricValue.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCRedactRegionType.h
