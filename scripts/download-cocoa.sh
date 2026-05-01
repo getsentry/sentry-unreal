@@ -14,7 +14,7 @@ fi
 
 # TEMP PATCH: pull SentryObjC from sentry-cocoa CI artifact for Metrics API evaluation
 gh run download 25172608781 -R getsentry/sentry-cocoa \
-    -n "xcframework-7b3193ae7718fcba832963f72b18b6f86e3bab5a-sentryobjc-dynamic" \
+    -n "xcframework-d5e8e7c8ca8fc8edc3d8622c6dbda29ff679d879-sentryobjc-dynamic" \
     -D "${sentryCocoaCache}"
 
 unzip -o "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework.zip" -d "${sentryCocoaCache}/"
