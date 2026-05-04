@@ -66,6 +66,8 @@ Source/Sentry/Private/Apple/AppleSentryId.cpp
 Source/Sentry/Private/Apple/AppleSentryId.h
 Source/Sentry/Private/Apple/AppleSentryLog.cpp
 Source/Sentry/Private/Apple/AppleSentryLog.h
+Source/Sentry/Private/Apple/AppleSentryMetric.cpp
+Source/Sentry/Private/Apple/AppleSentryMetric.h
 Source/Sentry/Private/Apple/AppleSentrySamplingContext.cpp
 Source/Sentry/Private/Apple/AppleSentrySamplingContext.h
 Source/Sentry/Private/Apple/AppleSentryScope.cpp
