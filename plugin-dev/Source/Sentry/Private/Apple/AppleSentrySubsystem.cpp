@@ -73,7 +73,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
 			options.enableLogs = settings->EnableStructuredLogging;
-			options.experimental.enableMetrics = settings->EnableMetrics;
+			options.enableMetrics = settings->EnableMetrics;
 #if SENTRY_UIKIT_AVAILABLE
 			options.attachScreenshot = settings->AttachScreenshot;
 #endif
