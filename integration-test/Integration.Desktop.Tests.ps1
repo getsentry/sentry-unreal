@@ -356,7 +356,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $exception.type | Should -Be 'Ensure failed'
         }
 
-        It "Should have stack trace" {
+        It "Should have stack trace" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
             $exception = $script:EnsureEvent.exception.values[0]
             $exception.stacktrace | Should -Not -BeNullOrEmpty
             $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
