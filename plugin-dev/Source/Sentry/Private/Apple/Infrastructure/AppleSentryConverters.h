@@ -43,6 +43,7 @@ public:
 	/** Other conversions */
 	static SentryLevel StringToSentryLevel(NSString* string);
 	static FSentryVariant SentryAttributeToVariant(SentryAttribute* attribute);
+	static FSentryVariant SentryAttributeContentToVariant(SentryObjCAttributeContent* content);
 };
 
 #endif // !USE_SENTRY_NATIVE

@@ -6,6 +6,8 @@
 
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryMetric.h"
+#elif PLATFORM_APPLE
+#include "Apple/AppleSentryMetric.h"
 #elif USE_SENTRY_NATIVE
 #include "GenericPlatform/GenericPlatformSentryMetric.h"
 #else

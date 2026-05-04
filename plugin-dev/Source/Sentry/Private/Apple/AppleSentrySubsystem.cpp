@@ -10,6 +10,7 @@
 #include "AppleSentryFeedback.h"
 #include "AppleSentryId.h"
 #include "AppleSentryLog.h"
+#include "AppleSentryMetric.h"
 #include "AppleSentrySamplingContext.h"
 #include "AppleSentryScope.h"
 #include "AppleSentryTransaction.h"
@@ -18,11 +19,13 @@
 
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
+#include "SentryBeforeMetricHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
 #include "SentryLog.h"
+#include "SentryMetric.h"
 #include "SentrySamplingContext.h"
 #include "SentrySettings.h"
 #include "SentryTraceSampler.h"
@@ -171,6 +174,28 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					USentryLog* ProcessedLog = beforeLogHandler->HandleBeforeLog(LogToProcess);
 
 					return ProcessedLog ? log : nullptr;
+				};
+			}
+			if (beforeMetricHandler != nullptr)
+			{
+				options.beforeSendMetric = ^SentryObjCMetric*(SentryObjCMetric* metric) {
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
+					{
+						// Metric will be sent without calling a `onBeforeMetric` handler
+						return metric;
+					}
+
+					TSentryCallbackGuard<USentryBeforeMetricHandler> ReentrancyGuard;
+					if (ReentrancyGuard.IsReentrant())
+					{
+						return metric;
+					}
+
+					USentryMetric* MetricToProcess = USentryMetric::Create(MakeShareable(new FAppleSentryMetric(metric)));
+
+					USentryMetric* ProcessedMetric = beforeMetricHandler->HandleBeforeMetric(MetricToProcess);
+
+					return ProcessedMetric ? metric : nullptr;
 				};
 			}
 			if (beforeSendHandler != nullptr)

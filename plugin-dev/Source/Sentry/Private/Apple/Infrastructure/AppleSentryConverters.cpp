@@ -562,4 +562,26 @@ FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryAttribute*
 	}
 }
 
+FSentryVariant FAppleSentryConverters::SentryAttributeContentToVariant(SentryObjCAttributeContent* content)
+{
+	if (!content)
+	{
+		return FSentryVariant();
+	}
+
+	switch (content.type)
+	{
+	case SentryObjCAttributeContentTypeString:
+		return FSentryVariant(FString(content.stringValue));
+	case SentryObjCAttributeContentTypeBoolean:
+		return FSentryVariant(content.booleanValue);
+	case SentryObjCAttributeContentTypeInteger:
+		return FSentryVariant(static_cast<int32>(content.integerValue));
+	case SentryObjCAttributeContentTypeDouble:
+		return FSentryVariant(static_cast<float>(content.doubleValue));
+	default:
+		return FSentryVariant();
+	}
+}
+
 #endif // !USE_SENTRY_NATIVE
