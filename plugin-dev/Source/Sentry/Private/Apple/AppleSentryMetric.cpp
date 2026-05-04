@@ -12,12 +12,12 @@
 FAppleSentryMetric::FAppleSentryMetric()
 {
 	MetricApple = [[SENTRY_APPLE_CLASS(SentryObjCMetric) alloc] initWithTimestamp:[NSDate date]
-		name:@""
-		traceId:[[SENTRY_APPLE_CLASS(SentryId) alloc] init]
-		spanId:nil
-		value:[SENTRY_APPLE_CLASS(SentryObjCMetricValue) counterWithValue:0]
-		unit:nil
-		attributes:@{}];
+																			 name:@""
+																		  traceId:[[SENTRY_APPLE_CLASS(SentryId) alloc] init]
+																		   spanId:nil
+																			value:[SENTRY_APPLE_CLASS(SentryObjCMetricValue) counterWithValue:0]
+																			 unit:nil
+																	   attributes:@{}];
 }
 
 FAppleSentryMetric::FAppleSentryMetric(SentryObjCMetric* metric)
