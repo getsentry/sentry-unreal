@@ -80,7 +80,7 @@ void FMacSentrySubsystem::ConfigureLogFileAttachment(sentry_options_t* Options)
 void FMacSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Options)
 {
 	const FString CrashReporterPath = GetCrashReporterPath();
-	if (!FPaths::FileExists(CrashReporterPath))
+	if (!FPaths::DirectoryExists(CrashReporterPath))
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("External crash reporter executable couldn't be found at: %s"), *CrashReporterPath);
 		return;
