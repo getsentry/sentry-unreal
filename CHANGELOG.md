@@ -11,6 +11,7 @@
 - Add a dedicated plugin settings section for Sentry Crash Reporter([#1350](https://github.com/getsentry/sentry-unreal/pull/1350))
 - Add Crash Reporter logo customization ([#1349](https://github.com/getsentry/sentry-unreal/pull/1349))
 - Enable metrics by default ([#1363](https://github.com/getsentry/sentry-unreal/pull/1363))
+- Enable logs by default ([#1371](https://github.com/getsentry/sentry-unreal/pull/1371))
 
 ### Fixes
 
