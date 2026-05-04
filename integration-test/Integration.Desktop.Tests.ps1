@@ -751,7 +751,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
-    # Metrics are not supported on macOS with Cocoa backend
     Context "Metrics Capture Tests" {
         BeforeAll {
             $script:MetricResult = $null
