@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> Structured logs and metrics are enabled by default in this release. Applications that do not want to capture them must explicitly opt out by setting `EnableStructuredLogging` / `EnableMetrics` to `False` in the project's `.ini` configuration file.
+
 ### Features
 
 - Add WinGDK platform support ([#1337](https://github.com/getsentry/sentry-unreal/pull/1337))
