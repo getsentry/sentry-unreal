@@ -6,6 +6,12 @@
 
 - Fix Crash Reporter documentation links in plugin settings menu ([#1373](https://github.com/getsentry/sentry-unreal/pull/1373))
 
+### Dependencies
+
+- Bump Cocoa SDK from v9.12.0 to v9.12.1 ([#1375](https://github.com/getsentry/sentry-unreal/pull/1375))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9121)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.12.1)
+
 ## 1.11.0
 
 > [!IMPORTANT]
