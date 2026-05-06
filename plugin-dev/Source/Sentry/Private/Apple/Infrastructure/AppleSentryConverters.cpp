@@ -214,6 +214,125 @@ SentryAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryV
 	}
 }
 
+SentryObjCAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) integerWithValue:variant.GetValue<int32>()];
+	case ESentryVariantType::Float:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) doubleWithValue:(double)variant.GetValue<float>()];
+	case ESentryVariantType::Bool:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) booleanWithValue:variant.GetValue<bool>()];
+	case ESentryVariantType::String:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringWithValue:variant.GetValue<FString>().GetNSString()];
+	case ESentryVariantType::Array:
+	{
+		const TArray<FSentryVariant>& arr = variant.GetValue<TArray<FSentryVariant>>();
+		// Check if array is homogeneous and convert to typed array if possible
+		if (arr.Num() > 0)
+		{
+			ESentryVariantType firstType = arr[0].GetType();
+			bool isHomogeneous = true;
+			for (const FSentryVariant& item : arr)
+			{
+				if (item.GetType() != firstType)
+				{
+					isHomogeneous = false;
+					break;
+				}
+			}
+
+			if (isHomogeneous)
+			{
+				switch (firstType)
+				{
+				case ESentryVariantType::String:
+				{
+					NSMutableArray<NSString*>* stringArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[stringArr addObject:item.GetValue<FString>().GetNSString()];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringArrayWithValue:stringArr];
+				}
+				case ESentryVariantType::Integer:
+				{
+					NSMutableArray<NSNumber*>* intArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[intArr addObject:@(item.GetValue<int32>())];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) integerArrayWithValue:intArr];
+				}
+				case ESentryVariantType::Float:
+				{
+					NSMutableArray<NSNumber*>* doubleArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[doubleArr addObject:@((double)item.GetValue<float>())];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) doubleArrayWithValue:doubleArr];
+				}
+				case ESentryVariantType::Bool:
+				{
+					NSMutableArray<NSNumber*>* boolArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[boolArr addObject:@(item.GetValue<bool>())];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) booleanArrayWithValue:boolArr];
+				}
+				default:
+					break;
+				}
+			}
+		}
+		// Fall back to JSON string for mixed arrays
+		NSArray* nativeArray = VariantArrayToNative(arr);
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeArray options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringWithValue:jsonString];
+		}
+		return nil;
+	}
+	case ESentryVariantType::Map:
+	{
+		// Convert map to JSON string
+		NSDictionary* nativeDict = VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeDict options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringWithValue:jsonString];
+		}
+		return nil;
+	}
+	default:
+		return nil;
+	}
+}
+
+NSDictionary<NSString*, SentryObjCAttributeContent*>* FAppleSentryConverters::VariantMapToAttributeContentNative(const TMap<FString, FSentryVariant>& variantMap)
+{
+	NSMutableDictionary<NSString*, SentryObjCAttributeContent*>* dict = [NSMutableDictionary dictionaryWithCapacity:variantMap.Num()];
+
+	for (auto it = variantMap.CreateConstIterator(); it; ++it)
+	{
+		SentryObjCAttributeContent* content = VariantToAttributeContentNative(it.Value());
+		if (content != nil)
+		{
+			[dict setObject:content forKey:it.Key().GetNSString()];
+		}
+	}
+
+	return dict;
+}
+
 ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
@@ -440,6 +559,28 @@ FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryAttribute*
 	else
 	{
 		return FSentryVariant(FString([attribute.value description]));
+	}
+}
+
+FSentryVariant FAppleSentryConverters::SentryAttributeContentToVariant(SentryObjCAttributeContent* content)
+{
+	if (!content)
+	{
+		return FSentryVariant();
+	}
+
+	switch (content.type)
+	{
+	case SentryObjCAttributeContentTypeString:
+		return FSentryVariant(FString(content.stringValue));
+	case SentryObjCAttributeContentTypeBoolean:
+		return FSentryVariant(content.booleanValue);
+	case SentryObjCAttributeContentTypeInteger:
+		return FSentryVariant(static_cast<int32>(content.integerValue));
+	case SentryObjCAttributeContentTypeDouble:
+		return FSentryVariant(static_cast<float>(content.doubleValue));
+	default:
+		return FSentryVariant();
 	}
 }
 
