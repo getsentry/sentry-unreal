@@ -44,34 +44,42 @@ function New-SymbolicLink {
 # Platform-specific configuration
 $platformConfig = @{
     'Switch' = @{
-        Preset = 'nx64-unreal'
-        BuildDir = 'nx64-unreal'
         PlatformFolder = 'Switch'
-        SourceDir = 'Sentry'
+        SourceDir      = 'Sentry'
+        Variants = @(
+            @{ Name = 'Default'; Preset = 'nx64-unreal'; BuildDir = 'nx64-unreal' }
+        )
     }
     'PS5' = @{
-        Preset = 'ps5-unreal'
-        BuildDir = 'ps5-unreal'
         PlatformFolder = 'PS5'
-        SourceDir = 'Sentry'
+        SourceDir      = 'Sentry'
+        Variants = @(
+            @{ Name = 'Default'; Preset = 'ps5-unreal'; BuildDir = 'ps5-unreal' }
+        )
     }
     'XSX' = @{
-        Preset = 'scarlett-unreal'
-        BuildDir = 'scarlett-unreal'
         PlatformFolder = 'XSX'
-        SourceDir = 'Sentry_XSX'
+        SourceDir      = 'Sentry_XSX'
+        Variants = @(
+            @{ Name = 'Breakpad'; Preset = 'scarlett-unreal';         BuildDir = 'scarlett-unreal' }
+            @{ Name = 'Native';   Preset = 'scarlett-unreal-outproc'; BuildDir = 'scarlett-unreal-outproc' }
+        )
     }
     'XB1' = @{
-        Preset = 'xboxone-unreal'
-        BuildDir = 'xboxone-unreal'
         PlatformFolder = 'XB1'
-        SourceDir = 'Sentry_XB1'
+        SourceDir      = 'Sentry_XB1'
+        Variants = @(
+            @{ Name = 'Breakpad'; Preset = 'xboxone-unreal';         BuildDir = 'xboxone-unreal' }
+            @{ Name = 'Native';   Preset = 'xboxone-unreal-outproc'; BuildDir = 'xboxone-unreal-outproc' }
+        )
     }
     'WinGDK' = @{
-        Preset = 'wingdk-unreal'
-        BuildDir = 'wingdk-unreal'
         PlatformFolder = 'WinGDK'
-        SourceDir = 'Sentry_WinGDK'
+        SourceDir      = 'Sentry_WinGDK'
+        Variants = @(
+            @{ Name = 'Breakpad'; Preset = 'wingdk-unreal';         BuildDir = 'wingdk-unreal' }
+            @{ Name = 'Native';   Preset = 'wingdk-unreal-outproc'; BuildDir = 'wingdk-unreal-outproc' }
+        )
     }
 }
 
@@ -108,24 +116,34 @@ Write-Host "  ✓ Extension path validated" -ForegroundColor Green
 
 # Step 2: Build extension
 Write-Host "`n[2/6] Building extension..." -ForegroundColor Yellow
-Write-Host "  Running: cmake --workflow --preset $($config.Preset) --fresh"
 
-Push-Location $ExtensionPath
-try {
-    $buildOutput = & cmake --workflow --preset $config.Preset --fresh 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host $buildOutput -ForegroundColor Red
-        throw "Build failed with exit code $LASTEXITCODE"
+$variantCount = $config.Variants.Count
+Write-Host "  Variants: $variantCount ($(($config.Variants | ForEach-Object { $_.Name }) -join ', '))"
+
+for ($i = 0; $i -lt $variantCount; $i++) {
+    $variant = $config.Variants[$i]
+    $progress = "$($i + 1)/$variantCount"
+
+    Write-Host "`n  [$progress] Building '$($variant.Name)' variant..." -ForegroundColor Yellow
+    Write-Host "    Running: cmake --workflow --preset $($variant.Preset) --fresh"
+
+    Push-Location $ExtensionPath
+    try {
+        $buildOutput = & cmake --workflow --preset $variant.Preset --fresh 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host $buildOutput -ForegroundColor Red
+            throw "Build failed for variant '$($variant.Name)' with exit code $LASTEXITCODE"
+        }
+        Write-Host "    ✓ '$($variant.Name)' variant built successfully" -ForegroundColor Green
+    } finally {
+        Pop-Location
     }
-    Write-Host "  ✓ Extension built successfully" -ForegroundColor Green
-} finally {
-    Pop-Location
-}
 
-# Verify build output exists
-$buildOutputDir = Join-Path $ExtensionPath "build" $config.BuildDir "unreal" "Sentry"
-if (-not (Test-Path $buildOutputDir)) {
-    throw "Build output directory not found: $buildOutputDir"
+    # Verify build output exists for this variant
+    $buildOutputDir = Join-Path $ExtensionPath "build" $variant.BuildDir "unreal" "Sentry"
+    if (-not (Test-Path $buildOutputDir)) {
+        throw "Build output directory not found for variant '$($variant.Name)': $buildOutputDir"
+    }
 }
 
 # Step 3: Create directory structure in sample project
@@ -155,19 +173,20 @@ Write-Host "  ✓ Directory structure created" -ForegroundColor Green
 # Step 4: Copy build artifacts (ThirdParty libs/headers)
 Write-Host "`n[4/6] Copying build artifacts..." -ForegroundColor Yellow
 
-$buildThirdPartyDir = Join-Path $buildOutputDir "Source" "ThirdParty" $config.PlatformFolder
-if (-not (Test-Path $buildThirdPartyDir)) {
-    throw "Build ThirdParty directory not found: $buildThirdPartyDir"
-}
-
-# Remove existing ThirdParty directory if it exists to ensure clean copy
+# Wipe target ThirdParty once so each variant's tree merges cleanly into a fresh dir
 if (Test-Path $targetThirdPartyDir) {
     Remove-Item -Path $targetThirdPartyDir -Recurse -Force
 }
 
-# Copy entire ThirdParty directory
-Copy-Item -Path $buildThirdPartyDir -Destination (Join-Path $targetSourceRoot "ThirdParty") -Recurse -Force
-Write-Host "  Copied: ThirdParty/$($config.PlatformFolder)/"
+foreach ($variant in $config.Variants) {
+    $variantThirdParty = Join-Path $ExtensionPath "build" $variant.BuildDir "unreal" "Sentry" "Source" "ThirdParty" $config.PlatformFolder
+    if (-not (Test-Path $variantThirdParty)) {
+        throw "ThirdParty directory not found for variant '$($variant.Name)': $variantThirdParty"
+    }
+
+    Copy-Item -Path $variantThirdParty -Destination (Join-Path $targetSourceRoot "ThirdParty") -Recurse -Force
+    Write-Host "  Copied: ThirdParty/$($config.PlatformFolder)/ ($($variant.Name))"
+}
 
 Write-Host "  ✓ Build artifacts copied" -ForegroundColor Green
 
