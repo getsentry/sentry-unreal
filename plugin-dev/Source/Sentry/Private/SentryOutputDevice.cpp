@@ -58,7 +58,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 	const FString CategoryString = Category.ToString();
 
 	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-	if (!SentrySubsystem || !SentrySubsystem->IsEnabled())
+	if (!SentrySubsystem || !SentrySubsystem->IsEnabled() || SentrySubsystem->IsCrashing())
 	{
 		return;
 	}

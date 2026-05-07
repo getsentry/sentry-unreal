@@ -916,6 +916,11 @@ bool USentrySubsystem::IsSupportedForCurrentSettings() const
 	return true;
 }
 
+bool USentrySubsystem::IsCrashing() const
+{
+	return SubsystemNativeImpl ? SubsystemNativeImpl->IsCrashing() : false;
+}
+
 TSharedPtr<ISentrySubsystem> USentrySubsystem::GetNativeObject() const
 {
 	return SubsystemNativeImpl;

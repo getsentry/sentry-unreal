@@ -46,7 +46,7 @@ FSentryPerfGameStatsMonitor::~FSentryPerfGameStatsMonitor()
 bool FSentryPerfGameStatsMonitor::OnTick(float DeltaTime)
 {
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
-	if (!Sentry || !Sentry->IsEnabled())
+	if (!Sentry || !Sentry->IsEnabled() || Sentry->IsCrashing())
 	{
 		return true;
 	}

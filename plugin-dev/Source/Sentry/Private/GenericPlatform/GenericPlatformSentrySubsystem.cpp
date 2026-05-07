@@ -637,6 +637,11 @@ bool FGenericPlatformSentrySubsystem::IsEnabled()
 	return isEnabled;
 }
 
+bool FGenericPlatformSentrySubsystem::IsCrashing() const
+{
+	return bIsCrashing;
+}
+
 ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
 {
 	ESentryCrashedLastRun unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
