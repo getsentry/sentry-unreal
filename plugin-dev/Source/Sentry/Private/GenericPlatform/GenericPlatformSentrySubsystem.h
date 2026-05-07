@@ -4,12 +4,14 @@
 
 #include "Convenience/GenericPlatformSentryInclude.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
+#include "UObject/StrongObjectPtrTemplates.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
+class USentryEvent;
 
 #if USE_SENTRY_NATIVE
 
@@ -145,6 +147,8 @@ private:
 	bool isGpuDumpAttachmentEnabled;
 
 	FString databaseParentPath;
+
+	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
 };
 
 #endif

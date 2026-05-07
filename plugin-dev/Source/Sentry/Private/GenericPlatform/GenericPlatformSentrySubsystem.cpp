@@ -171,7 +171,16 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
+	USentryEvent* EventToProcess;
+	if (isCrash && PooledCrashEvent.IsValid())
+	{
+		PooledCrashEvent->SetNativeImpl(MakeShareable(new FGenericPlatformSentryEvent(event, true)));
+		EventToProcess = PooledCrashEvent.Get();
+	}
+	else
+	{
+		EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
+	}
 
 	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, nullptr);
 
@@ -581,11 +590,18 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 			RevokeUserConsent();
 		}
 	}
+
+	// Pre-allocate a USentryEvent to be reused on the crash path. This avoids `NewObject` (and the
+	// associated GC lock acquisition) inside the `before_send` callback when handling fatal errors,
+	// which can re-trigger memory-related crashes (e.g. stack overflow).
+	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
 }
 
 void FGenericPlatformSentrySubsystem::Close()
 {
 	isEnabled = false;
+
+	PooledCrashEvent.Reset();
 
 	sentry_close();
 }
