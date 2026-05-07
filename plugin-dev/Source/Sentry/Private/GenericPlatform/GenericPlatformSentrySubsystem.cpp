@@ -106,7 +106,13 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 {
 	if (closure)
 	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnCrash(uctx, event, closure);
+		FGenericPlatformSentrySubsystem* platformSubsystem = StaticCast<FGenericPlatformSentrySubsystem*>(closure);
+
+		// Set as early as possible so platform-specific crash handlers can also
+		// benefit from short-circuiting user callbacks.
+		platformSubsystem->bIsCrashing = true;
+
+		return platformSubsystem->OnCrash(uctx, event, closure);
 	}
 	else
 	{
@@ -201,6 +207,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 		return breadcrumb;
 	}
 
+	if (bIsCrashing)
+	{
+		return breadcrumb;
+	}
+
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		return breadcrumb;
@@ -230,6 +241,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 	if (!Handler)
 	{
 		// If custom handler isn't set skip further processing
+		return log;
+	}
+
+	if (bIsCrashing)
+	{
 		return log;
 	}
 
@@ -263,6 +279,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 	if (!Handler)
 	{
 		// If custom handler isn't set skip further processing
+		return metric;
+	}
+
+	if (bIsCrashing)
+	{
 		return metric;
 	}
 
@@ -317,6 +338,11 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 	if (!Sampler)
 	{
 		// If custom sampler isn't set skip further processing
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	if (bIsCrashing)
+	{
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 

@@ -4,6 +4,7 @@
 
 #include "Convenience/GenericPlatformSentryInclude.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
+#include "HAL/ThreadSafeBool.h"
 #include "UObject/StrongObjectPtrTemplates.h"
 
 #include "Interface/SentrySubsystemInterface.h"
@@ -149,6 +150,8 @@ private:
 	FString databaseParentPath;
 
 	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
+
+	FThreadSafeBool bIsCrashing;
 };
 
 #endif
