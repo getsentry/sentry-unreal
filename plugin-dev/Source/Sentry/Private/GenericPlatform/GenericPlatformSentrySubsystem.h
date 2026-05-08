@@ -5,7 +5,7 @@
 #include "Convenience/GenericPlatformSentryInclude.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 #include "HAL/ThreadSafeBool.h"
-#include "UObject/StrongObjectPtrTemplates.h"
+#include "UObject/StrongObjectPtr.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
