@@ -58,7 +58,7 @@ void FSentryPerfGCMonitor::OnPostGC()
 	const float PauseMs = static_cast<float>((FPlatformTime::Seconds() - GCStartTime) * 1000.0);
 
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
-	if (!Sentry || !Sentry->IsEnabled() || Sentry->IsCrashing())
+	if (!Sentry || !Sentry->IsEnabled())
 	{
 		return;
 	}

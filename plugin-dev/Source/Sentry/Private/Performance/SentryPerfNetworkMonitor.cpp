@@ -82,7 +82,7 @@ bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
 	}
 
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
-	if (!Sentry || !Sentry->IsEnabled() || Sentry->IsCrashing())
+	if (!Sentry || !Sentry->IsEnabled())
 	{
 		return true;
 	}

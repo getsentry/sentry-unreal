@@ -37,7 +37,7 @@ void FSentryPerfFrameTimeMonitor::ProcessFrame(const FFrameData& FrameData)
 	}
 
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
-	if (!Sentry || !Sentry->IsEnabled() || Sentry->IsCrashing())
+	if (!Sentry || !Sentry->IsEnabled())
 	{
 		return;
 	}
