@@ -340,6 +340,15 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOutOfProcessScreenshots;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Attach replay clip", ToolTip = "When enabled, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring. Currently supported on Xbox only."))
+	bool AttachReplayClip;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Replay clip duration (ms)", ToolTip = "Requested duration of the retroactive replay clip. The resulting clip can be shorter than the requested duration if it hasn't accumulated enough buffered frames yet.",
+			EditCondition = "AttachReplayClip", ClampMin = "1000", ClampMax = "15000"))
+	uint32 ReplayClipDurationMs;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only."))
 	bool AttachGpuDump;
 
