@@ -6,7 +6,7 @@
 
 #include "Interface/SentryFeedbackInterface.h"
 
-@class SentryFeedback;
+#include "Convenience/AppleSentryInclude.h"
 
 class FAppleSentryFeedback : public ISentryFeedback
 {

@@ -8,10 +8,10 @@ PROJECT_FILE="$5"
 PLUGIN_DIR="$6"
 ENGINE_DIR="$7"
 
-# Copy sentry.dylib to plugin's Binaries/Mac dir if it doesn't exist there to ensure FAB version of the plugin works correctly
+# Copy SentryObjC.dylib to plugin's Binaries/Mac dir if it doesn't exist there to ensure FAB version of the plugin works correctly
 # Epic obfuscates any extra binaries when pre-building the plugin
-if [ "$TARGET_PLATFORM" = "Mac" ] && [ ! -f "$PLUGIN_DIR/Binaries/Mac/sentry.dylib" ]; then
-  cp "$PLUGIN_DIR/Source/ThirdParty/Mac/bin/sentry.dylib" "$PLUGIN_DIR/Binaries/Mac/sentry.dylib"
+if [ "$TARGET_PLATFORM" = "Mac" ] && [ ! -f "$PLUGIN_DIR/Binaries/Mac/SentryObjC.dylib" ]; then
+  cp "$PLUGIN_DIR/Source/ThirdParty/Mac/bin/SentryObjC.dylib" "$PLUGIN_DIR/Binaries/Mac/SentryObjC.dylib"
 fi
 
 # Grant execute permissions to sentry-cli binary (FAB version of the plugin doesn't preserve file permissions)

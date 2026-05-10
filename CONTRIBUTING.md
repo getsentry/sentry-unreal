@@ -116,6 +116,22 @@ These scripts pre-build the binaries required for consoles and copy them to samp
 > [!TIP]
 > For more details about the environment and Unreal Engine setup required for console development, refer to the corresponding plugin extension repositories' `unreal/CONTRIBUTING.md` files.
 
+## Quick Build Commands
+
+A `Makefile` is provided for common development tasks. Run `make help` to see all available targets:
+
+```bash
+make stage-framework   # Download and stage SentryObjC framework into ThirdParty
+make build-macos       # Build sample project for macOS
+make build-ios         # Build sample project for iOS
+```
+
+The Unreal Engine install path is auto-detected from the Epic Games Launcher. To override it:
+
+```bash
+make build-macos UNREAL_ENGINE_ROOT=/path/to/UE_5.x
+```
+
 ## Plugin Structure
 
 Sentry Unreal SDK consists of two modules:

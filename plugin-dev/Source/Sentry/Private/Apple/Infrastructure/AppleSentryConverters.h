@@ -27,6 +27,8 @@ public:
 	static NSDictionary* VariantMapToNative(const TMap<FString, FSentryVariant>& variantMap);
 	static SentryStacktrace* CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 	static SentryAttribute* VariantToAttributeNative(const FSentryVariant& variant);
+	static SentryObjCAttributeContent* VariantToAttributeContentNative(const FSentryVariant& variant);
+	static NSDictionary<NSString*, SentryObjCAttributeContent*>* VariantMapToAttributeContentNative(const TMap<FString, FSentryVariant>& variantMap);
 
 	/** Conversions from native Mac/iOS types */
 	static ESentryLevel SentryLevelToUnreal(SentryLevel level);
@@ -41,6 +43,7 @@ public:
 	/** Other conversions */
 	static SentryLevel StringToSentryLevel(NSString* string);
 	static FSentryVariant SentryAttributeToVariant(SentryAttribute* attribute);
+	static FSentryVariant SentryAttributeContentToVariant(SentryObjCAttributeContent* content);
 };
 
 #endif // !USE_SENTRY_NATIVE
