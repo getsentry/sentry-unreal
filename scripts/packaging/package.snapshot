@@ -355,7 +355,6 @@ Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryFormatter.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryLogC.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
-Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryNSDictionarySanitize.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryOptionsInternal.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Source/ThirdParty/IOS/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
@@ -432,7 +431,6 @@ Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryMechanism.h
 Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryMechanismContext.h
 Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryMessage.h
 Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryNSDataUtils.h
-Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryNSDictionarySanitize.h
 Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryNSError.h
 Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryOptionsInternal.h
 Source/ThirdParty/Mac/Cocoa/include/Sentry/SentryProfilingConditionals.h
