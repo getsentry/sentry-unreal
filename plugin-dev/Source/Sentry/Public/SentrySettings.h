@@ -340,7 +340,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOutOfProcessScreenshots;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Attach session replay (for Xbox only, experimental)", ToolTip = "When enabled, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring. Currently supported on Xbox only."))
+		Meta = (DisplayName = "Attach session replay (for Xbox devkits only, experimental)", ToolTip = "When enabled, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring. Currently supported on Xbox development kits only."))
 	bool AttachSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
