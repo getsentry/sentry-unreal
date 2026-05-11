@@ -490,6 +490,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use."))
 	bool EnableOnCrashLogging;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
+		Meta = (DisplayName = "Shutdown timeout, milliseconds", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0))
+	int32 ShutdownTimeout;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Sentry Crash Reporter",
 		Meta = (DisplayName = "Enable Sentry Crash Reporter",
 			ToolTip = "When enabled, the Sentry Crash Reporter dialog is shown to the user after a crash, allowing them to review crash details and provide feedback before the report is submitted."))
