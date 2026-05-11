@@ -5,10 +5,20 @@
 ### Features
 
 - Add experimental replay clip capturing on Xbox ([#1378](https://github.com/getsentry/sentry-unreal/pull/1378))
+- Add SDK shutdown timeout as plugin setting for native desktop and console platforms ([#1379](https://github.com/getsentry/sentry-unreal/pull/1379))
 
 ### Fixes
 
 - Fix Crash Reporter documentation links in plugin settings menu ([#1373](https://github.com/getsentry/sentry-unreal/pull/1373))
+
+### Dependencies
+
+- Bump Cocoa SDK from v9.12.0 to v9.12.1 ([#1375](https://github.com/getsentry/sentry-unreal/pull/1375))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9121)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.12.1)
+- Bump Java SDK from v8.40.0 to v8.41.0 ([#1376](https://github.com/getsentry/sentry-unreal/pull/1376))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8410)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.40.0...8.41.0)
 
 ## 1.11.0
 
