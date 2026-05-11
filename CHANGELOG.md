@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add experimental replay clip capturing on Xbox ([#1378](https://github.com/getsentry/sentry-unreal/pull/1378))
+- Add experimental session replay capturing on Xbox ([#1378](https://github.com/getsentry/sentry-unreal/pull/1378))
 - Add SDK shutdown timeout as plugin setting for native desktop and console platforms ([#1379](https://github.com/getsentry/sentry-unreal/pull/1379))
 
 ### Fixes
