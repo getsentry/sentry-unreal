@@ -435,6 +435,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isStackTraceEnabled(true)
 	, isPiiAttachmentEnabled(false)
 	, isScreenshotAttachmentEnabled(false)
+	, isSessionReplayAttachmentEnabled(false)
 	, isGpuDumpAttachmentEnabled(false)
 {
 }
@@ -482,6 +483,12 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		{
 			ConfigureScreenshotCapturing(options);
 		}
+	}
+
+	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
+	if (isSessionReplayAttachmentEnabled)
+	{
+		ConfigureSessionReplayCapturing(options);
 	}
 
 	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
