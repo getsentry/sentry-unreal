@@ -83,7 +83,7 @@ protected:
 	virtual void ConfigureStackCaptureStrategy(sentry_options_t* Options) {}
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) {}
 	virtual void ConfigureScreenshotCapturing(sentry_options_t* Options) {}
-	virtual void ConfigureReplayClipCapturing(sentry_options_t* Options) {}
+	virtual void ConfigureSessionReplayCapturing(sentry_options_t* Options) {}
 
 	void ConfigureCrashReporterAppearance(const USentrySettings* Settings);
 
@@ -143,7 +143,7 @@ private:
 	bool isStackTraceEnabled;
 	bool isPiiAttachmentEnabled;
 	bool isScreenshotAttachmentEnabled;
-	bool isReplayClipAttachmentEnabled;
+	bool isSessionReplayAttachmentEnabled;
 	bool isGpuDumpAttachmentEnabled;
 
 	FString databaseParentPath;

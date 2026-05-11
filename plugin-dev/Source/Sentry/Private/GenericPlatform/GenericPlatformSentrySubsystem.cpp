@@ -435,7 +435,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isStackTraceEnabled(true)
 	, isPiiAttachmentEnabled(false)
 	, isScreenshotAttachmentEnabled(false)
-	, isReplayClipAttachmentEnabled(false)
+	, isSessionReplayAttachmentEnabled(false)
 	, isGpuDumpAttachmentEnabled(false)
 {
 }
@@ -485,10 +485,10 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		}
 	}
 
-	isReplayClipAttachmentEnabled = settings->AttachReplayClip;
-	if (isReplayClipAttachmentEnabled)
+	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
+	if (isSessionReplayAttachmentEnabled)
 	{
-		ConfigureReplayClipCapturing(options);
+		ConfigureSessionReplayCapturing(options);
 	}
 
 	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
