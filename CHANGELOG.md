@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add experimental replay clip capturing on Xbox ([#1378](https://github.com/getsentry/sentry-unreal/pull/1378))
+
 ### Fixes
 
 - Fix Crash Reporter documentation links in plugin settings menu ([#1373](https://github.com/getsentry/sentry-unreal/pull/1373))
