@@ -106,7 +106,13 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 {
 	if (closure)
 	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnCrash(uctx, event, closure);
+		FGenericPlatformSentrySubsystem* platformSubsystem = StaticCast<FGenericPlatformSentrySubsystem*>(closure);
+
+		// Set as early as possible so platform-specific crash handlers can also
+		// benefit from short-circuiting user callbacks.
+		platformSubsystem->bIsCrashing = true;
+
+		return platformSubsystem->OnCrash(uctx, event, closure);
 	}
 	else
 	{
@@ -171,7 +177,16 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
+	USentryEvent* EventToProcess;
+	if (isCrash && PooledCrashEvent.IsValid())
+	{
+		PooledCrashEvent->SetNativeImpl(MakeShareable(new FGenericPlatformSentryEvent(event, true)));
+		EventToProcess = PooledCrashEvent.Get();
+	}
+	else
+	{
+		EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
+	}
 
 	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, nullptr);
 
@@ -189,6 +204,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 	if (!Handler)
 	{
 		// If custom handler isn't set skip further processing
+		return breadcrumb;
+	}
+
+	if (bIsCrashing)
+	{
 		return breadcrumb;
 	}
 
@@ -224,6 +244,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 		return log;
 	}
 
+	if (bIsCrashing)
+	{
+		return log;
+	}
+
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		return log;
@@ -254,6 +279,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 	if (!Handler)
 	{
 		// If custom handler isn't set skip further processing
+		return metric;
+	}
+
+	if (bIsCrashing)
+	{
 		return metric;
 	}
 
@@ -308,6 +338,11 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 	if (!Sampler)
 	{
 		// If custom sampler isn't set skip further processing
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	if (bIsCrashing)
+	{
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
@@ -588,11 +623,18 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 			RevokeUserConsent();
 		}
 	}
+
+	// Pre-allocate a USentryEvent to be reused on the crash path. This avoids `NewObject` (and the
+	// associated GC lock acquisition) inside the `before_send` callback when handling fatal errors,
+	// which can re-trigger memory-related crashes (e.g. stack overflow).
+	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
 }
 
 void FGenericPlatformSentrySubsystem::Close()
 {
 	isEnabled = false;
+
+	PooledCrashEvent.Reset();
 
 	sentry_close();
 }
@@ -600,6 +642,11 @@ void FGenericPlatformSentrySubsystem::Close()
 bool FGenericPlatformSentrySubsystem::IsEnabled()
 {
 	return isEnabled;
+}
+
+bool FGenericPlatformSentrySubsystem::IsCrashing() const
+{
+	return bIsCrashing;
 }
 
 ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()

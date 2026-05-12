@@ -4,12 +4,15 @@
 
 #include "Convenience/GenericPlatformSentryInclude.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
+#include "HAL/ThreadSafeBool.h"
+#include "UObject/StrongObjectPtr.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
+class USentryEvent;
 
 #if USE_SENTRY_NATIVE
 
@@ -21,6 +24,7 @@ public:
 	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
+	virtual bool IsCrashing() const override;
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override;
@@ -147,6 +151,10 @@ private:
 	bool isGpuDumpAttachmentEnabled;
 
 	FString databaseParentPath;
+
+	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
+
+	FThreadSafeBool bIsCrashing;
 };
 
 #endif

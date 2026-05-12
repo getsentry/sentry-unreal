@@ -38,6 +38,9 @@ public:
 	/** Retrieves the underlying native implementation. */
 	TSharedPtr<Interface> GetNativeObject() const { return NativeImpl; }
 
+	/** Rebinds wrapper to a different native implementation. */
+	void SetNativeImpl(TSharedPtr<Interface> InObject) { NativeImpl = InObject; }
+
 protected:
 	TSharedPtr<Interface> NativeImpl;
 };
