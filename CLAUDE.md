@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This project is the Sentry SDK for Unreal Engine which provides crash and error monitoring as well as performance tracking for games built with Unreal Engine. It wraps multiple Sentry SDKs for supported platforms (`sentry-native` for Windows/Linux/Xbox/WinGDK/PlayStation/Nintendo, `sentry-cocoa` for macOS/iOS, `sentry-java` for Android) into a single Unreal Engine plugin and extends them with Unreal Engine-specific functionality.
+This project is the Sentry SDK for Unreal Engine which provides crash and error monitoring as well as performance tracking for games built with Unreal Engine. It wraps multiple Sentry SDKs for supported platforms (`sentry-native` for Windows/Linux/macOS/Xbox/WinGDK/PlayStation/Nintendo, `sentry-cocoa` for macOS/iOS, `sentry-java` for Android) into a single Unreal Engine plugin and extends them with Unreal Engine-specific functionality.
 
 ## Plugin Architecture
 
@@ -27,7 +27,7 @@ plugin-dev/Source/
 │       ├── Interface/       # Abstract interfaces
 │       ├── IOS/             # iOS overrides for Apple
 │       ├── Linux/           # Linux overrides for GenericPlatform
-│       ├── Mac/             # macOS overrides for Apple
+│       ├── Mac/             # macOS overrides for Apple/GenericPlatform
 │       ├── Microsoft/       # Windows/Xbox/WinGDK base, overrides GenericPlatform
 │       ├── Null/            # Stubs for unsupported platforms
 │       ├── Tests/           # Unit test specs
@@ -46,13 +46,14 @@ sentry-native (C/C++ SDK)
 │   │   ├── Windows/          # Windows-specific overrides
 │   │   └── Xbox/             # Xbox-specific overrides (private extension)
 │   │   └── WinGDK/           # WinGDK-specific overrides (private extension)
+│   ├── Mac/                  # macOS-specific overrides (native backend)
 │   ├── Linux/                # Linux-specific overrides
 │   ├── PlayStation/          # PlayStation-specific (private extension)
 │   └── Switch/               # Nintendo Switch-specific (private extension)
 
 sentry-cocoa (Objective-C SDK)
 ├── Apple/                    # Base implementation for all Apple platforms
-│   ├── Mac/                  # macOS-specific overrides
+│   ├── Mac/                  # macOS-specific overrides (cocoa backend)
 │   └── IOS/                  # iOS-specific overrides
 
 sentry-java (Java/Kotlin SDK)
@@ -60,6 +61,19 @@ sentry-java (Java/Kotlin SDK)
 
 Null/                         # Stubs for unsupported platforms
 ```
+
+### Crash Handler Backends
+
+For `sentry-native` platforms SDK supports multiple crash handler backends. The backend is selected in `Sentry.Build.cs` at build time via the `UseNativeBackend` setting configured in `SentrySettings`.
+
+| Platform             | Default backend | Alternative backend |
+|----------------------|-----------------|---------------------|
+| Windows (x64, ARM64) | Crashpad        | Native              |
+| Linux (x64, ARM64)   | Crashpad        | Native              |
+| macOS                | Cocoa           | Native              |
+| Xbox/WinGDK          | Breakpad        | Native              |
+
+Each platform's ThirdParty directory contains subdirectories per backend (e.g. `Crashpad/` + `Native/`, `Cocoa/` + `Native/`, or `Breakpad/` + `Native/`).
 
 ### Public API
 
@@ -206,9 +220,11 @@ Build and test workflows are available as skills:
 When implementing features that wrap native SDK functionality, check APIs in the following order (proceed to next source only if previous is unavailable or lacks context):
 
 1. **ThirdParty headers** - pre-built SDK headers and libraries:
-    - `plugin-dev/Source/ThirdParty/Win64/` - sentry-native (C headers + .lib)
-    - `plugin-dev/Source/ThirdParty/Linux/`, `LinuxArm64/` - sentry-native (C headers + .a)
-    - `plugin-dev/Source/ThirdParty/Mac/` - sentry-cocoa (Objective-C headers)
+    - `plugin-dev/Source/ThirdParty/Win64/` - sentry-native (C headers + .lib), subdirs: `Crashpad/`, `Native/`
+    - `plugin-dev/Source/ThirdParty/WinArm64/` - same as Win64 for ARM64
+    - `plugin-dev/Source/ThirdParty/Linux/` - sentry-native (C headers + .a), subdirs: `Crashpad/`, `Native/`
+    - `plugin-dev/Source/ThirdParty/LinuxArm64/` - same as Linux for ARM64
+    - `plugin-dev/Source/ThirdParty/Mac/` - subdirs: `Cocoa/` (Objective-C headers + .dylib), `Native/` (C headers + .a)
     - `plugin-dev/Source/ThirdParty/IOS/` - sentry-cocoa (Objective-C framework)
     - `plugin-dev/Source/ThirdParty/Android/` - sentry-java (.aar/.jar)
 
