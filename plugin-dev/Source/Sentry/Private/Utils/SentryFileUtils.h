@@ -11,6 +11,7 @@ public:
 	static FString GetGameLogPath();
 	static FString GetGameLogBackupPath();
 	static FString GetGpuDumpPath();
+	static TArray<FString> GetGpuShaderDebugInfoPaths();
 	static FString GetScreenshotPath();
 	static FString GetLatestScreenshot();
 };

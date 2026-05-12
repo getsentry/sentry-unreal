@@ -72,6 +72,25 @@ FString SentryFileUtils::GetGpuDumpPath()
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GpuDumpFiles[0]);
 }
 
+TArray<FString> SentryFileUtils::GetGpuShaderDebugInfoPaths()
+{
+	TArray<FString> NvdbgFiles;
+	IFileManager::Get().FindFiles(NvdbgFiles, *FString::Printf(TEXT("%s*.nvdbg"), *FPaths::ProjectLogDir()), true, false);
+
+	if (NvdbgFiles.Num() == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("There is no .nvdbg files available."));
+		return TArray<FString>();
+	}
+
+	for (int i = 0; i < NvdbgFiles.Num(); ++i)
+	{
+		NvdbgFiles[i] = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectLogDir() / NvdbgFiles[i]));
+	}
+
+	return NvdbgFiles;
+}
+
 FString SentryFileUtils::GetScreenshotPath()
 {
 	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
