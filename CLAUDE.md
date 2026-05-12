@@ -157,9 +157,9 @@ Refer to `Building for Consoles` in `CONTRIBUTING.md` for build instructions.
 
 ## Crash Reporter
 
-The plugin includes an optional external crash reporter - a .NET desktop application that shows a user-facing dialog when a crash occurs, allowing players to submit feedback and review crash details (tags, context, stacktrace). Supported on Windows and Linux (x64 and ARM64).
+The plugin includes an optional external crash reporter - a .NET desktop application that shows a user-facing dialog when a crash occurs, allowing players to submit feedback and review crash details (tags, context, stacktrace). Supported on Windows, Linux, and macOS (x64 and ARM64).
 
-- **Sources**: `modules/sentry-crash-reporter` submodule or local checkout via `SENTRY_CRASH_REPORTER_PATH` env var
+- **Sources**: local checkout via `SENTRY_CRASH_REPORTER_PATH` env var
 
 ## Development Guidelines
 
@@ -273,7 +273,7 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 - [sentry-native](https://github.com/getsentry/sentry-native): crash and error monitoring on Windows/Linux and game consoles
 - [sentry-java](https://github.com/getsentry/sentry-java): crash and error monitoring on Android
 - [sentry-cocoa](https://github.com/getsentry/sentry-cocoa): crash and error monitoring on macOS and iOS
-- [sentry-desktop-crash-reporter](https://github.com/getsentry/sentry-desktop-crash-reporter): external crash reporter dialog for Windows/Linux
+- [sentry-desktop-crash-reporter](https://github.com/getsentry/sentry-desktop-crash-reporter): external crash reporter dialog for Windows/Linux/macOS
 - [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
