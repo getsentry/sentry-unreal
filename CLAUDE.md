@@ -83,13 +83,13 @@ Each platform's ThirdParty directory contains subdirectories per backend (e.g. `
 - `SentryLibrary` - Blueprint function library for instantiating Sentry objects
 
 **Sentry Entities:**
-- `SentryEvent`, `SentryBreadcrumb`, `SentryScope`, `SentryUser`, `SentryAttachment`, `SentryHint`, `SentryFeedback` - Data objects representing Sentry concepts
+- `SentryEvent`, `SentryBreadcrumb`, `SentryScope`, `SentryUser`, `SentryAttachment`, `SentryHint`, `SentryFeedback`, `SentryMetric`, `SentryLog` - Data objects representing Sentry concepts
 
-**Performance Monitoring:**
+**Tracing:**
 - `SentryTransaction`, `SentrySpan`, `SentryTransactionContext`, `SentrySamplingContext` - Tracing and performance measurement
 
 **Callbacks:**
-- `SentryBeforeSendHandler`, `SentryBeforeBreadcrumbHandler`, `SentryBeforeLogHandler`, `SentryTraceSampler` - Hooks for customizing SDK behavior
+- `SentryBeforeSendHandler`, `SentryBeforeBreadcrumbHandler`, `SentryBeforeLogHandler`, `SentryBeforeMetricHandler`, `SentryTraceSampler` - Hooks for customizing SDK behavior
 
 **Utilities:**
 - `SentryVariant` - Universal value type for passing data to Sentry APIs (tags, context, etc.)
