@@ -79,7 +79,7 @@ TArray<FString> SentryFileUtils::GetGpuShaderDebugInfoPaths()
 
 	if (NvdbgFiles.Num() == 0)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("There is no .nvdbg files available."));
+		UE_LOG(LogSentrySdk, Log, TEXT("There are no .nvdbg files available."));
 		return TArray<FString>();
 	}
 
