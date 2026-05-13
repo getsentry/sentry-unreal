@@ -472,6 +472,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isScreenshotAttachmentEnabled(false)
 	, isSessionReplayAttachmentEnabled(false)
 	, isGpuDumpAttachmentEnabled(false)
+	, initTimestamp(FDateTime::UtcNow())
 {
 }
 
@@ -1188,6 +1189,20 @@ void FGenericPlatformSentrySubsystem::TryCaptureGpuDump()
 		MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
 
 	AddFileAttachment(GpuDumpAttachment);
+
+	// Attach NVIDIA Aftermath .nvdbg files written during this SDK session (older files are assumed to belong to previous crashes)
+	for (const FString& NvdbgPath : SentryFileUtils::GetGpuShaderDebugInfoPaths())
+	{
+		if (IFileManager::Get().GetTimeStamp(*NvdbgPath) < initTimestamp)
+		{
+			continue;
+		}
+
+		TSharedPtr<ISentryAttachment> NvdbgAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(NvdbgPath, FPaths::GetCleanFilename(NvdbgPath), TEXT("application/octet-stream")));
+
+		AddFileAttachment(NvdbgAttachment);
+	}
 }
 
 void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USentrySettings* Settings)

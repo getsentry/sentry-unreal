@@ -150,6 +150,8 @@ private:
 	bool isSessionReplayAttachmentEnabled;
 	bool isGpuDumpAttachmentEnabled;
 
+	FDateTime initTimestamp;
+
 	FString databaseParentPath;
 
 	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
