@@ -73,7 +73,6 @@ public class SentryBridgeJava {
 					options.setSendDefaultPii(settingJson.getBoolean("sendDefaultPii"));
 					if(settingJson.getBoolean("attachSessionReplay")) {
 						options.getSessionReplay().setSessionSampleRate(1.0);
-						options.getSessionReplay().setOnErrorSampleRate(1.0);
 						options.getSessionReplay().setCaptureSurfaceViews(true);
 					}
 					JSONArray Includes = settingJson.getJSONArray("inAppInclude");
