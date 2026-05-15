@@ -67,6 +67,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetNumberField(TEXT("sampleRate"), settings->SampleRate);
 	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);
 	SettingsJson->SetBoolField(TEXT("attachScreenshot"), settings->AttachScreenshot);
+	SettingsJson->SetBoolField(TEXT("attachSessionReplay"), settings->AttachSessionReplay);
 	SettingsJson->SetArrayField(TEXT("inAppInclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppInclude));
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppExclude));
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
