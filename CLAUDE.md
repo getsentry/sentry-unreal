@@ -129,7 +129,7 @@ Path to extensions source code may be set via environment variables. When workin
 
 - `SENTRY_PLAYSTATION_PATH` → PS5
 - `SENTRY_XBOX_PATH` → XSX, XB1, WinGDK
-- `SENTRY_SWITCH_PATH` → Switch
+- `SENTRY_SWITCH_PATH` → Switch, Switch2
 
 **Setup console extensions:**
 
