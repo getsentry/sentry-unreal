@@ -77,7 +77,7 @@ void FGenericPlatformSentryCrashReporter::SetContext(const FString& key, const T
 
 	for (auto it = values.CreateConstIterator(); it; ++it)
 	{
-		valuesConfig->Values.Add(it.Key(), FGenericPlatformSentryConverters::VariantToJsonValue(it.Value()));
+		valuesConfig->SetField(it.Key(), FGenericPlatformSentryConverters::VariantToJsonValue(it.Value()));
 	}
 
 	TSharedPtr<FJsonObject> contextConfig;
