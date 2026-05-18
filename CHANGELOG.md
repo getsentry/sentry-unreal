@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add experimental session replay capturing for Android ([#1386](https://github.com/getsentry/sentry-unreal/pull/1386))
+
 ### Dependencies
 
 - Bump Native SDK from v0.14.1 to v0.14.2 ([#1387](https://github.com/getsentry/sentry-unreal/pull/1387))

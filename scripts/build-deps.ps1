@@ -253,7 +253,7 @@ function buildSentryJava()
     try
     {
         ./gradlew -PsentryAndroidSdkName="sentry.native.android.unreal" `
-            :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
+            :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry-android-replay:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
 
         if ($LASTEXITCODE -ne 0)
         {
@@ -276,7 +276,41 @@ function buildSentryJava()
 
     Copy-Item "$JavaPath/sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" -Destination "$androidOutDir/sentry-android-ndk-release.aar"
     Copy-Item "$JavaPath/sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" -Destination "$androidOutDir/sentry-android-core-release.aar"
+    Copy-Item "$JavaPath/sentry-android-replay/build/outputs/aar/sentry-android-replay-release.aar" -Destination "$androidOutDir/sentry-android-replay-release.aar"
     Copy-Item "$JavaPath/sentry/build/libs/$("sentry-*.jar")" -Destination "$androidOutDir/sentry.jar"
+
+    # With version v8 of the sentry-java the Native SDK NDK has to be downloaded separately from the sentry-native repo release page
+    $configFile = "$JavaPath/gradle/libs.versions.toml"
+    if (-not (Test-Path $configFile))
+    {
+        throw "libs.versions.toml file not found at $configFile"
+    }
+
+    $tomlContent = Get-Content $configFile -Raw
+    if ($tomlContent -notmatch 'sentry-native-ndk[^\n]*version\s*=\s*"([^"]+)"')
+    {
+        throw "Failed to extract Native SDK NDK version from $configFile"
+    }
+    $nativeNdkVersion = $Matches[1]
+    Write-Host "Extracted Sentry Native NDK version: $nativeNdkVersion"
+
+    $nativeNdkCache = "$JavaPath/native-ndk-cache"
+    if (-not (Test-Path $nativeNdkCache))
+    {
+        New-Item $nativeNdkCache -ItemType Directory > $null
+    }
+
+    $nativeNdkZip = "$nativeNdkCache/sentry-native-ndk-$nativeNdkVersion.zip"
+    $nativeNdkUrl = "https://github.com/getsentry/sentry-native/releases/download/$nativeNdkVersion/sentry-native-ndk-$nativeNdkVersion.zip"
+
+    if (-not (Test-Path $nativeNdkZip))
+    {
+        Invoke-WebRequest -Uri $nativeNdkUrl -OutFile $nativeNdkZip
+    }
+
+    Expand-Archive -Path $nativeNdkZip -DestinationPath $nativeNdkCache -Force
+
+    Copy-Item "$nativeNdkCache/sentry-native-ndk-$nativeNdkVersion/sentry-native-ndk-release.aar" -Destination "$androidOutDir/sentry-native-ndk-release.aar"
 }
 
 function buildSentryNative()

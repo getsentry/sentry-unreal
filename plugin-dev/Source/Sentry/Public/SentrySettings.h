@@ -340,11 +340,11 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOutOfProcessScreenshots;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Attach session replay (for Xbox devkits only, experimental)", ToolTip = "When enabled, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring. Currently supported on Xbox development kits only."))
+		Meta = (DisplayName = "Attach session replay (experimental)", ToolTip = "Enables session replay capture. On Android, records a continuous video of the session and sends it with error events. On Xbox development kits, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring. Currently supported on Android and Xbox development kits only."))
 	bool AttachSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Session replay duration (ms)", ToolTip = "Requested duration of the retroactive session replay clip. The resulting clip can be shorter than the requested duration if it hasn't accumulated enough buffered frames yet.",
+		Meta = (DisplayName = "Session replay duration (ms, Xbox only)", ToolTip = "Requested duration of the retroactive session replay clip on Xbox. The resulting clip can be shorter than the requested duration if it hasn't accumulated enough buffered frames yet. This setting is ignored on Android, where the replay duration is determined by the Sentry SDK.",
 			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "15000"))
 	uint32 SessionReplayDurationMs;
 
