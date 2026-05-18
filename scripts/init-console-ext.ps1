@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Switch', 'PS5', 'XSX', 'XB1', 'WinGDK')]
+    [ValidateSet('Switch', 'Switch2', 'PS5', 'XSX', 'XB1', 'WinGDK')]
     [string]$Platform,
 
     [Parameter(Mandatory=$true)]
@@ -45,9 +45,16 @@ function New-SymbolicLink {
 $platformConfig = @{
     'Switch' = @{
         PlatformFolder = 'Switch'
-        SourceDir      = 'Sentry'
+        SourceDir      = 'Sentry_Switch'
         Variants = @(
             @{ Name = 'Default'; Preset = 'nx64-unreal'; BuildDir = 'nx64-unreal' }
+        )
+    }
+    'Switch2' = @{
+        PlatformFolder = 'Switch2'
+        SourceDir      = 'Sentry_Switch2'
+        Variants = @(
+            @{ Name = 'Default'; Preset = 'ounce64-unreal'; BuildDir = 'ounce64-unreal' }
         )
     }
     'PS5' = @{
