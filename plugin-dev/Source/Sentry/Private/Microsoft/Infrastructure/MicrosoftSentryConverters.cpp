@@ -4,6 +4,8 @@
 
 #if USE_SENTRY_NATIVE
 
+#include "Misc/EngineVersionComparison.h"
+
 /* static */ void FMicrosoftSentryConverters::SentryCrashContextToString(const sentry_ucontext_t* crashContext, TCHAR* outErrorString, int32 errorStringBufSize)
 {
 	EXCEPTION_RECORD* ExceptionRecord = crashContext->exception_ptrs.ExceptionRecord;
@@ -32,10 +34,14 @@
 			ErrorString += TEXT("writing address ");
 		}
 		ErrorString += FString::Printf(
+#if UE_VERSION_OLDER_THAN(5, 8, 0)
 #if PLATFORM_64BITS
 			TEXT("0x%016llx"),
 #else
 			TEXT("0x%08x"),
+#endif
+#else
+			TEXT("0x%016llx"),
 #endif
 			ExceptionRecord->ExceptionInformation[1]);
 		break;
