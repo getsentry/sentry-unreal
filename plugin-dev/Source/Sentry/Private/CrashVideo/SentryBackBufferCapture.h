@@ -37,18 +37,21 @@ public:
 private:
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer);
 
-	FTextureRHIRef AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format);
+	FTextureRHIRef AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height);
 
 	FSentryVideoEncoder& Encoder;
 	FDelegateHandle DelegateHandle;
 
-	// Pool of capture-destination textures (cycled round-robin).
+	// Pool of capture-destination textures (cycled round-robin). Always
+	// allocated as PF_B8G8R8A8 because NVENC D3D12 requires that exact format.
+	// The render-graph draw pass below converts whatever the backbuffer is
+	// (PF_FloatRGBA / PF_A2B10G10R10 / PF_B8G8R8A8) into BGRA8 via a pixel
+	// shader, which UE auto-quantizes on render-target write.
 	static constexpr int32 PoolSize = 3;
 	FTextureRHIRef Pool[PoolSize];
 	int32 NextPoolIndex = 0;
 	uint32 PoolWidth = 0;
 	uint32 PoolHeight = 0;
-	EPixelFormat PoolFormat = PF_Unknown;
 	bool bUnsupportedFormatLogged = false;
 
 	// Frame throttling

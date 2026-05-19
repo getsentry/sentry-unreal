@@ -66,18 +66,17 @@ void FSentryBackBufferCapture::Stop()
 	}
 }
 
-FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)
+FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height)
 {
-	if (Width != PoolWidth || Height != PoolHeight || Format != PoolFormat)
+	if (Width != PoolWidth || Height != PoolHeight)
 	{
-		// Resolution / format changed — drop the existing pool. New textures get created below.
+		// Resolution changed — drop the existing pool. New textures get created below.
 		for (int32 i = 0; i < PoolSize; ++i)
 		{
 			Pool[i].SafeRelease();
 		}
 		PoolWidth = Width;
 		PoolHeight = Height;
-		PoolFormat = Format;
 		NextPoolIndex = 0;
 	}
 
@@ -88,9 +87,9 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 	{
 		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentryCrashVideoCapture"))
 			.SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
-			.SetFormat(Format)
+			.SetFormat(PF_B8G8R8A8)
 			.SetFlags(ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable)
-			.SetInitialState(ERHIAccess::CopyDest);
+			.SetInitialState(ERHIAccess::SRVGraphics);
 		Slot = RHICreateTexture(Desc);
 	}
 	return Slot;
@@ -126,16 +125,19 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		return;
 	}
 
-	// NVENC D3D12 only accepts DXGI_FORMAT_B8G8R8A8_UNORM. HDR / float backbuffers
-	// (e.g. PF_FloatRGBA) would produce garbage. Bail loudly the first time we
-	// encounter an unsupported format; the rotation thread still flushes whatever
-	// fragments had already been encoded.
+	// NVENC D3D12 requires DXGI_FORMAT_B8G8R8A8_UNORM. When the project uses
+	// HDR backbuffer formats (r.DefaultBackBufferPixelFormat != 0/1) the
+	// backbuffer is PF_FloatRGBA or PF_A2B10G10R10 and a same-format copy
+	// produces wrong colours. Until we add a proper format-converting copy,
+	// detect the unsupported case and skip.
 	if (SrcFormat != PF_B8G8R8A8)
 	{
 		if (!bUnsupportedFormatLogged)
 		{
 			UE_LOG(LogSentrySdk, Warning,
-				TEXT("Crash video: backbuffer format %d not supported (only PF_B8G8R8A8 is accepted by NVENC D3D12). Capture disabled."),
+				TEXT("Crash video: backbuffer format %d is not BGRA8 (likely r.DefaultBackBufferPixelFormat=2/3/4 selecting HDR). ")
+				TEXT("Capture is disabled — set r.DefaultBackBufferPixelFormat=0 or 1 in DefaultEngine.ini to use crash video. ")
+				TEXT("HDR backbuffer support is a planned improvement."),
 				static_cast<int32>(SrcFormat));
 			bUnsupportedFormatLogged = true;
 		}
@@ -144,16 +146,16 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 
 	FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
 
-	FTextureRHIRef DestTexture = AcquirePoolTexture_RenderThread(W, H, SrcFormat);
+	FTextureRHIRef DestTexture = AcquirePoolTexture_RenderThread(W, H);
 	if (!DestTexture.IsValid())
 	{
 		return;
 	}
 
-	// Transition both textures into copy-friendly states. The backbuffer is in
-	// RTV at this point (SlateRHIRenderer will transition it to Present after
-	// this delegate returns). Using ERHIAccess::Unknown lets the RHI figure out
-	// the source state itself.
+	// Same-format CopyTexture. The backbuffer is in RTV at this point
+	// (SlateRHIRenderer transitions it to Present after this delegate
+	// returns); passing ERHIAccess::Unknown lets the RHI infer the source
+	// state from its internal tracking.
 	FRHITransitionInfo Transitions[] = {
 		FRHITransitionInfo(BackBuffer.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc),
 		FRHITransitionInfo(DestTexture.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopyDest),
@@ -164,9 +166,6 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
 	RHICmdList.CopyTexture(BackBuffer.GetReference(), DestTexture.GetReference(), CopyInfo);
 
-	// Leave the destination in CopyDest; the encoder will read it from another
-	// thread via AVCodecs's resource transform. The backbuffer continues to be
-	// transitioned to Present by the upstream code after we return.
 	FRHITransitionInfo DestToSR(DestTexture.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics);
 	RHICmdList.Transition(DestToSR);
 
