@@ -12,6 +12,7 @@
 
 #include "HAL/Event.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/Paths.h"
@@ -317,106 +318,44 @@ bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& By
 		}
 	}
 
-	// 2) Atomic rename.
-	//    On Windows we use SetFileInformationByHandle(FileRenameInfoEx) with
-	//    POSIX semantics, which succeeds even if the destination is open by
-	//    another process (e.g. a video player previewing the file). Available
-	//    on Win10 1607+. Falls back to MoveFileExW if the POSIX path fails.
+	// 2) Atomic rename. UE has no cross-platform "replace existing destination
+	//    atomically" primitive: IFileManager::Move deletes the destination
+	//    first (non-atomic), and IPlatformFile::MoveFile maps to plain
+	//    MoveFileW on Windows (which fails if the destination exists). So we
+	//    branch: MoveFileExW(REPLACE_EXISTING) on Windows, rename(2) via
+	//    IPlatformFile on POSIX (it overwrites by default and is atomic).
 #if PLATFORM_WINDOWS
-	bool bMoved = false;
-	DWORD PosixErr = 0;
-	DWORD CreateErr = 0;
+	if (!::MoveFileExW(*TempPath, *AttachmentPath,
+		MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
 	{
-		// Convert UE-style forward slashes to backslashes for Win32 APIs that
-		// are picky about path separators (FileRenameInfoEx in particular).
-		FString WinTempPath = TempPath;
-		FString WinAttachmentPath = AttachmentPath;
-		WinTempPath.ReplaceInline(TEXT("/"), TEXT("\\"));
-		WinAttachmentPath.ReplaceInline(TEXT("/"), TEXT("\\"));
-
-		const HANDLE hSrc = ::CreateFileW(
-			*WinTempPath,
-			DELETE | SYNCHRONIZE,
-			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-			nullptr,
-			OPEN_EXISTING,
-			0,
-			nullptr);
-		if (hSrc == INVALID_HANDLE_VALUE)
+		const DWORD Err = ::GetLastError();
+		static bool bLoggedOnce = false;
+		if (!bLoggedOnce)
 		{
-			CreateErr = ::GetLastError();
-		}
-		else
-		{
-			const int32 NameLenChars = WinAttachmentPath.Len();
-			const SIZE_T NameBytes = static_cast<SIZE_T>(NameLenChars) * sizeof(WCHAR);
-			const SIZE_T BufBytes = sizeof(FILE_RENAME_INFO) + NameBytes;
-
-			TArray<uint8> Buf;
-			Buf.SetNumZeroed(static_cast<int32>(BufBytes));
-			FILE_RENAME_INFO* Info = reinterpret_cast<FILE_RENAME_INFO*>(Buf.GetData());
-			// The struct exposes ReplaceIfExists as a BOOLEAN unioned with a DWORD
-			// Flags field used for FileRenameInfoEx. Write the Flags via the
-			// union's first byte and overlay the remaining bits explicitly.
-			constexpr DWORD RenameFlags =
-				/*FILE_RENAME_FLAG_REPLACE_IF_EXISTS*/ 0x1 |
-				/*FILE_RENAME_FLAG_POSIX_SEMANTICS  */ 0x2;
-			*reinterpret_cast<DWORD*>(&Info->ReplaceIfExists) = RenameFlags;
-			Info->RootDirectory = nullptr;
-			Info->FileNameLength = static_cast<DWORD>(NameBytes);
-			FMemory::Memcpy(Info->FileName, *WinAttachmentPath, NameBytes);
-
-			// FileRenameInfoEx (value 22) — present in Win10 1607+ SDK but the
-			// FILE_INFO_BY_HANDLE_CLASS enum constant isn't visible at our
-			// _WIN32_WINNT level. Use the numeric value directly.
-			constexpr FILE_INFO_BY_HANDLE_CLASS InfoClass_FileRenameInfoEx = static_cast<FILE_INFO_BY_HANDLE_CLASS>(22);
-			if (::SetFileInformationByHandle(hSrc, InfoClass_FileRenameInfoEx, Info, static_cast<DWORD>(BufBytes)))
+			if (Err == /*ERROR_ACCESS_DENIED*/ 5 || Err == /*ERROR_SHARING_VIOLATION*/ 32)
 			{
-				bMoved = true;
+				UE_LOG(LogSentrySdk, Warning,
+					TEXT("Crash video: cannot rotate %s — another process is holding it open (e.g. a video preview window). ")
+					TEXT("Rotation will keep retrying. In a normal crash scenario this never happens because nothing else has the file open."),
+					*AttachmentPath);
 			}
 			else
 			{
-				PosixErr = ::GetLastError();
+				UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: MoveFileExW failed with error %u"), Err);
 			}
-			::CloseHandle(hSrc);
+			bLoggedOnce = true;
 		}
-	}
-	if (!bMoved)
-	{
-		// Fallback: classic atomic rename. Works as long as the dest isn't
-		// held with a sharing mode that blocks renames.
-		bMoved = !!::MoveFileExW(
-			*TempPath,
-			*AttachmentPath,
-			MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
-		if (!bMoved)
-		{
-			const DWORD MoveErr = ::GetLastError();
-			static bool bLoggedOnce = false;
-			if (!bLoggedOnce)
-			{
-				if (PosixErr == /*ERROR_SHARING_VIOLATION*/ 32 || MoveErr == /*ERROR_ACCESS_DENIED*/ 5)
-				{
-					UE_LOG(LogSentrySdk, Warning,
-						TEXT("Crash video: cannot rotate %s — another process is holding it open (e.g. a video preview window). ")
-						TEXT("Rotation will keep retrying. In a normal crash scenario this never happens because nothing else has the file open."),
-						*AttachmentPath);
-				}
-				else
-				{
-					UE_LOG(LogSentrySdk, Warning,
-						TEXT("Crash video: rename failed. CreateFile err=%u, SetFileInformationByHandle err=%u, MoveFileExW err=%u"),
-						CreateErr, PosixErr, MoveErr);
-				}
-				bLoggedOnce = true;
-			}
-			return false;
-		}
+		return false;
 	}
 #else
-	if (!IFileManager::Get().Move(*AttachmentPath, *TempPath, /*Replace*/ true, /*EvenIfReadOnly*/ true))
+	if (!FPlatformFileManager::Get().GetPlatformFile().MoveFile(*AttachmentPath, *TempPath))
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: rename to %s failed"), *AttachmentPath);
+		static bool bLoggedOnce = false;
+		if (!bLoggedOnce)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: rename to %s failed"), *AttachmentPath);
+			bLoggedOnce = true;
+		}
 		return false;
 	}
 #endif
