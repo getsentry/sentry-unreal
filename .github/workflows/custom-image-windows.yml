@@ -1,0 +1,37 @@
+name: Build UE Windows runner image
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    # Rebuild weekly on Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  create-image:
+    name: Create Windows image with UE Docker images
+    runs-on: windows-latest-4-cores
+    snapshot: windows-latest-4-cores-unreal
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Unreal Engine Docker image
+        run: |
+          docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:5.7"
+
+      - name: Verify pulled images
+        run: |
+          docker images --filter "reference=${{ env.REGISTRY }}/getsentry/unreal-docker" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
