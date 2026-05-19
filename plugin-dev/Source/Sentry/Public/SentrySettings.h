@@ -44,19 +44,6 @@ enum class ESentryDatabaseLocation : uint8
 };
 
 UENUM(BlueprintType)
-enum class ESentryCrashVideoResolution : uint8
-{
-	// 854x480
-	SD480,
-	// 1280x720 (default)
-	HD720,
-	// 1920x1080
-	HD1080,
-	// Match the backbuffer resolution (no downscaling)
-	MatchBackBuffer
-};
-
-UENUM(BlueprintType)
 enum class ESentryAndroidCrashBackend : uint8
 {
 	// Capture crashes using the sentry-native NDK signal handler only
@@ -559,11 +546,6 @@ class SENTRY_API USentrySettings : public UObject
 			ToolTip = "How often the disk attachment file is refreshed by atomic rename.",
 			EditCondition = "EnableCrashVideo", ClampMin = 0.25f, ClampMax = 5.0f))
 	float CrashVideoRotationIntervalSeconds;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
-		Meta = (DisplayName = "Capture resolution",
-			EditCondition = "EnableCrashVideo"))
-	ESentryCrashVideoResolution CrashVideoResolution;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
 		Meta = (DisplayName = "Target framerate",

@@ -24,25 +24,6 @@
 #include "Windows/HideWindowsPlatformTypes.h"
 #endif
 
-namespace
-{
-	void GetResolutionExtents(ESentryCrashVideoResolution Resolution, uint32& OutWidth, uint32& OutHeight)
-	{
-		switch (Resolution)
-		{
-		case ESentryCrashVideoResolution::SD480:
-			OutWidth = 854; OutHeight = 480; break;
-		case ESentryCrashVideoResolution::HD1080:
-			OutWidth = 1920; OutHeight = 1080; break;
-		case ESentryCrashVideoResolution::MatchBackBuffer:
-			OutWidth = 0; OutHeight = 0; break;
-		case ESentryCrashVideoResolution::HD720:
-		default:
-			OutWidth = 1280; OutHeight = 720; break;
-		}
-	}
-}
-
 FSentryCrashVideoSubsystem::FSentryCrashVideoSubsystem() = default;
 
 FSentryCrashVideoSubsystem::~FSentryCrashVideoSubsystem()
@@ -85,12 +66,9 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings)
 	IFileManager::Get().Delete(*TempPath, /*RequireExists*/ false, /*EvenReadOnly*/ true);
 	bSnapshotOnDisk.AtomicSet(false);
 
-	uint32 ConfiguredWidth = 0, ConfiguredHeight = 0;
-	GetResolutionExtents(Settings->CrashVideoResolution, ConfiguredWidth, ConfiguredHeight);
-	// v1: ignore configured target resolution and capture native backbuffer size.
-	// Downscaling requires a draw pass; deferred to a follow-up. The encoder
-	// picks Width/Height from the first frame.
-	(void)ConfiguredWidth; (void)ConfiguredHeight;
+	// Capture native backbuffer dimensions. A configurable target resolution
+	// would require a scaling draw pass (same machinery as HDR conversion);
+	// out of scope for v1. The encoder picks Width/Height from the first frame.
 
 	Encoder = MakeUnique<FSentryVideoEncoder>(
 		*this,
