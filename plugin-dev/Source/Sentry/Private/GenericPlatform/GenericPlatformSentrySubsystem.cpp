@@ -34,6 +34,10 @@
 #include "Utils/SentryFileUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
+#if USE_SENTRY_CRASH_VIDEO
+#include "CrashVideo/SentryCrashVideoSubsystem.h"
+#endif
+
 #include "Infrastructure/GenericPlatformSentryConverters.h"
 
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
@@ -325,6 +329,20 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		TryCaptureGpuDump();
 	}
 
+#if USE_SENTRY_CRASH_VIDEO
+	if (CrashVideo && CrashVideo->HasSnapshotOnDisk())
+	{
+		// Register the rolling video file as a crash attachment. Sentry-native
+		// forwards this to crashpad's client->AddAttachment IPC; the handler
+		// will read crash_video.mp4 from disk when it serialises the report.
+#if PLATFORM_WINDOWS
+		sentry_attach_filew(*CrashVideo->GetAttachmentPath());
+#else
+		sentry_attach_file(TCHAR_TO_UTF8(*CrashVideo->GetAttachmentPath()));
+#endif
+	}
+#endif
+
 	SetEventCrashType(event, ResolveCrashType());
 
 	// At this point crash events are handled the same way as non-fatal ones,
@@ -457,6 +475,8 @@ void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const ch
 	}
 	sentry_value_set_by_key(eventTags, key, sentry_value_new_string(value));
 }
+
+FGenericPlatformSentrySubsystem::~FGenericPlatformSentrySubsystem() = default;
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: bUseNativeBackend(false)
@@ -629,11 +649,30 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	// associated GC lock acquisition) inside the `before_send` callback when handling fatal errors,
 	// which can re-trigger memory-related crashes (e.g. stack overflow).
 	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
+
+#if USE_SENTRY_CRASH_VIDEO
+	if (isEnabled)
+	{
+		CrashVideo = MakeUnique<FSentryCrashVideoSubsystem>();
+		if (!CrashVideo->Initialize(settings))
+		{
+			CrashVideo.Reset();
+		}
+	}
+#endif
 }
 
 void FGenericPlatformSentrySubsystem::Close()
 {
 	isEnabled = false;
+
+#if USE_SENTRY_CRASH_VIDEO
+	if (CrashVideo)
+	{
+		CrashVideo->Shutdown();
+		CrashVideo.Reset();
+	}
+#endif
 
 	PooledCrashEvent.Reset();
 

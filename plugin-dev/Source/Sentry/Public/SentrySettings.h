@@ -44,6 +44,19 @@ enum class ESentryDatabaseLocation : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESentryCrashVideoResolution : uint8
+{
+	// 854x480
+	SD480,
+	// 1280x720 (default)
+	HD720,
+	// 1920x1080
+	HD1080,
+	// Match the backbuffer resolution (no downscaling)
+	MatchBackBuffer
+};
+
+UENUM(BlueprintType)
 enum class ESentryAndroidCrashBackend : uint8
 {
 	// Capture crashes using the sentry-native NDK signal handler only
@@ -522,6 +535,45 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Hang timeout (seconds)", ToolTip = "Duration in seconds that a thread must be unresponsive before a hang event is captured.",
 			EditCondition = "EnableHangTracking", ClampMin = 1.0f))
 	float HangTimeoutDuration;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
+		Meta = (DisplayName = "Enable crash video capture",
+			ToolTip = "Continuously encodes the last few seconds of gameplay to an MP4 file and attaches it to crash reports. Requires the Crashpad backend. Windows only (Win64 with NVIDIA NVENC).",
+			ConfigRestartRequired = true))
+	bool EnableCrashVideo;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
+		Meta = (DisplayName = "Window duration (seconds)",
+			ToolTip = "Length of the rolling video window kept on disk for crash attachment.",
+			EditCondition = "EnableCrashVideo", ClampMin = 2, ClampMax = 60))
+	float CrashVideoWindowSeconds;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
+		Meta = (DisplayName = "Fragment duration (seconds)",
+			ToolTip = "Length of each fMP4 fragment. Shorter values reduce the worst-case lost-tail at crash time, but increase keyframe frequency and lower compression efficiency.",
+			EditCondition = "EnableCrashVideo", ClampMin = 0.1f, ClampMax = 2.0f))
+	float CrashVideoFragmentSeconds;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
+		Meta = (DisplayName = "Rotation interval (seconds)",
+			ToolTip = "How often the disk attachment file is refreshed by atomic rename.",
+			EditCondition = "EnableCrashVideo", ClampMin = 0.25f, ClampMax = 5.0f))
+	float CrashVideoRotationIntervalSeconds;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
+		Meta = (DisplayName = "Capture resolution",
+			EditCondition = "EnableCrashVideo"))
+	ESentryCrashVideoResolution CrashVideoResolution;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
+		Meta = (DisplayName = "Target framerate",
+			EditCondition = "EnableCrashVideo", ClampMin = 10, ClampMax = 60))
+	int32 CrashVideoFramerate;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
+		Meta = (DisplayName = "Target bitrate (kbps)",
+			EditCondition = "EnableCrashVideo", ClampMin = 200, ClampMax = 20000))
+	int32 CrashVideoBitrateKbps;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
 		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))

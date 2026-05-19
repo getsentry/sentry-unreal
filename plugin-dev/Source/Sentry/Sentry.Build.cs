@@ -50,12 +50,14 @@ public class Sentry : ModuleRules
 		// when the user hasn't explicitly configured them and no entry exists in the .ini file
 		bool bEnableExternalCrashReporter = false;
 		bool bUseNativeBackend = false;
+		bool bEnableCrashVideo = false;
 
 		if (Target.ProjectFile != null)
 		{
 			ConfigHierarchy EngineConfig = ConfigCache.ReadHierarchy(ConfigHierarchyType.Engine, DirectoryReference.FromFile(Target.ProjectFile), Target.Platform);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "UseNativeBackend", out bUseNativeBackend);
+			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableCrashVideo", out bEnableCrashVideo);
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
@@ -181,6 +183,20 @@ public class Sentry : ModuleRules
 			PublicSystemLibraries.Add("winhttp.lib");
 			PublicSystemLibraries.Add("version.lib");
 			PublicSystemLibraries.Add("Synchronization.lib");
+
+			// Crash video feature (Win64 + Crashpad only)
+			bool bCrashVideoEnabled = bEnableCrashVideo && !bUseNativeBackend;
+			if (bCrashVideoEnabled)
+			{
+				PrivateDependencyModuleNames.AddRange(new string[]
+				{
+					"RHI",
+					"RenderCore",
+					"AVCodecsCore",
+					"AVCodecsCoreRHI",
+				});
+			}
+			PublicDefinitions.Add("USE_SENTRY_CRASH_VIDEO=" + (bCrashVideoEnabled ? "1" : "0"));
 		}
 #if UE_5_0_OR_LATER
 		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)

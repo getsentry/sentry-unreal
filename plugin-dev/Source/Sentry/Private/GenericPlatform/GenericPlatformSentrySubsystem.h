@@ -12,6 +12,7 @@
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
+class FSentryCrashVideoSubsystem;
 class USentryEvent;
 
 #if USE_SENTRY_NATIVE
@@ -20,6 +21,7 @@ class FGenericPlatformSentrySubsystem : public ISentrySubsystem
 {
 public:
 	FGenericPlatformSentrySubsystem();
+	virtual ~FGenericPlatformSentrySubsystem() override;
 
 	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
 	virtual void Close() override;
@@ -157,6 +159,10 @@ private:
 	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
 
 	FThreadSafeBool bIsCrashing;
+
+#if USE_SENTRY_CRASH_VIDEO
+	TUniquePtr<FSentryCrashVideoSubsystem> CrashVideo;
+#endif
 };
 
 #endif
