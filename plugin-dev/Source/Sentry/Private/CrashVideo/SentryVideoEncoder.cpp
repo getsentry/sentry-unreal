@@ -36,7 +36,6 @@ FSentryVideoEncoder::FSentryVideoEncoder(
 	, BitrateBps(InBitrateKbps * 1000)
 	, FragmentSeconds(InFragmentSeconds)
 {
-	KeyframeIntervalFrames = FMath::Max(1u, static_cast<uint32>(FMath::RoundToInt(Framerate * FragmentSeconds)));
 }
 
 FSentryVideoEncoder::~FSentryVideoEncoder()
@@ -149,7 +148,11 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		return false;
 	}
 
-	// Configure for H.264, CBR, short keyframe interval, ultra-low latency.
+	// Configure for H.264, CBR, ultra-low latency. KeyframeInterval is left at
+	// 0 ("auto" / no upper bound) — the encoder thread forces an IDR via
+	// bForceKeyframe on a wall-clock cadence so fragments are ~FragmentSeconds
+	// of real time, not frames. This makes the WindowSeconds setting honour
+	// the actual elapsed time regardless of the source's render rate.
 	FVideoEncoderConfigH264 Config;
 	Config.Width = ResourceWidth;
 	Config.Height = ResourceHeight;
@@ -159,7 +162,7 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Config.MinBitrate = BitrateBps / 2;
 	Config.RateControlMode = ERateControlMode::CBR;
 	Config.LatencyMode = EAVLatencyMode::UltraLowLatency;
-	Config.KeyframeInterval = KeyframeIntervalFrames;
+	Config.KeyframeInterval = 0;
 	Config.Profile = EH264Profile::Main;
 	Config.RepeatSPSPPS = true;
 	Config.bFillData = 0;
@@ -177,8 +180,8 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Width = ResourceWidth;
 	Height = ResourceHeight;
 	bEncoderOpen = true;
-	UE_LOG(LogSentrySdk, Log, TEXT("Crash video: encoder opened %ux%u @ %u fps, %d kbps, keyframe every %u frames"),
-		Width, Height, Framerate, BitrateBps / 1000, KeyframeIntervalFrames);
+	UE_LOG(LogSentrySdk, Log, TEXT("Crash video: encoder opened %ux%u @ %u fps, %d kbps, forced keyframe every %.2fs"),
+		Width, Height, Framerate, BitrateBps / 1000, FragmentSeconds);
 	return true;
 }
 
@@ -209,7 +212,20 @@ uint32 FSentryVideoEncoder::Run()
 				Encoder->GetDevice().ToSharedRef(),
 				FVideoResourceRHI::FRawData{ Frame.Texture, nullptr, 0 });
 
-			const FAVResult Result = Encoder->SendFrame(Resource, static_cast<uint32>(Frame.TimestampUs / 1000), false);
+			// Force a keyframe every FragmentSeconds of wall clock. This makes
+			// fragment durations honour real time even when the source renders
+			// slower than `Framerate` — a frame-count-based keyframe interval
+			// would stretch each fragment by the same factor and inflate the
+			// effective window (e.g. 12s setting → 24s file at half rate).
+			const double NowSec = FPlatformTime::Seconds();
+			bool bForceKeyframe = false;
+			if (LastForcedKeyframeTime <= 0.0 || (NowSec - LastForcedKeyframeTime) >= FragmentSeconds)
+			{
+				bForceKeyframe = true;
+				LastForcedKeyframeTime = NowSec;
+			}
+
+			const FAVResult Result = Encoder->SendFrame(Resource, static_cast<uint32>(Frame.TimestampUs / 1000), bForceKeyframe);
 			if (Result.IsNotSuccess())
 			{
 				UE_LOG(LogSentrySdk, Verbose, TEXT("Crash video: SendFrame returned non-success"));

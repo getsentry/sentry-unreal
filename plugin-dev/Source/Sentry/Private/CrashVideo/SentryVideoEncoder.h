@@ -79,7 +79,6 @@ private:
 	uint32 Framerate;
 	int32 BitrateBps;
 	float FragmentSeconds;
-	uint32 KeyframeIntervalFrames;
 
 	FRunnableThread* Thread = nullptr;
 	FEvent* WakeEvent = nullptr;
@@ -91,6 +90,7 @@ private:
 	uint64 NextTimestampUs = 0;
 	uint64 PacketsReceived = 0;
 	uint64 LastPacketWallClockUs = 0;
+	double LastForcedKeyframeTime = 0.0;
 
 	bool bEncoderOpen = false;
 	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
