@@ -6,10 +6,10 @@
 
 #if USE_SENTRY_CRASH_VIDEO
 
+#include "Containers/RingBuffer.h"
+#include "HAL/CriticalSection.h"
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
-#include "HAL/CriticalSection.h"
-#include "Containers/RingBuffer.h"
 
 class FRunnableThread;
 class FEvent;

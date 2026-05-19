@@ -4,8 +4,8 @@
 
 #if USE_SENTRY_CRASH_VIDEO
 
-#include "SentryVideoEncoder.h"
 #include "SentryDefines.h"
+#include "SentryVideoEncoder.h"
 
 #include "Framework/Application/SlateApplication.h"
 #include "HAL/PlatformTime.h"
@@ -86,10 +86,10 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 	if (!Slot.IsValid())
 	{
 		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentryCrashVideoCapture"))
-			.SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
-			.SetFormat(PF_B8G8R8A8)
-			.SetFlags(ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable)
-			.SetInitialState(ERHIAccess::SRVGraphics);
+											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
+											   .SetFormat(PF_B8G8R8A8)
+											   .SetFlags(ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable)
+											   .SetInitialState(ERHIAccess::SRVGraphics);
 		Slot = RHICreateTexture(Desc);
 	}
 	return Slot;
@@ -136,8 +136,8 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		{
 			UE_LOG(LogSentrySdk, Warning,
 				TEXT("Crash video: backbuffer format %d is not BGRA8 (likely r.DefaultBackBufferPixelFormat=2/3/4 selecting HDR). ")
-				TEXT("Capture is disabled — set r.DefaultBackBufferPixelFormat=0 or 1 in DefaultEngine.ini to use crash video. ")
-				TEXT("HDR backbuffer support is a planned improvement."),
+					TEXT("Capture is disabled — set r.DefaultBackBufferPixelFormat=0 or 1 in DefaultEngine.ini to use crash video. ")
+						TEXT("HDR backbuffer support is a planned improvement."),
 				static_cast<int32>(SrcFormat));
 			bUnsupportedFormatLogged = true;
 		}

@@ -20,8 +20,8 @@
 
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/WindowsHWrapper.h"
 #include "Windows/HideWindowsPlatformTypes.h"
+#include "Windows/WindowsHWrapper.h"
 #endif
 
 FSentryCrashVideoSubsystem::FSentryCrashVideoSubsystem() = default;
@@ -220,7 +220,8 @@ void FSentryCrashVideoSubsystem::DoRotation()
 	constexpr int32 TfdtFieldOffset = 60;
 	auto ReadTfdt = [&](const TArray<uint8>& Bytes) -> uint64
 	{
-		if (Bytes.Num() < TfdtFieldOffset + 8) return 0;
+		if (Bytes.Num() < TfdtFieldOffset + 8)
+			return 0;
 		uint64 V = 0;
 		for (int32 b = 0; b < 8; ++b)
 		{
@@ -230,7 +231,8 @@ void FSentryCrashVideoSubsystem::DoRotation()
 	};
 	auto WriteTfdtAt = [&](TArray<uint8>& Bytes, int32 Offset, uint64 V)
 	{
-		if (Bytes.Num() < Offset + 8) return;
+		if (Bytes.Num() < Offset + 8)
+			return;
 		for (int32 b = 0; b < 8; ++b)
 		{
 			Bytes[Offset + (7 - b)] = static_cast<uint8>(V & 0xFF);
@@ -304,7 +306,7 @@ bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& By
 	//    IPlatformFile on POSIX (it overwrites by default and is atomic).
 #if PLATFORM_WINDOWS
 	if (!::MoveFileExW(*TempPath, *AttachmentPath,
-		MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+			MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
 	{
 		const DWORD Err = ::GetLastError();
 		static bool bLoggedOnce = false;
@@ -314,7 +316,7 @@ bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& By
 			{
 				UE_LOG(LogSentrySdk, Warning,
 					TEXT("Crash video: cannot rotate %s — another process is holding it open (e.g. a video preview window). ")
-					TEXT("Rotation will keep retrying. In a normal crash scenario this never happens because nothing else has the file open."),
+						TEXT("Rotation will keep retrying. In a normal crash scenario this never happens because nothing else has the file open."),
 					*AttachmentPath);
 			}
 			else

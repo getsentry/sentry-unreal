@@ -6,9 +6,9 @@
 
 #if USE_SENTRY_CRASH_VIDEO
 
+#include "Containers/Queue.h"
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
-#include "Containers/Queue.h"
 #include "RHIFwd.h"
 #include "Templates/SharedPointer.h"
 
@@ -99,7 +99,7 @@ private:
 	TArray<FSentryH264Sample> CurrentSamples;
 	uint64 CurrentFragmentDecodeTime = 0;
 	uint32 NextFragmentSequence = 1;
-	uint64 SampleClock = 0;            // monotonic decode time in TrackTimescale ticks
+	uint64 SampleClock = 0; // monotonic decode time in TrackTimescale ticks
 	TArray<uint8> CachedSps;
 	TArray<uint8> CachedPps;
 	bool bInitSegmentPublished = false;
