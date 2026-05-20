@@ -153,7 +153,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	// proper format-converting copy pass lands.
 	const bool bSupportedFormat = (SrcFormat == PF_B8G8R8A8)
 #if PLATFORM_MAC
-		|| (SrcFormat == PF_A2B10G10R10)
+								  || (SrcFormat == PF_A2B10G10R10)
 #endif
 		;
 	if (!bSupportedFormat)
