@@ -22,10 +22,6 @@
 #include "Video/VideoEncoder.h"
 #include "Video/VideoPacket.h"
 
-#if PLATFORM_MAC
-#include "Video/Encoders/Configs/VideoEncoderConfigVT.h"
-#endif
-
 FSentryVideoEncoder::FSentryVideoEncoder(
 	FSentryCrashVideoSubsystem& InOwner,
 	uint32 InWidth,
@@ -189,26 +185,6 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		return false;
 	}
 
-#if PLATFORM_MAC
-	// Workaround for an AVCodecs bug: FVideoEncoderConfigVT::PixelFormat is
-	// declared without a default initializer (VideoEncoderConfigVT.h:29) and
-	// the H264-to-VT TransformConfig (VideoEncoderConfigVT.cpp:63) doesn't
-	// set it. Per-frame ApplyConfig then calls GetCVPixelFormatType() on
-	// uninitialised memory and the `default:` case hits `unimplemented()`.
-	//
-	// FAVInstance::Edit<T>() lazily creates the typed config when it doesn't
-	// exist (AVInstance.h:113-122) — do NOT guard with Has<T>(), because at
-	// this point right after Create the VT config hasn't been added yet
-	// (AVCodecs lazily transforms it during the first SendFrame). Calling
-	// Edit unconditionally seeds the config with PixelFormat = BGRA;
-	// AVCodecs' subsequent TransformConfig<VT, H264> sets the other fields
-	// in-place without touching PixelFormat, so our value persists.
-	if (FAVInstance* Instance = Encoder->GetInstance().Get())
-	{
-		Instance->Edit<FVideoEncoderConfigVT>().PixelFormat = EVideoFormat::BGRA;
-	}
-#endif
-
 	Width = ResourceWidth;
 	Height = ResourceHeight;
 	bEncoderOpen = true;
@@ -276,11 +252,10 @@ uint32 FSentryVideoEncoder::Run()
 			else if (!bFirstFrameValidated)
 			{
 				// AVCodecs rejected the first frame — likely an unsupported
-				// backbuffer format for the active backend (NVENC D3D12 wants
-				// BGRA8; VTCodecs takes BGRA/ABGR10). Stop trying so we don't
-				// burn cycles on subsequent frames.
+				// backbuffer format (NVENC D3D12 wants BGRA8). Stop trying so
+				// we don't burn cycles on subsequent frames.
 				UE_LOG(LogSentrySdk, Warning,
-					TEXT("Crash video: encoder rejected the first frame (backbuffer format may not be supported by the active AVCodecs backend). Recording disabled for this session."));
+					TEXT("Crash video: encoder rejected the first frame (backbuffer format may not be supported by NVENC). Recording disabled for this session."));
 				bEncodingDisabled.AtomicSet(true);
 				break;
 			}

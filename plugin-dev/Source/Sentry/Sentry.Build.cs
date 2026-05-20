@@ -242,14 +242,12 @@ public class Sentry : ModuleRules
 			}
 		}
 
-		// Crash video feature — capture backbuffer, encode via AVCodecs (NVENC on
-		// Win/Linux, VideoToolbox on Mac), mux fragmented MP4 and rotate to an
-		// attachment file. Always compiled in on desktop; runtime enable is
-		// the `EnableCrashVideo` setting in SentrySettings. The recorder itself
-		// is backend-agnostic; per-backend glue (registering the attachment
-		// with the live crash handler vs. deferred upload) is the only
-		// platform-specific part.
-		bool bCrashVideoEnabled = Target.Platform.IsInGroup(UnrealPlatformGroup.Desktop);
+		// Crash video feature — capture backbuffer, encode via AVCodecs (NVENC),
+		// mux fragmented MP4 and rotate to an attachment file. Win64 only for
+		// now: Mac/Metal hits engine-side AVCodecs bugs (UE's MetalRHI maps to
+		// RGBA/RGB10A2 formats AVCodecs doesn't accept), and Linux/AMF haven't
+		// been validated. Runtime enable is the `AttachSessionReplay` setting.
+		bool bCrashVideoEnabled = Target.Platform == UnrealTargetPlatform.Win64;
 		if (bCrashVideoEnabled)
 		{
 			PrivateDependencyModuleNames.AddRange(new string[]
@@ -259,13 +257,6 @@ public class Sentry : ModuleRules
 				"AVCodecsCore",
 				"AVCodecsCoreRHI",
 			});
-			if (Target.Platform == UnrealTargetPlatform.Mac)
-			{
-				// We touch FVideoEncoderConfigVT directly to work around an
-				// AVCodecs bug (PixelFormat field is uninitialised and the H264
-				// → VT TransformConfig doesn't set it).
-				PrivateDependencyModuleNames.Add("VTCodecs");
-			}
 		}
 		PublicDefinitions.Add("USE_SENTRY_CRASH_VIDEO=" + (bCrashVideoEnabled ? "1" : "0"));
 	}

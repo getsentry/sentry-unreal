@@ -12,17 +12,14 @@
 
 #include "HAL/Event.h"
 #include "HAL/FileManager.h"
-#include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeLock.h"
 
-#if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include "Windows/HideWindowsPlatformTypes.h"
 #include "Windows/WindowsHWrapper.h"
-#endif
 
 FSentryCrashVideoSubsystem::FSentryCrashVideoSubsystem() = default;
 
@@ -35,7 +32,7 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, con
 {
 	check(IsInGameThread());
 
-	if (!Settings || !Settings->EnableCrashVideo)
+	if (!Settings || !Settings->AttachSessionReplay)
 	{
 		return false;
 	}
@@ -286,13 +283,10 @@ bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& By
 		}
 	}
 
-	// 2) Atomic rename. UE has no cross-platform "replace existing destination
-	//    atomically" primitive: IFileManager::Move deletes the destination
-	//    first (non-atomic), and IPlatformFile::MoveFile maps to plain
-	//    MoveFileW on Windows (which fails if the destination exists). So we
-	//    branch: MoveFileExW(REPLACE_EXISTING) on Windows, rename(2) via
-	//    IPlatformFile on POSIX (it overwrites by default and is atomic).
-#if PLATFORM_WINDOWS
+	// 2) Atomic rename. UE has no built-in "replace existing destination
+	//    atomically" primitive (IFileManager::Move deletes the destination
+	//    first; IPlatformFile::MoveFile maps to plain MoveFileW which fails
+	//    if the destination exists), so we go straight to MoveFileExW.
 	if (!::MoveFileExW(*TempPath, *AttachmentPath,
 			MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
 	{
@@ -315,18 +309,6 @@ bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& By
 		}
 		return false;
 	}
-#else
-	if (!FPlatformFileManager::Get().GetPlatformFile().MoveFile(*AttachmentPath, *TempPath))
-	{
-		static bool bLoggedOnce = false;
-		if (!bLoggedOnce)
-		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: rename to %s failed"), *AttachmentPath);
-			bLoggedOnce = true;
-		}
-		return false;
-	}
-#endif
 	return true;
 }
 

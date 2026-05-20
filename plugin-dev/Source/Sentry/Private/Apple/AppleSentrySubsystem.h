@@ -6,11 +6,6 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-#if USE_SENTRY_CRASH_VIDEO
-#include "Templates/UniquePtr.h"
-class FSentryCrashVideoSubsystem;
-#endif
-
 class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
@@ -77,19 +72,9 @@ protected:
 	virtual FString GetGameLogPath() const { return FString(); };
 	virtual FString GetLatestGameLog() const { return FString(); }
 
-#if USE_SENTRY_CRASH_VIDEO
-	virtual FString GetReplayPath() const;
-	virtual FString GetLatestReplay() const;
-	void UploadReplayForEvent(TSharedPtr<ISentryId> eventId, const FString& replayPath) const;
-#endif
-
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
-
-#if USE_SENTRY_CRASH_VIDEO
-	TUniquePtr<FSentryCrashVideoSubsystem> CrashVideo;
-#endif
 };
 
 #endif // !USE_SENTRY_NATIVE

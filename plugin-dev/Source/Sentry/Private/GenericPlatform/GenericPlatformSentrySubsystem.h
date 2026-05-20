@@ -12,7 +12,6 @@
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
-class FSentryCrashVideoSubsystem;
 class USentryEvent;
 
 #if USE_SENTRY_NATIVE
@@ -96,7 +95,6 @@ protected:
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;
-	FString GetReplayPath() const;
 	FString GetCrashReporterPath() const;
 	FString GetCrashReporterLogoPath() const;
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }
@@ -160,10 +158,6 @@ private:
 	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
 
 	FThreadSafeBool bIsCrashing;
-
-#if USE_SENTRY_CRASH_VIDEO
-	TUniquePtr<FSentryCrashVideoSubsystem> CrashVideo;
-#endif
 };
 
 #endif

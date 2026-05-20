@@ -86,21 +86,12 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 
 	if (!Slot.IsValid())
 	{
-		// Texture flags follow what AVCodecs expects for its own resources on
-		// each backend (see `Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp`,
-		// the `#if AVCODECS_USE_METAL` branch):
-		//   - D3D / Vulkan (NVENC): Shared (cross-process for NVENC interop)
-		//     + ShaderResource + RenderTargetable
-		//   - Metal (VideoToolbox): CPUReadback — VTCodecs reads via a
-		//     CPU-mapped IOSurface, the Shared flag has different semantics
-		//     on Metal and causes `Unable to transform video resource` errors
-#if PLATFORM_MAC
-		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::CPUReadback;
-		const ERHIAccess InitialAccess = ERHIAccess::CPURead;
-#else
+		// Texture flags follow what AVCodecs expects for its NVENC resources
+		// on D3D (see Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp):
+		// Shared (cross-process for NVENC interop) + ShaderResource +
+		// RenderTargetable.
 		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
 		const ERHIAccess InitialAccess = ERHIAccess::SRVGraphics;
-#endif
 		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentryCrashVideoCapture"))
 											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
 											   .SetFormat(Format)
@@ -141,28 +132,17 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		return;
 	}
 
-	// Pre-validate the source format. AVCodecs' VTCodecs path uses
-	// `unimplemented()` (a hard assertion) rather than returning an error for
-	// unsupported pixel formats — so we can't rely on the encoder thread's
-	// first-frame validation alone and have to refuse the frame here. NVENC
-	// D3D12 also requires BGRA8 input. Whitelist matches what each backend's
-	// ConvertFormat actually switches on:
-	//   - NVENC: BGRA only (Win/Linux)
-	//   - VTCodecs: BGRA + ABGR10 (Mac)
-	// Anything else (PF_FloatRGBA etc.) is dropped with a warning, until a
-	// proper format-converting copy pass lands.
-	const bool bSupportedFormat = (SrcFormat == PF_B8G8R8A8)
-#if PLATFORM_MAC
-								  || (SrcFormat == PF_A2B10G10R10)
-#endif
-		;
-	if (!bSupportedFormat)
+	// NVENC D3D12 only accepts BGRA8 input (see AVCodecs'
+	// VideoEncoderNVENCD3D12::ConvertFormat). HDR backbuffer formats
+	// (PF_FloatRGBA / PF_A2B10G10R10) would need a format-converting copy
+	// pass — out of scope for v1.
+	if (SrcFormat != PF_B8G8R8A8)
 	{
 		if (!bUnsupportedFormatLogged)
 		{
 			UE_LOG(LogSentrySdk, Warning,
-				TEXT("Crash video: backbuffer format %d isn't supported by the active AVCodecs backend. ")
-					TEXT("Try r.DefaultBackBufferPixelFormat=0 or 1 in DefaultEngine.ini. ")
+				TEXT("Crash video: backbuffer format %d isn't supported by NVENC. ")
+					TEXT("Set r.DefaultBackBufferPixelFormat=0 in DefaultEngine.ini. ")
 						TEXT("Full HDR backbuffer support is a planned improvement."),
 				static_cast<int32>(SrcFormat));
 			bUnsupportedFormatLogged = true;
@@ -192,14 +172,8 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
 	RHICmdList.CopyTexture(BackBuffer.GetReference(), DestTexture.GetReference(), CopyInfo);
 
-	// Leave the destination in a state the encoder backend expects:
-	//   - Metal/VTCodecs reads from a CPU-mapped surface, so CPURead.
-	//   - D3D / Vulkan / NVENC read as shader resource.
-#if PLATFORM_MAC
-	FRHITransitionInfo DestPostCopy(DestTexture.GetReference(), ERHIAccess::CopyDest, ERHIAccess::CPURead);
-#else
+	// Leave the destination in a shader-readable state for NVENC.
 	FRHITransitionInfo DestPostCopy(DestTexture.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics);
-#endif
 	RHICmdList.Transition(DestPostCopy);
 
 	Encoder.SubmitFrame(DestTexture);

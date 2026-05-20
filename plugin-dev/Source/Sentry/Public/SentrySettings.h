@@ -340,7 +340,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOutOfProcessScreenshots;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Attach session replay (experimental)", ToolTip = "Enables session replay capture. On Android, records a continuous video of the session and sends it with error events. On Xbox development kits, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring. Currently supported on Android and Xbox development kits only."))
+		Meta = (DisplayName = "Attach session replay (experimental)", ToolTip = "Enables session replay capture. On Android, records a continuous video of the session and sends it with error events. On Windows, continuously encodes the last few seconds of gameplay to an MP4 file and attaches it to crash reports (requires Crashpad backend, NVIDIA NVENC). On Xbox development kits, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring."))
 	bool AttachSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
@@ -523,38 +523,32 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableHangTracking", ClampMin = 1.0f))
 	float HangTimeoutDuration;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
-		Meta = (DisplayName = "Enable crash video capture",
-			ToolTip = "Continuously encodes the last few seconds of gameplay to an MP4 file and attaches it to crash reports. Requires the Crashpad backend. Windows only (Win64 with NVIDIA NVENC).",
-			ConfigRestartRequired = true))
-	bool EnableCrashVideo;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
-		Meta = (DisplayName = "Window duration (seconds)",
-			ToolTip = "Length of the rolling video window kept on disk for crash attachment.",
-			EditCondition = "EnableCrashVideo", ClampMin = 2, ClampMax = 60))
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Crash video window duration (seconds, Windows only)",
+			ToolTip = "Length of the rolling crash-video window kept on disk for attachment.",
+			EditCondition = "AttachSessionReplay", ClampMin = 2, ClampMax = 60))
 	float CrashVideoWindowSeconds;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
-		Meta = (DisplayName = "Fragment duration (seconds)",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Crash video fragment duration (seconds, Windows only)",
 			ToolTip = "Length of each fMP4 fragment. Shorter values reduce the worst-case lost-tail at crash time, but increase keyframe frequency and lower compression efficiency.",
-			EditCondition = "EnableCrashVideo", ClampMin = 0.1f, ClampMax = 2.0f))
+			EditCondition = "AttachSessionReplay", ClampMin = 0.1f, ClampMax = 2.0f))
 	float CrashVideoFragmentSeconds;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
-		Meta = (DisplayName = "Rotation interval (seconds)",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Crash video rotation interval (seconds, Windows only)",
 			ToolTip = "How often the disk attachment file is refreshed by atomic rename.",
-			EditCondition = "EnableCrashVideo", ClampMin = 0.25f, ClampMax = 5.0f))
+			EditCondition = "AttachSessionReplay", ClampMin = 0.25f, ClampMax = 5.0f))
 	float CrashVideoRotationIntervalSeconds;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
-		Meta = (DisplayName = "Target framerate",
-			EditCondition = "EnableCrashVideo", ClampMin = 10, ClampMax = 60))
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Crash video target framerate (Windows only)",
+			EditCondition = "AttachSessionReplay", ClampMin = 10, ClampMax = 60))
 	int32 CrashVideoFramerate;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Crash Video",
-		Meta = (DisplayName = "Target bitrate (kbps)",
-			EditCondition = "EnableCrashVideo", ClampMin = 200, ClampMax = 20000))
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Crash video target bitrate (kbps, Windows only)",
+			EditCondition = "AttachSessionReplay", ClampMin = 200, ClampMax = 20000))
 	int32 CrashVideoBitrateKbps;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",

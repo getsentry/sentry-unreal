@@ -9,7 +9,16 @@
 
 #include "Utils/SentryPlatformDetectionUtils.h"
 
+#include "HAL/FileManager.h"
+#include "Misc/Guid.h"
 #include "Misc/Paths.h"
+
+#if USE_SENTRY_CRASH_VIDEO
+#include "CrashVideo/SentryCrashVideoSubsystem.h"
+#endif
+
+FWindowsSentrySubsystem::FWindowsSentrySubsystem() = default;
+FWindowsSentrySubsystem::~FWindowsSentrySubsystem() = default;
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers)
 {
@@ -129,11 +138,47 @@ void FWindowsSentrySubsystem::ConfigureScreenshotCapturing(sentry_options_t* Opt
 	}
 }
 
+void FWindowsSentrySubsystem::ConfigureSessionReplayCapturing(sentry_options_t* Options)
+{
+#if USE_SENTRY_CRASH_VIDEO
+	// Clear replay videos captured during previous session if any.
+	IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
+	const USentrySettings* Settings = GetDefault<USentrySettings>();
+	CrashVideo = MakeUnique<FSentryCrashVideoSubsystem>();
+	if (!CrashVideo->Initialize(Settings, GetReplayPath()))
+	{
+		CrashVideo.Reset();
+	}
+#endif
+}
+
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	// Windows-specific crash handling can go here if needed in the future
-	// For now, just delegate to parent which handles the crash logger
+#if USE_SENTRY_CRASH_VIDEO
+	if (CrashVideo && CrashVideo->HasSnapshotOnDisk())
+	{
+		// Register the rolling video file as a crash attachment. Sentry-native
+		// forwards this to crashpad's client->AddAttachment IPC; the handler
+		// reads the file off disk when it serialises the report.
+		sentry_attach_filew(*CrashVideo->GetAttachmentPath());
+	}
+#endif
+
 	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
+}
+
+void FWindowsSentrySubsystem::Close()
+{
+#if USE_SENTRY_CRASH_VIDEO
+	if (CrashVideo)
+	{
+		CrashVideo->Shutdown();
+		CrashVideo.Reset();
+	}
+#endif
+
+	FMicrosoftSentrySubsystem::Close();
 }
 
 FString FWindowsSentrySubsystem::GetDeviceType() const
@@ -145,5 +190,14 @@ FString FWindowsSentrySubsystem::GetDeviceType() const
 
 	return FMicrosoftSentrySubsystem::GetDeviceType();
 }
+
+#if USE_SENTRY_CRASH_VIDEO
+FString FWindowsSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"),
+		FString::Printf(TEXT("replay-%s.mp4"), *FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower)));
+	return FPaths::ConvertRelativePathToFull(ReplayPath);
+}
+#endif
 
 #endif // USE_SENTRY_NATIVE && !SENTRY_WINGDK

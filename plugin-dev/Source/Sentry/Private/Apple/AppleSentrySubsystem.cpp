@@ -39,14 +39,9 @@
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
-#include "Misc/Guid.h"
 #include "Misc/Paths.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
-
-#if USE_SENTRY_CRASH_VIDEO
-#include "CrashVideo/SentryCrashVideoSubsystem.h"
-#endif
 
 FAppleSentrySubsystem::FAppleSentrySubsystem() = default;
 FAppleSentrySubsystem::~FAppleSentrySubsystem() = default;
@@ -102,15 +97,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					// find the most recent one and upload it to Sentry.
 					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
 				}
-#if USE_SENTRY_CRASH_VIDEO
-				if (settings->EnableCrashVideo)
-				{
-					// Same pattern as screenshots: previous-session recording survives in
-					// SentryReplays/, latest one is uploaded against the crash event and
-					// deleted on success.
-					UploadReplayForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestReplay());
-				}
-#endif
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
@@ -220,32 +206,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	// Wait synchronously until sentry-cocoa initialization finished in main thread
 	dispatch_group_wait(sentryDispatchGroup, DISPATCH_TIME_FOREVER);
 	dispatch_release(sentryDispatchGroup);
-
-#if USE_SENTRY_CRASH_VIDEO
-	if (settings->EnableCrashVideo)
-	{
-		// Independent of sentry-cocoa — recorder writes a fresh per-session
-		// file inside SentryReplays/, and the onLastRunStatusDetermined block
-		// above picks up the previous session's file for upload. No startup
-		// cleanup: prior file is the one being uploaded.
-		CrashVideo = MakeUnique<FSentryCrashVideoSubsystem>();
-		if (!CrashVideo->Initialize(settings, GetReplayPath()))
-		{
-			CrashVideo.Reset();
-		}
-	}
-#endif
 }
 
 void FAppleSentrySubsystem::Close()
 {
-#if USE_SENTRY_CRASH_VIDEO
-	if (CrashVideo)
-	{
-		CrashVideo->Shutdown();
-		CrashVideo.Reset();
-	}
-#endif
 	[SENTRY_APPLE_CLASS(SentrySDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentrySDK) close];
 }
@@ -740,54 +704,5 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 
 	return Screenshots[0];
 }
-
-#if USE_SENTRY_CRASH_VIDEO
-
-FString FAppleSentrySubsystem::GetReplayPath() const
-{
-	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"),
-		FString::Printf(TEXT("replay-%s.mp4"),
-			*FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower)));
-}
-
-FString FAppleSentrySubsystem::GetLatestReplay() const
-{
-	const FString& ReplaysDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"));
-
-	TArray<FString> Replays;
-	IFileManager::Get().FindFiles(Replays, *ReplaysDir, TEXT("*.mp4"));
-
-	if (Replays.Num() == 0)
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("There are no replays found."));
-		return FString("");
-	}
-
-	for (int i = 0; i < Replays.Num(); ++i)
-	{
-		Replays[i] = ReplaysDir / Replays[i];
-	}
-
-	Replays.Sort([](const FString& A, const FString& B)
-	{
-		const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
-		const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
-		return TimestampB < TimestampA;
-	});
-
-	return Replays[0];
-}
-
-void FAppleSentrySubsystem::UploadReplayForEvent(TSharedPtr<ISentryId> eventId, const FString& replayPath) const
-{
-	if (replayPath.IsEmpty())
-	{
-		return;
-	}
-
-	UploadAttachmentForEvent(eventId, replayPath, TEXT("crash_video.mp4"), /*deleteAfterUpload*/ true);
-}
-
-#endif // USE_SENTRY_CRASH_VIDEO
 
 #endif // !USE_SENTRY_NATIVE
