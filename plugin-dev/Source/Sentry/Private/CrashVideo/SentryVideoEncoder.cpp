@@ -24,14 +24,10 @@
 
 FSentryVideoEncoder::FSentryVideoEncoder(
 	FSentryCrashVideoSubsystem& InOwner,
-	uint32 InWidth,
-	uint32 InHeight,
 	uint32 InFramerate,
 	int32 InBitrateKbps,
 	float InFragmentSeconds)
 	: Owner(InOwner)
-	, Width(InWidth)
-	, Height(InHeight)
 	, Framerate(InFramerate)
 	, BitrateBps(InBitrateKbps * 1000)
 	, FragmentSeconds(InFragmentSeconds)
@@ -126,21 +122,11 @@ void FSentryVideoEncoder::Stop()
 
 void FSentryVideoEncoder::Exit()
 {
-	if (Encoder.IsValid())
-	{
-		// NOTE: AVCodecs' TVideoEncoder API documents that SendFrame(nullptr)
-		// performs a flush (Video/VideoEncoder.h, comment on SendFrame).
-		// However FVideoEncoderNVENCD3D12::SendFrame dereferences Resource
-		// unconditionally on its very first line — Resource->GetFormat() —
-		// so calling the documented flush form null-derefs and asserts
-		// inside TSharedPtr::operator->. We skip the explicit flush and just
-		// drain whatever's already in the output queue. With
-		// LatencyMode = UltraLowLatency the encoder doesn't hold frames
-		// across calls, so a missed flush only loses one in-flight frame at
-		// most — acceptable for a rolling crash-video window.
-		DrainPackets();
-		Encoder.Reset();
-	}
+	// AVCodecs' documented flush form `SendFrame(nullptr)` null-derefs inside
+	// FVideoEncoderNVENCD3D12::SendFrame (it dereferences Resource on the
+	// first line). We just drop the encoder; any in-flight fragments are
+	// discarded by the subsystem's teardown anyway.
+	Encoder.Reset();
 	bEncoderOpen = false;
 }
 
@@ -285,8 +271,6 @@ void FSentryVideoEncoder::DrainPackets()
 	FVideoPacket Packet;
 	while (Encoder->ReceivePacket(Packet).IsSuccess())
 	{
-		++PacketsReceived;
-
 		if (Packet.DataSize == 0 || !Packet.DataPtr.IsValid())
 		{
 			continue;
@@ -357,11 +341,6 @@ void FSentryVideoEncoder::DrainPackets()
 		}
 		SampleClock += Sample.Duration;
 		CurrentSamples.Add(MoveTemp(Sample));
-
-		// Hard cap: never let a fragment grow beyond ~2× target duration even if
-		// keyframes are missed (e.g. encoder hiccup). A new "synthetic" fragment
-		// boundary will not be a real keyframe — so we don't actually flush here;
-		// instead we just rely on the encoder respecting KeyframeInterval.
 	}
 }
 

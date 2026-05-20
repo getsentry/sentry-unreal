@@ -181,12 +181,12 @@ static TArray<uint8> BuildDref()
 {
 	TArray<uint8> P;
 	WriteU32(P, 1); // entry_count
-	// url ' box, flags=0x01 (self-contained)
+	// "url " full box, flags=0x01 (self-contained, no URL string follows).
+	// Manually framed instead of calling FullBox() because the payload is empty.
 	TArray<uint8> UrlInner;
 	WriteU8(UrlInner, 0);		  // version
 	WriteU24(UrlInner, 0x000001); // flags
 	P.Append(Box("url ", UrlInner));
-	// Actually url is a full box; let me rewrite. We already wrote version+flags inside UrlInner so just box it.
 	return FullBox("dref", 0, 0, P);
 }
 

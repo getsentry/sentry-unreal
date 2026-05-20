@@ -51,14 +51,11 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, con
 	IFileManager::Get().MakeDirectory(*FPaths::GetPath(AttachmentPath), /*Tree*/ true);
 	bSnapshotOnDisk.AtomicSet(false);
 
-	// Capture native backbuffer dimensions. A configurable target resolution
-	// would require a scaling draw pass (same machinery as HDR conversion);
-	// out of scope for v1. The encoder picks Width/Height from the first frame.
-
+	// The encoder picks Width/Height from the first submitted frame (native
+	// backbuffer dimensions). A configurable target resolution would require
+	// a scaling draw pass — out of scope for v1.
 	Encoder = MakeUnique<FSentryVideoEncoder>(
 		*this,
-		/*Width*/ 0,
-		/*Height*/ 0,
 		static_cast<uint32>(Settings->CrashVideoFramerate),
 		Settings->CrashVideoBitrateKbps,
 		Settings->CrashVideoFragmentSeconds);

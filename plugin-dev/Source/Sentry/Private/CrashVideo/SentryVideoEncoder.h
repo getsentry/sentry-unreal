@@ -36,8 +36,6 @@ class FSentryVideoEncoder : public FRunnable
 public:
 	FSentryVideoEncoder(
 		FSentryCrashVideoSubsystem& InOwner,
-		uint32 InWidth,
-		uint32 InHeight,
 		uint32 InFramerate,
 		int32 InBitrateKbps,
 		float InFragmentSeconds);
@@ -51,8 +49,6 @@ public:
 	// so the texture stays alive until the encoder is done with it.
 	void SubmitFrame(const FTextureRHIRef& Texture);
 
-	uint32 GetWidth() const { return Width; }
-	uint32 GetHeight() const { return Height; }
 	uint32 GetFramerate() const { return Framerate; }
 
 	// FRunnable
@@ -74,8 +70,9 @@ private:
 
 	FSentryCrashVideoSubsystem& Owner;
 
-	uint32 Width;
-	uint32 Height;
+	// Width/Height are set from the first submitted frame in EnsureEncoderOpen.
+	uint32 Width = 0;
+	uint32 Height = 0;
 	uint32 Framerate;
 	int32 BitrateBps;
 	float FragmentSeconds;
@@ -88,7 +85,6 @@ private:
 	TArray<FPendingFrame> PendingQueue;
 
 	uint64 NextTimestampUs = 0;
-	uint64 PacketsReceived = 0;
 	uint64 LastPacketWallClockUs = 0;
 	double LastForcedKeyframeTime = 0.0;
 
