@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
 #include "Containers/RingBuffer.h"
 #include "HAL/CriticalSection.h"
@@ -18,7 +18,7 @@ class FSentryBackBufferCapture;
 class USentrySettings;
 
 /**
- * Owns the crash-video capture pipeline.
+ * Owns the session-replay capture pipeline (crash-attached gameplay video).
  *
  * Threads:
  *   - Render thread: backbuffer capture hook copies the swap chain into a
@@ -28,13 +28,13 @@ class USentrySettings;
  *     OnInitSegmentReady / OnFragmentReady callbacks below.
  *   - Rotation thread (this class's FRunnable): periodically composes
  *     `init + last N fragments` into a temp file and atomically renames
- *     it into place over `crash_video.mp4`.
+ *     it into place over the attachment path.
  */
-class FSentryCrashVideoSubsystem : public FRunnable
+class FSentrySessionReplayRecorder : public FRunnable
 {
 public:
-	FSentryCrashVideoSubsystem();
-	virtual ~FSentryCrashVideoSubsystem() override;
+	FSentrySessionReplayRecorder();
+	virtual ~FSentrySessionReplayRecorder() override;
 
 	// Game thread. Sets up encoder, capture hook, fragment ring, and
 	// rotation thread. The caller provides the full target file path
@@ -93,4 +93,4 @@ private:
 	FEvent* RotationWake = nullptr;
 };
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY

@@ -2,7 +2,7 @@
 
 #include "SentryFmp4Writer.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
 namespace SentryFmp4Detail
 {
@@ -586,4 +586,4 @@ TArray<uint8> FSentryFmp4Writer::AnnexBToAvcc(
 	return Out;
 }
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY

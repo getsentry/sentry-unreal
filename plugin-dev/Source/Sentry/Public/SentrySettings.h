@@ -524,32 +524,32 @@ class SENTRY_API USentrySettings : public UObject
 	float HangTimeoutDuration;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Crash video window duration (seconds, Windows only)",
-			ToolTip = "Length of the rolling crash-video window kept on disk for attachment.",
+		Meta = (DisplayName = "Session replay window duration (seconds, Windows only)",
+			ToolTip = "Length of the rolling session-replay window kept on disk for crash attachment.",
 			EditCondition = "AttachSessionReplay", ClampMin = 2, ClampMax = 60))
-	float CrashVideoWindowSeconds;
+	float SessionReplayWindowSeconds;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Crash video fragment duration (seconds, Windows only)",
+		Meta = (DisplayName = "Session replay fragment duration (seconds, Windows only)",
 			ToolTip = "Length of each fMP4 fragment. Shorter values reduce the worst-case lost-tail at crash time, but increase keyframe frequency and lower compression efficiency.",
 			EditCondition = "AttachSessionReplay", ClampMin = 0.1f, ClampMax = 2.0f))
-	float CrashVideoFragmentSeconds;
+	float SessionReplayFragmentSeconds;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Crash video rotation interval (seconds, Windows only)",
+		Meta = (DisplayName = "Session replay rotation interval (seconds, Windows only)",
 			ToolTip = "How often the disk attachment file is refreshed by atomic rename.",
 			EditCondition = "AttachSessionReplay", ClampMin = 0.25f, ClampMax = 5.0f))
-	float CrashVideoRotationIntervalSeconds;
+	float SessionReplayRotationIntervalSeconds;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Crash video target framerate (Windows only)",
+		Meta = (DisplayName = "Session replay target framerate (Windows only)",
 			EditCondition = "AttachSessionReplay", ClampMin = 10, ClampMax = 60))
-	int32 CrashVideoFramerate;
+	int32 SessionReplayFramerate;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Crash video target bitrate (kbps, Windows only)",
+		Meta = (DisplayName = "Session replay target bitrate (kbps, Windows only)",
 			EditCondition = "AttachSessionReplay", ClampMin = 200, ClampMax = 20000))
-	int32 CrashVideoBitrateKbps;
+	int32 SessionReplayBitrateKbps;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
 		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))

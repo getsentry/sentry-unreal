@@ -242,13 +242,14 @@ public class Sentry : ModuleRules
 			}
 		}
 
-		// Crash video feature — capture backbuffer, encode via AVCodecs (NVENC),
-		// mux fragmented MP4 and rotate to an attachment file. Win64 only for
-		// now: Mac/Metal hits engine-side AVCodecs bugs (UE's MetalRHI maps to
-		// RGBA/RGB10A2 formats AVCodecs doesn't accept), and Linux/AMF haven't
-		// been validated. Runtime enable is the `AttachSessionReplay` setting.
-		bool bCrashVideoEnabled = Target.Platform == UnrealTargetPlatform.Win64;
-		if (bCrashVideoEnabled)
+		// Session replay feature — capture backbuffer, encode via AVCodecs
+		// (NVENC), mux fragmented MP4 and rotate to an attachment file. Win64
+		// only for now: Mac/Metal hits engine-side AVCodecs bugs (UE's MetalRHI
+		// maps to RGBA/RGB10A2 formats AVCodecs doesn't accept), and Linux/AMF
+		// haven't been validated. Runtime enable is the `AttachSessionReplay`
+		// setting.
+		bool bSessionReplayEnabled = Target.Platform == UnrealTargetPlatform.Win64;
+		if (bSessionReplayEnabled)
 		{
 			PrivateDependencyModuleNames.AddRange(new string[]
 			{
@@ -258,7 +259,7 @@ public class Sentry : ModuleRules
 				"AVCodecsCoreRHI",
 			});
 		}
-		PublicDefinitions.Add("USE_SENTRY_CRASH_VIDEO=" + (bCrashVideoEnabled ? "1" : "0"));
+		PublicDefinitions.Add("USE_SENTRY_SESSION_REPLAY=" + (bSessionReplayEnabled ? "1" : "0"));
 	}
 
 	private void StageCrashReporterResources(ReadOnlyTargetRules Target)

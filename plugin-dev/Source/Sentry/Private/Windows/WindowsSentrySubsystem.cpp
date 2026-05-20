@@ -13,8 +13,8 @@
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
 
-#if USE_SENTRY_CRASH_VIDEO
-#include "CrashVideo/SentryCrashVideoSubsystem.h"
+#if USE_SENTRY_SESSION_REPLAY
+#include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
 
 FWindowsSentrySubsystem::FWindowsSentrySubsystem() = default;
@@ -35,16 +35,16 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		ConfigureCrashReporterAppearance(Settings);
 	}
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 	if (IsEnabled() && Settings->AttachSessionReplay)
 	{
 		// Clear replay videos captured during previous session if any.
 		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
 
-		CrashVideo = MakeUnique<FSentryCrashVideoSubsystem>();
-		if (!CrashVideo->Initialize(Settings, GetReplayPath()))
+		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+		if (!SessionReplay->Initialize(Settings, GetReplayPath()))
 		{
-			CrashVideo.Reset();
+			SessionReplay.Reset();
 		}
 	}
 #endif
@@ -154,13 +154,13 @@ void FWindowsSentrySubsystem::ConfigureScreenshotCapturing(sentry_options_t* Opt
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-#if USE_SENTRY_CRASH_VIDEO
-	if (CrashVideo && CrashVideo->HasSnapshotOnDisk())
+#if USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
 	{
 		// Register the rolling video file as a crash attachment. Sentry-native
 		// forwards this to crashpad's client->AddAttachment IPC; the handler
 		// reads the file off disk when it serialises the report.
-		sentry_attach_filew(*CrashVideo->GetAttachmentPath());
+		sentry_attach_filew(*SessionReplay->GetAttachmentPath());
 	}
 #endif
 
@@ -169,11 +169,11 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 
 void FWindowsSentrySubsystem::Close()
 {
-#if USE_SENTRY_CRASH_VIDEO
-	if (CrashVideo)
+#if USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay)
 	{
-		CrashVideo->Shutdown();
-		CrashVideo.Reset();
+		SessionReplay->Shutdown();
+		SessionReplay.Reset();
 	}
 #endif
 

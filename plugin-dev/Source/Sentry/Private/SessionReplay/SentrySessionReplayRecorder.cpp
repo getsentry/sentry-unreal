@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "SentryCrashVideoSubsystem.h"
+#include "SentrySessionReplayRecorder.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
 #include "SentryBackBufferCapture.h"
 #include "SentryDefines.h"
@@ -21,14 +21,14 @@
 #include "Windows/HideWindowsPlatformTypes.h"
 #include "Windows/WindowsHWrapper.h"
 
-FSentryCrashVideoSubsystem::FSentryCrashVideoSubsystem() = default;
+FSentrySessionReplayRecorder::FSentrySessionReplayRecorder() = default;
 
-FSentryCrashVideoSubsystem::~FSentryCrashVideoSubsystem()
+FSentrySessionReplayRecorder::~FSentrySessionReplayRecorder()
 {
 	Shutdown();
 }
 
-bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, const FString& ReplayPath)
+bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, const FString& ReplayPath)
 {
 	check(IsInGameThread());
 
@@ -37,9 +37,9 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, con
 		return false;
 	}
 
-	WindowSeconds = Settings->CrashVideoWindowSeconds;
-	FragmentSeconds = Settings->CrashVideoFragmentSeconds;
-	RotationIntervalSeconds = Settings->CrashVideoRotationIntervalSeconds;
+	WindowSeconds = Settings->SessionReplayWindowSeconds;
+	FragmentSeconds = Settings->SessionReplayFragmentSeconds;
+	RotationIntervalSeconds = Settings->SessionReplayRotationIntervalSeconds;
 	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
 	FragmentRing.Empty(FragmentRingCapacity);
 
@@ -56,9 +56,9 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, con
 	// a scaling draw pass — out of scope for v1.
 	Encoder = MakeUnique<FSentryVideoEncoder>(
 		*this,
-		static_cast<uint32>(Settings->CrashVideoFramerate),
-		Settings->CrashVideoBitrateKbps,
-		Settings->CrashVideoFragmentSeconds);
+		static_cast<uint32>(Settings->SessionReplayFramerate),
+		Settings->SessionReplayBitrateKbps,
+		Settings->SessionReplayFragmentSeconds);
 	if (!Encoder->StartEncoder())
 	{
 		Encoder.Reset();
@@ -77,7 +77,7 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, con
 	// Spawn rotation thread last, so it doesn't fire before the queues are ready.
 	bStopRequested.AtomicSet(false);
 	RotationWake = FPlatformProcess::GetSynchEventFromPool(false);
-	RotationThread = FRunnableThread::Create(this, TEXT("SentryCrashVideoRotation"), 0, TPri_BelowNormal);
+	RotationThread = FRunnableThread::Create(this, TEXT("SentrySessionReplayRotation"), 0, TPri_BelowNormal);
 	if (!RotationThread)
 	{
 		Capture->Stop();
@@ -90,11 +90,11 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, con
 	}
 
 	bEnabled = true;
-	UE_LOG(LogSentrySdk, Log, TEXT("Crash video enabled, attachment path: %s"), *AttachmentPath);
+	UE_LOG(LogSentrySdk, Log, TEXT("Session replay enabled, attachment path: %s"), *AttachmentPath);
 	return true;
 }
 
-void FSentryCrashVideoSubsystem::Shutdown()
+void FSentrySessionReplayRecorder::Shutdown()
 {
 	check(IsInGameThread());
 
@@ -140,13 +140,13 @@ void FSentryCrashVideoSubsystem::Shutdown()
 	}
 }
 
-void FSentryCrashVideoSubsystem::OnInitSegmentReady(TArray<uint8>&& NewInitSegment)
+void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment)
 {
 	FScopeLock Lock(&RingLock);
 	InitSegment = MoveTemp(NewInitSegment);
 }
 
-void FSentryCrashVideoSubsystem::OnFragmentReady(TArray<uint8>&& Fragment)
+void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment)
 {
 	FScopeLock Lock(&RingLock);
 	if (FragmentRing.Num() >= FragmentRingCapacity)
@@ -156,12 +156,12 @@ void FSentryCrashVideoSubsystem::OnFragmentReady(TArray<uint8>&& Fragment)
 	FragmentRing.Add(MoveTemp(Fragment));
 }
 
-bool FSentryCrashVideoSubsystem::Init()
+bool FSentrySessionReplayRecorder::Init()
 {
 	return true;
 }
 
-uint32 FSentryCrashVideoSubsystem::Run()
+uint32 FSentrySessionReplayRecorder::Run()
 {
 	const uint32 SleepMs = FMath::Max(50, FMath::RoundToInt(RotationIntervalSeconds * 1000.0f));
 	while (!bStopRequested)
@@ -179,7 +179,7 @@ uint32 FSentryCrashVideoSubsystem::Run()
 	return 0;
 }
 
-void FSentryCrashVideoSubsystem::Stop()
+void FSentrySessionReplayRecorder::Stop()
 {
 	bStopRequested.AtomicSet(true);
 	if (RotationWake)
@@ -188,11 +188,11 @@ void FSentryCrashVideoSubsystem::Stop()
 	}
 }
 
-void FSentryCrashVideoSubsystem::Exit()
+void FSentrySessionReplayRecorder::Exit()
 {
 }
 
-void FSentryCrashVideoSubsystem::DoRotation()
+void FSentrySessionReplayRecorder::DoRotation()
 {
 	// Read the tfdt's base_media_decode_time from a serialised fragment. The
 	// field lives at a fixed offset inside our fragment layout:
@@ -261,21 +261,21 @@ void FSentryCrashVideoSubsystem::DoRotation()
 	}
 }
 
-bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& Bytes)
+bool FSentrySessionReplayRecorder::WriteSnapshotAtomically(const TArray<uint8>& Bytes)
 {
 	// 1) Write bytes into the temp file (truncate any prior remnants).
 	{
 		TUniquePtr<FArchive> Out(IFileManager::Get().CreateFileWriter(*TempPath, FILEWRITE_EvenIfReadOnly));
 		if (!Out)
 		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: failed to open %s for write"), *TempPath);
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to open %s for write"), *TempPath);
 			return false;
 		}
 		Out->Serialize(const_cast<uint8*>(Bytes.GetData()), Bytes.Num());
 		Out->Flush();
 		if (!Out->Close())
 		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: failed to close temp file"));
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to close temp file"));
 			return false;
 		}
 	}
@@ -294,13 +294,13 @@ bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& By
 			if (Err == /*ERROR_ACCESS_DENIED*/ 5 || Err == /*ERROR_SHARING_VIOLATION*/ 32)
 			{
 				UE_LOG(LogSentrySdk, Warning,
-					TEXT("Crash video: cannot rotate %s — another process is holding it open (e.g. a video preview window). ")
+					TEXT("Session replay: cannot rotate %s — another process is holding it open (e.g. a video preview window). ")
 						TEXT("Rotation will keep retrying. In a normal crash scenario this never happens because nothing else has the file open."),
 					*AttachmentPath);
 			}
 			else
 			{
-				UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: MoveFileExW failed with error %u"), Err);
+				UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: MoveFileExW failed with error %u"), Err);
 			}
 			bLoggedOnce = true;
 		}
@@ -309,4 +309,4 @@ bool FSentryCrashVideoSubsystem::WriteSnapshotAtomically(const TArray<uint8>& By
 	return true;
 }
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY

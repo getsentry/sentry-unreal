@@ -8,8 +8,8 @@
 
 #include "Microsoft/MicrosoftSentrySubsystem.h"
 
-#if USE_SENTRY_CRASH_VIDEO
-class FSentryCrashVideoSubsystem;
+#if USE_SENTRY_SESSION_REPLAY
+class FSentrySessionReplayRecorder;
 #endif
 
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
@@ -47,8 +47,8 @@ private:
 	/** Whether native out-of-process screenshot capturing is enabled */
 	bool bOutOfProcessScreenshots = false;
 
-#if USE_SENTRY_CRASH_VIDEO
-	TUniquePtr<FSentryCrashVideoSubsystem> CrashVideo;
+#if USE_SENTRY_SESSION_REPLAY
+	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
 #endif
 };
 

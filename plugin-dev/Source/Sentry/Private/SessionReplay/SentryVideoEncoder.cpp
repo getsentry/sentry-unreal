@@ -2,9 +2,9 @@
 
 #include "SentryVideoEncoder.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
-#include "SentryCrashVideoSubsystem.h"
+#include "SentrySessionReplayRecorder.h"
 #include "SentryDefines.h"
 
 #include "HAL/Event.h"
@@ -23,7 +23,7 @@
 #include "Video/VideoPacket.h"
 
 FSentryVideoEncoder::FSentryVideoEncoder(
-	FSentryCrashVideoSubsystem& InOwner,
+	FSentrySessionReplayRecorder& InOwner,
 	uint32 InFramerate,
 	int32 InBitrateKbps,
 	float InFragmentSeconds)
@@ -49,10 +49,10 @@ bool FSentryVideoEncoder::StartEncoder()
 	WakeEvent = FPlatformProcess::GetSynchEventFromPool(false);
 	bStopRequested.AtomicSet(false);
 
-	Thread = FRunnableThread::Create(this, TEXT("SentryCrashVideoEncoder"), 0, TPri_BelowNormal);
+	Thread = FRunnableThread::Create(this, TEXT("SentrySessionReplayEncoder"), 0, TPri_BelowNormal);
 	if (!Thread)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: failed to start encoder thread"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to start encoder thread"));
 		FPlatformProcess::ReturnSynchEventToPool(WakeEvent);
 		WakeEvent = nullptr;
 		return false;
@@ -167,14 +167,14 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Encoder = FVideoEncoder::Create<FVideoResourceRHI>(Device, Config);
 	if (!Encoder.IsValid())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: failed to create H.264 encoder (no NVENC/AMF backend available?)"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to create H.264 encoder (no NVENC/AMF backend available?)"));
 		return false;
 	}
 
 	Width = ResourceWidth;
 	Height = ResourceHeight;
 	bEncoderOpen = true;
-	UE_LOG(LogSentrySdk, Log, TEXT("Crash video: encoder opened %ux%u @ %u fps, %d kbps, forced keyframe every %.2fs"),
+	UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder opened %ux%u @ %u fps, %d kbps, forced keyframe every %.2fs"),
 		Width, Height, Framerate, BitrateBps / 1000, FragmentSeconds);
 	return true;
 }
@@ -241,13 +241,13 @@ uint32 FSentryVideoEncoder::Run()
 				// backbuffer format (NVENC D3D12 wants BGRA8). Stop trying so
 				// we don't burn cycles on subsequent frames.
 				UE_LOG(LogSentrySdk, Warning,
-					TEXT("Crash video: encoder rejected the first frame (backbuffer format may not be supported by NVENC). Recording disabled for this session."));
+					TEXT("Session replay: encoder rejected the first frame (backbuffer format may not be supported by NVENC). Recording disabled for this session."));
 				bEncodingDisabled.AtomicSet(true);
 				break;
 			}
 			else
 			{
-				UE_LOG(LogSentrySdk, Verbose, TEXT("Crash video: SendFrame returned non-success"));
+				UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success"));
 			}
 
 			DrainPackets();
@@ -360,4 +360,4 @@ void FSentryVideoEncoder::FinalizeFragment()
 	CurrentSamples.Reset();
 }
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY

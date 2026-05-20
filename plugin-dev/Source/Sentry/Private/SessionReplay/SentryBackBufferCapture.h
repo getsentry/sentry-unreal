@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
 #include "Delegates/IDelegateInstance.h"
 #include "PixelFormat.h"
@@ -61,4 +61,4 @@ private:
 	double CapturePeriodSeconds = 1.0 / 30.0;
 };
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY

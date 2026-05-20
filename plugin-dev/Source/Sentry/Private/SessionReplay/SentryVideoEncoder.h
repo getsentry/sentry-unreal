@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
 #include "Containers/Queue.h"
 #include "HAL/Runnable.h"
@@ -20,7 +20,7 @@ class FRunnableThread;
 class FEvent;
 class FVideoResourceRHI;
 
-class FSentryCrashVideoSubsystem;
+class FSentrySessionReplayRecorder;
 
 /**
  * Owns the AVCodecs H.264 encoder and runs on a dedicated thread.
@@ -29,13 +29,13 @@ class FSentryCrashVideoSubsystem;
  * The thread submits them to the hardware encoder, polls for output packets,
  * splits Annex-B byte streams into per-NALU AVCC samples, and groups them
  * into fragments delimited by IDR keyframes. Completed fragments are pushed
- * back to the owning subsystem via FSentryCrashVideoSubsystem::OnFragmentReady.
+ * back to the owning subsystem via FSentrySessionReplayRecorder::OnFragmentReady.
  */
 class FSentryVideoEncoder : public FRunnable
 {
 public:
 	FSentryVideoEncoder(
-		FSentryCrashVideoSubsystem& InOwner,
+		FSentrySessionReplayRecorder& InOwner,
 		uint32 InFramerate,
 		int32 InBitrateKbps,
 		float InFragmentSeconds);
@@ -68,7 +68,7 @@ private:
 	void DrainPackets();
 	void FinalizeFragment();
 
-	FSentryCrashVideoSubsystem& Owner;
+	FSentrySessionReplayRecorder& Owner;
 
 	// Width/Height are set from the first submitted frame in EnsureEncoderOpen.
 	uint32 Width = 0;
@@ -109,4 +109,4 @@ private:
 	bool bInitSegmentPublished = false;
 };
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY

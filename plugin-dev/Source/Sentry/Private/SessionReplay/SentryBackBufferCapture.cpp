@@ -2,7 +2,7 @@
 
 #include "SentryBackBufferCapture.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
 #include "SentryDefines.h"
 #include "SentryVideoEncoder.h"
@@ -31,13 +31,13 @@ bool FSentryBackBufferCapture::Start()
 
 	if (!FSlateApplication::IsInitialized())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: Slate not initialised, cannot hook backbuffer"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: Slate not initialised, cannot hook backbuffer"));
 		return false;
 	}
 	FSlateRenderer* Renderer = FSlateApplication::Get().GetRenderer();
 	if (!Renderer)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: no Slate renderer"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: no Slate renderer"));
 		return false;
 	}
 
@@ -92,7 +92,7 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 		// RenderTargetable.
 		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
 		const ERHIAccess InitialAccess = ERHIAccess::SRVGraphics;
-		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentryCrashVideoCapture"))
+		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayCapture"))
 											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
 											   .SetFormat(Format)
 											   .SetFlags(CreateFlags)
@@ -141,7 +141,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		if (!bUnsupportedFormatLogged)
 		{
 			UE_LOG(LogSentrySdk, Warning,
-				TEXT("Crash video: backbuffer format %d isn't supported by NVENC. ")
+				TEXT("Session replay: backbuffer format %d isn't supported by NVENC. ")
 					TEXT("Set r.DefaultBackBufferPixelFormat=0 in DefaultEngine.ini. ")
 						TEXT("Full HDR backbuffer support is a planned improvement."),
 				static_cast<int32>(SrcFormat));
@@ -179,4 +179,4 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	Encoder.SubmitFrame(DestTexture);
 }
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY

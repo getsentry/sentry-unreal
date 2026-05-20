@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#if USE_SENTRY_CRASH_VIDEO
+#if USE_SENTRY_SESSION_REPLAY
 
 /**
  * Fragmented MP4 (fMP4) writer for video-only H.264 streams.
@@ -80,4 +80,4 @@ public:
 		TArray<uint8>* OutPps);
 };
 
-#endif // USE_SENTRY_CRASH_VIDEO
+#endif // USE_SENTRY_SESSION_REPLAY
