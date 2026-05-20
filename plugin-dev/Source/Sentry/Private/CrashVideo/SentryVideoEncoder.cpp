@@ -128,8 +128,16 @@ void FSentryVideoEncoder::Exit()
 {
 	if (Encoder.IsValid())
 	{
-		// Flush remaining packets
-		Encoder->SendFrame(nullptr, 0);
+		// NOTE: AVCodecs' TVideoEncoder API documents that SendFrame(nullptr)
+		// performs a flush (Video/VideoEncoder.h, comment on SendFrame).
+		// However FVideoEncoderNVENCD3D12::SendFrame dereferences Resource
+		// unconditionally on its very first line — Resource->GetFormat() —
+		// so calling the documented flush form null-derefs and asserts
+		// inside TSharedPtr::operator->. We skip the explicit flush and just
+		// drain whatever's already in the output queue. With
+		// LatencyMode = UltraLowLatency the encoder doesn't hold frames
+		// across calls, so a missed flush only loses one in-flight frame at
+		// most — acceptable for a rolling crash-video window.
 		DrainPackets();
 		Encoder.Reset();
 	}
