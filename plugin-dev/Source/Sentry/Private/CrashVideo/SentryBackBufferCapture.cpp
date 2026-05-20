@@ -141,10 +141,35 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		return;
 	}
 
-	// Pool texture format follows the source so the same-format CopyTexture
-	// below works without conversion. Whether AVCodecs actually accepts this
-	// format is decided downstream by the encoder thread — it disables itself
-	// after a single first-frame rejection (see FSentryVideoEncoder::Run).
+	// Pre-validate the source format. AVCodecs' VTCodecs path uses
+	// `unimplemented()` (a hard assertion) rather than returning an error for
+	// unsupported pixel formats — so we can't rely on the encoder thread's
+	// first-frame validation alone and have to refuse the frame here. NVENC
+	// D3D12 also requires BGRA8 input. Whitelist matches what each backend's
+	// ConvertFormat actually switches on:
+	//   - NVENC: BGRA only (Win/Linux)
+	//   - VTCodecs: BGRA + ABGR10 (Mac)
+	// Anything else (PF_FloatRGBA etc.) is dropped with a warning, until a
+	// proper format-converting copy pass lands.
+	const bool bSupportedFormat = (SrcFormat == PF_B8G8R8A8)
+#if PLATFORM_MAC
+		|| (SrcFormat == PF_A2B10G10R10)
+#endif
+		;
+	if (!bSupportedFormat)
+	{
+		if (!bUnsupportedFormatLogged)
+		{
+			UE_LOG(LogSentrySdk, Warning,
+				TEXT("Crash video: backbuffer format %d isn't supported by the active AVCodecs backend. ")
+					TEXT("Try r.DefaultBackBufferPixelFormat=0 or 1 in DefaultEngine.ini. ")
+						TEXT("Full HDR backbuffer support is a planned improvement."),
+				static_cast<int32>(SrcFormat));
+			bUnsupportedFormatLogged = true;
+		}
+		return;
+	}
+
 	FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
 
 	FTextureRHIRef DestTexture = AcquirePoolTexture_RenderThread(W, H, SrcFormat);

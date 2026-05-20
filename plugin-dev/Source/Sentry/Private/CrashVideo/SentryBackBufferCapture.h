@@ -54,6 +54,7 @@ private:
 	uint32 PoolWidth = 0;
 	uint32 PoolHeight = 0;
 	EPixelFormat PoolFormat = PF_Unknown;
+	bool bUnsupportedFormatLogged = false;
 
 	// Frame throttling
 	double NextCaptureTime = 0.0;
