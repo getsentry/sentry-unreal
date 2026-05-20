@@ -98,9 +98,7 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::CPUReadback;
 		const ERHIAccess InitialAccess = ERHIAccess::CPURead;
 #else
-		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared
-											  | ETextureCreateFlags::ShaderResource
-											  | ETextureCreateFlags::RenderTargetable;
+		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
 		const ERHIAccess InitialAccess = ERHIAccess::SRVGraphics;
 #endif
 		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentryCrashVideoCapture"))
