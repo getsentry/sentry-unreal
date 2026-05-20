@@ -35,6 +35,20 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		ConfigureCrashReporterAppearance(Settings);
 	}
 
+#if USE_SENTRY_CRASH_VIDEO
+	if (IsEnabled() && Settings->AttachSessionReplay)
+	{
+		// Clear replay videos captured during previous session if any.
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
+		CrashVideo = MakeUnique<FSentryCrashVideoSubsystem>();
+		if (!CrashVideo->Initialize(Settings, GetReplayPath()))
+		{
+			CrashVideo.Reset();
+		}
+	}
+#endif
+
 	// Add Wine/Proton context for all events if detected
 	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
 	{
@@ -138,21 +152,6 @@ void FWindowsSentrySubsystem::ConfigureScreenshotCapturing(sentry_options_t* Opt
 	}
 }
 
-void FWindowsSentrySubsystem::ConfigureSessionReplayCapturing(sentry_options_t* Options)
-{
-#if USE_SENTRY_CRASH_VIDEO
-	// Clear replay videos captured during previous session if any.
-	IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
-
-	const USentrySettings* Settings = GetDefault<USentrySettings>();
-	CrashVideo = MakeUnique<FSentryCrashVideoSubsystem>();
-	if (!CrashVideo->Initialize(Settings, GetReplayPath()))
-	{
-		CrashVideo.Reset();
-	}
-#endif
-}
-
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
 #if USE_SENTRY_CRASH_VIDEO
@@ -191,13 +190,12 @@ FString FWindowsSentrySubsystem::GetDeviceType() const
 	return FMicrosoftSentrySubsystem::GetDeviceType();
 }
 
-#if USE_SENTRY_CRASH_VIDEO
 FString FWindowsSentrySubsystem::GetReplayPath() const
 {
-	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"),
-		FString::Printf(TEXT("replay-%s.mp4"), *FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower)));
-	return FPaths::ConvertRelativePathToFull(ReplayPath);
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower)));
+	const FString ReplayFullPath = FPaths::ConvertRelativePathToFull(ReplayPath);
+
+	return ReplayFullPath;
 }
-#endif
 
 #endif // USE_SENTRY_NATIVE && !SENTRY_WINGDK

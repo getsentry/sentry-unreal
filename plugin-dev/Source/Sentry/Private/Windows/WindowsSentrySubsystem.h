@@ -21,12 +21,14 @@ public:
 	virtual void InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers) override;
 	virtual void Close() override;
 
+	virtual bool IsHangTrackingSupported() const override { return true; }
+	virtual FString GetDeviceType() const override;
+
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
 	virtual void ConfigureStackCaptureStrategy(sentry_options_t* Options) override;
 	virtual void ConfigureCrashReporterPath(sentry_options_t* Options) override;
 	virtual void ConfigureScreenshotCapturing(sentry_options_t* Options) override;
-	virtual void ConfigureSessionReplayCapturing(sentry_options_t* Options) override;
 
 	virtual FString GetHandlerExecutableName() const override;
 	virtual FString GetCrashReporterExecutableName() const override { return TEXT("Sentry.CrashReporter.exe"); }
@@ -35,11 +37,10 @@ protected:
 
 	virtual bool IsScreenshotSupported() const override { return true; }
 	virtual bool IsOutOfProcessScreenshotEnabled() const override { return bOutOfProcessScreenshots; }
-	virtual bool IsHangTrackingSupported() const override { return true; }
-
-	virtual FString GetDeviceType() const override;
 
 private:
+	FString GetReplayPath() const;
+
 	/** Wine/Proton detection info */
 	FWineProtonInfo WineProtonInfo;
 
@@ -47,8 +48,6 @@ private:
 	bool bOutOfProcessScreenshots = false;
 
 #if USE_SENTRY_CRASH_VIDEO
-	FString GetReplayPath() const;
-
 	TUniquePtr<FSentryCrashVideoSubsystem> CrashVideo;
 #endif
 };
