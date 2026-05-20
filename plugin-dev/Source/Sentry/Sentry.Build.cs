@@ -50,14 +50,12 @@ public class Sentry : ModuleRules
 		// when the user hasn't explicitly configured them and no entry exists in the .ini file
 		bool bEnableExternalCrashReporter = false;
 		bool bUseNativeBackend = false;
-		bool bEnableCrashVideo = false;
 
 		if (Target.ProjectFile != null)
 		{
 			ConfigHierarchy EngineConfig = ConfigCache.ReadHierarchy(ConfigHierarchyType.Engine, DirectoryReference.FromFile(Target.ProjectFile), Target.Platform);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "UseNativeBackend", out bUseNativeBackend);
-			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableCrashVideo", out bEnableCrashVideo);
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
@@ -183,20 +181,6 @@ public class Sentry : ModuleRules
 			PublicSystemLibraries.Add("winhttp.lib");
 			PublicSystemLibraries.Add("version.lib");
 			PublicSystemLibraries.Add("Synchronization.lib");
-
-			// Crash video feature (Win64 + Crashpad only)
-			bool bCrashVideoEnabled = bEnableCrashVideo && !bUseNativeBackend;
-			if (bCrashVideoEnabled)
-			{
-				PrivateDependencyModuleNames.AddRange(new string[]
-				{
-					"RHI",
-					"RenderCore",
-					"AVCodecsCore",
-					"AVCodecsCoreRHI",
-				});
-			}
-			PublicDefinitions.Add("USE_SENTRY_CRASH_VIDEO=" + (bCrashVideoEnabled ? "1" : "0"));
 		}
 #if UE_5_0_OR_LATER
 		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
@@ -257,6 +241,26 @@ public class Sentry : ModuleRules
 				Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/unreal/game-consoles/");
 			}
 		}
+
+		// Crash video feature — capture backbuffer, encode via AVCodecs (NVENC on
+		// Win/Linux, VideoToolbox on Mac), mux fragmented MP4 and rotate to an
+		// attachment file. Always compiled in on desktop; runtime enable is
+		// the `EnableCrashVideo` setting in SentrySettings. The recorder itself
+		// is backend-agnostic; per-backend glue (registering the attachment
+		// with the live crash handler vs. deferred upload) is the only
+		// platform-specific part.
+		bool bCrashVideoEnabled = Target.Platform.IsInGroup(UnrealPlatformGroup.Desktop);
+		if (bCrashVideoEnabled)
+		{
+			PrivateDependencyModuleNames.AddRange(new string[]
+			{
+				"RHI",
+				"RenderCore",
+				"AVCodecsCore",
+				"AVCodecsCoreRHI",
+			});
+		}
+		PublicDefinitions.Add("USE_SENTRY_CRASH_VIDEO=" + (bCrashVideoEnabled ? "1" : "0"));
 	}
 
 	private void StageCrashReporterResources(ReadOnlyTargetRules Target)
