@@ -92,6 +92,16 @@ private:
 	uint64 LastPacketWallClockUs = 0;
 	double LastForcedKeyframeTime = 0.0;
 
+	// First-frame validation: AVCodecs rejects unsupported source formats
+	// per-frame (e.g. NVENC D3D12 only accepts BGRA8, VTCodecs handles
+	// BGRA+ABGR10). Rather than maintain a per-backend whitelist of our
+	// own, we attempt encoding and disable the pipeline if AVCodecs rejects
+	// the very first frame. Successful encoding of any frame locks in
+	// "validated" so transient mid-session errors don't permanently kill
+	// recording.
+	bool bFirstFrameValidated = false;
+	FThreadSafeBool bEncodingDisabled;
+
 	bool bEncoderOpen = false;
 	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
 

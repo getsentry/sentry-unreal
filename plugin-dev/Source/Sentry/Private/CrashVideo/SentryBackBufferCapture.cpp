@@ -66,17 +66,18 @@ void FSentryBackBufferCapture::Stop()
 	}
 }
 
-FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height)
+FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)
 {
-	if (Width != PoolWidth || Height != PoolHeight)
+	if (Width != PoolWidth || Height != PoolHeight || Format != PoolFormat)
 	{
-		// Resolution changed — drop the existing pool. New textures get created below.
+		// Resolution / format changed — drop the existing pool. New textures get created below.
 		for (int32 i = 0; i < PoolSize; ++i)
 		{
 			Pool[i].SafeRelease();
 		}
 		PoolWidth = Width;
 		PoolHeight = Height;
+		PoolFormat = Format;
 		NextPoolIndex = 0;
 	}
 
@@ -87,7 +88,7 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 	{
 		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentryCrashVideoCapture"))
 											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
-											   .SetFormat(PF_B8G8R8A8)
+											   .SetFormat(Format)
 											   .SetFlags(ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable)
 											   .SetInitialState(ERHIAccess::SRVGraphics);
 		Slot = RHICreateTexture(Desc);
@@ -125,28 +126,13 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		return;
 	}
 
-	// NVENC D3D12 requires DXGI_FORMAT_B8G8R8A8_UNORM. When the project uses
-	// HDR backbuffer formats (r.DefaultBackBufferPixelFormat != 0/1) the
-	// backbuffer is PF_FloatRGBA or PF_A2B10G10R10 and a same-format copy
-	// produces wrong colours. Until we add a proper format-converting copy,
-	// detect the unsupported case and skip.
-	if (SrcFormat != PF_B8G8R8A8)
-	{
-		if (!bUnsupportedFormatLogged)
-		{
-			UE_LOG(LogSentrySdk, Warning,
-				TEXT("Crash video: backbuffer format %d is not BGRA8 (likely r.DefaultBackBufferPixelFormat=2/3/4 selecting HDR). ")
-					TEXT("Capture is disabled — set r.DefaultBackBufferPixelFormat=0 or 1 in DefaultEngine.ini to use crash video. ")
-						TEXT("HDR backbuffer support is a planned improvement."),
-				static_cast<int32>(SrcFormat));
-			bUnsupportedFormatLogged = true;
-		}
-		return;
-	}
-
+	// Pool texture format follows the source so the same-format CopyTexture
+	// below works without conversion. Whether AVCodecs actually accepts this
+	// format is decided downstream by the encoder thread — it disables itself
+	// after a single first-frame rejection (see FSentryVideoEncoder::Run).
 	FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
 
-	FTextureRHIRef DestTexture = AcquirePoolTexture_RenderThread(W, H);
+	FTextureRHIRef DestTexture = AcquirePoolTexture_RenderThread(W, H, SrcFormat);
 	if (!DestTexture.IsValid())
 	{
 		return;

@@ -37,22 +37,23 @@ public:
 private:
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer);
 
-	FTextureRHIRef AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height);
+	FTextureRHIRef AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format);
 
 	FSentryVideoEncoder& Encoder;
 	FDelegateHandle DelegateHandle;
 
-	// Pool of capture-destination textures (cycled round-robin). Always
-	// allocated as PF_B8G8R8A8 because NVENC D3D12 requires that exact format.
-	// The render-graph draw pass below converts whatever the backbuffer is
-	// (PF_FloatRGBA / PF_A2B10G10R10 / PF_B8G8R8A8) into BGRA8 via a pixel
-	// shader, which UE auto-quantizes on render-target write.
+	// Pool of capture-destination textures (cycled round-robin). The format
+	// follows the source backbuffer's format so we can use a same-format
+	// hardware CopyTexture (which doesn't do conversion). Whether the active
+	// AVCodecs backend actually accepts this format is decided downstream by
+	// the encoder thread — see FSentryVideoEncoder::Run's first-frame
+	// validation.
 	static constexpr int32 PoolSize = 3;
 	FTextureRHIRef Pool[PoolSize];
 	int32 NextPoolIndex = 0;
 	uint32 PoolWidth = 0;
 	uint32 PoolHeight = 0;
-	bool bUnsupportedFormatLogged = false;
+	EPixelFormat PoolFormat = PF_Unknown;
 
 	// Frame throttling
 	double NextCaptureTime = 0.0;

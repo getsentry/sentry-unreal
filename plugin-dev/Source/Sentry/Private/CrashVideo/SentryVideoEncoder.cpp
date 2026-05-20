@@ -203,6 +203,17 @@ uint32 FSentryVideoEncoder::Run()
 			Swap(Frames, PendingQueue);
 		}
 
+		if (bEncodingDisabled)
+		{
+			// Encoder previously refused the input; drop any incoming frames
+			// on the floor and idle until shutdown.
+			if (WakeEvent)
+			{
+				WakeEvent->Wait(50);
+			}
+			continue;
+		}
+
 		for (const FPendingFrame& Frame : Frames)
 		{
 			if (!Frame.Texture.IsValid())
@@ -234,7 +245,22 @@ uint32 FSentryVideoEncoder::Run()
 			}
 
 			const FAVResult Result = Encoder->SendFrame(Resource, static_cast<uint32>(Frame.TimestampUs / 1000), bForceKeyframe);
-			if (Result.IsNotSuccess())
+			if (Result.IsSuccess())
+			{
+				bFirstFrameValidated = true;
+			}
+			else if (!bFirstFrameValidated)
+			{
+				// AVCodecs rejected the first frame — likely an unsupported
+				// backbuffer format for the active backend (NVENC D3D12 wants
+				// BGRA8; VTCodecs takes BGRA/ABGR10). Stop trying so we don't
+				// burn cycles on subsequent frames.
+				UE_LOG(LogSentrySdk, Warning,
+					TEXT("Crash video: encoder rejected the first frame (backbuffer format may not be supported by the active AVCodecs backend). Recording disabled for this session."));
+				bEncodingDisabled.AtomicSet(true);
+				break;
+			}
+			else
 			{
 				UE_LOG(LogSentrySdk, Verbose, TEXT("Crash video: SendFrame returned non-success"));
 			}
