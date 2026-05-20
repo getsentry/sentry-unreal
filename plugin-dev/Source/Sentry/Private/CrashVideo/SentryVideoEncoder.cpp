@@ -22,6 +22,10 @@
 #include "Video/VideoEncoder.h"
 #include "Video/VideoPacket.h"
 
+#if PLATFORM_MAC
+#include "Video/Encoders/Configs/VideoEncoderConfigVT.h"
+#endif
+
 FSentryVideoEncoder::FSentryVideoEncoder(
 	FSentryCrashVideoSubsystem& InOwner,
 	uint32 InWidth,
@@ -184,6 +188,22 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		UE_LOG(LogSentrySdk, Warning, TEXT("Crash video: failed to create H.264 encoder (no NVENC/AMF backend available?)"));
 		return false;
 	}
+
+#if PLATFORM_MAC
+	// Workaround for an AVCodecs bug: FVideoEncoderConfigVT::PixelFormat is
+	// declared without a default initializer (VideoEncoderConfigVT.h:29) and
+	// the H264-to-VT TransformConfig (VideoEncoderConfigVT.cpp:63) doesn't
+	// set it. Per-frame ApplyConfig then calls GetCVPixelFormatType() on
+	// uninitialised memory and the `default:` case hits `unimplemented()`.
+	// Reach in via FAVInstance::Edit and set the field explicitly.
+	if (FAVInstance* Instance = Encoder->GetInstance().Get())
+	{
+		if (Instance->Has<FVideoEncoderConfigVT>())
+		{
+			Instance->Edit<FVideoEncoderConfigVT>().PixelFormat = EVideoFormat::BGRA;
+		}
+	}
+#endif
 
 	Width = ResourceWidth;
 	Height = ResourceHeight;

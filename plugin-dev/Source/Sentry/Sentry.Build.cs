@@ -259,6 +259,13 @@ public class Sentry : ModuleRules
 				"AVCodecsCore",
 				"AVCodecsCoreRHI",
 			});
+			if (Target.Platform == UnrealTargetPlatform.Mac)
+			{
+				// We touch FVideoEncoderConfigVT directly to work around an
+				// AVCodecs bug (PixelFormat field is uninitialised and the H264
+				// → VT TransformConfig doesn't set it).
+				PrivateDependencyModuleNames.Add("VTCodecs");
+			}
 		}
 		PublicDefinitions.Add("USE_SENTRY_CRASH_VIDEO=" + (bCrashVideoEnabled ? "1" : "0"));
 	}
