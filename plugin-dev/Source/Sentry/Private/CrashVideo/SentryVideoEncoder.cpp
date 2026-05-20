@@ -195,13 +195,17 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	// the H264-to-VT TransformConfig (VideoEncoderConfigVT.cpp:63) doesn't
 	// set it. Per-frame ApplyConfig then calls GetCVPixelFormatType() on
 	// uninitialised memory and the `default:` case hits `unimplemented()`.
-	// Reach in via FAVInstance::Edit and set the field explicitly.
+	//
+	// FAVInstance::Edit<T>() lazily creates the typed config when it doesn't
+	// exist (AVInstance.h:113-122) — do NOT guard with Has<T>(), because at
+	// this point right after Create the VT config hasn't been added yet
+	// (AVCodecs lazily transforms it during the first SendFrame). Calling
+	// Edit unconditionally seeds the config with PixelFormat = BGRA;
+	// AVCodecs' subsequent TransformConfig<VT, H264> sets the other fields
+	// in-place without touching PixelFormat, so our value persists.
 	if (FAVInstance* Instance = Encoder->GetInstance().Get())
 	{
-		if (Instance->Has<FVideoEncoderConfigVT>())
-		{
-			Instance->Edit<FVideoEncoderConfigVT>().PixelFormat = EVideoFormat::BGRA;
-		}
+		Instance->Edit<FVideoEncoderConfigVT>().PixelFormat = EVideoFormat::BGRA;
 	}
 #endif
 
