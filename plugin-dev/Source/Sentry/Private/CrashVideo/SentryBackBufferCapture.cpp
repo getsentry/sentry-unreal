@@ -86,11 +86,28 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 
 	if (!Slot.IsValid())
 	{
+		// Texture flags follow what AVCodecs expects for its own resources on
+		// each backend (see `Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp`,
+		// the `#if AVCODECS_USE_METAL` branch):
+		//   - D3D / Vulkan (NVENC): Shared (cross-process for NVENC interop)
+		//     + ShaderResource + RenderTargetable
+		//   - Metal (VideoToolbox): CPUReadback — VTCodecs reads via a
+		//     CPU-mapped IOSurface, the Shared flag has different semantics
+		//     on Metal and causes `Unable to transform video resource` errors
+#if PLATFORM_MAC
+		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::CPUReadback;
+		const ERHIAccess InitialAccess = ERHIAccess::CPURead;
+#else
+		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared
+											  | ETextureCreateFlags::ShaderResource
+											  | ETextureCreateFlags::RenderTargetable;
+		const ERHIAccess InitialAccess = ERHIAccess::SRVGraphics;
+#endif
 		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentryCrashVideoCapture"))
 											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
 											   .SetFormat(Format)
-											   .SetFlags(ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable)
-											   .SetInitialState(ERHIAccess::SRVGraphics);
+											   .SetFlags(CreateFlags)
+											   .SetInitialState(InitialAccess);
 		Slot = RHICreateTexture(Desc);
 	}
 	return Slot;
@@ -152,8 +169,15 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
 	RHICmdList.CopyTexture(BackBuffer.GetReference(), DestTexture.GetReference(), CopyInfo);
 
-	FRHITransitionInfo DestToSR(DestTexture.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics);
-	RHICmdList.Transition(DestToSR);
+	// Leave the destination in a state the encoder backend expects:
+	//   - Metal/VTCodecs reads from a CPU-mapped surface, so CPURead.
+	//   - D3D / Vulkan / NVENC read as shader resource.
+#if PLATFORM_MAC
+	FRHITransitionInfo DestPostCopy(DestTexture.GetReference(), ERHIAccess::CopyDest, ERHIAccess::CPURead);
+#else
+	FRHITransitionInfo DestPostCopy(DestTexture.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics);
+#endif
+	RHICmdList.Transition(DestPostCopy);
 
 	Encoder.SubmitFrame(DestTexture);
 }
