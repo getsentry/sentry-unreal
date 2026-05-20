@@ -31,18 +31,12 @@ FSentryCrashVideoSubsystem::~FSentryCrashVideoSubsystem()
 	Shutdown();
 }
 
-bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings)
+bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings, const FString& ReplayPath)
 {
 	check(IsInGameThread());
 
 	if (!Settings || !Settings->EnableCrashVideo)
 	{
-		return false;
-	}
-	if (Settings->UseNativeBackend)
-	{
-		UE_LOG(LogSentrySdk, Warning,
-			TEXT("Crash video requires the Crashpad backend; UseNativeBackend is set, feature disabled."));
 		return false;
 	}
 
@@ -52,18 +46,12 @@ bool FSentryCrashVideoSubsystem::Initialize(const USentrySettings* Settings)
 	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
 	FragmentRing.Empty(FragmentRingCapacity);
 
-	// Build the attachment path. Both .mp4 and .tmp live next to the Sentry database
-	// inside ProjectSavedDir/Sentry/. Crashpad reads the .mp4 path at crash time.
-	const FString SentryDir = FPaths::ConvertRelativePathToFull(
-		FPaths::ProjectSavedDir() / TEXT("Sentry"));
-	IFileManager::Get().MakeDirectory(*SentryDir, /*Tree*/ true);
-	AttachmentPath = SentryDir / TEXT("crash_video.mp4");
-	TempPath = SentryDir / TEXT("crash_video.mp4.tmp");
-
-	// Remove any stale artefacts from previous runs so we never attach a video
-	// older than this session.
-	IFileManager::Get().Delete(*AttachmentPath, /*RequireExists*/ false, /*EvenReadOnly*/ true);
-	IFileManager::Get().Delete(*TempPath, /*RequireExists*/ false, /*EvenReadOnly*/ true);
+	// Use the caller-supplied per-session path (typically
+	// `<.sentry-native>/replays/replay-<guid>.mp4`). The temp file used by
+	// atomic-rename rotation is sibling to the target.
+	AttachmentPath = ReplayPath;
+	TempPath = ReplayPath + TEXT(".tmp");
+	IFileManager::Get().MakeDirectory(*FPaths::GetPath(AttachmentPath), /*Tree*/ true);
 	bSnapshotOnDisk.AtomicSet(false);
 
 	// Capture native backbuffer dimensions. A configurable target resolution

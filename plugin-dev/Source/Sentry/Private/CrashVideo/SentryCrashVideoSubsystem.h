@@ -36,9 +36,13 @@ public:
 	FSentryCrashVideoSubsystem();
 	virtual ~FSentryCrashVideoSubsystem() override;
 
-	// Game thread. Reads config from the settings object, sets up encoder,
-	// capture hook, fragment ring, and rotation thread. No-op if disabled.
-	bool Initialize(const USentrySettings* Settings);
+	// Game thread. Sets up encoder, capture hook, fragment ring, and
+	// rotation thread. The caller provides the full target file path
+	// (e.g. `<.sentry-native>/replays/replay-<guid>.mp4`); the temp file
+	// used for atomic rename is derived from it. The caller is also
+	// responsible for clearing any leftover files from previous sessions
+	// (same pattern as screenshots). No-op if disabled.
+	bool Initialize(const USentrySettings* Settings, const FString& ReplayPath);
 
 	// Game thread. Tears everything down.
 	void Shutdown();

@@ -96,6 +96,7 @@ protected:
 	FString GetHandlerPath() const;
 	FString GetDatabasePath() const;
 	FString GetScreenshotPath() const;
+	FString GetReplayPath() const;
 	FString GetCrashReporterPath() const;
 	FString GetCrashReporterLogoPath() const;
 	virtual FString GetHandlerExecutableName() const { return TEXT("invalid"); }

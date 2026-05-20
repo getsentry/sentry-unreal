@@ -308,11 +308,11 @@ void FSentryVideoEncoder::DrainPackets()
 			DurationUs = NowUs - LastPacketWallClockUs;
 			// Guard against runaway durations if the encoder stalled
 			// (e.g. window minimised). Clamp to <=2s.
-			DurationUs = FMath::Min<uint64>(DurationUs, 2 '000' 000u);
+			DurationUs = FMath::Min<uint64>(DurationUs, 2000000u);
 		}
 		LastPacketWallClockUs = NowUs;
 		const uint32 DurationTicks = static_cast<uint32>(
-			(static_cast<uint64>(FSentryFmp4Writer::TrackTimescale) * DurationUs) / 1 '000' 000u);
+			(static_cast<uint64>(FSentryFmp4Writer::TrackTimescale) * DurationUs) / 1000000u);
 
 		FSentryH264Sample Sample;
 		Sample.AvccBytes = MoveTemp(Avcc);

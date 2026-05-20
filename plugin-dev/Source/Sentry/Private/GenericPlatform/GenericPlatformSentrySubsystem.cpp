@@ -44,6 +44,7 @@
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 
 #include "Dom/JsonObject.h"
+#include "Misc/Guid.h"
 #include "Serialization/JsonSerializer.h"
 
 #include "Engine/Engine.h"
@@ -651,10 +652,13 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
 
 #if USE_SENTRY_CRASH_VIDEO
-	if (isEnabled)
+	if (isEnabled && settings->EnableCrashVideo)
 	{
+		// Clear replay videos captured during previous session if any
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
 		CrashVideo = MakeUnique<FSentryCrashVideoSubsystem>();
-		if (!CrashVideo->Initialize(settings))
+		if (!CrashVideo->Initialize(settings, GetReplayPath()))
 		{
 			CrashVideo.Reset();
 		}
@@ -1349,6 +1353,15 @@ FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 	const FString ScreenshotFullPath = FPaths::ConvertRelativePathToFull(ScreenshotPath);
 
 	return ScreenshotFullPath;
+}
+
+FString FGenericPlatformSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"),
+		FString::Printf(TEXT("replay-%s.mp4"), *FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower)));
+	const FString ReplayFullPath = FPaths::ConvertRelativePathToFull(ReplayPath);
+
+	return ReplayFullPath;
 }
 
 #endif
