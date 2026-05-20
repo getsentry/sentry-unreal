@@ -280,28 +280,23 @@ bool FSentrySessionReplayRecorder::WriteSnapshotAtomically(const TArray<uint8>& 
 		}
 	}
 
-	// 2) Atomic rename. UE has no built-in "replace existing destination
-	//    atomically" primitive (IFileManager::Move deletes the destination
-	//    first; IPlatformFile::MoveFile maps to plain MoveFileW which fails
-	//    if the destination exists), so we go straight to MoveFileExW.
-	if (!::MoveFileExW(*TempPath, *AttachmentPath,
-			MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+	// 2) Replace the previous snapshot. IFileManager::Move with bReplace=true
+	//    deletes the destination then renames — not strictly atomic, but the
+	//    rename itself is atomic on both Windows (MoveFileW) and POSIX
+	//    (rename(2)). The brief window between delete and rename where the
+	//    file is absent is harmless: crashpad logs "attachment couldn't be
+	//    opened, skipping" and uploads the report without the video — the
+	//    same fallback we already rely on for early-session crashes that
+	//    fire before the first snapshot is produced.
+	if (!IFileManager::Get().Move(*AttachmentPath, *TempPath, /*bReplace*/ true, /*EvenIfReadOnly*/ true))
 	{
-		const DWORD Err = ::GetLastError();
 		static bool bLoggedOnce = false;
 		if (!bLoggedOnce)
 		{
-			if (Err == /*ERROR_ACCESS_DENIED*/ 5 || Err == /*ERROR_SHARING_VIOLATION*/ 32)
-			{
-				UE_LOG(LogSentrySdk, Warning,
-					TEXT("Session replay: cannot rotate %s — another process is holding it open (e.g. a video preview window). ")
-						TEXT("Rotation will keep retrying. In a normal crash scenario this never happens because nothing else has the file open."),
-					*AttachmentPath);
-			}
-			else
-			{
-				UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: MoveFileExW failed with error %u"), Err);
-			}
+			UE_LOG(LogSentrySdk, Warning,
+				TEXT("Session replay: failed to replace %s — another process may be holding it open ")
+					TEXT("(e.g. a video preview window). Rotation will keep retrying. In a normal crash scenario this doesn't happen."),
+				*AttachmentPath);
 			bLoggedOnce = true;
 		}
 		return false;
