@@ -293,6 +293,7 @@ Source/ThirdParty/CLI/sentry-cli-Darwin-universal
 Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
 Source/ThirdParty/CLI/sentry-cli-Windows-x86_64.exe
 Source/ThirdParty/IOS/Sentry.embeddedframework.zip
+Source/ThirdParty/IOS/Sentry.xcframework.zip
 Source/ThirdParty/IOS/Sentry.framework/Headers/PrivateSentrySDKOnly.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/PrivatesHeader.h
 Source/ThirdParty/IOS/Sentry.framework/Headers/Sentry-Swift.h
