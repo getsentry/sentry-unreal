@@ -177,6 +177,20 @@ function buildSentryCocoaIos()
 
     # Cleanup
     Remove-Item "$iosOutDir/Sentry.embeddedframework" -Recurse -Force
+
+    # Create xcframework.zip for UE 5.6+
+    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework" -Destination "$iosOutDir/Sentry.xcframework" -Recurse
+    Push-Location $iosOutDir
+    try
+    {
+        zip -r "Sentry.xcframework.zip" "Sentry.xcframework"
+    }
+    finally
+    {
+        Pop-Location
+    }
+    Remove-Item "$iosOutDir/Sentry.xcframework" -Recurse -Force
+
     Remove-Item $tempExtractDir -Recurse -Force
 
     Write-Host "Successfully built Sentry Cocoa for iOS"
