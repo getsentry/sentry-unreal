@@ -1,10 +1,10 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "SentryFmp4Writer.h"
+#include "SentryFMP4Writer.h"
 
 #if USE_SENTRY_SESSION_REPLAY
 
-namespace SentryFmp4Detail
+namespace SentryFMP4Detail
 {
 // Big-endian writers
 static void WriteU8(TArray<uint8>& Out, uint8 V)
@@ -118,7 +118,7 @@ static TArray<uint8> BuildTkhd(uint32 Width, uint32 Height)
 	TArray<uint8> P;
 	WriteU32(P, 0);							 // creation_time
 	WriteU32(P, 0);							 // modification_time
-	WriteU32(P, FSentryFmp4Writer::TrackId); // track_ID
+	WriteU32(P, FSentryFMP4Writer::TrackId); // track_ID
 	WriteU32(P, 0);							 // reserved
 	WriteU32(P, 0);							 // duration
 	WriteZeros(P, 8);						 // reserved (2 * uint32)
@@ -147,7 +147,7 @@ static TArray<uint8> BuildMdhd()
 	TArray<uint8> P;
 	WriteU32(P, 0);									// creation_time
 	WriteU32(P, 0);									// modification_time
-	WriteU32(P, FSentryFmp4Writer::TrackTimescale); // timescale
+	WriteU32(P, FSentryFMP4Writer::TrackTimescale); // timescale
 	WriteU32(P, 0);									// duration
 	WriteU16(P, 0x55C4);							// language ("und")
 	WriteU16(P, 0);									// pre_defined
@@ -312,7 +312,7 @@ static TArray<uint8> BuildTrak(uint32 Width, uint32 Height, const TArray<uint8>&
 static TArray<uint8> BuildTrex()
 {
 	TArray<uint8> P;
-	WriteU32(P, FSentryFmp4Writer::TrackId); // track_ID
+	WriteU32(P, FSentryFMP4Writer::TrackId); // track_ID
 	WriteU32(P, 1);							 // default_sample_description_index
 	WriteU32(P, 0);							 // default_sample_duration
 	WriteU32(P, 0);							 // default_sample_size
@@ -344,7 +344,7 @@ static TArray<uint8> BuildMfhd(uint32 SequenceNumber)
 static TArray<uint8> BuildTfhd()
 {
 	TArray<uint8> P;
-	WriteU32(P, FSentryFmp4Writer::TrackId);
+	WriteU32(P, FSentryFMP4Writer::TrackId);
 	// flags = 0x020000 (default-base-is-moof). Per-sample fields come from trun.
 	return FullBox("tfhd", 0, 0x020000, P);
 }
@@ -363,9 +363,7 @@ static constexpr uint32 NonKeyframeSampleFlags = 0x01010000;
 // is a sync sample.
 static constexpr uint32 KeyframeSampleFlags = 0x02000000;
 
-static TArray<uint8> BuildTrunWithData(
-	int32 DataOffsetFromMoofStart,
-	const TArray<FSentryH264Sample>& Samples)
+static TArray<uint8> BuildTrunWithData(int32 DataOffsetFromMoofStart, const TArray<FSentryH264Sample>& Samples)
 {
 	TArray<uint8> P;
 	// flags:
@@ -385,15 +383,11 @@ static TArray<uint8> BuildTrunWithData(
 	}
 	return FullBox("trun", 0, Flags, P);
 }
-} // namespace SentryFmp4Detail
+} // namespace SentryFMP4Detail
 
-using namespace SentryFmp4Detail;
+using namespace SentryFMP4Detail;
 
-TArray<uint8> FSentryFmp4Writer::BuildInitSegment(
-	uint32 Width,
-	uint32 Height,
-	const TArray<uint8>& Sps,
-	const TArray<uint8>& Pps)
+TArray<uint8> FSentryFMP4Writer::BuildInitSegment(uint32 Width, uint32 Height, const TArray<uint8>& Sps, const TArray<uint8>& Pps)
 {
 	TArray<uint8> Out;
 	Out.Append(BuildFtyp());
@@ -401,10 +395,7 @@ TArray<uint8> FSentryFmp4Writer::BuildInitSegment(
 	return Out;
 }
 
-TArray<uint8> FSentryFmp4Writer::BuildFragment(
-	uint32 SequenceNumber,
-	uint64 BaseMediaDecodeTime,
-	const TArray<FSentryH264Sample>& Samples)
+TArray<uint8> FSentryFMP4Writer::BuildFragment(uint32 SequenceNumber, uint64 BaseMediaDecodeTime, const TArray<FSentryH264Sample>& Samples)
 {
 	// Compute mdat size up front so we know the trun data_offset.
 	int64 MdatBodySize = 0;
@@ -479,7 +470,7 @@ TArray<uint8> FSentryFmp4Writer::BuildFragment(
 	return Out;
 }
 
-TArray<TArray<uint8>> FSentryFmp4Writer::SplitAnnexB(const uint8* Data, int64 Size)
+TArray<TArray<uint8>> FSentryFMP4Writer::SplitAnnexB(const uint8* Data, int64 Size)
 {
 	TArray<TArray<uint8>> Out;
 	if (!Data || Size < 4)
@@ -539,11 +530,7 @@ TArray<TArray<uint8>> FSentryFmp4Writer::SplitAnnexB(const uint8* Data, int64 Si
 	return Out;
 }
 
-TArray<uint8> FSentryFmp4Writer::AnnexBToAvcc(
-	const uint8* Data,
-	int64 Size,
-	TArray<uint8>* OutSps,
-	TArray<uint8>* OutPps)
+TArray<uint8> FSentryFMP4Writer::AnnexBToAvcc(const uint8* Data, int64 Size, TArray<uint8>* OutSps, TArray<uint8>* OutPps)
 {
 	TArray<uint8> Out;
 	const TArray<TArray<uint8>> Nalus = SplitAnnexB(Data, Size);

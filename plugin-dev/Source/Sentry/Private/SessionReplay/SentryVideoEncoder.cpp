@@ -278,7 +278,7 @@ void FSentryVideoEncoder::DrainPackets()
 
 		// Convert Annex-B → AVCC, extracting any SPS/PPS.
 		TArray<uint8> Sps, Pps;
-		TArray<uint8> Avcc = FSentryFmp4Writer::AnnexBToAvcc(
+		TArray<uint8> Avcc = FSentryFMP4Writer::AnnexBToAvcc(
 			Packet.DataPtr.Get(), Packet.DataSize, &Sps, &Pps);
 
 		if (Sps.Num() > 0 && CachedSps.Num() == 0)
@@ -293,7 +293,7 @@ void FSentryVideoEncoder::DrainPackets()
 		// Once we have SPS+PPS, publish the init segment.
 		if (!bInitSegmentPublished && CachedSps.Num() > 0 && CachedPps.Num() > 0)
 		{
-			TArray<uint8> Init = FSentryFmp4Writer::BuildInitSegment(Width, Height, CachedSps, CachedPps);
+			TArray<uint8> Init = FSentryFMP4Writer::BuildInitSegment(Width, Height, CachedSps, CachedPps);
 			Owner.OnInitSegmentReady(MoveTemp(Init));
 			bInitSegmentPublished = true;
 		}
@@ -329,7 +329,7 @@ void FSentryVideoEncoder::DrainPackets()
 		}
 		LastPacketWallClockUs = NowUs;
 		const uint32 DurationTicks = static_cast<uint32>(
-			(static_cast<uint64>(FSentryFmp4Writer::TrackTimescale) * DurationUs) / 1000000u);
+			(static_cast<uint64>(FSentryFMP4Writer::TrackTimescale) * DurationUs) / 1000000u);
 
 		FSentryH264Sample Sample;
 		Sample.AvccBytes = MoveTemp(Avcc);
@@ -351,7 +351,7 @@ void FSentryVideoEncoder::FinalizeFragment()
 		return;
 	}
 
-	TArray<uint8> Frag = FSentryFmp4Writer::BuildFragment(
+	TArray<uint8> Frag = FSentryFMP4Writer::BuildFragment(
 		NextFragmentSequence++,
 		CurrentFragmentDecodeTime,
 		CurrentSamples);

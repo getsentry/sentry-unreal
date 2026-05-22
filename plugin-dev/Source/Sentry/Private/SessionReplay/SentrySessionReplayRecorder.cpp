@@ -6,7 +6,6 @@
 
 #include "SentryBackBufferCapture.h"
 #include "SentryDefines.h"
-#include "SentryFmp4Writer.h"
 #include "SentrySettings.h"
 #include "SentryVideoEncoder.h"
 

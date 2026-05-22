@@ -31,7 +31,7 @@ struct FSentryH264Sample
 	bool bIsKeyframe;
 };
 
-class FSentryFmp4Writer
+class FSentryFMP4Writer
 {
 public:
 	// Track timescale (ticks per second). 90000 is the canonical H.264 choice.
@@ -45,11 +45,7 @@ public:
 	 * size. The SPS and PPS bytes must NOT include Annex-B start codes — raw NALU
 	 * payload only (i.e. starting with the H.264 NAL header byte).
 	 */
-	static TArray<uint8> BuildInitSegment(
-		uint32 Width,
-		uint32 Height,
-		const TArray<uint8>& Sps,
-		const TArray<uint8>& Pps);
+	static TArray<uint8> BuildInitSegment(uint32 Width, uint32 Height, const TArray<uint8>& Sps, const TArray<uint8>& Pps);
 
 	/**
 	 * Build a single fragment (moof + mdat) carrying the supplied samples.
@@ -57,10 +53,7 @@ public:
 	 * SequenceNumber: 1-based, monotonically increasing across fragments.
 	 * BaseMediaDecodeTime: decode time of the first sample, in TrackTimescale ticks.
 	 */
-	static TArray<uint8> BuildFragment(
-		uint32 SequenceNumber,
-		uint64 BaseMediaDecodeTime,
-		const TArray<FSentryH264Sample>& Samples);
+	static TArray<uint8> BuildFragment(uint32 SequenceNumber, uint64 BaseMediaDecodeTime, const TArray<FSentryH264Sample>& Samples);
 
 	/**
 	 * Split an Annex-B byte stream into NALU payloads (start codes stripped).
@@ -73,11 +66,7 @@ public:
 	 * appended to OutSps/OutPps instead, since they belong in the init
 	 * segment's avcC box rather than inside mdat.
 	 */
-	static TArray<uint8> AnnexBToAvcc(
-		const uint8* Data,
-		int64 Size,
-		TArray<uint8>* OutSps,
-		TArray<uint8>* OutPps);
+	static TArray<uint8> AnnexBToAvcc(const uint8* Data, int64 Size, TArray<uint8>* OutSps, TArray<uint8>* OutPps);
 };
 
 #endif // USE_SENTRY_SESSION_REPLAY

@@ -12,7 +12,7 @@
 #include "RHIFwd.h"
 #include "Templates/SharedPointer.h"
 
-#include "SentryFmp4Writer.h"
+#include "SentryFMP4Writer.h"
 
 #include "Video/VideoEncoder.h"
 
