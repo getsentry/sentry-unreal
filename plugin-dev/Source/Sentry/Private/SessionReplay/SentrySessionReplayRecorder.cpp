@@ -189,33 +189,12 @@ void FSentrySessionReplayRecorder::Exit()
 
 void FSentrySessionReplayRecorder::DoRotation()
 {
-	// Read the tfdt's base_media_decode_time from a serialised fragment. The
-	// field lives at a fixed offset inside our fragment layout:
-	//   moof box header (8) + mfhd (16) + traf box header (8)
-	//   + tfhd (16) + tfdt size+type+ver+flags (12) = 60.
-	// And it's a big-endian 64-bit value (we always emit tfdt v1).
+	// The tfdt's base_media_decode_time lives at a fixed byte offset inside
+	// each serialised fragment, given the layout produced by FSentryFMP4Writer:
+	//   moof header (8) + mfhd (16) + traf header (8) + tfhd (16)
+	//   + tfdt size/type/ver/flags (12) = 60
+	// followed by an 8-byte big-endian uint64 value (tfdt v1).
 	constexpr int32 TfdtFieldOffset = 60;
-	auto ReadTfdt = [&](const TArray<uint8>& Bytes) -> uint64
-	{
-		if (Bytes.Num() < TfdtFieldOffset + 8)
-			return 0;
-		uint64 V = 0;
-		for (int32 b = 0; b < 8; ++b)
-		{
-			V = (V << 8) | static_cast<uint64>(Bytes[TfdtFieldOffset + b]);
-		}
-		return V;
-	};
-	auto WriteTfdtAt = [&](TArray<uint8>& Bytes, int32 Offset, uint64 V)
-	{
-		if (Bytes.Num() < Offset + 8)
-			return;
-		for (int32 b = 0; b < 8; ++b)
-		{
-			Bytes[Offset + (7 - b)] = static_cast<uint8>(V & 0xFF);
-			V >>= 8;
-		}
-	};
 
 	TArray<uint8> Snapshot;
 	{
@@ -225,7 +204,6 @@ void FSentrySessionReplayRecorder::DoRotation()
 			return; // no encoded data yet
 		}
 
-		// Reserve roughly:
 		int64 Reserve = InitSegment.Num();
 		for (int32 i = 0; i < FragmentRing.Num(); ++i)
 		{
@@ -238,15 +216,15 @@ void FSentrySessionReplayRecorder::DoRotation()
 		// Without this, evicted fragments leave the kept ones with absolute
 		// session-clock tfdt values, and players that compute duration from
 		// "last sample end time" overstate the clip length.
-		const uint64 FirstTfdt = ReadTfdt(FragmentRing[0]);
+		const uint64 FirstTfdt = FSentryFMP4Writer::ReadU64BE(FragmentRing[0], TfdtFieldOffset);
 		for (int32 i = 0; i < FragmentRing.Num(); ++i)
 		{
 			const int32 FragStartInSnapshot = Snapshot.Num();
 			Snapshot.Append(FragmentRing[i]);
 
-			const uint64 OrigTfdt = ReadTfdt(FragmentRing[i]);
+			const uint64 OrigTfdt = FSentryFMP4Writer::ReadU64BE(FragmentRing[i], TfdtFieldOffset);
 			const uint64 NewTfdt = (OrigTfdt >= FirstTfdt) ? (OrigTfdt - FirstTfdt) : 0;
-			WriteTfdtAt(Snapshot, FragStartInSnapshot + TfdtFieldOffset, NewTfdt);
+			FSentryFMP4Writer::PatchU64(Snapshot, FragStartInSnapshot + TfdtFieldOffset, NewTfdt);
 		}
 	}
 

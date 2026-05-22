@@ -67,6 +67,12 @@ public:
 	 * segment's avcC box rather than inside mdat.
 	 */
 	static TArray<uint8> AnnexBToAvcc(const uint8* Data, int64 Size, TArray<uint8>* OutSps, TArray<uint8>* OutPps);
+
+	// In-place big-endian byte poking helpers, exposed so the rotation
+	// thread can patch tfdt offsets when rebasing serialized fragments.
+	static void PatchU32(TArray<uint8>& Out, int32 Offset, uint32 V);
+	static void PatchU64(TArray<uint8>& Out, int32 Offset, uint64 V);
+	static uint64 ReadU64BE(const TArray<uint8>& Bytes, int32 Offset);
 };
 
 #endif // USE_SENTRY_SESSION_REPLAY

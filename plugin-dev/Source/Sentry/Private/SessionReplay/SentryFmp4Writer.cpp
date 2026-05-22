@@ -6,7 +6,11 @@
 
 namespace SentryFMP4Detail
 {
-// Big-endian writers
+// ---------------------------------------------------------------------------
+// Low-level byte writers and ISO/IEC 14496-12 box framing primitives.
+// All multi-byte integers are big-endian.
+// ---------------------------------------------------------------------------
+
 static void WriteU8(TArray<uint8>& Out, uint8 V)
 {
 	Out.Add(V);
@@ -45,12 +49,14 @@ static void WriteBytes(TArray<uint8>& Out, const uint8* Data, int32 Size)
 {
 	Out.Append(Data, Size);
 }
-static void WriteZeros(TArray<uint8>& Out, int32 Count)
+
+// ISO 14496-12 transformation matrix, identity (no scale/rotate/translate).
+// Stored as 3x3 of 16.16 / 2.30 fixed-point: { 1, 0, 0,  0, 1, 0,  0, 0, 1 }.
+static void WriteUnityMatrix(TArray<uint8>& Out)
 {
-	for (int32 i = 0; i < Count; ++i)
-	{
-		Out.Add(0);
-	}
+	WriteU32(Out, 0x00010000); WriteU32(Out, 0);          WriteU32(Out, 0);
+	WriteU32(Out, 0);          WriteU32(Out, 0x00010000); WriteU32(Out, 0);
+	WriteU32(Out, 0);          WriteU32(Out, 0);          WriteU32(Out, 0x40000000);
 }
 
 // Wrap a payload as `[size:u32][type:fourcc][payload...]`.
@@ -75,6 +81,12 @@ static TArray<uint8> FullBox(const char* Type, uint8 Version, uint32 Flags, cons
 	return Box(Type, Inner);
 }
 
+// ---------------------------------------------------------------------------
+// Init segment: ftyp + moov subtree.
+// Sample tables (stbl children) are intentionally empty — per-sample metadata
+// lives in each fragment's trun, not the init segment.
+// ---------------------------------------------------------------------------
+
 static TArray<uint8> BuildFtyp()
 {
 	TArray<uint8> P;
@@ -97,19 +109,10 @@ static TArray<uint8> BuildMvhd()
 	WriteU32(P, 0);			 // duration (unknown in fMP4)
 	WriteU32(P, 0x00010000); // rate 1.0
 	WriteU16(P, 0x0100);	 // volume 1.0
-	WriteZeros(P, 10);		 // reserved
-	// Identity matrix
-	WriteU32(P, 0x00010000);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0x00010000);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0x40000000);
-	WriteZeros(P, 24); // pre_defined
-	WriteU32(P, 2);	   // next_track_ID
+	P.AddZeroed(10);		 // reserved
+	WriteUnityMatrix(P);
+	P.AddZeroed(24);		 // pre_defined
+	WriteU32(P, 2);			 // next_track_ID
 	return FullBox("mvhd", 0, 0, P);
 }
 
@@ -121,21 +124,12 @@ static TArray<uint8> BuildTkhd(uint32 Width, uint32 Height)
 	WriteU32(P, FSentryFMP4Writer::TrackId); // track_ID
 	WriteU32(P, 0);							 // reserved
 	WriteU32(P, 0);							 // duration
-	WriteZeros(P, 8);						 // reserved (2 * uint32)
+	P.AddZeroed(8);							 // reserved (2 * uint32)
 	WriteU16(P, 0);							 // layer
 	WriteU16(P, 0);							 // alternate_group
 	WriteU16(P, 0);							 // volume
 	WriteU16(P, 0);							 // reserved
-	// Identity matrix
-	WriteU32(P, 0x00010000);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0x00010000);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0);
-	WriteU32(P, 0x40000000);
+	WriteUnityMatrix(P);
 	WriteU32(P, Width << 16);  // width fixed-point 16.16
 	WriteU32(P, Height << 16); // height fixed-point 16.16
 	// flags 0x07 = track_enabled | in_movie | in_preview
@@ -159,7 +153,7 @@ static TArray<uint8> BuildHdlr()
 	TArray<uint8> P;
 	WriteU32(P, 0);			// pre_defined
 	WriteFourCC(P, "vide"); // handler_type
-	WriteZeros(P, 12);		// reserved
+	P.AddZeroed(12);		// reserved
 	// name string, null-terminated
 	const char* Name = "VideoHandler";
 	WriteBytes(P, reinterpret_cast<const uint8*>(Name), 12);
@@ -197,17 +191,25 @@ static TArray<uint8> BuildDinf()
 
 static TArray<uint8> BuildAvcC(const TArray<uint8>& Sps, const TArray<uint8>& Pps)
 {
+	// Fallback defaults if the SPS NALU is malformed/short: Baseline profile,
+	// no constraint flags, level 3.1. The three bytes after the SPS NAL
+	// header carry profile_idc / profile_compatibility / level_idc per
+	// ISO/IEC 14496-15 §5.3.3.1.2.
+	constexpr uint8 DefaultProfileIdc       = 0x42; // Baseline
+	constexpr uint8 DefaultProfileCompat    = 0x00;
+	constexpr uint8 DefaultLevelIdc         = 0x1F; // 3.1
+
 	TArray<uint8> P;
-	WriteU8(P, 1);								 // configurationVersion
-	WriteU8(P, Sps.Num() >= 4 ? Sps[1] : 0x42);	 // AVCProfileIndication (from SPS)
-	WriteU8(P, Sps.Num() >= 4 ? Sps[2] : 0x00);	 // profile_compatibility
-	WriteU8(P, Sps.Num() >= 4 ? Sps[3] : 0x1F);	 // AVCLevelIndication
-	WriteU8(P, 0xFF);							 // 6 bits reserved + lengthSizeMinusOne (3 = 4 bytes)
-	WriteU8(P, 0xE1);							 // 3 bits reserved + numOfSPS (1)
-	WriteU16(P, static_cast<uint16>(Sps.Num())); // SPS length
+	WriteU8(P, 1);                                                      // configurationVersion
+	WriteU8(P, Sps.Num() >= 4 ? Sps[1] : DefaultProfileIdc);            // AVCProfileIndication
+	WriteU8(P, Sps.Num() >= 4 ? Sps[2] : DefaultProfileCompat);         // profile_compatibility
+	WriteU8(P, Sps.Num() >= 4 ? Sps[3] : DefaultLevelIdc);              // AVCLevelIndication
+	WriteU8(P, 0xFF);                                                   // 6 bits reserved + lengthSizeMinusOne (3 = 4 bytes)
+	WriteU8(P, 0xE1);                                                   // 3 bits reserved + numOfSPS (1)
+	WriteU16(P, static_cast<uint16>(Sps.Num()));                        // SPS length
 	WriteBytes(P, Sps.GetData(), Sps.Num());
-	WriteU8(P, 1);								 // numOfPPS
-	WriteU16(P, static_cast<uint16>(Pps.Num())); // PPS length
+	WriteU8(P, 1);                                                      // numOfPPS
+	WriteU16(P, static_cast<uint16>(Pps.Num()));                        // PPS length
 	WriteBytes(P, Pps.GetData(), Pps.Num());
 	return Box("avcC", P);
 }
@@ -215,12 +217,12 @@ static TArray<uint8> BuildAvcC(const TArray<uint8>& Sps, const TArray<uint8>& Pp
 static TArray<uint8> BuildAvc1(uint32 Width, uint32 Height, const TArray<uint8>& Sps, const TArray<uint8>& Pps)
 {
 	TArray<uint8> P;
-	WriteZeros(P, 6); // reserved
-	WriteU16(P, 1);	  // data_reference_index
+	P.AddZeroed(6);	// reserved
+	WriteU16(P, 1); // data_reference_index
 	// VisualSampleEntry
-	WriteU16(P, 0);	   // pre_defined
-	WriteU16(P, 0);	   // reserved
-	WriteZeros(P, 12); // pre_defined (3 * uint32)
+	WriteU16(P, 0);	 // pre_defined
+	WriteU16(P, 0);	 // reserved
+	P.AddZeroed(12); // pre_defined (3 * uint32)
 	WriteU16(P, static_cast<uint16>(Width));
 	WriteU16(P, static_cast<uint16>(Height));
 	WriteU32(P, 0x00480000); // horizresolution 72 dpi
@@ -229,7 +231,7 @@ static TArray<uint8> BuildAvc1(uint32 Width, uint32 Height, const TArray<uint8>&
 	WriteU16(P, 1);			 // frame_count
 	// compressorname: 32-byte pascal-style string (1 length byte + 31 chars)
 	WriteU8(P, 0);
-	WriteZeros(P, 31);
+	P.AddZeroed(31);
 	WriteU16(P, 0x0018); // depth (24 bits)
 	WriteU16(P, 0xFFFF); // pre_defined (-1)
 	// avcC child box
@@ -334,6 +336,13 @@ static TArray<uint8> BuildMoov(uint32 Width, uint32 Height, const TArray<uint8>&
 	return Box("moov", P);
 }
 
+// ---------------------------------------------------------------------------
+// Fragment: moof + mdat subtree.
+// Each fragment is self-describing — it carries its own mini sample table
+// (trun) with sizes/durations/keyframe flags. Players can stop at any
+// fragment boundary and the file remains valid.
+// ---------------------------------------------------------------------------
+
 static TArray<uint8> BuildMfhd(uint32 SequenceNumber)
 {
 	TArray<uint8> P;
@@ -365,19 +374,18 @@ static constexpr uint32 KeyframeSampleFlags = 0x02000000;
 
 static TArray<uint8> BuildTrunWithData(int32 DataOffsetFromMoofStart, const TArray<FSentryH264Sample>& Samples)
 {
+	const uint32 Flags =
+		0x000001 |  // data-offset-present
+		0x000004 |  // first-sample-flags-present
+		0x000100 |  // sample-duration-present
+		0x000200;   // sample-size-present
+
 	TArray<uint8> P;
-	// flags:
-	//   0x000001  data-offset-present
-	//   0x000004  first-sample-flags-present
-	//   0x000100  sample-duration-present
-	//   0x000200  sample-size-present
-	const uint32 Flags = 0x000305;
-	WriteU32(P, static_cast<uint32>(Samples.Num())); // sample_count
-	WriteU32(P, static_cast<uint32>(DataOffsetFromMoofStart));
-	WriteU32(P, KeyframeSampleFlags); // first_sample_flags
-	for (int32 i = 0; i < Samples.Num(); ++i)
+	WriteU32(P, static_cast<uint32>(Samples.Num()));            // sample_count
+	WriteU32(P, static_cast<uint32>(DataOffsetFromMoofStart));  // data_offset (patched by caller)
+	WriteU32(P, KeyframeSampleFlags);                            // first_sample_flags
+	for (const FSentryH264Sample& S : Samples)
 	{
-		const FSentryH264Sample& S = Samples[i];
 		WriteU32(P, S.Duration);
 		WriteU32(P, static_cast<uint32>(S.AvccBytes.Num()));
 	}
@@ -405,64 +413,50 @@ TArray<uint8> FSentryFMP4Writer::BuildFragment(uint32 SequenceNumber, uint64 Bas
 	}
 	const int64 MdatBoxSize = 8 + MdatBodySize;
 
-	// Build traf with a placeholder trun, then patch the data offset.
-	// First, build the children whose sizes are independent of the trun.
+	// Build moof children. Trun uses a placeholder data_offset that's
+	// patched once we know the final size of moof (data_offset is relative
+	// to the moof start and points to the first sample byte in mdat).
+	TArray<uint8> Mfhd = BuildMfhd(SequenceNumber);
 	TArray<uint8> Tfhd = BuildTfhd();
 	TArray<uint8> Tfdt = BuildTfdt(BaseMediaDecodeTime);
+	TArray<uint8> Trun = BuildTrunWithData(/*placeholder*/ 0, Samples);
 
-	// Build trun with a placeholder data_offset = 0; we'll fix it after framing.
-	TArray<uint8> TrunPlaceholder = BuildTrunWithData(0, Samples);
+	// trun box layout (offsets relative to the box's own start, i.e. the size field):
+	//   0..3   size
+	//   4..7   'trun'
+	//   8      version
+	//   9..11  flags
+	//   12..15 sample_count
+	//   16..19 data_offset      <-- the field we patch
+	//   20..23 first_sample_flags
+	//   ...per-sample entries
+	// We can compute its byte offset inside Moof directly from the sizes of
+	// the boxes that precede it, no need to scan for the 'trun' tag.
+	const int32 TrunStartInMoof = 8 /*moof hdr*/ + Mfhd.Num() + 8 /*traf hdr*/ + Tfhd.Num() + Tfdt.Num();
+	const int32 DataOffsetFieldIndex = TrunStartInMoof + 16;
 
-	// Compose traf body
+	// Compose traf body + moof body.
 	TArray<uint8> TrafBody;
 	TrafBody.Append(Tfhd);
 	TrafBody.Append(Tfdt);
-	TrafBody.Append(TrunPlaceholder);
-	TArray<uint8> Traf = Box("traf", TrafBody);
+	TrafBody.Append(Trun);
 
-	// Compose moof body
 	TArray<uint8> MoofBody;
-	MoofBody.Append(BuildMfhd(SequenceNumber));
-	MoofBody.Append(Traf);
+	MoofBody.Append(Mfhd);
+	MoofBody.Append(Box("traf", TrafBody));
 	TArray<uint8> Moof = Box("moof", MoofBody);
 
-	// trun's data_offset = moof box size + 8 (mdat header) — bytes from moof start to first sample byte.
-	const int32 DataOffset = static_cast<int32>(Moof.Num() + 8);
-
-	// Locate the trun data_offset field within Moof and overwrite.
-	// trun full-box layout inside the trun box body:
-	//   [size:u32]  [type 'trun':u32]  [version:u8]  [flags:u24]
-	//   [sample_count:u32]
-	//   [data_offset:u32]              <-- we patch this
-	//   [first_sample_flags:u32]
-	//   ... per-sample entries
-	//
-	// We find the trun box by scanning Moof for the 'trun' tag.
-	int32 TrunTagIndex = INDEX_NONE;
-	for (int32 i = 0; i + 8 <= Moof.Num(); ++i)
-	{
-		if (Moof[i + 4] == 't' && Moof[i + 5] == 'r' && Moof[i + 6] == 'u' && Moof[i + 7] == 'n')
-		{
-			TrunTagIndex = i + 4;
-			break;
-		}
-	}
-	check(TrunTagIndex != INDEX_NONE);
-	// data_offset field starts at: trun_tag + 4 (type) + 1 (version) + 3 (flags) + 4 (sample_count) = trun_tag + 12
-	const int32 DataOffsetFieldIndex = TrunTagIndex + 12;
-	Moof[DataOffsetFieldIndex + 0] = static_cast<uint8>((DataOffset >> 24) & 0xFF);
-	Moof[DataOffsetFieldIndex + 1] = static_cast<uint8>((DataOffset >> 16) & 0xFF);
-	Moof[DataOffsetFieldIndex + 2] = static_cast<uint8>((DataOffset >> 8) & 0xFF);
-	Moof[DataOffsetFieldIndex + 3] = static_cast<uint8>(DataOffset & 0xFF);
+	// Now that the moof's final size is known, patch trun.data_offset =
+	// moof box size + 8 (mdat header).
+	const uint32 DataOffset = static_cast<uint32>(Moof.Num() + 8);
+	FSentryFMP4Writer::PatchU32(Moof, DataOffsetFieldIndex, DataOffset);
 
 	// Build mdat header + body
 	TArray<uint8> Out;
 	Out.Reserve(Moof.Num() + MdatBoxSize);
 	Out.Append(Moof);
-	// mdat box header
 	WriteU32(Out, static_cast<uint32>(MdatBoxSize));
 	WriteFourCC(Out, "mdat");
-	// mdat body
 	for (const FSentryH264Sample& S : Samples)
 	{
 		Out.Append(S.AvccBytes);
@@ -571,6 +565,39 @@ TArray<uint8> FSentryFMP4Writer::AnnexBToAvcc(const uint8* Data, int64 Size, TAr
 		Out.Append(Nalu);
 	}
 	return Out;
+}
+
+void FSentryFMP4Writer::PatchU32(TArray<uint8>& Out, int32 Offset, uint32 V)
+{
+	check(Offset + 4 <= Out.Num());
+	Out[Offset + 0] = static_cast<uint8>((V >> 24) & 0xFF);
+	Out[Offset + 1] = static_cast<uint8>((V >> 16) & 0xFF);
+	Out[Offset + 2] = static_cast<uint8>((V >> 8)  & 0xFF);
+	Out[Offset + 3] = static_cast<uint8>( V        & 0xFF);
+}
+
+void FSentryFMP4Writer::PatchU64(TArray<uint8>& Out, int32 Offset, uint64 V)
+{
+	check(Offset + 8 <= Out.Num());
+	for (int32 b = 0; b < 8; ++b)
+	{
+		Out[Offset + (7 - b)] = static_cast<uint8>(V & 0xFF);
+		V >>= 8;
+	}
+}
+
+uint64 FSentryFMP4Writer::ReadU64BE(const TArray<uint8>& Bytes, int32 Offset)
+{
+	if (Bytes.Num() < Offset + 8)
+	{
+		return 0;
+	}
+	uint64 V = 0;
+	for (int32 b = 0; b < 8; ++b)
+	{
+		V = (V << 8) | static_cast<uint64>(Bytes[Offset + b]);
+	}
+	return V;
 }
 
 #endif // USE_SENTRY_SESSION_REPLAY
