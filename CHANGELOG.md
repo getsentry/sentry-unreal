@@ -11,12 +11,15 @@
 - Bump Native SDK from v0.14.1 to v0.14.2 ([#1387](https://github.com/getsentry/sentry-unreal/pull/1387))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0142)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.14.1...0.14.2)
-- Bump Android Gradle Plugin from v6.6.0 to v6.7.0 ([#1388](https://github.com/getsentry/sentry-unreal/pull/1388))
-  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#670)
-  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.6.0...6.7.0)
+- Bump Android Gradle Plugin from v6.6.0 to v6.7.1 ([#1388](https://github.com/getsentry/sentry-unreal/pull/1388), [#1392](https://github.com/getsentry/sentry-unreal/pull/1392))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#671)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.6.0...6.7.1)
 - Bump Crash Reporter from v0.2.0 to v0.3.0 ([#1391](https://github.com/getsentry/sentry-unreal/pull/1391))
   - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#030)
   - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.2.0...0.3.0)
+- Bump Java SDK from v8.41.0 to v8.42.0 ([#1394](https://github.com/getsentry/sentry-unreal/pull/1394))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8420)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.41.0...8.42.0)
 
 ## 1.12.0
 
