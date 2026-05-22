@@ -99,7 +99,7 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 
 void FSentrySessionReplayRecorder::Shutdown()
 {
-	check(IsInGameThread()); 
+	check(IsInGameThread());
 
 	if (!bEnabled)
 	{
