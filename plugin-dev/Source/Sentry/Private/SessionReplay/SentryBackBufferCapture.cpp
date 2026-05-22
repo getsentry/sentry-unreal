@@ -70,68 +70,6 @@ void FSentryBackBufferCapture::Stop()
 	ScratchTexture.SafeRelease();
 }
 
-FTextureRHIRef FSentryBackBufferCapture::AcquireScratchTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)
-{
-	if (Width != ScratchWidth || Height != ScratchHeight || Format != ScratchFormat)
-	{
-		ScratchTexture.SafeRelease();
-		ScratchWidth = Width;
-		ScratchHeight = Height;
-		ScratchFormat = Format;
-	}
-
-	if (!ScratchTexture.IsValid())
-	{
-		// Mirror the backbuffer's format, but add ShaderResource so
-		// AddDrawTexturePass can sample it. RenderTargetable lets the same
-		// scratch double as a draw target in the same-format fast path
-		// inside AddDrawTexturePass (it still ends up as a HW copy).
-		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
-		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayScratch"))
-											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
-											   .SetFormat(Format)
-											   .SetFlags(CreateFlags)
-											   .SetInitialState(ERHIAccess::SRVGraphics);
-		ScratchTexture = RHICreateTexture(Desc);
-	}
-	return ScratchTexture;
-}
-
-FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height)
-{
-	if (Width != PoolWidth || Height != PoolHeight)
-	{
-		// Resolution changed — drop the existing pool. New textures get created below.
-		for (int32 i = 0; i < PoolSize; ++i)
-		{
-			Pool[i].SafeRelease();
-		}
-		PoolWidth = Width;
-		PoolHeight = Height;
-		NextPoolIndex = 0;
-	}
-
-	FTextureRHIRef& Slot = Pool[NextPoolIndex];
-	NextPoolIndex = (NextPoolIndex + 1) % PoolSize;
-
-	if (!Slot.IsValid())
-	{
-		// Texture flags follow what AVCodecs expects for its NVENC resources
-		// on D3D (see Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp):
-		// Shared (cross-process for NVENC interop) + ShaderResource +
-		// RenderTargetable. Format is always PF_B8G8R8A8 because that's what
-		// NVENC D3D12 requires; source-format conversion happens at draw time.
-		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
-		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayCapture"))
-											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
-											   .SetFormat(PF_B8G8R8A8)
-											   .SetFlags(CreateFlags)
-											   .SetInitialState(ERHIAccess::SRVGraphics);
-		Slot = RHICreateTexture(Desc);
-	}
-	return Slot;
-}
-
 void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer)
 {
 	check(IsInRenderingThread());
@@ -210,6 +148,68 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	RHICmdList.Transition(FRHITransitionInfo(DestTexture.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
 
 	Encoder.SubmitFrame(DestTexture);
+}
+
+FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height)
+{
+	if (Width != PoolWidth || Height != PoolHeight)
+	{
+		// Resolution changed — drop the existing pool. New textures get created below.
+		for (int32 i = 0; i < PoolSize; ++i)
+		{
+			Pool[i].SafeRelease();
+		}
+		PoolWidth = Width;
+		PoolHeight = Height;
+		NextPoolIndex = 0;
+	}
+
+	FTextureRHIRef& Slot = Pool[NextPoolIndex];
+	NextPoolIndex = (NextPoolIndex + 1) % PoolSize;
+
+	if (!Slot.IsValid())
+	{
+		// Texture flags follow what AVCodecs expects for its NVENC resources
+		// on D3D (see Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp):
+		// Shared (cross-process for NVENC interop) + ShaderResource +
+		// RenderTargetable. Format is always PF_B8G8R8A8 because that's what
+		// NVENC D3D12 requires; source-format conversion happens at draw time.
+		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
+		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayCapture"))
+											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
+											   .SetFormat(PF_B8G8R8A8)
+											   .SetFlags(CreateFlags)
+											   .SetInitialState(ERHIAccess::SRVGraphics);
+		Slot = RHICreateTexture(Desc);
+	}
+	return Slot;
+}
+
+FTextureRHIRef FSentryBackBufferCapture::AcquireScratchTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)
+{
+	if (Width != ScratchWidth || Height != ScratchHeight || Format != ScratchFormat)
+	{
+		ScratchTexture.SafeRelease();
+		ScratchWidth = Width;
+		ScratchHeight = Height;
+		ScratchFormat = Format;
+	}
+
+	if (!ScratchTexture.IsValid())
+	{
+		// Mirror the backbuffer's format, but add ShaderResource so
+		// AddDrawTexturePass can sample it. RenderTargetable lets the same
+		// scratch double as a draw target in the same-format fast path
+		// inside AddDrawTexturePass (it still ends up as a HW copy).
+		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
+		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayScratch"))
+											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
+											   .SetFormat(Format)
+											   .SetFlags(CreateFlags)
+											   .SetInitialState(ERHIAccess::SRVGraphics);
+		ScratchTexture = RHICreateTexture(Desc);
+	}
+	return ScratchTexture;
 }
 
 #endif // USE_SENTRY_SESSION_REPLAY
