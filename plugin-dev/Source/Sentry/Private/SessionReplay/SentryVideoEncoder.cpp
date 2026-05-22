@@ -4,8 +4,8 @@
 
 #if USE_SENTRY_SESSION_REPLAY
 
-#include "SentryDefines.h"
 #include "SentrySessionReplayRecorder.h"
+#include "SentryDefines.h"
 
 #include "HAL/Event.h"
 #include "HAL/PlatformTime.h"

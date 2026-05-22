@@ -17,10 +17,6 @@
 #include "Misc/Paths.h"
 #include "Misc/ScopeLock.h"
 
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
-#include "Windows/WindowsHWrapper.h"
-
 FSentrySessionReplayRecorder::FSentrySessionReplayRecorder() = default;
 
 FSentrySessionReplayRecorder::~FSentrySessionReplayRecorder()
