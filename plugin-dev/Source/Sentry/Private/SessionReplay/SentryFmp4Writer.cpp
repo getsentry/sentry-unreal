@@ -570,8 +570,8 @@ void FSentryFMP4Writer::PatchU32(TArray<uint8>& Out, int32 Offset, uint32 V)
 	check(Offset + 4 <= Out.Num());
 	Out[Offset + 0] = static_cast<uint8>((V >> 24) & 0xFF);
 	Out[Offset + 1] = static_cast<uint8>((V >> 16) & 0xFF);
-	Out[Offset + 2] = static_cast<uint8>((V >> 8)  & 0xFF);
-	Out[Offset + 3] = static_cast<uint8>( V        & 0xFF);
+	Out[Offset + 2] = static_cast<uint8>((V >> 8) & 0xFF);
+	Out[Offset + 3] = static_cast<uint8>(V & 0xFF);
 }
 
 void FSentryFMP4Writer::PatchU64(TArray<uint8>& Out, int32 Offset, uint64 V)
