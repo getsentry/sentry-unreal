@@ -40,24 +40,21 @@ public:
 private:
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer);
 
-	FTextureRHIRef AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height);
+	FTextureRHIRef AcquireTexturePoolSlot_RenderThread(uint32 Width, uint32 Height);
 	FTextureRHIRef AcquireScratchTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format);
 
 	FSentryVideoEncoder& Encoder;
-	FDelegateHandle DelegateHandle;
 
-	// Pool of capture-destination textures (cycled round-robin). Always
-	// PF_B8G8R8A8 because that's what NVENC D3D12 requires; source-format
-	// conversion happens inside AddDrawTexturePass.
-	static constexpr int32 PoolSize = 3;
-	FTextureRHIRef Pool[PoolSize];
-	int32 NextPoolIndex = 0;
-	uint32 PoolWidth = 0;
-	uint32 PoolHeight = 0;
+	FDelegateHandle BackBufferReadyHandle;
 
-	// Scratch texture matching the backbuffer's format with ShaderResource
-	// flag added — the Slate backbuffer doesn't carry that flag so
-	// AddDrawTexturePass' shader fallback can't bind it as an SRV directly.
+	// Pool of capture-destination textures (cycled round-robin)
+	static constexpr int32 TexturePoolSize = 3;
+	TArray<FTextureRHIRef> TexturePool;
+	int32 NextTexturePoolSlot = 0;
+	uint32 TexturePoolWidth = 0;
+	uint32 TexturePoolHeight = 0;
+
+	// Scratch texture matching the backbuffer's format with ShaderResource flag added
 	FTextureRHIRef ScratchTexture;
 	uint32 ScratchWidth = 0;
 	uint32 ScratchHeight = 0;
