@@ -20,6 +20,9 @@
 - Bump Java SDK from v8.41.0 to v8.42.0 ([#1394](https://github.com/getsentry/sentry-unreal/pull/1394))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8420)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.41.0...8.42.0)
+- Bump Cocoa SDK from v9.13.0 to v9.14.0 ([#1398](https://github.com/getsentry/sentry-unreal/pull/1398))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9140)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.13.0...9.14.0)
 
 ## 1.12.0
 
