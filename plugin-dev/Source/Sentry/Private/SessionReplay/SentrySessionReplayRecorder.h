@@ -36,25 +36,16 @@ public:
 	FSentrySessionReplayRecorder();
 	virtual ~FSentrySessionReplayRecorder() override;
 
-	// Game thread. Sets up encoder, capture hook, fragment ring, and
-	// rotation thread. The caller provides the full target file path
-	// (e.g. `<.sentry-native>/replays/replay-<guid>.mp4`); the temp file
-	// used for atomic rename is derived from it. The caller is also
-	// responsible for clearing any leftover files from previous sessions
-	// (same pattern as screenshots). No-op if disabled.
 	bool Initialize(const USentrySettings* Settings, const FString& ReplayPath);
-
-	// Game thread. Tears everything down.
 	void Shutdown();
 
 	bool IsEnabled() const { return bEnabled; }
 	bool HasSnapshotOnDisk() const { return bSnapshotOnDisk; }
 	const FString& GetAttachmentPath() const { return AttachmentPath; }
 
-	// Called by the encoder thread when the init segment (ftyp+moov) is ready.
+	// Called by the encoder thread when the init segment (ftyp+moov) is ready
 	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
-
-	// Called by the encoder thread when a fragment (moof+mdat) is complete.
+	// Called by the encoder thread when a fragment (moof+mdat) is complete
 	void OnFragmentReady(TArray<uint8>&& Fragment);
 
 	// FRunnable (rotation thread)

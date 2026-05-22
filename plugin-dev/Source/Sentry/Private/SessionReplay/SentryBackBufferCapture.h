@@ -32,9 +32,9 @@ public:
 	explicit FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder);
 	~FSentryBackBufferCapture();
 
-	// Subscribes to OnBackBufferReadyToPresent (game thread).
+	// Subscribes to OnBackBufferReadyToPresent (game thread)
 	bool Start();
-	// Unsubscribes from OnBackBufferReadyToPresent (game thread).
+	// Unsubscribes from OnBackBufferReadyToPresent (game thread)
 	void Stop();
 
 private:

@@ -38,25 +38,26 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
 	FragmentRing.Empty(FragmentRingCapacity);
 
-	// Use the caller-supplied per-session path (typically
-	// `<.sentry-native>/replays/replay-<guid>.mp4`). The temp file used by
-	// atomic-rename rotation is sibling to the target.
+	// Use the caller-supplied per-session path (typically `<.sentry-native>/replays/replay-<guid>.mp4`)
+	// The temp file used by atomic-rename rotation is sibling to the target
 	AttachmentPath = ReplayPath;
 	TempPath = ReplayPath + TEXT(".tmp");
+
 	IFileManager::Get().MakeDirectory(*FPaths::GetPath(AttachmentPath), /*Tree*/ true);
+
 	bSnapshotOnDisk.AtomicSet(false);
 
 	// The encoder picks Width/Height from the first submitted frame (native
 	// backbuffer dimensions). A configurable target resolution would require
 	// a scaling draw pass — out of scope for v1.
-	Encoder = MakeUnique<FSentryVideoEncoder>(
-		*this,
+	Encoder = MakeUnique<FSentryVideoEncoder>(*this,
 		static_cast<uint32>(Settings->SessionReplayFramerate),
 		Settings->SessionReplayBitrateKbps,
 		Settings->SessionReplayFragmentSeconds);
 	if (!Encoder->StartEncoder())
 	{
 		Encoder.Reset();
+
 		return false;
 	}
 
@@ -64,34 +65,41 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	if (!Capture->Start())
 	{
 		Capture.Reset();
+
 		Encoder->StopEncoder();
 		Encoder.Reset();
+
 		return false;
 	}
 
-	// Spawn rotation thread last, so it doesn't fire before the queues are ready.
 	bStopRequested.AtomicSet(false);
+
 	RotationWake = FPlatformProcess::GetSynchEventFromPool(false);
 	RotationThread = FRunnableThread::Create(this, TEXT("SentrySessionReplayRotation"), 0, TPri_BelowNormal);
 	if (!RotationThread)
 	{
 		Capture->Stop();
 		Capture.Reset();
+
 		Encoder->StopEncoder();
 		Encoder.Reset();
+
 		FPlatformProcess::ReturnSynchEventToPool(RotationWake);
 		RotationWake = nullptr;
+
 		return false;
 	}
 
 	bEnabled = true;
+
 	UE_LOG(LogSentrySdk, Log, TEXT("Session replay enabled, attachment path: %s"), *AttachmentPath);
+
 	return true;
 }
 
 void FSentrySessionReplayRecorder::Shutdown()
 {
-	check(IsInGameThread());
+	check(IsInGameThread()); 
 
 	if (!bEnabled)
 	{
