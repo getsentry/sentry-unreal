@@ -197,7 +197,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		FRDGBuilder GraphBuilder(RHICmdList);
 
 		FRDGTextureRef RDGSource = RegisterExternalTexture(GraphBuilder, ScratchTex, TEXT("SentrySR_Scratch"));
-		FRDGTextureRef RDGDest   = RegisterExternalTexture(GraphBuilder, DestTexture, TEXT("SentrySR_Dest"));
+		FRDGTextureRef RDGDest = RegisterExternalTexture(GraphBuilder, DestTexture, TEXT("SentrySR_Dest"));
 
 		FRDGDrawTextureInfo DrawInfo;
 		DrawInfo.Size = FIntPoint(static_cast<int32>(W), static_cast<int32>(H));
