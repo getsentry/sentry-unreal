@@ -17,11 +17,14 @@ class SWindow;
  * Hooks FSlateRenderer::OnBackBufferReadyToPresent and forwards each
  * rendered frame of the primary game window to the encoder.
  *
- * The Slate delegate fires on the render thread. We allocate a small ring
- * of pooled textures (same dimensions as the backbuffer, BGRA8 + shareable
- * flags) and issue a CopyTexture into the next slot before passing the
- * copy to the encoder. This isolates the encoder from swap-chain timing
- * and gives us a known-good shareable texture for NVENC.
+ * Per frame on the render thread:
+ *   1. Hardware-copy the backbuffer into a "scratch" texture that has the
+ *      same format but also carries ShaderResource flag (Slate backbuffers
+ *      don't, which makes them unusable as an SRV directly).
+ *   2. AddDrawTexturePass(scratch -> pool[BGRA8]). When the scratch format
+ *      matches BGRA8 this stays a hardware copy; otherwise the engine's
+ *      built-in pixel-shader path converts HDR/10-bit to BGRA8.
+ * The pool slot is then handed to NVENC.
  */
 class FSentryBackBufferCapture
 {
@@ -37,24 +40,28 @@ public:
 private:
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer);
 
-	FTextureRHIRef AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format);
+	FTextureRHIRef AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height);
+	FTextureRHIRef AcquireScratchTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format);
 
 	FSentryVideoEncoder& Encoder;
 	FDelegateHandle DelegateHandle;
 
-	// Pool of capture-destination textures (cycled round-robin). The format
-	// follows the source backbuffer's format so we can use a same-format
-	// hardware CopyTexture (which doesn't do conversion). Whether the active
-	// AVCodecs backend actually accepts this format is decided downstream by
-	// the encoder thread — see FSentryVideoEncoder::Run's first-frame
-	// validation.
+	// Pool of capture-destination textures (cycled round-robin). Always
+	// PF_B8G8R8A8 because that's what NVENC D3D12 requires; source-format
+	// conversion happens inside AddDrawTexturePass.
 	static constexpr int32 PoolSize = 3;
 	FTextureRHIRef Pool[PoolSize];
 	int32 NextPoolIndex = 0;
 	uint32 PoolWidth = 0;
 	uint32 PoolHeight = 0;
-	EPixelFormat PoolFormat = PF_Unknown;
-	bool bUnsupportedFormatLogged = false;
+
+	// Scratch texture matching the backbuffer's format with ShaderResource
+	// flag added — the Slate backbuffer doesn't carry that flag so
+	// AddDrawTexturePass' shader fallback can't bind it as an SRV directly.
+	FTextureRHIRef ScratchTexture;
+	uint32 ScratchWidth = 0;
+	uint32 ScratchHeight = 0;
+	EPixelFormat ScratchFormat = PF_Unknown;
 
 	// Frame throttling
 	double NextCaptureTime = 0.0;

@@ -8,9 +8,12 @@
 #include "SentryVideoEncoder.h"
 
 #include "Framework/Application/SlateApplication.h"
+#include "GlobalShader.h"
 #include "HAL/PlatformTime.h"
 #include "RHICommandList.h"
 #include "RHIResources.h"
+#include "RenderGraphBuilder.h"
+#include "RenderGraphUtils.h"
 #include "RenderingThread.h"
 #include "Widgets/SWindow.h"
 
@@ -64,20 +67,47 @@ void FSentryBackBufferCapture::Stop()
 	{
 		Pool[i].SafeRelease();
 	}
+	ScratchTexture.SafeRelease();
 }
 
-FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)
+FTextureRHIRef FSentryBackBufferCapture::AcquireScratchTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)
 {
-	if (Width != PoolWidth || Height != PoolHeight || Format != PoolFormat)
+	if (Width != ScratchWidth || Height != ScratchHeight || Format != ScratchFormat)
 	{
-		// Resolution / format changed — drop the existing pool. New textures get created below.
+		ScratchTexture.SafeRelease();
+		ScratchWidth = Width;
+		ScratchHeight = Height;
+		ScratchFormat = Format;
+	}
+
+	if (!ScratchTexture.IsValid())
+	{
+		// Mirror the backbuffer's format, but add ShaderResource so
+		// AddDrawTexturePass can sample it. RenderTargetable lets the same
+		// scratch double as a draw target in the same-format fast path
+		// inside AddDrawTexturePass (it still ends up as a HW copy).
+		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
+		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayScratch"))
+											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
+											   .SetFormat(Format)
+											   .SetFlags(CreateFlags)
+											   .SetInitialState(ERHIAccess::SRVGraphics);
+		ScratchTexture = RHICreateTexture(Desc);
+	}
+	return ScratchTexture;
+}
+
+FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 Width, uint32 Height)
+{
+	if (Width != PoolWidth || Height != PoolHeight)
+	{
+		// Resolution changed — drop the existing pool. New textures get created below.
 		for (int32 i = 0; i < PoolSize; ++i)
 		{
 			Pool[i].SafeRelease();
 		}
 		PoolWidth = Width;
 		PoolHeight = Height;
-		PoolFormat = Format;
 		NextPoolIndex = 0;
 	}
 
@@ -89,14 +119,14 @@ FTextureRHIRef FSentryBackBufferCapture::AcquirePoolTexture_RenderThread(uint32 
 		// Texture flags follow what AVCodecs expects for its NVENC resources
 		// on D3D (see Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp):
 		// Shared (cross-process for NVENC interop) + ShaderResource +
-		// RenderTargetable.
+		// RenderTargetable. Format is always PF_B8G8R8A8 because that's what
+		// NVENC D3D12 requires; source-format conversion happens at draw time.
 		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
-		const ERHIAccess InitialAccess = ERHIAccess::SRVGraphics;
 		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayCapture"))
 											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
-											   .SetFormat(Format)
+											   .SetFormat(PF_B8G8R8A8)
 											   .SetFlags(CreateFlags)
-											   .SetInitialState(InitialAccess);
+											   .SetInitialState(ERHIAccess::SRVGraphics);
 		Slot = RHICreateTexture(Desc);
 	}
 	return Slot;
@@ -132,49 +162,52 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		return;
 	}
 
-	// NVENC D3D12 only accepts BGRA8 input (see AVCodecs'
-	// VideoEncoderNVENCD3D12::ConvertFormat). HDR backbuffer formats
-	// (PF_FloatRGBA / PF_A2B10G10R10) would need a format-converting copy
-	// pass — out of scope for v1.
-	if (SrcFormat != PF_B8G8R8A8)
+	FTextureRHIRef ScratchTex = AcquireScratchTexture_RenderThread(W, H, SrcFormat);
+	FTextureRHIRef DestTexture = AcquirePoolTexture_RenderThread(W, H);
+	if (!ScratchTex.IsValid() || !DestTexture.IsValid())
 	{
-		if (!bUnsupportedFormatLogged)
-		{
-			UE_LOG(LogSentrySdk, Warning,
-				TEXT("Session replay: backbuffer format %d isn't supported by NVENC. ")
-					TEXT("Set r.DefaultBackBufferPixelFormat=0 in DefaultEngine.ini. ")
-						TEXT("Full HDR backbuffer support is a planned improvement."),
-				static_cast<int32>(SrcFormat));
-			bUnsupportedFormatLogged = true;
-		}
 		return;
 	}
 
 	FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
 
-	FTextureRHIRef DestTexture = AcquirePoolTexture_RenderThread(W, H, SrcFormat);
-	if (!DestTexture.IsValid())
+	// Step 1: hardware-copy backbuffer -> scratch (same format). Slate
+	// backbuffers don't carry TexCreate_ShaderResource, so we can't bind
+	// them directly as an SRV in the shader path below.
 	{
-		return;
+		FRHITransitionInfo Transitions[] = {
+			FRHITransitionInfo(BackBuffer.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc),
+			FRHITransitionInfo(ScratchTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopyDest),
+		};
+		RHICmdList.Transition(MakeArrayView(Transitions, UE_ARRAY_COUNT(Transitions)));
+
+		FRHICopyTextureInfo CopyInfo;
+		CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
+		RHICmdList.CopyTexture(BackBuffer.GetReference(), ScratchTex.GetReference(), CopyInfo);
+
+		RHICmdList.Transition(FRHITransitionInfo(ScratchTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics));
 	}
 
-	// Same-format CopyTexture. The backbuffer is in RTV at this point
-	// (SlateRHIRenderer transitions it to Present after this delegate
-	// returns); passing ERHIAccess::Unknown lets the RHI infer the source
-	// state from its internal tracking.
-	FRHITransitionInfo Transitions[] = {
-		FRHITransitionInfo(BackBuffer.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc),
-		FRHITransitionInfo(DestTexture.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopyDest),
-	};
-	RHICmdList.Transition(MakeArrayView(Transitions, UE_ARRAY_COUNT(Transitions)));
+	// Step 2: AddDrawTexturePass scratch -> pool (BGRA8). Same-format fast
+	// path is a hardware copy; format mismatch (HDR / 10-bit source) falls
+	// back to the engine's built-in FDrawTexturePS pixel shader. The GPU
+	// clamps values >1.0 on the BGRA8 write, so scene-referred HDR
+	// highlights blow out to white — acceptable for crash diagnostics.
+	{
+		FRDGBuilder GraphBuilder(RHICmdList);
 
-	FRHICopyTextureInfo CopyInfo;
-	CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
-	RHICmdList.CopyTexture(BackBuffer.GetReference(), DestTexture.GetReference(), CopyInfo);
+		FRDGTextureRef RDGSource = RegisterExternalTexture(GraphBuilder, ScratchTex, TEXT("SentrySR_Scratch"));
+		FRDGTextureRef RDGDest   = RegisterExternalTexture(GraphBuilder, DestTexture, TEXT("SentrySR_Dest"));
+
+		FRDGDrawTextureInfo DrawInfo;
+		DrawInfo.Size = FIntPoint(static_cast<int32>(W), static_cast<int32>(H));
+		AddDrawTexturePass(GraphBuilder, GetGlobalShaderMap(GMaxRHIFeatureLevel), RDGSource, RDGDest, DrawInfo);
+
+		GraphBuilder.Execute();
+	}
 
 	// Leave the destination in a shader-readable state for NVENC.
-	FRHITransitionInfo DestPostCopy(DestTexture.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics);
-	RHICmdList.Transition(DestPostCopy);
+	RHICmdList.Transition(FRHITransitionInfo(DestTexture.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
 
 	Encoder.SubmitFrame(DestTexture);
 }
