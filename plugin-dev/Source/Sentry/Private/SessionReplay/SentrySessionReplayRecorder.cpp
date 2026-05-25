@@ -35,6 +35,7 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	WindowSeconds = Settings->SessionReplayWindowSeconds;
 	FragmentSeconds = Settings->SessionReplayFragmentSeconds;
 	RotationIntervalSeconds = Settings->SessionReplayRotationIntervalSeconds;
+
 	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
 	FragmentRing.Empty(FragmentRingCapacity);
 
@@ -50,10 +51,7 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	// The encoder picks Width/Height from the first submitted frame (native
 	// backbuffer dimensions). A configurable target resolution would require
 	// a scaling draw pass — out of scope for v1.
-	Encoder = MakeUnique<FSentryVideoEncoder>(*this,
-		static_cast<uint32>(Settings->SessionReplayFramerate),
-		Settings->SessionReplayBitrateKbps,
-		Settings->SessionReplayFragmentSeconds);
+	Encoder = MakeUnique<FSentryVideoEncoder>(*this, static_cast<uint32>(Settings->SessionReplayFramerate), Settings->SessionReplayBitrateKbps, Settings->SessionReplayFragmentSeconds);
 	if (!Encoder->StartEncoder())
 	{
 		Encoder.Reset();
@@ -274,10 +272,7 @@ bool FSentrySessionReplayRecorder::WriteSnapshotAtomically(const TArray<uint8>& 
 		static bool bLoggedOnce = false;
 		if (!bLoggedOnce)
 		{
-			UE_LOG(LogSentrySdk, Warning,
-				TEXT("Session replay: failed to replace %s — another process may be holding it open ")
-					TEXT("(e.g. a video preview window). Rotation will keep retrying. In a normal crash scenario this doesn't happen."),
-				*AttachmentPath);
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to replace %s"), *AttachmentPath);
 			bLoggedOnce = true;
 		}
 		return false;

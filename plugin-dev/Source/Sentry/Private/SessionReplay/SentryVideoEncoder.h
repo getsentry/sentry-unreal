@@ -23,87 +23,76 @@ class FVideoResourceRHI;
 class FSentrySessionReplayRecorder;
 
 /**
- * Owns the AVCodecs H.264 encoder and runs on a dedicated thread.
+ * Wraps the AVCodecs H.264 encoder and runs on a dedicated thread.
  *
  * Frames arrive from the render-thread capture path via SubmitFrame().
  * The thread submits them to the hardware encoder, polls for output packets,
  * splits Annex-B byte streams into per-NALU AVCC samples, and groups them
  * into fragments delimited by IDR keyframes. Completed fragments are pushed
- * back to the owning subsystem via FSentrySessionReplayRecorder::OnFragmentReady.
+ * back to the owning recorder via FSentrySessionReplayRecorder::OnFragmentReady.
  */
 class FSentryVideoEncoder : public FRunnable
 {
 public:
-	FSentryVideoEncoder(
-		FSentrySessionReplayRecorder& InOwner,
-		uint32 InFramerate,
-		int32 InBitrateKbps,
-		float InFragmentSeconds);
+	FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds);
 
 	virtual ~FSentryVideoEncoder() override;
 
 	bool StartEncoder();
 	void StopEncoder();
 
-	// Render thread: enqueue an RHI texture for encoding. Takes a shared ref
-	// so the texture stays alive until the encoder is done with it.
+	// Enqueues a texture for the encoder thread to process
 	void SubmitFrame(const FTextureRHIRef& Texture);
 
 	uint32 GetFramerate() const { return Framerate; }
 
 	// FRunnable
 	virtual bool Init() override;
-	virtual uint32 Run() override;
 	virtual void Stop() override;
 	virtual void Exit() override;
+	virtual uint32 Run() override;
 
 private:
-	struct FPendingFrame
-	{
-		FTextureRHIRef Texture;
-		uint64 TimestampUs;
-	};
-
 	bool EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight);
+
+	// Pulls available packets from the encoder, converts them to AVCC samples and emits a fragment at each keyframe boundary
 	void DrainPackets();
-	void FinalizeFragment();
 
-	FSentrySessionReplayRecorder& Owner;
+	FSentrySessionReplayRecorder& Recorder;
 
-	// Width/Height are set from the first submitted frame in EnsureEncoderOpen.
+	bool bEncoderOpen = false;
+	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
+
+	bool bFirstFrameValidated = false;
+	FThreadSafeBool bEncodingDisabled;
+
+	// Capture config
 	uint32 Width = 0;
 	uint32 Height = 0;
 	uint32 Framerate;
 	int32 BitrateBps;
 	float FragmentSeconds;
 
+	// Encoder worker thread
 	FRunnableThread* Thread = nullptr;
 	FEvent* WakeEvent = nullptr;
 	FThreadSafeBool bStopRequested;
 
+	// Encoder thread frame queue
+	static constexpr int32 MaxQueueDepth = 10;
 	FCriticalSection QueueLock;
-	TArray<FPendingFrame> PendingQueue;
+	TArray<FTextureRHIRef> PendingQueue;
 
-	uint64 NextTimestampUs = 0;
-	uint64 LastPacketWallClockUs = 0;
+	// Timing (encoder-thread-only)
+	uint64 EncodedFrameCount = 0;
+	double LastPacketTime = 0.0;
 	double LastForcedKeyframeTime = 0.0;
-
-	// First-frame validation: NVENC D3D12 only accepts BGRA8. Rather than
-	// maintain a per-format whitelist of our own, we attempt encoding and
-	// disable the pipeline if AVCodecs rejects the very first frame.
-	// Successful encoding of any frame locks in "validated" so transient
-	// mid-session errors don't permanently kill recording.
-	bool bFirstFrameValidated = false;
-	FThreadSafeBool bEncodingDisabled;
-
-	bool bEncoderOpen = false;
-	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
 
 	// Fragment-in-progress state
 	TArray<FSentryH264Sample> CurrentSamples;
 	uint64 CurrentFragmentDecodeTime = 0;
 	uint32 NextFragmentSequence = 1;
-	uint64 SampleClock = 0; // monotonic decode time in TrackTimescale ticks
+	uint64 SampleClock = 0;
 	TArray<uint8> CachedSps;
 	TArray<uint8> CachedPps;
 	bool bInitSegmentPublished = false;

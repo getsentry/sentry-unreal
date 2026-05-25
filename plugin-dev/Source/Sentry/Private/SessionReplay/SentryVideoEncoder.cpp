@@ -22,12 +22,8 @@
 #include "Video/VideoEncoder.h"
 #include "Video/VideoPacket.h"
 
-FSentryVideoEncoder::FSentryVideoEncoder(
-	FSentrySessionReplayRecorder& InOwner,
-	uint32 InFramerate,
-	int32 InBitrateKbps,
-	float InFragmentSeconds)
-	: Owner(InOwner)
+FSentryVideoEncoder::FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds)
+	: Recorder(InRecorder)
 	, Framerate(InFramerate)
 	, BitrateBps(InBitrateKbps * 1000)
 	, FragmentSeconds(InFragmentSeconds)
@@ -47,16 +43,20 @@ bool FSentryVideoEncoder::StartEncoder()
 	}
 
 	WakeEvent = FPlatformProcess::GetSynchEventFromPool(false);
+
 	bStopRequested.AtomicSet(false);
 
 	Thread = FRunnableThread::Create(this, TEXT("SentrySessionReplayEncoder"), 0, TPri_BelowNormal);
 	if (!Thread)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to start encoder thread"));
+
 		FPlatformProcess::ReturnSynchEventToPool(WakeEvent);
 		WakeEvent = nullptr;
+
 		return false;
 	}
+
 	return true;
 }
 
@@ -65,10 +65,12 @@ void FSentryVideoEncoder::StopEncoder()
 	if (Thread != nullptr)
 	{
 		bStopRequested.AtomicSet(true);
+
 		if (WakeEvent)
 		{
 			WakeEvent->Trigger();
 		}
+
 		Thread->WaitForCompletion();
 		delete Thread;
 		Thread = nullptr;
@@ -82,23 +84,18 @@ void FSentryVideoEncoder::StopEncoder()
 
 void FSentryVideoEncoder::SubmitFrame(const FTextureRHIRef& Texture)
 {
-	if (!Texture.IsValid() || bStopRequested)
+	if (!Texture.IsValid() || bStopRequested || bEncodingDisabled)
 	{
 		return;
 	}
 
-	const uint64 TimestampUs = NextTimestampUs;
-	NextTimestampUs += 1000000u / FMath::Max(1u, Framerate);
-
 	{
 		FScopeLock Lock(&QueueLock);
-		// Cap the queue depth to avoid runaway memory if encoder is starved.
-		const int32 MaxQueueDepth = 8;
 		if (PendingQueue.Num() >= MaxQueueDepth)
 		{
 			PendingQueue.RemoveAt(0, 1, EAllowShrinking::No);
 		}
-		PendingQueue.Add({ Texture, TimestampUs });
+		PendingQueue.Add(Texture);
 	}
 	if (WakeEvent)
 	{
@@ -122,12 +119,81 @@ void FSentryVideoEncoder::Stop()
 
 void FSentryVideoEncoder::Exit()
 {
-	// AVCodecs' documented flush form `SendFrame(nullptr)` null-derefs inside
-	// FVideoEncoderNVENCD3D12::SendFrame (it dereferences Resource on the
-	// first line). We just drop the encoder; any in-flight fragments are
-	// discarded by the subsystem's teardown anyway.
 	Encoder.Reset();
 	bEncoderOpen = false;
+}
+
+uint32 FSentryVideoEncoder::Run()
+{
+	while (!bStopRequested)
+	{
+		TArray<FTextureRHIRef> Frames;
+		{
+			FScopeLock Lock(&QueueLock);
+			Swap(Frames, PendingQueue);
+		}
+
+		if (bEncodingDisabled)
+		{
+			if (WakeEvent)
+			{
+				WakeEvent->Wait(50);
+			}
+			continue;
+		}
+
+		for (const FTextureRHIRef& FrameTexture : Frames)
+		{
+			if (!FrameTexture.IsValid())
+			{
+				continue;
+			}
+			const uint32 ResW = FrameTexture->GetSizeX();
+			const uint32 ResH = FrameTexture->GetSizeY();
+			if (!EnsureEncoderOpen(ResW, ResH))
+			{
+				continue;
+			}
+
+			TSharedRef<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(Encoder->GetDevice().ToSharedRef(),
+				FVideoResourceRHI::FRawData{ FrameTexture, nullptr, 0 });
+
+			const double NowSec = FPlatformTime::Seconds();
+			bool bForceKeyframe = false;
+			if (LastForcedKeyframeTime <= 0.0 || (NowSec - LastForcedKeyframeTime) >= FragmentSeconds)
+			{
+				bForceKeyframe = true;
+				LastForcedKeyframeTime = NowSec;
+			}
+
+			const uint32 TimestampMs = static_cast<uint32>(EncodedFrameCount * 1000u / FMath::Max(1u, Framerate));
+			++EncodedFrameCount;
+
+			const FAVResult Result = Encoder->SendFrame(Resource, TimestampMs, bForceKeyframe);
+			if (Result.IsSuccess())
+			{
+				bFirstFrameValidated = true;
+			}
+			else if (!bFirstFrameValidated)
+			{
+				UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder rejected the first frame. Recording disabled for this session."));
+				bEncodingDisabled.AtomicSet(true);
+				break;
+			}
+			else
+			{
+				UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success"));
+			}
+
+			DrainPackets();
+		}
+
+		if (PendingQueue.Num() == 0 && WakeEvent)
+		{
+			WakeEvent->Wait(50);
+		}
+	}
+	return 0;
 }
 
 bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight)
@@ -142,11 +208,6 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		return false;
 	}
 
-	// Configure for H.264, CBR, ultra-low latency. KeyframeInterval is left at
-	// 0 ("auto" / no upper bound) — the encoder thread forces an IDR via
-	// bForceKeyframe on a wall-clock cadence so fragments are ~FragmentSeconds
-	// of real time, not frames. This makes the WindowSeconds setting honour
-	// the actual elapsed time regardless of the source's render rate.
 	FVideoEncoderConfigH264 Config;
 	Config.Width = ResourceWidth;
 	Config.Height = ResourceHeight;
@@ -167,98 +228,19 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Encoder = FVideoEncoder::Create<FVideoResourceRHI>(Device, Config);
 	if (!Encoder.IsValid())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to create H.264 encoder (no NVENC/AMF backend available?)"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to create H.264 encoder"));
 		return false;
 	}
 
 	Width = ResourceWidth;
 	Height = ResourceHeight;
+
 	bEncoderOpen = true;
+
 	UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder opened %ux%u @ %u fps, %d kbps, forced keyframe every %.2fs"),
 		Width, Height, Framerate, BitrateBps / 1000, FragmentSeconds);
+
 	return true;
-}
-
-uint32 FSentryVideoEncoder::Run()
-{
-	while (!bStopRequested)
-	{
-		TArray<FPendingFrame> Frames;
-		{
-			FScopeLock Lock(&QueueLock);
-			Swap(Frames, PendingQueue);
-		}
-
-		if (bEncodingDisabled)
-		{
-			// Encoder previously refused the input; drop any incoming frames
-			// on the floor and idle until shutdown.
-			if (WakeEvent)
-			{
-				WakeEvent->Wait(50);
-			}
-			continue;
-		}
-
-		for (const FPendingFrame& Frame : Frames)
-		{
-			if (!Frame.Texture.IsValid())
-			{
-				continue;
-			}
-			const uint32 ResW = Frame.Texture->GetSizeX();
-			const uint32 ResH = Frame.Texture->GetSizeY();
-			if (!EnsureEncoderOpen(ResW, ResH))
-			{
-				continue;
-			}
-
-			TSharedRef<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(
-				Encoder->GetDevice().ToSharedRef(),
-				FVideoResourceRHI::FRawData{ Frame.Texture, nullptr, 0 });
-
-			// Force a keyframe every FragmentSeconds of wall clock. This makes
-			// fragment durations honour real time even when the source renders
-			// slower than `Framerate` — a frame-count-based keyframe interval
-			// would stretch each fragment by the same factor and inflate the
-			// effective window (e.g. 12s setting → 24s file at half rate).
-			const double NowSec = FPlatformTime::Seconds();
-			bool bForceKeyframe = false;
-			if (LastForcedKeyframeTime <= 0.0 || (NowSec - LastForcedKeyframeTime) >= FragmentSeconds)
-			{
-				bForceKeyframe = true;
-				LastForcedKeyframeTime = NowSec;
-			}
-
-			const FAVResult Result = Encoder->SendFrame(Resource, static_cast<uint32>(Frame.TimestampUs / 1000), bForceKeyframe);
-			if (Result.IsSuccess())
-			{
-				bFirstFrameValidated = true;
-			}
-			else if (!bFirstFrameValidated)
-			{
-				// AVCodecs rejected the first frame — likely an unsupported
-				// backbuffer format (NVENC D3D12 wants BGRA8). Stop trying so
-				// we don't burn cycles on subsequent frames.
-				UE_LOG(LogSentrySdk, Warning,
-					TEXT("Session replay: encoder rejected the first frame (backbuffer format may not be supported by NVENC). Recording disabled for this session."));
-				bEncodingDisabled.AtomicSet(true);
-				break;
-			}
-			else
-			{
-				UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success"));
-			}
-
-			DrainPackets();
-		}
-
-		if (PendingQueue.Num() == 0 && WakeEvent)
-		{
-			WakeEvent->Wait(50);
-		}
-	}
-	return 0;
 }
 
 void FSentryVideoEncoder::DrainPackets()
@@ -276,10 +258,8 @@ void FSentryVideoEncoder::DrainPackets()
 			continue;
 		}
 
-		// Convert Annex-B → AVCC, extracting any SPS/PPS.
 		TArray<uint8> Sps, Pps;
-		TArray<uint8> Avcc = FSentryFMP4Writer::AnnexBToAvcc(
-			Packet.DataPtr.Get(), Packet.DataSize, &Sps, &Pps);
+		TArray<uint8> Avcc = FSentryFMP4Writer::AnnexBToAvcc(Packet.DataPtr.Get(), Packet.DataSize, &Sps, &Pps);
 
 		if (Sps.Num() > 0 && CachedSps.Num() == 0)
 		{
@@ -290,74 +270,52 @@ void FSentryVideoEncoder::DrainPackets()
 			CachedPps = MoveTemp(Pps);
 		}
 
-		// Once we have SPS+PPS, publish the init segment.
 		if (!bInitSegmentPublished && CachedSps.Num() > 0 && CachedPps.Num() > 0)
 		{
 			TArray<uint8> Init = FSentryFMP4Writer::BuildInitSegment(Width, Height, CachedSps, CachedPps);
-			Owner.OnInitSegmentReady(MoveTemp(Init));
+			Recorder.OnInitSegmentReady(MoveTemp(Init));
 			bInitSegmentPublished = true;
 		}
 
 		if (Avcc.Num() == 0)
 		{
-			// Packet contained only parameter sets.
 			continue;
 		}
 
-		// On every keyframe boundary, finalize the previous fragment.
 		if (Packet.bIsKeyframe && CurrentSamples.Num() > 0)
 		{
-			FinalizeFragment();
+			TArray<uint8> Frag = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
+			Recorder.OnFragmentReady(MoveTemp(Frag));
+			CurrentSamples.Reset();
 		}
 
 		// Wall-clock sample duration: the gap between the previous packet's
 		// emission and now. The first packet of the session uses a 1/Framerate
 		// fallback. This way the recorded video plays back at real time even
-		// when the source renders below the configured target rate.
-		const uint64 NowUs = static_cast<uint64>(FPlatformTime::Seconds() * 1000000.0);
-		uint64 DurationUs;
-		if (LastPacketWallClockUs == 0)
-		{
-			DurationUs = 1000000u / FMath::Max(1u, Framerate);
-		}
-		else
-		{
-			DurationUs = NowUs - LastPacketWallClockUs;
-			// Guard against runaway durations if the encoder stalled
-			// (e.g. window minimised). Clamp to <=2s.
-			DurationUs = FMath::Min<uint64>(DurationUs, 2000000u);
-		}
-		LastPacketWallClockUs = NowUs;
-		const uint32 DurationTicks = static_cast<uint32>(
-			(static_cast<uint64>(FSentryFMP4Writer::TrackTimescale) * DurationUs) / 1000000u);
+		// when the source renders below the configured target rate
+		const double Now = FPlatformTime::Seconds();
+		double DurationSeconds = (LastPacketTime <= 0.0) ? (1.0 / FMath::Max(1u, Framerate)) : (Now - LastPacketTime);
+
+		// Guard against runaway durations if the encoder stalled (e.g. window minimised)
+		DurationSeconds = FMath::Min(DurationSeconds, 2.0);
+
+		LastPacketTime = Now;
+
+		const uint32 DurationTicks = FMath::Max<uint32>(1, static_cast<uint32>(DurationSeconds * FSentryFMP4Writer::TrackTimescale));
 
 		FSentryH264Sample Sample;
 		Sample.AvccBytes = MoveTemp(Avcc);
-		Sample.Duration = FMath::Max(1u, DurationTicks);
+		Sample.Duration = DurationTicks;
 		Sample.bIsKeyframe = Packet.bIsKeyframe != 0;
+
 		if (CurrentSamples.Num() == 0)
 		{
 			CurrentFragmentDecodeTime = SampleClock;
 		}
 		SampleClock += Sample.Duration;
+
 		CurrentSamples.Add(MoveTemp(Sample));
 	}
-}
-
-void FSentryVideoEncoder::FinalizeFragment()
-{
-	if (CurrentSamples.Num() == 0)
-	{
-		return;
-	}
-
-	TArray<uint8> Frag = FSentryFMP4Writer::BuildFragment(
-		NextFragmentSequence++,
-		CurrentFragmentDecodeTime,
-		CurrentSamples);
-	Owner.OnFragmentReady(MoveTemp(Frag));
-
-	CurrentSamples.Reset();
 }
 
 #endif // USE_SENTRY_SESSION_REPLAY
