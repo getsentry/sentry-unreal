@@ -39,18 +39,13 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
 	FragmentRing.Empty(FragmentRingCapacity);
 
-	// Use the caller-supplied per-session path (typically `<.sentry-native>/replays/replay-<guid>.mp4`)
-	// The temp file used by atomic-rename rotation is sibling to the target
 	AttachmentPath = ReplayPath;
 	TempPath = ReplayPath + TEXT(".tmp");
 
-	IFileManager::Get().MakeDirectory(*FPaths::GetPath(AttachmentPath), /*Tree*/ true);
+	IFileManager::Get().MakeDirectory(*FPaths::GetPath(AttachmentPath), true);
 
 	bSnapshotOnDisk.AtomicSet(false);
 
-	// The encoder picks Width/Height from the first submitted frame (native
-	// backbuffer dimensions). A configurable target resolution would require
-	// a scaling draw pass — out of scope for v1.
 	Encoder = MakeUnique<FSentryVideoEncoder>(*this, static_cast<uint32>(Settings->SessionReplayOptions.Framerate), Settings->SessionReplayOptions.BitrateKbps, Settings->SessionReplayOptions.FragmentSeconds);
 	if (!Encoder->StartEncoder())
 	{
@@ -241,24 +236,18 @@ void FSentrySessionReplayRecorder::DoRotation()
 
 bool FSentrySessionReplayRecorder::WriteSnapshot(const TArray<uint8>& Bytes)
 {
-	// Write to a temp file, then rename it over the attachment. The rename is
-	// atomic, so a reader (crashpad) never sees a torn .mp4 — only the previous
-	// snapshot or the new one. The brief absent window during the replace is
-	// harmless: crashpad just skips the missing attachment.
+	TUniquePtr<FArchive> Out(IFileManager::Get().CreateFileWriter(*TempPath, FILEWRITE_EvenIfReadOnly));
+	if (!Out)
 	{
-		TUniquePtr<FArchive> Out(IFileManager::Get().CreateFileWriter(*TempPath, FILEWRITE_EvenIfReadOnly));
-		if (!Out)
-		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to open %s for write"), *TempPath);
-			return false;
-		}
-		Out->Serialize(const_cast<uint8*>(Bytes.GetData()), Bytes.Num());
-		Out->Flush();
-		if (!Out->Close())
-		{
-			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to close temp file"));
-			return false;
-		}
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to open %s for write"), *TempPath);
+		return false;
+	}
+	Out->Serialize(const_cast<uint8*>(Bytes.GetData()), Bytes.Num());
+	Out->Flush();
+	if (!Out->Close())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to close temp file"));
+		return false;
 	}
 
 	if (!IFileManager::Get().Move(*AttachmentPath, *TempPath, true, true))
