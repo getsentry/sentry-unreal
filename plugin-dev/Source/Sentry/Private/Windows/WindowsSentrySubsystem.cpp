@@ -14,6 +14,7 @@
 #include "Misc/Paths.h"
 
 #ifdef USE_SENTRY_SESSION_REPLAY
+#include "GenericPlatform/GenericPlatformSentryAttachment.h"
 #include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
 
@@ -157,7 +158,10 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 #ifdef USE_SENTRY_SESSION_REPLAY
 	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
 	{
-		sentry_attach_filew(*SessionReplay->GetAttachmentPath());
+		TSharedPtr<ISentryAttachment> ReplayAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(SessionReplay->GetAttachmentPath(), TEXT("session-replay.mp4"), TEXT("video/mp4")));
+
+		AddFileAttachment(ReplayAttachment);
 	}
 #endif
 
