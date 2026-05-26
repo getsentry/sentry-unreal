@@ -193,7 +193,8 @@ FString FWindowsSentrySubsystem::GetDeviceType() const
 
 FString FWindowsSentrySubsystem::GetReplayPath() const
 {
-	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower)));
+	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
 	const FString ReplayFullPath = FPaths::ConvertRelativePathToFull(ReplayPath);
 
 	return ReplayFullPath;
