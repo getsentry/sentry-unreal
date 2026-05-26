@@ -257,7 +257,6 @@ public class Sentry : ModuleRules
 		}
 	}
 
-	// Returns true if the project has explicitly enabled the plugin with the given name.
 	private bool IsPluginEnabled(ReadOnlyTargetRules Target, string PluginName)
 	{
 		if (Target.ProjectFile == null)
