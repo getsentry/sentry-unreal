@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add experimental session replay capturing for Windows ([#1404](https://github.com/getsentry/sentry-unreal/pull/1404))
 - Add experimental session replay capturing for Android ([#1386](https://github.com/getsentry/sentry-unreal/pull/1386))
 
 ### Dependencies
