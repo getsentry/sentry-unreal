@@ -2,7 +2,7 @@
 
 #include "SentryVideoEncoder.h"
 
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 
 #include "SentryDefines.h"
 #include "SentrySessionReplayRecorder.h"

@@ -28,18 +28,6 @@
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
 		}
 	],
-	"Plugins": [
-		{
-			"Name": "AVCodecsCore",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [ "Win64" ]
-		},
-		{
-			"Name": "NVCodecs",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [ "Win64" ]
-		}
-	],
 	"PreBuildSteps":
 	{
 		"Mac": [

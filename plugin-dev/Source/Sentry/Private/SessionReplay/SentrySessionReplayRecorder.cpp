@@ -2,7 +2,7 @@
 
 #include "SentrySessionReplayRecorder.h"
 
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 
 #include "SentryBackBufferCapture.h"
 #include "SentryDefines.h"
@@ -32,9 +32,9 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 		return false;
 	}
 
-	WindowSeconds = Settings->SessionReplayWindowSeconds;
-	FragmentSeconds = Settings->SessionReplayFragmentSeconds;
-	RotationIntervalSeconds = Settings->SessionReplayRotationIntervalSeconds;
+	WindowSeconds = Settings->SessionReplayDurationMs / 1000.0f;
+	FragmentSeconds = Settings->SessionReplayOptions.FragmentSeconds;
+	RotationIntervalSeconds = Settings->SessionReplayOptions.RotationIntervalSeconds;
 
 	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
 	FragmentRing.Empty(FragmentRingCapacity);
@@ -51,7 +51,7 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	// The encoder picks Width/Height from the first submitted frame (native
 	// backbuffer dimensions). A configurable target resolution would require
 	// a scaling draw pass — out of scope for v1.
-	Encoder = MakeUnique<FSentryVideoEncoder>(*this, static_cast<uint32>(Settings->SessionReplayFramerate), Settings->SessionReplayBitrateKbps, Settings->SessionReplayFragmentSeconds);
+	Encoder = MakeUnique<FSentryVideoEncoder>(*this, static_cast<uint32>(Settings->SessionReplayOptions.Framerate), Settings->SessionReplayOptions.BitrateKbps, Settings->SessionReplayOptions.FragmentSeconds);
 	if (!Encoder->StartEncoder())
 	{
 		Encoder.Reset();

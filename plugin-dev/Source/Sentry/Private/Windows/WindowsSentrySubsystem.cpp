@@ -13,7 +13,7 @@
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
 
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 #include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
 
@@ -35,7 +35,7 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		ConfigureCrashReporterAppearance(Settings);
 	}
 
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 	if (IsEnabled() && Settings->AttachSessionReplay)
 	{
 		// Clear replay videos captured during previous session if any.
@@ -154,7 +154,7 @@ void FWindowsSentrySubsystem::ConfigureScreenshotCapturing(sentry_options_t* Opt
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
 	{
 		// Register the rolling video file as a crash attachment. Sentry-native
@@ -169,7 +169,7 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 
 void FWindowsSentrySubsystem::Close()
 {
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 	if (SessionReplay)
 	{
 		SessionReplay->Shutdown();

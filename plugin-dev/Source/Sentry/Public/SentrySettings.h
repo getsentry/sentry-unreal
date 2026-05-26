@@ -286,6 +286,30 @@ struct FSentryCrashReporterAppearance
 	FSentryCrashReporterImagery Imagery;
 };
 
+USTRUCT(BlueprintType)
+struct FSentrySessionReplayOptions
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Fragment duration (seconds)", ToolTip = "Length of each fMP4 fragment. Shorter values reduce the worst-case lost-tail at crash time, but increase keyframe frequency and lower compression efficiency.",
+			ClampMin = 0.1f, ClampMax = 2.0f))
+	float FragmentSeconds = 0.5f;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Rotation interval (seconds)", ToolTip = "How often the on-disk attachment file is refreshed by atomic rename.",
+			ClampMin = 0.25f, ClampMax = 5.0f))
+	float RotationIntervalSeconds = 1.0f;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Target framerate", ClampMin = 10, ClampMax = 60))
+	int32 Framerate = 30;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Target bitrate (kbps)", ClampMin = 200, ClampMax = 20000))
+	int32 BitrateKbps = 2000;
+};
+
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -338,15 +362,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable out-of-process screenshot capturing (for Windows only, experimental)", ToolTip = "Flag indicating whether crash screenshots should be captured out-of-process by the native SDK using OS-level APIs instead of Unreal's Slate renderer. More reliable during crashes since it doesn't depend on the rendering pipeline being functional. Currently supported on Windows only. Requires `Attach screenshots` to be enabled.",
 			EditCondition = "AttachScreenshot"))
 	bool EnableOutOfProcessScreenshots;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Attach session replay (experimental)", ToolTip = "Enables session replay capture. On Android, records a continuous video of the session and sends it with error events. On Windows, continuously encodes the last few seconds of gameplay to an MP4 file and attaches it to crash reports (requires Crashpad backend, NVIDIA NVENC). On Xbox development kits, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring."))
-	bool AttachSessionReplay;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Session replay duration (ms, Xbox only)", ToolTip = "Requested duration of the retroactive session replay clip on Xbox. The resulting clip can be shorter than the requested duration if it hasn't accumulated enough buffered frames yet. This setting is ignored on Android, where the replay duration is determined by the Sentry SDK.",
-			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "15000"))
-	uint32 SessionReplayDurationMs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only."))
@@ -523,33 +538,20 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableHangTracking", ClampMin = 1.0f))
 	float HangTimeoutDuration;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Session replay window duration (seconds, Windows only)",
-			ToolTip = "Length of the rolling session-replay window kept on disk for crash attachment.",
-			EditCondition = "AttachSessionReplay", ClampMin = 2, ClampMax = 60))
-	float SessionReplayWindowSeconds;
+	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
+		Meta = (DisplayName = "Enable session replay (experimental)", ToolTip = "Captures gameplay video and attaches it to crash reports. On Windows, requires the AVCodecsCore/NVCodecs plugins, NVIDIA GPU and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
+			ConfigRestartRequired = true))
+	bool AttachSessionReplay;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Session replay fragment duration (seconds, Windows only)",
-			ToolTip = "Length of each fMP4 fragment. Shorter values reduce the worst-case lost-tail at crash time, but increase keyframe frequency and lower compression efficiency.",
-			EditCondition = "AttachSessionReplay", ClampMin = 0.1f, ClampMax = 2.0f))
-	float SessionReplayFragmentSeconds;
+	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
+		Meta = (DisplayName = "Replay duration (ms)", ToolTip = "Requested duration of the retroactive replay window. On Windows this is the rolling clip length kept on disk for crash attachment; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration.",
+			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "60000"))
+	uint32 SessionReplayDurationMs;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Session replay rotation interval (seconds, Windows only)",
-			ToolTip = "How often the disk attachment file is refreshed by atomic rename.",
-			EditCondition = "AttachSessionReplay", ClampMin = 0.25f, ClampMax = 5.0f))
-	float SessionReplayRotationIntervalSeconds;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Session replay target framerate (Windows only)",
-			EditCondition = "AttachSessionReplay", ClampMin = 10, ClampMax = 60))
-	int32 SessionReplayFramerate;
-
-	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
-		Meta = (DisplayName = "Session replay target bitrate (kbps, Windows only)",
-			EditCondition = "AttachSessionReplay", ClampMin = 200, ClampMax = 20000))
-	int32 SessionReplayBitrateKbps;
+	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
+		Meta = (DisplayName = "Advanced recording options (Windows)", ToolTip = "Low-level encoder/muxer tuning for the Windows session-replay recorder. Defaults are sensible for most projects.",
+			EditCondition = "AttachSessionReplay", AdvancedDisplay))
+	FSentrySessionReplayOptions SessionReplayOptions;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Offline caching",
 		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))

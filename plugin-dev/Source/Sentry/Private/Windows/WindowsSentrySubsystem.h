@@ -8,7 +8,7 @@
 
 #include "Microsoft/MicrosoftSentrySubsystem.h"
 
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 class FSentrySessionReplayRecorder;
 #endif
 
@@ -47,7 +47,7 @@ private:
 	/** Whether native out-of-process screenshot capturing is enabled */
 	bool bOutOfProcessScreenshots = false;
 
-#if USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY)
 	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
 #endif
 };

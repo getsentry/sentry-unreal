@@ -34,6 +34,16 @@
 		{
 			"Name": "WindowsMoviePlayer",
 			"Enabled": false
+		},
+		{
+			"Name": "AVCodecsCore",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [ "Win64" ]
+		},
+		{
+			"Name": "NVCodecs",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [ "Win64" ]
 		}
 	],
 	"TargetPlatforms": [
