@@ -38,11 +38,13 @@
 		{
 			"Name": "AVCodecsCore",
 			"Enabled": true,
+			"Optional": true,
 			"SupportedTargetPlatforms": [ "Win64" ]
 		},
 		{
 			"Name": "NVCodecs",
 			"Enabled": true,
+			"Optional": true,
 			"SupportedTargetPlatforms": [ "Win64" ]
 		}
 	],
