@@ -47,10 +47,11 @@ private:
 
 	FDelegateHandle BackBufferReadyHandle;
 
-	// Pool of capture-destination textures (cycled round-robin)
-	static constexpr int32 TexturePoolSize = 3;
+	// Pool of capture-destination textures handed to the encoder. Sized to the
+	// encoder queue depth and created lazily. A slot is reused only once nothing
+	// else references it (ref count back to 1); if every slot is still in flight
+	// the frame is dropped rather than overwriting one the encoder hasn't read
 	TArray<FTextureRHIRef> TexturePool;
-	int32 NextTexturePoolSlot = 0;
 	uint32 TexturePoolWidth = 0;
 	uint32 TexturePoolHeight = 0;
 

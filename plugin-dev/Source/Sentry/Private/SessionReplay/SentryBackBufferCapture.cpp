@@ -20,7 +20,7 @@
 FSentryBackBufferCapture::FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder)
 	: Encoder(InEncoder)
 {
-	TexturePool.SetNum(TexturePoolSize);
+	TexturePool.SetNum(FSentryVideoEncoder::MaxQueueDepth);
 	CapturePeriodSeconds = 1.0 / static_cast<double>(FMath::Max(1u, Encoder.GetFramerate()));
 }
 
@@ -155,13 +155,24 @@ FTextureRHIRef FSentryBackBufferCapture::AcquireTexturePoolSlot_RenderThread(uin
 		}
 		TexturePoolWidth = Width;
 		TexturePoolHeight = Height;
-		NextTexturePoolSlot = 0;
 	}
 
-	FTextureRHIRef& Slot = TexturePool[NextTexturePoolSlot];
-	NextTexturePoolSlot = (NextTexturePoolSlot + 1) % TexturePoolSize;
+	FTextureRHIRef* FreeSlot = nullptr;
+	for (FTextureRHIRef& Slot : TexturePool)
+	{
+		if (Slot.GetRefCount() <= 1)
+		{
+			FreeSlot = &Slot;
+			break;
+		}
+	}
 
-	if (!Slot.IsValid())
+	if (!FreeSlot)
+	{
+		return nullptr;
+	}
+
+	if (!FreeSlot->IsValid())
 	{
 		// Texture flags follow what AVCodecs expects for its NVENC resources
 		// on D3D (see Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp):
@@ -174,9 +185,9 @@ FTextureRHIRef FSentryBackBufferCapture::AcquireTexturePoolSlot_RenderThread(uin
 											   .SetFormat(PF_B8G8R8A8)
 											   .SetFlags(CreateFlags)
 											   .SetInitialState(ERHIAccess::SRVGraphics);
-		Slot = RHICreateTexture(Desc);
+		*FreeSlot = RHICreateTexture(Desc);
 	}
-	return Slot;
+	return *FreeSlot;
 }
 
 FTextureRHIRef FSentryBackBufferCapture::AcquireScratchTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)

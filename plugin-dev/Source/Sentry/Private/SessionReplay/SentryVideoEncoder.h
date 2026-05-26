@@ -52,6 +52,9 @@ public:
 	virtual void Exit() override;
 	virtual uint32 Run() override;
 
+	// Frames buffered for the encoder thread
+	static constexpr int32 MaxQueueDepth = 5;
+
 private:
 	bool EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight);
 
@@ -79,7 +82,6 @@ private:
 	FThreadSafeBool bStopRequested;
 
 	// Encoder thread frame queue
-	static constexpr int32 MaxQueueDepth = 10;
 	FCriticalSection QueueLock;
 	TArray<FTextureRHIRef> PendingQueue;
 
