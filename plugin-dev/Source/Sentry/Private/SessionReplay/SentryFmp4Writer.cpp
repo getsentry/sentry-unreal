@@ -2,7 +2,7 @@
 
 #include "SentryFMP4Writer.h"
 
-#if defined(USE_SENTRY_SESSION_REPLAY)
+#ifdef USE_SENTRY_SESSION_REPLAY
 
 namespace SentryFMP4Detail
 {

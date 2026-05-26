@@ -13,7 +13,7 @@
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
 
-#if defined(USE_SENTRY_SESSION_REPLAY)
+#ifdef USE_SENTRY_SESSION_REPLAY
 #include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
 
@@ -35,10 +35,10 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		ConfigureCrashReporterAppearance(Settings);
 	}
 
-#if defined(USE_SENTRY_SESSION_REPLAY)
+#ifdef USE_SENTRY_SESSION_REPLAY
 	if (IsEnabled() && Settings->AttachSessionReplay)
 	{
-		// Clear replay videos captured during previous session if any.
+		// Clear replay videos captured during previous session if any
 		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
 
 		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
@@ -154,12 +154,9 @@ void FWindowsSentrySubsystem::ConfigureScreenshotCapturing(sentry_options_t* Opt
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-#if defined(USE_SENTRY_SESSION_REPLAY)
+#ifdef USE_SENTRY_SESSION_REPLAY
 	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
 	{
-		// Register the rolling video file as a crash attachment. Sentry-native
-		// forwards this to crashpad's client->AddAttachment IPC; the handler
-		// reads the file off disk when it serialises the report.
 		sentry_attach_filew(*SessionReplay->GetAttachmentPath());
 	}
 #endif
@@ -169,7 +166,7 @@ sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, s
 
 void FWindowsSentrySubsystem::Close()
 {
-#if defined(USE_SENTRY_SESSION_REPLAY)
+#ifdef USE_SENTRY_SESSION_REPLAY
 	if (SessionReplay)
 	{
 		SessionReplay->Shutdown();

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#if defined(USE_SENTRY_SESSION_REPLAY)
+#ifdef USE_SENTRY_SESSION_REPLAY
 
 /**
  * Fragmented MP4 (fMP4) writer for video-only H.264 streams.

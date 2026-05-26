@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#if defined(USE_SENTRY_SESSION_REPLAY)
+#ifdef USE_SENTRY_SESSION_REPLAY
 
 #include "Containers/RingBuffer.h"
 #include "HAL/CriticalSection.h"
