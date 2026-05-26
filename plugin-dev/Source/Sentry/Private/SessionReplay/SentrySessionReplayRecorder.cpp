@@ -105,7 +105,7 @@ void FSentrySessionReplayRecorder::Shutdown()
 	}
 	bEnabled = false;
 
-	// Stop the rotation thread first so it doesn't race against teardown.
+	// Stop the rotation thread first so it doesn't race against teardown
 	bStopRequested.AtomicSet(true);
 	if (RotationWake)
 	{
@@ -196,9 +196,8 @@ void FSentrySessionReplayRecorder::Exit()
 void FSentrySessionReplayRecorder::DoRotation()
 {
 	// The tfdt's base_media_decode_time lives at a fixed byte offset inside
-	// each serialised fragment, given the layout produced by FSentryFMP4Writer:
-	//   moof header (8) + mfhd (16) + traf header (8) + tfhd (16)
-	//   + tfdt size/type/ver/flags (12) = 60
+	// each serialized fragment, given the layout produced by FSentryFMP4Writer:
+	// moof header (8) + mfhd (16) + traf header (8) + tfhd (16) + tfdt size/type/ver/flags (12) = 60
 	// followed by an 8-byte big-endian uint64 value (tfdt v1).
 	constexpr int32 TfdtFieldOffset = 60;
 
@@ -207,7 +206,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 		FScopeLock Lock(&RingLock);
 		if (InitSegment.Num() == 0 || FragmentRing.Num() == 0)
 		{
-			return; // no encoded data yet
+			return;
 		}
 
 		int64 Reserve = InitSegment.Num();
@@ -221,7 +220,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 		// Rebase tfdt so the surviving fragments form a clip starting at t=0.
 		// Without this, evicted fragments leave the kept ones with absolute
 		// session-clock tfdt values, and players that compute duration from
-		// "last sample end time" overstate the clip length.
+		// "last sample end time" overstate the clip length
 		const uint64 FirstTfdt = FSentryFMP4Writer::ReadU64BE(FragmentRing[0], TfdtFieldOffset);
 		for (int32 i = 0; i < FragmentRing.Num(); ++i)
 		{
@@ -234,15 +233,18 @@ void FSentrySessionReplayRecorder::DoRotation()
 		}
 	}
 
-	if (WriteSnapshotAtomically(Snapshot))
+	if (WriteSnapshot(Snapshot))
 	{
 		bSnapshotOnDisk.AtomicSet(true);
 	}
 }
 
-bool FSentrySessionReplayRecorder::WriteSnapshotAtomically(const TArray<uint8>& Bytes)
+bool FSentrySessionReplayRecorder::WriteSnapshot(const TArray<uint8>& Bytes)
 {
-	// 1) Write bytes into the temp file (truncate any prior remnants).
+	// Write to a temp file, then rename it over the attachment. The rename is
+	// atomic, so a reader (crashpad) never sees a torn .mp4 — only the previous
+	// snapshot or the new one. The brief absent window during the replace is
+	// harmless: crashpad just skips the missing attachment.
 	{
 		TUniquePtr<FArchive> Out(IFileManager::Get().CreateFileWriter(*TempPath, FILEWRITE_EvenIfReadOnly));
 		if (!Out)
@@ -259,15 +261,7 @@ bool FSentrySessionReplayRecorder::WriteSnapshotAtomically(const TArray<uint8>& 
 		}
 	}
 
-	// 2) Replace the previous snapshot. IFileManager::Move with bReplace=true
-	//    deletes the destination then renames — not strictly atomic, but the
-	//    rename itself is atomic on both Windows (MoveFileW) and POSIX
-	//    (rename(2)). The brief window between delete and rename where the
-	//    file is absent is harmless: crashpad logs "attachment couldn't be
-	//    opened, skipping" and uploads the report without the video — the
-	//    same fallback we already rely on for early-session crashes that
-	//    fire before the first snapshot is produced.
-	if (!IFileManager::Get().Move(*AttachmentPath, *TempPath, /*bReplace*/ true, /*EvenIfReadOnly*/ true))
+	if (!IFileManager::Get().Move(*AttachmentPath, *TempPath, true, true))
 	{
 		static bool bLoggedOnce = false;
 		if (!bLoggedOnce)

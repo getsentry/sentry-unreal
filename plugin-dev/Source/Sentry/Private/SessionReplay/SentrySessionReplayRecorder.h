@@ -56,7 +56,7 @@ public:
 
 private:
 	void DoRotation();
-	bool WriteSnapshotAtomically(const TArray<uint8>& Bytes);
+	bool WriteSnapshot(const TArray<uint8>& Bytes);
 
 	bool bEnabled = false;
 	FThreadSafeBool bSnapshotOnDisk;
