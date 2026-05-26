@@ -188,7 +188,7 @@ uint32 FSentryVideoEncoder::Run()
 			DrainPackets();
 		}
 
-		if (PendingQueue.Num() == 0 && WakeEvent)
+		if (WakeEvent)
 		{
 			WakeEvent->Wait(50);
 		}
