@@ -4,7 +4,6 @@
 
 #if !USE_SENTRY_NATIVE
 
-
 FAppleSentryFeedback::FAppleSentryFeedback(const FString& message)
 	: Message(message)
 {

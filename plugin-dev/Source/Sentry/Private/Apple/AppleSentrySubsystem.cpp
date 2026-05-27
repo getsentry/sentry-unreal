@@ -261,8 +261,8 @@ void FAppleSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap
 	NSDictionary<NSString*, SentryObjCAttributeContent*>* attributesDict = FAppleSentryConverters::VariantMapToAttributeContentNative(Attributes);
 
 	[[SENTRY_APPLE_CLASS(SentryObjCSDK) metrics] countWithKey:Key.GetNSString()
-													value:(NSUInteger)Value
-											   attributes:attributesDict];
+														value:(NSUInteger)Value
+												   attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
@@ -271,9 +271,9 @@ void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, con
 	SentryObjCUnit* effectiveUnit = Unit.IsEmpty() ? nil : [[SENTRY_APPLE_CLASS(SentryObjCUnit) alloc] initWithRawValue:Unit.GetNSString()];
 
 	[[SENTRY_APPLE_CLASS(SentryObjCSDK) metrics] distributionWithKey:Key.GetNSString()
-														   value:(double)Value
-															unit:effectiveUnit
-													  attributes:attributesDict];
+															   value:(double)Value
+																unit:effectiveUnit
+														  attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
@@ -282,9 +282,9 @@ void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FStr
 	SentryObjCUnit* effectiveUnit = Unit.IsEmpty() ? nil : [[SENTRY_APPLE_CLASS(SentryObjCUnit) alloc] initWithRawValue:Unit.GetNSString()];
 
 	[[SENTRY_APPLE_CLASS(SentryObjCSDK) metrics] gaugeWithKey:Key.GetNSString()
-													value:(double)Value
-													 unit:effectiveUnit
-											   attributes:attributesDict];
+														value:(double)Value
+														 unit:effectiveUnit
+												   attributes:attributesDict];
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()
@@ -560,8 +560,8 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 	TSharedPtr<FAppleSentryTransactionContext> transactionContextIOS = StaticCastSharedPtr<FAppleSentryTransactionContext>(context);
 
 	SentryObjCSpan* transaction = [SENTRY_APPLE_CLASS(SentryObjCSDK) startTransactionWithContext:transactionContextIOS->GetNativeObject()
-																				bindToScope:options.BindToScope
-																	  customSamplingContext:FAppleSentryConverters::VariantMapToNative(options.CustomSamplingContext)];
+																					 bindToScope:options.BindToScope
+																		   customSamplingContext:FAppleSentryConverters::VariantMapToNative(options.CustomSamplingContext)];
 
 	return MakeShareable(new FAppleSentryTransaction(transaction));
 }
@@ -585,12 +585,12 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	SentryObjCId* traceId = [[SENTRY_APPLE_CLASS(SentryObjCId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
 
 	SentryObjCTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryObjCTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
-																											  traceId:traceId
-																											   spanId:[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] init]
-																										 parentSpanId:[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] initWithValue:traceParts[1].GetNSString()]
-																										parentSampled:sampleDecision
-																									 parentSampleRate:nil
-																									 parentSampleRand:nil];
+																													  traceId:traceId
+																													   spanId:[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] init]
+																												 parentSpanId:[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] initWithValue:traceParts[1].GetNSString()]
+																												parentSampled:sampleDecision
+																											 parentSampleRate:nil
+																											 parentSampleRand:nil];
 
 	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
 
