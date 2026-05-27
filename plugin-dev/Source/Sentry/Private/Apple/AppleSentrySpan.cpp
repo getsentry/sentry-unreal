@@ -11,7 +11,7 @@
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
 
-FAppleSentrySpan::FAppleSentrySpan(id<SentrySpan> span)
+FAppleSentrySpan::FAppleSentrySpan(SentryObjCSpan* span)
 {
 	SpanApple = span;
 	[SpanApple retain];
@@ -22,18 +22,18 @@ FAppleSentrySpan::~FAppleSentrySpan()
 	[SpanApple release];
 }
 
-id<SentrySpan> FAppleSentrySpan::GetNativeObject()
+SentryObjCSpan* FAppleSentrySpan::GetNativeObject()
 {
 	return SpanApple;
 }
 
 TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChild(const FString& operation, const FString& desctiption, bool bindToScope)
 {
-	id<SentrySpan> span = [SpanApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
+	SentryObjCSpan* span = [SpanApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
 
 	if (bindToScope)
 	{
-		[SENTRY_APPLE_CLASS(SentrySDK) configureScope:^(SentryScope* scope) {
+		[SENTRY_APPLE_CLASS(SentryObjCSDK) configureScope:^(SentryObjCScope* scope) {
 			scope.span = span;
 		}];
 	}
@@ -85,7 +85,7 @@ void FAppleSentrySpan::RemoveData(const FString& key)
 
 void FAppleSentrySpan::GetTrace(FString& name, FString& value)
 {
-	SentryTraceHeader* traceHeader = [SpanApple toTraceHeader];
+	SentryObjCTraceHeader* traceHeader = [SpanApple toTraceHeader];
 
 	name = TEXT("sentry-trace");
 	value = FString([traceHeader value]);

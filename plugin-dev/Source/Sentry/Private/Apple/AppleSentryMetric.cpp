@@ -11,13 +11,12 @@
 
 FAppleSentryMetric::FAppleSentryMetric()
 {
-	MetricApple = [[SENTRY_APPLE_CLASS(SentryObjCMetric) alloc] initWithTimestamp:[NSDate date]
-																			 name:@""
-																		  traceId:[[SENTRY_APPLE_CLASS(SentryId) alloc] init]
-																		   spanId:nil
-																			value:[SENTRY_APPLE_CLASS(SentryObjCMetricValue) counterWithValue:0]
-																			 unit:nil
-																	   attributes:@{}];
+	MetricApple = [[SENTRY_APPLE_CLASS(SentryObjCMetric) alloc] init];
+	MetricApple.timestamp = [NSDate date];
+	MetricApple.name = @"";
+	MetricApple.traceId = [[SENTRY_APPLE_CLASS(SentryObjCId) alloc] init];
+	MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) counter:0];
+	MetricApple.attributes = @{};
 }
 
 FAppleSentryMetric::FAppleSentryMetric(SentryObjCMetric* metric)
@@ -51,72 +50,85 @@ void FAppleSentryMetric::SetType(const FString& type)
 
 	if (type == TEXT("counter"))
 	{
-		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) counterWithValue:(unsigned long long)currentValue];
+		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) counter:(unsigned long long)currentValue];
 	}
 	else if (type == TEXT("gauge"))
 	{
-		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) gaugeWithValue:(double)currentValue];
+		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) gauge:(double)currentValue];
 	}
 	else if (type == TEXT("distribution"))
 	{
-		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) distributionWithValue:(double)currentValue];
+		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) distribution:(double)currentValue];
 	}
 }
 
 FString FAppleSentryMetric::GetType() const
 {
-	switch (MetricApple.value.type)
+	if (MetricApple.value.isCounter)
 	{
-	case SentryObjCMetricValueTypeCounter:
 		return TEXT("counter");
-	case SentryObjCMetricValueTypeGauge:
-		return TEXT("gauge");
-	case SentryObjCMetricValueTypeDistribution:
-		return TEXT("distribution");
-	default:
-		return FString();
 	}
+	else if (MetricApple.value.isGauge)
+	{
+		return TEXT("gauge");
+	}
+	else if (MetricApple.value.isDistribution)
+	{
+		return TEXT("distribution");
+	}
+
+	return FString();
 }
 
 void FAppleSentryMetric::SetValue(float value)
 {
-	switch (MetricApple.value.type)
+	if (MetricApple.value.isCounter)
 	{
-	case SentryObjCMetricValueTypeCounter:
-		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) counterWithValue:(unsigned long long)value];
-		break;
-	case SentryObjCMetricValueTypeGauge:
-		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) gaugeWithValue:(double)value];
-		break;
-	case SentryObjCMetricValueTypeDistribution:
-		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) distributionWithValue:(double)value];
-		break;
+		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) counter:(unsigned long long)value];
+	}
+	else if (MetricApple.value.isGauge)
+	{
+		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) gauge:(double)value];
+	}
+	else if (MetricApple.value.isDistribution)
+	{
+		MetricApple.value = [SENTRY_APPLE_CLASS(SentryObjCMetricValue) distribution:(double)value];
 	}
 }
 
 float FAppleSentryMetric::GetValue() const
 {
-	switch (MetricApple.value.type)
+	if (MetricApple.value.isCounter)
 	{
-	case SentryObjCMetricValueTypeCounter:
 		return static_cast<float>(MetricApple.value.counterValue);
-	case SentryObjCMetricValueTypeGauge:
-		return static_cast<float>(MetricApple.value.gaugeValue);
-	case SentryObjCMetricValueTypeDistribution:
-		return static_cast<float>(MetricApple.value.distributionValue);
-	default:
-		return 0.0f;
 	}
+	else if (MetricApple.value.isGauge)
+	{
+		return static_cast<float>(MetricApple.value.gaugeValue);
+	}
+	else if (MetricApple.value.isDistribution)
+	{
+		return static_cast<float>(MetricApple.value.distributionValue);
+	}
+
+	return 0.0f;
 }
 
 void FAppleSentryMetric::SetUnit(const FString& unit)
 {
-	MetricApple.unit = unit.GetNSString();
+	if (unit.IsEmpty())
+	{
+		MetricApple.unit = nil;
+	}
+	else
+	{
+		MetricApple.unit = [[SENTRY_APPLE_CLASS(SentryObjCUnit) alloc] initWithRawValue:unit.GetNSString()];
+	}
 }
 
 FString FAppleSentryMetric::GetUnit() const
 {
-	return MetricApple.unit ? FString(MetricApple.unit) : FString();
+	return MetricApple.unit ? FString(MetricApple.unit.rawValue) : FString();
 }
 
 void FAppleSentryMetric::SetAttribute(const FString& key, const FSentryVariant& value)

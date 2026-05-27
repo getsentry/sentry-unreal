@@ -6,22 +6,22 @@
 
 #include "Interface/SentryTransactionContextInterface.h"
 
-@class SentryTransactionContext;
+@class SentryObjCTransactionContext;
 
 class FAppleSentryTransactionContext : public ISentryTransactionContext
 {
 public:
 	FAppleSentryTransactionContext(const FString& name, const FString& operation);
-	FAppleSentryTransactionContext(SentryTransactionContext* context);
+	FAppleSentryTransactionContext(SentryObjCTransactionContext* context);
 	virtual ~FAppleSentryTransactionContext() override;
 
 	virtual FString GetName() const override;
 	virtual FString GetOperation() const override;
 
-	SentryTransactionContext* GetNativeObject();
+	SentryObjCTransactionContext* GetNativeObject();
 
 private:
-	SentryTransactionContext* TransactionContext;
+	SentryObjCTransactionContext* TransactionContext;
 };
 
 typedef FAppleSentryTransactionContext FPlatformSentryTransactionContext;

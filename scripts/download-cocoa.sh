@@ -12,9 +12,9 @@ if ! [ -d "$sentryCocoaCache" ]; then
     mkdir $sentryCocoaCache
 fi
 
-# TEMP PATCH: pull SentryObjC from sentry-cocoa CI artifact for Metrics API evaluation
-gh run download 25172608781 -R getsentry/sentry-cocoa \
-    -n "xcframework-d5e8e7c8ca8fc8edc3d8622c6dbda29ff679d879-sentryobjc-dynamic" \
+# TEMP PATCH: pull SentryObjC from sentry-cocoa CI artifact for Metrics API evaluation\
+gh run download 26515702183 -R getsentry/sentry-cocoa \
+    -n "xcframework-b1f0d15c8f9058a6deae782370346fb8cd16d710-sentryobjc-dynamic" \
     -D "${sentryCocoaCache}"
 
 unzip -o "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework.zip" -d "${sentryCocoaCache}/"
@@ -26,7 +26,7 @@ else
     rm -rf "$(dirname $sentryArtifactsDestination)/IOS/"*
 fi
 
-cp -R "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/ios-arm64/SentryObjC.framework" "$(dirname $sentryArtifactsDestination)/IOS/SentryObjC.framework"
+cp -R "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/ios-arm64_arm64e/SentryObjC.framework" "$(dirname $sentryArtifactsDestination)/IOS/SentryObjC.framework"
 
 mkdir "SentryObjC.embeddedframework"
 
@@ -47,6 +47,6 @@ fi
 mkdir "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/bin"
 mkdir "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/include"
 
-cp "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_x86_64/SentryObjC.framework/SentryObjC" "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/bin/SentryObjC.dylib"
+cp "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_arm64e_x86_64/SentryObjC.framework/SentryObjC" "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/bin/SentryObjC.dylib"
 
-cp -rL "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_x86_64/SentryObjC.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/include/SentryObjC"
+cp -rL "${sentryCocoaCache}/SentryObjC-Dynamic.xcframework/macos-arm64_arm64e_x86_64/SentryObjC.framework/Headers" "$(dirname $sentryArtifactsDestination)/Mac/Cocoa/include/SentryObjC"
