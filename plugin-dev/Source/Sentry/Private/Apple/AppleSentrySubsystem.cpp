@@ -43,9 +43,6 @@
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
-FAppleSentrySubsystem::FAppleSentrySubsystem() = default;
-FAppleSentrySubsystem::~FAppleSentrySubsystem() = default;
-
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
 	USentryBeforeSendHandler* beforeSendHandler = callbackHandlers.BeforeSendHandler;

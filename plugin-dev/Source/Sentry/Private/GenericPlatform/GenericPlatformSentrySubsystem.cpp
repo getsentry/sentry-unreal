@@ -458,8 +458,6 @@ void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const ch
 	sentry_value_set_by_key(eventTags, key, sentry_value_new_string(value));
 }
 
-FGenericPlatformSentrySubsystem::~FGenericPlatformSentrySubsystem() = default;
-
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: bUseNativeBackend(false)
 	, beforeSend(nullptr)

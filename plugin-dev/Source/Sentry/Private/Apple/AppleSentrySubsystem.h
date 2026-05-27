@@ -9,9 +9,6 @@
 class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
-	FAppleSentrySubsystem();
-	virtual ~FAppleSentrySubsystem() override;
-
 	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
 	virtual void Close() override;
 	virtual bool IsEnabled() override;
