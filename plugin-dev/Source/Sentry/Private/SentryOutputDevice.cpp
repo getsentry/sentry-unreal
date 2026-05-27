@@ -42,6 +42,12 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 {
 	TGuardValue<bool> IsSerializingGuard(bIsSerializing, true);
 
+	USentrySubsystem* SentrySubsystem = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
+	if (!SentrySubsystem || !SentrySubsystem->IsEnabled() || SentrySubsystem->IsCrashing())
+	{
+		return;
+	}
+
 	// Filter internal log messages coming from the underlying platform-specific Sentry SDKs
 	if (Category.IsEqual(TEXT("LogSentryInternal")))
 	{
@@ -56,12 +62,6 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 
 	ESentryLevel Level = SentryLogUtils::ConvertLogVerbosityToSentryLevel(Verbosity);
 	const FString CategoryString = Category.ToString();
-
-	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-	if (!SentrySubsystem || !SentrySubsystem->IsEnabled())
-	{
-		return;
-	}
 
 	if (bIsStructuredLoggingEnabled && ShouldForwardToStructuredLogging(CategoryString, Level))
 	{

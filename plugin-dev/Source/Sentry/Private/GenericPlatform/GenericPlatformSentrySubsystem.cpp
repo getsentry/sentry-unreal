@@ -106,7 +106,13 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 {
 	if (closure)
 	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnCrash(uctx, event, closure);
+		FGenericPlatformSentrySubsystem* platformSubsystem = StaticCast<FGenericPlatformSentrySubsystem*>(closure);
+
+		// Set as early as possible so platform-specific crash handlers can also
+		// benefit from short-circuiting user callbacks.
+		platformSubsystem->bIsCrashing = true;
+
+		return platformSubsystem->OnCrash(uctx, event, closure);
 	}
 	else
 	{
@@ -171,7 +177,16 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
-	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
+	USentryEvent* EventToProcess;
+	if (isCrash && PooledCrashEvent.IsValid())
+	{
+		PooledCrashEvent->SetNativeImpl(MakeShareable(new FGenericPlatformSentryEvent(event, true)));
+		EventToProcess = PooledCrashEvent.Get();
+	}
+	else
+	{
+		EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
+	}
 
 	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, nullptr);
 
@@ -189,6 +204,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 	if (!Handler)
 	{
 		// If custom handler isn't set skip further processing
+		return breadcrumb;
+	}
+
+	if (bIsCrashing)
+	{
 		return breadcrumb;
 	}
 
@@ -224,6 +244,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 		return log;
 	}
 
+	if (bIsCrashing)
+	{
+		return log;
+	}
+
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
 		return log;
@@ -254,6 +279,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 	if (!Handler)
 	{
 		// If custom handler isn't set skip further processing
+		return metric;
+	}
+
+	if (bIsCrashing)
+	{
 		return metric;
 	}
 
@@ -308,6 +338,11 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 	if (!Sampler)
 	{
 		// If custom sampler isn't set skip further processing
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	if (bIsCrashing)
+	{
 		return parent_sampled != nullptr ? *parent_sampled : 0.0;
 	}
 
@@ -435,7 +470,9 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isStackTraceEnabled(true)
 	, isPiiAttachmentEnabled(false)
 	, isScreenshotAttachmentEnabled(false)
+	, isSessionReplayAttachmentEnabled(false)
 	, isGpuDumpAttachmentEnabled(false)
+	, initTimestamp(FDateTime::UtcNow())
 {
 }
 
@@ -484,6 +521,12 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		}
 	}
 
+	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
+	if (isSessionReplayAttachmentEnabled)
+	{
+		ConfigureSessionReplayCapturing(options);
+	}
+
 	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
 
 	if (settings->UseProxy)
@@ -523,7 +566,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
 	sentry_options_set_before_send_log(options, HandleBeforeLog, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
-	sentry_options_set_shutdown_timeout(options, 3000);
+	sentry_options_set_shutdown_timeout(options, settings->ShutdownTimeout);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
@@ -531,6 +574,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
 	sentry_options_set_http_retry(options, 1);
+	sentry_options_set_enable_large_attachments(options, settings->EnableLargeAttachments);
 
 	if (bUseNativeBackend)
 	{
@@ -580,11 +624,18 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 			RevokeUserConsent();
 		}
 	}
+
+	// Pre-allocate a USentryEvent to be reused on the crash path. This avoids `NewObject` (and the
+	// associated GC lock acquisition) inside the `before_send` callback when handling fatal errors,
+	// which can re-trigger memory-related crashes (e.g. stack overflow).
+	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
 }
 
 void FGenericPlatformSentrySubsystem::Close()
 {
 	isEnabled = false;
+
+	PooledCrashEvent.Reset();
 
 	sentry_close();
 }
@@ -592,6 +643,11 @@ void FGenericPlatformSentrySubsystem::Close()
 bool FGenericPlatformSentrySubsystem::IsEnabled()
 {
 	return isEnabled;
+}
+
+bool FGenericPlatformSentrySubsystem::IsCrashing() const
+{
+	return bIsCrashing;
 }
 
 ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
@@ -1133,6 +1189,20 @@ void FGenericPlatformSentrySubsystem::TryCaptureGpuDump()
 		MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
 
 	AddFileAttachment(GpuDumpAttachment);
+
+	// Attach NVIDIA Aftermath .nvdbg files written during this SDK session (older files are assumed to belong to previous crashes)
+	for (const FString& NvdbgPath : SentryFileUtils::GetGpuShaderDebugInfoPaths())
+	{
+		if (IFileManager::Get().GetTimeStamp(*NvdbgPath) < initTimestamp)
+		{
+			continue;
+		}
+
+		TSharedPtr<ISentryAttachment> NvdbgAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(NvdbgPath, FPaths::GetCleanFilename(NvdbgPath), TEXT("application/octet-stream")));
+
+		AddFileAttachment(NvdbgAttachment);
+	}
 }
 
 void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USentrySettings* Settings)

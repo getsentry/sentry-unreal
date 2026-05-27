@@ -12,6 +12,7 @@ public:
 	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override {}
 	virtual void Close() override {}
 	virtual bool IsEnabled() override { return false; }
+	virtual bool IsCrashing() const override { return false; }
 	virtual ESentryCrashedLastRun IsCrashedLastRun() override { return ESentryCrashedLastRun::NotEvaluated; }
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override {}
 	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override {}

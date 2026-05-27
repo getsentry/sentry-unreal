@@ -326,12 +326,9 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 		return unrealMap;
 	}
 
-	TArray<FString> keysArr;
-	jsonObject->Values.GetKeys(keysArr);
-
-	for (auto it = keysArr.CreateConstIterator(); it; ++it)
+	for (const auto& pair : jsonObject->Values)
 	{
-		unrealMap.Add(*it, VariantToUnreal(sentry_value_get_by_key(map, TCHAR_TO_UTF8(**it))));
+		unrealMap.Add(FString(*pair.Key), VariantToUnreal(sentry_value_get_by_key(map, TCHAR_TO_UTF8(*pair.Key))));
 	}
 
 	sentry_string_free(jsonString);
@@ -378,12 +375,10 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 		return unrealMap;
 	}
 
-	TArray<FString> keysArr;
-	jsonObject->Values.GetKeys(keysArr);
-
-	for (auto it = keysArr.CreateConstIterator(); it; ++it)
+	for (const auto& pair : jsonObject->Values)
 	{
-		unrealMap.Add(*it, jsonObject->GetStringField(*it));
+		FString key(*pair.Key);
+		unrealMap.Add(key, jsonObject->GetStringField(key));
 	}
 
 	sentry_string_free(jsonString);

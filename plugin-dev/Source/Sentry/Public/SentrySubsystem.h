@@ -561,6 +561,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	bool IsSupportedForCurrentSettings() const;
 
+	/** Returns true once a fatal crash has been detected by the Sentry SDK (native platforms only). */
+	bool IsCrashing() const;
+
 	/** Retrieves the underlying native implementation. */
 	TSharedPtr<ISentrySubsystem> GetNativeObject() const;
 

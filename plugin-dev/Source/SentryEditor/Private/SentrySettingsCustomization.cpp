@@ -192,7 +192,7 @@ void FSentrySettingsCustomization::DrawSentryCrashReporterSection(IDetailLayoutB
 			.VAlign(VAlign_Top)
 			[
 				SNew(SRichTextBlock)
-				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/configuration/setup-crashreporter/#sentry-crash-reporter\">View the Sentry Crash Reporter setup documentation -></>")))
+				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/configuration/crash-reporter/sentry-crash-reporter/#sentry-crash-reporter\">View the Sentry Crash Reporter setup documentation -></>")))
 				.AutoWrapText(true)
 				.DecoratorStyleSet(&FCoreStyle::Get())
 				+ SRichTextBlock::HyperlinkDecorator(TEXT("browser"), FSlateHyperlinkRun::FOnClick::CreateStatic(&OnDocumentationLinkClicked))
@@ -246,7 +246,7 @@ void FSentrySettingsCustomization::DrawUnrealCrashReporterNotice(IDetailLayoutBu
 			.VAlign(VAlign_Top)
 			[
 				SNew(SRichTextBlock)
-				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/setup-crashreporter/\">View the Unreal Crash Reporter setup documentation -></>")))
+				.Text(FText::FromString(TEXT("<a id=\"browser\" href=\"https://docs.sentry.io/platforms/unreal/configuration/crash-reporter/crash-reporter-client/\">View the Unreal Crash Reporter setup documentation -></>")))
 				.AutoWrapText(true)
 				.DecoratorStyleSet(&FCoreStyle::Get())
 				+ SRichTextBlock::HyperlinkDecorator(TEXT("browser"), FSlateHyperlinkRun::FOnClick::CreateStatic(&OnDocumentationLinkClicked))

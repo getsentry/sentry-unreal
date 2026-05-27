@@ -113,15 +113,15 @@ struct FStructuredLoggingLevels
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Fatal", ToolTip = "Flag indicating whether to forward Fatal log messages to Sentry structured logging."))
-	bool bOnFatalLog = true;
+	bool bOnFatalLog = false;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Error", ToolTip = "Flag indicating whether to forward Error log messages to Sentry structured logging."))
-	bool bOnErrorLog = true;
+	bool bOnErrorLog = false;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Warning", ToolTip = "Flag indicating whether to forward Warning log messages to Sentry structured logging."))
-	bool bOnWarningLog = true;
+	bool bOnWarningLog = false;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Display/Log", ToolTip = "Flag indicating whether to forward Display/Log messages to Sentry structured logging."))
@@ -340,12 +340,25 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOutOfProcessScreenshots;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Attach session replay (experimental)", ToolTip = "Enables session replay capture. On Android, records a continuous video of the session and sends it with error events. On Xbox development kits, attaches a short retroactive video clip on crash, captured from the OS-managed game recording ring. Currently supported on Android and Xbox development kits only."))
+	bool AttachSessionReplay;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
+		Meta = (DisplayName = "Session replay duration (ms, Xbox only)", ToolTip = "Requested duration of the retroactive session replay clip on Xbox. The resulting clip can be shorter than the requested duration if it hasn't accumulated enough buffered frames yet. This setting is ignored on Android, where the replay duration is determined by the Sentry SDK.",
+			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "15000"))
+	uint32 SessionReplayDurationMs;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Attachments",
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only."))
 	bool AttachGpuDump;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Attachments",
 		Meta = (DisplayName = "Max attachment size in bytes", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed but this size is planned to be increased. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/"))
 	int32 MaxAttachmentSize;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Attachments",
+		Meta = (DisplayName = "Enable large attachments (for desktop and consoles only)", ToolTip = "When enabled, attachments above an internal size threshold are uploaded out-of-band via a separate request. When disabled, oversized attachments are rejected by Sentry. Currently supported on Windows, Linux, Mac (with native backend) and consoles."))
+	bool EnableLargeAttachments;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
 		Meta = (DisplayName = "Enable structured logging", ToolTip = "Flag indicating whether to enable structured logging that forwards UE_LOG calls to Sentry logger."))
@@ -485,6 +498,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use."))
 	bool EnableOnCrashLogging;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
+		Meta = (DisplayName = "Shutdown timeout, milliseconds", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0))
+	int32 ShutdownTimeout;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Sentry Crash Reporter",
 		Meta = (DisplayName = "Enable Sentry Crash Reporter",
