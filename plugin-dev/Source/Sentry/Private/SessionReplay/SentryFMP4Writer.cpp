@@ -322,7 +322,7 @@ static TArray<uint8> BuildTrex()
 	WriteU32(P, 1);							 // default_sample_description_index
 	WriteU32(P, 0);							 // default_sample_duration
 	WriteU32(P, 0);							 // default_sample_size
-	WriteU32(P, 0);							 // default_sample_flags
+	WriteU32(P, 0x01010000);				 // default_sample_flags: depends-on-others + non-sync (P-frame)
 	return FullBox("trex", 0, 0, P);
 }
 
