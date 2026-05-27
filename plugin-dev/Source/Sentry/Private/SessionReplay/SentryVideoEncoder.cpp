@@ -8,7 +8,6 @@
 #include "SentrySessionReplayRecorder.h"
 
 #include "HAL/Event.h"
-#include "HAL/PlatformTime.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/ScopeLock.h"
 #include "RHI.h"
@@ -82,7 +81,7 @@ void FSentryVideoEncoder::StopEncoder()
 	}
 }
 
-void FSentryVideoEncoder::SubmitFrame(const FTextureRHIRef& Texture)
+void FSentryVideoEncoder::SubmitFrame(const FTextureRHIRef& Texture, double CaptureTimeSeconds)
 {
 	if (!Texture.IsValid() || bStopRequested || bEncodingDisabled)
 	{
@@ -95,7 +94,7 @@ void FSentryVideoEncoder::SubmitFrame(const FTextureRHIRef& Texture)
 		{
 			PendingQueue.RemoveAt(0, 1, EAllowShrinking::No);
 		}
-		PendingQueue.Add(Texture);
+		PendingQueue.Add(FPendingFrame{ Texture, CaptureTimeSeconds });
 	}
 	if (WakeEvent)
 	{
@@ -127,7 +126,7 @@ uint32 FSentryVideoEncoder::Run()
 {
 	while (!bStopRequested)
 	{
-		TArray<FTextureRHIRef> Frames;
+		TArray<FPendingFrame> Frames;
 		{
 			FScopeLock Lock(&QueueLock);
 			Swap(Frames, PendingQueue);
@@ -142,8 +141,9 @@ uint32 FSentryVideoEncoder::Run()
 			continue;
 		}
 
-		for (const FTextureRHIRef& FrameTexture : Frames)
+		for (const FPendingFrame& Frame : Frames)
 		{
+			const FTextureRHIRef& FrameTexture = Frame.Texture;
 			if (!FrameTexture.IsValid())
 			{
 				continue;
@@ -158,16 +158,19 @@ uint32 FSentryVideoEncoder::Run()
 			TSharedRef<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(Encoder->GetDevice().ToSharedRef(),
 				FVideoResourceRHI::FRawData{ FrameTexture, nullptr, 0 });
 
-			const double NowSec = FPlatformTime::Seconds();
 			bool bForceKeyframe = false;
-			if (LastForcedKeyframeTime <= 0.0 || (NowSec - LastForcedKeyframeTime) >= FragmentSeconds)
+			if (LastForcedKeyframeTime <= 0.0 || (Frame.CaptureTimeSeconds - LastForcedKeyframeTime) >= FragmentSeconds)
 			{
 				bForceKeyframe = true;
-				LastForcedKeyframeTime = NowSec;
+				LastForcedKeyframeTime = Frame.CaptureTimeSeconds;
 			}
 
-			const uint32 TimestampMs = static_cast<uint32>(EncodedFrameCount * 1000u / FMath::Max(1u, Framerate));
-			++EncodedFrameCount;
+			if (CaptureTimeBaseSeconds < 0.0)
+			{
+				CaptureTimeBaseSeconds = Frame.CaptureTimeSeconds;
+			}
+
+			const uint32 TimestampMs = static_cast<uint32>(FMath::Max(0.0, (Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds) * 1000.0));
 
 			const FAVResult Result = Encoder->SendFrame(Resource, TimestampMs, bForceKeyframe);
 			if (Result.IsSuccess())
@@ -289,17 +292,30 @@ void FSentryVideoEncoder::DrainPackets()
 			CurrentSamples.Reset();
 		}
 
-		// Wall-clock sample duration: the gap between the previous packet's
-		// emission and now. The first packet of the session uses a 1/Framerate
-		// fallback. This way the recorded video plays back at real time even
-		// when the source renders below the configured target rate
-		const double Now = FPlatformTime::Seconds();
-		double DurationSeconds = (LastPacketTime <= 0.0) ? (1.0 / FMath::Max(1u, Framerate)) : (Now - LastPacketTime);
+		// The encoder echoes back the capture timestamp we passed to SendFrame
+		// (ms, relative to the first frame). Sample duration is the gap to the
+		// previously emitted sample, so playback follows the real capture cadence
+		// rather than the bursty encoder output cadence (and stays real-time even
+		// when the source renders below the configured target rate). A skipped
+		// packet never updates the marker, so its interval folds into the next
+		// sample. The first sample falls back to a nominal 1/Framerate
+		const uint32 PacketTimestampMs = static_cast<uint32>(Packet.Timestamp);
+		double DurationSeconds;
+		if (!bHavePrevPacketTimestamp)
+		{
+			DurationSeconds = 1.0 / FMath::Max(1u, Framerate);
+		}
+		else
+		{
+			const uint32 DeltaMs = PacketTimestampMs - LastPacketTimestampMs;
+			DurationSeconds = DeltaMs / 1000.0;
+		}
 
 		// Guard against runaway durations if the encoder stalled (e.g. window minimised)
 		DurationSeconds = FMath::Min(DurationSeconds, 2.0);
 
-		LastPacketTime = Now;
+		LastPacketTimestampMs = PacketTimestampMs;
+		bHavePrevPacketTimestamp = true;
 
 		const uint32 DurationTicks = FMath::Max<uint32>(1, static_cast<uint32>(DurationSeconds * FSentryFMP4Writer::TrackTimescale));
 

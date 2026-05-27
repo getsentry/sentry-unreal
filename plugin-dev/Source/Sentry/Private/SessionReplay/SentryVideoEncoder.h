@@ -42,7 +42,7 @@ public:
 	void StopEncoder();
 
 	// Enqueues a texture for the encoder thread to process
-	void SubmitFrame(const FTextureRHIRef& Texture);
+	void SubmitFrame(const FTextureRHIRef& Texture, double CaptureTimeSeconds);
 
 	uint32 GetFramerate() const { return Framerate; }
 
@@ -82,12 +82,19 @@ private:
 	FThreadSafeBool bStopRequested;
 
 	// Encoder thread frame queue
+	struct FPendingFrame
+	{
+		FTextureRHIRef Texture;
+		double CaptureTimeSeconds = 0.0;
+	};
+
 	FCriticalSection QueueLock;
-	TArray<FTextureRHIRef> PendingQueue;
+	TArray<FPendingFrame> PendingQueue;
 
 	// Timing (encoder-thread-only)
-	uint64 EncodedFrameCount = 0;
-	double LastPacketTime = 0.0;
+	double CaptureTimeBaseSeconds = -1.0;
+	uint32 LastPacketTimestampMs = 0;
+	bool bHavePrevPacketTimestamp = false;
 	double LastForcedKeyframeTime = 0.0;
 
 	// Fragment-in-progress state

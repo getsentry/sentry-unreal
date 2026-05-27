@@ -9,15 +9,12 @@
 #include "Microsoft/MicrosoftSentrySubsystem.h"
 
 #ifdef USE_SENTRY_SESSION_REPLAY
-class FSentrySessionReplayRecorder;
+#include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
 
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
 public:
-	FWindowsSentrySubsystem();
-	virtual ~FWindowsSentrySubsystem() override;
-
 	virtual void InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers) override;
 	virtual void Close() override;
 

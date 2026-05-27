@@ -142,7 +142,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	// Leave the destination in a shader-readable state for NVENC
 	RHICmdList.Transition(FRHITransitionInfo(DestTexture.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
 
-	Encoder.SubmitFrame(DestTexture);
+	Encoder.SubmitFrame(DestTexture, Now);
 }
 
 FTextureRHIRef FSentryBackBufferCapture::AcquireTexturePoolSlot_RenderThread(uint32 Width, uint32 Height)

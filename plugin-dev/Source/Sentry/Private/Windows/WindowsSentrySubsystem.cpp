@@ -15,11 +15,7 @@
 
 #ifdef USE_SENTRY_SESSION_REPLAY
 #include "GenericPlatform/GenericPlatformSentryAttachment.h"
-#include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
-
-FWindowsSentrySubsystem::FWindowsSentrySubsystem() = default;
-FWindowsSentrySubsystem::~FWindowsSentrySubsystem() = default;
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers)
 {
