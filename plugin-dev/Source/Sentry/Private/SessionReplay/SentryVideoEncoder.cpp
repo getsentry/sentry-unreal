@@ -191,6 +191,8 @@ uint32 FSentryVideoEncoder::Run()
 			DrainPackets();
 		}
 
+		Frames.Reset();
+
 		if (WakeEvent)
 		{
 			WakeEvent->Wait(50);
