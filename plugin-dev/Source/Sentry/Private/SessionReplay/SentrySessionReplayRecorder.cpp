@@ -13,6 +13,7 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
+#include "Misc/App.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeLock.h"
 
@@ -29,6 +30,12 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 
 	if (!Settings || !Settings->AttachSessionReplay)
 	{
+		return false;
+	}
+
+	if (!FApp::CanEverRender())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay disabled: no rendering RHI available (commandlet, dedicated server, or -NullRHI)"));
 		return false;
 	}
 
