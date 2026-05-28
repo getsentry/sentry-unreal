@@ -80,6 +80,12 @@ jobs:
           docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
           docker exec unreal powershell -Command 'Copy-Item -Path "C:/workspace/checkout/.github/BuildConfiguration.xml" -Destination "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml" -Force'
 
+      # UE 4.27 doesn't ship the AVCodecs plugins family so references to them have to be stripped from the project file
+      - name: Strip experimental codec plugin refs (UE 4.27)
+        if: ${{ inputs.unreal-version == '4.27' }}
+        shell: pwsh
+        run: ./checkout/scripts/strip-plugin-refs.ps1 -ProjectPath checkout/sample/SentryPlayground.uproject -PluginNames AVCodecsCore,NVCodecs
+
       - name: Build and test (Crashpad)
         id: run-tests
         env:
