@@ -26,9 +26,6 @@ struct FSentryH264Sample
 
 	// Sample duration in track timescale ticks.
 	uint32 Duration;
-
-	// Whether this is an IDR sample (the first sample of every fragment must be IDR).
-	bool bIsKeyframe;
 };
 
 class FSentryFMP4Writer

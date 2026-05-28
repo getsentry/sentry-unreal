@@ -324,7 +324,6 @@ void FSentryVideoEncoder::DrainPackets()
 		FSentryH264Sample Sample;
 		Sample.AvccBytes = MoveTemp(Avcc);
 		Sample.Duration = DurationTicks;
-		Sample.bIsKeyframe = Packet.bIsKeyframe != 0;
 
 		if (CurrentSamples.Num() == 0)
 		{
