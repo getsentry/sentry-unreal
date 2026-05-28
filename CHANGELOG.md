@@ -5,6 +5,7 @@
 ### Features
 
 - Add experimental session replay capturing for Android ([#1386](https://github.com/getsentry/sentry-unreal/pull/1386))
+- Add configurable cache mode setting for Sentry Crash Reporter ([#1408](https://github.com/getsentry/sentry-unreal/pull/1408))
 
 ### Dependencies
 

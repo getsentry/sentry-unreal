@@ -44,6 +44,19 @@ enum class ESentryDatabaseLocation : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESentryCrashReporterCacheKeep : uint8
+{
+	// Use the crash reporter's compiled-in default (Offline)
+	Default,
+	// Never retain envelopes after submission attempts
+	None,
+	// Retain envelopes only when the host appears offline
+	Offline,
+	// Always retain envelopes regardless of submission outcome
+	Always
+};
+
+UENUM(BlueprintType)
 enum class ESentryAndroidCrashBackend : uint8
 {
 	// Capture crashes using the sentry-native NDK signal handler only
@@ -280,6 +293,10 @@ struct FSentryCrashReporterAppearance
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Window closable", ToolTip = "When disabled, the user cannot close the crash reporter window without submitting the report. The native close button is disabled and the cancel button is hidden."))
 	bool bWindowClosable = true;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Cache mode", ToolTip = "Initial cache mode shown to the user in the crash reporter when they have not selected one. The user can still override this at runtime. 'None' never keeps envelopes after submission, 'Offline' keeps them only while the host is offline, 'Always' keeps them regardless of submission outcome. Leave as 'Default' to let the crash reporter use its built-in default."))
+	ESentryCrashReporterCacheKeep CacheKeep = ESentryCrashReporterCacheKeep::Default;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "App logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image. The file is stored in Build/SentryCrashReporter/ under your project and staged alongside the plugin during packaging."))
