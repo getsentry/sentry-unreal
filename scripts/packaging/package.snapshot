@@ -473,6 +473,7 @@ Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libhostpolicy.dyli
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libicudata.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libicuuc.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libSkiaSharp.dylib
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libsymbolic_native.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libSystem.Globalization.Native.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libSystem.IO.Compression.Native.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libSystem.Native.dylib
@@ -577,6 +578,7 @@ Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/splash_screen.
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/splash_screen.scale-300.png
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/splash_screen.scale-400.png
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/Splat.dll
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/Symbolic.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Collections.Concurrent.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Collections.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Collections.Immutable.dll
