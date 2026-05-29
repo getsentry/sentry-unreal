@@ -288,6 +288,7 @@ Source/SentryEditor/Public/SentrySymToolsDownloader.h
 Source/SentryEditor/SentryEditor.Build.cs
 Source/ThirdParty/Android/sentry-android-core-release.aar
 Source/ThirdParty/Android/sentry-android-ndk-release.aar
+Source/ThirdParty/Android/sentry-android-replay-release.aar
 Source/ThirdParty/Android/sentry-native-ndk-release.aar
 Source/ThirdParty/Android/sentry.jar
 Source/ThirdParty/CLI/sentry-cli-Darwin-universal
@@ -742,6 +743,7 @@ Source/ThirdParty/Win64/Crashpad/lib/mini_chromium.lib
 Source/ThirdParty/Win64/Crashpad/lib/sentry.lib
 Source/ThirdParty/Win64/Native/bin/sentry-crash.exe
 Source/ThirdParty/Win64/Native/include/sentry.h
+Source/ThirdParty/Win64/Native/lib/sentry-wer.lib
 Source/ThirdParty/Win64/Native/lib/sentry.lib
 Source/ThirdParty/Win64/Sentry.CrashReporter.exe
 Source/ThirdParty/WinArm64/Crashpad/bin/crashpad_handler.exe
@@ -761,5 +763,6 @@ Source/ThirdParty/WinArm64/Crashpad/lib/mini_chromium.lib
 Source/ThirdParty/WinArm64/Crashpad/lib/sentry.lib
 Source/ThirdParty/WinArm64/Native/bin/sentry-crash.exe
 Source/ThirdParty/WinArm64/Native/include/sentry.h
+Source/ThirdParty/WinArm64/Native/lib/sentry-wer.lib
 Source/ThirdParty/WinArm64/Native/lib/sentry.lib
 Source/ThirdParty/WinArm64/Sentry.CrashReporter.exe
