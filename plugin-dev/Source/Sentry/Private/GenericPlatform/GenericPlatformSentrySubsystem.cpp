@@ -1249,6 +1249,11 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 	{
 		AppConfigObject->SetBoolField(TEXT("WindowClosable"), false);
 	}
+	if (Appearance.CacheKeep != ESentryCrashReporterCacheKeep::Default)
+	{
+		const FString CacheKeepStr = StaticEnum<ESentryCrashReporterCacheKeep>()->GetNameStringByValue(static_cast<int64>(Appearance.CacheKeep));
+		AppConfigObject->SetStringField(TEXT("CacheKeep"), CacheKeepStr);
+	}
 
 	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));
 
