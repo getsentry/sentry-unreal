@@ -84,6 +84,7 @@ public class SentryBridgeJava {
 						options.addInAppExclude(Excludes.getString(i));
 					}
 					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
+					options.setAnrTimeoutIntervalMillis(settingJson.getLong("anrTimeoutMillis"));
                     options.setEnableNdk(settingJson.getBoolean("enableNdk"));
                     options.setTombstoneEnabled(settingJson.getBoolean("enableTombstone"));
 					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));

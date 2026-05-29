@@ -571,6 +571,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable ANR error tracking", Tooltip = "Flag indicating whether to enable tracking of ANR (app not responding) errors."))
 	bool EnableAppNotRespondingTracking;
 
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Mobile",
+		Meta = (DisplayName = "ANR timeout (seconds)", ToolTip = "Duration the main thread must be unresponsive before an ANR/app-hang event is captured. Applied on Apple (iOS/macOS) and on Android API < 30. On Android API >= 30, the OS controls the threshold via ApplicationExitInfo and this value is ignored.",
+			EditCondition = "EnableAppNotRespondingTracking", ClampMin = 1.0f))
+	float AppNotRespondingTimeout;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Mobile",
 		Meta = (DisplayName = "Android crash capturing backend", ToolTip = "Mechanism used to capture Android crashes and enrich them with additional context."))
 	ESentryAndroidCrashBackend AndroidCrashBackend;
