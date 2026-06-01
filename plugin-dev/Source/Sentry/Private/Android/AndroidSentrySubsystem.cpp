@@ -28,6 +28,7 @@
 
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformTLS.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
 #include "Misc/OutputDeviceError.h"
@@ -73,6 +74,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
 	SettingsJson->SetNumberField(TEXT("anrTimeoutMillis"), settings->AppNotRespondingTimeout * 1000.0f);
+	if (settings->EnableAppNotRespondingTracking)
+	{
+		SettingsJson->SetNumberField(TEXT("anrThreadId"), static_cast<double>(FPlatformTLS::GetCurrentThreadId()));
+	}
 	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidCrashBackend != ESentryAndroidCrashBackend::TombstoneOnly);
 	SettingsJson->SetBoolField(TEXT("enableTombstone"),
 		settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneOnly || settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneMergedWithNdk);
@@ -123,6 +128,14 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 			TryCaptureScreenshot();
 		});
 	}
+
+	if (IsEnabled() && settings->EnableAppNotRespondingTracking)
+	{
+		AnrHeartbeatDelegateHandle = FCoreDelegates::OnEndFrame.AddLambda([]()
+		{
+			FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "notifyAnrThreadAlive", "()V");
+		});
+	}
 }
 
 void FAndroidSentrySubsystem::Close()
@@ -131,6 +144,12 @@ void FAndroidSentrySubsystem::Close()
 	{
 		FCoreDelegates::OnHandleSystemError.Remove(OnHandleSystemErrorDelegateHandle);
 		OnHandleSystemErrorDelegateHandle.Reset();
+	}
+
+	if (AnrHeartbeatDelegateHandle.IsValid())
+	{
+		FCoreDelegates::OnEndFrame.Remove(AnrHeartbeatDelegateHandle);
+		AnrHeartbeatDelegateHandle.Reset();
 	}
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "flush", "(J)V", (jlong)3000);

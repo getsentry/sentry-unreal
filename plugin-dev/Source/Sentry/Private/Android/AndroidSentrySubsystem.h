@@ -64,6 +64,7 @@ private:
 	bool isScreenshotAttachmentEnabled = false;
 
 	FDelegateHandle OnHandleSystemErrorDelegateHandle;
+	FDelegateHandle AnrHeartbeatDelegateHandle;
 };
 
 typedef FAndroidSentrySubsystem FPlatformSentrySubsystem;

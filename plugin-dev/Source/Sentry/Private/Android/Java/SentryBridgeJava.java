@@ -85,6 +85,9 @@ public class SentryBridgeJava {
 					}
 					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
 					options.setAnrTimeoutIntervalMillis(settingJson.getLong("anrTimeoutMillis"));
+					if (settingJson.has("anrThreadId")) {
+						options.setAnrThreadId(settingJson.getLong("anrThreadId"));
+					}
                     options.setEnableNdk(settingJson.getBoolean("enableNdk"));
                     options.setTombstoneEnabled(settingJson.getBoolean("enableTombstone"));
 					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));
@@ -324,6 +327,10 @@ public class SentryBridgeJava {
 
 	public static void clearAttachments() {
 		Sentry.getGlobalScope().clearAttachments();
+	}
+
+	public static void notifyAnrThreadAlive() {
+		io.sentry.AnrHeartbeatRegistry.notifyAlive();
 	}
 
 	public static void addLogFatal(final String message, final HashMap<String, Object> attributesMap) {
