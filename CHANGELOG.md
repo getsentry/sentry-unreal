@@ -2,11 +2,15 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> ANR errors capturing for Android and Apple platforms is enabled by default in this release. Applications that do not want to capture them must explicitly opt out by setting `EnableAppNotRespondingTracking` to `False` in the project's `.ini` configuration file.
+
 ### Features
 
 - Add experimental session replay capturing for Android ([#1386](https://github.com/getsentry/sentry-unreal/pull/1386))
 - Add configurable cache mode setting for Sentry Crash Reporter ([#1408](https://github.com/getsentry/sentry-unreal/pull/1408))
 - Add ANR timeout setting for mobile platforms ([#1413](https://github.com/getsentry/sentry-unreal/pull/1413))
+- Enable ANR error capturing by default on Android and Apple platforms ([#1415](https://github.com/getsentry/sentry-unreal/pull/1415))
 
 ### Dependencies
 
