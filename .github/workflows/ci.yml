@@ -34,7 +34,7 @@ jobs:
     with:
       target: Mac
       backend: native
-      runsOn: macos-latest
+      runsOn: macos-15
 
   linux-sdk-crashpad:
     uses: ./.github/workflows/sdk-build.yml
