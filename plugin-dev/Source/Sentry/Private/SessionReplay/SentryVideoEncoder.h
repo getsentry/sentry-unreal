@@ -69,6 +69,9 @@ private:
 	bool bFirstFrameValidated = false;
 	FThreadSafeBool bEncodingDisabled;
 
+	int32 ConsecutiveSendFrameFailures = 0;
+	static constexpr int32 MaxConsecutiveSendFrameFailures = 30;
+
 	// Capture config
 	uint32 Width = 0;
 	uint32 Height = 0;

@@ -176,6 +176,7 @@ uint32 FSentryVideoEncoder::Run()
 			if (Result.IsSuccess())
 			{
 				bFirstFrameValidated = true;
+				ConsecutiveSendFrameFailures = 0;
 			}
 			else if (!bFirstFrameValidated)
 			{
@@ -185,7 +186,14 @@ uint32 FSentryVideoEncoder::Run()
 			}
 			else
 			{
-				UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success"));
+				if (++ConsecutiveSendFrameFailures >= MaxConsecutiveSendFrameFailures)
+				{
+					UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder failed %d consecutive frames. Recording disabled for this session."), ConsecutiveSendFrameFailures);
+					bEncodingDisabled.AtomicSet(true);
+					break;
+				}
+
+				UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success (%d in a row)"), ConsecutiveSendFrameFailures);
 			}
 
 			DrainPackets();
