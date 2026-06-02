@@ -213,6 +213,12 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 {
 	if (bEncoderOpen)
 	{
+		if ((ResourceWidth != Width || ResourceHeight != Height) && !bResolutionChanged)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size and may be cropped or black."),
+				Width, Height, ResourceWidth, ResourceHeight);
+			bResolutionChanged = true;
+		}
 		return true;
 	}
 

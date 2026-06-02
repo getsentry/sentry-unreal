@@ -64,6 +64,7 @@ private:
 	FSentrySessionReplayRecorder& Recorder;
 
 	bool bEncoderOpen = false;
+	bool bResolutionChanged = false;
 	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
 
 	bool bFirstFrameValidated = false;
