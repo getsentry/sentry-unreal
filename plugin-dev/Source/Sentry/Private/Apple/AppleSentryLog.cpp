@@ -10,14 +10,8 @@
 #include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryLog::FAppleSentryLog()
+	: FAppleSentryLog(FString(), ESentryLevel::Debug)
 {
-	LogApple = [SENTRY_APPLE_CLASS(SentryObjCLog) alloc];
-	// Initialize required properties
-	LogApple.timestamp = [NSDate date];
-	LogApple.traceId = [[SENTRY_APPLE_CLASS(SentryObjCId) alloc] init];
-	LogApple.body = @"";
-	LogApple.attributes = @{};
-	LogApple.level = SentryObjCLogLevelDebug;
 }
 
 FAppleSentryLog::FAppleSentryLog(SentryObjCLog* log)
@@ -27,13 +21,8 @@ FAppleSentryLog::FAppleSentryLog(SentryObjCLog* log)
 
 FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLevel level)
 {
-	LogApple = [SENTRY_APPLE_CLASS(SentryObjCLog) alloc];
-	// Initialize required properties
-	LogApple.timestamp = [NSDate date];
-	LogApple.traceId = [[SENTRY_APPLE_CLASS(SentryObjCId) alloc] init];
-	LogApple.attributes = @{};
-	SetBody(body);
-	SetLevel(level);
+	LogApple = [[SENTRY_APPLE_CLASS(SentryObjCLog) alloc] initWithLevel:FAppleSentryConverters::SentryLogLevelToNative(level)
+																   body:body.GetNSString()];
 }
 
 FAppleSentryLog::~FAppleSentryLog()
