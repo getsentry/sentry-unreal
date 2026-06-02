@@ -154,6 +154,28 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					return ProcessedBreadcrumb ? breadcrumb : nullptr;
 				};
 			}
+			if (beforeLogHandler != nullptr)
+			{
+				options.beforeSendLog = ^SentryObjCLog*(SentryObjCLog* log) {
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
+					{
+						// Log will be added without calling a `onBeforeLog` handler
+						return log;
+					}
+
+					TSentryCallbackGuard<USentryBeforeLogHandler> ReentrancyGuard;
+					if (ReentrancyGuard.IsReentrant())
+					{
+						return log;
+					}
+
+					USentryLog* LogToProcess = USentryLog::Create(MakeShareable(new FAppleSentryLog(log)));
+
+					USentryLog* ProcessedLog = beforeLogHandler->HandleBeforeLog(LogToProcess);
+
+					return ProcessedLog ? log : nullptr;
+				};
+			}
 			if (beforeSendHandler != nullptr)
 			{
 				options.beforeSend = ^SentryObjCEvent*(SentryObjCEvent* event) {
