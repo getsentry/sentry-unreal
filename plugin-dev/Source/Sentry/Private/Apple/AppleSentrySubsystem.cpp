@@ -176,6 +176,28 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					return ProcessedLog ? log : nullptr;
 				};
 			}
+			if (beforeMetricHandler != nullptr)
+			{
+				options.beforeSendMetric = ^SentryObjCMetric*(SentryObjCMetric* metric) {
+					if (!SentryCallbackUtils::IsCallbackSafeToRun())
+					{
+						// Metric will be sent without calling a `beforeSendMetric` handler
+						return metric;
+					}
+
+					TSentryCallbackGuard<USentryBeforeMetricHandler> ReentrancyGuard;
+					if (ReentrancyGuard.IsReentrant())
+					{
+						return metric;
+					}
+
+					USentryMetric* MetricToProcess = USentryMetric::Create(MakeShareable(new FAppleSentryMetric(metric)));
+
+					USentryMetric* ProcessedMetric = beforeMetricHandler->HandleBeforeMetric(MetricToProcess);
+
+					return ProcessedMetric ? metric : nullptr;
+				};
+			}
 			if (beforeSendHandler != nullptr)
 			{
 				options.beforeSend = ^SentryObjCEvent*(SentryObjCEvent* event) {
