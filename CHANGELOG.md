@@ -13,6 +13,10 @@
 - Add ANR timeout setting for mobile platforms ([#1413](https://github.com/getsentry/sentry-unreal/pull/1413))
 - Enable ANR error capturing by default on Android and Apple platforms ([#1415](https://github.com/getsentry/sentry-unreal/pull/1415))
 
+### Fixes
+
+- Fix Sentry Crash Reporter showing an empty window for packaged games on Mac ([#1420](https://github.com/getsentry/sentry-unreal/pull/1420))
+
 ### Dependencies
 
 - Bump Native SDK from v0.14.1 to v0.14.2 ([#1387](https://github.com/getsentry/sentry-unreal/pull/1387))
