@@ -219,6 +219,14 @@ Source/Sentry/Private/SentryTransactionContext.cpp
 Source/Sentry/Private/SentryUnit.cpp
 Source/Sentry/Private/SentryUser.cpp
 Source/Sentry/Private/SentryVariant.cpp
+Source/Sentry/Private/SessionReplay/SentryBackBufferCapture.cpp
+Source/Sentry/Private/SessionReplay/SentryBackBufferCapture.h
+Source/Sentry/Private/SessionReplay/SentryFMP4Writer.cpp
+Source/Sentry/Private/SessionReplay/SentryFMP4Writer.h
+Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.cpp
+Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.h
+Source/Sentry/Private/SessionReplay/SentryVideoEncoder.cpp
+Source/Sentry/Private/SessionReplay/SentryVideoEncoder.h
 Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentryFeedback.spec.cpp

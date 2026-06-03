@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.12.0",
+	"VersionName": "1.13.0",
 	"FriendlyName": "Sentry",
 	"Description": "Sentry catches all your errors and performance issues, and shows you how to fix them before they bring down the player experience.",
 	"Category": "Code Plugins",
@@ -26,6 +26,13 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "AVCodecsCore",
+			"Enabled": false,
+			"Optional": true
 		}
 	],
 	"PreBuildSteps":

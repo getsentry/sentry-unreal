@@ -103,6 +103,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 				[options addInAppInclude:it->GetNSString()];
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
+			options.appHangTimeoutInterval = settings->AppNotRespondingTimeout;
 			if (settings->EnableOfflineCaching)
 			{
 				options.maxCacheItems = settings->CacheMaxItems;

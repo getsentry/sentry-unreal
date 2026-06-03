@@ -2,10 +2,31 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump CLI from v3.4.3 to v3.5.0 ([#1419](https://github.com/getsentry/sentry-unreal/pull/1419))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#350)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.4.3...3.5.0)
+- Bump Cocoa SDK from v9.15.0 to v9.16.1 ([#1421](https://github.com/getsentry/sentry-unreal/pull/1421))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9161)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.16.1)
+
+## 1.13.0
+
+> [!IMPORTANT]
+> ANR errors capturing for Android and Apple platforms is enabled by default in this release. Applications that do not want to capture them must explicitly opt out by setting `EnableAppNotRespondingTracking` to `False` in the project's `.ini` configuration file.
+
 ### Features
 
+- Add experimental session replay capturing for Windows ([#1404](https://github.com/getsentry/sentry-unreal/pull/1404))
 - Add experimental session replay capturing for Android ([#1386](https://github.com/getsentry/sentry-unreal/pull/1386))
 - Add configurable cache mode setting for Sentry Crash Reporter ([#1408](https://github.com/getsentry/sentry-unreal/pull/1408))
+- Add ANR timeout setting for mobile platforms ([#1413](https://github.com/getsentry/sentry-unreal/pull/1413))
+- Enable ANR error capturing by default on Android and Apple platforms ([#1415](https://github.com/getsentry/sentry-unreal/pull/1415))
+
+### Fixes
+
+- Fix Sentry Crash Reporter showing an empty window for packaged games on Mac ([#1420](https://github.com/getsentry/sentry-unreal/pull/1420))
 
 ### Dependencies
 
@@ -15,9 +36,9 @@
 - Bump Android Gradle Plugin from v6.6.0 to v6.9.0 ([#1388](https://github.com/getsentry/sentry-unreal/pull/1388), [#1392](https://github.com/getsentry/sentry-unreal/pull/1392), [#1400](https://github.com/getsentry/sentry-unreal/pull/1400), [#1409](https://github.com/getsentry/sentry-unreal/pull/1409))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#690)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.6.0...6.9.0)
-- Bump Crash Reporter from v0.2.0 to v0.3.1 ([#1391](https://github.com/getsentry/sentry-unreal/pull/1391), [#1405](https://github.com/getsentry/sentry-unreal/pull/1405))
-  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#031)
-  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.2.0...0.3.1)
+- Bump Crash Reporter from v0.2.0 to v0.3.2 ([#1391](https://github.com/getsentry/sentry-unreal/pull/1391), [#1405](https://github.com/getsentry/sentry-unreal/pull/1405), [#1416](https://github.com/getsentry/sentry-unreal/pull/1416))
+  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#032)
+  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.2.0...0.3.2)
 - Bump Java SDK from v8.41.0 to v8.43.0 ([#1394](https://github.com/getsentry/sentry-unreal/pull/1394), [#1406](https://github.com/getsentry/sentry-unreal/pull/1406))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8430)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.41.0...8.43.0)

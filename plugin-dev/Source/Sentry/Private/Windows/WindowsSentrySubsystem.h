@@ -8,10 +8,18 @@
 
 #include "Microsoft/MicrosoftSentrySubsystem.h"
 
+#ifdef USE_SENTRY_SESSION_REPLAY
+#include "SessionReplay/SentrySessionReplayRecorder.h"
+#endif
+
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers) override;
+	virtual void Close() override;
+
+	virtual bool IsHangTrackingSupported() const override { return true; }
+	virtual FString GetDeviceType() const override;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
@@ -26,16 +34,19 @@ protected:
 
 	virtual bool IsScreenshotSupported() const override { return true; }
 	virtual bool IsOutOfProcessScreenshotEnabled() const override { return bOutOfProcessScreenshots; }
-	virtual bool IsHangTrackingSupported() const override { return true; }
-
-	virtual FString GetDeviceType() const override;
 
 private:
+	FString GetReplayPath() const;
+
 	/** Wine/Proton detection info */
 	FWineProtonInfo WineProtonInfo;
 
 	/** Whether native out-of-process screenshot capturing is enabled */
 	bool bOutOfProcessScreenshots = false;
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
+#endif
 };
 
 typedef FWindowsSentrySubsystem FPlatformSentrySubsystem;
