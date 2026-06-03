@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.13.0
 
 > [!IMPORTANT]
 > ANR errors capturing for Android and Apple platforms is enabled by default in this release. Applications that do not want to capture them must explicitly opt out by setting `EnableAppNotRespondingTracking` to `False` in the project's `.ini` configuration file.
