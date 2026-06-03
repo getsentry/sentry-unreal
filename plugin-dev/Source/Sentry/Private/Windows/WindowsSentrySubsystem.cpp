@@ -9,7 +9,13 @@
 
 #include "Utils/SentryPlatformDetectionUtils.h"
 
+#include "HAL/FileManager.h"
+#include "Misc/Guid.h"
 #include "Misc/Paths.h"
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+#include "GenericPlatform/GenericPlatformSentryAttachment.h"
+#endif
 
 void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers)
 {
@@ -25,6 +31,20 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 	{
 		ConfigureCrashReporterAppearance(Settings);
 	}
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (IsEnabled() && Settings->AttachSessionReplay)
+	{
+		// Clear replay videos captured during previous session if any
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
+		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+		if (!SessionReplay->Initialize(Settings, GetReplayPath()))
+		{
+			SessionReplay.Reset();
+		}
+	}
+#endif
 
 	// Add Wine/Proton context for all events if detected
 	if (WineProtonInfo.bIsRunningUnderWine && IsEnabled())
@@ -131,9 +151,30 @@ void FWindowsSentrySubsystem::ConfigureScreenshotCapturing(sentry_options_t* Opt
 
 sentry_value_t FWindowsSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-	// Windows-specific crash handling can go here if needed in the future
-	// For now, just delegate to parent which handles the crash logger
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
+	{
+		TSharedPtr<ISentryAttachment> ReplayAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(SessionReplay->GetAttachmentPath(), TEXT("session-replay.mp4"), TEXT("video/mp4")));
+
+		AddFileAttachment(ReplayAttachment);
+	}
+#endif
+
 	return FMicrosoftSentrySubsystem::OnCrash(uctx, event, closure);
+}
+
+void FWindowsSentrySubsystem::Close()
+{
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay)
+	{
+		SessionReplay->Shutdown();
+		SessionReplay.Reset();
+	}
+#endif
+
+	FMicrosoftSentrySubsystem::Close();
 }
 
 FString FWindowsSentrySubsystem::GetDeviceType() const
@@ -144,6 +185,15 @@ FString FWindowsSentrySubsystem::GetDeviceType() const
 	}
 
 	return FMicrosoftSentrySubsystem::GetDeviceType();
+}
+
+FString FWindowsSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	const FString ReplayFullPath = FPaths::ConvertRelativePathToFull(ReplayPath);
+
+	return ReplayFullPath;
 }
 
 #endif // USE_SENTRY_NATIVE && !SENTRY_WINGDK

@@ -28,6 +28,13 @@
 			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
 		}
 	],
+	"Plugins": [
+		{
+			"Name": "AVCodecsCore",
+			"Enabled": false,
+			"Optional": true
+		}
+	],
 	"PreBuildSteps":
 	{
 		"Mac": [

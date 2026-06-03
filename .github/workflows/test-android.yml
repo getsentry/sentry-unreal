@@ -152,6 +152,12 @@ jobs:
             mkdir -p ~/.config/Unreal\ Engine/UnrealBuildTool ;
             cp /workspace/checkout/.github/BuildConfiguration.xml ~/.config/Unreal\ Engine/UnrealBuildTool/ "
 
+      # UE 4.27 doesn't ship the AVCodecs plugins family so references to them have to be stripped from the project file
+      - name: Strip experimental codec plugin refs (UE 4.27)
+        if: ${{ inputs.unreal-version == '4.27' }}
+        shell: pwsh
+        run: ./checkout/scripts/strip-plugin-refs.ps1 -ProjectPath checkout/sample/SentryPlayground.uproject -PluginNames AVCodecsCore,NVCodecs
+
       - name: Build Android package (Development)
         id: build-android-dev
         run: |
