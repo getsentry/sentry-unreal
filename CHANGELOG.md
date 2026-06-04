@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add Metrics API support for Mac and iOS via SentryObjC framework integration ([#1352](https://github.com/getsentry/sentry-unreal/pull/1352))
+
 ### Dependencies
 
 - Bump CLI from v3.4.3 to v3.5.0 ([#1419](https://github.com/getsentry/sentry-unreal/pull/1419))
