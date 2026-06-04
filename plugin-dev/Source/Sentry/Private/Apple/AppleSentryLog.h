@@ -6,7 +6,7 @@
 
 #include "Interface/SentryLogInterface.h"
 
-#include "Convenience/AppleSentryInclude.h"
+@class SentryObjCLog;
 
 class FAppleSentryLog : public ISentryLog
 {
