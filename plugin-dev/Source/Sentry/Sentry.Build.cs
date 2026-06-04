@@ -64,7 +64,6 @@ public class Sentry : ModuleRules
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 
-			// SentryObjC is a standalone framework that embeds the full SDK
 			PublicAdditionalFrameworks.Add(new Framework("SentryObjC", Path.Combine(PlatformThirdPartyPath, "SentryObjC.embeddedframework.zip"), null, true));
 
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
@@ -110,7 +109,6 @@ public class Sentry : ModuleRules
 
 				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "Cocoa", "include"));
 
-				// SentryObjC is a standalone dylib that embeds the full SDK
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "SentryObjC.dylib"), Path.Combine(PlatformThirdPartyPath, "Cocoa", "bin", "SentryObjC.dylib"));
 
 				PublicDefinitions.Add("USE_SENTRY_NATIVE=0");

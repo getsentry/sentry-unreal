@@ -28,7 +28,7 @@ void FSentryModule::StartupModule()
 	SentrySettings->AddToRoot();
 
 #if PLATFORM_MAC && !USE_SENTRY_NATIVE
-	// Load SentryObjC dynamic library (standalone framework with full SDK embedded)
+	// Load SentryObjC dynamic library
 	FString LibraryPath = FPaths::Combine(GetBinariesPath(), TEXT("SentryObjC.dylib"));
 	mDllHandleSentry = FPlatformProcess::GetDllHandle(*LibraryPath);
 
