@@ -6,8 +6,6 @@
 
 #include "Interface/SentryFeedbackInterface.h"
 
-#include "Convenience/AppleSentryInclude.h"
-
 class FAppleSentryFeedback : public ISentryFeedback
 {
 public:
