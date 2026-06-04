@@ -92,50 +92,24 @@ if ([string]::IsNullOrEmpty($CrashReporterPath)) { $CrashReporterPath = $env:SEN
 
 $outDir = Resolve-Path "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 
-function extractXCFramework([string] $zipPath, [string] $destination)
-{
-    if (-not (Test-Path $zipPath))
-    {
-        throw "XCFramework zip not found at: $zipPath"
-    }
-
-    if (Test-Path $destination)
-    {
-        Remove-Item $destination -Recurse -Force
-    }
-
-    New-Item $destination -ItemType Directory > $null
-
-    Push-Location $destination
-    try
-    {
-        unzip -q "$zipPath"
-    }
-    finally
-    {
-        Pop-Location
-    }
-}
-
-function buildSentryCocoaIos()
+function buildSentryCocoa()
 {
     if (-not (Test-Path $CocoaPath))
     {
         throw "Sentry Cocoa path does not exist: $CocoaPath"
     }
 
-    Write-Host "Building Sentry Cocoa for iOS using local repository at: $CocoaPath"
+    Write-Host "Building SentryObjC-Dynamic XCFramework (iOS + macOS) using local repository at: $CocoaPath"
 
     Push-Location -Path $CocoaPath
 
     try
     {
-        # Build dynamic XCFramework for iOS only
-        bash ./scripts/build-xcframework-local.sh "iOSOnly" "DynamicOnly"
+        make build-xcframework-sentryobjc-dynamic SDKS=iphoneos,macosx
 
         if ($LASTEXITCODE -ne 0)
         {
-            throw "Failed to build Sentry Cocoa XCFramework for iOS"
+            throw "Failed to build SentryObjC-Dynamic XCFramework"
         }
     }
     finally
@@ -143,11 +117,13 @@ function buildSentryCocoaIos()
         Pop-Location
     }
 
-    # Extract the built XCFramework
-    $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-ios"
-    extractXCFramework "$CocoaPath/XCFrameworkBuildPath/Sentry-Dynamic.xcframework.zip" $tempExtractDir
+    $xcframeworkPath = "$CocoaPath/SentryObjC-Dynamic.xcframework"
+    if (-not (Test-Path $xcframeworkPath))
+    {
+        throw "SentryObjC-Dynamic XCFramework not found at: $xcframeworkPath"
+    }
 
-    # Prepare output directories
+    # iOS artifacts
     $iosOutDir = "$outDir/IOS"
 
     if (Test-Path $iosOutDir)
@@ -157,65 +133,29 @@ function buildSentryCocoaIos()
 
     New-Item $iosOutDir -ItemType Directory > $null
 
-    # Copy iOS framework
-    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/ios-arm64/Sentry.framework" -Destination "$iosOutDir/Sentry.framework" -Recurse
+    Copy-Item "$xcframeworkPath/ios-arm64/SentryObjC.framework" -Destination "$iosOutDir/SentryObjC.framework" -Recurse
 
-    # Create embedded framework structure
-    New-Item "$iosOutDir/Sentry.embeddedframework" -ItemType Directory > $null
-    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/ios-arm64/Sentry.framework" -Destination "$iosOutDir/Sentry.embeddedframework/Sentry.framework" -Recurse
+    New-Item "$iosOutDir/SentryObjC.embeddedframework" -ItemType Directory > $null
+    Copy-Item "$xcframeworkPath/ios-arm64/SentryObjC.framework" -Destination "$iosOutDir/SentryObjC.embeddedframework/SentryObjC.framework" -Recurse
 
-    # Create zip for embedded framework
     Push-Location $iosOutDir
     try
     {
-        zip -r "Sentry.embeddedframework.zip" "Sentry.embeddedframework"
+        zip -r "SentryObjC.embeddedframework.zip" "SentryObjC.embeddedframework"
     }
     finally
     {
         Pop-Location
     }
 
-    # Cleanup
-    Remove-Item "$iosOutDir/Sentry.embeddedframework" -Recurse -Force
-    Remove-Item $tempExtractDir -Recurse -Force
+    Remove-Item "$iosOutDir/SentryObjC.embeddedframework" -Recurse -Force
 
     Write-Host "Successfully built Sentry Cocoa for iOS"
-}
 
-function buildSentryCocoaMac()
-{
-    if (-not (Test-Path $CocoaPath))
-    {
-        throw "Sentry Cocoa path does not exist: $CocoaPath"
-    }
-
-    Write-Host "Building Sentry Cocoa for Mac using local repository at: $CocoaPath"
-
-    Push-Location -Path $CocoaPath
-
-    try
-    {
-        # Build dynamic XCFramework for Mac only
-        bash ./scripts/build-xcframework-local.sh "macOSOnly" "DynamicOnly"
-
-        if ($LASTEXITCODE -ne 0)
-        {
-            throw "Failed to build Sentry Cocoa XCFramework for Mac"
-        }
-    }
-    finally
-    {
-        Pop-Location
-    }
-
-    # Extract the built XCFramework
-    $tempExtractDir = "$PSScriptRoot/../build/temp-xcframework-mac"
-    extractXCFramework "$CocoaPath/XCFrameworkBuildPath/Sentry-Dynamic.xcframework.zip" $tempExtractDir
-
-    # Prepare output directories
+    # macOS artifacts
     $macCocoaDir = "$outDir/Mac/Cocoa"
     $macOutDirBinaries = "$macCocoaDir/bin"
-    $macOutDirIncludes = "$macCocoaDir/include/Sentry"
+    $macOutDirIncludes = "$macCocoaDir/include/SentryObjC"
 
     if (Test-Path $macCocoaDir)
     {
@@ -226,15 +166,9 @@ function buildSentryCocoaMac()
     New-Item $macOutDirBinaries -ItemType Directory > $null
     New-Item $macOutDirIncludes -ItemType Directory > $null
 
-    # Copy Mac framework binary
-    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Sentry" -Destination "$macOutDirBinaries/sentry.dylib"
+    Copy-Item "$xcframeworkPath/macos-arm64_x86_64/SentryObjC.framework/SentryObjC" -Destination "$macOutDirBinaries/SentryObjC.dylib"
 
-    # Copy headers and private headers
-    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Headers/*" -Destination $macOutDirIncludes
-    Copy-Item "$tempExtractDir/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/PrivateHeaders/*" -Destination $macOutDirIncludes
-
-    # Cleanup
-    Remove-Item $tempExtractDir -Recurse -Force
+    Copy-Item "$xcframeworkPath/macos-arm64_x86_64/SentryObjC.framework/Headers/*" -Destination $macOutDirIncludes
 
     Write-Host "Successfully built Sentry Cocoa for Mac"
 }
@@ -505,8 +439,7 @@ if ($buildCocoa)
     }
     else
     {
-        buildSentryCocoaMac
-        buildSentryCocoaIos
+        buildSentryCocoa
     }
 }
 
