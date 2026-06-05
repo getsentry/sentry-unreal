@@ -197,9 +197,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 ### Project Build & Testing
 
-Before constructing shell commands manually, run `make help` to check for ready-to-use Makefile targets (e.g. `make build-macos`, `make build-ios`, `make stage-framework`).
-
-Build and test workflows are also available as skills:
+Build and test workflows are available as skills:
 
 - `/ue-build` - Build sample project for a target platform
 - `/ue-unit-test` - Run Sentry unit tests
