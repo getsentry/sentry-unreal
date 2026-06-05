@@ -241,6 +241,12 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Config.RepeatSPSPPS = true;
 	Config.bFillData = 0;
 	Config.MultipassMode = EMultipassMode::Disabled;
+	
+#if PLATFORM_MAC
+	// Work around a VT bug where H.264 Auto maps to a null EntropyCodingMode
+	// causing a crash in CFStringGetLength. Use CABAC instead (supported by Main/High profiles)
+	Config.EntropyCodingMode = EH264EntropyCodingMode::CABAC;
+#endif
 
 	TSharedRef<FAVDevice>& Device = FAVDevice::GetHardwareDevice();
 
