@@ -20,7 +20,7 @@
 FSentryBackBufferCapture::FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder)
 	: Encoder(InEncoder)
 {
-	TexturePool.SetNum(FSentryVideoEncoder::MaxQueueDepth);
+	EncoderPool.Slots.SetNum(FSentryVideoEncoder::MaxQueueDepth);
 	CapturePeriodSeconds = 1.0 / static_cast<double>(FMath::Max(1u, Encoder.GetFramerate()));
 }
 
@@ -64,11 +64,12 @@ void FSentryBackBufferCapture::Stop()
 
 	// Ensure render thread is done with our textures before destruction
 	FlushRenderingCommands();
-	for (FTextureRHIRef& Slot : TexturePool)
+	for (FTextureRHIRef& Slot : EncoderPool.Slots)
 	{
 		Slot.SafeRelease();
 	}
-	ScratchTexture.SafeRelease();
+	Scratch.Texture.SafeRelease();
+	Converted.Texture.SafeRelease();
 }
 
 void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer)
@@ -95,14 +96,53 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		return;
 	}
 
-	const EPixelFormat SrcFormat = BackBuffer->GetFormat();
+	constexpr ETextureCreateFlags SrvRt = ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
 
-	FTextureRHIRef ScratchTex = AcquireScratchTexture_RenderThread(W, H, SrcFormat);
-	FTextureRHIRef DestTexture = AcquireTexturePoolSlot_RenderThread(W, H);
-	if (!ScratchTex.IsValid() || !DestTexture.IsValid())
+	FTextureRHIRef ScratchTex = AcquireSingletonTexture_RenderThread(Scratch, W, H, BackBuffer->GetFormat(),
+		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayScratch"));
+
+#if PLATFORM_MAC
+	FTextureRHIRef ConvertedTex = AcquireSingletonTexture_RenderThread(Converted, W, H, PF_B8G8R8A8,
+		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayConverted"));
+#endif
+
+#if PLATFORM_MAC
+	// VT requires pool slot to have CPUReadback flag so it can be read via Metal's getBytes().
+	// Note: Metal forbids RT|CPUReadback on the same texture so an extra pass is needed (step 3)
+	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::CPUReadback;
+	constexpr ERHIAccess PoolInitialState = ERHIAccess::CPURead;
+#else
+	// NVENC reads from the pool slot directly. Shared adds cross-process interop and
+	// SRV|RT lets the draw pass write into it.
+	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::Shared | SrvRt;
+	constexpr ERHIAccess PoolInitialState = ERHIAccess::SRVGraphics;
+#endif
+
+	FTextureRHIRef EncoderTex = AcquirePoolSlot_RenderThread(EncoderPool, W, H, PF_B8G8R8A8,
+		PoolFlags, PoolInitialState, TEXT("SentrySessionReplayCapture"));
+
+	if (!ScratchTex.IsValid())
 	{
 		return;
 	}
+
+#if PLATFORM_MAC
+	if (!ConvertedTex.IsValid())
+	{
+		return;
+	}
+#endif
+
+	if (!EncoderTex.IsValid())
+	{
+		return;
+	}
+
+#if PLATFORM_MAC
+	FTextureRHIRef DrawTarget = ConvertedTex;
+#else
+	FTextureRHIRef DrawTarget = EncoderTex;
+#endif
 
 	FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
 
@@ -123,14 +163,14 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		RHICmdList.Transition(FRHITransitionInfo(ScratchTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics));
 	}
 
-	// Step 2: AddDrawTexturePass scratch -> pool (BGRA8). Same-format fast
-	// path is a hardware copy; format mismatch (HDR / 10-bit source) falls
-	// back to the engine's built-in FDrawTexturePS pixel shader
+	// Step 2: AddDrawTexturePass scratch -> DrawTarget (BGRA8). Same-format fast
+	// path is a hardware copy; format mismatch (HDR / 10-bit source) falls back
+	// to the engine's built-in FDrawTexturePS pixel shader
 	{
 		FRDGBuilder GraphBuilder(RHICmdList);
 
 		FRDGTextureRef RDGSource = RegisterExternalTexture(GraphBuilder, ScratchTex, TEXT("SentrySR_Scratch"));
-		FRDGTextureRef RDGDest = RegisterExternalTexture(GraphBuilder, DestTexture, TEXT("SentrySR_Dest"));
+		FRDGTextureRef RDGDest = RegisterExternalTexture(GraphBuilder, DrawTarget, TEXT("SentrySR_Dest"));
 
 		FRDGDrawTextureInfo DrawInfo;
 		DrawInfo.Size = FIntPoint(static_cast<int32>(W), static_cast<int32>(H));
@@ -139,26 +179,72 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 		GraphBuilder.Execute();
 	}
 
-	// Leave the destination in a shader-readable state for NVENC
-	RHICmdList.Transition(FRHITransitionInfo(DestTexture.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
+#if PLATFORM_MAC
+	// Step 3 (Mac only): hardware-copy Converted -> EncoderPool slot. Both are BGRA8 same-format
+	{
+		FRHITransitionInfo Transitions[] = {
+			FRHITransitionInfo(DrawTarget.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc),
+			FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopyDest),
+		};
+		RHICmdList.Transition(MakeArrayView(Transitions, UE_ARRAY_COUNT(Transitions)));
 
-	Encoder.SubmitFrame(DestTexture, Now);
+		FRHICopyTextureInfo CopyInfo;
+		CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
+		RHICmdList.CopyTexture(DrawTarget.GetReference(), EncoderTex.GetReference(), CopyInfo);
+	}
+#endif
+
+#if PLATFORM_MAC
+	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::CPURead));
+#else
+	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
+#endif
+
+	Encoder.SubmitFrame(EncoderTex, Now);
 }
 
-FTextureRHIRef FSentryBackBufferCapture::AcquireTexturePoolSlot_RenderThread(uint32 Width, uint32 Height)
+FTextureRHIRef FSentryBackBufferCapture::AcquireSingletonTexture_RenderThread(FCachedTextureState& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
+	ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName)
 {
-	if (Width != TexturePoolWidth || Height != TexturePoolHeight)
+	if (Width != Cache.Width || Height != Cache.Height || Format != Cache.Format || Flags != Cache.Flags)
 	{
-		for (FTextureRHIRef& Slot : TexturePool)
+		Cache.Texture.SafeRelease();
+		Cache.Width = Width;
+		Cache.Height = Height;
+		Cache.Format = Format;
+		Cache.Flags = Flags;
+	}
+
+	if (!Cache.Texture.IsValid())
+	{
+		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(DebugName)
+											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
+											   .SetFormat(Format)
+											   .SetFlags(Flags)
+											   .SetInitialState(InitialState);
+		Cache.Texture = RHICreateTexture(Desc);
+	}
+
+	return Cache.Texture;
+}
+
+FTextureRHIRef FSentryBackBufferCapture::AcquirePoolSlot_RenderThread(FPooledTextureState& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
+	ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName)
+{
+	if (Width != Pool.Width || Height != Pool.Height || Format != Pool.Format || Flags != Pool.Flags)
+	{
+		for (FTextureRHIRef& Slot : Pool.Slots)
 		{
 			Slot.SafeRelease();
 		}
-		TexturePoolWidth = Width;
-		TexturePoolHeight = Height;
+		Pool.Width = Width;
+		Pool.Height = Height;
+		Pool.Format = Format;
+		Pool.Flags = Flags;
 	}
 
 	FTextureRHIRef* FreeSlot = nullptr;
-	for (FTextureRHIRef& Slot : TexturePool)
+	for (FTextureRHIRef& Slot : Pool.Slots)
 	{
 		if (Slot.GetRefCount() <= 1)
 		{
@@ -174,47 +260,15 @@ FTextureRHIRef FSentryBackBufferCapture::AcquireTexturePoolSlot_RenderThread(uin
 
 	if (!FreeSlot->IsValid())
 	{
-		// Texture flags follow what AVCodecs expects for its NVENC resources
-		// on D3D (see Engine/.../AVCodecsCoreRHI/.../VideoResourceRHI.cpp):
-		// Shared (cross-process for NVENC interop) + ShaderResource +
-		// RenderTargetable. Format is always PF_B8G8R8A8 because that's what
-		// NVENC D3D12 requires; source-format conversion happens at draw time
-		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::Shared | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
-		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayCapture"))
-											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
-											   .SetFormat(PF_B8G8R8A8)
-											   .SetFlags(CreateFlags)
-											   .SetInitialState(ERHIAccess::SRVGraphics);
-		*FreeSlot = RHICreateTexture(Desc);
-	}
-	return *FreeSlot;
-}
-
-FTextureRHIRef FSentryBackBufferCapture::AcquireScratchTexture_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format)
-{
-	if (Width != ScratchWidth || Height != ScratchHeight || Format != ScratchFormat)
-	{
-		ScratchTexture.SafeRelease();
-		ScratchWidth = Width;
-		ScratchHeight = Height;
-		ScratchFormat = Format;
-	}
-
-	if (!ScratchTexture.IsValid())
-	{
-		// Mirror the backbuffer's format, but add ShaderResource so
-		// AddDrawTexturePass can sample it. RenderTargetable lets the same
-		// scratch double as a draw target in the same-format fast path
-		// inside AddDrawTexturePass (it still ends up as a HW copy)
-		const ETextureCreateFlags CreateFlags = ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
-		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(TEXT("SentrySessionReplayScratch"))
+		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(DebugName)
 											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
 											   .SetFormat(Format)
-											   .SetFlags(CreateFlags)
-											   .SetInitialState(ERHIAccess::SRVGraphics);
-		ScratchTexture = RHICreateTexture(Desc);
+											   .SetFlags(Flags)
+											   .SetInitialState(InitialState);
+		*FreeSlot = RHICreateTexture(Desc);
 	}
-	return ScratchTexture;
+
+	return *FreeSlot;
 }
 
 #endif // USE_SENTRY_SESSION_REPLAY
