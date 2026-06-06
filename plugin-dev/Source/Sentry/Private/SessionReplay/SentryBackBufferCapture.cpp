@@ -98,11 +98,11 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 
 	constexpr ETextureCreateFlags SrvRt = ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
 
-	FTextureRHIRef ScratchTex = AcquireSingletonTexture_RenderThread(Scratch, W, H, BackBuffer->GetFormat(),
+	FTextureRHIRef ScratchTex = AcquireCachedTexture_RenderThread(Scratch, W, H, BackBuffer->GetFormat(),
 		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayScratch"));
 
 #if PLATFORM_MAC
-	FTextureRHIRef ConvertedTex = AcquireSingletonTexture_RenderThread(Converted, W, H, PF_B8G8R8A8,
+	FTextureRHIRef ConvertedTex = AcquireCachedTexture_RenderThread(Converted, W, H, PF_B8G8R8A8,
 		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayConverted"));
 #endif
 
@@ -118,7 +118,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	constexpr ERHIAccess PoolInitialState = ERHIAccess::SRVGraphics;
 #endif
 
-	FTextureRHIRef EncoderTex = AcquirePoolSlot_RenderThread(EncoderPool, W, H, PF_B8G8R8A8,
+	FTextureRHIRef EncoderTex = AcquireTexturePoolSlot_RenderThread(EncoderPool, W, H, PF_B8G8R8A8,
 		PoolFlags, PoolInitialState, TEXT("SentrySessionReplayCapture"));
 
 	if (!ScratchTex.IsValid())
@@ -203,7 +203,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	Encoder.SubmitFrame(EncoderTex, Now);
 }
 
-FTextureRHIRef FSentryBackBufferCapture::AcquireSingletonTexture_RenderThread(FCachedTextureState& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
+FTextureRHIRef FSentryBackBufferCapture::AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
 	ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName)
 {
 	if (Width != Cache.Width || Height != Cache.Height || Format != Cache.Format || Flags != Cache.Flags)
@@ -228,7 +228,7 @@ FTextureRHIRef FSentryBackBufferCapture::AcquireSingletonTexture_RenderThread(FC
 	return Cache.Texture;
 }
 
-FTextureRHIRef FSentryBackBufferCapture::AcquirePoolSlot_RenderThread(FPooledTextureState& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
+FTextureRHIRef FSentryBackBufferCapture::AcquireTexturePoolSlot_RenderThread(FCachedTexturePool& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
 	ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName)
 {
 	if (Width != Pool.Width || Height != Pool.Height || Format != Pool.Format || Flags != Pool.Flags)

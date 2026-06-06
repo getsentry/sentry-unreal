@@ -45,7 +45,7 @@ public:
 private:
 	// Single texture tracked alongside the config it was created with, so the
 	// acquire helper can detect changes and recreate
-	struct FCachedTextureState
+	struct FCachedTexture
 	{
 		FTextureRHIRef Texture;
 		uint32 Width = 0;
@@ -56,7 +56,7 @@ private:
 
 	// N-slot pool sharing one config across all slots. Slots are created lazily
 	// and recycled when their refcount drops back to 1 (no other holder)
-	struct FPooledTextureState
+	struct FCachedTexturePool
 	{
 		TArray<FTextureRHIRef> Slots;
 		uint32 Width = 0;
@@ -69,12 +69,12 @@ private:
 
 	// Returns the cached texture, recreated when any of (Width, Height, Format,
 	// Flags) differs from the previous call. Returns null on creation failure
-	static FTextureRHIRef AcquireSingletonTexture_RenderThread(FCachedTextureState& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
+	static FTextureRHIRef AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
-	// Returns a slot whose refcount is <= 1, recreating the entire pool when
+	// Returns a texture pool slot whose refcount is <= 1, recreating the entire pool when
 	// the config changes. Returns null when every slot is still in flight
-	static FTextureRHIRef AcquirePoolSlot_RenderThread(FPooledTextureState& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
+	static FTextureRHIRef AcquireTexturePoolSlot_RenderThread(FCachedTexturePool& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
 	FSentryVideoEncoder& Encoder;
@@ -83,15 +83,15 @@ private:
 
 	// SRV-able copy of the backbuffer at its source format. Slate backbuffers
 	// don't carry the SRV flag, so they can't be sampled in a shader directly
-	FCachedTextureState Scratch;
+	FCachedTexture Scratch;
 
 	// BGRA8 RenderTargetable texture. Used on Mac as the draw pass output
 	// before the final hardware copy into the CPUReadback EncoderPool slot
-	FCachedTextureState Converted;
+	FCachedTexture Converted;
 
 	// Pool of textures that are submitted to the encoder. Ref-counted because
 	// the encoder thread holds these across frames
-	FPooledTextureState EncoderPool;
+	FCachedTexturePool EncoderPool;
 
 	// Frame throttling
 	double NextCaptureTime = 0.0;
