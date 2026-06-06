@@ -170,9 +170,17 @@ uint32 FSentryVideoEncoder::Run()
 				CaptureTimeBaseSeconds = Frame.CaptureTimeSeconds;
 			}
 
-			const uint32 TimestampMs = static_cast<uint32>(FMath::Max(0.0, (Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds) * 1000.0));
+			// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
+#if PLATFORM_MAC
+			static constexpr double SendTimestampScale = 1'000'000.0;
+#else
+			static constexpr double SendTimestampScale = 1'000.0;
+#endif
 
-			const FAVResult Result = Encoder->SendFrame(Resource, TimestampMs, bForceKeyframe);
+			const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
+			const uint32 SendTimestamp = static_cast<uint32>(TimestampSeconds * SendTimestampScale);
+
+			const FAVResult Result = Encoder->SendFrame(Resource, SendTimestamp, bForceKeyframe);
 			if (Result.IsSuccess())
 			{
 				bFirstFrameValidated = true;
@@ -241,7 +249,7 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Config.RepeatSPSPPS = true;
 	Config.bFillData = 0;
 	Config.MultipassMode = EMultipassMode::Disabled;
-	
+
 #if PLATFORM_MAC
 	// Work around a VT bug where H.264 Auto maps to a null EntropyCodingMode
 	// causing a crash in CFStringGetLength. Use CABAC instead (supported by Main/High profiles)
@@ -315,13 +323,17 @@ void FSentryVideoEncoder::DrainPackets()
 		}
 
 		// The encoder echoes back the capture timestamp we passed to SendFrame
-		// (ms, relative to the first frame). Sample duration is the gap to the
+		// (relative to the first frame). Sample duration is the gap to the
 		// previously emitted sample, so playback follows the real capture cadence
 		// rather than the bursty encoder output cadence (and stays real-time even
 		// when the source renders below the configured target rate). A skipped
 		// packet never updates the marker, so its interval folds into the next
 		// sample. The first sample falls back to a nominal 1/Framerate
+#if PLATFORM_MAC
+		const uint32 PacketTimestampMs = static_cast<uint32>(FPlatformTime::ToMilliseconds64(Packet.Timestamp));
+#else
 		const uint32 PacketTimestampMs = static_cast<uint32>(Packet.Timestamp);
+#endif
 		double DurationSeconds;
 		if (!bHavePrevPacketTimestamp)
 		{
