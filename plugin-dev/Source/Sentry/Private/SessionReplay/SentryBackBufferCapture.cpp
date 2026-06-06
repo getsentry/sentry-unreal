@@ -108,7 +108,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 
 #if PLATFORM_MAC
 	// VT requires pool slot to have CPUReadback flag so it can be read via Metal's getBytes().
-	// Note: Metal forbids RT|CPUReadback on the same texture so an extra pass is needed (step 3)
+	// Note: Metal forbids RT|CPUReadback on the same texture so an extra copy is needed (step 3)
 	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::CPUReadback;
 	constexpr ERHIAccess PoolInitialState = ERHIAccess::CPURead;
 #else

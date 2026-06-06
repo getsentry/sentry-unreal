@@ -89,7 +89,7 @@ private:
 	// before the final hardware copy into the CPUReadback EncoderPool slot
 	FCachedTextureState Converted;
 
-	// Pool of textures that are submited to the encoder. Ref-counted because
+	// Pool of textures that are submitted to the encoder. Ref-counted because
 	// the encoder thread holds these across frames
 	FPooledTextureState EncoderPool;
 
