@@ -285,7 +285,7 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 - [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
-- [sentry-docs](https://github.com/getsentry/seentry-docs): documentation sources for Sentry products
+- [sentry-docs](https://github.com/getsentry/sentry-docs): documentation sources for Sentry products
 
 ## Maintaining This Document
 
