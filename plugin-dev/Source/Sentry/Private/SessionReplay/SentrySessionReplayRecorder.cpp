@@ -147,6 +147,11 @@ void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSeg
 {
 	FScopeLock Lock(&RingLock);
 	InitSegment = MoveTemp(NewInitSegment);
+
+	if (!FragmentRing.IsEmpty())
+	{
+		FragmentRing.Reset();
+	}
 }
 
 void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment)

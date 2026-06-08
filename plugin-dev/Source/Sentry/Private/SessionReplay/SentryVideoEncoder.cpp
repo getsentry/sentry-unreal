@@ -172,13 +172,29 @@ uint32 FSentryVideoEncoder::Run()
 
 			// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
 #if PLATFORM_MAC
-			static constexpr double SendTimestampScale = 1 '000' 000.0;
+			static constexpr double SendTimestampScale = 1'000'000.0;
 #else
 			static constexpr double SendTimestampScale = 1'000.0;
 #endif
 
 			const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
-			const uint32 SendTimestamp = static_cast<uint32>(TimestampSeconds * SendTimestampScale);
+			const double ScaledTimestamp = TimestampSeconds * SendTimestampScale;
+
+#if PLATFORM_MAC
+			// Restart the encoder every hour of recording. On Mac this stays well clear of the
+			// uint32-microseconds wrap at ~71 min which would otherwise feed VT a backward PTS
+			// and corrupt all subsequent fragments. On Windows the natural wrap is at ~49 days
+			// so realistically periodic refresh of encoder state won't be needed there
+			constexpr double RestartThreshold = 3600.0 * SendTimestampScale;
+			if (ScaledTimestamp > RestartThreshold)
+			{
+				UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder has been running for %.0f s; restarting to refresh state."), TimestampSeconds);
+				Restart();
+				continue;
+			}
+#endif
+
+			const uint32 SendTimestamp = static_cast<uint32>(ScaledTimestamp);
 
 			const FAVResult Result = Encoder->SendFrame(Resource, SendTimestamp, bForceKeyframe);
 			if (Result.IsSuccess())
@@ -274,6 +290,38 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		Width, Height, Framerate, BitrateBps / 1000, FragmentSeconds);
 
 	return true;
+}
+
+void FSentryVideoEncoder::Restart()
+{
+	DrainPackets();
+
+	if (CurrentSamples.Num() > 0 && bInitSegmentPublished)
+	{
+		TArray<uint8> Frag = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
+		Recorder.OnFragmentReady(MoveTemp(Frag));
+	}
+	CurrentSamples.Reset();
+
+	Encoder.Reset();
+
+	bEncoderOpen = false;
+
+	CaptureTimeBaseSeconds = -1.0;
+	LastPacketTimestampMs = 0;
+	bHavePrevPacketTimestamp = false;
+	LastForcedKeyframeTime = 0.0;
+	CurrentFragmentDecodeTime = 0;
+	SampleClock = 0;
+	NextFragmentSequence = 1;
+	CachedSps.Empty();
+	CachedPps.Empty();
+	bInitSegmentPublished = false;
+
+	{
+		FScopeLock Lock(&QueueLock);
+		PendingQueue.Reset();
+	}
 }
 
 void FSentryVideoEncoder::DrainPackets()
