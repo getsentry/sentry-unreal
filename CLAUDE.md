@@ -186,7 +186,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
-- Package plugin and update snapshot after adding/removing files (see `/pack` skill).
+- Package plugin and update snapshot after adding/removing files under `plugin-dev` dir (use `/pack` skill).
 
 ### Code Style
 
