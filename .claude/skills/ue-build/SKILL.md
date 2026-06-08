@@ -24,20 +24,22 @@ Build the SentryPlayground sample project.
 
 3. Determine the build configuration: use `Development` by default, or `Shipping` if the user mentions it.
 
-4. Run the build command from the repository root:
+4. Resolve the repo root and run the build command:
 
 ```bash
+REPO=$(git rev-parse --show-toplevel)
+
 # Windows
 "$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.bat" BuildCookRun \
-    -project="$PWD/sample/SentryPlayground.uproject" \
-    -archivedirectory="$PWD/sample/dist" \
+    -project="$REPO/sample/SentryPlayground.uproject" \
+    -archivedirectory="$REPO/sample/dist" \
     -platform=Win64 -clientconfig=Development \
     -build -cook -stage -package -archive -nop4
 
 # macOS
 "$UNREAL_ENGINE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
-    -project="$PWD/sample/SentryPlayground.uproject" \
-    -archivedirectory="$PWD/sample/dist" \
+    -project="$REPO/sample/SentryPlayground.uproject" \
+    -archivedirectory="$REPO/sample/dist" \
     -platform=Mac -clientconfig=Development \
     -build -cook -stage -package -archive -nop4
 ```

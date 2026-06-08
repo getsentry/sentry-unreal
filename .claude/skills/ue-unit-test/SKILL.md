@@ -17,21 +17,23 @@ Prerequisite: the project must be built first. If unsure whether it's been built
 | macOS   | `Engine/Binaries/Mac/UnrealEditor`       | `Engine/Binaries/Mac/UE4Editor`       |
 | Linux   | `Engine/Binaries/Linux/UnrealEditor`     | `Engine/Binaries/Linux/UE4Editor`     |
 
-3. Run the automation command from the repository root:
+3. Resolve the repo root and run the automation command:
 
 ```bash
+REPO=$(git rev-parse --show-toplevel)
+
 # Windows UE5
 "$UNREAL_ENGINE_ROOT/Engine/Binaries/Win64/UnrealEditor.exe" \
-    "$PWD/sample/SentryPlayground.uproject" \
-    -ReportExportPath="$PWD/sample/Saved/Automation" \
+    "$REPO/sample/SentryPlayground.uproject" \
+    -ReportExportPath="$REPO/sample/Saved/Automation" \
     -ExecCmds="Automation RunTests Sentry;quit" \
     -TestExit="Automation Test Queue Empty" \
     -Unattended -NoPause -NoSplash -NullRHI
 
 # macOS UE5
 "$UNREAL_ENGINE_ROOT/Engine/Binaries/Mac/UnrealEditor" \
-    "$PWD/sample/SentryPlayground.uproject" \
-    -ReportExportPath="$PWD/sample/Saved/Automation" \
+    "$REPO/sample/SentryPlayground.uproject" \
+    -ReportExportPath="$REPO/sample/Saved/Automation" \
     -ExecCmds="Automation RunTests Sentry;quit" \
     -TestExit="Automation Test Queue Empty" \
     -Unattended -NoPause -NoSplash -NullRHI

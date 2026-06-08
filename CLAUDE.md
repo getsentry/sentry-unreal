@@ -30,6 +30,8 @@ plugin-dev/Source/
 │       ├── Mac/             # macOS overrides for Apple/GenericPlatform
 │       ├── Microsoft/       # Windows/Xbox/WinGDK base, overrides GenericPlatform
 │       ├── Null/            # Stubs for unsupported platforms
+│       ├── Performance/     # Performance monitors (frame time, GC, network, game stats)
+│       ├── SessionReplay/   # Session replay recording (backbuffer capture, MP4 encoder)
 │       ├── Tests/           # Unit test specs
 │       ├── Utils/           # Common utilities
 │       └── Windows/         # Windows overrides for Microsoft
@@ -184,7 +186,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
-- Package plugin and update snapshot after adding/removing files (see `/pack` skill).
+- Package plugin and update snapshot after adding/removing files under `plugin-dev` dir (use `/pack` skill).
 
 ### Code Style
 
@@ -208,6 +210,14 @@ Build and test workflows are available as skills:
 - Never commit secrets, credentials, API keys, or tokens to the repository
 - Never print or display environment variables that may contain secrets (passwords, API keys, auth tokens, DSNs)
 - When checking environment variables, only verify if they are set (non-empty), don't output their values
+
+### Documentation
+
+When introducing a new SDK feature or changing existing behavior, consider whether the Unreal plugin documentation needs to be updated as part of the change.
+
+For guidance on content, structure, and writing style, look for similar documentation in sibling SDKs. Reuse existing patterns whenever possible to keep documentation consistent across SDKs.
+
+The `SENTRY_DOCS_PATH` environment variable points to a local checkout of the documentation repository where any required updates should be made.
 
 ### Troubleshooting
 
@@ -277,6 +287,7 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 - [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
+- [sentry-docs](https://github.com/getsentry/sentry-docs): documentation sources for Sentry products
 
 ## Maintaining This Document
 
