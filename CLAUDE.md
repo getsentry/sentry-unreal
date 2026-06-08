@@ -30,6 +30,8 @@ plugin-dev/Source/
 │       ├── Mac/             # macOS overrides for Apple/GenericPlatform
 │       ├── Microsoft/       # Windows/Xbox/WinGDK base, overrides GenericPlatform
 │       ├── Null/            # Stubs for unsupported platforms
+│       ├── Performance/     # Performance monitors (frame time, GC, network, game stats)
+│       ├── SessionReplay/   # Session replay recording (backbuffer capture, MP4 encoder)
 │       ├── Tests/           # Unit test specs
 │       ├── Utils/           # Common utilities
 │       └── Windows/         # Windows overrides for Microsoft
