@@ -5,7 +5,10 @@ This directory contains integration tests for the Sentry Unreal SDK using Pester
 Supports testing on:
 - **Windows** - Desktop (x64)
 - **Linux** - Desktop (x64)
+- **macOS** - Desktop (arm64)
 - **Android** - Local device/emulator (via adb) or SauceLabs Real Device Cloud
+
+The desktop test script (`Integration.Desktop.Tests.ps1`) auto-detects the host platform and adjusts test selection based on the active crash handler backend (Crashpad/Cocoa/Breakpad vs. Native). Some tests are skipped on certain backend combinations — see notes under [Test Coverage](#test-coverage).
 
 ## Prerequisites
 
@@ -94,13 +97,17 @@ cd integration-test
 Invoke-Pester Integration.Desktop.Tests.ps1
 ```
 
-### Linux
+### Linux / macOS
 
 ```bash
 # Set environment variables
 export SENTRY_UNREAL_TEST_DSN="https://key@org.ingest.sentry.io/project"
 export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
+
+# Linux: shell-script entrypoint
 export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.sh"
+# macOS: executable inside the .app bundle
+export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.app/Contents/MacOS/SentryPlayground"
 
 # Run tests
 cd integration-test
@@ -137,6 +144,9 @@ Invoke-Pester Integration.Android.Tests.ps1
 The integration tests cover:
 
 ### Crash Capture Tests
+
+Runs once per crash type. The desktop suite parameterizes over: `NullPointer`, `StackOverflow`, `MemoryCorruption`, `Assert`, `OutOfMemory`. `OutOfMemory` is skipped on Linux and on macOS with the native backend (memory overcommit makes the OOM condition unreliable to trigger).
+
 - Application crashes with non-zero exit code
 - Event ID is captured from output (set via `test.crash_id` tag)
 - Crash event appears in Sentry
@@ -146,10 +156,26 @@ The integration tests cover:
 - Integration test tags are set
 - Breadcrumbs are collected
 
-**Note**: Crash capture tests are currently disabled on Android due to a known issue with tag persistence across app sessions.
+**Note**: On Android and macOS (cocoa backend), the crash event is uploaded on the next app launch (an init-only run), and the crash is captured from the Java layer (platform `java` rather than `native`).
+
+### Ensure Capture Tests
+
+- Application exits cleanly after a non-fatal `ensure()` failure
+- Event ID is captured from output and TEST_RESULT indicates success
+- Ensure event appears in Sentry with exception type "Ensure failed"
+- Stack trace, user context, and integration test tags are present
+
+### Hang Tracking Tests
+
+Desktop-only; skipped on macOS (sentry-cocoa provides its own AppHang detection that isn't exercised here).
+
+- Application exits cleanly after a tracked hang
+- Hang event appears in Sentry with the "App Hanging" exception type and `AppHang` mechanism
+- Stack trace and CrashType tag are present
 
 ### Message Capture Tests
-- Application exits cleanly (exit code 0 on Windows/Linux, Android doesn't report exit codes)
+
+- Application exits cleanly (exit code 0 on Windows/Linux/macOS, Android doesn't report exit codes)
 - Event ID is captured from output
 - TEST_RESULT indicates success
 - Message event appears in Sentry
@@ -161,6 +187,7 @@ The integration tests cover:
 **Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
 
 ### Structured Logging Tests
+
 - Application exits cleanly
 - Test ID is captured from output
 - TEST_RESULT indicates success
@@ -174,6 +201,7 @@ The integration tests cover:
 **Note**: Global log attributes (`SetAttribute`/`RemoveAttribute`) are not supported on Android (sentry-java) and are only tested on desktop.
 
 ### Metrics Capture Tests
+
 - Application exits cleanly
 - Test ID is captured from output
 - TEST_RESULT indicates success
@@ -182,9 +210,10 @@ The integration tests cover:
 - Attribute removed by BeforeMetricHandler is absent
 - Test ID attribute matches captured ID
 
-**Note**: Metrics are not supported on Apple platforms (macOS/iOS) and the test is skipped accordingly.
+**Note**: Metrics are not supported on the cocoa backend, so the test is skipped on macOS when the cocoa backend is active. With the native backend on macOS, metrics are tested.
 
 ### Tracing Capture Tests
+
 - Application exits cleanly
 - Trace ID is captured from output
 - Transaction appears in Sentry with correct name and operation
@@ -196,7 +225,8 @@ The integration tests cover:
 
 Test outputs are saved to `integration-test/output/`:
 
-### Windows/Linux
+### Windows/Linux/macOS
+
 - `*-crash-stdout.log` - Crash test standard output
 - `*-crash-stderr.log` - Crash test standard error
 - `*-crash-result.json` - Full crash test result
@@ -206,6 +236,7 @@ Test outputs are saved to `integration-test/output/`:
 - `event-*.json` - Events fetched from Sentry API
 
 ### Android
+
 - `*-logcat.txt` - Logcat output from app execution (one file per launch)
 - `event-*.json` - Events fetched from Sentry API
 
