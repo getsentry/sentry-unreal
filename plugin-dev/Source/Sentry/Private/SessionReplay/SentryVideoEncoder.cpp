@@ -172,7 +172,7 @@ uint32 FSentryVideoEncoder::Run()
 
 			// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
 #if PLATFORM_MAC
-			static constexpr double SendTimestampScale = 1'000'000.0;
+			static constexpr double SendTimestampScale = 1 '000' 000.0;
 #else
 			static constexpr double SendTimestampScale = 1'000.0;
 #endif
