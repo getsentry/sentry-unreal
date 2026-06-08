@@ -209,6 +209,14 @@ Build and test workflows are available as skills:
 - Never print or display environment variables that may contain secrets (passwords, API keys, auth tokens, DSNs)
 - When checking environment variables, only verify if they are set (non-empty), don't output their values
 
+### Documentation
+
+When introducing a new SDK feature or changing existing behavior, consider whether the Unreal plugin documentation needs to be updated as part of the change.
+
+For guidance on content, structure, and writing style, look for similar documentation in sibling SDKs. Reuse existing patterns whenever possible to keep documentation consistent across SDKs.
+
+The `SENTRY_DOCS_PATH` environment variable points to a local checkout of the documentation repository where any required updates should be made.
+
 ### Troubleshooting
 
 - If the build, test, or script execution fails, try to understand the root cause of the error and suggest a fix. Check logs for additional issue insights.
@@ -277,6 +285,7 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 - [sentry-cli](https://github.com/getsentry/sentry-cli): uploading debug symbols for symbolicating stack traces gathered via the SDK
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
+- [sentry-docs](https://github.com/getsentry/seentry-docs): documentation sources for Sentry products
 
 ## Maintaining This Document
 
