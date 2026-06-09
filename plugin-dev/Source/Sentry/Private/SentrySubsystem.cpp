@@ -167,8 +167,12 @@ void USentrySubsystem::Initialize()
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
 
-	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported())
+	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported()
+		&& !SubsystemNativeImpl->IsOutOfProcessHangTrackingEnabled())
 	{
+		// When the platform/backend provides its own out-of-process app-hang detector (e.g. native backend
+		// on Windows), it's wired during InitWithSettings and the engine-side watcher is skipped to avoid
+		// double-reporting. Otherwise fall back to the FThreadHeartBeat-based watcher.
 		ConfigureHangTracking();
 	}
 
