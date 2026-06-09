@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add out-of-process hang tracking with `Native` backend on Windows and Mac ([#1427](https://github.com/getsentry/sentry-unreal/pull/1427))
+
 ### Dependencies
 
 - Bump CLI from v3.4.3 to v3.5.0 ([#1419](https://github.com/getsentry/sentry-unreal/pull/1419))
