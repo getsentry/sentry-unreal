@@ -627,7 +627,9 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		// thread and every subsequent frame refreshes the heartbeat the daemon watches for staleness
 		AppHangHeartbeatHandle = FCoreDelegates::OnEndFrame.AddLambda([]()
 		{
+#if PLATFORM_WINDOWS
 			sentry_app_hang_set_target_thread();
+#endif
 			sentry_app_hang_heartbeat();
 		});
 	}
