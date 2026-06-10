@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add out-of-process hang tracking with `Native` backend on Windows and Mac ([#1427](https://github.com/getsentry/sentry-unreal/pull/1427))
+- Add out-of-process hang tracking with `Native` backend on Windows, Mac and Linux ([#1427](https://github.com/getsentry/sentry-unreal/pull/1427))
 
 ### Dependencies
 
