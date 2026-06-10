@@ -317,6 +317,8 @@ void FSentryVideoEncoder::Restart()
 	CachedSps.Empty();
 	CachedPps.Empty();
 	bInitSegmentPublished = false;
+	bFirstFrameValidated = false;
+	ConsecutiveSendFrameFailures = 0;
 
 	{
 		FScopeLock Lock(&QueueLock);
