@@ -6,15 +6,10 @@
 
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
 
-#ifdef USE_SENTRY_SESSION_REPLAY
-#include "SessionReplay/SentrySessionReplayRecorder.h"
-#endif
-
 class FMacSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
 public:
 	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
-	virtual void Close() override;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) override;
@@ -30,15 +25,6 @@ protected:
 	virtual bool IsHangTrackingSupported() const override { return false; }
 
 	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
-
-	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
-
-private:
-#ifdef USE_SENTRY_SESSION_REPLAY
-	FString GetReplayPath() const;
-
-	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
-#endif
 };
 
 #else

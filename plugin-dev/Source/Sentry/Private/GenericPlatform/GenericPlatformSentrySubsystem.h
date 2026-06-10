@@ -9,6 +9,10 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
+#ifdef USE_SENTRY_SESSION_REPLAY
+#include "SessionReplay/SentrySessionReplayRecorder.h"
+#endif
+
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
@@ -157,6 +161,12 @@ private:
 	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
 
 	FThreadSafeBool bIsCrashing;
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	FString GetReplayPath() const;
+
+	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
+#endif
 };
 
 #endif

@@ -38,12 +38,12 @@
 		{
 			"Name": "AVCodecsCore",
 			"Enabled": true,
-			"PlatformAllowList": [ "Win64", "Mac" ]
+			"PlatformAllowList": [ "Win64", "Mac", "Linux" ]
 		},
 		{
 			"Name": "NVCodecs",
 			"Enabled": true,
-			"PlatformAllowList": [ "Win64" ]
+			"PlatformAllowList": [ "Win64", "Linux" ]
 		},
 		{
 			"Name": "VTCodecs",
