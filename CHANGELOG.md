@@ -5,6 +5,7 @@
 ### Features
 
 - Add out-of-process hang tracking with `Native` backend on Windows, Mac and Linux ([#1427](https://github.com/getsentry/sentry-unreal/pull/1427))
+- Add experimental Session Replay capturing on Mac ([#1425](https://github.com/getsentry/sentry-unreal/pull/1425))
 
 ### Dependencies
 

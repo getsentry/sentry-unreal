@@ -53,6 +53,18 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
+	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
+
+	if (settings->AttachSessionReplay)
+	{
+		// Capture the previous run's replay path before starting the recorder to
+		// avoid a race where onLastRunStatusDetermined picks up the current session's MP4
+		PrevSessionReplayPath = GetLatestSessionReplay();
+		if (PrevSessionReplayPath.IsEmpty())
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("No session replays from the previous session were found."));
+		}
+	}
 
 	[SENTRY_APPLE_CLASS(PrivateSentrySDKOnly) setSdkName:@"sentry.cocoa.unreal"];
 
@@ -80,6 +92,12 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.onLastRunStatusDetermined = ^(SentryLastRunStatus status, SentryEvent* event) {
 				if (status != SentryLastRunStatusDidCrash || event == nil)
 				{
+					// No crash to attach to — drop the previous run's replay file so it
+					// doesn't linger and confuse the next session's "latest" detection
+					if (!PrevSessionReplayPath.IsEmpty() && FPaths::FileExists(PrevSessionReplayPath))
+					{
+						IFileManager::Get().Delete(*PrevSessionReplayPath);
+					}
 					return;
 				}
 				if (settings->AttachScreenshot)
@@ -93,6 +111,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
 					// find the most recent one and upload it to Sentry.
 					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
+				}
+				if (settings->AttachSessionReplay)
+				{
+					// If a replay was captured during the previous app run upload it to Sentry.
+					UploadSessionReplayForEvent(MakeShareable(new FAppleSentryId(event.eventId)), PrevSessionReplayPath);
 				}
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
@@ -675,6 +698,17 @@ void FAppleSentrySubsystem::UploadGameLogForEvent(TSharedPtr<ISentryId> eventId,
 	UploadAttachmentForEvent(eventId, logFilePath, SentryFileUtils::GetGameLogName());
 }
 
+void FAppleSentrySubsystem::UploadSessionReplayForEvent(TSharedPtr<ISentryId> eventId, const FString& replayPath) const
+{
+	if (replayPath.IsEmpty())
+	{
+		// Recorder only produces a file after the first keyframe so if a crash happens early and nothing is written to disk (empty path) skip the upload
+		return;
+	}
+
+	UploadAttachmentForEvent(eventId, replayPath, TEXT("session-replay.mp4"), true);
+}
+
 FString FAppleSentrySubsystem::GetScreenshotPath() const
 {
 	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryScreenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
@@ -706,6 +740,34 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 	});
 
 	return Screenshots[0];
+}
+
+FString FAppleSentrySubsystem::GetLatestSessionReplay() const
+{
+	const FString& ReplaysDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"));
+
+	TArray<FString> Replays;
+	IFileManager::Get().FindFiles(Replays, *ReplaysDir, TEXT("*.mp4"));
+
+	if (Replays.Num() == 0)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("There are no session replays found."));
+		return FString("");
+	}
+
+	for (int i = 0; i < Replays.Num(); ++i)
+	{
+		Replays[i] = ReplaysDir / Replays[i];
+	}
+
+	Replays.Sort([](const FString& A, const FString& B)
+	{
+		const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
+		const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
+		return TimestampB < TimestampA;
+	});
+
+	return Replays[0];
 }
 
 #endif // !USE_SENTRY_NATIVE

@@ -11,6 +11,12 @@
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 
+#ifdef USE_SENTRY_SESSION_REPLAY
+#include "GenericPlatform/GenericPlatformSentryAttachment.h"
+#include "HAL/FileManager.h"
+#include "Misc/Guid.h"
+#endif
+
 void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, const FSentryCallbackHandlers& CallbackHandlers)
 {
 	FGenericPlatformSentrySubsystem::InitWithSettings(Settings, CallbackHandlers);
@@ -24,7 +30,58 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, cons
 	{
 		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
 	}
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (IsEnabled() && Settings->AttachSessionReplay)
+	{
+		// Clear replay videos captured during previous session if any
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
+		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+		if (!SessionReplay->Initialize(Settings, GetReplayPath()))
+		{
+			SessionReplay.Reset();
+		}
+	}
+#endif
 }
+
+sentry_value_t FMacSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
+{
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
+	{
+		TSharedPtr<ISentryAttachment> ReplayAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(SessionReplay->GetAttachmentPath(), TEXT("session-replay.mp4"), TEXT("video/mp4")));
+
+		AddFileAttachment(ReplayAttachment);
+	}
+#endif
+
+	return FGenericPlatformSentrySubsystem::OnCrash(uctx, event, closure);
+}
+
+void FMacSentrySubsystem::Close()
+{
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay)
+	{
+		SessionReplay->Shutdown();
+		SessionReplay.Reset();
+	}
+#endif
+
+	FGenericPlatformSentrySubsystem::Close();
+}
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+FString FMacSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	return FPaths::ConvertRelativePathToFull(ReplayPath);
+}
+#endif
 
 FString FMacSentrySubsystem::GetHandlerExecutableName() const
 {
@@ -96,8 +153,10 @@ void FMacSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Options)
 
 #include "Utils/SentryFileUtils.h"
 
+#include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Guid.h"
 
 void FMacSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
@@ -112,11 +171,30 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* settings, cons
 				TryCaptureScreenshot();
 			});
 		}
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+		if (settings->AttachSessionReplay)
+		{
+			SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+			if (!SessionReplay->Initialize(settings, GetReplayPath()))
+			{
+				SessionReplay.Reset();
+			}
+		}
+#endif
 	}
 }
 
 void FMacSentrySubsystem::Close()
 {
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay)
+	{
+		SessionReplay->Shutdown();
+		SessionReplay.Reset();
+	}
+#endif
+
 	if (OnHandleSystemErrorDelegateHandle.IsValid())
 	{
 		FCoreDelegates::OnHandleSystemError.Remove(OnHandleSystemErrorDelegateHandle);
@@ -125,6 +203,15 @@ void FMacSentrySubsystem::Close()
 
 	FAppleSentrySubsystem::Close();
 }
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+FString FMacSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
+	const FString ReplayPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	return FPaths::ConvertRelativePathToFull(ReplayPath);
+}
+#endif
 
 TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {

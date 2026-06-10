@@ -64,15 +64,20 @@ protected:
 
 	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const;
 	void UploadGameLogForEvent(TSharedPtr<ISentryId> eventId, const FString& logFilePath) const;
+	void UploadSessionReplayForEvent(TSharedPtr<ISentryId> eventId, const FString& replayPath) const;
 
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;
 	virtual FString GetGameLogPath() const { return FString(); };
 	virtual FString GetLatestGameLog() const { return FString(); }
+	virtual FString GetLatestSessionReplay() const;
 
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
+	bool isSessionReplayAttachmentEnabled = false;
+
+	FString PrevSessionReplayPath;
 };
 
 #endif // !USE_SENTRY_NATIVE

@@ -184,17 +184,6 @@ public class Sentry : ModuleRules
 			PublicSystemLibraries.Add("version.lib");
 			PublicSystemLibraries.Add("Synchronization.lib");
 
-			if (bAttachSessionReplay && IsPluginEnabled(Target, "AVCodecsCore"))
-			{
-				PrivateDependencyModuleNames.AddRange(new string[]
-				{
-					"RHI",
-					"RenderCore",
-					"AVCodecsCore",
-					"AVCodecsCoreRHI",
-				});
-				PublicDefinitions.Add("USE_SENTRY_SESSION_REPLAY=1");
-			}
 		}
 #if UE_5_0_OR_LATER
 		else if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64)
@@ -254,6 +243,19 @@ public class Sentry : ModuleRules
 
 				Console.WriteLine("To use Sentry SDK on game consoles follow the instructions at https://docs.sentry.io/platforms/unreal/game-consoles/");
 			}
+		}
+
+		if (bAttachSessionReplay && IsPluginEnabled(Target, "AVCodecsCore") &&
+			(Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac))
+		{
+			PrivateDependencyModuleNames.AddRange(new string[]
+			{
+				"RHI",
+				"RenderCore",
+				"AVCodecsCore",
+				"AVCodecsCoreRHI",
+			});
+			PublicDefinitions.Add("USE_SENTRY_SESSION_REPLAY=1");
 		}
 	}
 
