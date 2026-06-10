@@ -39,6 +39,15 @@ cp -R "Sentry.embeddedframework.zip" "$(dirname $sentryArtifactsDestination)/IOS
 rm -rf "Sentry.embeddedframework"
 rm "Sentry.embeddedframework.zip"
 
+mkdir "Sentry.xcframework"
+cp -R "${sentryCocoaCache}/Sentry-Dynamic.xcframework/ios-arm64" "Sentry.xcframework/"
+cp -R "${sentryCocoaCache}/Sentry-Dynamic.xcframework/ios-arm64_x86_64-simulator" "Sentry.xcframework/"
+cp "${sentryCocoaCache}/Sentry-Dynamic.xcframework/Info.plist" "Sentry.xcframework/"
+zip -r "Sentry.xcframework.zip" "Sentry.xcframework"
+cp "Sentry.xcframework.zip" "$(dirname $sentryArtifactsDestination)/IOS/Sentry.xcframework.zip"
+rm -rf "Sentry.xcframework"
+rm "Sentry.xcframework.zip"
+
 # Prepare Mac artifacts
 if ! [ -d "$(dirname $sentryArtifactsDestination)/Mac/Cocoa" ]; then
     mkdir -p "$(dirname $sentryArtifactsDestination)/Mac/Cocoa"
