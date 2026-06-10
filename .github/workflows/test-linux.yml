@@ -147,7 +147,7 @@ jobs:
       - name: Strip experimental codec plugin refs (UE 4.27)
         if: ${{ inputs.unreal-version == '4.27' }}
         shell: pwsh
-        run: ./checkout/scripts/strip-plugin-refs.ps1 -ProjectPath checkout/sample/SentryPlayground.uproject -PluginNames AVCodecsCore,NVCodecs
+        run: ./checkout/scripts/strip-plugin-refs.ps1 -ProjectPath checkout/sample/SentryPlayground.uproject -PluginNames AVCodecsCore,NVCodecs,VTCodecs
 
       - name: Build and test (Crashpad)
         id: run-tests

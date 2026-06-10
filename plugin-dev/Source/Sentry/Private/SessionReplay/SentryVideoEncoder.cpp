@@ -170,9 +170,33 @@ uint32 FSentryVideoEncoder::Run()
 				CaptureTimeBaseSeconds = Frame.CaptureTimeSeconds;
 			}
 
-			const uint32 TimestampMs = static_cast<uint32>(FMath::Max(0.0, (Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds) * 1000.0));
+			// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
+#if PLATFORM_MAC
+			static constexpr double SendTimestampScale = 1'000'000.0;
+#else
+			static constexpr double SendTimestampScale = 1'000.0;
+#endif
 
-			const FAVResult Result = Encoder->SendFrame(Resource, TimestampMs, bForceKeyframe);
+			const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
+			const double ScaledTimestamp = TimestampSeconds * SendTimestampScale;
+
+#if PLATFORM_MAC
+			// Restart the encoder every hour of recording. On Mac this stays well clear of the
+			// uint32-microseconds wrap at ~71 min which would otherwise feed VT a backward PTS
+			// and corrupt all subsequent fragments. On Windows the natural wrap is at ~49 days
+			// so realistically periodic refresh of encoder state won't be needed there
+			constexpr double RestartThreshold = 3600.0 * SendTimestampScale;
+			if (ScaledTimestamp > RestartThreshold)
+			{
+				UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder has been running for %.0f s; restarting to refresh state."), TimestampSeconds);
+				Restart();
+				continue;
+			}
+#endif
+
+			const uint32 SendTimestamp = static_cast<uint32>(ScaledTimestamp);
+
+			const FAVResult Result = Encoder->SendFrame(Resource, SendTimestamp, bForceKeyframe);
 			if (Result.IsSuccess())
 			{
 				bFirstFrameValidated = true;
@@ -242,6 +266,12 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Config.bFillData = 0;
 	Config.MultipassMode = EMultipassMode::Disabled;
 
+#if PLATFORM_MAC
+	// Work around a VT bug where H.264 Auto maps to a null EntropyCodingMode
+	// causing a crash in CFStringGetLength. Use CABAC instead (supported by Main/High profiles)
+	Config.EntropyCodingMode = EH264EntropyCodingMode::CABAC;
+#endif
+
 	TSharedRef<FAVDevice>& Device = FAVDevice::GetHardwareDevice();
 
 	Encoder = FVideoEncoder::Create<FVideoResourceRHI>(Device, Config);
@@ -260,6 +290,40 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		Width, Height, Framerate, BitrateBps / 1000, FragmentSeconds);
 
 	return true;
+}
+
+void FSentryVideoEncoder::Restart()
+{
+	DrainPackets();
+
+	if (CurrentSamples.Num() > 0 && bInitSegmentPublished)
+	{
+		TArray<uint8> Frag = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
+		Recorder.OnFragmentReady(MoveTemp(Frag));
+	}
+	CurrentSamples.Reset();
+
+	Encoder.Reset();
+
+	bEncoderOpen = false;
+
+	CaptureTimeBaseSeconds = -1.0;
+	LastPacketTimestampMs = 0;
+	bHavePrevPacketTimestamp = false;
+	LastForcedKeyframeTime = 0.0;
+	CurrentFragmentDecodeTime = 0;
+	SampleClock = 0;
+	NextFragmentSequence = 1;
+	CachedSps.Empty();
+	CachedPps.Empty();
+	bInitSegmentPublished = false;
+	bFirstFrameValidated = false;
+	ConsecutiveSendFrameFailures = 0;
+
+	{
+		FScopeLock Lock(&QueueLock);
+		PendingQueue.Reset();
+	}
 }
 
 void FSentryVideoEncoder::DrainPackets()
@@ -309,13 +373,17 @@ void FSentryVideoEncoder::DrainPackets()
 		}
 
 		// The encoder echoes back the capture timestamp we passed to SendFrame
-		// (ms, relative to the first frame). Sample duration is the gap to the
+		// (relative to the first frame). Sample duration is the gap to the
 		// previously emitted sample, so playback follows the real capture cadence
 		// rather than the bursty encoder output cadence (and stays real-time even
 		// when the source renders below the configured target rate). A skipped
 		// packet never updates the marker, so its interval folds into the next
 		// sample. The first sample falls back to a nominal 1/Framerate
+#if PLATFORM_MAC
+		const uint32 PacketTimestampMs = static_cast<uint32>(FPlatformTime::ToMilliseconds64(Packet.Timestamp));
+#else
 		const uint32 PacketTimestampMs = static_cast<uint32>(Packet.Timestamp);
+#endif
 		double DurationSeconds;
 		if (!bHavePrevPacketTimestamp)
 		{
