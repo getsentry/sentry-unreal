@@ -26,7 +26,7 @@ ObjCBreakBeforeNestedBlockParam:                false
 PointerAlignment:                               Left
 SpacesInContainerLiterals:                      true
 SpaceAfterTemplateKeyword:                      false
-Standard:                                       c++11
+Standard:                                       c++14
 TabWidth:                                       4
 UseTab:                                         Always
 MacroBlockBegin:                                '^BEGIN_DEFINE_SPEC'

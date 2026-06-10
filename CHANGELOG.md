@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add experimental Session Replay capturing on Mac ([#1425](https://github.com/getsentry/sentry-unreal/pull/1425))
+
 ### Dependencies
 
 - Bump CLI from v3.4.3 to v3.5.0 ([#1419](https://github.com/getsentry/sentry-unreal/pull/1419))
