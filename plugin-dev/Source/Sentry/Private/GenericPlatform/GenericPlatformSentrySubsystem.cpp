@@ -52,6 +52,7 @@
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Guid.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectThreadContext.h"
 
@@ -308,6 +309,16 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
+	{
+		TSharedPtr<ISentryAttachment> ReplayAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(SessionReplay->GetAttachmentPath(), TEXT("session-replay.mp4"), TEXT("video/mp4")));
+
+		AddFileAttachment(ReplayAttachment);
+	}
+#endif
+
 	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
 		if (IsScreenshotSupported())
@@ -629,11 +640,33 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	// associated GC lock acquisition) inside the `before_send` callback when handling fatal errors,
 	// which can re-trigger memory-related crashes (e.g. stack overflow).
 	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (isEnabled && settings->AttachSessionReplay)
+	{
+		// Clear replay videos captured during previous session if any
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
+		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+		if (!SessionReplay->Initialize(settings, GetReplayPath()))
+		{
+			SessionReplay.Reset();
+		}
+	}
+#endif
 }
 
 void FGenericPlatformSentrySubsystem::Close()
 {
 	isEnabled = false;
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay)
+	{
+		SessionReplay->Shutdown();
+		SessionReplay.Reset();
+	}
+#endif
 
 	PooledCrashEvent.Reset();
 
@@ -1316,5 +1349,14 @@ FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 
 	return ScreenshotFullPath;
 }
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+FString FGenericPlatformSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	return FPaths::ConvertRelativePathToFull(ReplayPath);
+}
+#endif
 
 #endif
