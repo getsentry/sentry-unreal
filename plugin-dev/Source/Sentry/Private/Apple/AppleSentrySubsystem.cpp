@@ -57,6 +57,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
 	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
+	maxAttachmentSize = settings->MaxAttachmentSize;
 
 	if (settings->AttachSessionReplay)
 	{
@@ -676,9 +677,14 @@ void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> event
 
 	const FString& filePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*filePath);
 
-	NSData* attachmentData = [NSData dataWithContentsOfFile:filePathExt.GetNSString()];
+	SentryObjCAttachment* attachment = [[SENTRY_APPLE_CLASS(SentryObjCAttachment) alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
 
-	SentryObjCEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryObjCEnvelopeItem) alloc] initWithType:@"attachment" data:attachmentData contentType:@"application/octet-stream" itemCount:@1];
+	SentryObjCEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryObjCEnvelopeItem) alloc] initWithAttachment:attachment maxAttachmentSize:maxAttachmentSize];
+	if (envelopeItem == nil)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload attachment - file exceeds max attachment size or could not be read: %s"), *filePath);
+		return;
+	}
 
 	SentryObjCId* id = StaticCastSharedPtr<FAppleSentryId>(eventId)->GetNativeObject();
 
