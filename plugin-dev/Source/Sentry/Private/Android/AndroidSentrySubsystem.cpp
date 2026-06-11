@@ -342,6 +342,11 @@ bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
 	return false;
 }
 
+bool FAndroidSentrySubsystem::IsOutOfProcessHangTrackingEnabled() const
+{
+	return false;
+}
+
 void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);

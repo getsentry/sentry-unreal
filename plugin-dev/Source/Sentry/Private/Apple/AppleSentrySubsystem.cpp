@@ -465,6 +465,11 @@ bool FAppleSentrySubsystem::IsHangTrackingSupported() const
 	return false;
 }
 
+bool FAppleSentrySubsystem::IsOutOfProcessHangTrackingEnabled() const
+{
+	return false;
+}
+
 void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAppleSentryFeedback> feedbackApple = StaticCastSharedPtr<FAppleSentryFeedback>(feedback);
