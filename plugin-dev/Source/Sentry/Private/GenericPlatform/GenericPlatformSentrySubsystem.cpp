@@ -581,7 +581,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
-	sentry_options_set_logs_with_attributes(options, true);
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
 	sentry_options_set_http_retry(options, 1);
@@ -728,25 +727,7 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 
 	sentry_value_t attributes = FGenericPlatformSentryConverters::VariantMapToAttributesNative(Attributes);
 
-	switch (Level)
-	{
-	case ESentryLevel::Fatal:
-		sentry_log_fatal(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Error:
-		sentry_log_error(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Warning:
-		sentry_log_warn(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Info:
-		sentry_log_info(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Debug:
-	default:
-		sentry_log_debug(MessageUtf8.Get(), attributes);
-		break;
-	}
+	sentry_log(FGenericPlatformSentryConverters::SentryLevelToNative(Level), MessageUtf8.Get(), attributes);
 }
 
 void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
