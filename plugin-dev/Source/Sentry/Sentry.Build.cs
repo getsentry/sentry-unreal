@@ -250,7 +250,7 @@ public class Sentry : ModuleRules
 		}
 
 		if (bAttachSessionReplay && IsPluginEnabled(Target, "AVCodecsCore") &&
-			(Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac))
+			(Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux))
 		{
 			PrivateDependencyModuleNames.AddRange(new string[]
 			{
