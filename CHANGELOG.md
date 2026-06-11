@@ -7,6 +7,10 @@
 - Add experimental Session Replay capturing on Mac ([#1425](https://github.com/getsentry/sentry-unreal/pull/1425))
 - Add experimental session replay capturing on Linux ([#1428](https://github.com/getsentry/sentry-unreal/pull/1428))
 
+### Fixes
+
+- Fix crash when captured log messages contain printf-style format specifiers ([#1434](https://github.com/getsentry/sentry-unreal/pull/1434))
+
 ### Dependencies
 
 - Bump CLI from v3.4.3 to v3.5.0 ([#1419](https://github.com/getsentry/sentry-unreal/pull/1419))
