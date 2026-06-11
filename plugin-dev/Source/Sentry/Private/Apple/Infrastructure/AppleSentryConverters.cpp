@@ -595,10 +595,7 @@ FSentryVariant FAppleSentryConverters::SentryAttributeContentToVariant(SentryObj
 	{
 		return FSentryVariant(static_cast<float>([(NSNumber*)content.value doubleValue]));
 	}
-	else if ([type isEqualToString:@"string[]"]
-		|| [type isEqualToString:@"integer[]"]
-		|| [type isEqualToString:@"double[]"]
-		|| [type isEqualToString:@"boolean[]"])
+	else if ([type isEqualToString:@"string[]"] || [type isEqualToString:@"integer[]"] || [type isEqualToString:@"double[]"] || [type isEqualToString:@"boolean[]"])
 	{
 		return FSentryVariant(VariantArrayToUnreal((NSArray*)content.value));
 	}
