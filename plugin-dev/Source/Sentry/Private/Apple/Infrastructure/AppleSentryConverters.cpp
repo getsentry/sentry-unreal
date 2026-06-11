@@ -449,9 +449,17 @@ FSentryVariant FAppleSentryConverters::VariantToUnreal(id variant)
 		{
 			return FSentryVariant([number floatValue]);
 		}
+		if (strcmp(objCType, @encode(double)) == 0)
+		{
+			return FSentryVariant(static_cast<float>([number doubleValue]));
+		}
 		if (strcmp(objCType, @encode(int)) == 0)
 		{
 			return FSentryVariant([number intValue]);
+		}
+		if (strcmp(objCType, @encode(long)) == 0 || strcmp(objCType, @encode(long long)) == 0)
+		{
+			return FSentryVariant(static_cast<int32>([number longLongValue]));
 		}
 	}
 	if ([variant isKindOfClass:[NSString class]])
@@ -586,6 +594,13 @@ FSentryVariant FAppleSentryConverters::SentryAttributeContentToVariant(SentryObj
 	else if ([type isEqualToString:@"double"])
 	{
 		return FSentryVariant(static_cast<float>([(NSNumber*)content.value doubleValue]));
+	}
+	else if ([type isEqualToString:@"string[]"]
+		|| [type isEqualToString:@"integer[]"]
+		|| [type isEqualToString:@"double[]"]
+		|| [type isEqualToString:@"boolean[]"])
+	{
+		return FSentryVariant(VariantArrayToUnreal((NSArray*)content.value));
 	}
 
 	return FSentryVariant();
