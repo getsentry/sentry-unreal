@@ -472,9 +472,9 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $script:CapturedLogs.Count | Should -BeGreaterThan 0
         }
 
-        It "Should have correct log message" {
+        It "Should have correct log message with format specifiers delivered verbatim" {
             $log = $script:CapturedLogs[0]
-            $log.message | Should -Match 'Integration test structured log'
+            $log.message | Should -Be '[LogSentryTest] Integration test structured log metadata="%s" (%d fields)'
         }
 
         It "Should have correct severity level" {
