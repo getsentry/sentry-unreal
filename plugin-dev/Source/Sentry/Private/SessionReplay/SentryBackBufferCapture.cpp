@@ -76,7 +76,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 {
 	check(IsInRenderingThread());
 
-	if (!BackBuffer.IsValid())
+	if (!BackBuffer.IsValid() || Encoder.IsEncodingDisabled())
 	{
 		return;
 	}

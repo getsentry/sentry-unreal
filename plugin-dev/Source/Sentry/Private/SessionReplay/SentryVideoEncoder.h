@@ -46,6 +46,8 @@ public:
 
 	uint32 GetFramerate() const { return Framerate; }
 
+	bool IsEncodingDisabled() const { return bEncodingDisabled; }
+
 	// FRunnable
 	virtual bool Init() override;
 	virtual void Stop() override;
