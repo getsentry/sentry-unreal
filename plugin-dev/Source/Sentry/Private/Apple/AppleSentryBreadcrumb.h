@@ -6,16 +6,16 @@
 
 #include "Interface/SentryBreadcrumbInterface.h"
 
-@class SentryBreadcrumb;
+@class SentryObjCBreadcrumb;
 
 class FAppleSentryBreadcrumb : public ISentryBreadcrumb
 {
 public:
 	FAppleSentryBreadcrumb();
-	FAppleSentryBreadcrumb(SentryBreadcrumb* breadcrumb);
+	FAppleSentryBreadcrumb(SentryObjCBreadcrumb* breadcrumb);
 	virtual ~FAppleSentryBreadcrumb() override;
 
-	SentryBreadcrumb* GetNativeObject();
+	SentryObjCBreadcrumb* GetNativeObject();
 
 	virtual void SetMessage(const FString& message) override;
 	virtual FString GetMessage() const override;
@@ -29,7 +29,7 @@ public:
 	virtual ESentryLevel GetLevel() const override;
 
 private:
-	SentryBreadcrumb* BreadcrumbApple;
+	SentryObjCBreadcrumb* BreadcrumbApple;
 };
 
 typedef FAppleSentryBreadcrumb FPlatformSentryBreadcrumb;

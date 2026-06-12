@@ -4,14 +4,6 @@
 
 #if !USE_SENTRY_NATIVE
 
-#include "AppleSentryAttachment.h"
-#include "AppleSentryId.h"
-
-#include "Convenience/AppleSentryInclude.h"
-#include "Convenience/AppleSentryMacro.h"
-
-#include "Misc/FileHelper.h"
-
 FAppleSentryFeedback::FAppleSentryFeedback(const FString& message)
 	: Message(message)
 {
@@ -60,42 +52,6 @@ FString FAppleSentryFeedback::GetAssociatedEvent() const
 void FAppleSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
 	Attachments.Add(attachment);
-}
-
-SentryFeedback* FAppleSentryFeedback::CreateSentryFeedback(TSharedPtr<FAppleSentryFeedback> feedback)
-{
-	SentryId* id = nil;
-	if (!feedback->EventId.IsEmpty())
-	{
-		TSharedPtr<FAppleSentryId> idIOS = MakeShareable(new FAppleSentryId(feedback->EventId));
-		id = idIOS->GetNativeObject();
-	}
-
-	NSMutableArray<SentryAttachment*>* attachments = nil;
-	if (feedback->Attachments.Num() > 0)
-	{
-		attachments = [NSMutableArray arrayWithCapacity:feedback->Attachments.Num()];
-
-		for (const TSharedPtr<ISentryAttachment>& attachment : feedback->Attachments)
-		{
-			TSharedPtr<FAppleSentryAttachment> attachmentApple = StaticCastSharedPtr<FAppleSentryAttachment>(attachment);
-			if (attachmentApple)
-			{
-				SentryAttachment* nativeAttachment = attachmentApple->GetNativeObject();
-				if (nativeAttachment != nil)
-				{
-					[attachments addObject:nativeAttachment];
-				}
-			}
-		}
-	}
-
-	return [[SENTRY_APPLE_CLASS(SentryFeedback) alloc] initWithMessage:feedback->Message.GetNSString()
-																  name:feedback->Name.GetNSString()
-																 email:feedback->Email.GetNSString()
-																source:SentryFeedbackSourceCustom
-													 associatedEventId:id
-														   attachments:attachments];
 }
 
 #endif // !USE_SENTRY_NATIVE

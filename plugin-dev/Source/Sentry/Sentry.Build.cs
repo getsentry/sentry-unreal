@@ -64,7 +64,7 @@ public class Sentry : ModuleRules
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 
-			PublicAdditionalFrameworks.Add(new Framework("Sentry", Path.Combine(PlatformThirdPartyPath, "Sentry.embeddedframework.zip"), null, true));
+			PublicAdditionalFrameworks.Add(new Framework("SentryObjC", Path.Combine(PlatformThirdPartyPath, "SentryObjC.embeddedframework.zip"), null, true));
 
 			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
 
@@ -77,6 +77,8 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 			PublicDefinitions.Add("SDK_V9=0");
 			PublicDefinitions.Add("SWIFT_PACKAGE=0");
+			PublicDefinitions.Add("SENTRY_TEST=0");
+			PublicDefinitions.Add("SENTRY_TEST_CI=0");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
@@ -107,7 +109,7 @@ public class Sentry : ModuleRules
 
 				PublicIncludePaths.Add(Path.Combine(PlatformThirdPartyPath, "Cocoa", "include"));
 
-				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry.dylib"), Path.Combine(PlatformThirdPartyPath, "Cocoa", "bin", "sentry.dylib"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "SentryObjC.dylib"), Path.Combine(PlatformThirdPartyPath, "Cocoa", "bin", "SentryObjC.dylib"));
 
 				PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 				PublicDefinitions.Add("COCOAPODS=0");
@@ -116,6 +118,8 @@ public class Sentry : ModuleRules
 				PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 				PublicDefinitions.Add("SDK_V9=0");
 				PublicDefinitions.Add("SWIFT_PACKAGE=0");
+				PublicDefinitions.Add("SENTRY_TEST=0");
+				PublicDefinitions.Add("SENTRY_TEST_CI=0");
 			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Android)

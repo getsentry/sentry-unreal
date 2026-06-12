@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add Metrics API support for Mac and iOS via SentryObjC framework integration ([#1352](https://github.com/getsentry/sentry-unreal/pull/1352))
 - Add experimental Session Replay capturing on Mac ([#1425](https://github.com/getsentry/sentry-unreal/pull/1425))
 - Add experimental session replay capturing on Linux ([#1428](https://github.com/getsentry/sentry-unreal/pull/1428))
 

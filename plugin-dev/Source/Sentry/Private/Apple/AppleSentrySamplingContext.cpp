@@ -10,7 +10,7 @@
 
 #include "Convenience/AppleSentryInclude.h"
 
-FAppleSentrySamplingContext::FAppleSentrySamplingContext(SentrySamplingContext* context)
+FAppleSentrySamplingContext::FAppleSentrySamplingContext(SentryObjCSamplingContext* context)
 {
 	SamplingContext = context;
 }
@@ -30,7 +30,7 @@ TMap<FString, FSentryVariant> FAppleSentrySamplingContext::GetCustomSamplingCont
 	return FAppleSentryConverters::VariantMapToUnreal(SamplingContext.customSamplingContext);
 }
 
-SentrySamplingContext* FAppleSentrySamplingContext::GetNativeObject()
+SentryObjCSamplingContext* FAppleSentrySamplingContext::GetNativeObject()
 {
 	return SamplingContext;
 }

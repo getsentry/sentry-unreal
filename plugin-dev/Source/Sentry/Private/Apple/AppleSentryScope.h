@@ -6,16 +6,16 @@
 
 #include "Interface/SentryScopeInterface.h"
 
-@class SentryScope;
+@class SentryObjCScope;
 
 class FAppleSentryScope : public ISentryScope
 {
 public:
 	FAppleSentryScope();
-	FAppleSentryScope(SentryScope* scope);
+	FAppleSentryScope(SentryObjCScope* scope);
 	virtual ~FAppleSentryScope() override;
 
-	SentryScope* GetNativeObject();
+	SentryObjCScope* GetNativeObject();
 
 	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
 	virtual void ClearBreadcrumbs() override;
@@ -44,7 +44,7 @@ public:
 	virtual void Clear() override;
 
 private:
-	SentryScope* ScopeApple;
+	SentryObjCScope* ScopeApple;
 };
 
 typedef FAppleSentryScope FPlatformSentryScope;
