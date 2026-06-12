@@ -49,6 +49,11 @@
 			"Name": "VTCodecs",
 			"Enabled": true,
 			"PlatformAllowList": [ "Mac" ]
+		},
+		{
+			"Name": "AMFCodecs",
+			"Enabled": true,
+			"PlatformAllowList": [ "Win64" ]
 		}
 	],
 	"TargetPlatforms": [
