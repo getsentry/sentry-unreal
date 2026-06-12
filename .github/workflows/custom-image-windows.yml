@@ -28,9 +28,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull Unreal Engine Docker image
+      - name: Pull Unreal Engine Docker images
+        shell: pwsh
         run: |
-          docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:5.7"
+          $tags = @('4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7')
+          foreach ($tag in $tags) {
+            Write-Host "=== Pulling ${{ env.REGISTRY }}/getsentry/unreal-docker:$tag ==="
+            docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:$tag"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to pull image for tag $tag"
+              exit 1
+            }
+            Write-Host "=== Free disk space after pulling $tag ==="
+            Get-PSDrive -PSProvider FileSystem | Format-Table -AutoSize Name, @{Name='Used(GB)';Expression={[math]::Round($_.Used/1GB,2)}}, @{Name='Free(GB)';Expression={[math]::Round($_.Free/1GB,2)}}
+          }
 
       - name: Verify pulled images
         run: |
