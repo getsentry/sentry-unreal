@@ -152,6 +152,10 @@ uint32 FSentryVideoEncoder::Run()
 			const uint32 ResH = FrameTexture->GetSizeY();
 			if (!EnsureEncoderOpen(ResW, ResH))
 			{
+				if (bEncodingDisabled)
+				{
+					break;
+				}
 				continue;
 			}
 
@@ -277,7 +281,8 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Encoder = FVideoEncoder::Create<FVideoResourceRHI>(Device, Config);
 	if (!Encoder.IsValid())
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to create H.264 encoder"));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to create H.264 encoder - check that a codec plugin matching the GPU vendor is enabled. Recording disabled for this session."));
+		bEncodingDisabled.AtomicSet(true);
 		return false;
 	}
 
