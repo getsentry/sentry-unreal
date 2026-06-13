@@ -1,0 +1,55 @@
+name: Build UE Windows runner image
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    # Rebuild weekly on Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  create-image:
+    name: Create Windows image with UE Docker images
+    runs-on: windows-latest-4-cores
+    snapshot: windows-latest-4-cores-unreal
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Free up disk space
+        shell: pwsh
+        run: ./scripts/clean-storage-win.ps1
+
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Unreal Engine Docker images
+        shell: pwsh
+        run: |
+          $tags = @('4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7')
+          foreach ($tag in $tags) {
+            Write-Host "=== Pulling ${{ env.REGISTRY }}/getsentry/unreal-docker:$tag ==="
+            docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:$tag"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to pull image for tag $tag"
+              exit 1
+            }
+            Write-Host "=== Free disk space after pulling $tag ==="
+            Get-PSDrive -PSProvider FileSystem | Format-Table -AutoSize Name, @{Name='Used(GB)';Expression={[math]::Round($_.Used/1GB,2)}}, @{Name='Free(GB)';Expression={[math]::Round($_.Free/1GB,2)}}
+          }
+
+      - name: Verify pulled images
+        run: |
+          docker images --filter "reference=${{ env.REGISTRY }}/getsentry/unreal-docker" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
