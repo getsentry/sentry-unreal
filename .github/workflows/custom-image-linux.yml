@@ -13,8 +13,8 @@ env:
 jobs:
   create-image:
     name: Create Linux image with UE Docker images
-    runs-on: ubuntu-latest-4-cores
-    snapshot: ubuntu-latest-4-cores-unreal
+    runs-on: unreal-image-creating-runner-linux
+    snapshot: ubuntu-latest-unreal
 
     permissions:
       contents: read
