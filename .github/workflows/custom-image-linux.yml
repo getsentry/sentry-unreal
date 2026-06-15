@@ -1,0 +1,50 @@
+name: Build UE Linux runner image
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    # Rebuild weekly on Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  create-image:
+    name: Create Linux image with UE Docker images
+    runs-on: ubuntu-latest-4-cores
+    snapshot: ubuntu-latest-4-cores-unreal
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Free up disk space
+        run: ./scripts/clean-storage-linux.sh
+
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Unreal Engine Docker images
+        run: |
+          set -e
+          tags=("4.27" "5.2" "5.3" "5.4" "5.5" "5.6" "5.7")
+          for tag in "${tags[@]}"; do
+            echo "=== Pulling ${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-linux ==="
+            docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-linux"
+            echo "=== Free disk space after pulling ${tag}-linux ==="
+            df -h /
+          done
+
+      - name: Verify pulled images
+        run: |
+          docker images --filter "reference=${{ env.REGISTRY }}/getsentry/unreal-docker" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
