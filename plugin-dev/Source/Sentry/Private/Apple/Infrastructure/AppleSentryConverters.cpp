@@ -9,26 +9,26 @@
 #include "Apple/AppleSentryScope.h"
 #include "Apple/Convenience/AppleSentryMacro.h"
 
-SentryLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
+SentryObjCLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 {
-	SentryLevel nativeLevel = kSentryLevelDebug;
+	SentryObjCLevel nativeLevel = SentryObjCLevelDebug;
 
 	switch (level)
 	{
 	case ESentryLevel::Debug:
-		nativeLevel = kSentryLevelDebug;
+		nativeLevel = SentryObjCLevelDebug;
 		break;
 	case ESentryLevel::Info:
-		nativeLevel = kSentryLevelInfo;
+		nativeLevel = SentryObjCLevelInfo;
 		break;
 	case ESentryLevel::Warning:
-		nativeLevel = kSentryLevelWarning;
+		nativeLevel = SentryObjCLevelWarning;
 		break;
 	case ESentryLevel::Error:
-		nativeLevel = kSentryLevelError;
+		nativeLevel = SentryObjCLevelError;
 		break;
 	case ESentryLevel::Fatal:
-		nativeLevel = kSentryLevelFatal;
+		nativeLevel = SentryObjCLevelFatal;
 		break;
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry level value used. Debug will be returned."));
@@ -37,26 +37,26 @@ SentryLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
-SentryLogLevel FAppleSentryConverters::SentryLogLevelToNative(ESentryLevel level)
+SentryObjCLogLevel FAppleSentryConverters::SentryLogLevelToNative(ESentryLevel level)
 {
-	SentryLogLevel nativeLevel = SentryLogLevelDebug;
+	SentryObjCLogLevel nativeLevel = SentryObjCLogLevelDebug;
 
 	switch (level)
 	{
 	case ESentryLevel::Debug:
-		nativeLevel = SentryLogLevelDebug;
+		nativeLevel = SentryObjCLogLevelDebug;
 		break;
 	case ESentryLevel::Info:
-		nativeLevel = SentryLogLevelInfo;
+		nativeLevel = SentryObjCLogLevelInfo;
 		break;
 	case ESentryLevel::Warning:
-		nativeLevel = SentryLogLevelWarn;
+		nativeLevel = SentryObjCLogLevelWarn;
 		break;
 	case ESentryLevel::Error:
-		nativeLevel = SentryLogLevelError;
+		nativeLevel = SentryObjCLogLevelError;
 		break;
 	case ESentryLevel::Fatal:
-		nativeLevel = SentryLogLevelFatal;
+		nativeLevel = SentryObjCLogLevelFatal;
 		break;
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
@@ -147,7 +147,7 @@ NSDictionary* FAppleSentryConverters::VariantMapToNative(const TMap<FString, FSe
 	return dict;
 }
 
-SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
+SentryObjCStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack)
 {
 	int32 framesCount = callstack.Num();
 
@@ -155,28 +155,28 @@ SentryStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FProgra
 
 	for (int i = 0; i < framesCount; ++i)
 	{
-		SentryFrame* frame = [[SENTRY_APPLE_CLASS(SentryFrame) alloc] init];
+		SentryObjCFrame* frame = [[SENTRY_APPLE_CLASS(SentryObjCFrame) alloc] init];
 		frame.instructionAddress = FString::Printf(TEXT("0x%llx"), callstack[framesCount - i - 1].ProgramCounter).GetNSString();
 		[arr addObject:frame];
 	}
 
-	SentryStacktrace* trace = [[SENTRY_APPLE_CLASS(SentryStacktrace) alloc] initWithFrames:arr registers:@{}];
+	SentryObjCStacktrace* trace = [[SENTRY_APPLE_CLASS(SentryObjCStacktrace) alloc] initWithFrames:arr registers:@{}];
 
 	return trace;
 }
 
-SentryAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)
+SentryObjCAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)
 {
 	switch (variant.GetType())
 	{
 	case ESentryVariantType::Integer:
-		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithInteger:variant.GetValue<int32>()];
+		return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithInteger:variant.GetValue<int32>()];
 	case ESentryVariantType::Float:
-		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithDouble:(double)variant.GetValue<float>()];
+		return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithDouble:(double)variant.GetValue<float>()];
 	case ESentryVariantType::Bool:
-		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithBoolean:variant.GetValue<bool>()];
+		return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithBoolean:variant.GetValue<bool>()];
 	case ESentryVariantType::String:
-		return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
+		return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:variant.GetValue<FString>().GetNSString()];
 	case ESentryVariantType::Array:
 	{
 		// Convert array to native and then to JSON string representation
@@ -186,7 +186,7 @@ SentryAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryV
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithString:jsonString];
+			return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
 		}
 		else
 		{
@@ -202,7 +202,7 @@ SentryAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryV
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryAttribute) alloc] initWithString:jsonString];
+			return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
 		}
 		else
 		{
@@ -214,25 +214,144 @@ SentryAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryV
 	}
 }
 
-ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
+SentryObjCAttributeContent* FAppleSentryConverters::VariantToAttributeContentNative(const FSentryVariant& variant)
+{
+	switch (variant.GetType())
+	{
+	case ESentryVariantType::Integer:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) integer:variant.GetValue<int32>()];
+	case ESentryVariantType::Float:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) double:(double)variant.GetValue<float>()];
+	case ESentryVariantType::Bool:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) boolean:variant.GetValue<bool>()];
+	case ESentryVariantType::String:
+		return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:variant.GetValue<FString>().GetNSString()];
+	case ESentryVariantType::Array:
+	{
+		const TArray<FSentryVariant>& arr = variant.GetValue<TArray<FSentryVariant>>();
+		// Check if array is homogeneous and convert to typed array if possible
+		if (arr.Num() > 0)
+		{
+			ESentryVariantType firstType = arr[0].GetType();
+			bool isHomogeneous = true;
+			for (const FSentryVariant& item : arr)
+			{
+				if (item.GetType() != firstType)
+				{
+					isHomogeneous = false;
+					break;
+				}
+			}
+
+			if (isHomogeneous)
+			{
+				switch (firstType)
+				{
+				case ESentryVariantType::String:
+				{
+					NSMutableArray<NSString*>* stringArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[stringArr addObject:item.GetValue<FString>().GetNSString()];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) stringArray:stringArr];
+				}
+				case ESentryVariantType::Integer:
+				{
+					NSMutableArray<NSNumber*>* intArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[intArr addObject:@(item.GetValue<int32>())];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) integerArray:intArr];
+				}
+				case ESentryVariantType::Float:
+				{
+					NSMutableArray<NSNumber*>* doubleArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[doubleArr addObject:@((double)item.GetValue<float>())];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) doubleArray:doubleArr];
+				}
+				case ESentryVariantType::Bool:
+				{
+					NSMutableArray<NSNumber*>* boolArr = [NSMutableArray arrayWithCapacity:arr.Num()];
+					for (const FSentryVariant& item : arr)
+					{
+						[boolArr addObject:@(item.GetValue<bool>())];
+					}
+					return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) booleanArray:boolArr];
+				}
+				default:
+					break;
+				}
+			}
+		}
+		// Fall back to JSON string for mixed arrays
+		NSArray* nativeArray = VariantArrayToNative(arr);
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeArray options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+		}
+		return nil;
+	}
+	case ESentryVariantType::Map:
+	{
+		// Convert map to JSON string
+		NSDictionary* nativeDict = VariantMapToNative(variant.GetValue<TMap<FString, FSentryVariant>>());
+		NSError* error = nil;
+		NSData* jsonData = [NSJSONSerialization dataWithJSONObject:nativeDict options:0 error:&error];
+		if (jsonData && !error)
+		{
+			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+		}
+		return nil;
+	}
+	default:
+		return nil;
+	}
+}
+
+NSDictionary<NSString*, SentryObjCAttributeContent*>* FAppleSentryConverters::VariantMapToAttributeContentNative(const TMap<FString, FSentryVariant>& variantMap)
+{
+	NSMutableDictionary<NSString*, SentryObjCAttributeContent*>* dict = [NSMutableDictionary dictionaryWithCapacity:variantMap.Num()];
+
+	for (auto it = variantMap.CreateConstIterator(); it; ++it)
+	{
+		SentryObjCAttributeContent* content = VariantToAttributeContentNative(it.Value());
+		if (content != nil)
+		{
+			[dict setObject:content forKey:it.Key().GetNSString()];
+		}
+	}
+
+	return dict;
+}
+
+ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryObjCLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
 
 	switch (level)
 	{
-	case kSentryLevelDebug:
+	case SentryObjCLevelDebug:
 		unrealLevel = ESentryLevel::Debug;
 		break;
-	case kSentryLevelInfo:
+	case SentryObjCLevelInfo:
 		unrealLevel = ESentryLevel::Info;
 		break;
-	case kSentryLevelWarning:
+	case SentryObjCLevelWarning:
 		unrealLevel = ESentryLevel::Warning;
 		break;
-	case kSentryLevelError:
+	case SentryObjCLevelError:
 		unrealLevel = ESentryLevel::Error;
 		break;
-	case kSentryLevelFatal:
+	case SentryObjCLevelFatal:
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
@@ -242,26 +361,26 @@ ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryLevel level)
 	return unrealLevel;
 }
 
-ESentryLevel FAppleSentryConverters::SentryLogLevelToUnreal(SentryLogLevel level)
+ESentryLevel FAppleSentryConverters::SentryLogLevelToUnreal(SentryObjCLogLevel level)
 {
 	ESentryLevel unrealLevel = ESentryLevel::Debug;
 
 	switch (level)
 	{
-	case SentryLogLevelTrace:
-	case SentryLogLevelDebug:
+	case SentryObjCLogLevelTrace:
+	case SentryObjCLogLevelDebug:
 		unrealLevel = ESentryLevel::Debug;
 		break;
-	case SentryLogLevelInfo:
+	case SentryObjCLogLevelInfo:
 		unrealLevel = ESentryLevel::Info;
 		break;
-	case SentryLogLevelWarn:
+	case SentryObjCLogLevelWarn:
 		unrealLevel = ESentryLevel::Warning;
 		break;
-	case SentryLogLevelError:
+	case SentryObjCLogLevelError:
 		unrealLevel = ESentryLevel::Error;
 		break;
-	case SentryLogLevelFatal:
+	case SentryObjCLogLevelFatal:
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
@@ -330,9 +449,17 @@ FSentryVariant FAppleSentryConverters::VariantToUnreal(id variant)
 		{
 			return FSentryVariant([number floatValue]);
 		}
+		if (strcmp(objCType, @encode(double)) == 0)
+		{
+			return FSentryVariant(static_cast<float>([number doubleValue]));
+		}
 		if (strcmp(objCType, @encode(int)) == 0)
 		{
 			return FSentryVariant([number intValue]);
+		}
+		if (strcmp(objCType, @encode(long)) == 0 || strcmp(objCType, @encode(long long)) == 0)
+		{
+			return FSentryVariant(static_cast<int32>([number longLongValue]));
 		}
 	}
 	if ([variant isKindOfClass:[NSString class]])
@@ -376,29 +503,29 @@ TMap<FString, FSentryVariant> FAppleSentryConverters::VariantMapToUnreal(NSDicti
 	return map;
 }
 
-SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
+SentryObjCLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 {
-	SentryLevel nativeLevel = kSentryLevelDebug;
+	SentryObjCLevel nativeLevel = SentryObjCLevelDebug;
 
 	if ([string isEqualToString:@"debug"])
 	{
-		nativeLevel = kSentryLevelDebug;
+		nativeLevel = SentryObjCLevelDebug;
 	}
 	else if ([string isEqualToString:@"info"])
 	{
-		nativeLevel = kSentryLevelInfo;
+		nativeLevel = SentryObjCLevelInfo;
 	}
 	else if ([string isEqualToString:@"warning"])
 	{
-		nativeLevel = kSentryLevelWarning;
+		nativeLevel = SentryObjCLevelWarning;
 	}
 	else if ([string isEqualToString:@"error"])
 	{
-		nativeLevel = kSentryLevelError;
+		nativeLevel = SentryObjCLevelError;
 	}
 	else if ([string isEqualToString:@"fatal"])
 	{
-		nativeLevel = kSentryLevelFatal;
+		nativeLevel = SentryObjCLevelFatal;
 	}
 	else
 	{
@@ -408,7 +535,7 @@ SentryLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 	return nativeLevel;
 }
 
-FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryAttribute* attribute)
+FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryObjCAttribute* attribute)
 {
 	if (!attribute)
 	{
@@ -441,6 +568,39 @@ FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryAttribute*
 	{
 		return FSentryVariant(FString([attribute.value description]));
 	}
+}
+
+FSentryVariant FAppleSentryConverters::SentryAttributeContentToVariant(SentryObjCAttributeContent* content)
+{
+	if (!content)
+	{
+		return FSentryVariant();
+	}
+
+	NSString* type = content.type;
+
+	if ([type isEqualToString:@"string"])
+	{
+		return FSentryVariant(FString((NSString*)content.value));
+	}
+	else if ([type isEqualToString:@"boolean"])
+	{
+		return FSentryVariant([(NSNumber*)content.value boolValue]);
+	}
+	else if ([type isEqualToString:@"integer"])
+	{
+		return FSentryVariant(static_cast<int32>([(NSNumber*)content.value integerValue]));
+	}
+	else if ([type isEqualToString:@"double"])
+	{
+		return FSentryVariant(static_cast<float>([(NSNumber*)content.value doubleValue]));
+	}
+	else if ([type isEqualToString:@"string[]"] || [type isEqualToString:@"integer[]"] || [type isEqualToString:@"double[]"] || [type isEqualToString:@"boolean[]"])
+	{
+		return FSentryVariant(VariantArrayToUnreal((NSArray*)content.value));
+	}
+
+	return FSentryVariant();
 }
 
 #endif // !USE_SENTRY_NATIVE

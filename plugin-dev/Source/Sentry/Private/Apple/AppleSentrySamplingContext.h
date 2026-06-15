@@ -6,21 +6,21 @@
 
 #include "Interface/SentrySamplingContextInterface.h"
 
-@class SentrySamplingContext;
+@class SentryObjCSamplingContext;
 
 class FAppleSentrySamplingContext : public ISentrySamplingContext
 {
 public:
-	FAppleSentrySamplingContext(SentrySamplingContext* context);
+	FAppleSentrySamplingContext(SentryObjCSamplingContext* context);
 	virtual ~FAppleSentrySamplingContext() override;
 
 	virtual TSharedPtr<ISentryTransactionContext> GetTransactionContext() const override;
 	virtual TMap<FString, FSentryVariant> GetCustomSamplingContext() const override;
 
-	SentrySamplingContext* GetNativeObject();
+	SentryObjCSamplingContext* GetNativeObject();
 
 private:
-	SentrySamplingContext* SamplingContext;
+	SentryObjCSamplingContext* SamplingContext;
 };
 
 typedef FAppleSentrySamplingContext FPlatformSentrySamplingContext;

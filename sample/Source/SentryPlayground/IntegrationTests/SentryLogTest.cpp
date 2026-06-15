@@ -13,7 +13,7 @@ void FSentryLogTest::Run()
 {
 	USentrySubsystem* Subsystem = GetSubsystem();
 
-	const FString LogMessage = TEXT("Integration test structured log");
+	const FString LogMessage = TEXT("Integration test structured log metadata=\"%s\" (%d fields)");
 	const FString LogCategory = TEXT("LogSentryTest");
 
 	FString TestId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);

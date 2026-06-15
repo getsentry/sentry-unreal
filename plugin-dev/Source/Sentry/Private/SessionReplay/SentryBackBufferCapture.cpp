@@ -76,7 +76,7 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 {
 	check(IsInRenderingThread());
 
-	if (!BackBuffer.IsValid())
+	if (!BackBuffer.IsValid() || Encoder.IsEncodingDisabled())
 	{
 		return;
 	}
@@ -112,9 +112,16 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::CPUReadback;
 	constexpr ERHIAccess PoolInitialState = ERHIAccess::CPURead;
 #else
-	// NVENC reads from the pool slot directly. Shared adds cross-process interop and
-	// SRV|RT lets the draw pass write into it.
-	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::Shared | SrvRt;
+	// NVENC reads from the pool slot directly. The external-memory flag exposes the
+	// texture's GPU allocation to the encoder; SRV|RT lets the draw pass write into it.
+	// The flag is RHI-specific: D3D (Windows) uses Shared, while Vulkan (Linux, or
+	// Windows -vulkan) needs External so AVCodecs can import it through CUDA. This must
+	// match how the engine's FVideoResourceRHI::Create chooses the flag per RHI, otherwise
+	// the resource has no shareable handle and the encoder rejects every frame.
+	const ETextureCreateFlags InteropFlag = (RHIGetInterfaceType() == ERHIInterfaceType::Vulkan)
+												? ETextureCreateFlags::External
+												: ETextureCreateFlags::Shared;
+	const ETextureCreateFlags PoolFlags = InteropFlag | SrvRt;
 	constexpr ERHIAccess PoolInitialState = ERHIAccess::SRVGraphics;
 #endif
 

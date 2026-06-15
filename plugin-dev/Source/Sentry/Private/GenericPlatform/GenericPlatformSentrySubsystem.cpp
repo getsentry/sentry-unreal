@@ -52,6 +52,7 @@
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Guid.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectThreadContext.h"
 
@@ -308,6 +309,16 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
+	{
+		TSharedPtr<ISentryAttachment> ReplayAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(SessionReplay->GetAttachmentPath(), TEXT("session-replay.mp4"), TEXT("video/mp4")));
+
+		AddFileAttachment(ReplayAttachment);
+	}
+#endif
+
 	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
 		if (IsScreenshotSupported())
@@ -580,7 +591,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
 	sentry_options_set_enable_logs(options, settings->EnableStructuredLogging);
-	sentry_options_set_logs_with_attributes(options, true);
 	sentry_options_set_enable_metrics(options, settings->EnableMetrics);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
 	sentry_options_set_http_retry(options, 1);
@@ -649,6 +659,20 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	// associated GC lock acquisition) inside the `before_send` callback when handling fatal errors,
 	// which can re-trigger memory-related crashes (e.g. stack overflow).
 	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (isEnabled && settings->AttachSessionReplay)
+	{
+		// Clear replay videos captured during previous session if any
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
+		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+		if (!SessionReplay->Initialize(settings, GetReplayPath()))
+		{
+			SessionReplay.Reset();
+		}
+	}
+#endif
 }
 
 void FGenericPlatformSentrySubsystem::Close()
@@ -660,6 +684,14 @@ void FGenericPlatformSentrySubsystem::Close()
 	}
 
 	isEnabled = false;
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay)
+	{
+		SessionReplay->Shutdown();
+		SessionReplay.Reset();
+	}
+#endif
 
 	PooledCrashEvent.Reset();
 
@@ -721,25 +753,7 @@ void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLeve
 
 	sentry_value_t attributes = FGenericPlatformSentryConverters::VariantMapToAttributesNative(Attributes);
 
-	switch (Level)
-	{
-	case ESentryLevel::Fatal:
-		sentry_log_fatal(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Error:
-		sentry_log_error(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Warning:
-		sentry_log_warn(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Info:
-		sentry_log_info(MessageUtf8.Get(), attributes);
-		break;
-	case ESentryLevel::Debug:
-	default:
-		sentry_log_debug(MessageUtf8.Get(), attributes);
-		break;
-	}
+	sentry_log(FGenericPlatformSentryConverters::SentryLevelToNative(Level), MessageUtf8.Get(), attributes);
 }
 
 void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
@@ -1342,5 +1356,14 @@ FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 
 	return ScreenshotFullPath;
 }
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+FString FGenericPlatformSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	return FPaths::ConvertRelativePathToFull(ReplayPath);
+}
+#endif
 
 #endif

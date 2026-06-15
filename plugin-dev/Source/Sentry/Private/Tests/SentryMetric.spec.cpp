@@ -7,7 +7,7 @@
 
 #include "HAL/PlatformSentryMetric.h"
 
-#if WITH_AUTOMATION_TESTS && (PLATFORM_ANDROID || USE_SENTRY_NATIVE)
+#if WITH_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(SentryMetricSpec, "Sentry.SentryMetric", EAutomationTestFlags::ProductFilter | SentryApplicationContextMask)
 	USentryMetric* SentryMetric;

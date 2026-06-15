@@ -556,17 +556,17 @@ class SENTRY_API USentrySettings : public UObject
 	float HangTimeoutDuration;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
-		Meta = (DisplayName = "Enable session replay (experimental)", ToolTip = "Captures gameplay video and attaches it to crash reports. On Windows, requires the AVCodecsCore/NVCodecs plugins, NVIDIA GPU and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
+		Meta = (DisplayName = "Enable session replay (experimental)", ToolTip = "Captures gameplay video and attaches it to crash reports. On desktop platforms (Windows/Mac/Linux), requires the AVCodecsCore plugin plus a codec plugin matching the GPU vendor (NVCodecs for NVIDIA on Windows/Linux, AMFCodecs for AMD on Windows, VTCodecs on Mac) and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
 			ConfigRestartRequired = true))
 	bool AttachSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
-		Meta = (DisplayName = "Replay duration (ms)", ToolTip = "Requested duration of the retroactive replay window. On Windows this is the rolling clip length kept on disk for crash attachment; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration.",
+		Meta = (DisplayName = "Replay duration (ms)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for crash attachment; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration.",
 			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "60000"))
 	uint32 SessionReplayDurationMs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
-		Meta = (DisplayName = "Advanced recording options (Windows)", ToolTip = "Low-level encoder/muxer tuning for the Windows session-replay recorder. Defaults are sensible for most projects.",
+		Meta = (DisplayName = "Advanced recording options (Desktop)", ToolTip = "Low-level encoder/muxer tuning for the desktop (Windows/Mac/Linux) session-replay recorder. Defaults are sensible for most projects.",
 			EditCondition = "AttachSessionReplay", AdvancedDisplay))
 	FSentrySessionReplayOptions SessionReplayOptions;
 

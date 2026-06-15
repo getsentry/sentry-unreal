@@ -13,10 +13,10 @@
 
 FAppleSentryEvent::FAppleSentryEvent()
 {
-	EventApple = [[SENTRY_APPLE_CLASS(SentryEvent) alloc] init];
+	EventApple = [[SENTRY_APPLE_CLASS(SentryObjCEvent) alloc] init];
 }
 
-FAppleSentryEvent::FAppleSentryEvent(SentryEvent* event)
+FAppleSentryEvent::FAppleSentryEvent(SentryObjCEvent* event)
 {
 	EventApple = event;
 }
@@ -26,27 +26,27 @@ FAppleSentryEvent::~FAppleSentryEvent()
 	// Put custom destructor logic here if needed
 }
 
-SentryEvent* FAppleSentryEvent::GetNativeObject()
+SentryObjCEvent* FAppleSentryEvent::GetNativeObject()
 {
 	return EventApple;
 }
 
 TSharedPtr<ISentryId> FAppleSentryEvent::GetId() const
 {
-	SentryId* id = EventApple.eventId;
+	SentryObjCId* id = EventApple.eventId;
 	return MakeShareable(new FAppleSentryId(id));
 }
 
 void FAppleSentryEvent::SetMessage(const FString& message)
 {
-	SentryMessage* msg = [SENTRY_APPLE_CLASS(SentryMessage) alloc];
+	SentryObjCMessage* msg = [[SENTRY_APPLE_CLASS(SentryObjCMessage) alloc] initWithFormatted:message.GetNSString()];
 	msg.message = message.GetNSString();
 	EventApple.message = msg;
 }
 
 FString FAppleSentryEvent::GetMessage() const
 {
-	SentryMessage* msg = EventApple.message;
+	SentryObjCMessage* msg = EventApple.message;
 	return FString(msg.message);
 }
 
@@ -200,14 +200,14 @@ bool FAppleSentryEvent::IsCrash() const
 
 bool FAppleSentryEvent::IsAnr() const
 {
-	bool isErrorLevel = EventApple.level == kSentryLevelError;
+	bool isErrorLevel = EventApple.level == SentryObjCLevelError;
 	bool isAppHangException = false;
 	bool isAppHangMechanism = false;
 	bool isAppHangMessage = false;
 
 	if (EventApple.exceptions != nil && EventApple.exceptions.count == 1)
 	{
-		SentryException* exception = EventApple.exceptions[0];
+		SentryObjCException* exception = EventApple.exceptions[0];
 		isAppHangException = [exception.type isEqualToString:@"App Hanging"];
 		isAppHangMechanism = exception.mechanism != nil && [exception.mechanism.type isEqualToString:@"AppHang"];
 		isAppHangMessage = [exception.value hasPrefix:@"App hanging for at least"];

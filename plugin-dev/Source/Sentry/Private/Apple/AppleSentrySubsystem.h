@@ -77,6 +77,8 @@ protected:
 	bool isGameLogAttachmentEnabled = false;
 	bool isSessionReplayAttachmentEnabled = false;
 
+	int32 maxAttachmentSize = 0;
+
 	FString PrevSessionReplayPath;
 };
 

@@ -6,15 +6,15 @@
 
 #include "Interface/SentrySpanInterface.h"
 
-@protocol SentrySpan;
+@class SentryObjCSpan;
 
 class FAppleSentrySpan : public ISentrySpan
 {
 public:
-	FAppleSentrySpan(id<SentrySpan> span);
+	FAppleSentrySpan(SentryObjCSpan* span);
 	virtual ~FAppleSentrySpan() override;
 
-	id<SentrySpan> GetNativeObject();
+	SentryObjCSpan* GetNativeObject();
 
 	virtual TSharedPtr<ISentrySpan> StartChild(const FString& operation, const FString& desctiption, bool bindToScope) override;
 	virtual TSharedPtr<ISentrySpan> StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope) override;
@@ -28,7 +28,7 @@ public:
 	virtual void GetTrace(FString& name, FString& value) override;
 
 private:
-	id<SentrySpan> SpanApple;
+	SentryObjCSpan* SpanApple;
 };
 
 typedef FAppleSentrySpan FPlatformSentrySpan;

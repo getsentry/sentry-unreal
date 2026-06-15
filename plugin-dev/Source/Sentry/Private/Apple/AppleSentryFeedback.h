@@ -6,8 +6,6 @@
 
 #include "Interface/SentryFeedbackInterface.h"
 
-@class SentryFeedback;
-
 class FAppleSentryFeedback : public ISentryFeedback
 {
 public:
@@ -23,7 +21,7 @@ public:
 	virtual FString GetAssociatedEvent() const override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 
-	static SentryFeedback* CreateSentryFeedback(TSharedPtr<FAppleSentryFeedback> feedback);
+	const TArray<TSharedPtr<ISentryAttachment>>& GetAttachments() const { return Attachments; }
 
 private:
 	FString Message;
