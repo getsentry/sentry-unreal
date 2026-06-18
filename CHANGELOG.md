@@ -7,6 +7,9 @@
 - Bump CLI from v3.5.0 to v3.5.1 ([#1438](https://github.com/getsentry/sentry-unreal/pull/1438))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#351)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.5.0...3.5.1)
+- Bump Java SDK from v8.43.2 to v8.44.0 ([#1439](https://github.com/getsentry/sentry-unreal/pull/1439))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8440)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.2...8.44.0)
 
 ## 1.14.0
 
