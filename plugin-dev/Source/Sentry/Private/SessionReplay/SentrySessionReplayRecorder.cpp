@@ -143,6 +143,26 @@ void FSentrySessionReplayRecorder::Shutdown()
 	}
 }
 
+FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo(const FString& ReplayId, const FString& ErrorEventId) const
+{
+	const FDateTime NowUtc = FDateTime::UtcNow();
+
+	FSentryReplayInfo Info;
+	Info.ReplayId = ReplayId;
+	Info.ErrorEventId = ErrorEventId;
+	Info.VideoPath = AttachmentPath;
+	Info.Width = Encoder ? static_cast<int32>(Encoder->GetWidth()) : 0;
+	Info.Height = Encoder ? static_cast<int32>(Encoder->GetHeight()) : 0;
+	Info.FrameRate = Encoder ? static_cast<int32>(Encoder->GetFramerate()) : 0;
+	Info.DurationMs = LatestDurationMs;
+	Info.FrameCount = LatestFrameCount;
+	Info.SizeBytes = IFileManager::Get().FileSize(*AttachmentPath);
+	Info.EndTimestampSec = static_cast<double>(NowUtc.ToUnixTimestamp()) + NowUtc.GetMillisecond() / 1000.0;
+	Info.StartTimestampSec = Info.EndTimestampSec - static_cast<double>(Info.DurationMs) / 1000.0;
+
+	return Info;
+}
+
 void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment)
 {
 	FScopeLock Lock(&RingLock);
@@ -154,14 +174,20 @@ void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSeg
 	}
 }
 
-void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment)
+void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks)
 {
 	FScopeLock Lock(&RingLock);
 	if (FragmentRing.Num() >= FragmentRingCapacity)
 	{
 		FragmentRing.PopFront();
 	}
-	FragmentRing.Add(MoveTemp(Fragment));
+
+	FFragment Entry;
+	Entry.Bytes = MoveTemp(Fragment);
+	Entry.FrameCount = FrameCount;
+	Entry.DurationTicks = DurationTicks;
+
+	FragmentRing.Add(MoveTemp(Entry));
 }
 
 bool FSentrySessionReplayRecorder::Init()
@@ -209,6 +235,8 @@ void FSentrySessionReplayRecorder::DoRotation()
 	constexpr int32 TfdtFieldOffset = 60;
 
 	TArray<uint8> Snapshot;
+	int64 TotalFrames = 0;
+	uint64 TotalTicks = 0;
 	{
 		FScopeLock Lock(&RingLock);
 		if (InitSegment.Num() == 0 || FragmentRing.Num() == 0)
@@ -219,7 +247,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 		int64 Reserve = InitSegment.Num();
 		for (int32 i = 0; i < FragmentRing.Num(); ++i)
 		{
-			Reserve += FragmentRing[i].Num();
+			Reserve += FragmentRing[i].Bytes.Num();
 		}
 		Snapshot.Reserve(static_cast<int32>(Reserve));
 		Snapshot.Append(InitSegment);
@@ -228,17 +256,24 @@ void FSentrySessionReplayRecorder::DoRotation()
 		// Without this, evicted fragments leave the kept ones with absolute
 		// session-clock tfdt values, and players that compute duration from
 		// "last sample end time" overstate the clip length
-		const uint64 FirstTfdt = FSentryFMP4Writer::ReadU64BE(FragmentRing[0], TfdtFieldOffset);
+		const uint64 FirstTfdt = FSentryFMP4Writer::ReadU64BE(FragmentRing[0].Bytes, TfdtFieldOffset);
 		for (int32 i = 0; i < FragmentRing.Num(); ++i)
 		{
+			const FFragment& Fragment = FragmentRing[i];
 			const int32 FragStartInSnapshot = Snapshot.Num();
-			Snapshot.Append(FragmentRing[i]);
+			Snapshot.Append(Fragment.Bytes);
 
-			const uint64 OrigTfdt = FSentryFMP4Writer::ReadU64BE(FragmentRing[i], TfdtFieldOffset);
+			const uint64 OrigTfdt = FSentryFMP4Writer::ReadU64BE(Fragment.Bytes, TfdtFieldOffset);
 			const uint64 NewTfdt = (OrigTfdt >= FirstTfdt) ? (OrigTfdt - FirstTfdt) : 0;
 			FSentryFMP4Writer::PatchU64(Snapshot, FragStartInSnapshot + TfdtFieldOffset, NewTfdt);
+
+			TotalFrames += Fragment.FrameCount;
+			TotalTicks += Fragment.DurationTicks;
 		}
 	}
+
+	LatestFrameCount = static_cast<int32>(TotalFrames);
+	LatestDurationMs = static_cast<int64>((TotalTicks * 1000) / FSentryFMP4Writer::TrackTimescale);
 
 	if (WriteSnapshot(Snapshot))
 	{

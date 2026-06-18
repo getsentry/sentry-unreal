@@ -11,6 +11,8 @@
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
 
+#include "SentryReplayInfo.h"
+
 class FRunnableThread;
 class FEvent;
 class FSentryVideoEncoder;
@@ -43,10 +45,13 @@ public:
 	bool HasSnapshotOnDisk() const { return bSnapshotOnDisk; }
 	const FString& GetAttachmentPath() const { return AttachmentPath; }
 
+	// Assembles the platform-agnostic replay model from the most recent on-disk snapshot
+	FSentryReplayInfo BuildReplayInfo(const FString& ReplayId, const FString& ErrorEventId) const;
+
 	// Called by the encoder thread when the init segment (ftyp+moov) is ready
 	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
 	// Called by the encoder thread when a fragment (moof+mdat) is complete
-	void OnFragmentReady(TArray<uint8>&& Fragment);
+	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks);
 
 	// FRunnable (rotation thread)
 	virtual bool Init() override;
@@ -74,10 +79,20 @@ private:
 	TUniquePtr<FSentryVideoEncoder> Encoder;
 	TUniquePtr<FSentryBackBufferCapture> Capture;
 
+	struct FFragment
+	{
+		TArray<uint8> Bytes;
+		uint32 FrameCount = 0;
+		uint64 DurationTicks = 0;
+	};
+
 	// Fragment ring + init segment, protected by RingLock
 	FCriticalSection RingLock;
 	TArray<uint8> InitSegment;
-	TRingBuffer<TArray<uint8>> FragmentRing;
+	TRingBuffer<FFragment> FragmentRing;
+
+	int32 LatestFrameCount = 0;
+	int64 LatestDurationMs = 0;
 
 	// Rotation thread
 	FRunnableThread* RotationThread = nullptr;
