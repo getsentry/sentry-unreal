@@ -59,7 +59,6 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 					void* _ = FMemory::Malloc(BlockSize);
 				}
 			}
-			break;
 		case ESentryAppTerminationType::MemoryCorruption:
 			{
 				void* ptr = FMemory::Malloc(1024);
