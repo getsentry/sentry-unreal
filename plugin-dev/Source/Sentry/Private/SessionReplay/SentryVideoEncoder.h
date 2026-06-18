@@ -46,6 +46,9 @@ public:
 
 	uint32 GetFramerate() const { return Framerate; }
 
+	uint32 GetWidth() const { return Width; }
+	uint32 GetHeight() const { return Height; }
+
 	bool IsEncodingDisabled() const { return bEncodingDisabled; }
 
 	// FRunnable
