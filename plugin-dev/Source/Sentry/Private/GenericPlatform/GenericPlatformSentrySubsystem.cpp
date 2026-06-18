@@ -317,7 +317,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 		AddFileAttachment(ReplayAttachment);
 
-		const FSentryReplayInfo ReplayInfo = 
+		const FSentryReplayInfo ReplayInfo =
 			SessionReplay->BuildReplayInfo(SessionReplayId, FString(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_key(event, "event_id")))));
 
 		sentry_capture_session_replay(TCHAR_TO_UTF8(*ReplayInfo.VideoPath),
