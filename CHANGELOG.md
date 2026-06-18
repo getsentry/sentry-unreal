@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add Unreal Engine 5.8 support ([#1440](https://github.com/getsentry/sentry-unreal/pull/1440))
+
 ### Dependencies
 
 - Bump CLI from v3.5.0 to v3.5.1 ([#1438](https://github.com/getsentry/sentry-unreal/pull/1438))
