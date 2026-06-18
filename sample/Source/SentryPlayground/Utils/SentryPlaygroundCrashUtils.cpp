@@ -113,7 +113,6 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 			{
 				UE_LOG(LogTemp, Fatal, TEXT("Fatal error!"));
 			}
-			break;
 		case ESentryAppTerminationType::Hang:
 			UE_LOG(LogTemp, Warning, TEXT("Triggering hang: blocking game thread for 10 seconds..."));
 			FPlatformProcess::Sleep(10.0f);
