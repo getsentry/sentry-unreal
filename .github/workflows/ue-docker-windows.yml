@@ -121,6 +121,7 @@ jobs:
           --exclude debug `
           --exclude templates `
           --exclude ddc `
+          --prerequisites-dockerfile="./docker/ue-windows-prerequisites.dockerfile" `
           --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
 
       - name: Log in to GitHub package registry
