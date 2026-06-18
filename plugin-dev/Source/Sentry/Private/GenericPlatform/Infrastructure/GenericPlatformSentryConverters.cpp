@@ -234,6 +234,71 @@ sentry_crash_reporting_mode_t FGenericPlatformSentryConverters::CrashReportingMo
 	}
 }
 
+#ifdef USE_SENTRY_SESSION_REPLAY
+sentry_value_t FGenericPlatformSentryConverters::ReplayEventToNative(const FSentryReplayInfo& info)
+{
+	sentry_value_t event = sentry_value_new_object();
+	sentry_value_set_by_key(event, "type", sentry_value_new_string("replay_event"));
+	sentry_value_set_by_key(event, "replay_type", sentry_value_new_string(TCHAR_TO_UTF8(*info.ReplayType)));
+	sentry_value_set_by_key(event, "segment_id", sentry_value_new_int32(info.SegmentId));
+	sentry_value_set_by_key(event, "replay_id", sentry_value_new_string(TCHAR_TO_UTF8(*info.ReplayId)));
+	sentry_value_set_by_key(event, "event_id", sentry_value_new_string(TCHAR_TO_UTF8(*info.ReplayId)));
+	sentry_value_set_by_key(event, "platform", sentry_value_new_string("native"));
+	sentry_value_set_by_key(event, "timestamp", sentry_value_new_double(info.EndTimestampSec));
+	sentry_value_set_by_key(event, "replay_start_timestamp", sentry_value_new_double(info.StartTimestampSec));
+	sentry_value_set_by_key(event, "urls", sentry_value_new_list());
+
+	sentry_value_t errorIds = sentry_value_new_list();
+	if (!info.ErrorEventId.IsEmpty())
+	{
+		sentry_value_append(errorIds, sentry_value_new_string(TCHAR_TO_UTF8(*info.ErrorEventId)));
+	}
+	sentry_value_set_by_key(event, "error_ids", errorIds);
+
+	return event;
+}
+
+sentry_value_t FGenericPlatformSentryConverters::ReplayRecordingToNative(const FSentryReplayInfo& info)
+{
+	const double tsMs = info.StartTimestampSec * 1000.0;
+
+	sentry_value_t metaData = sentry_value_new_object();
+	sentry_value_set_by_key(metaData, "href", sentry_value_new_string(""));
+	sentry_value_set_by_key(metaData, "width", sentry_value_new_int32(info.Width));
+	sentry_value_set_by_key(metaData, "height", sentry_value_new_int32(info.Height));
+	sentry_value_t metaEvent = sentry_value_new_object();
+	sentry_value_set_by_key(metaEvent, "type", sentry_value_new_int32(4));
+	sentry_value_set_by_key(metaEvent, "timestamp", sentry_value_new_double(tsMs));
+	sentry_value_set_by_key(metaEvent, "data", metaData);
+
+	sentry_value_t payload = sentry_value_new_object();
+	sentry_value_set_by_key(payload, "segmentId", sentry_value_new_int32(info.SegmentId));
+	sentry_value_set_by_key(payload, "size", sentry_value_new_double(static_cast<double>(info.SizeBytes)));
+	sentry_value_set_by_key(payload, "duration", sentry_value_new_double(static_cast<double>(info.DurationMs)));
+	sentry_value_set_by_key(payload, "encoding", sentry_value_new_string("h264"));
+	sentry_value_set_by_key(payload, "container", sentry_value_new_string("mp4"));
+	sentry_value_set_by_key(payload, "height", sentry_value_new_int32(info.Height));
+	sentry_value_set_by_key(payload, "width", sentry_value_new_int32(info.Width));
+	sentry_value_set_by_key(payload, "left", sentry_value_new_int32(0));
+	sentry_value_set_by_key(payload, "top", sentry_value_new_int32(0));
+	sentry_value_set_by_key(payload, "frameCount", sentry_value_new_int32(info.FrameCount));
+	sentry_value_set_by_key(payload, "frameRate", sentry_value_new_int32(info.FrameRate));
+	sentry_value_set_by_key(payload, "frameRateType", sentry_value_new_string("variable"));
+	sentry_value_t videoData = sentry_value_new_object();
+	sentry_value_set_by_key(videoData, "tag", sentry_value_new_string("video"));
+	sentry_value_set_by_key(videoData, "payload", payload);
+	sentry_value_t videoEvent = sentry_value_new_object();
+	sentry_value_set_by_key(videoEvent, "type", sentry_value_new_int32(5));
+	sentry_value_set_by_key(videoEvent, "timestamp", sentry_value_new_double(tsMs));
+	sentry_value_set_by_key(videoEvent, "data", videoData);
+
+	sentry_value_t recording = sentry_value_new_list();
+	sentry_value_append(recording, metaEvent);
+	sentry_value_append(recording, videoEvent);
+	return recording;
+}
+#endif // USE_SENTRY_SESSION_REPLAY
+
 ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_value_t level)
 {
 	FString levelStr = FString(UTF8_TO_TCHAR(sentry_value_as_string(level)));
