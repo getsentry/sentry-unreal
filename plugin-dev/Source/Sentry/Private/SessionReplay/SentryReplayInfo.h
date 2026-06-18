@@ -6,7 +6,7 @@
 
 /**
  * Description of a recorded session-replay clip.
- * 
+ *
  * See https://develop.sentry.dev/sdk/telemetry/replays/ for details.
  */
 struct FSentryReplayInfo
