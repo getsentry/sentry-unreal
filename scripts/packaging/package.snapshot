@@ -223,6 +223,7 @@ Source/Sentry/Private/SessionReplay/SentryBackBufferCapture.cpp
 Source/Sentry/Private/SessionReplay/SentryBackBufferCapture.h
 Source/Sentry/Private/SessionReplay/SentryFMP4Writer.cpp
 Source/Sentry/Private/SessionReplay/SentryFMP4Writer.h
+Source/Sentry/Private/SessionReplay/SentryReplayInfo.h
 Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.cpp
 Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.h
 Source/Sentry/Private/SessionReplay/SentryVideoEncoder.cpp
@@ -505,6 +506,8 @@ Source/ThirdParty/Mac/Native/lib/libsentry.a
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/_CodeSignature/CodeResources
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/CodeResources
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Info.plist
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/._Sentry.CrashReporter.deps.json
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/._Sentry.CrashReporter.runtimeconfig.json
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrgcexp.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrjit.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libcoreclr.dylib
