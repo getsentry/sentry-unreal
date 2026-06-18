@@ -165,6 +165,8 @@ private:
 #ifdef USE_SENTRY_SESSION_REPLAY
 	FString GetReplayPath() const;
 
+	FString SessionReplayId;
+
 	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
 #endif
 };

@@ -646,10 +646,17 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		// Clear replay videos captured during previous session if any
 		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
 
+		SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
+
 		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
-		if (!SessionReplay->Initialize(settings, GetReplayPath()))
+		if (SessionReplay->Initialize(settings, GetReplayPath()))
+		{
+			SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
+		}
+		else
 		{
 			SessionReplay.Reset();
+			SessionReplayId.Reset();
 		}
 	}
 #endif
@@ -1334,8 +1341,7 @@ FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 #ifdef USE_SENTRY_SESSION_REPLAY
 FString FGenericPlatformSentrySubsystem::GetReplayPath() const
 {
-	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
-	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *SessionReplayId));
 	return FPaths::ConvertRelativePathToFull(ReplayPath);
 }
 #endif
