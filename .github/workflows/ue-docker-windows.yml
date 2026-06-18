@@ -77,7 +77,15 @@ jobs:
             cd ue4-docker-0.0.116
             # Patch install-prerequisites.ps1 to fix pre-requisites image build
             $file = "src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
-            (Get-Content $file) -replace 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64' | Set-Content $file
+            $content = Get-Content $file -Raw
+            # Pin the VC toolchain to a known-good version
+            $content = $content.Replace('Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64')
+            # The VS bootstrapper keeps vs_setup_bootstrapper.exe locked, so wiping $env:TEMP fails with
+            # "Access denied" and aborts the build (ErrorActionPreference = stop). Tolerate the locked file
+            # and recreate TEMP idempotently.
+            $content = $content.Replace('Remove-Item -LiteralPath "$env:TEMP" -Recurse -Force', 'Remove-Item -LiteralPath "$env:TEMP" -Recurse -Force -ErrorAction SilentlyContinue')
+            $content = $content.Replace('New-Item -Type directory -Path "$env:TEMP"', 'New-Item -Type directory -Path "$env:TEMP" -Force')
+            Set-Content $file $content
             # Install the patched ue4-docker package
             pip install -e .
 
