@@ -565,7 +565,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	bOutOfProcessHangTracking = settings->EnableHangTracking && settings->UseNativeBackend;
 	if (bOutOfProcessHangTracking)
 	{
-		sentry_options_set_app_hang_enabled(options, 1);
+		sentry_options_set_enable_app_hang_tracking(options, 1);
 		sentry_options_set_app_hang_timeout_ms(options, static_cast<uint64_t>(settings->HangTimeoutDuration * 1000.0));
 	}
 #endif
