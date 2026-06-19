@@ -13,6 +13,9 @@
 - Bump Native SDK from v0.15.0 to v0.15.1 ([#1443](https://github.com/getsentry/sentry-unreal/pull/1443))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0151)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.15.0...0.15.1)
+- Bump Cocoa SDK from v9.17.1 to v9.18.0 ([#1442](https://github.com/getsentry/sentry-unreal/pull/1442))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9180)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.17.1...9.18.0)
 
 ## 1.14.0
 
