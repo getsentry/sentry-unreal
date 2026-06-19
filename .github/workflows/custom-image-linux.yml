@@ -38,9 +38,9 @@ jobs:
           set -e
           tags=("4.27" "5.2" "5.3" "5.4" "5.5" "5.6" "5.7")
           for tag in "${tags[@]}"; do
-            echo "=== Pulling ${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-linux ==="
-            docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-linux"
-            echo "=== Free disk space after pulling ${tag}-linux ==="
+            echo "=== Pulling ${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-android ==="
+            docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-android"
+            echo "=== Free disk space after pulling ${tag}-android ==="
             df -h /
           done
 
