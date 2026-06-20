@@ -227,7 +227,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unreal: ['4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7']
+        unreal: ['4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
     uses: ./.github/workflows/test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
@@ -293,7 +293,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        unreal: ['5.4', '5.5', '5.6', '5.7']
+        unreal: ['5.4', '5.5', '5.6', '5.7', '5.8']
     uses: ./.github/workflows/integration-test-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}
