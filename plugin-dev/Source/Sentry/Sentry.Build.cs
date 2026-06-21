@@ -76,6 +76,7 @@ public class Sentry : ModuleRules
 			PublicDefinitions.Add("SENTRY_NO_UI_FRAMEWORK=0");
 			PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 			PublicDefinitions.Add("SDK_V9=0");
+			PublicDefinitions.Add("SDK_V10=0");
 			PublicDefinitions.Add("SWIFT_PACKAGE=0");
 			PublicDefinitions.Add("SENTRY_TEST=0");
 			PublicDefinitions.Add("SENTRY_TEST_CI=0");
@@ -117,6 +118,7 @@ public class Sentry : ModuleRules
 				PublicDefinitions.Add("SENTRY_NO_UI_FRAMEWORK=0");
 				PublicDefinitions.Add("APPLICATION_EXTENSION_API_ONLY_NO=0");
 				PublicDefinitions.Add("SDK_V9=0");
+				PublicDefinitions.Add("SDK_V10=0");
 				PublicDefinitions.Add("SWIFT_PACKAGE=0");
 				PublicDefinitions.Add("SENTRY_TEST=0");
 				PublicDefinitions.Add("SENTRY_TEST_CI=0");
