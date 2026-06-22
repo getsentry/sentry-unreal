@@ -11,7 +11,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: windows-2022
+    runs-on: windows-latest-unreal
 
     steps:
       - name: Log in to GitHub package registry
