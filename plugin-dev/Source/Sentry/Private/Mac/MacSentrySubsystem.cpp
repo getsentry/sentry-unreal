@@ -101,6 +101,8 @@ void FMacSentrySubsystem::ConfigureCrashReporterPath(sentry_options_t* Options)
 #include "Misc/FileHelper.h"
 #include "Misc/Guid.h"
 
+#include "Mac/MacSystemIncludes.h"
+
 void FMacSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
 	FAppleSentrySubsystem::InitWithSettings(settings, callbackHandlers);
