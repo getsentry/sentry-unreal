@@ -11,6 +11,7 @@
 #endif
 
 #if PLATFORM_MAC
+#include "Mac/MacSystemIncludes.h"
 #include <SentryObjC/SentryObjC.h>
 #elif PLATFORM_IOS
 #import <SentryObjC/SentryObjC.h>
