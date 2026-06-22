@@ -37,7 +37,7 @@ jobs:
       - name: Pull Unreal Engine Docker images
         shell: pwsh
         run: |
-          $tags = @('4.27', '5.5', '5.6', '5.7')
+          $tags = @('4.27', '5.5', '5.6', '5.7', '5.8')
           foreach ($tag in $tags) {
             Write-Host "=== Pulling ${{ env.REGISTRY }}/getsentry/unreal-docker:$tag ==="
             docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:$tag"
