@@ -77,24 +77,7 @@ jobs:
             cd ue4-docker-0.0.116
             # Patch install-prerequisites.ps1 to fix pre-requisites image build
             $file = "src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
-            $content = Get-Content $file -Raw
-            # Pin the VC toolchain to a known-good version
-            $content = $content.Replace('Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64')
-            # The VS bootstrapper keeps vs_setup_bootstrapper.exe locked, so wiping $env:TEMP fails with
-            # "Access denied" and aborts the build (ErrorActionPreference = stop). Tolerate the locked file
-            # and recreate TEMP idempotently.
-            $content = $content.Replace('Remove-Item -LiteralPath "$env:TEMP" -Recurse -Force', 'Remove-Item -LiteralPath "$env:TEMP" -Recurse -Force -ErrorAction SilentlyContinue')
-            $content = $content.Replace('New-Item -Type directory -Path "$env:TEMP"', 'New-Item -Type directory -Path "$env:TEMP" -Force')
-            Set-Content $file $content
-            # Patch setup_cmd.py: 'sc.exe stop/start' is asynchronous, so 'sc.exe start docker' can race
-            # the still-running service and fail with 1056 ("instance already running"). Use the synchronous
-            # Stop-Service/Start-Service cmdlets, which block until the state transition completes and don't
-            # error when the service is already running.
-            $setup = "src\ue4docker\setup_cmd.py"
-            $setupContent = Get-Content $setup -Raw
-            $setupContent = $setupContent.Replace('subprocess.run(["sc.exe", "stop", "docker"], check=True)', 'subprocess.run(["powershell", "-Command", "Stop-Service -Name docker -Force"], check=True)')
-            $setupContent = $setupContent.Replace('subprocess.run(["sc.exe", "start", "docker"], check=True)', 'subprocess.run(["powershell", "-Command", "Start-Service -Name docker"], check=True)')
-            Set-Content $setup $setupContent
+            (Get-Content $file) -replace 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64' | Set-Content $file
             # Install the patched ue4-docker package
             pip install -e .
 
@@ -121,7 +104,6 @@ jobs:
           --exclude debug `
           --exclude templates `
           --exclude ddc `
-          --prerequisites-dockerfile="./docker/ue-windows-prerequisites.dockerfile" `
           --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
 
       - name: Log in to GitHub package registry
