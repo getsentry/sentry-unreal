@@ -11,7 +11,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest-4-cores
+    runs-on: android-latest-unreal
 
     steps:
       - name: Free disk space
@@ -109,7 +109,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: checkout
-          submodules: recursive
 
       - name: Extract package to sample/Plugins
         env:
@@ -161,6 +160,9 @@ jobs:
 
       - name: Build Android package (Development)
         id: build-android-dev
+        env:
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
         run: |
           docker exec -w /workspace/checkout/sample \
             -e TMPDIR=/home/gh/.cache/tmp \
@@ -168,6 +170,7 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
             -platform=Android \
+            -UBTArgs="$UBT_EXTRA_ARGS" \
             -clientconfig=Development \
             -nop4 \
             -cook \
@@ -181,6 +184,8 @@ jobs:
       - name: Build Android package (Shipping)
         id: build-android-shipping
         env:
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -194,6 +199,7 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
             -platform=Android \
+            -UBTArgs="$UBT_EXTRA_ARGS" \
             -distribution \
             -clientconfig=Shipping \
             -nop4 \
