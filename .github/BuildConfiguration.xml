@@ -3,5 +3,8 @@
     <BuildConfiguration>
         <DefaultWarningLevel>Error</DefaultWarningLevel>
         <DeprecationWarningLevel>Error</DeprecationWarningLevel>
+        <!-- Use all logical cores (incl. hyperthreads) for compilation. UBT defaults to one
+             process per physical core, leaving half the CI runner's cores idle on hyperthreaded VMs. -->
+        <bAllCores>true</bAllCores>
     </BuildConfiguration>
 </Configuration>
