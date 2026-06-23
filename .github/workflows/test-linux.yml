@@ -155,6 +155,8 @@ jobs:
         id: run-tests
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -167,6 +169,7 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
             -platform=Linux \
+            -UBTArgs="$UBT_EXTRA_ARGS" \
             -nop4 \
             -cook \
             -iterate \
@@ -218,6 +221,8 @@ jobs:
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -230,6 +235,7 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds-Native \
             -platform=Linux \
+            -UBTArgs="$UBT_EXTRA_ARGS" \
             -nop4 \
             -cook \
             -iterate \
