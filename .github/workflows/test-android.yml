@@ -95,6 +95,7 @@ jobs:
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/BuildCookRun ;
             mkdir -p /home/ue4/UnrealEngine/Engine/Intermediate/Build/Android/a/UnrealGame/Development/BuildSettings/Gen && chown -R $uid /home/ue4/UnrealEngine/Engine/Intermediate/Build/Android/a/UnrealGame/Development/BuildSettings/Gen ;
             mkdir -p /home/ue4/.config/Epic/UnrealEngine && chown -R $uid /home/ue4/.config ;
+            mkdir -p /tmp/uba_shm_locks && chown -R $uid /tmp/uba_shm_locks ;
             mkdir -p /home/ue4/UnrealEngine/UnrealTrace && chown -R $uid /home/ue4/UnrealEngine/UnrealTrace ;
             mkdir -p /home/ue4/.gradle && chown -R $uid /home/ue4/.gradle ;            
             mkdir -p /home/gh/.cache/tmp && chown -R $uid /home/gh/.cache ;            

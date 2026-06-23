@@ -59,7 +59,6 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 					void* _ = FMemory::Malloc(BlockSize);
 				}
 			}
-			break;
 		case ESentryAppTerminationType::MemoryCorruption:
 			{
 				void* ptr = FMemory::Malloc(1024);
@@ -114,7 +113,6 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 			{
 				UE_LOG(LogTemp, Fatal, TEXT("Fatal error!"));
 			}
-			break;
 		case ESentryAppTerminationType::Hang:
 			UE_LOG(LogTemp, Warning, TEXT("Triggering hang: blocking game thread for 10 seconds..."));
 			FPlatformProcess::Sleep(10.0f);

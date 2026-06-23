@@ -12,6 +12,10 @@
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 
+#if PLATFORM_MAC && !USE_SENTRY_NATIVE
+#include "Mac/MacSystemIncludes.h"
+#endif
+
 // SENTRY_WINGDK is explicitly defined only for Windows/WinGDK, so default it to 0 for other platforms to avoid -Wundef
 #ifndef SENTRY_WINGDK
 #define SENTRY_WINGDK 0
