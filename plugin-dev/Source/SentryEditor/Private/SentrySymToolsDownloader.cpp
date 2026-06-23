@@ -20,6 +20,10 @@
 #include "HAL/PlatformFileManager.h"
 #endif
 
+#if PLATFORM_MAC
+#include "Mac/MacSystemIncludes.h"
+#endif
+
 #if PLATFORM_WINDOWS
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Windows-x86_64.exe");
 #elif PLATFORM_MAC
