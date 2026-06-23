@@ -10,9 +10,9 @@ public class SentryPlaygroundEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
-		// Experiment: enable Unity build and PCH files to speed up compilation in CI
+		// Experiment: enable Unity build (keep PCH disabled) to speed up compilation in CI
 		bUseUnityBuild = true;
-		bUsePCHFiles = true;
+		bUsePCHFiles = false;
 
 #if UE_5_0_OR_LATER
 		NativePointerMemberBehaviorOverride = System.Environment.GetEnvironmentVariable("DISALLOW_RAW_POINTERS") == "true"
