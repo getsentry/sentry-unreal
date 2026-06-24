@@ -32,17 +32,22 @@ void FSentryHangTest::Run()
 	// Capture AsShared() so this test stays alive past RunIntegrationTest returning.
 	TSharedRef<FSentryBaseIntegrationTest> Self = AsShared();
 	TSharedRef<int32> FrameCounter = MakeShared<int32>(0);
-	TSharedRef<FDelegateHandle> EndFrameHandle = MakeShared<FDelegateHandle>();
+	TSharedRef<bool> bHangTriggered = MakeShared<bool>(false);
 
-	*EndFrameHandle = FCoreDelegates::OnEndFrame.AddLambda([Self, FrameCounter, EndFrameHandle]()
+	FCoreDelegates::OnEndFrame.AddLambda([Self, FrameCounter, bHangTriggered]()
 	{
+		if (*bHangTriggered)
+		{
+			return;
+		}
+
 		constexpr int32 FramesBeforeHang = 3;
 		if (++(*FrameCounter) < FramesBeforeHang)
 		{
 			return;
 		}
 
-		FCoreDelegates::OnEndFrame.Remove(*EndFrameHandle);
+		*bHangTriggered = true;
 
 		USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType::Hang);
 
