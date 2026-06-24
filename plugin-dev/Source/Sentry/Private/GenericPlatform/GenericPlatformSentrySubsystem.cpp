@@ -483,7 +483,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isScreenshotAttachmentEnabled(false)
 	, isSessionReplayAttachmentEnabled(false)
 	, isGpuDumpAttachmentEnabled(false)
-	, bOutOfProcessHangTracking(false)
+	, bNativeHangTracking(false)
 	, initTimestamp(FDateTime::UtcNow())
 {
 }
@@ -562,8 +562,8 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureStackCaptureStrategy(options);
 
 #if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
-	bOutOfProcessHangTracking = settings->EnableHangTracking && settings->UseNativeBackend;
-	if (bOutOfProcessHangTracking)
+	bNativeHangTracking = settings->EnableHangTracking && settings->UseNativeHangTracking;
+	if (bNativeHangTracking)
 	{
 		sentry_options_set_enable_app_hang_tracking(options, 1);
 		sentry_options_set_app_hang_timeout(options, static_cast<uint64_t>(settings->HangTimeoutDuration * 1000.0));
@@ -631,7 +631,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	isStackTraceEnabled = settings->AttachStacktrace;
 	isPiiAttachmentEnabled = settings->SendDefaultPii;
 
-	if (bOutOfProcessHangTracking && isEnabled)
+	if (bNativeHangTracking && isEnabled)
 	{
 		// OnEndFrame is broadcast on the game thread, so the first invocation latches it as the monitored
 		// thread and every subsequent frame refreshes the heartbeat the daemon watches for staleness

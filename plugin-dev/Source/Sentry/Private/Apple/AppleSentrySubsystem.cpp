@@ -463,7 +463,7 @@ bool FAppleSentrySubsystem::IsHangTrackingSupported() const
 	return false;
 }
 
-bool FAppleSentrySubsystem::IsOutOfProcessHangTrackingEnabled() const
+bool FAppleSentrySubsystem::IsNativeHangTrackingEnabled() const
 {
 	return false;
 }

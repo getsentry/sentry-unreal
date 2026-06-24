@@ -480,6 +480,104 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
+    Context "Native Hang Tracking Tests" -Skip:$IsMacOS {
+        BeforeAll {
+            $script:NativeHangResult = $null
+            $script:NativeHangEvent = $null
+
+            Write-Host "Running native hang tracking test..." -ForegroundColor Yellow
+
+            $appArgs = @(
+                '-nullrhi',     # Runs without graphics rendering (headless mode)
+                '-unattended',  # Disables user prompts and interactive dialogs
+                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
+                '-nosplash'     # Prevents splash screen and dialogs
+            )
+
+            # Override default project settings. UseNativeHangTracking switches the same -hang-capture
+            # scenario from the engine's FThreadHeartBeat watcher to sentry-native's app-hang watchdog.
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableHangTracking=True"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:UseNativeHangTracking=True"
+
+            # -hang-capture triggers the hang test scenario in the sample app
+            $script:NativeHangResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-hang-capture') + $appArgs) -join ' ')
+
+            Write-Host "Native hang test executed. Exit code: $($script:NativeHangResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse event ID from output (format: EVENT_CAPTURED: <guid>)
+            $eventIds = Get-EventIds -AppOutput $script:NativeHangResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                $hangId = $eventIds[0]
+
+                # Fetch event from Sentry (with polling) using the test.hang_id tag
+                try {
+                    $script:NativeHangEvent = Get-SentryTestEvent -TagName 'test.hang_id' -TagValue "$hangId"
+                    Write-Host "Native hang event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch native hang event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:NativeHangResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $script:NativeHangResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:NativeHangResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture hang event in Sentry" {
+            $script:NativeHangEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct event type and platform" {
+            $script:NativeHangEvent.type | Should -Be 'error'
+            $script:NativeHangEvent.platform | Should -Be 'native'
+        }
+
+        It "Should have exception with AppHang type" {
+            $script:NativeHangEvent.exception | Should -Not -BeNullOrEmpty
+            $script:NativeHangEvent.exception.values | Should -Not -BeNullOrEmpty
+            $exception = $script:NativeHangEvent.exception.values[0]
+            $exception.type | Should -Be 'AppHang'
+            $exception.value | Should -Match 'App hung for at least \d+ ms'
+        }
+
+        It "Should have AppHang mechanism" {
+            $exception = $script:NativeHangEvent.exception.values[0]
+            $exception.mechanism | Should -Not -BeNullOrEmpty
+            $exception.mechanism.type | Should -Be 'AppHang'
+        }
+
+        It "Should have stack trace" {
+            $exception = $script:NativeHangEvent.exception.values[0]
+            $exception.stacktrace | Should -Not -BeNullOrEmpty
+            $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have integration test tag" {
+            $tags = $script:NativeHangEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+    }
+
     Context "Message Capture Tests" {
         BeforeAll {
             $script:MessageResult = $null

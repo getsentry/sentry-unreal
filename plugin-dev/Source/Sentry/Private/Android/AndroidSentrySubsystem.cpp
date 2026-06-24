@@ -342,7 +342,7 @@ bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
 	return false;
 }
 
-bool FAndroidSentrySubsystem::IsOutOfProcessHangTrackingEnabled() const
+bool FAndroidSentrySubsystem::IsNativeHangTrackingEnabled() const
 {
 	return false;
 }

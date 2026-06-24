@@ -55,7 +55,7 @@ public:
 
 	virtual void HandleAssert() override {}
 	virtual bool IsHangTrackingSupported() const override { return false; }
-	virtual bool IsOutOfProcessHangTrackingEnabled() const override { return false; }
+	virtual bool IsNativeHangTrackingEnabled() const override { return false; }
 	virtual FString GetDeviceType() const override { return TEXT("Unknown"); }
 };
 

@@ -555,6 +555,12 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableHangTracking", ClampMin = 1.0f))
 	float HangTimeoutDuration;
 
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Use native hang tracking",
+			ToolTip = "Detect hangs with the sentry-native SDK's built-in app-hang watchdog instead of Unreal Engine's FThreadHeartBeat-based watcher. Works with any crash handler backend (both Crashpad and Native). Supported on Windows, macOS and Linux; ignored on other platforms.",
+			EditCondition = "EnableHangTracking"))
+	bool UseNativeHangTracking;
+
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
 		Meta = (DisplayName = "Enable session replay (experimental)", ToolTip = "Captures gameplay video and attaches it to crash reports. On desktop platforms (Windows/Mac/Linux), requires the AVCodecsCore plugin plus a codec plugin matching the GPU vendor (NVCodecs for NVIDIA on Windows/Linux, AMFCodecs for AMD on Windows, VTCodecs on Mac) and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
 			ConfigRestartRequired = true))

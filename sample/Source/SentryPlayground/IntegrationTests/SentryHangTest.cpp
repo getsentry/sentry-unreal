@@ -28,12 +28,22 @@ void FSentryHangTest::Run()
 
 	Subsystem->SetTag(TEXT("test.hang_id"), EventId);
 
-	// Defer the hang trigger until after engine loop init so that the heartbeat
-	// monitor thread is running and threads have registered their heartbeats.
+	// The hang must be triggered only after the game thread has ticked a few frames.
 	// Capture AsShared() so this test stays alive past RunIntegrationTest returning.
 	TSharedRef<FSentryBaseIntegrationTest> Self = AsShared();
-	FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([Self]()
+	TSharedRef<int32> FrameCounter = MakeShared<int32>(0);
+	TSharedRef<FDelegateHandle> EndFrameHandle = MakeShared<FDelegateHandle>();
+
+	*EndFrameHandle = FCoreDelegates::OnEndFrame.AddLambda([Self, FrameCounter, EndFrameHandle]()
 	{
+		constexpr int32 FramesBeforeHang = 3;
+		if (++(*FrameCounter) < FramesBeforeHang)
+		{
+			return;
+		}
+
+		FCoreDelegates::OnEndFrame.Remove(*EndFrameHandle);
+
 		USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType::Hang);
 
 		Self->GetSubsystem()->Close();
