@@ -33,7 +33,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Android images carry the Android SDK/NDK platform files and are large, so the set is limited to
-      # the versions Android is actually tested on (5.4+). Add '5.8' here once its image is published.
+      # the versions Android is actually tested on (5.4+)
       - name: Pull Unreal Engine Docker images
         run: |
           set -e
