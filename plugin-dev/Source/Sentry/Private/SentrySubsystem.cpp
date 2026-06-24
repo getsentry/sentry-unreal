@@ -169,9 +169,6 @@ void USentrySubsystem::Initialize()
 
 	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported() && !SubsystemNativeImpl->IsNativeHangTrackingEnabled())
 	{
-		// When the user opts into sentry-native's app-hang watchdog (UseNativeHangTracking), it's wired
-		// during InitWithSettings and the engine-side watcher is skipped to avoid double-reporting.
-		// Otherwise fall back to the FThreadHeartBeat-based watcher.
 		ConfigureHangTracking();
 	}
 

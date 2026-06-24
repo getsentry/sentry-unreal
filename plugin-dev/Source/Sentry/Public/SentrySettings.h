@@ -546,8 +546,7 @@ class SENTRY_API USentrySettings : public UObject
 	FSentryCrashReporterAppearance CrashReporterAppearance;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Enable hang tracking",
-			ToolTip = "Track application hangs (unresponsive game thread) using Unreal Engine's built-in FThreadHeartBeat. Only effective in packaged builds."))
+		Meta = (DisplayName = "Enable hang tracking", ToolTip = "Track application hangs (unresponsive game thread) using Unreal Engine's built-in FThreadHeartBeat. Only effective in packaged builds."))
 	bool EnableHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
@@ -556,8 +555,7 @@ class SENTRY_API USentrySettings : public UObject
 	float HangTimeoutDuration;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Use native hang tracking",
-			ToolTip = "Detect hangs with the sentry-native SDK's built-in app-hang watchdog instead of Unreal Engine's FThreadHeartBeat-based watcher. Works with any crash handler backend (both Crashpad and Native). Supported on Windows, macOS and Linux; ignored on other platforms.",
+		Meta = (DisplayName = "Use native hang tracking", ToolTip = "Detect hangs with the sentry-native SDK's built-in app-hang watchdog instead of Unreal Engine's FThreadHeartBeat-based watcher. Works with any crash handler backend (both Crashpad and Native). Supported on Windows, macOS and Linux; ignored on other platforms.",
 			EditCondition = "EnableHangTracking"))
 	bool UseNativeHangTracking;
 
