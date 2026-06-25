@@ -71,6 +71,7 @@ public:
 
 	virtual void HandleAssert() override {}
 	virtual bool IsHangTrackingSupported() const override { return false; }
+	virtual bool IsNativeHangTrackingEnabled() const override { return bNativeHangTracking; }
 	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
@@ -153,6 +154,10 @@ private:
 	bool isScreenshotAttachmentEnabled;
 	bool isSessionReplayAttachmentEnabled;
 	bool isGpuDumpAttachmentEnabled;
+
+	bool bNativeHangTracking;
+
+	FDelegateHandle AppHangHeartbeatHandle;
 
 	FDateTime initTimestamp;
 

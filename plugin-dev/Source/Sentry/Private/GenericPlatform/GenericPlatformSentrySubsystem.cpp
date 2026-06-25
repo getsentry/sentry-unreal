@@ -489,6 +489,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isScreenshotAttachmentEnabled(false)
 	, isSessionReplayAttachmentEnabled(false)
 	, isGpuDumpAttachmentEnabled(false)
+	, bNativeHangTracking(false)
 	, initTimestamp(FDateTime::UtcNow())
 {
 }
@@ -566,6 +567,15 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureNetworkConnectFunc(options);
 	ConfigureStackCaptureStrategy(options);
 
+#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+	bNativeHangTracking = settings->EnableHangTracking && settings->UseNativeHangTracking;
+	if (bNativeHangTracking)
+	{
+		sentry_options_set_enable_app_hang_tracking(options, 1);
+		sentry_options_set_app_hang_timeout(options, static_cast<uint64_t>(settings->HangTimeoutDuration * 1000.0));
+	}
+#endif
+
 	if (settings->EnableExternalCrashReporter)
 	{
 		ConfigureCrashReporterPath(options);
@@ -627,6 +637,16 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	isStackTraceEnabled = settings->AttachStacktrace;
 	isPiiAttachmentEnabled = settings->SendDefaultPii;
 
+	if (bNativeHangTracking && isEnabled)
+	{
+		// OnEndFrame is broadcast on the game thread, so the first invocation latches it as the monitored
+		// thread and every subsequent frame refreshes the heartbeat the daemon watches for staleness
+		AppHangHeartbeatHandle = FCoreDelegates::OnEndFrame.AddLambda([]()
+		{
+			sentry_app_hang_heartbeat();
+		});
+	}
+
 	// Best-effort at writing user consent to disk so that user consent can change at runtime and persist
 	// We should never have a valid user consent state return "Unknown", so assume that no consent value is written if we see this
 	if (settings->bRequireUserConsent && GetUserConsent() == EUserConsent::Unknown)
@@ -670,6 +690,12 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 void FGenericPlatformSentrySubsystem::Close()
 {
+	if (AppHangHeartbeatHandle.IsValid())
+	{
+		FCoreDelegates::OnEndFrame.Remove(AppHangHeartbeatHandle);
+		AppHangHeartbeatHandle.Reset();
+	}
+
 	isEnabled = false;
 
 #ifdef USE_SENTRY_SESSION_REPLAY

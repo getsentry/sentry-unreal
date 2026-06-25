@@ -31,6 +31,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override;
 	virtual bool IsHangTrackingSupported() const override;
+	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
 	virtual void RemoveUser() override;
