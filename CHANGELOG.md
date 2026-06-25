@@ -2,24 +2,33 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Android Gradle Plugin from v6.12.0 to v6.13.0 ([#1452](https://github.com/getsentry/sentry-unreal/pull/1452))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6130)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.12.0...6.13.0)
+
+## 1.15.0
+
 ### Features
 
 - Add Unreal Engine 5.8 support ([#1440](https://github.com/getsentry/sentry-unreal/pull/1440))
+- Add opt-in native app-hang tracking on Windows, Mac and Linux ([#1427](https://github.com/getsentry/sentry-unreal/pull/1427))
 
 ### Dependencies
 
 - Bump CLI from v3.5.0 to v3.5.1 ([#1438](https://github.com/getsentry/sentry-unreal/pull/1438))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#351)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.5.0...3.5.1)
-- Bump Java SDK from v8.43.2 to v8.44.1 ([#1439](https://github.com/getsentry/sentry-unreal/pull/1439), [#1444](https://github.com/getsentry/sentry-unreal/pull/1444))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8441)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.2...8.44.1)
-- Bump Native SDK from v0.15.0 to v0.15.1 ([#1443](https://github.com/getsentry/sentry-unreal/pull/1443))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0151)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.0...0.15.1)
-- Bump Cocoa SDK from v9.17.1 to v9.18.0 ([#1442](https://github.com/getsentry/sentry-unreal/pull/1442))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9180)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.17.1...9.18.0)
+- Bump Java SDK from v8.43.2 to v8.45.0 ([#1439](https://github.com/getsentry/sentry-unreal/pull/1439), [#1444](https://github.com/getsentry/sentry-unreal/pull/1444), [#1449](https://github.com/getsentry/sentry-unreal/pull/1449))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8450)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.2...8.45.0)
+- Bump Native SDK from v0.15.0 to v0.15.2 ([#1443](https://github.com/getsentry/sentry-unreal/pull/1443), [#1447](https://github.com/getsentry/sentry-unreal/pull/1447))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0152)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.0...0.15.2)
+- Bump Cocoa SDK from v9.17.1 to v9.19.0 ([#1442](https://github.com/getsentry/sentry-unreal/pull/1442), [#1448](https://github.com/getsentry/sentry-unreal/pull/1448))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9190)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.17.1...9.19.0)
 - Bump Android Gradle Plugin from v6.11.0 to v6.12.0 ([#1441](https://github.com/getsentry/sentry-unreal/pull/1441))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6120)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.11.0...6.12.0)

@@ -314,8 +314,10 @@ bool FGenericPlatformSentryEvent::IsAnr() const
 		return false;
 	}
 
+	// The engine FThreadHeartBeat watcher reports "App Hanging" (see CaptureHang) while sentry-native's
+	// app-hang watchdog reports "AppHang" - accept either so both detection mechanisms are recognized
 	const char* type = sentry_value_as_string(sentry_value_get_by_key(firstException, "type"));
-	bool isAppHangException = type && FCStringAnsi::Strcmp(type, "App Hanging") == 0;
+	bool isAppHangException = type && (FCStringAnsi::Strcmp(type, "App Hanging") == 0 || FCStringAnsi::Strcmp(type, "AppHang") == 0);
 
 	sentry_value_t mechanism = sentry_value_get_by_key(firstException, "mechanism");
 	const char* mechanismType = sentry_value_as_string(sentry_value_get_by_key(mechanism, "type"));
