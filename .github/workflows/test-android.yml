@@ -26,6 +26,7 @@ jobs:
           WORKSPACE_PATH: ${{ github.workspace }}
           UNREAL_VERSION: ${{ inputs.unreal-version }}
           DISALLOW_RAW_POINTERS: ${{ inputs.unreal-version == '4.27' && 'false' || 'true' }}
+          SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
         run: |
           # We start the container with the user ID of the parent GH action user to avoid permission issues on volume.
           # For UE 5.4 we have to enable ipv6 to fix container startup issues. See https://github.com/adamrehn/ue4-docker/issues/357
@@ -42,6 +43,7 @@ jobs:
             --env HOME="/home/$user" \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --env DISALLOW_RAW_POINTERS=$DISALLOW_RAW_POINTERS \
+            --env SENTRY_UNITY_BUILD=$SENTRY_UNITY_BUILD \
             --network ip6net -p 80:80 \
             ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-android
           docker logout ghcr.io
