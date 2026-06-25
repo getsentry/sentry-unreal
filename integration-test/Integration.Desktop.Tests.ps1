@@ -80,6 +80,21 @@ BeforeDiscovery {
         # Memory overcommit makes OOM conditions unreliable to trigger in tests on Linux and macOS
         $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
     }
+
+    # Define hang detection mechanisms to test
+    $TestHangMechanisms = @(
+        @{ Name = 'Engine'; ExceptionType = 'App Hanging'; ExceptionValuePattern = '^Application not responding$'; ExpectsCrashTypeTag = $true  }
+        @{ Name = 'Native'; ExceptionType = 'AppHang';     ExceptionValuePattern = 'App hung for at least \d+ ms';   ExpectsCrashTypeTag = $false }
+    )
+
+    if ($IsMacOS) {
+        if ($script:IsNativeBackend) {
+            $TestHangMechanisms = @($TestHangMechanisms | Where-Object { $_.Name -eq 'Native' })
+        }
+        else {
+            $TestHangMechanisms = @()
+        }
+    }
 }
 
 BeforeAll {
@@ -378,13 +393,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
-    # Hang tracking is not supported on macOS (sentry-cocoa has its own AppHang detection)
-    Context "Hang Tracking Tests" -Skip:$IsMacOS {
+    Context "Hang Tracking Tests - <Name>" -ForEach $TestHangMechanisms {
         BeforeAll {
             $script:HangResult = $null
             $script:HangEvent = $null
 
-            Write-Host "Running hang tracking test..." -ForegroundColor Yellow
+            Write-Host "Running hang tracking test ($($_.Name))..." -ForegroundColor Yellow
 
             $appArgs = @(
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
@@ -396,6 +410,9 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableHangTracking=True"
+            if ($_.Name -eq 'Native') {
+                $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:UseNativeHangTracking=True"
+            }
 
             # -hang-capture triggers hang test scenario in the sample app
             $script:HangResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-hang-capture') + $appArgs) -join ' ')
@@ -449,12 +466,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $script:HangEvent.platform | Should -Be 'native'
         }
 
-        It "Should have exception with App Hanging type" {
+        It "Should have exception with expected type and value" {
             $script:HangEvent.exception | Should -Not -BeNullOrEmpty
             $script:HangEvent.exception.values | Should -Not -BeNullOrEmpty
             $exception = $script:HangEvent.exception.values[0]
-            $exception.type | Should -Be 'App Hanging'
-            $exception.value | Should -Be 'Application not responding'
+            $exception.type | Should -Be $ExceptionType
+            $exception.value | Should -Match $ExceptionValuePattern
         }
 
         It "Should have AppHang mechanism" {
@@ -474,7 +491,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" {
+        It "Should have CrashType tag" -Skip:(-not $ExpectsCrashTypeTag) {
             $tags = $script:HangEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Hang'
         }

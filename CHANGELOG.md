@@ -5,6 +5,7 @@
 ### Features
 
 - Add Unreal Engine 5.8 support ([#1440](https://github.com/getsentry/sentry-unreal/pull/1440))
+- Add opt-in native app-hang tracking on Windows, Mac and Linux ([#1427](https://github.com/getsentry/sentry-unreal/pull/1427))
 
 ### Dependencies
 
