@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Android Gradle Plugin from v6.12.0 to v6.13.0 ([#1452](https://github.com/getsentry/sentry-unreal/pull/1452))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6130)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.12.0...6.13.0)
+
 ## 1.15.0
 
 ### Features
