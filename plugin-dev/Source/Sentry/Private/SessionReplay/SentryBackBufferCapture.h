@@ -7,12 +7,14 @@
 #ifdef USE_SENTRY_SESSION_REPLAY
 
 #include "Delegates/IDelegateInstance.h"
+#include "Misc/EngineVersionComparison.h"
 #include "PixelFormat.h"
 #include "RHIAccess.h"
 #include "RHIDefinitions.h"
 #include "RHIFwd.h"
 
 class FSentryVideoEncoder;
+class ISlateViewportProvider;
 class SWindow;
 
 /**
@@ -65,7 +67,14 @@ private:
 		ETextureCreateFlags Flags = ETextureCreateFlags::None;
 	};
 
+#if UE_VERSION_OLDER_THAN(5, 8, 0)
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer);
+#else
+	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, ISlateViewportProvider& ViewportProvider);
+#endif
+
+	// Captures a single backbuffer frame and forwards it to the encoder (render thread)
+	void CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer);
 
 	// Returns the cached texture, recreated when any of (Width, Height, Format,
 	// Flags) differs from the previous call. Returns null on creation failure
