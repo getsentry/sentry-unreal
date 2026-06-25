@@ -17,6 +17,10 @@
 #include "RenderingThread.h"
 #include "Widgets/SWindow.h"
 
+#if !UE_VERSION_OLDER_THAN(5, 8, 0)
+#include "Slate/SlateViewportProvider.h"
+#endif
+
 FSentryBackBufferCapture::FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder)
 	: Encoder(InEncoder)
 {
@@ -72,7 +76,19 @@ void FSentryBackBufferCapture::Stop()
 	Converted.Texture.SafeRelease();
 }
 
+#if UE_VERSION_OLDER_THAN(5, 8, 0)
 void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer)
+{
+	CaptureBackBuffer_RenderThread(BackBuffer);
+}
+#else
+void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, ISlateViewportProvider& ViewportProvider)
+{
+	CaptureBackBuffer_RenderThread(ViewportProvider.GetBackBufferResource());
+}
+#endif
+
+void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer)
 {
 	check(IsInRenderingThread());
 
