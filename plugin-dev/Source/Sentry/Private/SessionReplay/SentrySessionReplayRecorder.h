@@ -65,7 +65,7 @@ private:
 
 	// Writes the JSON metadata sidecar next to the mp4 (temp + atomic rename) so the
 	// SDK can build and send the replay envelope outside the crash handler
-	void WriteMetadataSidecar();
+	void WriteReplayMetadata();
 
 	bool bEnabled = false;
 	FThreadSafeBool bSnapshotOnDisk;

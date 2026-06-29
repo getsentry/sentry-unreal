@@ -13,6 +13,7 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
+#include "JsonObjectConverter.h"
 #include "Misc/App.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -169,7 +170,7 @@ FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
 
 	FSentryReplayInfo Info;
 	Info.ReplayId = ReplayId;
-	Info.VideoPath = AttachmentPath;
+	Info.VideoFilename = FPaths::GetCleanFilename(AttachmentPath);
 	Info.Width = Encoder ? static_cast<int32>(Encoder->GetWidth()) : 0;
 	Info.Height = Encoder ? static_cast<int32>(Encoder->GetHeight()) : 0;
 	Info.FrameRate = Encoder ? static_cast<int32>(Encoder->GetFramerate()) : 0;
@@ -298,9 +299,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 	{
 		bSnapshotOnDisk.AtomicSet(true);
 
-		// Refresh the metadata sidecar so the SDK can build the replay envelope
-		// from disk after a crash without doing any work in the crash handler.
-		WriteMetadataSidecar();
+		WriteReplayMetadata();
 	}
 }
 
@@ -333,36 +332,24 @@ bool FSentrySessionReplayRecorder::WriteSnapshot(const TArray<uint8>& Bytes)
 	return true;
 }
 
-void FSentrySessionReplayRecorder::WriteMetadataSidecar()
+void FSentrySessionReplayRecorder::WriteReplayMetadata()
 {
-	const FSentryReplayInfo Info = BuildReplayInfo();
-
-	// All values are numbers or controlled ASCII (hex id, generated filename), so a
-	// printf-built object is sufficient; size_bytes/duration_ms are emitted as whole
-	// numbers via %.0f to avoid platform int64 format-specifier issues.
-	const FString Json = FString::Printf(
-		TEXT("{\"replay_id\":\"%s\",\"video_filename\":\"%s\",\"replay_type\":\"%s\",\"segment_id\":%d,")
-			TEXT("\"start_timestamp_sec\":%.6f,\"end_timestamp_sec\":%.6f,\"width\":%d,\"height\":%d,")
-				TEXT("\"duration_ms\":%.0f,\"size_bytes\":%.0f,\"frame_count\":%d,\"frame_rate\":%d}"),
-		*Info.ReplayId,
-		*FPaths::GetCleanFilename(AttachmentPath),
-		*Info.ReplayType,
-		Info.SegmentId,
-		Info.StartTimestampSec,
-		Info.EndTimestampSec,
-		Info.Width,
-		Info.Height,
-		static_cast<double>(Info.DurationMs),
-		static_cast<double>(Info.SizeBytes),
-		Info.FrameCount,
-		Info.FrameRate);
-
-	// Temp + atomic rename so a crash never observes a torn sidecar.
-	if (!FFileHelper::SaveStringToFile(Json, *MetadataTempPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+	FString Json;
+	if (!FJsonObjectConverter::UStructToJsonObjectString(BuildReplayInfo(), Json, 0, 0, 0, nullptr, false))
 	{
 		return;
 	}
-	IFileManager::Get().Move(*MetadataPath, *MetadataTempPath, true, true);
+
+	if (!FFileHelper::SaveStringToFile(Json, *MetadataTempPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to write metadata temp file at %s"), *MetadataTempPath);
+		return;
+	}
+
+	if (!IFileManager::Get().Move(*MetadataPath, *MetadataTempPath, true, true))
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to replace metadata at %s"), *MetadataPath);
+	}
 }
 
 #endif // USE_SENTRY_SESSION_REPLAY

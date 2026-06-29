@@ -38,6 +38,7 @@ public class Sentry : ModuleRules
 				"SlateCore",
 				"Projects",
 				"Json",
+				"JsonUtilities",
 				"HTTP"
 				// ... add private dependencies that you statically link with here ...	
 			}
