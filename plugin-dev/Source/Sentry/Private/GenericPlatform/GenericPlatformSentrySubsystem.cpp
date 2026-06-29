@@ -316,11 +316,6 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 			MakeShareable(new FGenericPlatformSentryAttachment(SessionReplay->GetAttachmentPath(), TEXT("session-replay.mp4"), TEXT("video/mp4")));
 
 		AddFileAttachment(ReplayAttachment);
-
-		// The replay envelope itself is built and sent outside the crash handler:
-		// out-of-process by the daemon (same session), or at the next `sentry_init`
-		// for the other backends, from the JSON sidecar the recorder staged next to
-		// the mp4. Nothing is allocated/built here in the crashing process.
 	}
 #endif
 
