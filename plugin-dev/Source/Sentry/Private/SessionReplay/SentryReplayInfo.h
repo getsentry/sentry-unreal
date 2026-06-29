@@ -22,8 +22,6 @@ struct FSentryReplayInfo
 	double StartTimestampSec = 0.0;
 	double EndTimestampSec = 0.0;
 
-	FString ErrorEventId;
-
 	FString VideoPath;
 
 	int32 Width = 0;

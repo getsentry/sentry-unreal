@@ -5,10 +5,6 @@
 #include "SentryDataTypes.h"
 #include "SentryVariant.h"
 
-#ifdef USE_SENTRY_SESSION_REPLAY
-#include "SessionReplay/SentryReplayInfo.h"
-#endif
-
 #include "GenericPlatform/Convenience/GenericPlatformSentryInclude.h"
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 
@@ -32,11 +28,6 @@ public:
 	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 	static sentry_minidump_mode_t MinidumpModeToNative(ESentryMinidumpMode mode);
 	static sentry_crash_reporting_mode_t CrashReportingModeToNative(ESentryCrashReportingMode mode);
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-	static sentry_value_t ReplayEventToNative(const FSentryReplayInfo& info);
-	static sentry_value_t ReplayRecordingToNative(const FSentryReplayInfo& info);
-#endif
 
 	/** Conversions from native types */
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);

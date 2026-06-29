@@ -38,15 +38,12 @@ public:
 	FSentrySessionReplayRecorder();
 	virtual ~FSentrySessionReplayRecorder() override;
 
-	bool Initialize(const USentrySettings* Settings, const FString& ReplayPath);
+	bool Initialize(const USentrySettings* Settings, const FString& ReplayId, const FString& ReplayPath);
 	void Shutdown();
 
 	bool IsEnabled() const { return bEnabled; }
 	bool HasSnapshotOnDisk() const { return bSnapshotOnDisk; }
 	const FString& GetAttachmentPath() const { return AttachmentPath; }
-
-	// Assembles the platform-agnostic replay model from the most recent on-disk snapshot
-	FSentryReplayInfo BuildReplayInfo(const FString& ReplayId, const FString& ErrorEventId) const;
 
 	// Called by the encoder thread when the init segment (ftyp+moov) is ready
 	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
@@ -63,12 +60,22 @@ private:
 	void DoRotation();
 	bool WriteSnapshot(const TArray<uint8>& Bytes);
 
+	// Assembles the platform-agnostic replay model from the most recent on-disk snapshot
+	FSentryReplayInfo BuildReplayInfo() const;
+
+	// Writes the JSON metadata sidecar next to the mp4 (temp + atomic rename) so the
+	// SDK can build and send the replay envelope outside the crash handler
+	void WriteMetadataSidecar();
+
 	bool bEnabled = false;
 	FThreadSafeBool bSnapshotOnDisk;
 	FThreadSafeBool bStopRequested;
 
+	FString ReplayId;
 	FString AttachmentPath;
 	FString TempPath;
+	FString MetadataPath;
+	FString MetadataTempPath;
 
 	float WindowSeconds = 12.0f;
 	float FragmentSeconds = 0.5f;

@@ -14,6 +14,7 @@
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/App.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeLock.h"
 
@@ -24,7 +25,7 @@ FSentrySessionReplayRecorder::~FSentrySessionReplayRecorder()
 	Shutdown();
 }
 
-bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, const FString& ReplayPath)
+bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, const FString& InReplayId, const FString& ReplayPath)
 {
 	check(IsInGameThread());
 
@@ -32,6 +33,8 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	{
 		return false;
 	}
+
+	ReplayId = InReplayId;
 
 	if (!FApp::CanEverRender())
 	{
@@ -48,6 +51,8 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 
 	AttachmentPath = ReplayPath;
 	TempPath = ReplayPath + TEXT(".tmp");
+	MetadataPath = FPaths::ChangeExtension(ReplayPath, TEXT("json"));
+	MetadataTempPath = MetadataPath + TEXT(".tmp");
 
 	IFileManager::Get().MakeDirectory(*FPaths::GetPath(AttachmentPath), true);
 
@@ -141,15 +146,29 @@ void FSentrySessionReplayRecorder::Shutdown()
 		InitSegment.Empty();
 		FragmentRing.Reset();
 	}
+
+	// Clean shutdown: remove the staged replay so the SDK does not send it on the
+	// next launch. File presence in <db>/replays is what marks a crashed session,
+	// so a graceful exit must leave nothing behind.
+	IFileManager& FileManager = IFileManager::Get();
+	if (!MetadataPath.IsEmpty())
+	{
+		FileManager.Delete(*MetadataPath, false, true, true);
+		FileManager.Delete(*MetadataTempPath, false, true, true);
+	}
+	if (!AttachmentPath.IsEmpty())
+	{
+		FileManager.Delete(*AttachmentPath, false, true, true);
+		FileManager.Delete(*TempPath, false, true, true);
+	}
 }
 
-FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo(const FString& ReplayId, const FString& ErrorEventId) const
+FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
 {
 	const FDateTime NowUtc = FDateTime::UtcNow();
 
 	FSentryReplayInfo Info;
 	Info.ReplayId = ReplayId;
-	Info.ErrorEventId = ErrorEventId;
 	Info.VideoPath = AttachmentPath;
 	Info.Width = Encoder ? static_cast<int32>(Encoder->GetWidth()) : 0;
 	Info.Height = Encoder ? static_cast<int32>(Encoder->GetHeight()) : 0;
@@ -278,6 +297,10 @@ void FSentrySessionReplayRecorder::DoRotation()
 	if (WriteSnapshot(Snapshot))
 	{
 		bSnapshotOnDisk.AtomicSet(true);
+
+		// Refresh the metadata sidecar so the SDK can build the replay envelope
+		// from disk after a crash without doing any work in the crash handler.
+		WriteMetadataSidecar();
 	}
 }
 
@@ -308,6 +331,38 @@ bool FSentrySessionReplayRecorder::WriteSnapshot(const TArray<uint8>& Bytes)
 		return false;
 	}
 	return true;
+}
+
+void FSentrySessionReplayRecorder::WriteMetadataSidecar()
+{
+	const FSentryReplayInfo Info = BuildReplayInfo();
+
+	// All values are numbers or controlled ASCII (hex id, generated filename), so a
+	// printf-built object is sufficient; size_bytes/duration_ms are emitted as whole
+	// numbers via %.0f to avoid platform int64 format-specifier issues.
+	const FString Json = FString::Printf(
+		TEXT("{\"replay_id\":\"%s\",\"video_filename\":\"%s\",\"replay_type\":\"%s\",\"segment_id\":%d,")
+			TEXT("\"start_timestamp_sec\":%.6f,\"end_timestamp_sec\":%.6f,\"width\":%d,\"height\":%d,")
+				TEXT("\"duration_ms\":%.0f,\"size_bytes\":%.0f,\"frame_count\":%d,\"frame_rate\":%d}"),
+		*Info.ReplayId,
+		*FPaths::GetCleanFilename(AttachmentPath),
+		*Info.ReplayType,
+		Info.SegmentId,
+		Info.StartTimestampSec,
+		Info.EndTimestampSec,
+		Info.Width,
+		Info.Height,
+		static_cast<double>(Info.DurationMs),
+		static_cast<double>(Info.SizeBytes),
+		Info.FrameCount,
+		Info.FrameRate);
+
+	// Temp + atomic rename so a crash never observes a torn sidecar.
+	if (!FFileHelper::SaveStringToFile(Json, *MetadataTempPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+	{
+		return;
+	}
+	IFileManager::Get().Move(*MetadataPath, *MetadataTempPath, true, true);
 }
 
 #endif // USE_SENTRY_SESSION_REPLAY

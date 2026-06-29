@@ -317,11 +317,10 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 		AddFileAttachment(ReplayAttachment);
 
-		const FSentryReplayInfo ReplayInfo =
-			SessionReplay->BuildReplayInfo(SessionReplayId, FString(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_key(event, "event_id")))));
-
-		sentry_capture_session_replay(TCHAR_TO_UTF8(*ReplayInfo.VideoPath),
-			FGenericPlatformSentryConverters::ReplayEventToNative(ReplayInfo), FGenericPlatformSentryConverters::ReplayRecordingToNative(ReplayInfo));
+		// The replay envelope itself is built and sent outside the crash handler:
+		// out-of-process by the daemon (same session), or at the next `sentry_init`
+		// for the other backends, from the JSON sidecar the recorder staged next to
+		// the mp4. Nothing is allocated/built here in the crashing process.
 	}
 #endif
 
@@ -675,7 +674,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
 
 		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
-		if (SessionReplay->Initialize(settings, GetReplayPath()))
+		if (SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
 		{
 			SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
 		}
