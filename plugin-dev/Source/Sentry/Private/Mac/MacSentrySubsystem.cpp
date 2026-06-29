@@ -120,8 +120,9 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* settings, cons
 #ifdef USE_SENTRY_SESSION_REPLAY
 		if (settings->AttachSessionReplay)
 		{
+			SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
 			SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
-			if (!SessionReplay->Initialize(settings, GetReplayPath()))
+			if (!SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
 			{
 				SessionReplay.Reset();
 			}
@@ -152,8 +153,7 @@ void FMacSentrySubsystem::Close()
 #ifdef USE_SENTRY_SESSION_REPLAY
 FString FMacSentrySubsystem::GetReplayPath() const
 {
-	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
-	const FString ReplayPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	const FString ReplayPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"), FString::Printf(TEXT("replay-%s.mp4"), *SessionReplayId));
 	return FPaths::ConvertRelativePathToFull(ReplayPath);
 }
 #endif
