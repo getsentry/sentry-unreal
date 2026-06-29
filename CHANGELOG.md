@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add integration with Session Replay product for `native` backend ([#1445](https://github.com/getsentry/sentry-unreal/pull/1445))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v6.12.0 to v6.13.0 ([#1452](https://github.com/getsentry/sentry-unreal/pull/1452))
