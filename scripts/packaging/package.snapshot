@@ -506,8 +506,6 @@ Source/ThirdParty/Mac/Native/lib/libsentry.a
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/_CodeSignature/CodeResources
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/CodeResources
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Info.plist
-Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/._Sentry.CrashReporter.deps.json
-Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/._Sentry.CrashReporter.runtimeconfig.json
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrgcexp.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrjit.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libcoreclr.dylib
