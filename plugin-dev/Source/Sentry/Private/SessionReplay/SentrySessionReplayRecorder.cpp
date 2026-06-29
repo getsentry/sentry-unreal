@@ -147,21 +147,6 @@ void FSentrySessionReplayRecorder::Shutdown()
 		InitSegment.Empty();
 		FragmentRing.Reset();
 	}
-
-	// Clean shutdown: remove the staged replay so the SDK does not send it on the
-	// next launch. File presence in <db>/replays is what marks a crashed session,
-	// so a graceful exit must leave nothing behind.
-	IFileManager& FileManager = IFileManager::Get();
-	if (!MetadataPath.IsEmpty())
-	{
-		FileManager.Delete(*MetadataPath, false, true, true);
-		FileManager.Delete(*MetadataTempPath, false, true, true);
-	}
-	if (!AttachmentPath.IsEmpty())
-	{
-		FileManager.Delete(*AttachmentPath, false, true, true);
-		FileManager.Delete(*TempPath, false, true, true);
-	}
 }
 
 FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
