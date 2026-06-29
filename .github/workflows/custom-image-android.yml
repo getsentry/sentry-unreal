@@ -13,6 +13,8 @@ jobs:
     name: Create Android image with UE Docker images
     runs-on: unreal-image-creating-runner-linux
     snapshot: unreal-image-android
+    environment:
+      name: main
 
     permissions:
       contents: read

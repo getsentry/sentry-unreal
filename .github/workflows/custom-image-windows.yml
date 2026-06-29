@@ -13,6 +13,8 @@ jobs:
     name: Create Windows image with UE Docker images
     runs-on: unreal-image-creating-runner-windows
     snapshot: unreal-image-windows
+    environment:
+      name: main
 
     permissions:
       contents: read

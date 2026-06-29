@@ -13,6 +13,8 @@ jobs:
     name: Create Linux image with UE Docker images
     runs-on: unreal-image-creating-runner-linux
     snapshot: unreal-image-linux
+    environment:
+      name: main
 
     permissions:
       contents: read
