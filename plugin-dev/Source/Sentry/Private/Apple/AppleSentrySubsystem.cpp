@@ -70,7 +70,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 		}
 	}
 
-	[SENTRY_APPLE_CLASS(SentryObjCPrivateSDKOnly) setSdkName:@"sentry.cocoa.unreal"];
+	[[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] sdk] setName:@"sentry.cocoa.unreal"];
 
 	dispatch_group_t sentryDispatchGroup = dispatch_group_create();
 	dispatch_group_enter(sentryDispatchGroup);
@@ -697,7 +697,7 @@ void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> event
 
 	SentryObjCEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryObjCEnvelope) alloc] initWithHeader:envelopeHeader singleItem:envelopeItem];
 
-	[SENTRY_APPLE_CLASS(SentryObjCPrivateSDKOnly) captureEnvelope:envelope];
+	[[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] envelope] capture:envelope];
 
 	if (deleteAfterUpload)
 	{
