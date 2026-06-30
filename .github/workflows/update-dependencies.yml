@@ -28,7 +28,6 @@ jobs:
           path: modules/sentry-native
           name: Native SDK
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
-          # v3 default is 'update'; keep 'create' to preserve previous behavior.
           pr-strategy: create
 
   java:
