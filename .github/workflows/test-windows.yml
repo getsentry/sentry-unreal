@@ -11,7 +11,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: windows-2022
+    runs-on: windows-latest-unreal
 
     steps:
       - name: Log in to GitHub package registry
@@ -26,12 +26,14 @@ jobs:
           WORKSPACE_PATH: ${{ github.workspace }}
           UNREAL_VERSION: ${{ inputs.unreal-version }}
           DISALLOW_RAW_POINTERS: ${{ inputs.unreal-version == '4.27' && 'false' || 'true' }}
+          SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
         run: |
           docker run -td `
             --name unreal `
             --volume "${env:WORKSPACE_PATH}:C:/workspace" `
             --workdir C:/workspace `
             --env DISALLOW_RAW_POINTERS=${env:DISALLOW_RAW_POINTERS} `
+            --env SENTRY_UNITY_BUILD=${env:SENTRY_UNITY_BUILD} `
             ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
 
       - name: Download package
@@ -42,7 +44,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: checkout
-          submodules: recursive
 
       - name: Extract package to sample/Plugins
         env:
@@ -90,6 +91,8 @@ jobs:
         id: run-tests
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }}
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -102,6 +105,7 @@ jobs:
             -project=C:/workspace/checkout/sample/SentryPlayground.uproject `
             -archivedirectory=C:/workspace/checkout/sample/Builds `
             -platform=Win64 `
+            -UBTArgs="$env:UBT_EXTRA_ARGS" `
             -nop4 `
             -cook `
             -iterate `
@@ -152,6 +156,8 @@ jobs:
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }}
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -164,6 +170,7 @@ jobs:
             -project=C:/workspace/checkout/sample/SentryPlayground.uproject `
             -archivedirectory=C:/workspace/checkout/sample/Builds-Native `
             -platform=Win64 `
+            -UBTArgs="$env:UBT_EXTRA_ARGS" `
             -nop4 `
             -cook `
             -iterate `

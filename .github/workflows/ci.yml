@@ -9,6 +9,10 @@ on:
     paths-ignore:
       - "**.md"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   android-sdk:
     uses: ./.github/workflows/sdk-build.yml
@@ -220,50 +224,75 @@ jobs:
         shell: pwsh
         run: ./scripts/packaging/test-contents.ps1
 
+  # Resolves the engine-version matrix once for all test platforms. PRs run the legacy 4.27
+  # (where supported) plus the 3 latest versions; pushes to main/release run the full set.
+  generate-test-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      linux: ${{ steps.set-matrix.outputs.linux }}
+      windows: ${{ steps.set-matrix.outputs.windows }}
+      android: ${{ steps.set-matrix.outputs.android }}
+    steps:
+      - id: set-matrix
+        env:
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [[ "$IS_PR" == "true" ]]; then
+            # PRs: legacy 4.27 (where supported) + 3 latest
+            echo 'linux=["4.27","5.6","5.7","5.8"]'   >> "$GITHUB_OUTPUT"
+            echo 'windows=["4.27","5.6","5.7","5.8"]' >> "$GITHUB_OUTPUT"
+            echo 'android=["5.6","5.7","5.8"]'        >> "$GITHUB_OUTPUT"
+          else
+            # main / release: full set
+            echo 'linux=["4.27","5.2","5.3","5.4","5.5","5.6","5.7","5.8"]' >> "$GITHUB_OUTPUT"
+            echo 'windows=["4.27","5.5","5.6","5.7","5.8"]'                 >> "$GITHUB_OUTPUT"
+            echo 'android=["5.4","5.5","5.6","5.7","5.8"]'                  >> "$GITHUB_OUTPUT"
+          fi
+
   test-linux:
-    needs: [package-preparation]
+    needs: [package-preparation, generate-test-matrix]
     name: Linux UE ${{ matrix.unreal }}
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unreal: ['4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
     uses: ./.github/workflows/test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
   test-windows:
-    needs: [package-preparation]
+    needs: [package-preparation, generate-test-matrix]
     name: Windows UE ${{ matrix.unreal }}
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unreal: ['4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
     uses: ./.github/workflows/test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
   test-android:
-    needs: [package-preparation]
+    needs: [package-preparation, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unreal: ['4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
     uses: ./.github/workflows/test-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
   integration-test-linux:
-    needs: [test-linux]
+    needs: [test-linux, generate-test-matrix]
     name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unreal: ['4.27', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
         backend: [crashpad, native]
     uses: ./.github/workflows/integration-test-linux.yml
     with:
@@ -271,29 +300,31 @@ jobs:
       backend: ${{ matrix.backend }}
 
   integration-test-windows:
-    needs: [test-windows]
+    needs: [test-windows, generate-test-matrix]
     name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
-        unreal: ['5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
         backend: [crashpad, native]
+        exclude:
+          - unreal: '4.27'
     uses: ./.github/workflows/integration-test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
 
   integration-test-android:
-    needs: [test-android]
+    needs: [test-android, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
     secrets: inherit
     strategy:
       fail-fast: false
       max-parallel: 1
       matrix:
-        unreal: ['5.4', '5.5', '5.6', '5.7', '5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
     uses: ./.github/workflows/integration-test-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}

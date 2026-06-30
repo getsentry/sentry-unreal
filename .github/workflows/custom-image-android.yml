@@ -1,0 +1,52 @@
+name: Build UE Android runner image
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  create-image:
+    name: Create Android image with UE Docker images
+    runs-on: unreal-image-creating-runner-linux
+    snapshot: unreal-image-android
+    environment:
+      name: main
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Free up disk space
+        run: ./scripts/clean-storage-linux.sh
+
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Android images carry the Android SDK/NDK platform files and are large, so the set is limited to
+      # the versions Android is actually tested on (5.4+)
+      - name: Pull Unreal Engine Docker images
+        run: |
+          set -e
+          tags=("5.4" "5.5" "5.6" "5.7" "5.8")
+          for tag in "${tags[@]}"; do
+            echo "=== Pulling ${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-android ==="
+            docker pull "${{ env.REGISTRY }}/getsentry/unreal-docker:${tag}-android"
+            echo "=== Free disk space after pulling ${tag}-android ==="
+            df -h /
+          done
+
+      - name: Verify pulled images
+        run: |
+          docker images --filter "reference=${{ env.REGISTRY }}/getsentry/unreal-docker" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
