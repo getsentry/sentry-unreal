@@ -188,14 +188,11 @@ function buildSentryJava()
 
     Write-Host "Building Sentry Java for Android using local repository at: $JavaPath"
 
-    # Gradle build is platform-agnostic (only needs a JDK); pick the wrapper for the current OS
-    $gradlew = if ($isWindowsPlatform) { ".\gradlew.bat" } else { "./gradlew" }
-
     Push-Location -Path $JavaPath
 
     try
     {
-        & $gradlew -PsentryAndroidSdkName="sentry.native.android.unreal" `
+        ./gradlew -PsentryAndroidSdkName="sentry.native.android.unreal" `
             :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry-android-replay:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none
 
         if ($LASTEXITCODE -ne 0)
