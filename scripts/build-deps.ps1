@@ -363,9 +363,25 @@ function buildSentryNativeLinux()
         throw "Sentry Native path does not exist: $NativePath"
     }
 
-    Write-Host "Building Sentry Native for Linux (x64) using local repository at: $NativePath"
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    if ($arch -eq [System.Runtime.InteropServices.Architecture]::Arm64)
+    {
+        $platformDir = "$outDir/LinuxArm64"
+        $archName = "arm64"
+        $libcxxCFlags = "-mno-outline-atomics"
+        $libcxxCxxFlags = "-stdlib=libc++ -mno-outline-atomics"
+        $libcxxLinkFlags = "-stdlib=libc++ -mno-outline-atomics"
+    }
+    else
+    {
+        $platformDir = "$outDir/Linux"
+        $archName = "x64"
+        $libcxxCFlags = ""
+        $libcxxCxxFlags = "-stdlib=libc++"
+        $libcxxLinkFlags = "-stdlib=libc++"
+    }
 
-    $platformDir = "$outDir/Linux"
+    Write-Host "Building Sentry Native for Linux ($archName) using local repository at: $NativePath"
 
     # sentry-native is built with clang and libc++ for the static libs, but the crash handler
     # executables (crashpad_handler / sentry-crash) are built with libstdc++ to match Unreal.
@@ -384,7 +400,7 @@ function buildSentryNativeLinux()
         # Static libs with libc++
         cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
             -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
-            -D CMAKE_CXX_FLAGS="-stdlib=libc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libc++" -D HAVE_COPY_FILE_RANGE=0
+            -D CMAKE_C_FLAGS="$libcxxCFlags" -D CMAKE_CXX_FLAGS="$libcxxCxxFlags" -D CMAKE_EXE_LINKER_FLAGS="$libcxxLinkFlags" -D HAVE_COPY_FILE_RANGE=0
         cmake --build "build" --target sentry --parallel
         cmake --install "build" --prefix "install"
 
@@ -421,7 +437,7 @@ function buildSentryNativeLinux()
         # Static libs with libc++
         cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
             -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
-            -D CMAKE_CXX_FLAGS="-stdlib=libc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libc++" -D HAVE_COPY_FILE_RANGE=0
+            -D CMAKE_C_FLAGS="$libcxxCFlags" -D CMAKE_CXX_FLAGS="$libcxxCxxFlags" -D CMAKE_EXE_LINKER_FLAGS="$libcxxLinkFlags" -D HAVE_COPY_FILE_RANGE=0
         cmake --build "build_native" --target sentry --parallel
         cmake --install "build_native" --prefix "install_native"
 
@@ -446,7 +462,7 @@ function buildSentryNativeLinux()
     strip -x "$NativePath/build_native_crash/sentry-crash" -o "$nativeDir/bin/sentry-crash"
     Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
 
-    Write-Host "Successfully built Sentry Native for Linux"
+    Write-Host "Successfully built Sentry Native for Linux ($archName)"
 }
 
 function buildSentryCrashReporter()
