@@ -12,6 +12,11 @@ public class SentryPlaygroundEditorTarget : TargetRules
 
 		// Disable Unity build and PCH files to catch missing include errors in CI
 		bUseUnityBuild = false;
+		string unityBuildOverride = System.Environment.GetEnvironmentVariable("SENTRY_UNITY_BUILD");
+		if (unityBuildOverride != null)
+		{
+			bUseUnityBuild = unityBuildOverride == "true";
+		}
 		bUsePCHFiles = false;
 
 #if UE_5_0_OR_LATER

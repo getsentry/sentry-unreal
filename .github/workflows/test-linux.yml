@@ -11,32 +11,9 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-unreal
 
     steps:
-      - name: Free disk space
-        run: |
-          # time df -h
-          sudo time swapoff -a
-          sudo time rm -f /swapfile
-          sudo time rm -rf /usr/local/lib/android
-          sudo time rm -rf /usr/share/dotnet
-          sudo time rm -rf /usr/share/swift
-          sudo time rm -rf /usr/local/share/powershell
-          sudo time rm -rf /usr/local/.ghcup
-          sudo time rm -rf /usr/local/lib/node_modules
-          sudo time rm -rf /usr/local/share/boost
-          sudo time rm -rf /usr/lib/google-cloud-sdk
-          sudo time rm -rf /usr/lib/jvm
-          sudo time rm -rf /opt/pipx
-          sudo time rm -rf /opt/ghc
-          sudo time rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo time apt-get clean
-          sudo time rm -rf /var/lib/apt/lists/*
-          # time docker rmi $(docker image ls -aq)
-          # time du --max-depth=3 --threshold=100M -h /usr /opt /var 2>/dev/null | sort -hr
-          df -h
-
       - name: Log in to GitHub package registry
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
@@ -49,6 +26,7 @@ jobs:
           WORKSPACE_PATH: ${{ github.workspace }}
           UNREAL_VERSION: ${{ inputs.unreal-version }}
           DISALLOW_RAW_POINTERS: ${{ inputs.unreal-version == '4.27' && 'false' || 'true' }}
+          SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
         run: |
           # We start the container with the user ID of the parent GH action user to avoid permission issues on volume.
           # For UE 5.4 we have to enable ipv6 to fix container startup issues. See https://github.com/adamrehn/ue4-docker/issues/357
@@ -65,6 +43,7 @@ jobs:
             --env HOME="/home/$user" \
             --env PATH="/home/$user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             --env DISALLOW_RAW_POINTERS=$DISALLOW_RAW_POINTERS \
+            --env SENTRY_UNITY_BUILD=$SENTRY_UNITY_BUILD \
             --network ip6net -p 80:80 \
             ghcr.io/getsentry/unreal-docker:"$UNREAL_VERSION"-linux
           docker logout ghcr.io
@@ -155,6 +134,8 @@ jobs:
         id: run-tests
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -167,6 +148,7 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
             -platform=Linux \
+            -UBTArgs="$UBT_EXTRA_ARGS" \
             -nop4 \
             -cook \
             -iterate \
@@ -218,6 +200,8 @@ jobs:
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
         env:
           EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor' || 'UnrealEditor' }}
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -230,6 +214,7 @@ jobs:
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds-Native \
             -platform=Linux \
+            -UBTArgs="$UBT_EXTRA_ARGS" \
             -nop4 \
             -cook \
             -iterate \
