@@ -155,7 +155,6 @@ FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
 
 	FSentryReplayInfo Info;
 	Info.ReplayId = ReplayId;
-	Info.VideoFilename = FPaths::GetCleanFilename(AttachmentPath);
 	Info.Width = Encoder ? static_cast<int32>(Encoder->GetWidth()) : 0;
 	Info.Height = Encoder ? static_cast<int32>(Encoder->GetHeight()) : 0;
 	Info.FrameRate = Encoder ? static_cast<int32>(Encoder->GetFramerate()) : 0;

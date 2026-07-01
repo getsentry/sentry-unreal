@@ -19,9 +19,6 @@ struct FSentryReplayInfo
 	UPROPERTY()
 	FString ReplayId;
 
-	UPROPERTY()
-	FString VideoFilename;
-
 	// Replay capture mode: "buffer" (rolling window) or "session" (continuous)
 	UPROPERTY()
 	FString ReplayType = TEXT("buffer");
