@@ -1,10 +1,10 @@
 # Builds plugin dependencies locally and replaces corresponding binaries in `plugin-dev/Sources/ThirdParty/...`
 #
 # Plugin dependencies:
-# * sentry-native - for Windows support (can be built only on Windows)
+# * sentry-native - for Windows/Linux/Mac support
 # * sentry-cocoa - for Mac and iOS support (can be built only on MacOS)
-# * sentry-java - for Android support (can be built both on Windows and MacOS)
-# * sentry-crash-reporter - external crash reporter (can be built on Windows, MacOS and Linux)
+# * sentry-java - for Android support
+# * sentry-crash-reporter - external crash reporter
 #
 # Usage:
 #   .\build-deps.ps1 -All                                  # Build all SDKs for current platform
@@ -45,6 +45,12 @@ $isWindowsPlatform = if ($null -eq (Get-Variable -Name IsWindows -ErrorAction Si
 if ($All)
 {
     if ($isWindowsPlatform)
+    {
+        $Native = $true
+        $Java = $true
+        $CrashReporter = $true
+    }
+    elseif ($IsLinux)
     {
         $Native = $true
         $Java = $true
@@ -350,6 +356,115 @@ function buildSentryNativeMac()
     Write-Host "Successfully built Sentry Native for macOS"
 }
 
+function buildSentryNativeLinux()
+{
+    if (-not (Test-Path $NativePath))
+    {
+        throw "Sentry Native path does not exist: $NativePath"
+    }
+
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    if ($arch -eq [System.Runtime.InteropServices.Architecture]::Arm64)
+    {
+        $platformDir = "$outDir/LinuxArm64"
+        $archName = "arm64"
+        $libcxxCFlags = "-mno-outline-atomics"
+        $libcxxCxxFlags = "-stdlib=libc++ -mno-outline-atomics"
+        $libcxxLinkFlags = "-stdlib=libc++ -mno-outline-atomics"
+    }
+    else
+    {
+        $platformDir = "$outDir/Linux"
+        $archName = "x64"
+        $libcxxCFlags = ""
+        $libcxxCxxFlags = "-stdlib=libc++"
+        $libcxxLinkFlags = "-stdlib=libc++"
+    }
+
+    Write-Host "Building Sentry Native for Linux ($archName) using local repository at: $NativePath"
+
+    # sentry-native is built with clang and libc++ for the static libs, but the crash handler
+    # executables (crashpad_handler / sentry-crash) are built with libstdc++ to match Unreal.
+    $clangC = "clang"
+    $clangCxx = "clang++"
+    if (-not (Get-Command $clangC -ErrorAction SilentlyContinue))
+    {
+        throw "clang not found. Install clang (with libc++) to build Sentry Native for Linux."
+    }
+
+    # Build Crashpad backend
+    Write-Host "Building Crashpad backend..."
+    Push-Location -Path $NativePath
+    try
+    {
+        # Static libs with libc++
+        cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+            -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
+            -D CMAKE_C_FLAGS="$libcxxCFlags" -D CMAKE_CXX_FLAGS="$libcxxCxxFlags" -D CMAKE_EXE_LINKER_FLAGS="$libcxxLinkFlags" -D HAVE_COPY_FILE_RANGE=0
+        cmake --build "build" --target sentry --parallel
+        cmake --install "build" --prefix "install"
+
+        # crashpad_handler executable with libstdc++ (no transport needed)
+        cmake -B "build_crashpad_handler" -D SENTRY_BACKEND=crashpad -D SENTRY_TRANSPORT=none -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+            -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
+            -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libstdc++" -D HAVE_COPY_FILE_RANGE=0
+        cmake --build "build_crashpad_handler" --target sentry --parallel
+        cmake --install "build_crashpad_handler" --prefix "install_crashpad_handler"
+
+        # Replace crashpad_handler from the first build with the libstdc++ one
+        Copy-Item "$NativePath/install_crashpad_handler/bin/crashpad_handler" -Destination "$NativePath/install/bin/crashpad_handler" -Force
+    }
+    finally
+    {
+        Pop-Location
+    }
+
+    $crashpadDir = "$platformDir/Crashpad"
+    if (Test-Path $crashpadDir) { Remove-Item $crashpadDir -Recurse -Force }
+    New-Item "$crashpadDir/lib" -ItemType Directory -Force > $null
+    New-Item "$crashpadDir/bin" -ItemType Directory -Force > $null
+    New-Item "$crashpadDir/include" -ItemType Directory -Force > $null
+
+    Get-ChildItem -Path "$NativePath/install/lib" -Filter "*.a" -Recurse | Copy-Item -Destination "$crashpadDir/lib"
+    strip -x "$NativePath/install/bin/crashpad_handler" -o "$crashpadDir/bin/crashpad_handler"
+    Copy-Item "$NativePath/install/include/sentry.h" -Destination "$crashpadDir/include"
+
+    # Build Native backend
+    Write-Host "Building Native backend..."
+    Push-Location -Path $NativePath
+    try
+    {
+        # Static libs with libc++
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+            -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
+            -D CMAKE_C_FLAGS="$libcxxCFlags" -D CMAKE_CXX_FLAGS="$libcxxCxxFlags" -D CMAKE_EXE_LINKER_FLAGS="$libcxxLinkFlags" -D HAVE_COPY_FILE_RANGE=0
+        cmake --build "build_native" --target sentry --parallel
+        cmake --install "build_native" --prefix "install_native"
+
+        # sentry-crash executable with libstdc++ (needs transport to send crash envelopes)
+        cmake -B "build_native_crash" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+            -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
+            -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libstdc++" -D HAVE_COPY_FILE_RANGE=0
+        cmake --build "build_native_crash" --target sentry-crash --parallel
+    }
+    finally
+    {
+        Pop-Location
+    }
+
+    $nativeDir = "$platformDir/Native"
+    if (Test-Path $nativeDir) { Remove-Item $nativeDir -Recurse -Force }
+    New-Item "$nativeDir/lib" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/bin" -ItemType Directory -Force > $null
+    New-Item "$nativeDir/include" -ItemType Directory -Force > $null
+
+    Get-ChildItem -Path "$NativePath/install_native/lib" -Filter "*.a" -Recurse | Copy-Item -Destination "$nativeDir/lib"
+    strip -x "$NativePath/build_native_crash/sentry-crash" -o "$nativeDir/bin/sentry-crash"
+    Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
+
+    Write-Host "Successfully built Sentry Native for Linux ($archName)"
+}
+
 function buildSentryCrashReporter()
 {
     if (-not (Test-Path $CrashReporterPath))
@@ -459,6 +574,10 @@ if ($buildNative)
         elseif ($IsMacOS)
         {
             buildSentryNativeMac
+        }
+        elseif ($IsLinux)
+        {
+            buildSentryNativeLinux
         }
         else
         {
