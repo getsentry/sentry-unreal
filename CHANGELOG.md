@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add experimental session replay capturing on iOS (UE 5.8+) ([#1462](https://github.com/getsentry/sentry-unreal/pull/1462))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v6.12.0 to v6.13.0 ([#1452](https://github.com/getsentry/sentry-unreal/pull/1452))
