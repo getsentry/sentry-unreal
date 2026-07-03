@@ -175,7 +175,7 @@ uint32 FSentryVideoEncoder::Run()
 			}
 
 			// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 			static constexpr double SendTimestampScale = 1'000'000.0;
 #else
 			static constexpr double SendTimestampScale = 1'000.0;
@@ -184,8 +184,8 @@ uint32 FSentryVideoEncoder::Run()
 			const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
 			const double ScaledTimestamp = TimestampSeconds * SendTimestampScale;
 
-#if PLATFORM_MAC
-			// Restart the encoder every hour of recording. On Mac this stays well clear of the
+#if PLATFORM_APPLE
+			// Restart the encoder every hour of recording. On Apple platforms this stays well clear of the
 			// uint32-microseconds wrap at ~71 min which would otherwise feed VT a backward PTS
 			// and corrupt all subsequent fragments. On Windows the natural wrap is at ~49 days
 			// so realistically periodic refresh of encoder state won't be needed there
@@ -270,7 +270,7 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Config.bFillData = 0;
 	Config.MultipassMode = EMultipassMode::Disabled;
 
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 	// Work around a VT bug where H.264 Auto maps to a null EntropyCodingMode
 	// causing a crash in CFStringGetLength. Use CABAC instead (supported by Main/High profiles)
 	Config.EntropyCodingMode = EH264EntropyCodingMode::CABAC;
@@ -384,7 +384,7 @@ void FSentryVideoEncoder::DrainPackets()
 		// when the source renders below the configured target rate). A skipped
 		// packet never updates the marker, so its interval folds into the next
 		// sample. The first sample falls back to a nominal 1/Framerate
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 		const uint32 PacketTimestampMs = static_cast<uint32>(FPlatformTime::ToMilliseconds64(Packet.Timestamp));
 #else
 		const uint32 PacketTimestampMs = static_cast<uint32>(Packet.Timestamp);

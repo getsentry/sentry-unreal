@@ -66,7 +66,7 @@ private:
 	// Tears down the current encoder and resets per-encoder state so the next frame
 	// re-baselines against a fresh VT timestamp origin and republishes a new init
 	// segment. Used to avoid uint32 overflow of the SendFrame timestamp (~71 min of
-	// microseconds on Mac, ~49 days of milliseconds on Windows). Must be called only
+	// microseconds on Apple platforms, ~49 days of milliseconds on Windows). Must be called only
 	// from the encoder thread
 	void Restart();
 

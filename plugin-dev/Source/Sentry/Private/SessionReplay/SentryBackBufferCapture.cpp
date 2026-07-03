@@ -117,12 +117,12 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 	FTextureRHIRef ScratchTex = AcquireCachedTexture_RenderThread(Scratch, W, H, BackBuffer->GetFormat(),
 		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayScratch"));
 
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 	FTextureRHIRef ConvertedTex = AcquireCachedTexture_RenderThread(Converted, W, H, PF_B8G8R8A8,
 		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayConverted"));
 #endif
 
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 	// VT requires pool slot to have CPUReadback flag so it can be read via Metal's getBytes().
 	// Note: Metal forbids RT|CPUReadback on the same texture so an extra copy is needed (step 3)
 	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::CPUReadback;
@@ -149,7 +149,7 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 		return;
 	}
 
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 	if (!ConvertedTex.IsValid())
 	{
 		return;
@@ -161,7 +161,7 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 		return;
 	}
 
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 	FTextureRHIRef DrawTarget = ConvertedTex;
 #else
 	FTextureRHIRef DrawTarget = EncoderTex;
@@ -202,8 +202,8 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 		GraphBuilder.Execute();
 	}
 
-#if PLATFORM_MAC
-	// Step 3 (Mac only): hardware-copy Converted -> EncoderPool slot. Both are BGRA8 same-format
+#if PLATFORM_APPLE
+	// Step 3 (Apple only): hardware-copy Converted -> EncoderPool slot. Both are BGRA8 same-format
 	{
 		FRHITransitionInfo Transitions[] = {
 			FRHITransitionInfo(DrawTarget.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc),
@@ -217,7 +217,7 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 	}
 #endif
 
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::CPURead));
 #else
 	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
