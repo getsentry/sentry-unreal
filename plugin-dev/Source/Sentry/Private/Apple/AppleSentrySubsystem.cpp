@@ -253,10 +253,32 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	// Wait synchronously until sentry-cocoa initialization finished in main thread
 	dispatch_group_wait(sentryDispatchGroup, DISPATCH_TIME_FOREVER);
 	dispatch_release(sentryDispatchGroup);
+
+	if (IsEnabled())
+	{
+#ifdef USE_SENTRY_SESSION_REPLAY
+		if (settings->AttachSessionReplay)
+		{
+			SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+			if (!SessionReplay->Initialize(settings, GetReplayPath()))
+			{
+				SessionReplay.Reset();
+			}
+		}
+#endif
+	}
 }
 
 void FAppleSentrySubsystem::Close()
 {
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (SessionReplay)
+	{
+		SessionReplay->Shutdown();
+		SessionReplay.Reset();
+	}
+#endif
+
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) close];
 }
@@ -798,5 +820,14 @@ FString FAppleSentrySubsystem::GetLatestSessionReplay() const
 
 	return Replays[0];
 }
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+FString FAppleSentrySubsystem::GetReplayPath() const
+{
+	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
+	const FString ReplayPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	return FPaths::ConvertRelativePathToFull(ReplayPath);
+}
+#endif
 
 #endif // !USE_SENTRY_NATIVE
