@@ -164,8 +164,9 @@ jobs:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
+      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
       - name: Collect sample test info
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        if: ${{ always() && (steps.run-tests.outcome == 'failure' || steps.run-tests.outcome == 'cancelled') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample test report (macOS)
@@ -234,8 +235,9 @@ jobs:
             -NoSplash \
             -NullRHI
 
+      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
       - name: Collect native sample test info
-        if: ${{ always() && steps.run-tests-native.outcome == 'failure' }}
+        if: ${{ always() && (steps.run-tests-native.outcome == 'failure' || steps.run-tests-native.outcome == 'cancelled') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample test report (macOS, native)
