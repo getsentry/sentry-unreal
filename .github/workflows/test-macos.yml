@@ -38,15 +38,23 @@ jobs:
 
       - name: Install Unreal Engine
         run: |
-          mkdir -p "$HOME/UnrealEngine"
-          unzip -q ue.zip -d "$HOME/UnrealEngine"
-          rm ue.zip
-          # The archive may contain a wrapping directory - locate the actual engine root
-          UE_ROOT="$(dirname "$(find "$HOME/UnrealEngine" -maxdepth 3 -type d -name Engine | head -n 1)")"
-          if [ ! -d "$UE_ROOT/Engine" ]; then
+          # The engine may be wrapped in a directory inside the archive (e.g. 'Mac/Engine/...').
+          # Locate the actual engine root by looking up RunUAT.sh in the archive index.
+          ROOT_PREFIX="$(unzip -Z1 ue.zip | grep -v '^__MACOSX/' | grep -m1 'Engine/Build/BatchFiles/RunUAT\.sh$' | sed 's#Engine/Build/BatchFiles/RunUAT\.sh$##')"
+          if ! unzip -Z1 ue.zip "${ROOT_PREFIX}Engine/Build/BatchFiles/RunUAT.sh" > /dev/null; then
             echo "::error::Could not locate the Engine directory in the downloaded archive"
             exit 1
           fi
+          # Extract only the 'Engine' payload - this skips Finder metadata (__MACOSX),
+          # Templates and FeaturePacks which aren't needed for CI. MetaHuman plugin
+          # content (~8 GiB) isn't used by the sample project so it's skipped as well
+          # to fit within the runner's disk space.
+          mkdir -p "$HOME/UnrealEngine"
+          unzip -q ue.zip "${ROOT_PREFIX}Engine/*" -d "$HOME/UnrealEngine" \
+            -x "*.DS_Store" "${ROOT_PREFIX}Engine/Plugins/MetaHuman/*"
+          rm ue.zip
+          UE_ROOT="$HOME/UnrealEngine/${ROOT_PREFIX}"
+          UE_ROOT="${UE_ROOT%/}"
           echo "UE_ROOT=$UE_ROOT" >> "$GITHUB_ENV"
           # Zip archives may not preserve execute permissions
           chmod -R u+x "$UE_ROOT/Engine/Build/BatchFiles" "$UE_ROOT/Engine/Binaries" || true
