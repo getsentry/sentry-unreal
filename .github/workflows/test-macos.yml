@@ -33,7 +33,7 @@ jobs:
             exit 1
           fi
           pipx install gdown
-          gdown --fuzzy "$UE_MAC_DOWNLOAD_LINK" -O ue.zip
+          gdown "$UE_MAC_DOWNLOAD_LINK" -O ue.zip
           df -h /
 
       - name: Install Unreal Engine
