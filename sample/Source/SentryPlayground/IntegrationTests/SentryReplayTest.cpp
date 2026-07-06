@@ -18,8 +18,7 @@
 namespace
 {
 
-// Claimed properties of the staged clip. The daemon builds the replay envelope from the
-// sidecar values (the video bytes are never parsed), so they only need to be plausible.
+// Claimed properties of the staged clip used to build the replay envelope
 constexpr int32 ClipDurationMs = 5000;
 constexpr int32 ClipWidth = 1280;
 constexpr int32 ClipHeight = 720;
@@ -44,16 +43,11 @@ void FSentryReplayTest::Run()
 	USentrySubsystem* Subsystem = GetSubsystem();
 
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	if (!Settings->UseNativeBackend)
-	{
-		CompleteWithResult(false, TEXT("Replay test requires the native crash backend (UseNativeBackend=True)"));
-		return;
-	}
 
 	const FString ReplaysDir = GetReplaysDir(Settings);
 	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
 
-	// Stage the clip - deterministic filler bytes, since neither the daemon nor Sentry parse the video content
+	// Stage the clip with filler bytes
 	TArray<uint8> ClipBytes;
 	ClipBytes.SetNumUninitialized(ClipSizeBytes);
 	for (int32 i = 0; i < ClipBytes.Num(); ++i)
@@ -68,7 +62,7 @@ void FSentryReplayTest::Run()
 		return;
 	}
 
-	// Stage the metadata sidecar; key names mirror the FSentryReplayInfo serialization the daemon parses
+	// Stage the metadata sidecar; key names mirror the FSentryReplayInfo properties
 	const double EndTimestampSec = static_cast<double>(FDateTime::UtcNow().ToUnixTimestamp());
 	const double StartTimestampSec = EndTimestampSec - ClipDurationMs / 1000.0;
 

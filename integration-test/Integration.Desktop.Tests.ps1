@@ -497,7 +497,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
-    Context "Session Replay Tests" -Skip:(-not $script:IsNativeBackend) {
+    Context "Session Replay Tests" -Skip:($Platform -eq 'MacOS' -and -not $script:IsNativeBackend) {
         BeforeAll {
             $script:ReplayResult = $null
             $script:ReplayCrashEvent = $null
@@ -517,9 +517,19 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=True"
 
-            # -replay-capture stages a replay clip on disk and crashes; the crash daemon
+            # -replay-capture stages a replay clip on disk and crashes; the crash backend
             # is expected to send it as a replay_video envelope alongside the crash event
             $script:ReplayResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-replay-capture') + $appArgs) -join ' ')
+
+            # With the crashpad/breakpad/inproc backends the replay envelope is persisted
+            # to the crashed run's directory and delivered on the next launch, so relaunch
+            # the app to flush it. The native backend daemon sends it same-session.
+            if (-not $script:IsNativeBackend) {
+                $flushArgs = @('-init-only', '-nullrhi', '-unattended', '-stdout', '-nosplash')
+                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=False"
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($flushArgs -join ' ')
+            }
 
             Write-Host "Replay crash test executed. Exit code: $($script:ReplayResult.ExitCode)" -ForegroundColor Cyan
 
