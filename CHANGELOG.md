@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix deprecation warnings caused by `RHICreateTexture` usage in UE 5.8 ([#1466](https://github.com/getsentry/sentry-unreal/pull/1466))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v6.12.0 to v6.14.0 ([#1452](https://github.com/getsentry/sentry-unreal/pull/1452), [#1460](https://github.com/getsentry/sentry-unreal/pull/1460))
