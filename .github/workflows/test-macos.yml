@@ -104,11 +104,27 @@ jobs:
 
       - name: Build and test (Cocoa)
         id: run-tests
+        timeout-minutes: 150
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
+          # UAT redirects all cooker output to a log file under the engine directory,
+          # which makes a long shader-compiling cook look like a hang - stream the log
+          # to the console instead (wait for a log that appears after this step starts)
+          (
+            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            f="$baseline"
+            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
+              sleep 15
+              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            done
+            echo "=== Streaming cook log: $f ==="
+            exec tail -n +1 -f "$f"
+          ) &
+          COOK_LOG_TAIL_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
@@ -134,8 +150,15 @@ jobs:
             -NoSplash \
             -NullRHI
 
+      - name: Check for DDC content
+        id: ddc-exists
+        if: ${{ always() }}
+        run: echo "exists=$([ -d checkout/sample/DerivedDataCache ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+
+      # Save DDC even when the build/test step failed or timed out so that shader
+      # compilation progress carries over to the next attempt
       - name: Save DDC to cache
-        if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
+        if: ${{ always() && steps.ddc-exists.outputs.exists == 'true' && steps.cache-ddc.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: checkout/sample/DerivedDataCache
@@ -148,6 +171,8 @@ jobs:
           name: UE ${{ inputs.unreal-version }} sample test report (macOS)
           path: |
             checkout/sample/Saved/Automation
+            checkout/sample/Saved/Logs
+            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
 
       - name: Upload sample build (Cocoa)
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
@@ -165,11 +190,25 @@ jobs:
       - name: Build and test (Native)
         id: run-tests-native
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        timeout-minutes: 150
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
+          # See the log streaming note in the Cocoa step above
+          (
+            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            f="$baseline"
+            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
+              sleep 15
+              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            done
+            echo "=== Streaming cook log: $f ==="
+            exec tail -n +1 -f "$f"
+          ) &
+          COOK_LOG_TAIL_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds-Native" \
@@ -202,6 +241,8 @@ jobs:
           name: UE ${{ inputs.unreal-version }} sample test report (macOS, native)
           path: |
             checkout/sample/Saved/Automation-Native
+            checkout/sample/Saved/Logs
+            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
 
       - name: Upload sample build (Native)
         if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
