@@ -58,6 +58,9 @@ public:
 	static constexpr int32 MaxQueueDepth = 5;
 
 private:
+	// Checks if frame dimensions match with the app's fixed screen orientation
+	bool ShouldSwapDimensions(uint32 ResourceWidth, uint32 ResourceHeight) const;
+
 	bool EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight);
 
 	// Pulls available packets from the encoder, converts them to AVCC samples and emits a fragment at each keyframe boundary
@@ -74,6 +77,11 @@ private:
 
 	bool bEncoderOpen = false;
 	bool bResolutionChanged = false;
+
+	// Screen orientation the app runs in, captured once at construction (iOS only)
+	// and assumed constant for the session. Unknown disables orientation handling
+	EDeviceScreenOrientation ExpectedOrientation = EDeviceScreenOrientation::Unknown;
+
 	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
 
 	bool bFirstFrameValidated = false;

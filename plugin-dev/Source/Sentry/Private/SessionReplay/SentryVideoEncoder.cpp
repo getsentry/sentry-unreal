@@ -8,6 +8,7 @@
 #include "SentrySessionReplayRecorder.h"
 
 #include "HAL/Event.h"
+#include "HAL/PlatformMisc.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/ScopeLock.h"
 #include "RHI.h"
@@ -27,6 +28,9 @@ FSentryVideoEncoder::FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorde
 	, BitrateBps(InBitrateKbps * 1000)
 	, FragmentSeconds(InFragmentSeconds)
 {
+#if PLATFORM_IOS
+	ExpectedOrientation = FPlatformMisc::GetDeviceOrientation();
+#endif
 }
 
 FSentryVideoEncoder::~FSentryVideoEncoder()
@@ -237,11 +241,28 @@ uint32 FSentryVideoEncoder::Run()
 	return 0;
 }
 
+bool FSentryVideoEncoder::ShouldSwapDimensions(uint32 ResourceWidth, uint32 ResourceHeight) const
+{
+	switch (ExpectedOrientation)
+	{
+	case EDeviceScreenOrientation::Portrait:
+	case EDeviceScreenOrientation::PortraitUpsideDown:
+		return ResourceWidth > ResourceHeight;
+	case EDeviceScreenOrientation::LandscapeLeft:
+	case EDeviceScreenOrientation::LandscapeRight:
+		return ResourceHeight > ResourceWidth;
+	default:
+		return false;
+	}
+}
+
 bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight)
 {
 	if (bEncoderOpen)
 	{
-		if ((ResourceWidth != Width || ResourceHeight != Height) && !bResolutionChanged)
+		const bool bSameSize = ResourceWidth == Width && ResourceHeight == Height;
+		const bool bSameTransposedSize = ResourceWidth == Height && ResourceHeight == Width;
+		if (!bSameSize && !bSameTransposedSize && !bResolutionChanged)
 		{
 			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size and may be cropped or black."),
 				Width, Height, ResourceWidth, ResourceHeight);
@@ -253,6 +274,15 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	if (ResourceWidth == 0 || ResourceHeight == 0)
 	{
 		return false;
+	}
+
+	// If the first frame arrives in the device's native (transposed) dimensions
+	// swap them so the video is written with the correct resolution from the start
+	if (!ShouldSwapDimensions(ResourceWidth, ResourceHeight))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame is %ux%u but the app runs in %s orientation; opening the encoder with swapped dimensions."),
+			ResourceWidth, ResourceHeight, ResourceHeight > ResourceWidth ? TEXT("landscape") : TEXT("portrait"));
+		Swap(ResourceWidth, ResourceHeight);
 	}
 
 	FVideoEncoderConfigH264 Config;
