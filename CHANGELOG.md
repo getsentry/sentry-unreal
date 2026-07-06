@@ -8,15 +8,21 @@
 
 ### Dependencies
 
-- Bump Android Gradle Plugin from v6.12.0 to v6.13.0 ([#1452](https://github.com/getsentry/sentry-unreal/pull/1452))
-  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6130)
-  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.12.0...6.13.0)
-- Bump Java SDK from v8.45.0 to v8.46.0 ([#1453](https://github.com/getsentry/sentry-unreal/pull/1453))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8460)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.45.0...8.46.0)
+- Bump Android Gradle Plugin from v6.12.0 to v6.14.0 ([#1452](https://github.com/getsentry/sentry-unreal/pull/1452), [#1460](https://github.com/getsentry/sentry-unreal/pull/1460))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6140)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.12.0...6.14.0)
+- Bump Java SDK from v8.45.0 to v8.47.0 ([#1453](https://github.com/getsentry/sentry-unreal/pull/1453), [#1461](https://github.com/getsentry/sentry-unreal/pull/1461))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8470)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.45.0...8.47.0)
 - Bump CLI from v3.5.1 to v3.6.0 ([#1454](https://github.com/getsentry/sentry-unreal/pull/1454))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#360)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.5.1...3.6.0)
+- Bump Cocoa SDK from v9.19.0 to v9.19.1 ([#1459](https://github.com/getsentry/sentry-unreal/pull/1459))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9191)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.19.0...9.19.1)
+- Bump Native SDK from v0.15.2 to v0.15.3 ([#1465](https://github.com/getsentry/sentry-unreal/pull/1465))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0153)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.2...0.15.3)
 
 ## 1.15.0
 

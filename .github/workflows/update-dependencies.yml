@@ -11,51 +11,71 @@ on:
   # Allow a manual trigger to be able to run the update when there are new dependencies.
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+env:
+  CI_DEPLOY_KEY: ${{ secrets.CI_DEPLOY_KEY }}
+
 jobs:
   native:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@1949ea01ec2da6139d1bcc306c372e6aea76fb72 # v2
-    with:
-      path: modules/sentry-native
-      name: Native SDK
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+        with:
+          path: modules/sentry-native
+          name: Native SDK
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
 
   java:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@1949ea01ec2da6139d1bcc306c372e6aea76fb72 # v2
-    with:
-      path: modules/sentry-java
-      name: Java SDK
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+        with:
+          path: modules/sentry-java
+          name: Java SDK
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
 
   cocoa:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@1949ea01ec2da6139d1bcc306c372e6aea76fb72 # v2
-    with:
-      path: modules/sentry-cocoa.properties
-      name: Cocoa SDK
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+        with:
+          path: modules/sentry-cocoa.properties
+          name: Cocoa SDK
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
 
   crash-reporter:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@1949ea01ec2da6139d1bcc306c372e6aea76fb72 # v2
-    with:
-      path: modules/sentry-crash-reporter.properties
-      name: Crash Reporter
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+        with:
+          path: modules/sentry-crash-reporter.properties
+          name: Crash Reporter
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
 
   cli:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@1949ea01ec2da6139d1bcc306c372e6aea76fb72 # v2
-    with:
-      path: plugin-dev/sentry-cli.properties
-      name: CLI
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+        with:
+          path: plugin-dev/sentry-cli.properties
+          name: CLI
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
 
   android-gradle-plugin:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@1949ea01ec2da6139d1bcc306c372e6aea76fb72 # v2
-    with:
-      path: scripts/update-android-gradle-plugin.sh
-      name: Android Gradle Plugin
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+        with:
+          path: scripts/update-android-gradle-plugin.sh
+          name: Android Gradle Plugin
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
