@@ -273,6 +273,22 @@ jobs:
     with:
       unreal-version: ${{ matrix.unreal }}
 
+  # Unlike Linux/Windows/Android which use pre-baked Docker images, the macOS job downloads
+  # a pre-built engine archive (UE_MAC_DOWNLOAD_LINK repository setting) onto a GitHub-hosted
+  # runner, so it covers only the engine version stored in that archive.
+  test-macos:
+    needs: [package-preparation]
+    name: macOS UE ${{ matrix.unreal }}
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        # Must match the engine version of the archive behind UE_MAC_DOWNLOAD_LINK
+        unreal: ['5.8']
+    uses: ./.github/workflows/test-macos.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
   test-android:
     needs: [package-preparation, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
