@@ -278,7 +278,7 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 
 	// If the first frame arrives in the device's native (transposed) dimensions
 	// swap them so the video is written with the correct resolution from the start
-	if (!ShouldSwapDimensions(ResourceWidth, ResourceHeight))
+	if (ShouldSwapDimensions(ResourceWidth, ResourceHeight))
 	{
 		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame is %ux%u but the app runs in %s orientation; opening the encoder with swapped dimensions."),
 			ResourceWidth, ResourceHeight, ResourceHeight > ResourceWidth ? TEXT("landscape") : TEXT("portrait"));
