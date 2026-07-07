@@ -172,15 +172,26 @@ jobs:
             -archive
           # Run automation tests with the console binary (the GUI UnrealEditor binary
           # hangs at startup on the runner) and mirror the log to stdout so progress is
-          # visible in the CI console. A second watchdog kills the editor if it hangs
-          # at startup without ever writing its log.
+          # visible in the CI console. NoSound: the virtualized runner has no audio
+          # device and CoreAudio mixer initialization hangs indefinitely without it.
+          # A second watchdog kills the editor if its log stops growing for 10 minutes
+          # (startup hang, modal dialog, or a deadlocked test).
           TEST_LOG="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs/AutomationTests.log"
           (
-            for _ in $(seq 1 40); do
+            last_size=0
+            stall=0
+            while true; do
               sleep 15
-              [ -s "$TEST_LOG" ] && exit 0
+              size="$(stat -f%z "$TEST_LOG" 2>/dev/null || echo 0)"
+              if [ "$size" != "$last_size" ]; then
+                last_size="$size"
+                stall=0
+                continue
+              fi
+              stall=$((stall + 15))
+              [ "$stall" -ge 600 ] && break
             done
-            echo "::error::Automation test log is still empty after 10 minutes - the editor is hung at startup; collecting diagnostics"
+            echo "::error::Automation test log has not grown for 10 minutes - the editor appears hung; collecting diagnostics"
             DIAG_DIR="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs"
             mkdir -p "$DIAG_DIR"
             ps auxww > "$DIAG_DIR/test-watchdog-ps.txt" 2>&1 || true
@@ -205,6 +216,7 @@ jobs:
             -NoPause \
             -NoSplash \
             -NullRHI \
+            -NoSound \
             -SkipMinSpecCheck
 
       - name: Check for DDC content
@@ -319,11 +331,20 @@ jobs:
           # See the automation test run notes in the Cocoa step above
           TEST_LOG="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs/AutomationTests-Native.log"
           (
-            for _ in $(seq 1 40); do
+            last_size=0
+            stall=0
+            while true; do
               sleep 15
-              [ -s "$TEST_LOG" ] && exit 0
+              size="$(stat -f%z "$TEST_LOG" 2>/dev/null || echo 0)"
+              if [ "$size" != "$last_size" ]; then
+                last_size="$size"
+                stall=0
+                continue
+              fi
+              stall=$((stall + 15))
+              [ "$stall" -ge 600 ] && break
             done
-            echo "::error::Automation test log is still empty after 10 minutes - the editor is hung at startup; collecting diagnostics"
+            echo "::error::Automation test log has not grown for 10 minutes - the editor appears hung; collecting diagnostics"
             DIAG_DIR="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs"
             mkdir -p "$DIAG_DIR"
             ps auxww > "$DIAG_DIR/test-watchdog-ps.txt" 2>&1 || true
@@ -348,6 +369,7 @@ jobs:
             -NoPause \
             -NoSplash \
             -NullRHI \
+            -NoSound \
             -SkipMinSpecCheck
 
       # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
