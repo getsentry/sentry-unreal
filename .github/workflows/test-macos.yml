@@ -154,11 +154,15 @@ jobs:
           ) &
           COOK_WATCHDOG_PID=$!
           trap 'kill $COOK_LOG_TAIL_PID $COOK_WATCHDOG_PID 2>/dev/null || true' EXIT
+          # skipminspeccheck: GitHub mac runners are VMs (hw.model=VirtualMac2,1) that fail
+          # the editor's min-spec hardware check; without the flag the editor blocks forever
+          # on a modal "Run Anyway" alert before writing any log output
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
             -platform=Mac \
             -UBTArgs="-AllCores" \
+            -AdditionalCookerOptions="-skipminspeccheck" \
             -nop4 \
             -cook \
             -iterate \
@@ -177,7 +181,8 @@ jobs:
             -Unattended \
             -NoPause \
             -NoSplash \
-            -NullRHI
+            -NullRHI \
+            -SkipMinSpecCheck
 
       - name: Check for DDC content
         id: ddc-exists
@@ -271,11 +276,15 @@ jobs:
           ) &
           COOK_WATCHDOG_PID=$!
           trap 'kill $COOK_LOG_TAIL_PID $COOK_WATCHDOG_PID 2>/dev/null || true' EXIT
+          # skipminspeccheck: GitHub mac runners are VMs (hw.model=VirtualMac2,1) that fail
+          # the editor's min-spec hardware check; without the flag the editor blocks forever
+          # on a modal "Run Anyway" alert before writing any log output
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds-Native" \
             -platform=Mac \
             -UBTArgs="-AllCores" \
+            -AdditionalCookerOptions="-skipminspeccheck" \
             -nop4 \
             -cook \
             -iterate \
@@ -294,7 +303,8 @@ jobs:
             -Unattended \
             -NoPause \
             -NoSplash \
-            -NullRHI
+            -NullRHI \
+            -SkipMinSpecCheck
 
       # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
       - name: Collect native sample test info
