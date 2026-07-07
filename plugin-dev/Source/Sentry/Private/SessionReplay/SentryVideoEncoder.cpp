@@ -8,6 +8,7 @@
 #include "SentrySessionReplayRecorder.h"
 
 #include "HAL/Event.h"
+#include "HAL/PlatformMisc.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/ScopeLock.h"
 #include "RHI.h"
@@ -27,6 +28,9 @@ FSentryVideoEncoder::FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorde
 	, BitrateBps(InBitrateKbps * 1000)
 	, FragmentSeconds(InFragmentSeconds)
 {
+#if PLATFORM_IOS
+	ExpectedOrientation = FPlatformMisc::GetDeviceOrientation();
+#endif
 }
 
 FSentryVideoEncoder::~FSentryVideoEncoder()
@@ -175,7 +179,7 @@ uint32 FSentryVideoEncoder::Run()
 			}
 
 			// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 			static constexpr double SendTimestampScale = 1'000'000.0;
 #else
 			static constexpr double SendTimestampScale = 1'000.0;
@@ -184,8 +188,8 @@ uint32 FSentryVideoEncoder::Run()
 			const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
 			const double ScaledTimestamp = TimestampSeconds * SendTimestampScale;
 
-#if PLATFORM_MAC
-			// Restart the encoder every hour of recording. On Mac this stays well clear of the
+#if PLATFORM_APPLE
+			// Restart the encoder every hour of recording. On Apple platforms this stays well clear of the
 			// uint32-microseconds wrap at ~71 min which would otherwise feed VT a backward PTS
 			// and corrupt all subsequent fragments. On Windows the natural wrap is at ~49 days
 			// so realistically periodic refresh of encoder state won't be needed there
@@ -237,11 +241,33 @@ uint32 FSentryVideoEncoder::Run()
 	return 0;
 }
 
+bool FSentryVideoEncoder::ShouldSwapDimensions(uint32 ResourceWidth, uint32 ResourceHeight) const
+{
+	switch (ExpectedOrientation)
+	{
+	case EDeviceScreenOrientation::Portrait:
+	case EDeviceScreenOrientation::PortraitUpsideDown:
+		return ResourceWidth > ResourceHeight;
+	case EDeviceScreenOrientation::LandscapeLeft:
+	case EDeviceScreenOrientation::LandscapeRight:
+		return ResourceHeight > ResourceWidth;
+	default:
+		return false;
+	}
+}
+
 bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight)
 {
 	if (bEncoderOpen)
 	{
-		if ((ResourceWidth != Width || ResourceHeight != Height) && !bResolutionChanged)
+		const bool bSameSize = ResourceWidth == Width && ResourceHeight == Height;
+
+		// Transposed frames are expected only when orientation tracking is active (iOS);
+		// elsewhere a transposed size is a genuine resolution change
+		const bool bSameTransposedSize = ExpectedOrientation != EDeviceScreenOrientation::Unknown &&
+										 ResourceWidth == Height && ResourceHeight == Width;
+
+		if (!bSameSize && !bSameTransposedSize && !bResolutionChanged)
 		{
 			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size and may be cropped or black."),
 				Width, Height, ResourceWidth, ResourceHeight);
@@ -253,6 +279,15 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	if (ResourceWidth == 0 || ResourceHeight == 0)
 	{
 		return false;
+	}
+
+	// If the first frame arrives in the device's native (transposed) dimensions
+	// swap them so the video is written with the correct resolution from the start
+	if (ShouldSwapDimensions(ResourceWidth, ResourceHeight))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame is %ux%u but the app runs in %s orientation; opening the encoder with swapped dimensions."),
+			ResourceWidth, ResourceHeight, ResourceHeight > ResourceWidth ? TEXT("landscape") : TEXT("portrait"));
+		Swap(ResourceWidth, ResourceHeight);
 	}
 
 	FVideoEncoderConfigH264 Config;
@@ -270,7 +305,7 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	Config.bFillData = 0;
 	Config.MultipassMode = EMultipassMode::Disabled;
 
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 	// Work around a VT bug where H.264 Auto maps to a null EntropyCodingMode
 	// causing a crash in CFStringGetLength. Use CABAC instead (supported by Main/High profiles)
 	Config.EntropyCodingMode = EH264EntropyCodingMode::CABAC;
@@ -393,7 +428,7 @@ void FSentryVideoEncoder::DrainPackets()
 		// when the source renders below the configured target rate). A skipped
 		// packet never updates the marker, so its interval folds into the next
 		// sample. The first sample falls back to a nominal 1/Framerate
-#if PLATFORM_MAC
+#if PLATFORM_APPLE
 		const uint32 PacketTimestampMs = static_cast<uint32>(FPlatformTime::ToMilliseconds64(Packet.Timestamp));
 #else
 		const uint32 PacketTimestampMs = static_cast<uint32>(Packet.Timestamp);

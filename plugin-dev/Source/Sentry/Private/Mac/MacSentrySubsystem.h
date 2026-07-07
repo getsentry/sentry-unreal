@@ -31,10 +31,6 @@ protected:
 
 #include "Apple/AppleSentrySubsystem.h"
 
-#ifdef USE_SENTRY_SESSION_REPLAY
-#include "SessionReplay/SentrySessionReplayRecorder.h"
-#endif
-
 class FMacSentrySubsystem : public FAppleSentrySubsystem
 {
 public:
@@ -53,14 +49,6 @@ protected:
 
 private:
 	FDelegateHandle OnHandleSystemErrorDelegateHandle;
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-	FString GetReplayPath() const;
-
-	FString SessionReplayId;
-
-	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
-#endif
 };
 
 #endif

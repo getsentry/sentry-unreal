@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add experimental session replay capturing on iOS (UE 5.8+) ([#1462](https://github.com/getsentry/sentry-unreal/pull/1462))
 - Add integration with Session Replay product for native platforms ([#1445](https://github.com/getsentry/sentry-unreal/pull/1445))
 
 ### Fixes

@@ -6,6 +6,10 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
+#ifdef USE_SENTRY_SESSION_REPLAY
+#include "SessionReplay/SentrySessionReplayRecorder.h"
+#endif
+
 class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
@@ -80,6 +84,15 @@ protected:
 	int32 maxAttachmentSize = 0;
 
 	FString PrevSessionReplayPath;
+
+private:
+#ifdef USE_SENTRY_SESSION_REPLAY
+	FString GetReplayPath() const;
+
+	FString SessionReplayId;
+
+	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
+#endif
 };
 
 #endif // !USE_SENTRY_NATIVE

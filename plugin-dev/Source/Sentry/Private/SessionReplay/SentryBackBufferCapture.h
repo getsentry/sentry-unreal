@@ -28,9 +28,9 @@ class SWindow;
  *   2. AddDrawTexturePass scratch -> a BGRA8 destination. When the scratch
  *      format is already BGRA8 this stays a hardware copy; otherwise the
  *      engine's built-in pixel-shader path converts HDR/10-bit to BGRA8.
- *      Destination is the encoder pool slot on Windows; on Mac it's the
+ *      Destination is the encoder pool slot on Windows; on Apple platforms it's the
  *      "converted" texture because Metal forbids RenderTargetable | CPUReadback.
- *   3. Mac only: hardware-copy converted -> encoder pool slot (CPUReadback BGRA8).
+ *   3. Apple only: hardware-copy converted -> encoder pool slot (CPUReadback BGRA8).
  * The pool slot is then handed to the encoder.
  */
 class FSentryBackBufferCapture
@@ -94,7 +94,7 @@ private:
 	// don't carry the SRV flag, so they can't be sampled in a shader directly
 	FCachedTexture Scratch;
 
-	// BGRA8 RenderTargetable texture. Used on Mac as the draw pass output
+	// BGRA8 RenderTargetable texture. Used on Apple platforms as the draw pass output
 	// before the final hardware copy into the CPUReadback EncoderPool slot
 	FCachedTexture Converted;
 
