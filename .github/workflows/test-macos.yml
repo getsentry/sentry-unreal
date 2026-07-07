@@ -124,7 +124,39 @@ jobs:
             exec tail -n +1 -f "$f"
           ) &
           COOK_LOG_TAIL_PID=$!
-          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
+          # Watchdog: a healthy cooker writes LogInit output within seconds of its log
+          # file appearing. If the log is still empty after 10 minutes the editor is hung
+          # at startup - capture diagnostics (thread sample, open files, Gatekeeper/TCC
+          # activity) into Saved/Logs (picked up by the test report artifact) and kill
+          # the editor so the job fails fast with data instead of burning the step timeout.
+          DIAG_DIR="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs"
+          (
+            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            f="$baseline"
+            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
+              sleep 15
+              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            done
+            for _ in $(seq 1 40); do
+              sleep 15
+              [ -s "$f" ] && exit 0
+            done
+            echo "::error::Cook log is still empty after 10 minutes - the cooker is hung at startup; collecting diagnostics"
+            mkdir -p "$DIAG_DIR"
+            ps auxww > "$DIAG_DIR/cook-watchdog-ps.txt" 2>&1 || true
+            PID="$(pgrep -f UnrealEditor-Cmd | head -n 1)"
+            if [ -n "$PID" ]; then
+              sample "$PID" 10 -file "$DIAG_DIR/cook-editor-sample.txt" 2>&1 \
+                || sudo spindump "$PID" 10 -stdout > "$DIAG_DIR/cook-editor-spindump.txt" 2>&1 \
+                || true
+              lsof -p "$PID" > "$DIAG_DIR/cook-editor-lsof.txt" 2>&1 || true
+            fi
+            log show --last 30m --predicate 'process IN {"syspolicyd","amfid","tccd","sandboxd","ReportCrash"}' \
+              > "$DIAG_DIR/cook-system-log.txt" 2>&1 || true
+            pkill -9 -f UnrealEditor-Cmd || true
+          ) &
+          COOK_WATCHDOG_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID $COOK_WATCHDOG_PID 2>/dev/null || true' EXIT
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
@@ -209,7 +241,39 @@ jobs:
             exec tail -n +1 -f "$f"
           ) &
           COOK_LOG_TAIL_PID=$!
-          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
+          # Watchdog: a healthy cooker writes LogInit output within seconds of its log
+          # file appearing. If the log is still empty after 10 minutes the editor is hung
+          # at startup - capture diagnostics (thread sample, open files, Gatekeeper/TCC
+          # activity) into Saved/Logs (picked up by the test report artifact) and kill
+          # the editor so the job fails fast with data instead of burning the step timeout.
+          DIAG_DIR="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs"
+          (
+            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            f="$baseline"
+            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
+              sleep 15
+              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            done
+            for _ in $(seq 1 40); do
+              sleep 15
+              [ -s "$f" ] && exit 0
+            done
+            echo "::error::Cook log is still empty after 10 minutes - the cooker is hung at startup; collecting diagnostics"
+            mkdir -p "$DIAG_DIR"
+            ps auxww > "$DIAG_DIR/cook-watchdog-ps.txt" 2>&1 || true
+            PID="$(pgrep -f UnrealEditor-Cmd | head -n 1)"
+            if [ -n "$PID" ]; then
+              sample "$PID" 10 -file "$DIAG_DIR/cook-editor-sample.txt" 2>&1 \
+                || sudo spindump "$PID" 10 -stdout > "$DIAG_DIR/cook-editor-spindump.txt" 2>&1 \
+                || true
+              lsof -p "$PID" > "$DIAG_DIR/cook-editor-lsof.txt" 2>&1 || true
+            fi
+            log show --last 30m --predicate 'process IN {"syspolicyd","amfid","tccd","sandboxd","ReportCrash"}' \
+              > "$DIAG_DIR/cook-system-log.txt" 2>&1 || true
+            pkill -9 -f UnrealEditor-Cmd || true
+          ) &
+          COOK_WATCHDOG_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID $COOK_WATCHDOG_PID 2>/dev/null || true' EXIT
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds-Native" \
