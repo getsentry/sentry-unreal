@@ -65,16 +65,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 
 	if (settings->AttachSessionReplay)
 	{
-		// Capture the previous run's replay path before starting the recorder to
-		// avoid a race where onLastRunStatusDetermined picks up the current session's MP4
-		prevSessionReplayPath = GetLatestSessionReplay();
-		if (prevSessionReplayPath.IsEmpty())
+		// Capture the previous run's replay paths before starting the recorder to
+		// avoid a race where onLastRunStatusDetermined picks up the current session's files
+		if (!GetLatestSessionReplay(prevSessionReplayPath, prevSessionReplaySidecarPath))
 		{
 			UE_LOG(LogSentrySdk, Log, TEXT("No session replays from the previous session were found."));
-		}
-		else
-		{
-			prevSessionReplaySidecarPath = FPaths::ChangeExtension(prevSessionReplayPath, TEXT("json"));
 		}
 	}
 
@@ -106,11 +101,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 				{
 					// No crash to attach to — drop the previous run's replay files so they
 					// don't linger and confuse the next session's "latest" detection
-					if (!prevSessionReplayPath.IsEmpty() && FPaths::FileExists(prevSessionReplayPath))
+					if (FPaths::FileExists(prevSessionReplayPath))
 					{
 						IFileManager::Get().Delete(*prevSessionReplayPath);
 					}
-					if (!prevSessionReplaySidecarPath.IsEmpty() && FPaths::FileExists(prevSessionReplaySidecarPath))
+					if (FPaths::FileExists(prevSessionReplaySidecarPath))
 					{
 						IFileManager::Get().Delete(*prevSessionReplaySidecarPath);
 					}
@@ -130,17 +125,21 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 				}
 				if (settings->AttachSessionReplay)
 				{
-					if (!prevSessionReplayPath.IsEmpty() && FPaths::FileExists(prevSessionReplayPath))
-					{
-						// Send the structured replay envelope first since the attachment upload below deletes the video file
-						FAppleSentryReplayEnvelope::CaptureForCrashEvent(event, prevSessionReplayPath, prevSessionReplaySidecarPath);
-					}
-
 					// If a replay was captured during the previous app run upload it to Sentry.
 					UploadSessionReplayForEvent(MakeShareable(new FAppleSentryId(event.eventId)), prevSessionReplayPath);
 
-					// Clean up the metadata sidecar accompanying the replay video
-					if (!prevSessionReplaySidecarPath.IsEmpty() && FPaths::FileExists(prevSessionReplaySidecarPath))
+					if (FPaths::FileExists(prevSessionReplayPath) && FPaths::FileExists(prevSessionReplaySidecarPath))
+					{
+						// Send the structured replay envelope for the crash.
+						FAppleSentryReplayEnvelope::CaptureForCrashEvent(event, prevSessionReplayPath, prevSessionReplaySidecarPath);
+					}
+
+					// Clean up the replay files processed above.
+					if (FPaths::FileExists(prevSessionReplayPath))
+					{
+						IFileManager::Get().Delete(*prevSessionReplayPath);
+					}
+					if (FPaths::FileExists(prevSessionReplaySidecarPath))
 					{
 						IFileManager::Get().Delete(*prevSessionReplaySidecarPath);
 					}
@@ -788,7 +787,7 @@ void FAppleSentrySubsystem::UploadSessionReplayForEvent(TSharedPtr<ISentryId> ev
 		return;
 	}
 
-	UploadAttachmentForEvent(eventId, replayPath, TEXT("session-replay.mp4"), true);
+	UploadAttachmentForEvent(eventId, replayPath, TEXT("session-replay.mp4"), false);
 }
 
 FString FAppleSentrySubsystem::GetScreenshotPath() const
@@ -824,32 +823,59 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 	return Screenshots[0];
 }
 
-FString FAppleSentrySubsystem::GetLatestSessionReplay() const
+bool FAppleSentrySubsystem::GetLatestSessionReplay(FString& OutReplayPath, FString& OutSidecarPath) const
 {
 	const FString& ReplaysDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"));
 
-	TArray<FString> Replays;
-	IFileManager::Get().FindFiles(Replays, *ReplaysDir, TEXT("*.mp4"));
-
-	if (Replays.Num() == 0)
+	auto FindLatestFile = [&ReplaysDir](const TCHAR* Pattern) -> FString
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("There are no session replays found."));
-		return FString("");
+		TArray<FString> Files;
+		IFileManager::Get().FindFiles(Files, *ReplaysDir, Pattern);
+
+		if (Files.Num() == 0)
+		{
+			return FString();
+		}
+
+		for (int i = 0; i < Files.Num(); ++i)
+		{
+			Files[i] = ReplaysDir / Files[i];
+		}
+
+		Files.Sort([](const FString& A, const FString& B)
+		{
+			const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
+			const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
+			return TimestampB < TimestampA;
+		});
+
+		return Files[0];
+	};
+
+	const FString LatestReplay = FindLatestFile(TEXT("*.mp4"));
+	if (LatestReplay.IsEmpty())
+	{
+		return false;
 	}
 
-	for (int i = 0; i < Replays.Num(); ++i)
+	const FString LatestSidecar = FindLatestFile(TEXT("*.json"));
+	if (LatestSidecar.IsEmpty())
 	{
-		Replays[i] = ReplaysDir / Replays[i];
+		UE_LOG(LogSentrySdk, Warning, TEXT("There is no metadata sidecar accompanying the latest session replay."));
+		return false;
 	}
 
-	Replays.Sort([](const FString& A, const FString& B)
+	// The metadata sidecar is usable only if it belongs to the same replay as the video file
+	if (FPaths::GetBaseFilename(LatestSidecar) != FPaths::GetBaseFilename(LatestReplay))
 	{
-		const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
-		const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
-		return TimestampB < TimestampA;
-	});
+		UE_LOG(LogSentrySdk, Warning, TEXT("The latest metadata sidecar doesn't match the latest session replay."));
+		return false;
+	}
 
-	return Replays[0];
+	OutReplayPath = LatestReplay;
+	OutSidecarPath = LatestSidecar;
+
+	return true;
 }
 
 #ifdef USE_SENTRY_SESSION_REPLAY

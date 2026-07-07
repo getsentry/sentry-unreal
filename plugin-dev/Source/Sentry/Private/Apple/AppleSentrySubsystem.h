@@ -74,7 +74,7 @@ protected:
 	virtual FString GetLatestScreenshot() const;
 	virtual FString GetGameLogPath() const { return FString(); };
 	virtual FString GetLatestGameLog() const { return FString(); }
-	virtual FString GetLatestSessionReplay() const;
+	virtual bool GetLatestSessionReplay(FString& OutReplayPath, FString& OutSidecarPath) const;
 
 protected:
 	bool isScreenshotAttachmentEnabled = false;
