@@ -83,8 +83,6 @@ protected:
 
 	int32 maxAttachmentSize = 0;
 
-	FString PrevSessionReplayPath;
-
 private:
 #ifdef USE_SENTRY_SESSION_REPLAY
 	FString GetReplayPath() const;
