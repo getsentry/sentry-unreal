@@ -259,10 +259,17 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 #ifdef USE_SENTRY_SESSION_REPLAY
 		if (settings->AttachSessionReplay)
 		{
+			SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
+
 			SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
-			if (!SessionReplay->Initialize(settings, GetReplayPath()))
+			if (SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
+			{
+				SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
+			}
+			else
 			{
 				SessionReplay.Reset();
+				SessionReplayId.Reset();
 			}
 		}
 #endif
