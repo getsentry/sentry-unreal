@@ -289,6 +289,21 @@ jobs:
     with:
       unreal-version: ${{ matrix.unreal }}
 
+  integration-test-macos:
+    needs: [test-macos]
+    name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        # Must match the engine version of the archive behind UE_MAC_DOWNLOAD_LINK
+        unreal: ['5.8']
+        backend: [cocoa, native]
+    uses: ./.github/workflows/integration-test-macos.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+      backend: ${{ matrix.backend }}
+
   # test-android:
   #   needs: [package-preparation, generate-test-matrix]
   #   name: Android UE ${{ matrix.unreal }}
