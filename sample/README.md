@@ -44,6 +44,7 @@ Here's a breakdown of the important sample project files and folders:
 │       │   ├── 📄 SentryMessageTest.cpp/.h              # Message capture with scope customization
 │       │   ├── 📄 SentryLogTest.cpp/.h                  # Structured log capture
 │       │   ├── 📄 SentryMetricTest.cpp/.h               # Counter/distribution/gauge metrics
+│       │   ├── 📄 SentryReplayTest.cpp/.h               # Session Replay envelope capture
 │       │   ├── 📄 SentryTracingTest.cpp/.h              # Transactions and spans
 │       │   ├── 📄 SentryEnsureTest.cpp/.h               # Non-fatal ensure() capture
 │       │   ├── 📄 SentryHangTest.cpp/.h                 # Application hang detection
