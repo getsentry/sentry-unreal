@@ -245,7 +245,7 @@ FTextureRHIRef FSentryBackBufferCapture::AcquireCachedTexture_RenderThread(FCach
 											   .SetFormat(Format)
 											   .SetFlags(Flags)
 											   .SetInitialState(InitialState);
-		Cache.Texture = RHICreateTexture(Desc);
+		Cache.Texture = FRHICommandListImmediate::Get().CreateTexture(Desc);
 	}
 
 	return Cache.Texture;
@@ -288,7 +288,7 @@ FTextureRHIRef FSentryBackBufferCapture::AcquireTexturePoolSlot_RenderThread(FCa
 											   .SetFormat(Format)
 											   .SetFlags(Flags)
 											   .SetInitialState(InitialState);
-		*FreeSlot = RHICreateTexture(Desc);
+		*FreeSlot = FRHICommandListImmediate::Get().CreateTexture(Desc);
 	}
 
 	return *FreeSlot;
