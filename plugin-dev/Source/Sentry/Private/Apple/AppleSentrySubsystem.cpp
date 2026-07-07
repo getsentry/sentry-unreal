@@ -831,8 +831,7 @@ FString FAppleSentrySubsystem::GetLatestSessionReplay() const
 #ifdef USE_SENTRY_SESSION_REPLAY
 FString FAppleSentrySubsystem::GetReplayPath() const
 {
-	const FString ReplayId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens).ToLower();
-	const FString ReplayPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"), FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
+	const FString ReplayPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"), FString::Printf(TEXT("replay-%s.mp4"), *SessionReplayId));
 	return FPaths::ConvertRelativePathToFull(ReplayPath);
 }
 #endif
