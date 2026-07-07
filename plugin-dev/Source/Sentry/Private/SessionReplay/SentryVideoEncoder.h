@@ -46,6 +46,9 @@ public:
 
 	uint32 GetFramerate() const { return Framerate; }
 
+	uint32 GetWidth() const { return Width; }
+	uint32 GetHeight() const { return Height; }
+
 	bool IsEncodingDisabled() const { return bEncodingDisabled; }
 
 	// FRunnable
@@ -65,6 +68,9 @@ private:
 
 	// Pulls available packets from the encoder, converts them to AVCC samples and emits a fragment at each keyframe boundary
 	void DrainPackets();
+
+	// Builds a fragment from the accumulated samples and hands it to the recorder
+	void FlushCurrentFragment();
 
 	// Tears down the current encoder and resets per-encoder state so the next frame
 	// re-baselines against a fresh VT timestamp origin and republishes a new init

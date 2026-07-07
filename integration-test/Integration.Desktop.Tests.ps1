@@ -497,6 +497,114 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
+    Context "Session Replay Tests" -Skip:($Platform -eq 'MacOS' -and -not $script:IsNativeBackend) {
+        BeforeAll {
+            $script:ReplayResult = $null
+            $script:ReplayCrashEvent = $null
+            $script:ReplayEvent = $null
+            $script:ReplayId = $null
+
+            Write-Host "Running session replay crash test..." -ForegroundColor Yellow
+
+            $appArgs = @(
+                '-nullrhi',     # Runs without graphics rendering (headless mode)
+                '-unattended',  # Disables user prompts and interactive dialogs
+                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
+                '-nosplash'     # Prevents splash screen and dialogs
+            )
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=True"
+
+            # -replay-capture stages a replay clip on disk and crashes; the crash backend
+            # is expected to send it as a replay_video envelope alongside the crash event
+            $script:ReplayResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-replay-capture') + $appArgs) -join ' ')
+
+            # With the crashpad/breakpad/inproc backends the replay envelope is persisted
+            # to the crashed run's directory and delivered on the next launch, so relaunch
+            # the app to flush it. The native backend daemon sends it same-session.
+            if (-not $script:IsNativeBackend) {
+                $flushArgs = @('-init-only', '-nullrhi', '-unattended', '-stdout', '-nosplash')
+                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=False"
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($flushArgs -join ' ')
+            }
+
+            Write-Host "Replay crash test executed. Exit code: $($script:ReplayResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse replay ID from output (format: REPLAY_CAPTURED: <replay-id>)
+            $replayLines = @($script:ReplayResult.Output | Where-Object { $_ -match 'REPLAY_CAPTURED: ' })
+            if ($replayLines.Count -gt 0) {
+                $script:ReplayId = ($replayLines[0] -split 'REPLAY_CAPTURED: ')[-1].Trim()
+                Write-Host "Replay ID captured: $($script:ReplayId)" -ForegroundColor Cyan
+            }
+            else {
+                Write-Host "Warning: No REPLAY_CAPTURED line found in output" -ForegroundColor Yellow
+            }
+
+            # Parse event ID from output and fetch the crash event from Sentry (with polling)
+            $eventIds = Get-EventIds -AppOutput $script:ReplayResult.Output -ExpectedCount 1
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                try {
+                    $script:ReplayCrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$($eventIds[0])"
+                    Write-Host "Crash event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch crash event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+
+            # Fetch the replay from Sentry (with polling)
+            if ($script:ReplayId) {
+                try {
+                    $script:ReplayEvent = Get-SentryTestReplay -ReplayId $script:ReplayId
+                    Write-Host "Replay fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch replay from Sentry: $_" -ForegroundColor Red
+                }
+            }
+        }
+
+        It "Should have non-zero exit code" {
+            $script:ReplayResult.ExitCode | Should -Not -Be 0
+        }
+
+        It "Should output replay ID" {
+            $script:ReplayId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should capture crash event in Sentry" {
+            $script:ReplayCrashEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have replay context on crash event matching staged replay" {
+            $script:ReplayCrashEvent.contexts.replay.replay_id | Should -Be $script:ReplayId
+        }
+
+        It "Should capture replay in Sentry" {
+            $script:ReplayEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have matching replay ID" {
+            $script:ReplayEvent.id | Should -Be $script:ReplayId
+        }
+
+        It "Should have single replay segment" {
+            $script:ReplayEvent.count_segments | Should -Be 1
+        }
+
+        It "Should have expected replay duration" {
+            # The staged clip's sidecar claims a 5000 ms duration
+            $script:ReplayEvent.duration | Should -Be 5
+        }
+
+        It "Should have native platform" {
+            $script:ReplayEvent.platform | Should -Be 'native'
+        }
+    }
+
     Context "Message Capture Tests" {
         BeforeAll {
             $script:MessageResult = $null

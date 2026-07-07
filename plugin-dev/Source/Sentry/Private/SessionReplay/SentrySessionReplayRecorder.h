@@ -11,6 +11,8 @@
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
 
+#include "SentryReplayInfo.h"
+
 class FRunnableThread;
 class FEvent;
 class FSentryVideoEncoder;
@@ -36,7 +38,7 @@ public:
 	FSentrySessionReplayRecorder();
 	virtual ~FSentrySessionReplayRecorder() override;
 
-	bool Initialize(const USentrySettings* Settings, const FString& ReplayPath);
+	bool Initialize(const USentrySettings* Settings, const FString& ReplayId, const FString& ReplayPath);
 	void Shutdown();
 
 	bool IsEnabled() const { return bEnabled; }
@@ -46,7 +48,7 @@ public:
 	// Called by the encoder thread when the init segment (ftyp+moov) is ready
 	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
 	// Called by the encoder thread when a fragment (moof+mdat) is complete
-	void OnFragmentReady(TArray<uint8>&& Fragment);
+	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks);
 
 	// FRunnable (rotation thread)
 	virtual bool Init() override;
@@ -58,12 +60,22 @@ private:
 	void DoRotation();
 	bool WriteSnapshot(const TArray<uint8>& Bytes);
 
+	// Assembles the platform-agnostic replay model from the most recent on-disk snapshot
+	FSentryReplayInfo BuildReplayInfo() const;
+
+	// Writes the JSON metadata sidecar next to the mp4 (temp + atomic rename) so the
+	// SDK can build and send the replay envelope outside the crash handler
+	void WriteReplayMetadata();
+
 	bool bEnabled = false;
 	FThreadSafeBool bSnapshotOnDisk;
 	FThreadSafeBool bStopRequested;
 
+	FString ReplayId;
 	FString AttachmentPath;
 	FString TempPath;
+	FString MetadataPath;
+	FString MetadataTempPath;
 
 	float WindowSeconds = 12.0f;
 	float FragmentSeconds = 0.5f;
@@ -74,10 +86,20 @@ private:
 	TUniquePtr<FSentryVideoEncoder> Encoder;
 	TUniquePtr<FSentryBackBufferCapture> Capture;
 
+	struct FFragment
+	{
+		TArray<uint8> Bytes;
+		uint32 FrameCount = 0;
+		uint64 DurationTicks = 0;
+	};
+
 	// Fragment ring + init segment, protected by RingLock
 	FCriticalSection RingLock;
 	TArray<uint8> InitSegment;
-	TRingBuffer<TArray<uint8>> FragmentRing;
+	TRingBuffer<FFragment> FragmentRing;
+
+	int32 LatestFrameCount = 0;
+	int64 LatestDurationMs = 0;
 
 	// Rotation thread
 	FRunnableThread* RotationThread = nullptr;
