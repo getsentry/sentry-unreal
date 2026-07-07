@@ -35,7 +35,8 @@ The SDK currently supports and is tested on the following platforms:
 
 The SDK compiles with three latest engine versions.
 
-Blog posts:
+## Blog Posts
+
 * [Monitor Unreal Engine Game Performance with Application Metrics](https://blog.sentry.io/unreal-engine-performance-metrics/)
 * [Game Console Support GA](https://blog.sentry.io/error-monitoring-and-crash-reporting-for-gaming-consoles/)
 * [Building the Sentry Unreal Engine SDK with GitHub Actions](https://blog.sentry.io/building-the-sentry-unreal-engine-sdk-with-github-actions/)
