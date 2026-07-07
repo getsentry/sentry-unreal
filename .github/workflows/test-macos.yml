@@ -170,14 +170,37 @@ jobs:
             -stage \
             -package \
             -archive
-          EDITOR_BINARY="$UE_ROOT/Engine/Binaries/Mac/UnrealEditor"
-          if [ ! -x "$EDITOR_BINARY" ]; then
-            EDITOR_BINARY="$UE_ROOT/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor"
-          fi
-          "$EDITOR_BINARY" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+          # Run automation tests with the console binary (the GUI UnrealEditor binary
+          # hangs at startup on the runner) and mirror the log to stdout so progress is
+          # visible in the CI console. A second watchdog kills the editor if it hangs
+          # at startup without ever writing its log.
+          TEST_LOG="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs/AutomationTests.log"
+          (
+            for _ in $(seq 1 40); do
+              sleep 15
+              [ -s "$TEST_LOG" ] && exit 0
+            done
+            echo "::error::Automation test log is still empty after 10 minutes - the editor is hung at startup; collecting diagnostics"
+            DIAG_DIR="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs"
+            mkdir -p "$DIAG_DIR"
+            ps auxww > "$DIAG_DIR/test-watchdog-ps.txt" 2>&1 || true
+            PID="$(pgrep -f 'UnrealEditor-Cmd.*SentryPlayground' | head -n 1)"
+            if [ -n "$PID" ]; then
+              sample "$PID" 10 -file "$DIAG_DIR/test-editor-sample.txt" 2>&1 || true
+              lsof -p "$PID" > "$DIAG_DIR/test-editor-lsof.txt" 2>&1 || true
+            fi
+            log show --last 30m --predicate 'process IN {"syspolicyd","amfid","tccd","sandboxd","ReportCrash"}' \
+              > "$DIAG_DIR/test-system-log.txt" 2>&1 || true
+            pkill -9 -f 'UnrealEditor-Cmd.*SentryPlayground' || true
+          ) &
+          TEST_WATCHDOG_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID $COOK_WATCHDOG_PID $TEST_WATCHDOG_PID 2>/dev/null || true' EXIT
+          "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation" \
             -ExecCmds="Automation RunTests Sentry;quit" \
             -TestExit="Automation Test Queue Empty" \
+            -abslog="$TEST_LOG" \
+            -stdout \
             -Unattended \
             -NoPause \
             -NoSplash \
@@ -208,6 +231,7 @@ jobs:
             checkout/sample/Saved/Automation
             checkout/sample/Saved/Logs
             ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
+            ~/Library/Logs/Unreal Engine
 
       - name: Upload sample build (Cocoa)
         if: ${{ success() && steps.run-tests.outcome == 'success' }}
@@ -292,14 +316,34 @@ jobs:
             -stage \
             -package \
             -archive
-          EDITOR_BINARY="$UE_ROOT/Engine/Binaries/Mac/UnrealEditor"
-          if [ ! -x "$EDITOR_BINARY" ]; then
-            EDITOR_BINARY="$UE_ROOT/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor"
-          fi
-          "$EDITOR_BINARY" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+          # See the automation test run notes in the Cocoa step above
+          TEST_LOG="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs/AutomationTests-Native.log"
+          (
+            for _ in $(seq 1 40); do
+              sleep 15
+              [ -s "$TEST_LOG" ] && exit 0
+            done
+            echo "::error::Automation test log is still empty after 10 minutes - the editor is hung at startup; collecting diagnostics"
+            DIAG_DIR="$GITHUB_WORKSPACE/checkout/sample/Saved/Logs"
+            mkdir -p "$DIAG_DIR"
+            ps auxww > "$DIAG_DIR/test-watchdog-ps.txt" 2>&1 || true
+            PID="$(pgrep -f 'UnrealEditor-Cmd.*SentryPlayground' | head -n 1)"
+            if [ -n "$PID" ]; then
+              sample "$PID" 10 -file "$DIAG_DIR/test-editor-sample.txt" 2>&1 || true
+              lsof -p "$PID" > "$DIAG_DIR/test-editor-lsof.txt" 2>&1 || true
+            fi
+            log show --last 30m --predicate 'process IN {"syspolicyd","amfid","tccd","sandboxd","ReportCrash"}' \
+              > "$DIAG_DIR/test-system-log.txt" 2>&1 || true
+            pkill -9 -f 'UnrealEditor-Cmd.*SentryPlayground' || true
+          ) &
+          TEST_WATCHDOG_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID $COOK_WATCHDOG_PID $TEST_WATCHDOG_PID 2>/dev/null || true' EXIT
+          "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation-Native" \
             -ExecCmds="Automation RunTests Sentry;quit" \
             -TestExit="Automation Test Queue Empty" \
+            -abslog="$TEST_LOG" \
+            -stdout \
             -Unattended \
             -NoPause \
             -NoSplash \
@@ -316,6 +360,7 @@ jobs:
             checkout/sample/Saved/Automation-Native
             checkout/sample/Saved/Logs
             ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
+            ~/Library/Logs/Unreal Engine
 
       - name: Upload sample build (Native)
         if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
