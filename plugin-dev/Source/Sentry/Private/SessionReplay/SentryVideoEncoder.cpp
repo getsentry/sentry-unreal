@@ -261,7 +261,12 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 	if (bEncoderOpen)
 	{
 		const bool bSameSize = ResourceWidth == Width && ResourceHeight == Height;
-		const bool bSameTransposedSize = ResourceWidth == Height && ResourceHeight == Width;
+
+		// Transposed frames are expected only when orientation tracking is active (iOS);
+		// elsewhere a transposed size is a genuine resolution change
+		const bool bSameTransposedSize = ExpectedOrientation != EDeviceScreenOrientation::Unknown &&
+			ResourceWidth == Height && ResourceHeight == Width;
+
 		if (!bSameSize && !bSameTransposedSize && !bResolutionChanged)
 		{
 			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size and may be cropped or black."),
