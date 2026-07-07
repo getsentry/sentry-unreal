@@ -265,7 +265,7 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		// Transposed frames are expected only when orientation tracking is active (iOS);
 		// elsewhere a transposed size is a genuine resolution change
 		const bool bSameTransposedSize = ExpectedOrientation != EDeviceScreenOrientation::Unknown &&
-			ResourceWidth == Height && ResourceHeight == Width;
+										 ResourceWidth == Height && ResourceHeight == Width;
 
 		if (!bSameSize && !bSameTransposedSize && !bResolutionChanged)
 		{
