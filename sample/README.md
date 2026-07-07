@@ -44,6 +44,7 @@ Here's a breakdown of the important sample project files and folders:
 │       │   ├── 📄 SentryMessageTest.cpp/.h              # Message capture with scope customization
 │       │   ├── 📄 SentryLogTest.cpp/.h                  # Structured log capture
 │       │   ├── 📄 SentryMetricTest.cpp/.h               # Counter/distribution/gauge metrics
+│       │   ├── 📄 SentryReplayTest.cpp/.h               # Session Replay envelope capture
 │       │   ├── 📄 SentryTracingTest.cpp/.h              # Transactions and spans
 │       │   ├── 📄 SentryEnsureTest.cpp/.h               # Non-fatal ensure() capture
 │       │   ├── 📄 SentryHangTest.cpp/.h                 # Application hang detection
@@ -109,6 +110,7 @@ The following test switches are supported:
 - `-tracing-capture` - capture a transaction/span
 - `-ensure-capture` - trigger a non-fatal `ensure()`
 - `-hang-capture` - simulate an application hang
+- `-replay-capture` - capture session replay clip
 - `-init-only` - initialize the SDK and exit without running a test action
 
 The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.

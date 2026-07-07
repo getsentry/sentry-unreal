@@ -301,12 +301,7 @@ void FSentryVideoEncoder::Restart()
 {
 	DrainPackets();
 
-	if (CurrentSamples.Num() > 0 && bInitSegmentPublished)
-	{
-		TArray<uint8> Frag = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
-		Recorder.OnFragmentReady(MoveTemp(Frag));
-	}
-	CurrentSamples.Reset();
+	FlushCurrentFragment();
 
 	Encoder.Reset();
 
@@ -329,6 +324,22 @@ void FSentryVideoEncoder::Restart()
 		FScopeLock Lock(&QueueLock);
 		PendingQueue.Reset();
 	}
+}
+
+void FSentryVideoEncoder::FlushCurrentFragment()
+{
+	if (CurrentSamples.Num() > 0 && bInitSegmentPublished)
+	{
+		const uint32 FrameCount = static_cast<uint32>(CurrentSamples.Num());
+		uint64 DurationTicks = 0;
+		for (const FSentryH264Sample& Sample : CurrentSamples)
+		{
+			DurationTicks += Sample.Duration;
+		}
+		TArray<uint8> Fragment = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
+		Recorder.OnFragmentReady(MoveTemp(Fragment), FrameCount, DurationTicks);
+	}
+	CurrentSamples.Reset();
 }
 
 void FSentryVideoEncoder::DrainPackets()
@@ -372,9 +383,7 @@ void FSentryVideoEncoder::DrainPackets()
 
 		if (Packet.bIsKeyframe && CurrentSamples.Num() > 0)
 		{
-			TArray<uint8> Frag = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
-			Recorder.OnFragmentReady(MoveTemp(Frag));
-			CurrentSamples.Reset();
+			FlushCurrentFragment();
 		}
 
 		// The encoder echoes back the capture timestamp we passed to SendFrame

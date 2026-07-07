@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add integration with Session Replay product for native platforms ([#1445](https://github.com/getsentry/sentry-unreal/pull/1445))
+
 ### Fixes
 
 - Fix deprecation warnings caused by `RHICreateTexture` usage in UE 5.8 ([#1466](https://github.com/getsentry/sentry-unreal/pull/1466))
