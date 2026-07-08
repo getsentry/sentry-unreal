@@ -30,7 +30,9 @@ constexpr int32 ClipSizeBytes = 64 * 1024;
 // FAppleSentrySubsystem::GetReplayPath (cocoa) and FGenericPlatformSentrySubsystem::GetDatabasePath (sentry-native)
 FString GetReplaysDir(const USentrySettings* Settings)
 {
-#if PLATFORM_MAC
+#if PLATFORM_IOS
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
+#elif PLATFORM_MAC
 	if (!Settings->UseNativeBackend)
 	{
 		return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
