@@ -18,9 +18,6 @@
 namespace
 {
 
-// The `replay_video` envelope item payload is a msgpack map matching the format produced
-// by sentry-cocoa's `SentryMsgPackSerializer` (and sentry-native): keys as str8, values as bin32
-
 void AppendMsgPackString(NSMutableData* data, const char* str)
 {
 	const uint8 header[] = { 0xD9, static_cast<uint8>(strlen(str)) };
@@ -38,8 +35,6 @@ void AppendMsgPackBinary(NSMutableData* data, NSData* payload)
 	[data appendData:payload];
 }
 
-// Crash event data originates from the SentryCrash report and may contain values
-// `NSJSONSerialization` can't handle (e.g. `NSDate`), so it has to be sanitized first
 id SanitizeForJson(id value)
 {
 	if ([value isKindOfClass:[NSDictionary class]])
@@ -117,8 +112,6 @@ NSDictionary* BuildReplayEvent(SentryObjCEvent* event, const FSentryReplayInfo& 
 
 	if (event != nil)
 	{
-		// Copy the crash event's scope data onto the replay so it shares the crash's
-		// context; `error_ids` is deliberately omitted (deprecated in favor of trace ids)
 		if (event.tags)
 			dict[@"tags"] = event.tags;
 		if (event.context)
@@ -141,8 +134,6 @@ NSDictionary* BuildReplayEvent(SentryObjCEvent* event, const FSentryReplayInfo& 
 	return SanitizeForJson(dict);
 }
 
-// The recording payload is a `{"segment_id":N}` header line followed by an rrweb-style
-// list with two entries - a meta event and a video event describing the clip
 NSData* BuildReplayRecording(const FSentryReplayInfo& info, double startSec, uint64 videoSizeBytes)
 {
 	const double timestampMs = startSec * 1000.0;
