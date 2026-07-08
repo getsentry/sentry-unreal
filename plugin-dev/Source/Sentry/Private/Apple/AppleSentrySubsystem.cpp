@@ -827,48 +827,33 @@ bool FAppleSentrySubsystem::GetLatestSessionReplay(FString& OutReplayPath, FStri
 {
 	const FString& ReplaysDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"));
 
-	auto FindLatestFile = [&ReplaysDir](const TCHAR* Pattern) -> FString
-	{
-		TArray<FString> Files;
-		IFileManager::Get().FindFiles(Files, *ReplaysDir, Pattern);
+	TArray<FString> Replays;
+	IFileManager::Get().FindFiles(Replays, *ReplaysDir, TEXT("*.mp4"));
 
-		if (Files.Num() == 0)
-		{
-			return FString();
-		}
-
-		for (int i = 0; i < Files.Num(); ++i)
-		{
-			Files[i] = ReplaysDir / Files[i];
-		}
-
-		Files.Sort([](const FString& A, const FString& B)
-		{
-			const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
-			const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
-			return TimestampB < TimestampA;
-		});
-
-		return Files[0];
-	};
-
-	const FString LatestReplay = FindLatestFile(TEXT("*.mp4"));
-	if (LatestReplay.IsEmpty())
+	if (Replays.Num() == 0)
 	{
 		return false;
 	}
 
-	const FString LatestSidecar = FindLatestFile(TEXT("*.json"));
-	if (LatestSidecar.IsEmpty())
+	for (int i = 0; i < Replays.Num(); ++i)
+	{
+		Replays[i] = ReplaysDir / Replays[i];
+	}
+
+	Replays.Sort([](const FString& A, const FString& B)
+	{
+		const FDateTime TimestampA = IFileManager::Get().GetTimeStamp(*A);
+		const FDateTime TimestampB = IFileManager::Get().GetTimeStamp(*B);
+		return TimestampB < TimestampA;
+	});
+
+	const FString& LatestReplay = Replays[0];
+
+	// The metadata sidecar is written alongside the video file and shares its name
+	const FString LatestSidecar = FPaths::ChangeExtension(LatestReplay, TEXT("json"));
+	if (!FPaths::FileExists(LatestSidecar))
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("There is no metadata sidecar accompanying the latest session replay."));
-		return false;
-	}
-
-	// The metadata sidecar is usable only if it belongs to the same replay as the video file
-	if (FPaths::GetBaseFilename(LatestSidecar) != FPaths::GetBaseFilename(LatestReplay))
-	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("The latest metadata sidecar doesn't match the latest session replay."));
 		return false;
 	}
 
