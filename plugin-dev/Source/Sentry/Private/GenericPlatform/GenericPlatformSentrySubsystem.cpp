@@ -672,6 +672,8 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		if (SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
 		{
 			SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
+			SetAttribute(TEXT("sentry.replay_id"), FSentryVariant(SessionReplayId));
+			SetAttribute(TEXT("sentry._internal.replay_is_buffering"), FSentryVariant(true));
 		}
 		else
 		{
