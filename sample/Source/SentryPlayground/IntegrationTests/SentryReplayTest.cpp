@@ -26,9 +26,17 @@ constexpr int32 ClipFrameRate = 30;
 constexpr int32 ClipFrameCount = ClipDurationMs / 1000 * ClipFrameRate;
 constexpr int32 ClipSizeBytes = 64 * 1024;
 
-// Mirrors FGenericPlatformSentrySubsystem::GetDatabasePath which is not exposed publicly
+// Mirrors the directories the SDK scans for replay files which are not exposed publicly:
+// FAppleSentrySubsystem::GetReplayPath (cocoa) and FGenericPlatformSentrySubsystem::GetDatabasePath (sentry-native)
 FString GetReplaysDir(const USentrySettings* Settings)
 {
+#if PLATFORM_MAC
+	if (!Settings->UseNativeBackend)
+	{
+		return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
+	}
+#endif
+
 	const FString DatabaseParentPath = Settings->DatabaseLocation == ESentryDatabaseLocation::ProjectDirectory
 		? FPaths::ProjectDir()
 		: FPaths::ProjectUserDir();
