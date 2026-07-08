@@ -182,7 +182,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 ### Common Instructions
 
-- Before implementating new plugin features that wrap existing native SDK functionality, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple). Refer to `Native SDK API Lookup Order` in Quick References for where to find SDK APIs.
+- Before implementing new plugin features that wrap existing native SDK functionality, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple). Refer to `Native SDK API Lookup Order` in Quick References for where to find SDK APIs.
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
