@@ -11,6 +11,7 @@
 #include "AppleSentryId.h"
 #include "AppleSentryLog.h"
 #include "AppleSentryMetric.h"
+#include "AppleSentryReplayEnvelope.h"
 #include "AppleSentrySamplingContext.h"
 #include "AppleSentryScope.h"
 #include "AppleSentryTransaction.h"
@@ -59,12 +60,14 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
 	maxAttachmentSize = settings->MaxAttachmentSize;
 
+	FString prevSessionReplayPath;
+	FString prevSessionReplaySidecarPath;
+
 	if (settings->AttachSessionReplay)
 	{
-		// Capture the previous run's replay path before starting the recorder to
-		// avoid a race where onLastRunStatusDetermined picks up the current session's MP4
-		PrevSessionReplayPath = GetLatestSessionReplay();
-		if (PrevSessionReplayPath.IsEmpty())
+		// Capture the previous run's replay paths before starting the recorder to
+		// avoid a race where onLastRunStatusDetermined picks up the current session's files
+		if (!GetLatestSessionReplay(prevSessionReplayPath, prevSessionReplaySidecarPath))
 		{
 			UE_LOG(LogSentrySdk, Log, TEXT("No session replays from the previous session were found."));
 		}
@@ -96,11 +99,15 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.onLastRunStatusDetermined = ^(SentryObjCLastRunStatus status, SentryObjCEvent* event) {
 				if (status != SentryObjCLastRunStatusDidCrash || event == nil)
 				{
-					// No crash to attach to — drop the previous run's replay file so it
-					// doesn't linger and confuse the next session's "latest" detection
-					if (!PrevSessionReplayPath.IsEmpty() && FPaths::FileExists(PrevSessionReplayPath))
+					// No crash to attach to — drop the previous run's replay files so they
+					// don't linger and confuse the next session's "latest" detection
+					if (FPaths::FileExists(prevSessionReplayPath))
 					{
-						IFileManager::Get().Delete(*PrevSessionReplayPath);
+						IFileManager::Get().Delete(*prevSessionReplayPath);
+					}
+					if (FPaths::FileExists(prevSessionReplaySidecarPath))
+					{
+						IFileManager::Get().Delete(*prevSessionReplaySidecarPath);
 					}
 					return;
 				}
@@ -119,7 +126,23 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 				if (settings->AttachSessionReplay)
 				{
 					// If a replay was captured during the previous app run upload it to Sentry.
-					UploadSessionReplayForEvent(MakeShareable(new FAppleSentryId(event.eventId)), PrevSessionReplayPath);
+					UploadSessionReplayForEvent(MakeShareable(new FAppleSentryId(event.eventId)), prevSessionReplayPath);
+
+					if (FPaths::FileExists(prevSessionReplayPath) && FPaths::FileExists(prevSessionReplaySidecarPath))
+					{
+						// Send the structured replay envelope for the crash.
+						FAppleSentryReplayEnvelope::CaptureForCrashEvent(event, prevSessionReplayPath, prevSessionReplaySidecarPath);
+					}
+
+					// Clean up the replay files processed above.
+					if (FPaths::FileExists(prevSessionReplayPath))
+					{
+						IFileManager::Get().Delete(*prevSessionReplayPath);
+					}
+					if (FPaths::FileExists(prevSessionReplaySidecarPath))
+					{
+						IFileManager::Get().Delete(*prevSessionReplaySidecarPath);
+					}
 				}
 			};
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
@@ -764,7 +787,7 @@ void FAppleSentrySubsystem::UploadSessionReplayForEvent(TSharedPtr<ISentryId> ev
 		return;
 	}
 
-	UploadAttachmentForEvent(eventId, replayPath, TEXT("session-replay.mp4"), true);
+	UploadAttachmentForEvent(eventId, replayPath, TEXT("session-replay.mp4"), false);
 }
 
 FString FAppleSentrySubsystem::GetScreenshotPath() const
@@ -800,7 +823,7 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 	return Screenshots[0];
 }
 
-FString FAppleSentrySubsystem::GetLatestSessionReplay() const
+bool FAppleSentrySubsystem::GetLatestSessionReplay(FString& OutReplayPath, FString& OutSidecarPath) const
 {
 	const FString& ReplaysDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"));
 
@@ -809,8 +832,7 @@ FString FAppleSentrySubsystem::GetLatestSessionReplay() const
 
 	if (Replays.Num() == 0)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("There are no session replays found."));
-		return FString("");
+		return false;
 	}
 
 	for (int i = 0; i < Replays.Num(); ++i)
@@ -825,7 +847,20 @@ FString FAppleSentrySubsystem::GetLatestSessionReplay() const
 		return TimestampB < TimestampA;
 	});
 
-	return Replays[0];
+	const FString& LatestReplay = Replays[0];
+
+	// The metadata sidecar is written alongside the video file and shares its name
+	const FString LatestSidecar = FPaths::ChangeExtension(LatestReplay, TEXT("json"));
+	if (!FPaths::FileExists(LatestSidecar))
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("There is no metadata sidecar accompanying the latest session replay."));
+		return false;
+	}
+
+	OutReplayPath = LatestReplay;
+	OutSidecarPath = LatestSidecar;
+
+	return true;
 }
 
 #ifdef USE_SENTRY_SESSION_REPLAY

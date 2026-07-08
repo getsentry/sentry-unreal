@@ -74,7 +74,7 @@ protected:
 	virtual FString GetLatestScreenshot() const;
 	virtual FString GetGameLogPath() const { return FString(); };
 	virtual FString GetLatestGameLog() const { return FString(); }
-	virtual FString GetLatestSessionReplay() const;
+	virtual bool GetLatestSessionReplay(FString& OutReplayPath, FString& OutSidecarPath) const;
 
 protected:
 	bool isScreenshotAttachmentEnabled = false;
@@ -82,8 +82,6 @@ protected:
 	bool isSessionReplayAttachmentEnabled = false;
 
 	int32 maxAttachmentSize = 0;
-
-	FString PrevSessionReplayPath;
 
 private:
 #ifdef USE_SENTRY_SESSION_REPLAY
