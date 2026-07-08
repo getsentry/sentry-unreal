@@ -78,10 +78,21 @@ Execute from the `integration-test/` directory:
 
 ```bash
 cd integration-test
+
+# Desktop (Windows, Linux, macOS)
 pwsh -Command 'Invoke-Pester ./Integration.Desktop.Tests.ps1'
+
+# Android
+pwsh -Command 'Invoke-Pester ./Integration.Android.Tests.ps1'
 ```
 
-Replace the test file name for Android as needed.
+When iterating on a single test, filter by its name instead of rerunning the whole suite:
+
+```bash
+pwsh -Command 'Invoke-Pester ./Integration.Desktop.Tests.ps1 -FullNameFilter "*crash*"'
+```
+
+The full suite can take longer than the default command timeout — run it in the background and monitor its output, or raise the timeout accordingly.
 
 ### 6. Check results
 
