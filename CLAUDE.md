@@ -173,10 +173,9 @@ To work with the Unreal project, it has to be properly set up (symlink plugin so
 # Initialize (first-time setup - downloads SDK dependencies via GitHub CLI, CI provides pre-built binaries)
 pwsh ./scripts/init-win.ps1      # Windows
 ./scripts/init.sh                # macOS/Linux
-
-# Build platform SDKs and other dependencies locally (optional - useful when testing unreleased changes)
-pwsh ./scripts/build-deps.ps1 -All
 ```
+
+To build platform SDKs and other dependencies locally (optional - useful when testing unreleased changes), use the `/build-deps` skill.
 
 Supported Unreal Engine versions are listed in `scripts/packaging/engine-versions.txt`. When using an engine built from source, the `.uproject` file will contain a GUID instead of a version number in the `EngineAssociation` field.
 
@@ -204,6 +203,7 @@ Build and test workflows are available as skills:
 - `/ue-build` - Build sample project for a target platform
 - `/ue-unit-test` - Run Sentry unit tests
 - `/ue-integration-test` - Run integration tests
+- `/build-deps` - Build plugin SDK dependencies locally and refresh ThirdParty binaries
 
 ### Security
 
