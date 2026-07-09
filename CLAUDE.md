@@ -288,8 +288,3 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
 - [sentry-docs](https://github.com/getsentry/sentry-docs): documentation sources for Sentry products
-
-## Maintaining This Document
-
-- When completing a task that reveals new patterns, conventions, best practices, or solutions to recurring issues not yet documented here, suggest adding these insights to `CLAUDE.md`.
-- When using compaction (which condenses context by summarizing older messages), make sure to re-read `CLAUDE.md` afterward to keep it fully available in context.
