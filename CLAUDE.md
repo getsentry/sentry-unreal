@@ -192,7 +192,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - Source files require copyright notice: `Copyright (c) YYYY Sentry. All Rights Reserved.` (for `YYYY` use file creation year)
 - Use file naming pattern `{Platform}SentryXxx.cpp` for platform implementations (e.g., AndroidSentrySubsystem.cpp)
-- Use `.clang-format`
+- Run clang-format on changed C++ files before committing: `git diff --name-only --diff-filter=d $(git merge-base main HEAD) -- 'plugin-dev/Source/**/*.h' 'plugin-dev/Source/**/*.cpp' | xargs clang-format -i`
 - No BOM (Byte Order Mark) in source files
 - Files must end with a single empty line (newline at EOF)
 - Avoid giving a `UENUM` and a `USTRUCT`/`UCLASS` the same base name after prefix stripping (e.g., `ESentryFoo` + `FSentryFoo` both become `SentryFoo` in Python). If unavoidable, add `meta = (ScriptName = "...")` to the `UENUM` to resolve the collision.
