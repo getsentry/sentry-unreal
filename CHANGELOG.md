@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.16.0
+
+> [!IMPORTANT]
+> Gameplay clips captured around crashes are now integrated with [Session Replay](https://docs.sentry.io/product/explore/session-replay/) product and automatically linked to their corresponding crash events, letting you watch the final moments leading up to a crash directly in Sentry.
+>
+> This feature is experimental and disabled by default. To opt-in, turn on `Enable session replay` in plugin settings. See the [Unreal SDK Session Replay documentation](https://docs.sentry.io/platforms/unreal/session-replay/) for additional details and setup instructions.
 
 ### Features
 
