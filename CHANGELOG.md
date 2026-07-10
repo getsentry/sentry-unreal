@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Link structured logs and metrics with captured native crashes on Android ([#1475](https://github.com/getsentry/sentry-unreal/pull/1475))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.20.0 to v9.21.0 ([#1471](https://github.com/getsentry/sentry-unreal/pull/1471))

@@ -43,6 +43,7 @@ import io.sentry.SentryLogLevel;
 import io.sentry.SentryMetricsEvent;
 import io.sentry.JsonUnknown;
 import io.sentry.metrics.SentryMetricsParameters;
+import io.sentry.util.TracingUtils;
 
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
@@ -139,6 +140,10 @@ public class SentryBridgeJava {
 				}
 			}
 		});
+
+		// Force a new trace so the Java and NDK layers share the same trace_id. Otherwise each layer
+		// keeps its own randomly generated one, and native crashes can't be correlated with logs/metrics.
+		TracingUtils.startNewTrace(Sentry.getCurrentScopes());
 	}
 
 	public static void addBreadcrumb(final String message, final String category, final String type, final HashMap<String, String> data, final SentryLevel level) {
