@@ -142,29 +142,6 @@ jobs:
         env:
           # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
           UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
-        run: |
-          docker exec -w /workspace/checkout/sample \
-            -e TMPDIR=/home/gh/.cache/tmp \
-            unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
-            -project=/workspace/checkout/sample/SentryPlayground.uproject \
-            -archivedirectory=/workspace/checkout/sample/Builds \
-            -platform=Android \
-            -UBTArgs="$UBT_EXTRA_ARGS" \
-            -clientconfig=Development \
-            -nop4 \
-            -cook \
-            -iterate \
-            -build \
-            -stage \
-            -prereqs \
-            -package \
-            -archive
-      
-      - name: Build Android package (Shipping)
-        id: build-android-shipping
-        env:
-          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
-          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -180,7 +157,7 @@ jobs:
             -platform=Android \
             -UBTArgs="$UBT_EXTRA_ARGS" \
             -distribution \
-            -clientconfig=Shipping \
+            -clientconfig=Development \
             -nop4 \
             -cook \
             -iterate \
@@ -198,7 +175,7 @@ jobs:
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect build logs on failure
-        if: ${{ always() && (steps.build-android-dev.outcome == 'failure' || steps.build-android-shipping.outcome == 'failure') }}
+        if: ${{ always() && steps.build-android-dev.outcome == 'failure' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} Android build logs
@@ -206,7 +183,7 @@ jobs:
             checkout/sample/Saved/Logs
 
       - name: Upload Android build
-        if: ${{ success() && (steps.build-android-dev.outcome == 'success' && steps.build-android-shipping.outcome == 'success') }}
+        if: ${{ success() && steps.build-android-dev.outcome == 'success' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Android)
