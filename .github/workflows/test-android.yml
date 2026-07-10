@@ -142,6 +142,9 @@ jobs:
         env:
           # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
           UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
           docker exec -w /workspace/checkout/sample \
             -e TMPDIR=/home/gh/.cache/tmp \
