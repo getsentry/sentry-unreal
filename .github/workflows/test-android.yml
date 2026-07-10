@@ -148,6 +148,9 @@ jobs:
         run: |
           docker exec -w /workspace/checkout/sample \
             -e TMPDIR=/home/gh/.cache/tmp \
+            -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+            -e SENTRY_ORG="$SENTRY_ORG" \
+            -e SENTRY_PROJECT="$SENTRY_PROJECT" \
             unreal /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -project=/workspace/checkout/sample/SentryPlayground.uproject \
             -archivedirectory=/workspace/checkout/sample/Builds \
@@ -172,7 +175,7 @@ jobs:
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       - name: Collect build logs on failure
-        if: ${{ always() && (steps.build-android-dev.outcome == 'failure' || steps.build-android-shipping.outcome == 'failure') }}
+        if: ${{ always() && steps.build-android-dev.outcome == 'failure' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} Android build logs
@@ -180,7 +183,7 @@ jobs:
             checkout/sample/Saved/Logs
 
       - name: Upload Android build
-        if: ${{ success() && (steps.build-android-dev.outcome == 'success' && steps.build-android-shipping.outcome == 'success') }}
+        if: ${{ success() && steps.build-android-dev.outcome == 'success' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Android)
