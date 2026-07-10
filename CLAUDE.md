@@ -173,16 +173,15 @@ To work with the Unreal project, it has to be properly set up (symlink plugin so
 # Initialize (first-time setup - downloads SDK dependencies via GitHub CLI, CI provides pre-built binaries)
 pwsh ./scripts/init-win.ps1      # Windows
 ./scripts/init.sh                # macOS/Linux
-
-# Build platform SDKs and other dependencies locally (optional - useful when testing unreleased changes)
-pwsh ./scripts/build-deps.ps1 -All
 ```
+
+To build platform SDKs and other dependencies locally (optional - useful when testing unreleased changes), use the `/build-deps` skill.
 
 Supported Unreal Engine versions are listed in `scripts/packaging/engine-versions.txt`. When using an engine built from source, the `.uproject` file will contain a GUID instead of a version number in the `EngineAssociation` field.
 
 ### Common Instructions
 
-- Before implementating new plugin features that wrap existing native SDK functionality, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple). Refer to `Native SDK API Lookup Order` in Quick References for where to find SDK APIs.
+- Before implementing new plugin features that wrap existing native SDK functionality, examine the relevant SDK's API (`sentry-native`, `sentry-cocoa`, or `sentry-java`) to understand its usage, check platform availability, and identify interop requirements (JNI for Android, Objective-C++ for Apple). Refer to `Native SDK API Lookup Order` in Quick References for where to find SDK APIs.
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
@@ -192,7 +191,7 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - Source files require copyright notice: `Copyright (c) YYYY Sentry. All Rights Reserved.` (for `YYYY` use file creation year)
 - Use file naming pattern `{Platform}SentryXxx.cpp` for platform implementations (e.g., AndroidSentrySubsystem.cpp)
-- Use `.clang-format`
+- Run clang-format on changed C++ files before committing: `git diff --name-only --diff-filter=d $(git merge-base main HEAD) -- 'plugin-dev/Source/**/*.h' 'plugin-dev/Source/**/*.cpp' | xargs clang-format -i`
 - No BOM (Byte Order Mark) in source files
 - Files must end with a single empty line (newline at EOF)
 - Avoid giving a `UENUM` and a `USTRUCT`/`UCLASS` the same base name after prefix stripping (e.g., `ESentryFoo` + `FSentryFoo` both become `SentryFoo` in Python). If unavoidable, add `meta = (ScriptName = "...")` to the `UENUM` to resolve the collision.
@@ -204,6 +203,7 @@ Build and test workflows are available as skills:
 - `/ue-build` - Build sample project for a target platform
 - `/ue-unit-test` - Run Sentry unit tests
 - `/ue-integration-test` - Run integration tests
+- `/build-deps` - Build plugin SDK dependencies locally and refresh ThirdParty binaries
 
 ### Security
 
@@ -288,8 +288,3 @@ On Windows, when checking env vars via PowerShell through the Bash tool, use the
 - [sentry-android-gradle-plugin](https://github.com/getsentry/sentry-android-gradle-plugin): uploading Android debug symbols
 - [app-runner](https://github.com/getsentry/app-runner): PowerShell module used in integration tests
 - [sentry-docs](https://github.com/getsentry/sentry-docs): documentation sources for Sentry products
-
-## Maintaining This Document
-
-- When completing a task that reveals new patterns, conventions, best practices, or solutions to recurring issues not yet documented here, suggest adding these insights to `CLAUDE.md`.
-- When using compaction (which condenses context by summarizing older messages), make sure to re-read `CLAUDE.md` afterward to keep it fully available in context.
