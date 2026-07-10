@@ -36,8 +36,6 @@ pwsh ./scripts/build-deps.ps1 -Native -NativePath "/path/to/sentry-native" # exp
 
 The build can take longer than the default command timeout — run it in the background and monitor its output, or raise the timeout accordingly.
 
-**Linux notes (sentry-native):** the build requires clang with libc++ (static libs are built against libc++ to match Unreal; the crash handler executables use libstdc++). The host machine's clang may not match the version Unreal uses — prefer the clang toolchain bundled with the engine by prepending its `bin` directory to `PATH` before running the script. Look for it under `$UNREAL_ENGINE_ROOT/Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/<toolchain-version>/x86_64-unknown-linux-gnu/bin` (the target architecture is auto-detected by the script).
-
 ### 4. Clean stale build artifacts
 
 UnrealBuildTool does not reliably detect ThirdParty binary changes, so after a successful deps rebuild remove the plugin `Binaries`/`Intermediate` directories to avoid linking against stale binaries:
