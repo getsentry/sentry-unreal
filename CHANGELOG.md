@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Link structured logs and metrics with captured native crashes on Android ([#1475](https://github.com/getsentry/sentry-unreal/pull/1475))
+- Fix structured logs and metrics not being linked with captured native crashes on Android ([#1475](https://github.com/getsentry/sentry-unreal/pull/1475))
 
 ### Dependencies
 
