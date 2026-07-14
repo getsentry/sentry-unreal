@@ -11,6 +11,9 @@
 - Bump Cocoa SDK from v9.20.0 to v9.21.0 ([#1471](https://github.com/getsentry/sentry-unreal/pull/1471))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9210)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.20.0...9.21.0)
+- Bump Crash Reporter from v0.3.2 to v0.3.3 ([#1476](https://github.com/getsentry/sentry-unreal/pull/1476))
+  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#033)
+  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.3.2...0.3.3)
 
 ## 1.16.0
 
