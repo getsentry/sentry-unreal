@@ -6,7 +6,7 @@ export sentryArtifactsDestination=$2
 
 rm -rf "${sentryArtifactsDestination}/"*
 
-cmake -G "Visual Studio 17 2022" -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
+cmake -G "Visual Studio 17 2022" -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10
 cmake --build "${sentryNativeRoot}/build_native" --target sentry --config RelWithDebInfo --parallel
 cmake --build "${sentryNativeRoot}/build_native" --target sentry-crash --config RelWithDebInfo --parallel
 cmake --install "${sentryNativeRoot}/build_native" --prefix "${sentryNativeRoot}/install_native" --config RelWithDebInfo
