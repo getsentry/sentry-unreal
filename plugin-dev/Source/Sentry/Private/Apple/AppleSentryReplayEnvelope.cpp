@@ -11,6 +11,8 @@
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
 
+#include "Infrastructure/AppleSentryConverters.h"
+
 #include "JsonObjectConverter.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -134,7 +136,51 @@ NSDictionary* BuildReplayEvent(SentryObjCEvent* event, const FSentryReplayInfo& 
 	return SanitizeForJson(dict);
 }
 
-NSData* BuildReplayRecording(const FSentryReplayInfo& info, double startSec, uint64 videoSizeBytes)
+// Convert the crash event's breadcrumbs that fall inside the replay window into
+// rrweb `breadcrumb` events (custom event type 5) so they show up on the replay
+// timeline. The breadcrumbs array is chronological and every in-window crumb lies
+// at or after the meta/video events' timestamp, so appending the result to the
+// recording keeps it sorted.
+NSArray* BuildBreadcrumbEvents(NSArray<SentryObjCBreadcrumb*>* breadcrumbs, double startSec, double endSec)
+{
+	NSMutableArray* events = [NSMutableArray array];
+	for (SentryObjCBreadcrumb* crumb in breadcrumbs)
+	{
+		if (crumb.timestamp == nil)
+		{
+			continue;
+		}
+		const double crumbSec = [crumb.timestamp timeIntervalSince1970];
+		if (crumbSec < startSec || crumbSec > endSec)
+		{
+			continue;
+		}
+
+		NSMutableDictionary* payload = [NSMutableDictionary dictionary];
+		payload[@"type"] = crumb.type.length > 0 ? crumb.type : @"default";
+		// the rrweb payload timestamp is in seconds, the outer one in milliseconds
+		payload[@"timestamp"] = @(crumbSec);
+		payload[@"level"] = FAppleSentryConverters::SentryLevelToString(crumb.level);
+		if (crumb.category)
+			payload[@"category"] = crumb.category;
+		if (crumb.message)
+			payload[@"message"] = crumb.message;
+		if (crumb.data)
+			payload[@"data"] = SanitizeForJson(crumb.data);
+
+		[events addObject:@{
+			@"type" : @5,
+			@"timestamp" : @(crumbSec * 1000.0),
+			@"data" : @{
+				@"tag" : @"breadcrumb",
+				@"payload" : payload
+			}
+		}];
+	}
+	return events;
+}
+
+NSData* BuildReplayRecording(const FSentryReplayInfo& info, double startSec, double endSec, uint64 videoSizeBytes, NSArray<SentryObjCBreadcrumb*>* breadcrumbs)
 {
 	const double timestampMs = startSec * 1000.0;
 
@@ -170,8 +216,11 @@ NSData* BuildReplayRecording(const FSentryReplayInfo& info, double startSec, uin
 		}
 	};
 
+	NSMutableArray* events = [NSMutableArray arrayWithObjects:metaEvent, videoEvent, nil];
+	[events addObjectsFromArray:BuildBreadcrumbEvents(breadcrumbs, startSec, endSec)];
+
 	NSError* error = nil;
-	NSData* eventsJson = [NSJSONSerialization dataWithJSONObject:@[ metaEvent, videoEvent ] options:0 error:&error];
+	NSData* eventsJson = [NSJSONSerialization dataWithJSONObject:events options:0 error:&error];
 	if (eventsJson == nil)
 	{
 		return nil;
@@ -237,7 +286,7 @@ bool FAppleSentryReplayEnvelope::CaptureForCrashEvent(SentryObjCEvent* event, co
 		return false;
 	}
 
-	NSData* replayRecording = BuildReplayRecording(info, startSec, video.length);
+	NSData* replayRecording = BuildReplayRecording(info, startSec, endSec, video.length, event != nil ? event.breadcrumbs : nil);
 	if (replayRecording == nil)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to serialize replay recording"));

@@ -42,6 +42,7 @@ public:
 
 	/** Other conversions */
 	static SentryObjCLevel StringToSentryLevel(NSString* string);
+	static NSString* SentryLevelToString(SentryObjCLevel level);
 	static FSentryVariant SentryAttributeToVariant(SentryObjCAttribute* attribute);
 	static FSentryVariant SentryAttributeContentToVariant(SentryObjCAttributeContent* content);
 };
