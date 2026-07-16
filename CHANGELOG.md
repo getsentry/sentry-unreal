@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Decrease max session replay clip duration to 20 seconds to prevent replays from being rejected due to the server-side 10 MiB size limit, which could be exceeded at high rendering resolutions ([#1478](https://github.com/getsentry/sentry-unreal/pull/1478))
+
 ## 1.16.1
 
 ### Fixes
