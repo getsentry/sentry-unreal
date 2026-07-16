@@ -4,7 +4,7 @@
 
 ### Features
 
-- Include the crash event's breadcrumbs in crash session replays on Apple platforms (Cocoa backend), so breadcrumbs from the replay window show up on the replay timeline ([#TBD](https://github.com/getsentry/sentry-unreal/pull/TBD))
+- Include the crash event's breadcrumbs in crash session replays on Apple platforms (Cocoa backend), so breadcrumbs from the replay window show up on the replay timeline ([#1480](https://github.com/getsentry/sentry-unreal/pull/1480))
 
 ### Fixes
 
