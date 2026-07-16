@@ -565,8 +565,8 @@ class SENTRY_API USentrySettings : public UObject
 	bool AttachSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
-		Meta = (DisplayName = "Replay duration (ms)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for crash attachment; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration.",
-			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "60000"))
+		Meta = (DisplayName = "Replay duration (ms)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for crash attachment; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration. Capped at 20 seconds: Sentry rejects replay videos larger than 10 MiB, and longer clips risk exceeding that limit.",
+			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "20000"))
 	uint32 SessionReplayDurationMs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
