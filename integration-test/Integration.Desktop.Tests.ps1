@@ -567,6 +567,20 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                     Write-Host "Failed to fetch replay from Sentry: $_" -ForegroundColor Red
                 }
             }
+
+            # Fetch the replay's rrweb recording to verify embedded breadcrumbs
+            $script:ReplayRecordingEvents = $null
+            if ($script:ReplayEvent) {
+                try {
+                    $segments = Get-SentryTestReplayRecordingSegments -ReplayId $script:ReplayId
+                    # Flatten the per-segment event lists into a single rrweb event list
+                    $script:ReplayRecordingEvents = @($segments | ForEach-Object { $_ })
+                    Write-Host "Replay recording fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch replay recording from Sentry: $_" -ForegroundColor Red
+                }
+            }
         }
 
         It "Should have non-zero exit code" {
@@ -605,6 +619,30 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         It "Should have expected platform" {
             $expectedPlatform = if ($Platform -eq 'MacOS' -and -not $script:IsNativeBackend) { 'cocoa' } else { 'native' }
             $script:ReplayEvent.platform | Should -Be $expectedPlatform
+        }
+
+        It "Should embed test breadcrumbs in replay recording" {
+            $script:ReplayRecordingEvents | Should -Not -BeNullOrEmpty
+
+            # Breadcrumbs are rrweb custom events (type 5) tagged `breadcrumb`
+            $crumbs = @($script:ReplayRecordingEvents | Where-Object { $_.type -eq 5 -and $_.data.tag -eq 'breadcrumb' })
+            $crumbs.Count | Should -BeGreaterOrEqual 2
+
+            $messages = @($crumbs | ForEach-Object { $_.data.payload.message })
+            $messages | Should -Contain 'Replay test breadcrumb'
+            $messages | Should -Contain 'Replay test breadcrumb with data'
+        }
+
+        It "Should have well-formed breadcrumb payloads in replay recording" {
+            $crumbs = @($script:ReplayRecordingEvents | Where-Object { $_.type -eq 5 -and $_.data.tag -eq 'breadcrumb' -and $_.data.payload.category -eq 'replay.test' })
+            $crumbs.Count | Should -BeGreaterOrEqual 2
+
+            foreach ($crumb in $crumbs) {
+                # The outer rrweb timestamp is in milliseconds, the payload timestamp in seconds
+                [math]::Abs($crumb.timestamp - $crumb.data.payload.timestamp * 1000) | Should -BeLessThan 1
+                $crumb.data.payload.type | Should -Be 'default'
+                $crumb.data.payload.level | Should -BeIn @('info', 'warning')
+            }
         }
     }
 
