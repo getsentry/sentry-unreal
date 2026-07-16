@@ -100,6 +100,8 @@ void FSentryReplayTest::Run()
 	Subsystem->AddBreadcrumbWithParams(TEXT("Replay test breadcrumb with data"), TEXT("replay.test"), TEXT("default"),
 		{ { TEXT("key"), FSentryVariant(TEXT("value")) } }, ESentryLevel::Warning);
 
+	FPlatformProcess::Sleep(1.0f);
+
 	// Because we don't get the real crash event ID, create a fake one and set it as a tag
 	// This tag is then used by integration test script in CI to fetch the event
 	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
