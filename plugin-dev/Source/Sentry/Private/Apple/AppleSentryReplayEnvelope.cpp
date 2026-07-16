@@ -136,11 +136,6 @@ NSDictionary* BuildReplayEvent(SentryObjCEvent* event, const FSentryReplayInfo& 
 	return SanitizeForJson(dict);
 }
 
-// Convert the crash event's breadcrumbs that fall inside the replay window into
-// rrweb `breadcrumb` events (custom event type 5) so they show up on the replay
-// timeline. The breadcrumbs array is chronological and every in-window crumb lies
-// at or after the meta/video events' timestamp, so appending the result to the
-// recording keeps it sorted.
 NSArray* BuildBreadcrumbEvents(NSArray<SentryObjCBreadcrumb*>* breadcrumbs, double startSec, double endSec)
 {
 	NSMutableArray* events = [NSMutableArray array];
