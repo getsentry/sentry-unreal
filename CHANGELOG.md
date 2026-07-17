@@ -6,6 +6,12 @@
 
 - Decrease max session replay clip duration to 20 seconds to prevent replays from being rejected due to the server-side 10 MiB size limit, which could be exceeded at high rendering resolutions ([#1478](https://github.com/getsentry/sentry-unreal/pull/1478))
 
+### Dependencies
+
+- Bump Android Gradle Plugin from v6.14.0 to v6.15.0 ([#1482](https://github.com/getsentry/sentry-unreal/pull/1482))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6150)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.14.0...6.15.0)
+
 ## 1.16.1
 
 ### Fixes
