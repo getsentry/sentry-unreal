@@ -313,6 +313,13 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCAttribute.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCAttributeContent.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCBreadcrumb.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCClient.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDataCollectionDatabaseCollectionOptions.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDataCollectionGraphQLCollectionOptions.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDataCollectionHttpBodyType.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDataCollectionHttpHeaderCollectionOptions.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDataCollectionKeyValueCollectionBehavior.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDataCollectionKeyValueCollectionMode.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDataCollectionOptions.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDebugMeta.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCDefines.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCEnvelope.h
@@ -431,6 +438,13 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttribute.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttributeContent.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCBreadcrumb.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCClient.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionDatabaseCollectionOptions.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionGraphQLCollectionOptions.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionHttpBodyType.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionHttpHeaderCollectionOptions.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionKeyValueCollectionBehavior.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionKeyValueCollectionMode.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDebugMeta.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDefines.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCEnvelope.h
