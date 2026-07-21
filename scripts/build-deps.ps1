@@ -269,7 +269,7 @@ function buildSentryNative()
     Push-Location -Path $NativePath
     try
     {
-        cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
+        cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10
         cmake --build "build" --target sentry --config RelWithDebInfo --parallel
         cmake --build "build" --target crashpad_handler --config RelWithDebInfo --parallel
         cmake --install "build" --prefix "install" --config RelWithDebInfo
@@ -295,7 +295,7 @@ function buildSentryNative()
     Push-Location -Path $NativePath
     try
     {
-        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10
         cmake --build "build_native" --target sentry --config RelWithDebInfo --parallel
         cmake --build "build_native" --target sentry-crash --config RelWithDebInfo --parallel
         cmake --install "build_native" --prefix "install_native" --config RelWithDebInfo
@@ -332,7 +332,7 @@ function buildSentryNativeMac()
     Push-Location -Path $NativePath
     try
     {
-        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 `
             -D CMAKE_BUILD_TYPE=RelWithDebInfo -D "CMAKE_OSX_ARCHITECTURES=x86_64;arm64" -D CMAKE_OSX_DEPLOYMENT_TARGET=13.0
         cmake --build "build_native" --target sentry --parallel
         cmake --build "build_native" --target sentry-crash --parallel
@@ -398,14 +398,14 @@ function buildSentryNativeLinux()
     try
     {
         # Static libs with libc++
-        cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+        cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 `
             -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
             -D CMAKE_C_FLAGS="$libcxxCFlags" -D CMAKE_CXX_FLAGS="$libcxxCxxFlags" -D CMAKE_EXE_LINKER_FLAGS="$libcxxLinkFlags" -D HAVE_COPY_FILE_RANGE=0
         cmake --build "build" --target sentry --parallel
         cmake --install "build" --prefix "install"
 
         # crashpad_handler executable with libstdc++ (no transport needed)
-        cmake -B "build_crashpad_handler" -D SENTRY_BACKEND=crashpad -D SENTRY_TRANSPORT=none -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+        cmake -B "build_crashpad_handler" -D SENTRY_BACKEND=crashpad -D SENTRY_TRANSPORT=none -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 `
             -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
             -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libstdc++" -D HAVE_COPY_FILE_RANGE=0
         cmake --build "build_crashpad_handler" --target sentry --parallel
@@ -435,14 +435,14 @@ function buildSentryNativeLinux()
     try
     {
         # Static libs with libc++
-        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+        cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 `
             -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
             -D CMAKE_C_FLAGS="$libcxxCFlags" -D CMAKE_CXX_FLAGS="$libcxxCxxFlags" -D CMAKE_EXE_LINKER_FLAGS="$libcxxLinkFlags" -D HAVE_COPY_FILE_RANGE=0
         cmake --build "build_native" --target sentry --parallel
         cmake --install "build_native" --prefix "install_native"
 
         # sentry-crash executable with libstdc++ (needs transport to send crash envelopes)
-        cmake -B "build_native_crash" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF `
+        cmake -B "build_native_crash" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 `
             -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_C_COMPILER=$clangC -D CMAKE_CXX_COMPILER=$clangCxx `
             -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" -D CMAKE_EXE_LINKER_FLAGS="-stdlib=libstdc++" -D HAVE_COPY_FILE_RANGE=0
         cmake --build "build_native_crash" --target sentry-crash --parallel
