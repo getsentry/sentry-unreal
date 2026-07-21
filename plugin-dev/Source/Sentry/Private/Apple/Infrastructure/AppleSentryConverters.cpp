@@ -535,6 +535,25 @@ SentryObjCLevel FAppleSentryConverters::StringToSentryLevel(NSString* string)
 	return nativeLevel;
 }
 
+NSString* FAppleSentryConverters::SentryLevelToString(SentryObjCLevel level)
+{
+	switch (level)
+	{
+	case SentryObjCLevelDebug:
+		return @"debug";
+	case SentryObjCLevelInfo:
+		return @"info";
+	case SentryObjCLevelWarning:
+		return @"warning";
+	case SentryObjCLevelError:
+		return @"error";
+	case SentryObjCLevelFatal:
+		return @"fatal";
+	default:
+		return @"none";
+	}
+}
+
 FSentryVariant FAppleSentryConverters::SentryAttributeToVariant(SentryObjCAttribute* attribute)
 {
 	if (!attribute)

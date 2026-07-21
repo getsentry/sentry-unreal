@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Include the crash event's breadcrumbs in crash session replays on Apple platforms (Cocoa backend), so breadcrumbs from the replay window show up on the replay timeline ([#1480](https://github.com/getsentry/sentry-unreal/pull/1480))
+
 ### Fixes
 
 - Decrease max session replay clip duration to 20 seconds to prevent replays from being rejected due to the server-side 10 MiB size limit, which could be exceeded at high rendering resolutions ([#1478](https://github.com/getsentry/sentry-unreal/pull/1478))

@@ -40,8 +40,8 @@ FString GetReplaysDir(const USentrySettings* Settings)
 #endif
 
 	const FString DatabaseParentPath = Settings->DatabaseLocation == ESentryDatabaseLocation::ProjectDirectory
-		? FPaths::ProjectDir()
-		: FPaths::ProjectUserDir();
+										   ? FPaths::ProjectDir()
+										   : FPaths::ProjectUserDir();
 
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(DatabaseParentPath, TEXT(".sentry-native"), TEXT("replays")));
 }
@@ -78,8 +78,8 @@ void FSentryReplayTest::Run()
 
 	const FString Sidecar = FString::Printf(
 		TEXT("{\"replayId\":\"%s\",\"replayType\":\"buffer\",\"segmentId\":0,")
-		TEXT("\"startTimestampSec\":%.3f,\"endTimestampSec\":%.3f,")
-		TEXT("\"width\":%d,\"height\":%d,\"durationMs\":%d,\"sizeBytes\":%d,\"frameCount\":%d,\"frameRate\":%d}"),
+			TEXT("\"startTimestampSec\":%.3f,\"endTimestampSec\":%.3f,")
+				TEXT("\"width\":%d,\"height\":%d,\"durationMs\":%d,\"sizeBytes\":%d,\"frameCount\":%d,\"frameRate\":%d}"),
 		*ReplayId, StartTimestampSec, EndTimestampSec,
 		ClipWidth, ClipHeight, ClipDurationMs, ClipSizeBytes, ClipFrameCount, ClipFrameRate);
 
@@ -92,6 +92,15 @@ void FSentryReplayTest::Run()
 
 	// Link the staged replay to the crash event; when the recorder is active it does the same at init
 	Subsystem->SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(ReplayId) } });
+
+	// Add breadcrumbs shortly before the crash so they fall inside the replay window;
+	// the SDK is expected to embed them in the replay recording where the integration
+	// test script can verify them (message/category values are asserted in CI)
+	Subsystem->AddBreadcrumbWithParams(TEXT("Replay test breadcrumb"), TEXT("replay.test"), TEXT("default"), {}, ESentryLevel::Info);
+	Subsystem->AddBreadcrumbWithParams(TEXT("Replay test breadcrumb with data"), TEXT("replay.test"), TEXT("default"),
+		{ { TEXT("key"), FSentryVariant(TEXT("value")) } }, ESentryLevel::Warning);
+
+	FPlatformProcess::Sleep(1.0f);
 
 	// Because we don't get the real crash event ID, create a fake one and set it as a tag
 	// This tag is then used by integration test script in CI to fetch the event
