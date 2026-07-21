@@ -14,9 +14,17 @@ if [ "$TARGET_PLATFORM" = "Mac" ] && [ ! -f "$PLUGIN_DIR/Binaries/Mac/SentryObjC
   cp "$PLUGIN_DIR/Source/ThirdParty/Mac/Cocoa/bin/SentryObjC.dylib" "$PLUGIN_DIR/Binaries/Mac/SentryObjC.dylib"
 fi
 
-# Grant execute permissions to sentry-cli binary (FAB version of the plugin doesn't preserve file permissions)
+# Grant execute permissions to bundled binaries (some plugin distribution methods don't preserve file permissions)
 if [ -f "$PLUGIN_DIR/Source/ThirdParty/CLI/sentry-cli-Darwin-universal" ]; then
   chmod +x "$PLUGIN_DIR/Source/ThirdParty/CLI/sentry-cli-Darwin-universal"
+fi
+
+if [ -f "$PLUGIN_DIR/Binaries/$TARGET_PLATFORM/sentry-crash" ]; then
+  chmod +x "$PLUGIN_DIR/Binaries/$TARGET_PLATFORM/sentry-crash"
+fi
+
+if [ -f "$PLUGIN_DIR/Binaries/$TARGET_PLATFORM/Sentry.CrashReporter.app/Contents/MacOS/Sentry.CrashReporter" ]; then
+  chmod +x "$PLUGIN_DIR/Binaries/$TARGET_PLATFORM/Sentry.CrashReporter.app/Contents/MacOS/Sentry.CrashReporter"
 fi
 
 # Call Python script for debug symbol upload
