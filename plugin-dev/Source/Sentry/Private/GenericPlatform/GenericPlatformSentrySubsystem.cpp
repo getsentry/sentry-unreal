@@ -849,7 +849,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(c
 	onConfigureScope.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_capture_event_with_scope(nativeEvent, scope);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -886,7 +886,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_capture_event_with_scope(nativeEvent, scope);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -926,7 +926,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 	sentry_attachment_set_filename(screenshotAttachment, "screenshot.png");
 	sentry_attachment_set_content_type(screenshotAttachment, "image/png");
 
-	sentry_uuid_t id = sentry_capture_event_with_scope(exceptionEvent, scope);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, exceptionEvent);
 
 	IFileManager::Get().Delete(*ScreenshotPath);
 
