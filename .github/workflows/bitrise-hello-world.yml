@@ -9,7 +9,8 @@ on:
 jobs:
   hello-world:
     name: Hello World (Bitrise gdx pool)
-    runs-on: ["bitrise_pool_name:gdx"]
+    runs-on:
+      - bitrise_pool_name:gdx
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
