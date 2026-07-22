@@ -1,0 +1,28 @@
+name: bitrise-hello-world
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - chore/bitrise
+
+jobs:
+  hello-world:
+    name: Hello World (Bitrise gdx pool)
+    runs-on: ["bitrise_pool_name:gdx"]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Hello world
+        run: echo "Hello world from a Bitrise runner!"
+
+      - name: Print runner info
+        run: |
+          echo "Hostname: $(hostname)"
+          echo "OS: $(uname -a)"
+          echo "CPU cores: $(getconf _NPROCESSORS_ONLN)"
+          echo "Runner name: $RUNNER_NAME"
+          echo "Runner OS/arch: $RUNNER_OS/$RUNNER_ARCH"
+          echo "Working directory: $(pwd)"
+          df -h . | tail -1
