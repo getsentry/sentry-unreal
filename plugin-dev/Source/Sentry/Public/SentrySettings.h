@@ -314,7 +314,7 @@ struct FSentrySessionReplayOptions
 	float FragmentSeconds = 0.5f;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Rotation interval (seconds)", ToolTip = "How often the on-disk attachment file is refreshed by atomic rename.",
+		Meta = (DisplayName = "Rotation interval (seconds)", ToolTip = "How often the on-disk replay clip is refreshed by atomic rename.",
 			ClampMin = 0.25f, ClampMax = 5.0f))
 	float RotationIntervalSeconds = 1.0f;
 
@@ -560,12 +560,12 @@ class SENTRY_API USentrySettings : public UObject
 	bool UseNativeHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
-		Meta = (DisplayName = "Enable session replay (experimental)", ToolTip = "Captures gameplay video and attaches it to crash reports. On desktop platforms (Windows/Mac/Linux), requires the AVCodecsCore plugin plus a codec plugin matching the GPU vendor (NVCodecs for NVIDIA on Windows/Linux, AMFCodecs for AMD on Windows, VTCodecs on Mac) and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
+		Meta = (DisplayName = "Enable session replay (experimental)", ToolTip = "Captures a short gameplay video leading up to a crash and sends it to Sentry's Session Replay. On desktop platforms (Windows/Mac/Linux), requires the AVCodecsCore plugin plus a codec plugin matching the GPU vendor (NVCodecs for NVIDIA on Windows/Linux, AMFCodecs for AMD on Windows, VTCodecs on Mac) and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
 			ConfigRestartRequired = true))
 	bool AttachSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Session Replay",
-		Meta = (DisplayName = "Replay duration (ms)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for crash attachment; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration. Capped at 20 seconds: Sentry rejects replay videos larger than 10 MiB, and longer clips risk exceeding that limit.",
+		Meta = (DisplayName = "Replay duration (ms)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for the crash replay; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration. Capped at 20 seconds: Sentry rejects replay videos larger than 10 MiB, and longer clips risk exceeding that limit.",
 			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "20000"))
 	uint32 SessionReplayDurationMs;
 
