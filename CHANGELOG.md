@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Remove legacy session replay file attachment in favor of Session Replay envelope ([#1493](https://github.com/getsentry/sentry-unreal/pull/1493))
+
 ### Dependencies
 
 - Bump CLI from v3.6.1 to v3.6.2 ([#1491](https://github.com/getsentry/sentry-unreal/pull/1491))
