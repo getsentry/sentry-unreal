@@ -125,12 +125,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 				}
 				if (settings->AttachSessionReplay)
 				{
-					// If a replay was captured during the previous app run upload it to Sentry.
-					UploadSessionReplayForEvent(MakeShareable(new FAppleSentryId(event.eventId)), prevSessionReplayPath);
-
+					// Deliver the previous run's replay as a structured envelope so it shows
+					// up in the Session Replay product page.
 					if (FPaths::FileExists(prevSessionReplayPath) && FPaths::FileExists(prevSessionReplaySidecarPath))
 					{
-						// Send the structured replay envelope for the crash.
 						FAppleSentryReplayEnvelope::CaptureForCrashEvent(event, prevSessionReplayPath, prevSessionReplaySidecarPath);
 					}
 
@@ -779,17 +777,6 @@ void FAppleSentrySubsystem::UploadGameLogForEvent(TSharedPtr<ISentryId> eventId,
 #if !NO_LOGGING
 	UploadAttachmentForEvent(eventId, logFilePath, SentryFileUtils::GetGameLogName());
 #endif
-}
-
-void FAppleSentrySubsystem::UploadSessionReplayForEvent(TSharedPtr<ISentryId> eventId, const FString& replayPath) const
-{
-	if (replayPath.IsEmpty())
-	{
-		// Recorder only produces a file after the first keyframe so if a crash happens early and nothing is written to disk (empty path) skip the upload
-		return;
-	}
-
-	UploadAttachmentForEvent(eventId, replayPath, TEXT("session-replay.mp4"), false);
 }
 
 FString FAppleSentrySubsystem::GetScreenshotPath() const
