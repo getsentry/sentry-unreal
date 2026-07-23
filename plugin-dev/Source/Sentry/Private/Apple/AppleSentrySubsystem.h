@@ -68,7 +68,6 @@ protected:
 
 	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const;
 	void UploadGameLogForEvent(TSharedPtr<ISentryId> eventId, const FString& logFilePath) const;
-	void UploadSessionReplayForEvent(TSharedPtr<ISentryId> eventId, const FString& replayPath) const;
 
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;

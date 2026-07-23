@@ -309,16 +309,6 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
 {
-#ifdef USE_SENTRY_SESSION_REPLAY
-	if (SessionReplay && SessionReplay->HasSnapshotOnDisk())
-	{
-		TSharedPtr<ISentryAttachment> ReplayAttachment =
-			MakeShareable(new FGenericPlatformSentryAttachment(SessionReplay->GetAttachmentPath(), TEXT("session-replay.mp4"), TEXT("video/mp4")));
-
-		AddFileAttachment(ReplayAttachment);
-	}
-#endif
-
 	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
 		if (IsScreenshotSupported())
