@@ -21,7 +21,7 @@ FSentryJavaObjectWrapper::FSentryJavaObjectWrapper(FSentryJavaClass ClassData, c
 
 	va_list Params;
 	va_start(Params, CtorSignature);
-	auto LocalObject = NewScopedJavaObject(JEnv, JEnv->NewObjectV(Class, Constructor, Params));
+	auto LocalObject = NewSentryScopedJavaObject(JEnv, JEnv->NewObjectV(Class, Constructor, Params));
 	va_end(Params);
 	VerifyException();
 	check(LocalObject);
@@ -82,10 +82,10 @@ jobject FSentryJavaObjectWrapper::GetJObject() const
 	return Object;
 }
 
-FScopedJavaObject<jstring> FSentryJavaObjectWrapper::GetJString(const FString& String)
+FSentryScopedJavaObject<jstring> FSentryJavaObjectWrapper::GetJString(const FString& String)
 {
 	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
-	return FJavaHelper::ToJavaString(JEnv, String);
+	return NewSentryScopedJavaObject(JEnv, JEnv->NewStringUTF(TCHAR_TO_UTF8(*String)));
 }
 
 bool FSentryJavaObjectWrapper::IsInstanceOf(FSentryJavaClass ClassData, jobject JavaClassInstance)
@@ -241,7 +241,7 @@ FString FSentryJavaObjectWrapper::CallMethodInternal<FString>(FSentryJavaMethod 
 }
 
 template<>
-FScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobject>(FSentryJavaMethod Method, va_list Params) const
+FSentryScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobject>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
 	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
@@ -252,11 +252,11 @@ FScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethodInternal<jo
 			: JEnv->CallStaticObjectMethodV(Class, Method.Method, Params);
 
 	VerifyException();
-	return NewScopedJavaObject(JEnv, RetVal);
+	return NewSentryScopedJavaObject(JEnv, RetVal);
 }
 
 template<>
-FScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobjectArray>(FSentryJavaMethod Method, va_list Params) const
+FSentryScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobjectArray>(FSentryJavaMethod Method, va_list Params) const
 {
 	VerifyMethodCall(Method);
 	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
@@ -267,5 +267,5 @@ FScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethodIntern
 			: JEnv->CallStaticObjectMethodV(Class, Method.Method, Params);
 
 	VerifyException();
-	return NewScopedJavaObject(JEnv, (jobjectArray)RetVal);
+	return NewSentryScopedJavaObject(JEnv, (jobjectArray)RetVal);
 }

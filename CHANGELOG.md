@@ -32,6 +32,7 @@
 - Decrease max session replay clip duration to 20 seconds to prevent replays from being rejected due to the server-side 10 MiB size limit, which could be exceeded at high rendering resolutions ([#1478](https://github.com/getsentry/sentry-unreal/pull/1478))
 - Maximize telemetry buffers for native platforms to minimize queue overflows ([#1483](https://github.com/getsentry/sentry-unreal/pull/1483))
 - Grant execute permissions to bundled crash handler binaries (Linux/Mac) ([#1486](https://github.com/getsentry/sentry-unreal/pull/1486))
+- Resolve startup crash on Meta Quest during Sentry init (UE 5.7+) ([#1487](https://github.com/getsentry/sentry-unreal/pull/1487))
 
 ### Dependencies
 
