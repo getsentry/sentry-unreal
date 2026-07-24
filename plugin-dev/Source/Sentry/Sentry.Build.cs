@@ -39,8 +39,11 @@ public class Sentry : ModuleRules
 				"Projects",
 				"Json",
 				"JsonUtilities",
-				"HTTP"
-				// ... add private dependencies that you statically link with here ...	
+				"HTTP",
+				"UMG",
+				"DeveloperSettings",
+				"InputCore"
+				// ... add private dependencies that you statically link with here ...
 			}
 		);
 
