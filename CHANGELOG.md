@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add app-hang tracking via NDK game-thread heartbeat on Android ([#1497](https://github.com/getsentry/sentry-unreal/pull/1497))
+
 ### Fixes
 
 - Remove legacy session replay file attachment in favor of Session Replay envelope ([#1493](https://github.com/getsentry/sentry-unreal/pull/1493))

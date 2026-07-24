@@ -62,9 +62,16 @@ public:
 	FString TryCaptureScreenshot() const;
 
 private:
+	void PumpAppHangHeartbeat();
+
+	void (*AppHangHeartbeatFunc)() = nullptr;
+
+	bool bNdkAppHangTracking = false;
+
 	bool isScreenshotAttachmentEnabled = false;
 
 	FDelegateHandle OnHandleSystemErrorDelegateHandle;
+	FDelegateHandle OnEndFrameDelegateHandle;
 };
 
 typedef FAndroidSentrySubsystem FPlatformSentrySubsystem;
