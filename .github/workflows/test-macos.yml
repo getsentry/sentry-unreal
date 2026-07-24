@@ -1,0 +1,269 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: Test
+    runs-on: macos-15
+
+    env:
+      DISALLOW_RAW_POINTERS: 'true'
+      SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
+
+    steps:
+      # GitHub-hosted macOS runners have limited free disk space. Remove pre-installed
+      # tooling that isn't needed here to make room for the engine and sample builds.
+      - name: Free up disk space
+        run: |
+          df -h /
+          sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes
+          sudo rm -rf "$HOME/Library/Android" "$HOME/.dotnet" "$HOME/hostedtoolcache/CodeQL"
+          df -h /
+
+      - name: Download Unreal Engine
+        env:
+          UE_MAC_DOWNLOAD_LINK: ${{ secrets.UE_MAC_DOWNLOAD_LINK || vars.UE_MAC_DOWNLOAD_LINK }}
+        run: |
+          if [ -z "$UE_MAC_DOWNLOAD_LINK" ]; then
+            echo "::error::UE_MAC_DOWNLOAD_LINK is not configured in the repository settings"
+            exit 1
+          fi
+          pipx install gdown
+          gdown "$UE_MAC_DOWNLOAD_LINK" -O ue.zip
+          df -h /
+
+      - name: Install Unreal Engine
+        run: |
+          # The archive is produced from a local installed engine build ('Make Installed
+          # Build' BuildGraph output) with 'Engine' at the archive root - Templates,
+          # FeaturePacks and the MetaHuman plugin (~8 GiB) aren't needed for CI and are
+          # excluded when the archive is created:
+          #   cd LocalBuilds/Engine/Mac && zip -r -y -X UE-<version>-Mac.zip Engine \
+          #     -x 'Engine/Plugins/MetaHuman/*' -x '*.DS_Store'
+          if ! unzip -Z1 ue.zip Engine/Build/BatchFiles/RunUAT.sh > /dev/null; then
+            echo "::error::Could not locate Engine/Build/BatchFiles/RunUAT.sh at the archive root"
+            exit 1
+          fi
+          mkdir -p "$HOME/UnrealEngine"
+          unzip -q ue.zip -d "$HOME/UnrealEngine"
+          rm ue.zip
+          UE_ROOT="$HOME/UnrealEngine"
+          echo "UE_ROOT=$UE_ROOT" >> "$GITHUB_ENV"
+          # Zip archives may not preserve execute permissions
+          chmod -R u+x "$UE_ROOT/Engine/Build/BatchFiles" "$UE_ROOT/Engine/Binaries" || true
+          df -h /
+
+      - name: Download package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: ${{ github.sha }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: checkout
+
+      - name: Extract package to sample/Plugins
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: unzip -q sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
+
+      - name: Compute DDC cache key
+        id: ddc-cache-key
+        env:
+          HASH: ${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: |
+          KEY="ue-${UNREAL_VERSION}-mac-ddc-${HASH}"
+          echo "key=${KEY}" >> "$GITHUB_OUTPUT"
+          echo "DDC cache key: ${KEY}"
+
+      - name: Configure project-local DDC
+        shell: pwsh
+        run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
+
+      - name: Restore cached DDC
+        id: cache-ddc
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+          restore-keys: |
+            ue-${{ inputs.unreal-version }}-mac-ddc
+
+      - name: Update engine's build configuration
+        run: |
+          mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
+          cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
+
+      - name: Build and test (Cocoa)
+        id: run-tests
+        timeout-minutes: 150
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          # UAT redirects all cooker output to a log file under the engine directory,
+          # which makes a long shader-compiling cook look like a hang - stream the log
+          # to the console instead (wait for a log that appears after this step starts)
+          (
+            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            f="$baseline"
+            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
+              sleep 15
+              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            done
+            echo "=== Streaming cook log: $f ==="
+            exec tail -n +1 -f "$f"
+          ) &
+          COOK_LOG_TAIL_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
+          # skipminspeccheck: GitHub mac runners are VMs (hw.model=VirtualMac2,1) that fail
+          # the editor's min-spec hardware check; without the flag the editor blocks forever
+          # on a modal "Run Anyway" alert before writing any log output
+          "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
+            -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+            -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
+            -platform=Mac \
+            -UBTArgs="-AllCores" \
+            -AdditionalCookerOptions="-skipminspeccheck" \
+            -nop4 \
+            -cook \
+            -iterate \
+            -build \
+            -stage \
+            -package \
+            -archive
+          # Run automation tests with the console binary (the GUI UnrealEditor binary
+          # hangs at startup on the runner) and mirror the log to stdout so progress is
+          # visible in the CI console. NoSound: the virtualized runner has no audio
+          # device and CoreAudio mixer initialization hangs indefinitely without it.
+          # BuildMachine: skips the modal min-spec warning dialogs (low RAM/slow CPU)
+          # that UpdateAutoLoadProject shows on Mac even in unattended mode.
+          "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+            -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation" \
+            -ExecCmds="Automation RunTests Sentry;quit" \
+            -TestExit="Automation Test Queue Empty" \
+            -stdout \
+            -Unattended \
+            -NoPause \
+            -NoSplash \
+            -NullRHI \
+            -NoSound \
+            -SkipMinSpecCheck \
+            -BuildMachine
+
+      - name: Check for DDC content
+        id: ddc-exists
+        if: ${{ always() }}
+        run: echo "exists=$([ -d checkout/sample/DerivedDataCache ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+
+      # Save DDC even when the build/test step failed or timed out so that shader
+      # compilation progress carries over to the next attempt
+      - name: Save DDC to cache
+        if: ${{ always() && steps.ddc-exists.outputs.exists == 'true' && steps.cache-ddc.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+
+      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
+      - name: Collect sample test info
+        if: ${{ always() && (steps.run-tests.outcome == 'failure' || steps.run-tests.outcome == 'cancelled') }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample test report (macOS)
+          path: |
+            checkout/sample/Saved/Automation
+            checkout/sample/Saved/Logs
+            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
+            ~/Library/Logs/Unreal Engine
+
+      - name: Upload sample build (Cocoa)
+        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (macOS, cocoa)
+          path: checkout/sample/Builds/Mac/
+          retention-days: 1
+
+      - name: Enable native backend
+        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        run: |
+          sed -i '' 's/UseNativeBackend=False/UseNativeBackend=True/' checkout/sample/Config/DefaultEngine.ini
+
+      - name: Build and test (Native)
+        id: run-tests-native
+        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        timeout-minutes: 150
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          # See the log streaming note in the Cocoa step above
+          (
+            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            f="$baseline"
+            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
+              sleep 15
+              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
+            done
+            echo "=== Streaming cook log: $f ==="
+            exec tail -n +1 -f "$f"
+          ) &
+          COOK_LOG_TAIL_PID=$!
+          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
+          # skipminspeccheck: GitHub mac runners are VMs (hw.model=VirtualMac2,1) that fail
+          # the editor's min-spec hardware check; without the flag the editor blocks forever
+          # on a modal "Run Anyway" alert before writing any log output
+          "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
+            -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+            -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds-Native" \
+            -platform=Mac \
+            -UBTArgs="-AllCores" \
+            -AdditionalCookerOptions="-skipminspeccheck" \
+            -nop4 \
+            -cook \
+            -iterate \
+            -build \
+            -stage \
+            -package \
+            -archive
+          # See the automation test run notes in the Cocoa step above
+          "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+            -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation-Native" \
+            -ExecCmds="Automation RunTests Sentry;quit" \
+            -TestExit="Automation Test Queue Empty" \
+            -stdout \
+            -Unattended \
+            -NoPause \
+            -NoSplash \
+            -NullRHI \
+            -NoSound \
+            -SkipMinSpecCheck \
+            -BuildMachine
+
+      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
+      - name: Collect native sample test info
+        if: ${{ always() && (steps.run-tests-native.outcome == 'failure' || steps.run-tests-native.outcome == 'cancelled') }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample test report (macOS, native)
+          path: |
+            checkout/sample/Saved/Automation-Native
+            checkout/sample/Saved/Logs
+            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
+            ~/Library/Logs/Unreal Engine
+
+      - name: Upload sample build (Native)
+        if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (macOS, native)
+          path: checkout/sample/Builds-Native/Mac/
+          retention-days: 1

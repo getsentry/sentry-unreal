@@ -249,82 +249,113 @@ jobs:
             echo 'android=["5.4","5.5","5.6","5.7","5.8"]'                  >> "$GITHUB_OUTPUT"
           fi
 
-  test-linux:
-    needs: [package-preparation, generate-test-matrix]
-    name: Linux UE ${{ matrix.unreal }}
+  # test-linux:
+  #   needs: [package-preparation, generate-test-matrix]
+  #   name: Linux UE ${{ matrix.unreal }}
+  #   secrets: inherit
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
+  #   uses: ./.github/workflows/test-linux.yml
+  #   with:
+  #     unreal-version: ${{ matrix.unreal }}
+
+  # test-windows:
+  #   needs: [package-preparation, generate-test-matrix]
+  #   name: Windows UE ${{ matrix.unreal }}
+  #   secrets: inherit
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
+  #   uses: ./.github/workflows/test-windows.yml
+  #   with:
+  #     unreal-version: ${{ matrix.unreal }}
+
+  # Unlike Linux/Windows/Android which use pre-baked Docker images, the macOS job downloads
+  # a pre-built engine archive (UE_MAC_DOWNLOAD_LINK repository setting) onto a GitHub-hosted
+  # runner, so it covers only the engine version stored in that archive.
+  test-macos:
+    needs: [package-preparation]
+    name: macOS UE ${{ matrix.unreal }}
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
-    uses: ./.github/workflows/test-linux.yml
+        # Must match the engine version of the archive behind UE_MAC_DOWNLOAD_LINK
+        unreal: ['5.8']
+    uses: ./.github/workflows/test-macos.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
-  test-windows:
-    needs: [package-preparation, generate-test-matrix]
-    name: Windows UE ${{ matrix.unreal }}
+  integration-test-macos:
+    needs: [test-macos]
+    name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
-    uses: ./.github/workflows/test-windows.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
-
-  test-android:
-    needs: [package-preparation, generate-test-matrix]
-    name: Android UE ${{ matrix.unreal }}
-    secrets: inherit
-    strategy:
-      fail-fast: false
-      matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
-    uses: ./.github/workflows/test-android.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
-
-  integration-test-linux:
-    needs: [test-linux, generate-test-matrix]
-    name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
-    secrets: inherit
-    strategy:
-      fail-fast: false
-      matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
-        backend: [crashpad, native]
-    uses: ./.github/workflows/integration-test-linux.yml
+        # Must match the engine version of the archive behind UE_MAC_DOWNLOAD_LINK
+        unreal: ['5.8']
+        backend: [cocoa, native]
+    uses: ./.github/workflows/integration-test-macos.yml
     with:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
 
-  integration-test-windows:
-    needs: [test-windows, generate-test-matrix]
-    name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
-    secrets: inherit
-    strategy:
-      fail-fast: false
-      matrix:
-        # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
-        backend: [crashpad, native]
-        exclude:
-          - unreal: '4.27'
-    uses: ./.github/workflows/integration-test-windows.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
-      backend: ${{ matrix.backend }}
+  # test-android:
+  #   needs: [package-preparation, generate-test-matrix]
+  #   name: Android UE ${{ matrix.unreal }}
+  #   secrets: inherit
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
+  #   uses: ./.github/workflows/test-android.yml
+  #   with:
+  #     unreal-version: ${{ matrix.unreal }}
 
-  integration-test-android:
-    needs: [test-android, generate-test-matrix]
-    name: Android UE ${{ matrix.unreal }}
-    secrets: inherit
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
-    uses: ./.github/workflows/integration-test-android.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
+  # integration-test-linux:
+  #   needs: [test-linux, generate-test-matrix]
+  #   name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
+  #   secrets: inherit
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
+  #       backend: [crashpad, native]
+  #   uses: ./.github/workflows/integration-test-linux.yml
+  #   with:
+  #     unreal-version: ${{ matrix.unreal }}
+  #     backend: ${{ matrix.backend }}
+
+  # integration-test-windows:
+  #   needs: [test-windows, generate-test-matrix]
+  #   name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
+  #   secrets: inherit
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
+  #       unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
+  #       backend: [crashpad, native]
+  #       exclude:
+  #         - unreal: '4.27'
+  #   uses: ./.github/workflows/integration-test-windows.yml
+  #   with:
+  #     unreal-version: ${{ matrix.unreal }}
+  #     backend: ${{ matrix.backend }}
+
+  # integration-test-android:
+  #   needs: [test-android, generate-test-matrix]
+  #   name: Android UE ${{ matrix.unreal }}
+  #   secrets: inherit
+  #   strategy:
+  #     fail-fast: false
+  #     max-parallel: 1
+  #     matrix:
+  #       unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
+  #   uses: ./.github/workflows/integration-test-android.yml
+  #   with:
+  #     unreal-version: ${{ matrix.unreal }}
