@@ -50,3 +50,6 @@ jobs:
           path: |
             integration-test/output/
             sample-build/SentryPlayground/Saved/Logs/
+            sample-build/SentryPlayground/.sentry-native/
+          # .sentry-native is a hidden dir; upload-artifact skips hidden files by default
+          include-hidden-files: true
