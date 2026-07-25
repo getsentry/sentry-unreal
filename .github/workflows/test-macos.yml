@@ -8,7 +8,8 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: macos-15
+    runs-on:
+      - bitrise_pool_name:gdx
 
     env:
       DISALLOW_RAW_POINTERS: 'true'
