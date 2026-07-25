@@ -82,6 +82,27 @@ jobs:
           echo "key=${KEY}" >> "$GITHUB_OUTPUT"
           echo "DDC cache key: ${KEY}"
 
+      # Bitrise-hosted mac VMs don't ship PowerShell, which the DDC configuration
+      # script requires (no-op on GitHub-hosted runners where pwsh is preinstalled)
+      - name: Ensure PowerShell is available
+        run: |
+          if command -v pwsh >/dev/null; then
+            echo "pwsh already installed: $(pwsh --version)"
+            exit 0
+          fi
+          PWSH_VERSION=7.4.6
+          case "$(uname -m)" in
+            arm64) PWSH_ARCH=osx-arm64 ;;
+            *)     PWSH_ARCH=osx-x64 ;;
+          esac
+          curl -fsSL -o /tmp/pwsh.tar.gz "https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/powershell-${PWSH_VERSION}-${PWSH_ARCH}.tar.gz"
+          mkdir -p "$HOME/.pwsh"
+          tar -xzf /tmp/pwsh.tar.gz -C "$HOME/.pwsh"
+          rm /tmp/pwsh.tar.gz
+          chmod +x "$HOME/.pwsh/pwsh"
+          echo "$HOME/.pwsh" >> "$GITHUB_PATH"
+          "$HOME/.pwsh/pwsh" --version
+
       - name: Configure project-local DDC
         shell: pwsh
         run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
