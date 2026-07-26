@@ -4,6 +4,7 @@
 
 #include "SentryPlayground/SentryPlayground.h"
 #include "SentryPlayground/Utils/SentryPlaygroundCrashUtils.h"
+#include "SentryPlayground/Utils/SentryPlaygroundTestUtils.h"
 
 #include "SentryModule.h"
 #include "SentrySettings.h"
@@ -46,6 +47,13 @@ void FSentryCrashTest::Run()
 #if PLATFORM_ANDROID
 	FPlatformProcess::Sleep(1.0f);
 #endif
+
+	if (CrashType == ESentryAppTerminationType::OutOfMemory)
+	{
+		// Cap process memory so exhausting it doesn't starve the whole machine
+		// (and the out-of-process crash handler with it) on CI runners
+		USentryPlaygroundTestUtils::SetMemoryLimit(4096);
+	}
 
 	USentryPlaygroundCrashUtils::Terminate(CrashType);
 }
