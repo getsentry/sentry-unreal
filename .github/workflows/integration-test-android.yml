@@ -17,6 +17,9 @@ jobs:
       SAUCE_REGION: us-west-1
       SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
       SAUCE_SESSION_NAME: UE ${{ inputs.unreal-version }} Android Integration Test
+      # Capture only relevant logcat tags - system spam (thousands of lines/sec on real devices)
+      # evicts UE's EVENT_CAPTURED/TEST_RESULT markers from the log window otherwise
+      SAUCE_LOGCAT_FILTER: "UE:V UE4:V Sentry:V sentry-native:V DEBUG:V ActivityManager:I *:S"
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
