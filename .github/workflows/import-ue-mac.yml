@@ -21,6 +21,11 @@ on:
         required: true
         type: string
         default: '5.8'
+  # Temporary trigger for testing from this branch - workflow_dispatch only works
+  # once the workflow file exists on the default branch. Remove before merging.
+  push:
+    branches: ['chore/mac-build-ci']
+    paths: ['.github/workflows/import-ue-mac.yml']
 
 env:
   REGISTRY: ghcr.io
@@ -54,7 +59,7 @@ jobs:
 
       - name: Push archive to the registry
         env:
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
+          UNREAL_VERSION: ${{ inputs.unreal-version || '5.8' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
