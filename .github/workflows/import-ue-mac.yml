@@ -1,0 +1,61 @@
+# One-shot helper that publishes the pre-built macOS Unreal Engine archive to the
+# getsentry container registry, next to the unreal-docker images. The archive is
+# stored as a plain OCI artifact (the zip itself, no docker image wrapping), so
+# it can be fetched with oras but not 'docker pull'.
+#
+# Downloads the archive from the Google Drive link configured in the repository
+# settings (UE_MAC_DOWNLOAD_LINK) and pushes it to:
+#
+#   ghcr.io/getsentry/unreal-engine-mac:<unreal-version>
+#
+# Run it once whenever the engine archive changes (new engine version or a
+# rebuilt archive); the test-macos workflow pulls the artifact from the registry.
+
+name: Import macOS engine archive
+
+on:
+  workflow_dispatch:
+    inputs:
+      unreal-version:
+        description: 'Engine version to publish under (e.g. 5.8)'
+        required: true
+        type: string
+        default: '5.8'
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  import:
+    name: Import
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Install oras
+        run: |
+          ORAS_VERSION=1.3.3
+          curl -fsSL -o /tmp/oras.tar.gz "https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_linux_amd64.tar.gz"
+          sudo tar -xzf /tmp/oras.tar.gz -C /usr/local/bin oras
+          oras version
+
+      - name: Download engine archive
+        env:
+          UE_MAC_DOWNLOAD_LINK: ${{ secrets.UE_MAC_DOWNLOAD_LINK || vars.UE_MAC_DOWNLOAD_LINK }}
+        run: |
+          if [ -z "$UE_MAC_DOWNLOAD_LINK" ]; then
+            echo "::error::UE_MAC_DOWNLOAD_LINK is not configured in the repository settings"
+            exit 1
+          fi
+          pipx install gdown
+          gdown "$UE_MAC_DOWNLOAD_LINK" -O ue.zip
+          df -h /
+
+      - name: Push archive to the registry
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
+          oras push "$REGISTRY/getsentry/unreal-engine-mac:$UNREAL_VERSION" ue.zip

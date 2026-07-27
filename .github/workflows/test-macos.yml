@@ -11,6 +11,10 @@ jobs:
     runs-on:
       - bitrise_pool_name:gdx
 
+    permissions:
+      contents: read
+      packages: read
+
     env:
       DISALLOW_RAW_POINTERS: 'true'
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
@@ -30,17 +34,25 @@ jobs:
           sudo rm -rf "$HOME/Library/Android" "$HOME/.dotnet" "$HOME/hostedtoolcache/CodeQL"
           df -h /
 
+      # The engine archive is stored as an OCI artifact in the getsentry container
+      # registry (published by the import-ue-mac workflow) - it's the plain zip, so
+      # it's fetched with oras rather than docker
       - name: Download Unreal Engine
         env:
-          UE_MAC_DOWNLOAD_LINK: ${{ secrets.UE_MAC_DOWNLOAD_LINK || vars.UE_MAC_DOWNLOAD_LINK }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -z "$UE_MAC_DOWNLOAD_LINK" ]; then
-            echo "::error::UE_MAC_DOWNLOAD_LINK is not configured in the repository settings"
-            exit 1
-          fi
-          pipx install gdown
-          gdown "$UE_MAC_DOWNLOAD_LINK" -O ue.zip
-          df -h /
+          ORAS_VERSION=1.3.3
+          case "$(uname -m)" in
+            arm64) ORAS_ARCH=darwin_arm64 ;;
+            *)     ORAS_ARCH=darwin_amd64 ;;
+          esac
+          curl -fsSL -o /tmp/oras.tar.gz "https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_${ORAS_ARCH}.tar.gz"
+          mkdir -p /tmp/oras-bin
+          tar -xzf /tmp/oras.tar.gz -C /tmp/oras-bin oras
+          echo "$GITHUB_TOKEN" | /tmp/oras-bin/oras login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          /tmp/oras-bin/oras pull "ghcr.io/getsentry/unreal-engine-mac:$UNREAL_VERSION"
+          df -h
 
       - name: Install Unreal Engine
         run: |
