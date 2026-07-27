@@ -35,8 +35,9 @@ jobs:
           df -h /
 
       # The engine archive is stored as an OCI artifact in the getsentry container
-      # registry (published by the import-ue-mac workflow) - it's the plain zip, so
-      # it's fetched with oras rather than docker
+      # registry (published by the import-ue-mac workflow), in the same unreal-docker
+      # package as the Linux engine images - but unlike those, the '-mac' tag is the
+      # plain zip, so it's fetched with oras and can't be pulled with docker
       - name: Download Unreal Engine
         env:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
@@ -51,7 +52,7 @@ jobs:
           mkdir -p /tmp/oras-bin
           tar -xzf /tmp/oras.tar.gz -C /tmp/oras-bin oras
           echo "$GITHUB_TOKEN" | /tmp/oras-bin/oras login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          /tmp/oras-bin/oras pull "ghcr.io/getsentry/unreal-engine-mac:$UNREAL_VERSION"
+          /tmp/oras-bin/oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac"
           df -h
 
       - name: Install Unreal Engine

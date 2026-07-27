@@ -1,12 +1,13 @@
 # One-shot helper that publishes the pre-built macOS Unreal Engine archive to the
-# getsentry container registry, next to the unreal-docker images. The archive is
-# stored as a plain OCI artifact (the zip itself, no docker image wrapping), so
-# it can be fetched with oras but not 'docker pull'.
+# getsentry container registry, into the same unreal-docker package as the Linux
+# engine images. Unlike the '-linux' tags, the '-mac' tag is a plain OCI artifact
+# (the zip itself, no docker image wrapping), so it can be fetched with oras but
+# NOT with 'docker pull'.
 #
 # Downloads the archive from the Google Drive link configured in the repository
 # settings (UE_MAC_DOWNLOAD_LINK) and pushes it to:
 #
-#   ghcr.io/getsentry/unreal-engine-mac:<unreal-version>
+#   ghcr.io/getsentry/unreal-docker:<unreal-version>-mac
 #
 # Run it once whenever the engine archive changes (new engine version or a
 # rebuilt archive); the test-macos workflow pulls the artifact from the registry.
@@ -63,4 +64,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
-          oras push "$REGISTRY/getsentry/unreal-engine-mac:$UNREAL_VERSION" ue.zip
+          oras push "$REGISTRY/getsentry/unreal-docker:$UNREAL_VERSION-mac" ue.zip
