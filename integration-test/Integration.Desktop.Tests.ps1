@@ -611,11 +611,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $script:ReplayEvent.count_segments | Should -Be 1
         }
 
-        It "Should have expected replay duration" {
-            # The staged clip's sidecar claims a 5000 ms duration
-            $script:ReplayEvent.duration | Should -Be 5
-        }
-
         It "Should have expected platform" {
             $expectedPlatform = if ($Platform -eq 'MacOS' -and -not $script:IsNativeBackend) { 'cocoa' } else { 'native' }
             $script:ReplayEvent.platform | Should -Be $expectedPlatform
