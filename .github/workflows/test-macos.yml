@@ -20,57 +20,42 @@ jobs:
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
 
     steps:
-      # On macOS 'df -h /' shows the sealed system volume - list all mounts to see
-      # the actual free space on the data volume the job can use
-      - name: Show available disk space
-        run: df -h
-
-      # GitHub-hosted macOS runners have limited free disk space. Remove pre-installed
-      # tooling that isn't needed here to make room for the engine and sample builds.
-      - name: Free up disk space
-        run: |
-          df -h /
-          sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes
-          sudo rm -rf "$HOME/Library/Android" "$HOME/.dotnet" "$HOME/hostedtoolcache/CodeQL"
-          df -h /
-
-      # The engine archive is stored as an OCI artifact in the getsentry container
-      # registry (published by the import-ue-mac workflow), in the same unreal-docker
-      # package as the Linux engine images - but unlike those, the '-mac' tag is the
-      # plain zip, so it's fetched with oras and can't be pulled with docker
-      - name: Download Unreal Engine
-        env:
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install oras
         run: |
           ORAS_VERSION=1.3.3
           case "$(uname -m)" in
             arm64) ORAS_ARCH=darwin_arm64 ;;
             *)     ORAS_ARCH=darwin_amd64 ;;
           esac
-          curl -fsSL -o /tmp/oras.tar.gz "https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_${ORAS_ARCH}.tar.gz"
-          mkdir -p /tmp/oras-bin
-          tar -xzf /tmp/oras.tar.gz -C /tmp/oras-bin oras
-          echo "$GITHUB_TOKEN" | /tmp/oras-bin/oras login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          mkdir -p "$RUNNER_TEMP/oras"
+          curl -fsSL "https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_${ORAS_ARCH}.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP/oras" oras
+          echo "$RUNNER_TEMP/oras" >> "$GITHUB_PATH"
+
+      # The engine archive is an OCI artifact in the unreal-docker package (published
+      # by the ue-oci-macos workflow) - the '-mac' tag is the engine zip stored in
+      # parts, fetched with oras rather than docker
+      - name: Download Unreal Engine
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GITHUB_TOKEN" | oras login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           # The runner's network resets long-lived HTTP/2 streams on multi-GB downloads
           # (PROTOCOL_ERROR) - force the Go HTTP client down to HTTP/1.1 and retry
           export GODEBUG=http2client=0
           for attempt in 1 2 3; do
-            /tmp/oras-bin/oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac" && break
+            oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac" && break
             if [ "$attempt" = 3 ]; then
               echo "::error::Failed to pull the engine archive after $attempt attempts"
               exit 1
             fi
             echo "Pull failed (attempt $attempt), retrying..."
-            rm -f ue.zip ue.zip.part-*
+            rm -f ue.zip.part-*
             sleep 10
           done
-          # The archive is stored in parts (see import-ue-mac.yml) - reassemble it
-          if ls ue.zip.part-* > /dev/null 2>&1; then
-            cat ue.zip.part-* > ue.zip
-            rm ue.zip.part-*
-          fi
-          df -h
+          cat ue.zip.part-* > ue.zip
+          rm ue.zip.part-*
 
       - name: Install Unreal Engine
         run: |

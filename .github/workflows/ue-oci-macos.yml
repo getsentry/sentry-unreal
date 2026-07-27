@@ -1,0 +1,57 @@
+# Publishes a pre-built macOS Unreal Engine archive to the getsentry container
+# registry under the same unreal-docker package as the Linux engine images. The
+# '-mac' tag is a plain OCI artifact (the engine zip split into parts) fetched
+# with oras - it is not a runnable image and can't be pulled with docker.
+
+name: Build UE macOS OCI artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: Select Unreal Engine version
+        required: true
+        type: choice
+        options:
+        - 5.6
+        - 5.7
+        - 5.8
+      download_link:
+        description: URL of the pre-built engine archive (zip)
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Install oras
+        run: |
+          ORAS_VERSION=1.3.3
+          curl -fsSL "https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin oras
+
+      - name: Download engine archive
+        env:
+          DOWNLOAD_LINK: ${{ inputs.download_link }}
+        run: |
+          pipx install gdown
+          gdown --fuzzy "$DOWNLOAD_LINK" -O ue.zip
+
+      - name: Push archive to the registry
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Split so pulls fetch parts in parallel and a dropped connection only costs one part
+          split -b 4G ue.zip ue.zip.part-
+          rm ue.zip
+          echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
+          oras push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-mac" ue.zip.part-*
