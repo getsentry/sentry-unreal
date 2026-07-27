@@ -1,14 +1,3 @@
-# Publishes a pre-built macOS Unreal Engine archive to the getsentry container
-# registry under the same unreal-docker package as the Windows/Linux/Android engine images.
-# The '-mac' tag is a plain OCI artifact (the engine zip split into parts) fetched
-# with oras - it is not a runnable image and can't be pulled with docker.
-#
-# The archive is expected to contain 'Engine' at its root, e.g. produced from a
-# local installed engine build ('Make Installed Build' BuildGraph output) with:
-#   cd LocalBuilds/Engine/Mac && zip -r -y -X UE-<version>-Mac.zip Engine \
-#     -x 'Engine/Plugins/MetaHuman/*' -x '*.DS_Store'
-# (Templates, FeaturePacks and the MetaHuman plugin aren't needed for CI)
-
 name: Build UE macOS OCI artifact
 
 on:

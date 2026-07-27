@@ -67,7 +67,6 @@ jobs:
           echo "key=${KEY}" >> "$GITHUB_OUTPUT"
           echo "DDC cache key: ${KEY}"
 
-      # Bitrise-hosted mac VMs don't ship PowerShell, which the DDC configuration script requires
       - name: Install PowerShell
         run: |
           mkdir -p "$HOME/.pwsh"
