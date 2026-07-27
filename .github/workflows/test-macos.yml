@@ -21,16 +21,7 @@ jobs:
 
     steps:
       - name: Install oras
-        run: |
-          ORAS_VERSION=1.3.3
-          case "$(uname -m)" in
-            arm64) ORAS_ARCH=darwin_arm64 ;;
-            *)     ORAS_ARCH=darwin_amd64 ;;
-          esac
-          mkdir -p "$RUNNER_TEMP/oras"
-          curl -fsSL "https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_${ORAS_ARCH}.tar.gz" \
-            | tar -xz -C "$RUNNER_TEMP/oras" oras
-          echo "$RUNNER_TEMP/oras" >> "$GITHUB_PATH"
+        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
 
       # The engine archive is an OCI artifact in the unreal-docker package (published
       # by the ue-oci-macos workflow) - the '-mac' tag is the engine zip stored in
