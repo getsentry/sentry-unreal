@@ -52,7 +52,19 @@ jobs:
           mkdir -p /tmp/oras-bin
           tar -xzf /tmp/oras.tar.gz -C /tmp/oras-bin oras
           echo "$GITHUB_TOKEN" | /tmp/oras-bin/oras login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          /tmp/oras-bin/oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac"
+          # The runner's network resets long-lived HTTP/2 streams on multi-GB downloads
+          # (PROTOCOL_ERROR) - force the Go HTTP client down to HTTP/1.1 and retry
+          export GODEBUG=http2client=0
+          for attempt in 1 2 3; do
+            /tmp/oras-bin/oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac" && break
+            if [ "$attempt" = 3 ]; then
+              echo "::error::Failed to pull the engine archive after $attempt attempts"
+              exit 1
+            fi
+            echo "Pull failed (attempt $attempt), retrying..."
+            rm -f ue.zip
+            sleep 10
+          done
           df -h
 
       - name: Install Unreal Engine
