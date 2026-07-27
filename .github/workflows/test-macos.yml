@@ -50,16 +50,6 @@ jobs:
 
       - name: Install Unreal Engine
         run: |
-          # The archive is produced from a local installed engine build ('Make Installed
-          # Build' BuildGraph output) with 'Engine' at the archive root - Templates,
-          # FeaturePacks and the MetaHuman plugin (~8 GiB) aren't needed for CI and are
-          # excluded when the archive is created:
-          #   cd LocalBuilds/Engine/Mac && zip -r -y -X UE-<version>-Mac.zip Engine \
-          #     -x 'Engine/Plugins/MetaHuman/*' -x '*.DS_Store'
-          if ! unzip -Z1 ue.zip Engine/Build/BatchFiles/RunUAT.sh > /dev/null; then
-            echo "::error::Could not locate Engine/Build/BatchFiles/RunUAT.sh at the archive root"
-            exit 1
-          fi
           mkdir -p "$HOME/UnrealEngine"
           unzip -q ue.zip -d "$HOME/UnrealEngine"
           rm ue.zip

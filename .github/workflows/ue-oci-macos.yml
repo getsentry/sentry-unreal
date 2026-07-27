@@ -1,7 +1,13 @@
 # Publishes a pre-built macOS Unreal Engine archive to the getsentry container
-# registry under the same unreal-docker package as the Linux engine images. The
-# '-mac' tag is a plain OCI artifact (the engine zip split into parts) fetched
+# registry under the same unreal-docker package as the Windows/Linux/Android engine images.
+# The '-mac' tag is a plain OCI artifact (the engine zip split into parts) fetched
 # with oras - it is not a runnable image and can't be pulled with docker.
+#
+# The archive is expected to contain 'Engine' at its root, e.g. produced from a
+# local installed engine build ('Make Installed Build' BuildGraph output) with:
+#   cd LocalBuilds/Engine/Mac && zip -r -y -X UE-<version>-Mac.zip Engine \
+#     -x 'Engine/Plugins/MetaHuman/*' -x '*.DS_Store'
+# (Templates, FeaturePacks and the MetaHuman plugin aren't needed for CI)
 
 name: Build UE macOS OCI artifact
 
@@ -47,7 +53,6 @@ jobs:
           UE_VERSION: ${{ inputs.ue_version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Split so pulls fetch parts in parallel and a dropped connection only costs one part
           split -b 4G ue.zip ue.zip.part-
           echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
           oras push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-mac" ue.zip.part-*
