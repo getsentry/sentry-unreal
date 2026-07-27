@@ -23,28 +23,13 @@ jobs:
       - name: Install oras
         uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
 
-      # The engine archive is an OCI artifact in the unreal-docker package (published
-      # by the ue-oci-macos workflow) - the '-mac' tag is the engine zip stored in
-      # parts, fetched with oras rather than docker
       - name: Download Unreal Engine
         env:
           UNREAL_VERSION: ${{ inputs.unreal-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "$GITHUB_TOKEN" | oras login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          # The runner's network resets long-lived HTTP/2 streams on multi-GB downloads
-          # (PROTOCOL_ERROR) - force the Go HTTP client down to HTTP/1.1 and retry
-          export GODEBUG=http2client=0
-          for attempt in 1 2 3; do
-            oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac" && break
-            if [ "$attempt" = 3 ]; then
-              echo "::error::Failed to pull the engine archive after $attempt attempts"
-              exit 1
-            fi
-            echo "Pull failed (attempt $attempt), retrying..."
-            rm -f ue.zip.part-*
-            sleep 10
-          done
+          oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac"
           cat ue.zip.part-* > ue.zip
           rm ue.zip.part-*
 
@@ -57,7 +42,6 @@ jobs:
           echo "UE_ROOT=$UE_ROOT" >> "$GITHUB_ENV"
           # Zip archives may not preserve execute permissions
           chmod -R u+x "$UE_ROOT/Engine/Build/BatchFiles" "$UE_ROOT/Engine/Binaries" || true
-          df -h /
 
       - name: Download package
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
