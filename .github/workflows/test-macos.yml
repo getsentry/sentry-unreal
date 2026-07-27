@@ -100,24 +100,6 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
-          # UAT redirects all cooker output to a log file under the engine directory,
-          # which makes a long shader-compiling cook look like a hang - stream the log
-          # to the console instead (wait for a log that appears after this step starts)
-          (
-            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
-            f="$baseline"
-            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
-              sleep 15
-              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
-            done
-            echo "=== Streaming cook log: $f ==="
-            exec tail -n +1 -f "$f"
-          ) &
-          COOK_LOG_TAIL_PID=$!
-          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
-          # skipminspeccheck: GitHub mac runners are VMs (hw.model=VirtualMac2,1) that fail
-          # the editor's min-spec hardware check; without the flag the editor blocks forever
-          # on a modal "Run Anyway" alert before writing any log output
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
@@ -131,12 +113,6 @@ jobs:
             -stage \
             -package \
             -archive
-          # Run automation tests with the console binary (the GUI UnrealEditor binary
-          # hangs at startup on the runner) and mirror the log to stdout so progress is
-          # visible in the CI console. NoSound: the virtualized runner has no audio
-          # device and CoreAudio mixer initialization hangs indefinitely without it.
-          # BuildMachine: skips the modal min-spec warning dialogs (low RAM/slow CPU)
-          # that UpdateAutoLoadProject shows on Mac even in unattended mode.
           "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation" \
             -ExecCmds="Automation RunTests Sentry;quit" \
@@ -198,22 +174,6 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
-          # See the log streaming note in the Cocoa step above
-          (
-            baseline="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
-            f="$baseline"
-            while [ -z "$f" ] || [ "$f" = "$baseline" ]; do
-              sleep 15
-              f="$(ls -t "$UE_ROOT"/Engine/Programs/AutomationTool/Saved/Cook-*.txt 2>/dev/null | head -n 1)"
-            done
-            echo "=== Streaming cook log: $f ==="
-            exec tail -n +1 -f "$f"
-          ) &
-          COOK_LOG_TAIL_PID=$!
-          trap 'kill $COOK_LOG_TAIL_PID 2>/dev/null || true' EXIT
-          # skipminspeccheck: GitHub mac runners are VMs (hw.model=VirtualMac2,1) that fail
-          # the editor's min-spec hardware check; without the flag the editor blocks forever
-          # on a modal "Run Anyway" alert before writing any log output
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds-Native" \
@@ -227,7 +187,6 @@ jobs:
             -stage \
             -package \
             -archive
-          # See the automation test run notes in the Cocoa step above
           "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation-Native" \
             -ExecCmds="Automation RunTests Sentry;quit" \
