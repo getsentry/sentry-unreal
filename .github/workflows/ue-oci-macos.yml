@@ -49,6 +49,5 @@ jobs:
         run: |
           # Split so pulls fetch parts in parallel and a dropped connection only costs one part
           split -b 4G ue.zip ue.zip.part-
-          rm ue.zip
           echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
           oras push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-mac" ue.zip.part-*
