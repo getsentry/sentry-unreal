@@ -606,7 +606,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
 
         It "Should have expected platform" {
-            $expectedPlatform = if ($Platform -eq 'MacOS' -and -not $script:IsNativeBackend) { 'cocoa' } else { 'native' }
+            $expectedPlatform = if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) { 'cocoa' } else { 'native' }
             $script:ReplayEvent.platform | Should -Be $expectedPlatform
         }
     }
