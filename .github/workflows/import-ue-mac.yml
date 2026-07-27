@@ -65,7 +65,7 @@ jobs:
         run: |
           # Split the archive so pulls fetch several smaller blobs in parallel and a
           # dropped connection only costs one part instead of the whole download
-          split -b 4g ue.zip ue.zip.part-
+          split -b 4G ue.zip ue.zip.part-
           rm ue.zip
           ls -lh ue.zip.part-*
           echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
