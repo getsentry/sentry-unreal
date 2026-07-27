@@ -16,6 +16,11 @@ jobs:
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
 
     steps:
+      # On macOS 'df -h /' shows the sealed system volume - list all mounts to see
+      # the actual free space on the data volume the job can use
+      - name: Show available disk space
+        run: df -h
+
       # GitHub-hosted macOS runners have limited free disk space. Remove pre-installed
       # tooling that isn't needed here to make room for the engine and sample builds.
       - name: Free up disk space
