@@ -280,7 +280,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Must match the engine version of the archive behind UE_MAC_DOWNLOAD_LINK
+        # Must match an engine version published to the registry by the ue-oci-macos workflow
         unreal: ['5.8']
     uses: ./.github/workflows/test-macos.yml
     with:
@@ -293,7 +293,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Must match the engine version of the archive behind UE_MAC_DOWNLOAD_LINK
+        # Must match an engine version published to the registry by the ue-oci-macos workflow
         unreal: ['5.8']
         backend: [cocoa, native]
     uses: ./.github/workflows/integration-test-macos.yml
