@@ -285,6 +285,7 @@ jobs:
     uses: ./.github/workflows/test-macos.yml
     with:
       unreal-version: ${{ matrix.unreal }}
+    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
   test-android:
     needs: [package-preparation, generate-test-matrix]
