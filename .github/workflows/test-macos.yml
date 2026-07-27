@@ -62,9 +62,14 @@ jobs:
               exit 1
             fi
             echo "Pull failed (attempt $attempt), retrying..."
-            rm -f ue.zip
+            rm -f ue.zip ue.zip.part-*
             sleep 10
           done
+          # The archive is stored in parts (see import-ue-mac.yml) - reassemble it
+          if ls ue.zip.part-* > /dev/null 2>&1; then
+            cat ue.zip.part-* > ue.zip
+            rm ue.zip.part-*
+          fi
           df -h
 
       - name: Install Unreal Engine

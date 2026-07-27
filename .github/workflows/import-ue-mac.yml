@@ -63,5 +63,10 @@ jobs:
           UNREAL_VERSION: ${{ inputs.unreal-version || '5.8' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Split the archive so pulls fetch several smaller blobs in parallel and a
+          # dropped connection only costs one part instead of the whole download
+          split -b 4g ue.zip ue.zip.part-
+          rm ue.zip
+          ls -lh ue.zip.part-*
           echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
-          oras push "$REGISTRY/getsentry/unreal-docker:$UNREAL_VERSION-mac" ue.zip
+          oras push "$REGISTRY/getsentry/unreal-docker:$UNREAL_VERSION-mac" ue.zip.part-*
