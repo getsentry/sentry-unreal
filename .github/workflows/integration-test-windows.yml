@@ -39,8 +39,6 @@ jobs:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground.exe
-          # Enlarged thread stack guarantee (KiB) so the crash handler can run on stack-overflow (default 64 is not always enough for UE's handler chain)
-          SENTRY_HANDLER_STACK_SIZE: 256
         run: |
           cmake -B build -S .
           Invoke-Pester Integration.Desktop.Tests.ps1 -CI
