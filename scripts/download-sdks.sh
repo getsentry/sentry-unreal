@@ -6,7 +6,7 @@ cd "$(dirname $0)/../plugin-dev/Source/ThirdParty"
 
 findCiRun() {
     echo "Looking for the latest successful CI run on branch '$1'" >/dev/stderr
-    id=$(gh run list --branch $1 --workflow package-plugin-workflow \
+    id=$(gh run list --branch $1 --workflow CI \
         --json 'conclusion,databaseId' --jq 'first(.[] | select(.conclusion == "success") | .databaseId)')
     if [[ "$id" == "" ]]; then
         echo "  ... no successful CI run found on $1" >/dev/stderr
