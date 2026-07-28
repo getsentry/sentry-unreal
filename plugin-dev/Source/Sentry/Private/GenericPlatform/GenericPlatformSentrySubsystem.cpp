@@ -459,6 +459,11 @@ void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const ch
 	sentry_value_set_by_key(eventTags, key, sentry_value_new_string(value));
 }
 
+void FGenericPlatformSentrySubsystem::AttachStackTrace(sentry_value_t target)
+{
+	sentry_value_set_stacktrace(target, nullptr, 0);
+}
+
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: bUseNativeBackend(false)
 	, beforeSend(nullptr)
@@ -817,7 +822,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FStr
 
 	if (isStackTraceEnabled)
 	{
-		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
+		AttachStackTrace(nativeEvent);
 	}
 
 	sentry_uuid_t id = sentry_capture_event(nativeEvent);
@@ -830,7 +835,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(c
 
 	if (isStackTraceEnabled)
 	{
-		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
+		AttachStackTrace(nativeEvent);
 	}
 
 	sentry_scope_t* scope = sentry_local_scope_new();
@@ -852,7 +857,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEvent(TSharedPtr<I
 
 	if (isStackTraceEnabled)
 	{
-		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
+		AttachStackTrace(nativeEvent);
 	}
 
 	sentry_uuid_t id = sentry_capture_event(nativeEvent);
@@ -867,7 +872,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 
 	if (isStackTraceEnabled)
 	{
-		sentry_value_set_stacktrace(nativeEvent, nullptr, 0);
+		AttachStackTrace(nativeEvent);
 	}
 
 	sentry_scope_t* scope = sentry_local_scope_new();
@@ -890,7 +895,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_UTF8(*type), TCHAR_TO_UTF8(*message));
 	sentry_event_add_exception(exceptionEvent, nativeException);
 
-	sentry_value_set_stacktrace(exceptionEvent, nullptr, 0);
+	AttachStackTrace(exceptionEvent);
 
 	FString ScreenshotPath;
 

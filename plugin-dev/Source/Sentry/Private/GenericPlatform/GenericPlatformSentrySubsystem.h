@@ -124,6 +124,8 @@ protected:
 	void SetEventCrashType(sentry_value_t event, ECrashContextType crashType);
 	void SetEventTag(sentry_value_t event, const char* key, const char* value);
 
+	virtual void AttachStackTrace(sentry_value_t target);
+
 	bool bUseNativeBackend;
 
 	TArray<TSharedPtr<FGenericPlatformSentryAttachment>> attachments;
