@@ -1,0 +1,47 @@
+name: Build UE macOS OCI artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: Select Unreal Engine version
+        required: true
+        type: choice
+        options:
+        - 5.6
+        - 5.7
+        - 5.8
+      download_link:
+        description: URL of the pre-built engine archive (zip)
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Install oras
+        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
+
+      - name: Download engine archive
+        env:
+          DOWNLOAD_LINK: ${{ inputs.download_link }}
+        run: |
+          pipx install gdown
+          gdown --fuzzy "$DOWNLOAD_LINK" -O ue.zip
+
+      - name: Push archive to the registry
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          split -b 4G ue.zip ue.zip.part-
+          echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
+          oras push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-mac" ue.zip.part-*
