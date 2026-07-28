@@ -191,8 +191,30 @@ sentry_value_t FGenericPlatformSentryConverters::CallstackToNative(const TArray<
 	sentry_value_t frames = sentry_value_new_list();
 	for (int i = 0; i < framesCount; ++i)
 	{
+		const FProgramCounterSymbolInfo& symbolInfo = callstack[framesCount - i - 1];
+
 		sentry_value_t frame = sentry_value_new_object();
-		sentry_value_set_by_key(frame, "instruction_addr", AddressToNative(callstack[framesCount - i - 1].ProgramCounter));
+		sentry_value_set_by_key(frame, "instruction_addr", AddressToNative(symbolInfo.ProgramCounter));
+
+		// Frames may be symbolized on-device (e.g. PlayStation in Development builds). When symbol data is
+		// available it's attached directly so the event is readable without server-side symbolication.
+		if (symbolInfo.FunctionName[0] != '\0')
+		{
+			sentry_value_set_by_key(frame, "function", sentry_value_new_string(symbolInfo.FunctionName));
+		}
+		if (symbolInfo.Filename[0] != '\0')
+		{
+			sentry_value_set_by_key(frame, "filename", sentry_value_new_string(symbolInfo.Filename));
+		}
+		if (symbolInfo.LineNumber > 0)
+		{
+			sentry_value_set_by_key(frame, "lineno", sentry_value_new_int32(symbolInfo.LineNumber));
+		}
+		if (symbolInfo.ModuleName[0] != '\0')
+		{
+			sentry_value_set_by_key(frame, "package", sentry_value_new_string(symbolInfo.ModuleName));
+		}
+
 		sentry_value_append(frames, frame);
 	}
 

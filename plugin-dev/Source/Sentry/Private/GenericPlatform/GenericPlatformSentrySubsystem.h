@@ -111,6 +111,11 @@ protected:
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
+	// Attaches a stack trace to the given event/exception/thread value. The default implementation lets
+	// sentry-native capture and symbolize the current stack. Platforms whose native SDK can't unwind or
+	// symbolize non-fatal events (e.g. PlayStation) can override this to supply an engine-captured stack.
+	virtual void AttachStackTrace(sentry_value_t target);
+
 	virtual bool IsScreenshotSupported() const;
 	virtual bool IsOutOfProcessScreenshotEnabled() const { return false; }
 
