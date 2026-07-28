@@ -459,6 +459,11 @@ void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const ch
 	sentry_value_set_by_key(eventTags, key, sentry_value_new_string(value));
 }
 
+void FGenericPlatformSentrySubsystem::AttachStackTrace(sentry_value_t target)
+{
+	sentry_value_set_stacktrace(target, nullptr, 0);
+}
+
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: bUseNativeBackend(false)
 	, beforeSend(nullptr)
@@ -809,11 +814,6 @@ void FGenericPlatformSentrySubsystem::ClearAttachments()
 	}
 
 	attachments.Empty();
-}
-
-void FGenericPlatformSentrySubsystem::AttachStackTrace(sentry_value_t target)
-{
-	sentry_value_set_stacktrace(target, nullptr, 0);
 }
 
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
