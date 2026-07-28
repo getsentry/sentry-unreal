@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- Increase the crash handler thread stack guarantee to 128 KiB on Windows to make stack-overflow crash capture more reliable ([#1500](https://github.com/getsentry/sentry-unreal/pull/1500))
 - Remove legacy session replay file attachment in favor of Session Replay envelope ([#1493](https://github.com/getsentry/sentry-unreal/pull/1493))
 
 ### Dependencies

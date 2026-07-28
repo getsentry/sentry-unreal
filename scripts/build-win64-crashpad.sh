@@ -7,7 +7,8 @@ export sentryArtifactsDestination=$2
 rm -rf "${sentryArtifactsDestination}/"*
 
 # Force CMake to use the VS2019 toolset (`-T v142`) to maintain native libraries compatibility with older Unreal Engine versions (4.27–5.1)
-cmake -G "Visual Studio 17 2022" -T v142 -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10
+# `SENTRY_HANDLER_STACK_SIZE` reserves a 128 KiB thread stack guarantee so the crash handler can run on stack-overflow (overridable at runtime via the env var of the same name)
+cmake -G "Visual Studio 17 2022" -T v142 -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 -D SENTRY_HANDLER_STACK_SIZE=128
 cmake --build "${sentryNativeRoot}/build" --target sentry --config RelWithDebInfo --parallel
 cmake --build "${sentryNativeRoot}/build" --target crashpad_handler --config RelWithDebInfo --parallel
 cmake --install "${sentryNativeRoot}/build" --prefix "${sentryNativeRoot}/install" --config RelWithDebInfo
