@@ -269,7 +269,6 @@ function buildSentryNative()
     Push-Location -Path $NativePath
     try
     {
-        # Set `SENTRY_HANDLER_STACK_SIZE` to improve stack-overflow crash capture reliability
         cmake -B "build" -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 -D SENTRY_HANDLER_STACK_SIZE=128
         cmake --build "build" --target sentry --config RelWithDebInfo --parallel
         cmake --build "build" --target crashpad_handler --config RelWithDebInfo --parallel
@@ -296,7 +295,6 @@ function buildSentryNative()
     Push-Location -Path $NativePath
     try
     {
-        # Set `SENTRY_HANDLER_STACK_SIZE` to improve stack-overflow crash capture reliability
         cmake -B "build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 -D SENTRY_HANDLER_STACK_SIZE=128
         cmake --build "build_native" --target sentry --config RelWithDebInfo --parallel
         cmake --build "build_native" --target sentry-crash --config RelWithDebInfo --parallel
