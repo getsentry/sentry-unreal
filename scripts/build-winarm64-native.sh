@@ -6,7 +6,6 @@ export sentryArtifactsDestination=$2
 
 rm -rf "${sentryArtifactsDestination}/"*
 
-# `SENTRY_HANDLER_STACK_SIZE` reserves a 128 KiB thread stack guarantee so the crash handler can run on stack-overflow (overridable at runtime via the env var of the same name)
 cmake -G "Visual Studio 17 2022" -S "${sentryNativeRoot}" -B "${sentryNativeRoot}/build_native" -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unreal -D SENTRY_BUILD_SHARED_LIBS=OFF -D SENTRY_BATCHER_BUFFER_COUNT=10 -D SENTRY_HANDLER_STACK_SIZE=128
 cmake --build "${sentryNativeRoot}/build_native" --target sentry --config RelWithDebInfo --parallel
 cmake --build "${sentryNativeRoot}/build_native" --target sentry-crash --config RelWithDebInfo --parallel
