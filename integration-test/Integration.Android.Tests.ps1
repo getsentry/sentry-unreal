@@ -198,6 +198,16 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         $global:AndroidTracingResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $tracingIntentArgs
 
         Write-Host "Tracing test exit code: $($global:AndroidTracingResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 7: Hang test - captures app-hang event
+        # ==========================================
+
+        Write-Host "Running hang-capture test on $Platform..." -ForegroundColor Yellow
+        $hangIntentArgs = "-e cmdline -hang-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableHangTracking=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:UseNativeHangTracking=True"
+        $global:AndroidHangResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $hangIntentArgs
+
+        Write-Host "Hang test exit code: $($global:AndroidHangResult.ExitCode)" -ForegroundColor Cyan
     }
 
     AfterAll {
@@ -731,6 +741,80 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
             $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
             $grandchildSpan.parent_span_id | Should -Be $childSpan.span_id
+        }
+    }
+
+    Context "Hang Tracking Tests" {
+        BeforeAll {
+            $script:HangResult = $global:AndroidHangResult
+            $script:HangEvent = $null
+
+            # Parse hang event ID from output (format: EVENT_CAPTURED: <guid>)
+            $eventIds = Get-EventIds -AppOutput $script:HangResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Hang ID captured: $($eventIds[0])" -ForegroundColor Cyan
+                $hangId = $eventIds[0]
+
+                # Fetch hang event using the test.hang_id tag (event was uploaded in-session)
+                try {
+                    $script:HangEvent = Get-SentryTestEvent -TagName 'test.hang_id' -TagValue "$hangId"
+                    Write-Host "Hang event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch hang event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No hang event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $script:HangResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:HangResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture hang event in Sentry" {
+            $script:HangEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct event type and platform" {
+            $script:HangEvent.type | Should -Be 'error'
+            $script:HangEvent.platform | Should -Be 'native'
+        }
+
+        It "Should have exception with expected type and value" {
+            $script:HangEvent.exception | Should -Not -BeNullOrEmpty
+            $script:HangEvent.exception.values | Should -Not -BeNullOrEmpty
+            $exception = $script:HangEvent.exception.values[0]
+            $exception.type | Should -Be 'AppHang'
+            $exception.value | Should -Match 'App hung for at least \d+ ms'
+        }
+
+        It "Should have AppHang mechanism" {
+            $exception = $script:HangEvent.exception.values[0]
+            $exception.mechanism.type | Should -Be 'AppHang'
+        }
+
+        It "Should have stack trace" {
+            $exception = $script:HangEvent.exception.values[0]
+            $exception.stacktrace | Should -Not -BeNullOrEmpty
+            $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have test.hang_id tag for correlation" {
+            $tags = $script:HangEvent.tags
+            $hangIdTag = $tags | Where-Object { $_.key -eq 'test.hang_id' }
+            $hangIdTag | Should -Not -BeNullOrEmpty
+            $hangIdTag.value | Should -Not -BeNullOrEmpty
         }
     }
 }

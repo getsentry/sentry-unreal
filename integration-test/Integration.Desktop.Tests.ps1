@@ -173,7 +173,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings
@@ -298,7 +299,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings
@@ -404,7 +406,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings
@@ -510,7 +513,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings
@@ -612,7 +616,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
 
         It "Should have expected platform" {
-            $expectedPlatform = if ($Platform -eq 'MacOS' -and -not $script:IsNativeBackend) { 'cocoa' } else { 'native' }
+            $expectedPlatform = if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) { 'cocoa' } else { 'native' }
             $script:ReplayEvent.platform | Should -Be $expectedPlatform
         }
 
@@ -652,7 +656,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings to avoid double initialization
@@ -825,7 +830,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings to avoid double initialization
@@ -926,7 +932,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings
@@ -1075,7 +1082,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 '-nullrhi',     # Runs without graphics rendering (headless mode)
                 '-unattended',  # Disables user prompts and interactive dialogs
                 '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash'     # Prevents splash screen and dialogs
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
             )
 
             # Override default project settings

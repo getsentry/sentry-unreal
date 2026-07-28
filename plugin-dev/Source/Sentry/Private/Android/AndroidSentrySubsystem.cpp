@@ -35,6 +35,8 @@
 #include "Serialization/JsonSerializer.h"
 #include "Utils/SentryScreenshotUtils.h"
 
+#include <dlfcn.h>
+
 FAndroidSentrySubsystem::FAndroidSentrySubsystem()
 {
 	SentryJavaClasses::InitJavaClassRefsCache();
@@ -55,6 +57,8 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 
+	bNdkAppHangTracking = settings->EnableHangTracking && settings->UseNativeHangTracking;
+
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
 	SettingsJson->SetStringField(TEXT("dsn"), settings->Dsn);
 	SettingsJson->SetStringField(TEXT("release"), settings->GetEffectiveRelease());
@@ -73,6 +77,8 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);
 	SettingsJson->SetBoolField(TEXT("enableAnrTracking"), settings->EnableAppNotRespondingTracking);
 	SettingsJson->SetNumberField(TEXT("anrTimeoutMillis"), settings->AppNotRespondingTimeout * 1000.0f);
+	SettingsJson->SetBoolField(TEXT("enableNdkAppHangTracking"), bNdkAppHangTracking);
+	SettingsJson->SetNumberField(TEXT("ndkAppHangTimeoutMillis"), settings->HangTimeoutDuration * 1000.0f);
 	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidCrashBackend != ESentryAndroidCrashBackend::TombstoneOnly);
 	SettingsJson->SetBoolField(TEXT("enableTombstone"),
 		settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneOnly || settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneMergedWithNdk);
@@ -123,6 +129,14 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 			TryCaptureScreenshot();
 		});
 	}
+
+	if (IsEnabled() && bNdkAppHangTracking)
+	{
+		// OnEndFrame is broadcast on the game thread, so the first heartbeat latches it as the
+		// monitored thread and every subsequent frame refreshes the heartbeat sentry-native watches
+		// for staleness before capturing an app-hang event.
+		OnEndFrameDelegateHandle = FCoreDelegates::OnEndFrame.AddRaw(this, &FAndroidSentrySubsystem::PumpAppHangHeartbeat);
+	}
 }
 
 void FAndroidSentrySubsystem::Close()
@@ -131,6 +145,12 @@ void FAndroidSentrySubsystem::Close()
 	{
 		FCoreDelegates::OnHandleSystemError.Remove(OnHandleSystemErrorDelegateHandle);
 		OnHandleSystemErrorDelegateHandle.Reset();
+	}
+
+	if (OnEndFrameDelegateHandle.IsValid())
+	{
+		FCoreDelegates::OnEndFrame.Remove(OnEndFrameDelegateHandle);
+		OnEndFrameDelegateHandle.Reset();
 	}
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "flush", "(J)V", (jlong)3000);
@@ -333,18 +353,21 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEnsure(const FString& type
 
 TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureHang(uint32 HungThreadId)
 {
-	// Hang tracking is handled by the native Android SDK via built-in ANR detection (see EnableAppNotRespondingTracking setting)
+	// Hangs are self-captured by the native SDKs: the JVM ANR watchdog (see EnableAppNotRespondingTracking)
+	// and, when enabled, the sentry-native NDK app-hang watchdog fed by PumpAppHangHeartbeat.
 	return nullptr;
 }
 
 bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
 {
+	// The engine FThreadHeartBeat watcher (FSentryHangWatcher) is never used on Android — CaptureHang is a
+	// no-op here. Keep this false so the top-level subsystem does not create that watcher.
 	return false;
 }
 
 bool FAndroidSentrySubsystem::IsNativeHangTrackingEnabled() const
 {
-	return false;
+	return bNdkAppHangTracking;
 }
 
 void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
@@ -524,4 +547,28 @@ FString FAndroidSentrySubsystem::TryCaptureScreenshot() const
 	}
 
 	return ScreenshotPath;
+}
+
+void FAndroidSentrySubsystem::PumpAppHangHeartbeat()
+{
+	if (!AppHangHeartbeatFunc)
+	{
+		// libsentry.so is loaded asynchronously by the Java SDK (io.sentry.ndk.SentryNdk), so resolve
+		// the symbol lazily against the already-loaded library rather than linking it at build time.
+		if (void* libsentryHandle = dlopen("libsentry.so", RTLD_NOLOAD | RTLD_NOW))
+		{
+			AppHangHeartbeatFunc = reinterpret_cast<void (*)()>(dlsym(libsentryHandle, "sentry_app_hang_heartbeat"));
+			dlclose(libsentryHandle);
+
+			if (AppHangHeartbeatFunc)
+			{
+				UE_LOG(LogSentrySdk, Log, TEXT("Resolved sentry_app_hang_heartbeat for NDK app-hang tracking."));
+			}
+		}
+	}
+
+	if (AppHangHeartbeatFunc)
+	{
+		AppHangHeartbeatFunc();
+	}
 }

@@ -555,7 +555,7 @@ class SENTRY_API USentrySettings : public UObject
 	float HangTimeoutDuration;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Use native hang tracking", ToolTip = "Detect hangs with the sentry-native SDK's built-in app-hang watchdog instead of Unreal Engine's FThreadHeartBeat-based watcher. Works with any crash handler backend (both Crashpad and Native). Supported on Windows, macOS and Linux; ignored on other platforms.",
+		Meta = (DisplayName = "Use native hang tracking", ToolTip = "Detect hangs with the sentry-native SDK's built-in app-hang watchdog instead of Unreal Engine's FThreadHeartBeat-based watcher. Works with any crash handler backend (both Crashpad and Native). Supported on Windows, macOS and Linux. On Android, routes through the NDK app-hang watchdog to monitor the game thread, running alongside (not replacing) the JVM ANR watchdog. Ignored on other platforms.",
 			EditCondition = "EnableHangTracking"))
 	bool UseNativeHangTracking;
 

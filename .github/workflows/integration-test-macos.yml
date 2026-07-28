@@ -1,0 +1,69 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+      backend:
+        required: false
+        type: string
+        default: "cocoa"
+
+jobs:
+  integration-test:
+    name: Integration Test
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: recursive
+
+      - name: Download sample build
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (macOS, ${{ inputs.backend }})
+          path: sample-build
+
+      - name: Locate app and restore execute permissions
+        # The artifact zip round-trip strips unix execute permissions
+        run: |
+          APP_BIN="$(find "$GITHUB_WORKSPACE/sample-build" -type f -path '*/SentryPlayground.app/Contents/MacOS/SentryPlayground' | head -n 1)"
+          if [ -z "$APP_BIN" ]; then
+            echo "::error::SentryPlayground.app was not found in the sample build artifact"
+            exit 1
+          fi
+          echo "SENTRY_UNREAL_TEST_APP_PATH=$APP_BIN" >> "$GITHUB_ENV"
+          chmod +x "$(dirname "$APP_BIN")"/*
+          PLUGIN_BINARIES="$(dirname "$APP_BIN")/../UE/SentryPlayground/Plugins/sentry/Binaries/Mac"
+          if [ -d "$PLUGIN_BINARIES" ]; then
+            chmod +x "$PLUGIN_BINARIES"/*
+          fi
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge [version]'5.0' })) {
+            Install-Module Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          }
+
+      - name: Run integration tests
+        id: run-integration-tests
+        shell: pwsh
+        working-directory: integration-test
+        env:
+          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+        run: |
+          cmake -B build -S .
+          Invoke-Pester Integration.Desktop.Tests.ps1 -CI
+
+      - name: Upload integration test output
+        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} integration test output (macOS, ${{ inputs.backend }})
+          path: |
+            integration-test/output/
+            sample-build/**/Saved/Logs/
+            ~/Library/Application Support/Epic/SentryPlayground/Saved/Logs/
