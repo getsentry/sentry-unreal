@@ -4,7 +4,6 @@
 
 ### Features
 
-- Add an overridable stack trace hook so platform implementations can attach an engine-captured stack to non-fatal events ([#1502](https://github.com/getsentry/sentry-unreal/pull/1502))
 - Add app-hang tracking via NDK game-thread heartbeat on Android ([#1497](https://github.com/getsentry/sentry-unreal/pull/1497))
 
 ### Fixes
