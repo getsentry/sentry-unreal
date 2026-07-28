@@ -50,3 +50,5 @@ jobs:
           path: |
             integration-test/output/
             sample-build/SentryPlayground/Saved/Logs/
+            sample-build/SentryPlayground/.sentry-native/**/*.log
+          include-hidden-files: true
