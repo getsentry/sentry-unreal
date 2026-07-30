@@ -64,6 +64,7 @@
         <insert>
             -dontwarn android.app.ApplicationStartInfo
             -dontwarn android.os.ProfilingManager
+            -dontwarn android.os.ProfilingResult
             -dontwarn io.sentry.unreal.**
             -keep class io.sentry.** { *; }
             -keep interface io.sentry.** { *; }
