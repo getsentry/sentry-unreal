@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "HAL/ThreadSafeBool.h"
 #include "Interface/SentrySubsystemInterface.h"
 
 class FAndroidSentrySubsystem : public ISentrySubsystem
@@ -63,15 +64,24 @@ public:
 
 private:
 	void PumpAppHangHeartbeat();
+	void PauseAppHangTracking();
+	void ResolveAppHangFunctions();
 
 	void (*AppHangHeartbeatFunc)() = nullptr;
+	void (*AppHangPauseFunc)() = nullptr;
 
 	bool bNdkAppHangTracking = false;
+	FThreadSafeBool bAppIsActive;
+	FThreadSafeBool bAppIsForeground;
 
 	bool isScreenshotAttachmentEnabled = false;
 
 	FDelegateHandle OnHandleSystemErrorDelegateHandle;
 	FDelegateHandle OnEndFrameDelegateHandle;
+	FDelegateHandle OnWillDeactivateDelegateHandle;
+	FDelegateHandle OnWillEnterBackgroundDelegateHandle;
+	FDelegateHandle OnHasEnteredForegroundDelegateHandle;
+	FDelegateHandle OnHasReactivatedDelegateHandle;
 };
 
 typedef FAndroidSentrySubsystem FPlatformSentrySubsystem;

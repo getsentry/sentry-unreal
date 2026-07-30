@@ -159,7 +159,14 @@ private:
 
 	bool bNativeHangTracking;
 
+	FThreadSafeBool bAppIsActive;
+	FThreadSafeBool bAppIsForeground;
+
 	FDelegateHandle AppHangHeartbeatHandle;
+	FDelegateHandle AppHangWillDeactivateHandle;
+	FDelegateHandle AppHangWillEnterBackgroundHandle;
+	FDelegateHandle AppHangHasEnteredForegroundHandle;
+	FDelegateHandle AppHangHasReactivatedHandle;
 
 	FDateTime initTimestamp;
 
