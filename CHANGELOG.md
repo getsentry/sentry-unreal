@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix Android `minifyRelease` R8 build failure caused by missing `android.os.ProfilingManager`/`ProfilingResult` class references in the Java SDK ([#1505](https://github.com/getsentry/sentry-unreal/pull/1505))
+
 ### Dependencies
 
 - Bump Java SDK from v8.51.0-1-g057ba3685 to v8.51.0 ([#1503](https://github.com/getsentry/sentry-unreal/pull/1503))
