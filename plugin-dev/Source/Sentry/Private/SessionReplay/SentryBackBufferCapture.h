@@ -14,22 +14,24 @@
 #include "RHIFwd.h"
 
 class FSentryVideoEncoder;
+struct FSentryVideoFrame;
 class ISlateViewportProvider;
 class SWindow;
 
 /**
  * Hooks FSlateRenderer::OnBackBufferReadyToPresent and forwards each rendered
- * frame of the primary game window to the encoder.
+ * rendered backbuffer to the encoder.
  *
  * Per frame on the render thread:
  *   1. Hardware-copy the backbuffer into a "scratch" texture that has the same
  *      format but also carries the ShaderResource flag (Slate backbuffers don't,
  *      which makes them unusable as an SRV directly).
- *   2. AddDrawTexturePass scratch -> a BGRA8 destination. When the scratch
- *      format is already BGRA8 this stays a hardware copy; otherwise the
- *      engine's built-in pixel-shader path converts HDR/10-bit to BGRA8.
- *      Destination is the encoder pool slot on Windows; on Apple platforms it's the
- *      "converted" texture because Metal forbids RenderTargetable | CPUReadback.
+ *   2. AddDrawTexturePass scratch -> a same-size BGRA8 destination. When the
+ *      scratch format is already BGRA8 this stays a hardware copy; otherwise
+ *      the engine's built-in pixel-shader path converts HDR/10-bit to BGRA8.
+ *      Destination is the encoder pool slot on Windows; on Apple platforms
+ *      it's the "converted" texture because Metal forbids RenderTargetable |
+ *      CPUReadback.
  *   3. Apple only: hardware-copy converted -> encoder pool slot (CPUReadback BGRA8).
  * The pool slot is then handed to the encoder.
  */
@@ -57,10 +59,10 @@ private:
 	};
 
 	// N-slot pool sharing one config across all slots. Slots are created lazily
-	// and recycled when their refcount drops back to 1 (no other holder)
+	// and explicitly released by the encoder thread after GPU/encoder completion
 	struct FCachedTexturePool
 	{
-		TArray<FTextureRHIRef> Slots;
+		TArray<TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>> Slots;
 		uint32 Width = 0;
 		uint32 Height = 0;
 		EPixelFormat Format = PF_Unknown;
@@ -81,9 +83,10 @@ private:
 	static FTextureRHIRef AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
-	// Returns a texture pool slot whose refcount is <= 1, recreating the entire pool when
+	// Returns an exclusively acquired texture pool slot, recreating the pool when
 	// the config changes. Returns null when every slot is still in flight
-	static FTextureRHIRef AcquireTexturePoolSlot_RenderThread(FCachedTexturePool& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
+	static TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> AcquireTexturePoolSlot_RenderThread(
+		FCachedTexturePool& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
 	FSentryVideoEncoder& Encoder;

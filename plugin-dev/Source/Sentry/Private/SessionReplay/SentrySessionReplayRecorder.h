@@ -46,7 +46,7 @@ public:
 	const FString& GetAttachmentPath() const { return AttachmentPath; }
 
 	// Called by the encoder thread when the init segment (ftyp+moov) is ready
-	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
+	void OnInitSegmentReady(TArray<uint8>&& InitSegment, uint32 Width, uint32 Height);
 	// Called by the encoder thread when a fragment (moof+mdat) is complete
 	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks);
 
@@ -61,11 +61,11 @@ private:
 	bool WriteSnapshot(const TArray<uint8>& Bytes);
 
 	// Assembles the platform-agnostic replay model from the most recent on-disk snapshot
-	FSentryReplayInfo BuildReplayInfo() const;
+	FSentryReplayInfo BuildReplayInfo(int32 Width, int32 Height) const;
 
 	// Writes the JSON metadata sidecar next to the mp4 (temp + atomic rename) so the
 	// SDK can build and send the replay envelope outside the crash handler
-	void WriteReplayMetadata();
+	void WriteReplayMetadata(int32 Width, int32 Height);
 
 	bool bEnabled = false;
 	FThreadSafeBool bSnapshotOnDisk;
@@ -96,6 +96,8 @@ private:
 	// Fragment ring + init segment, protected by RingLock
 	FCriticalSection RingLock;
 	TArray<uint8> InitSegment;
+	int32 InitSegmentWidth = 0;
+	int32 InitSegmentHeight = 0;
 	TRingBuffer<FFragment> FragmentRing;
 
 	int32 LatestFrameCount = 0;

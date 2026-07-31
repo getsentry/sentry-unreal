@@ -16,11 +16,41 @@
 
 #include "Video/VideoEncoder.h"
 
+#include <atomic>
+
 class FRunnableThread;
 class FEvent;
 class FVideoResourceRHI;
 
 class FSentrySessionReplayRecorder;
+
+/**
+ * One reusable capture-pool slot shared by the render and encoder threads.
+ *
+ * The render thread marks a slot in flight before writing it. The encoder
+ * thread releases it only after the GPU write fence has passed and SendFrame
+ * has finished consuming the texture.
+ */
+struct FSentryVideoFrame
+{
+	bool TryAcquire()
+	{
+		return !bInFlight.exchange(true, std::memory_order_acq_rel);
+	}
+
+	void Release()
+	{
+		bInFlight.store(false, std::memory_order_release);
+	}
+
+	FTextureRHIRef Texture;
+	FGPUFenceRHIRef ReadyFence;
+
+private:
+	std::atomic<bool> bInFlight{ false };
+};
+
+using FSentryVideoFramePtr = TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>;
 
 /**
  * Wraps the AVCodecs H.264 encoder and runs on a dedicated thread.
@@ -41,13 +71,10 @@ public:
 	bool StartEncoder();
 	void StopEncoder();
 
-	// Enqueues a texture for the encoder thread to process
-	void SubmitFrame(const FTextureRHIRef& Texture, double CaptureTimeSeconds);
+	// Enqueues a capture-pool slot for the encoder thread to process
+	void SubmitFrame(const FSentryVideoFramePtr& Frame, double CaptureTimeSeconds);
 
 	uint32 GetFramerate() const { return Framerate; }
-
-	uint32 GetWidth() const { return Width; }
-	uint32 GetHeight() const { return Height; }
 
 	bool IsEncodingDisabled() const { return bEncodingDisabled; }
 
@@ -65,6 +92,15 @@ private:
 	bool ShouldSwapDimensions(uint32 ResourceWidth, uint32 ResourceHeight) const;
 
 	bool EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight);
+
+	// Reuses the AVCodecs wrapper and its native resource mapping for each pool texture
+	TSharedPtr<FVideoResourceRHI> GetOrCreateResource(const FTextureRHIRef& Texture);
+
+	// Moves queued slots to the retired list without making them reusable.
+	// A retired slot is released only after its GPU write fence passes.
+	void RetirePendingFrames();
+	int32 PollRetiredFrames();
+	void WaitForRetiredFrames();
 
 	// Pulls available packets from the encoder, converts them to AVCC samples and emits a fragment at each keyframe boundary
 	void DrainPackets();
@@ -111,12 +147,20 @@ private:
 	// Encoder thread frame queue
 	struct FPendingFrame
 	{
-		FTextureRHIRef Texture;
+		FSentryVideoFramePtr Frame;
 		double CaptureTimeSeconds = 0.0;
 	};
 
 	FCriticalSection QueueLock;
 	TArray<FPendingFrame> PendingQueue;
+	TArray<FSentryVideoFramePtr> RetiredFrames;
+
+	// Encoder-thread-only cache. Keeping the wrapper alive also keeps AVCodecs'
+	// native D3D/Vulkan/Metal mapping alive instead of rebuilding it every frame.
+	// The cache is reset whenever the native input dimensions change.
+	TMap<FRHITexture*, TSharedPtr<FVideoResourceRHI>> ResourceCache;
+	uint32 ResourceCacheWidth = 0;
+	uint32 ResourceCacheHeight = 0;
 
 	// Timing (encoder-thread-only)
 	double CaptureTimeBaseSeconds = -1.0;

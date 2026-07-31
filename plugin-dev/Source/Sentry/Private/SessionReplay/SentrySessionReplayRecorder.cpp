@@ -43,7 +43,15 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 		return false;
 	}
 
-	WindowSeconds = Settings->SessionReplayDurationMs / 1000.0f;
+	constexpr uint32 MinReplayDurationMs = 1000;
+	constexpr uint32 MaxReplayDurationMs = 20000;
+	const uint32 ReplayDurationMs = FMath::Clamp(Settings->SessionReplayDurationMs, MinReplayDurationMs, MaxReplayDurationMs);
+	if (ReplayDurationMs != Settings->SessionReplayDurationMs)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: requested duration %u ms is outside the supported range; using %u ms."),
+			Settings->SessionReplayDurationMs, ReplayDurationMs);
+	}
+	WindowSeconds = ReplayDurationMs / 1000.0f;
 	FragmentSeconds = Settings->SessionReplayOptions.FragmentSeconds;
 	RotationIntervalSeconds = Settings->SessionReplayOptions.RotationIntervalSeconds;
 
@@ -145,18 +153,20 @@ void FSentrySessionReplayRecorder::Shutdown()
 	{
 		FScopeLock Lock(&RingLock);
 		InitSegment.Empty();
+		InitSegmentWidth = 0;
+		InitSegmentHeight = 0;
 		FragmentRing.Reset();
 	}
 }
 
-FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
+FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo(int32 Width, int32 Height) const
 {
 	const FDateTime NowUtc = FDateTime::UtcNow();
 
 	FSentryReplayInfo Info;
 	Info.ReplayId = ReplayId;
-	Info.Width = Encoder ? static_cast<int32>(Encoder->GetWidth()) : 0;
-	Info.Height = Encoder ? static_cast<int32>(Encoder->GetHeight()) : 0;
+	Info.Width = Width;
+	Info.Height = Height;
 	Info.FrameRate = Encoder ? static_cast<int32>(Encoder->GetFramerate()) : 0;
 	Info.DurationMs = LatestDurationMs;
 	Info.FrameCount = LatestFrameCount;
@@ -167,10 +177,12 @@ FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
 	return Info;
 }
 
-void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment)
+void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment, uint32 Width, uint32 Height)
 {
 	FScopeLock Lock(&RingLock);
 	InitSegment = MoveTemp(NewInitSegment);
+	InitSegmentWidth = static_cast<int32>(Width);
+	InitSegmentHeight = static_cast<int32>(Height);
 
 	if (!FragmentRing.IsEmpty())
 	{
@@ -241,12 +253,17 @@ void FSentrySessionReplayRecorder::DoRotation()
 	TArray<uint8> Snapshot;
 	int64 TotalFrames = 0;
 	uint64 TotalTicks = 0;
+	int32 SnapshotWidth = 0;
+	int32 SnapshotHeight = 0;
 	{
 		FScopeLock Lock(&RingLock);
-		if (InitSegment.Num() == 0 || FragmentRing.Num() == 0)
+		if (InitSegment.Num() == 0 || InitSegmentWidth <= 0 || InitSegmentHeight <= 0 || FragmentRing.Num() == 0)
 		{
 			return;
 		}
+
+		SnapshotWidth = InitSegmentWidth;
+		SnapshotHeight = InitSegmentHeight;
 
 		int64 Reserve = InitSegment.Num();
 		for (int32 i = 0; i < FragmentRing.Num(); ++i)
@@ -283,7 +300,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 	{
 		bSnapshotOnDisk.AtomicSet(true);
 
-		WriteReplayMetadata();
+		WriteReplayMetadata(SnapshotWidth, SnapshotHeight);
 	}
 }
 
@@ -316,10 +333,10 @@ bool FSentrySessionReplayRecorder::WriteSnapshot(const TArray<uint8>& Bytes)
 	return true;
 }
 
-void FSentrySessionReplayRecorder::WriteReplayMetadata()
+void FSentrySessionReplayRecorder::WriteReplayMetadata(int32 Width, int32 Height)
 {
 	FString Json;
-	if (!FJsonObjectConverter::UStructToJsonObjectString(BuildReplayInfo(), Json, 0, 0, 0, nullptr, false))
+	if (!FJsonObjectConverter::UStructToJsonObjectString(BuildReplayInfo(Width, Height), Json, 0, 0, 0, nullptr, false))
 	{
 		return;
 	}
