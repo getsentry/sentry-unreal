@@ -14,6 +14,9 @@
 - Bump Native SDK from v0.16.0 to v0.16.1 ([#1508](https://github.com/getsentry/sentry-unreal/pull/1508))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0161)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.16.0...0.16.1)
+- Bump Android Gradle Plugin from v6.16.0 to v6.17.0 ([#1507](https://github.com/getsentry/sentry-unreal/pull/1507))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6170)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.16.0...6.17.0)
 
 ## 1.18.0
 
