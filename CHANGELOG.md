@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The app hang detection now correctly pauses when the game switched from foreground to background. This prevents false positive app hang events ([#1506](https://github.com/getsentry/sentry-unreal/pull/1506))
 - Fix Android `minifyRelease` R8 build failure caused by missing `android.os.ProfilingManager`/`ProfilingResult` class references in the Java SDK ([#1505](https://github.com/getsentry/sentry-unreal/pull/1505))
 
 ### Dependencies
