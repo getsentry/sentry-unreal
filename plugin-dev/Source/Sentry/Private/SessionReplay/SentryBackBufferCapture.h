@@ -73,6 +73,11 @@ private:
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, ISlateViewportProvider& ViewportProvider);
 #endif
 
+	// Returns true if this window is the one capture is locked to. The first
+	// window seen after Start() becomes the locked window; every other window
+	// (editor tooltips, notification toasts, secondary/PIE windows) is ignored.
+	bool AcceptWindow_RenderThread(const SWindow& SlateWindow);
+
 	// Captures a single backbuffer frame and forwards it to the encoder (render thread)
 	void CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer);
 
@@ -101,6 +106,10 @@ private:
 	// Pool of textures that are submitted to the encoder. Ref-counted because
 	// the encoder thread holds these across frames
 	FCachedTexturePool EncoderPool;
+
+	// Identity of the window capture is locked to (raw pointer, compared only,
+	// never dereferenced). Null until the first frame is seen
+	const SWindow* LockedWindow = nullptr;
 
 	// Frame throttling
 	double NextCaptureTime = 0.0;

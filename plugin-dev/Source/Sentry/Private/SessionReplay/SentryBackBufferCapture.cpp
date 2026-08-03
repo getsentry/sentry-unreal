@@ -68,6 +68,11 @@ void FSentryBackBufferCapture::Stop()
 
 	// Ensure render thread is done with our textures before destruction
 	FlushRenderingCommands();
+
+	// Render thread is idle after the flush, so resetting the lock here is safe.
+	// A subsequent Start() will re-lock onto the first window it then sees.
+	LockedWindow = nullptr;
+
 	for (FTextureRHIRef& Slot : EncoderPool.Slots)
 	{
 		Slot.SafeRelease();
@@ -79,14 +84,33 @@ void FSentryBackBufferCapture::Stop()
 #if UE_VERSION_OLDER_THAN(5, 8, 0)
 void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer)
 {
+	if (!AcceptWindow_RenderThread(SlateWindow))
+	{
+		return;
+	}
 	CaptureBackBuffer_RenderThread(BackBuffer);
 }
 #else
 void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, ISlateViewportProvider& ViewportProvider)
 {
+	if (!AcceptWindow_RenderThread(SlateWindow))
+	{
+		return;
+	}
 	CaptureBackBuffer_RenderThread(ViewportProvider.GetBackBufferResource());
 }
 #endif
+
+bool FSentryBackBufferCapture::AcceptWindow_RenderThread(const SWindow& SlateWindow)
+{
+	if (LockedWindow == nullptr)
+	{
+		LockedWindow = &SlateWindow;
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: capture locked to the first presented window; other windows will be ignored."));
+	}
+
+	return LockedWindow == &SlateWindow;
+}
 
 void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer)
 {
