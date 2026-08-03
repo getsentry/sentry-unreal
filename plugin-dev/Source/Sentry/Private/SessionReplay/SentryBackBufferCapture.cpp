@@ -69,10 +69,6 @@ void FSentryBackBufferCapture::Stop()
 	// Ensure render thread is done with our textures before destruction
 	FlushRenderingCommands();
 
-	// Render thread is idle after the flush, so resetting the lock here is safe.
-	// A subsequent Start() will re-lock onto the first window it then sees.
-	LockedWindow = nullptr;
-
 	for (FTextureRHIRef& Slot : EncoderPool.Slots)
 	{
 		Slot.SafeRelease();
@@ -103,13 +99,11 @@ void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& 
 
 bool FSentryBackBufferCapture::AcceptWindow_RenderThread(const SWindow& SlateWindow)
 {
-	if (LockedWindow == nullptr)
-	{
-		LockedWindow = &SlateWindow;
-		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: capture locked to the first presented window; other windows will be ignored."));
-	}
-
-	return LockedWindow == &SlateWindow;
+	// Capture only real top-level windows. Transient overlays - tooltips, popup
+	// menus, notification toasts, cursor decorators - present through the same hook
+	// but aren't gameplay, and their differing size would otherwise be handed to the
+	// encoder. IsRegularWindow() excludes exactly that class.
+	return SlateWindow.IsRegularWindow();
 }
 
 void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer)
