@@ -1350,6 +1350,11 @@ FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
 	const FString DatabasePath = FPaths::Combine(databaseParentPath, TEXT(".sentry-native"));
 	const FString DatabaseFullPath = FPaths::ConvertRelativePathToFull(DatabasePath);
 
+	// TEMP DIAGNOSTIC (PR #1511): compare lexical vs external-app-write resolution
+	const FString ForWritePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*DatabasePath);
+	UE_LOG(LogSentrySdk, Warning, TEXT("[DBPATH] lexical=%s | forWrite=%s | equal=%d"),
+		*DatabaseFullPath, *ForWritePath, DatabaseFullPath == ForWritePath);
+
 	return DatabaseFullPath;
 }
 
