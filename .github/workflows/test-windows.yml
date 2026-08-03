@@ -188,6 +188,43 @@ jobs:
             -NoSplash `
             -NullRHI
 
+      # TEMP DIAGNOSTIC (PR #1511): re-stage the already-cooked native build as a
+      # pak + compressed package and run it with -init-only to capture the [DBPATH]
+      # log emitted by GetDatabasePath(). This exercises the FPakPlatformFile chain,
+      # which the normal loose-file staged build does not.
+      - name: DBPath repro (native, pak+compressed)
+        id: dbpath-repro
+        if: ${{ steps.run-tests-native.outcome == 'success' }}
+        run: |
+          docker exec unreal C:\UnrealEngine\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun `
+            -project=C:/workspace/checkout/sample/SentryPlayground.uproject `
+            -platform=Win64 `
+            -clientconfig=Development `
+            -nop4 `
+            -skipcook `
+            -stage `
+            -pak `
+            -compressed `
+            -package `
+            -stagingdirectory=C:/workspace/checkout/sample/DbgStage
+          docker exec unreal powershell -Command '$e = (Get-ChildItem "C:/workspace/checkout/sample/DbgStage" -Recurse -Filter SentryPlayground.exe | Where-Object { $_.FullName -notmatch "Editor" } | Select-Object -First 1).FullName; Write-Host "exe=$e"; & $e -init-only -unattended -nosplash -nullrhi -stdout -FullStdOutLogOutput -NoLoadingScreen 2>&1 | Tee-Object C:/workspace/checkout/dbpath-run.log'
+          $hits = Select-String -Path checkout/dbpath-run.log -Pattern '\[DBPATH\]' | ForEach-Object { $_.Line }
+          if (-not $hits) { throw "[DBPATH] line not found in dbpath-run.log" }
+          $hits | ForEach-Object { Write-Host $_ }
+          "## DBPath (native, pak+compressed) - UE ${{ inputs.unreal-version }}" | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          '```'  | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          $hits  | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          '```'  | Out-File $env:GITHUB_STEP_SUMMARY -Append
+
+      - name: Upload DBPath repro log
+        if: ${{ always() && steps.dbpath-repro.outcome != 'skipped' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} dbpath repro (Windows, native)
+          path: |
+            checkout/dbpath-run.log
+          if-no-files-found: warn
+
       - name: Collect native sample test info
         if: ${{ always() && steps.run-tests-native.outcome == 'failure' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
