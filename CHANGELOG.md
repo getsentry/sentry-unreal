@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix Android `minifyRelease` R8 build failure caused by missing `android.os.ProfilingManager`/`ProfilingResult` class references in the Java SDK ([#1505](https://github.com/getsentry/sentry-unreal/pull/1505))
+- Skip transient overlay windows during session replay capture ([#1512](https://github.com/getsentry/sentry-unreal/pull/1512))
 
 ### Dependencies
 

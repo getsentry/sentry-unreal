@@ -73,6 +73,11 @@ private:
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, ISlateViewportProvider& ViewportProvider);
 #endif
 
+	// Returns true if SlateWindow is a real top-level window whose backbuffer should
+	// be captured. Transient overlays (tooltips, popup menus, notification toasts,
+	// cursor decorators) are rejected. Render thread only.
+	bool AcceptWindow_RenderThread(const SWindow& SlateWindow);
+
 	// Captures a single backbuffer frame and forwards it to the encoder (render thread)
 	void CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer);
 

@@ -68,6 +68,7 @@ void FSentryBackBufferCapture::Stop()
 
 	// Ensure render thread is done with our textures before destruction
 	FlushRenderingCommands();
+
 	for (FTextureRHIRef& Slot : EncoderPool.Slots)
 	{
 		Slot.SafeRelease();
@@ -79,14 +80,31 @@ void FSentryBackBufferCapture::Stop()
 #if UE_VERSION_OLDER_THAN(5, 8, 0)
 void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer)
 {
+	if (!AcceptWindow_RenderThread(SlateWindow))
+	{
+		return;
+	}
 	CaptureBackBuffer_RenderThread(BackBuffer);
 }
 #else
 void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, ISlateViewportProvider& ViewportProvider)
 {
+	if (!AcceptWindow_RenderThread(SlateWindow))
+	{
+		return;
+	}
 	CaptureBackBuffer_RenderThread(ViewportProvider.GetBackBufferResource());
 }
 #endif
+
+bool FSentryBackBufferCapture::AcceptWindow_RenderThread(const SWindow& SlateWindow)
+{
+	// Capture only real top-level windows. Transient overlays - tooltips, popup
+	// menus, notification toasts, cursor decorators - present through the same hook
+	// but aren't gameplay, and their differing size would otherwise be handed to the
+	// encoder. IsRegularWindow() excludes exactly that class.
+	return SlateWindow.IsRegularWindow();
+}
 
 void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer)
 {
