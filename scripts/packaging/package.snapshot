@@ -52,6 +52,7 @@ Source/Sentry/Private/Android/Infrastructure/AndroidSentryJavaClasses.cpp
 Source/Sentry/Private/Android/Infrastructure/AndroidSentryJavaClasses.h
 Source/Sentry/Private/Android/Infrastructure/AndroidSentryJavaObjectWrapper.cpp
 Source/Sentry/Private/Android/Infrastructure/AndroidSentryJavaObjectWrapper.h
+Source/Sentry/Private/Android/Infrastructure/AndroidSentryScopedJavaObject.h
 Source/Sentry/Private/Android/Java/SentryBridgeJava.java
 Source/Sentry/Private/Android/Jni/AndroidSentryJni.cpp
 Source/Sentry/Private/Apple/AppleSentryAttachment.cpp
