@@ -231,6 +231,8 @@ Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.cpp
 Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.h
 Source/Sentry/Private/SessionReplay/SentryVideoEncoder.cpp
 Source/Sentry/Private/SessionReplay/SentryVideoEncoder.h
+Source/Sentry/Private/SessionReplay/SentryVideoFrame.cpp
+Source/Sentry/Private/SessionReplay/SentryVideoFrame.h
 Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentryFeedback.spec.cpp

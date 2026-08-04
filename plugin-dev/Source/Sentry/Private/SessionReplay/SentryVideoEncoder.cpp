@@ -6,6 +6,7 @@
 
 #include "SentryDefines.h"
 #include "SentrySessionReplayRecorder.h"
+#include "SentryVideoFrame.h"
 
 #include "HAL/Event.h"
 #include "HAL/PlatformMisc.h"
@@ -85,20 +86,20 @@ void FSentryVideoEncoder::StopEncoder()
 	}
 }
 
-void FSentryVideoEncoder::SubmitFrame(const FTextureRHIRef& Texture, double CaptureTimeSeconds)
+void FSentryVideoEncoder::SubmitFrame(const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame)
 {
-	if (!Texture.IsValid() || bStopRequested || bEncodingDisabled)
+	if (!Frame.IsValid() || !Frame->Texture.IsValid() || bStopRequested || bEncodingDisabled)
 	{
+		if (Frame.IsValid())
+		{
+			Frame->Release();
+		}
 		return;
 	}
 
 	{
 		FScopeLock Lock(&QueueLock);
-		if (PendingQueue.Num() >= MaxQueueDepth)
-		{
-			PendingQueue.RemoveAt(0, 1, EAllowShrinking::No);
-		}
-		PendingQueue.Add(FPendingFrame{ Texture, CaptureTimeSeconds });
+		PendingQueue.Add(Frame);
 	}
 	if (WakeEvent)
 	{
@@ -130,7 +131,7 @@ uint32 FSentryVideoEncoder::Run()
 {
 	while (!bStopRequested)
 	{
-		TArray<FPendingFrame> Frames;
+		TArray<TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>> Frames;
 		{
 			FScopeLock Lock(&QueueLock);
 			Swap(Frames, PendingQueue);
@@ -138,6 +139,13 @@ uint32 FSentryVideoEncoder::Run()
 
 		if (bEncodingDisabled)
 		{
+			for (const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& FramePtr : Frames)
+			{
+				if (FramePtr.IsValid())
+				{
+					FramePtr->Release();
+				}
+			}
 			if (WakeEvent)
 			{
 				WakeEvent->Wait(50);
@@ -145,8 +153,13 @@ uint32 FSentryVideoEncoder::Run()
 			continue;
 		}
 
-		for (const FPendingFrame& Frame : Frames)
+		for (const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& FramePtr : Frames)
 		{
+			if (!FramePtr.IsValid())
+			{
+				continue;
+			}
+			const FSentryVideoFrame& Frame = *FramePtr;
 			const FTextureRHIRef& FrameTexture = Frame.Texture;
 			if (!FrameTexture.IsValid())
 			{
@@ -229,6 +242,14 @@ uint32 FSentryVideoEncoder::Run()
 			}
 
 			DrainPackets();
+		}
+
+		for (const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& FramePtr : Frames)
+		{
+			if (FramePtr.IsValid())
+			{
+				FramePtr->Release();
+			}
 		}
 
 		Frames.Reset();
@@ -361,6 +382,13 @@ void FSentryVideoEncoder::Restart()
 
 	{
 		FScopeLock Lock(&QueueLock);
+		for (const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& FramePtr : PendingQueue)
+		{
+			if (FramePtr.IsValid())
+			{
+				FramePtr->Release();
+			}
+		}
 		PendingQueue.Reset();
 	}
 }

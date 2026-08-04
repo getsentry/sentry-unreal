@@ -20,6 +20,7 @@ class FRunnableThread;
 class FEvent;
 class FVideoResourceRHI;
 
+struct FSentryVideoFrame;
 class FSentrySessionReplayRecorder;
 
 /**
@@ -42,7 +43,7 @@ public:
 	void StopEncoder();
 
 	// Enqueues a texture for the encoder thread to process
-	void SubmitFrame(const FTextureRHIRef& Texture, double CaptureTimeSeconds);
+	void SubmitFrame(const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame);
 
 	uint32 GetFramerate() const { return Framerate; }
 
@@ -56,9 +57,6 @@ public:
 	virtual void Stop() override;
 	virtual void Exit() override;
 	virtual uint32 Run() override;
-
-	// Frames buffered for the encoder thread
-	static constexpr int32 MaxQueueDepth = 5;
 
 private:
 	// Checks if frame dimensions match with the app's fixed screen orientation
@@ -109,14 +107,8 @@ private:
 	FThreadSafeBool bStopRequested;
 
 	// Encoder thread frame queue
-	struct FPendingFrame
-	{
-		FTextureRHIRef Texture;
-		double CaptureTimeSeconds = 0.0;
-	};
-
 	FCriticalSection QueueLock;
-	TArray<FPendingFrame> PendingQueue;
+	TArray<TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>> PendingQueue;
 
 	// Timing (encoder-thread-only)
 	double CaptureTimeBaseSeconds = -1.0;

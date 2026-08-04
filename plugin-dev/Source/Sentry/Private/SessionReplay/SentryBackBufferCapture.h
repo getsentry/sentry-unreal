@@ -12,7 +12,9 @@
 #include "RHIAccess.h"
 #include "RHIDefinitions.h"
 #include "RHIFwd.h"
+#include "Templates/SharedPointer.h"
 
+struct FSentryVideoFrame;
 class FSentryVideoEncoder;
 class ISlateViewportProvider;
 class SWindow;
@@ -56,17 +58,6 @@ private:
 		ETextureCreateFlags Flags = ETextureCreateFlags::None;
 	};
 
-	// N-slot pool sharing one config across all slots. Slots are created lazily
-	// and recycled when their refcount drops back to 1 (no other holder)
-	struct FCachedTexturePool
-	{
-		TArray<FTextureRHIRef> Slots;
-		uint32 Width = 0;
-		uint32 Height = 0;
-		EPixelFormat Format = PF_Unknown;
-		ETextureCreateFlags Flags = ETextureCreateFlags::None;
-	};
-
 #if UE_VERSION_OLDER_THAN(5, 8, 0)
 	void OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer);
 #else
@@ -86,9 +77,10 @@ private:
 	static FTextureRHIRef AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
-	// Returns a texture pool slot whose refcount is <= 1, recreating the entire pool when
-	// the config changes. Returns null when every slot is still in flight
-	static FTextureRHIRef AcquireTexturePoolSlot_RenderThread(FCachedTexturePool& Pool, uint32 Width, uint32 Height, EPixelFormat Format,
+	// Acquires a free pool frame and ensures its texture exists (recreated on config
+	// change). Marks the acquired frame in flight. Returns null when every slot is
+	// still owned by the encoder or on creation failure
+	TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> AcquireFrame_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
 	FSentryVideoEncoder& Encoder;
@@ -103,9 +95,13 @@ private:
 	// before the final hardware copy into the CPUReadback EncoderPool slot
 	FCachedTexture Converted;
 
-	// Pool of textures that are submitted to the encoder. Ref-counted because
-	// the encoder thread holds these across frames
-	FCachedTexturePool EncoderPool;
+	// Number of encoder frames pooled
+	static constexpr int32 FramePoolSize = 5;
+
+	// Pool of frames submitted to the encoder. Each frame stays in flight from
+	// acquire until the encoder releases it, so the render thread never overwrites
+	// a slot the encoder still holds
+	TArray<TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>> EncoderPool;
 
 	// Frame throttling
 	double NextCaptureTime = 0.0;
