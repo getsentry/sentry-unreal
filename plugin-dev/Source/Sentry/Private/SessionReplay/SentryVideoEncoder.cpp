@@ -312,6 +312,10 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 #endif
 
 	TSharedRef<FAVDevice>& Device = FAVDevice::GetHardwareDevice();
+	if (!Device->HasContext<FVideoContextRHI>())
+	{
+		return false;
+	}
 
 	Encoder = FVideoEncoder::Create<FVideoResourceRHI>(Device, Config);
 	if (!Encoder.IsValid())
