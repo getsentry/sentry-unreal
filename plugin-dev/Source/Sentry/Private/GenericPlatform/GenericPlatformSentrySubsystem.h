@@ -177,6 +177,7 @@ private:
 	FString SessionReplayId;
 
 	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
+
 	FDelegateHandle EngineLoopInitCompleteHandle;
 #endif
 };

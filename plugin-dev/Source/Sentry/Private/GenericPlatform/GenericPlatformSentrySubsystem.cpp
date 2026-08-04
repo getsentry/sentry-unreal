@@ -659,6 +659,8 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 #ifdef USE_SENTRY_SESSION_REPLAY
 	if (isEnabled && settings->AttachSessionReplay)
 	{
+		// The recorder hooks the Slate backbuffer, which isn't available yet if Sentry is initialized
+		// before the engine loop finishes. Defer the start until engine init completes in that case.
 		if (GIsRunning)
 		{
 			StartSessionReplay(settings);
