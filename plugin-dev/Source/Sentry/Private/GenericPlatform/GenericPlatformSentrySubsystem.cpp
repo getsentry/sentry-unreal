@@ -671,12 +671,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 			{
 				EngineLoopInitCompleteHandle = FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this, settings]
 				{
-					if (EngineLoopInitCompleteHandle.IsValid())
-					{
-						FCoreDelegates::OnFEngineLoopInitComplete.Remove(EngineLoopInitCompleteHandle);
-						EngineLoopInitCompleteHandle.Reset();
-					}
-
 					StartSessionReplay(settings);
 				});
 			}

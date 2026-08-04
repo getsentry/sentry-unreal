@@ -287,21 +287,16 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			{
 				StartSessionReplay(settings);
 			}
-			else
+			else if (!EngineLoopInitCompleteHandle.IsValid())
 			{
-				if (!EngineLoopInitCompleteHandle.IsValid())
+				// OnFEngineLoopInitComplete broadcasts exactly once. Don't Remove() this binding from inside
+				// the callback: RemoveDelegateInstance calls Unbind() synchronously, freeing this lambda's own
+				// storage (captured `this`/`settings`), so any subsequent access is a use-after-free. The
+				// binding is torn down later in Close() instead.
+				EngineLoopInitCompleteHandle = FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this, settings]
 				{
-					EngineLoopInitCompleteHandle = FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this, settings]
-					{
-						if (EngineLoopInitCompleteHandle.IsValid())
-						{
-							FCoreDelegates::OnFEngineLoopInitComplete.Remove(EngineLoopInitCompleteHandle);
-							EngineLoopInitCompleteHandle.Reset();
-						}
-
-						StartSessionReplay(settings);
-					});
-				}
+					StartSessionReplay(settings);
+				});
 			}
 		}
 #endif
