@@ -170,9 +170,9 @@ private:
 	FThreadSafeBool bIsCrashing;
 
 #ifdef USE_SENTRY_SESSION_REPLAY
-	FString GetReplayPath() const;
 	void StartSessionReplay(const USentrySettings* settings);
-	void StartSessionReplayAfterEngineInit();
+
+	FString GetReplayPath() const;
 
 	FString SessionReplayId;
 
