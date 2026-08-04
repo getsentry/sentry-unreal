@@ -1385,7 +1385,7 @@ FString FGenericPlatformSentrySubsystem::GetCrashReporterLogoPath() const
 FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
 {
 	const FString DatabasePath = FPaths::Combine(databaseParentPath, TEXT(".sentry-native"));
-	const FString DatabaseFullPath = FPaths::ConvertRelativePathToFull(DatabasePath);
+	const FString DatabaseFullPath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*DatabasePath);
 
 	return DatabaseFullPath;
 }
