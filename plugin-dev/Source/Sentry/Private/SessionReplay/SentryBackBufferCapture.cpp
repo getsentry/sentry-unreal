@@ -332,7 +332,7 @@ TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> FSentryBackBufferCapture::Acq
 		if (!Frame.Texture.IsValid() || !Frame.ReadyFence.IsValid())
 		{
 			Frame.Release();
-			return nullptr;
+			continue;
 		}
 
 		return Slot;
