@@ -402,8 +402,6 @@ void FSentryVideoEncoder::Restart()
 	bInitSegmentPublished = false;
 	bFirstFrameValidated = false;
 	ConsecutiveSendFrameFailures = 0;
-
-	DrainAndReleaseQueue();
 }
 
 void FSentryVideoEncoder::FlushCurrentFragment()
