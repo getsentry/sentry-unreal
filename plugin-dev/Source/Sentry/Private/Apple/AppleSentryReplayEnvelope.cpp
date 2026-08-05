@@ -14,6 +14,7 @@
 #include "Infrastructure/AppleSentryConverters.h"
 
 #include "JsonObjectConverter.h"
+#include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
@@ -252,10 +253,12 @@ bool FAppleSentryReplayEnvelope::CaptureForCrashEvent(SentryObjCEvent* event, co
 		return false;
 	}
 
-	NSData* video = [NSData dataWithContentsOfFile:videoPath.GetNSString()];
+	const FString NativeVideoPath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*videoPath);
+
+	NSData* video = [NSData dataWithContentsOfFile:NativeVideoPath.GetNSString()];
 	if (video == nil || video.length == 0)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to read video file at %s"), *videoPath);
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to read video file at %s"), *NativeVideoPath);
 		return false;
 	}
 
