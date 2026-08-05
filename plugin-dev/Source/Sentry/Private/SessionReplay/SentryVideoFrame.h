@@ -19,6 +19,8 @@ struct FSentryVideoFrame
 {
 	FTextureRHIRef Texture;
 
+	FGPUFenceRHIRef ReadyFence;
+
 	double CaptureTimeSeconds = 0.0;
 
 	uint32 Width = 0;
@@ -34,6 +36,11 @@ struct FSentryVideoFrame
 	// Called by the encoder to mark this frame free again, once it has finished
 	// encoding it, so the capture path can reuse it
 	void Release();
+
+	// Checks if GPU has finished writing Texture (ReadyFence signalled), so the
+	// encoder may hand it to the hardware encoder. A frame with no fence counts as
+	// ready
+	bool IsGpuWriteComplete() const;
 
 private:
 	FThreadSafeBool bInFlight;
