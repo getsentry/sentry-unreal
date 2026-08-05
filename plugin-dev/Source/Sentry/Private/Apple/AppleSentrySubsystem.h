@@ -84,11 +84,15 @@ protected:
 
 private:
 #ifdef USE_SENTRY_SESSION_REPLAY
+	void StartSessionReplay(const USentrySettings* settings);
+
 	FString GetReplayPath() const;
 
 	FString SessionReplayId;
 
 	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
+
+	FDelegateHandle EngineLoopInitCompleteHandle;
 #endif
 };
 

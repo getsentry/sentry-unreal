@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AndroidSentryDataTypes.h"
+#include "AndroidSentryScopedJavaObject.h"
 
 #include "Android/AndroidJavaEnv.h"
 
@@ -25,20 +26,20 @@ public:
 	template<typename ReturnType>
 	ReturnType CallMethod(FSentryJavaMethod Method, ...) const;
 	template<typename ReturnType>
-	FScopedJavaObject<ReturnType> CallObjectMethod(FSentryJavaMethod Method, ...) const;
+	FSentryScopedJavaObject<ReturnType> CallObjectMethod(FSentryJavaMethod Method, ...) const;
 
 	template<typename ReturnType>
 	static ReturnType CallStaticMethod(FSentryJavaClass ClassData, FSentryJavaMethod Method, ...);
 	template<typename ReturnType>
 	static ReturnType CallStaticMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...);
 	template<typename ReturnType>
-	static FScopedJavaObject<ReturnType> CallStaticObjectMethod(FSentryJavaClass ClassData, FSentryJavaMethod Method, ...);
+	static FSentryScopedJavaObject<ReturnType> CallStaticObjectMethod(FSentryJavaClass ClassData, FSentryJavaMethod Method, ...);
 	template<typename ReturnType>
-	static FScopedJavaObject<ReturnType> CallStaticObjectMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...);
+	static FSentryScopedJavaObject<ReturnType> CallStaticObjectMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...);
 
 	jobject GetJObject() const;
 
-	static FScopedJavaObject<jstring> GetJString(const FString& String);
+	static FSentryScopedJavaObject<jstring> GetJString(const FString& String);
 
 	static bool IsInstanceOf(FSentryJavaClass ClassData, jobject JavaClassInstance);
 
@@ -49,7 +50,7 @@ private:
 	template<typename ReturnType>
 	ReturnType CallMethodInternal(FSentryJavaMethod Method, va_list Params) const;
 	template<typename ReturnType>
-	FScopedJavaObject<ReturnType> CallObjectMethodInternal(FSentryJavaMethod Method, va_list Params) const;
+	FSentryScopedJavaObject<ReturnType> CallObjectMethodInternal(FSentryJavaMethod Method, va_list Params) const;
 
 protected:
 	jobject Object;
@@ -67,11 +68,11 @@ ReturnType FSentryJavaObjectWrapper::CallMethod(FSentryJavaMethod Method, ...) c
 }
 
 template<typename ReturnType>
-FScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallObjectMethod(FSentryJavaMethod Method, ...) const
+FSentryScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallObjectMethod(FSentryJavaMethod Method, ...) const
 {
 	va_list Params;
 	va_start(Params, Method);
-	FScopedJavaObject<ReturnType> RetVal = CallObjectMethodInternal<ReturnType>(Method, Params);
+	FSentryScopedJavaObject<ReturnType> RetVal = CallObjectMethodInternal<ReturnType>(Method, Params);
 	va_end(Params);
 	return RetVal;
 }
@@ -103,24 +104,24 @@ ReturnType FSentryJavaObjectWrapper::CallStaticMethod(FSentryJavaClass ClassData
 }
 
 template<typename ReturnType>
-FScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallStaticObjectMethod(FSentryJavaClass ClassData, FSentryJavaMethod Method, ...)
+FSentryScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallStaticObjectMethod(FSentryJavaClass ClassData, FSentryJavaMethod Method, ...)
 {
 	FSentryJavaObjectWrapper StaticInst(ClassData);
 	va_list Params;
 	va_start(Params, Method);
-	FScopedJavaObject<ReturnType> RetVal = StaticInst.CallObjectMethodInternal<ReturnType>(Method, Params);
+	FSentryScopedJavaObject<ReturnType> RetVal = StaticInst.CallObjectMethodInternal<ReturnType>(Method, Params);
 	va_end(Params);
 	return RetVal;
 }
 
 template<typename ReturnType>
-FScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallStaticObjectMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...)
+FSentryScopedJavaObject<ReturnType> FSentryJavaObjectWrapper::CallStaticObjectMethod(FSentryJavaClass ClassData, const char* MethodName, const char* FunctionSignature, ...)
 {
 	FSentryJavaObjectWrapper StaticInst(ClassData);
 	FSentryJavaMethod Method = GetStaticMethod(ClassData, MethodName, FunctionSignature);
 	va_list Params;
 	va_start(Params, FunctionSignature);
-	FScopedJavaObject<ReturnType> RetVal = StaticInst.CallObjectMethodInternal<ReturnType>(Method, Params);
+	FSentryScopedJavaObject<ReturnType> RetVal = StaticInst.CallObjectMethodInternal<ReturnType>(Method, Params);
 	va_end(Params);
 	return RetVal;
 }
@@ -150,7 +151,7 @@ template<>
 FString FSentryJavaObjectWrapper::CallMethodInternal<FString>(FSentryJavaMethod Method, va_list Params) const;
 
 template<>
-FScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobject>(FSentryJavaMethod Method, va_list Params) const;
+FSentryScopedJavaObject<jobject> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobject>(FSentryJavaMethod Method, va_list Params) const;
 
 template<>
-FScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobjectArray>(FSentryJavaMethod Method, va_list Params) const;
+FSentryScopedJavaObject<jobjectArray> FSentryJavaObjectWrapper::CallObjectMethodInternal<jobjectArray>(FSentryJavaMethod Method, va_list Params) const;

@@ -6,18 +6,24 @@
 
 - The app hang detection now correctly pauses when the game switched from foreground to background. This prevents false positive app hang events ([#1506](https://github.com/getsentry/sentry-unreal/pull/1506))
 - Fix Android `minifyRelease` R8 build failure caused by missing `android.os.ProfilingManager`/`ProfilingResult` class references in the Java SDK ([#1505](https://github.com/getsentry/sentry-unreal/pull/1505))
+- Skip transient overlay windows during session replay capture ([#1512](https://github.com/getsentry/sentry-unreal/pull/1512))
+- Defer Session Replay capture on desktop until engine initialization is complete ([#1514](https://github.com/getsentry/sentry-unreal/pull/1514))
+- Fix iOS session replay upload after a crash by resolving the sandbox video path ([#1518](https://github.com/getsentry/sentry-unreal/pull/1518))
 
 ### Dependencies
 
-- Bump Java SDK from v8.51.0-1-g057ba3685 to v8.51.0 ([#1503](https://github.com/getsentry/sentry-unreal/pull/1503))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8510)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.51.0-1-g057ba3685...8.51.0)
+- Bump Java SDK from v8.51.0-1-g057ba3685 to v8.52.0 ([#1503](https://github.com/getsentry/sentry-unreal/pull/1503), [#1521](https://github.com/getsentry/sentry-unreal/pull/1521))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8520)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.51.0-1-g057ba3685...8.52.0)
 - Bump Native SDK from v0.16.0 to v0.16.1 ([#1508](https://github.com/getsentry/sentry-unreal/pull/1508))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0161)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.16.0...0.16.1)
 - Bump Android Gradle Plugin from v6.16.0 to v6.17.0 ([#1507](https://github.com/getsentry/sentry-unreal/pull/1507))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6170)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.16.0...6.17.0)
+- Bump Cocoa SDK from v9.23.0 to v9.24.0 ([#1504](https://github.com/getsentry/sentry-unreal/pull/1504))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9240)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.23.0...9.24.0)
 
 ## 1.18.0
 
@@ -59,6 +65,7 @@
 - Decrease max session replay clip duration to 20 seconds to prevent replays from being rejected due to the server-side 10 MiB size limit, which could be exceeded at high rendering resolutions ([#1478](https://github.com/getsentry/sentry-unreal/pull/1478))
 - Maximize telemetry buffers for native platforms to minimize queue overflows ([#1483](https://github.com/getsentry/sentry-unreal/pull/1483))
 - Grant execute permissions to bundled crash handler binaries (Linux/Mac) ([#1486](https://github.com/getsentry/sentry-unreal/pull/1486))
+- Resolve startup crash on Meta Quest during Sentry init (UE 5.7+) ([#1487](https://github.com/getsentry/sentry-unreal/pull/1487))
 
 ### Dependencies
 

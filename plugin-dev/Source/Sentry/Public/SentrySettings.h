@@ -412,37 +412,37 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable metrics", ToolTip = "Flag indicating whether to enable the Sentry metrics API for tracking counters, distributions, and gauges."))
 	bool EnableMetrics;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS). Requires metrics to be enabled.",
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoFrameTimeMetrics;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Frame time sample interval (frames)", ToolTip = "Emit performance metrics every Nth frame. Higher values reduce network and storage overhead at the cost of granularity. At 60 FPS, a value of 30 emits ~2 samples per second.",
 			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 1))
 	int32 FrameTimeSampleInterval;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Collect game stats metrics", ToolTip = "Periodically collect game stats (e.g., process memory usage, active UObject count). Requires metrics to be enabled.",
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoGameStatsMetrics;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Game stats sample interval (seconds)", ToolTip = "How often to sample game stats metrics (memory, UObject count). Default: 60 seconds.",
 			EditCondition = "EnableAutoGameStatsMetrics && EnableMetrics", ClampMin = 1))
 	int32 GameStatsSampleInterval;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Collect GC pause metrics (UE 5.5+)", ToolTip = "Emit a metric for each garbage collection pause duration. GC pauses are a common source of hitches in Unreal Engine games. Requires Unreal Engine 5.5 or later.",
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoGCMetrics;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Collect network metrics (UE 5.7+)", ToolTip = "Emit network performance metrics (ping, bandwidth, packet loss, jitter) during active multiplayer sessions. Only active when a network driver is present. Requires Unreal Engine 5.7 or later.",
 			EditCondition = "EnableMetrics"))
 	bool EnableAutoNetworkMetrics;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Experimental",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Network metrics sample interval (seconds)", ToolTip = "How often to sample network metrics. Default: 10 seconds.",
 			EditCondition = "EnableAutoNetworkMetrics && EnableMetrics", ClampMin = 1))
 	int32 NetworkMetricsSampleInterval;

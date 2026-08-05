@@ -39,6 +39,7 @@
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
 
+#include "CoreGlobals.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -683,22 +684,21 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 #ifdef USE_SENTRY_SESSION_REPLAY
 	if (isEnabled && settings->AttachSessionReplay)
 	{
-		// Clear replay videos captured during previous session if any
-		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
-
-		SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
-
-		SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
-		if (SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
+		// The recorder hooks the Slate backbuffer, which isn't available yet if Sentry is initialized
+		// before the engine loop finishes. Defer the start until engine init completes in that case.
+		if (GIsRunning)
 		{
-			SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
-			SetAttribute(TEXT("sentry.replay_id"), FSentryVariant(SessionReplayId));
-			SetAttribute(TEXT("sentry._internal.replay_is_buffering"), FSentryVariant(true));
+			StartSessionReplay(settings);
 		}
 		else
 		{
-			SessionReplay.Reset();
-			SessionReplayId.Reset();
+			if (!EngineLoopInitCompleteHandle.IsValid())
+			{
+				EngineLoopInitCompleteHandle = FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this, settings]
+				{
+					StartSessionReplay(settings);
+				});
+			}
 		}
 	}
 #endif
@@ -735,6 +735,12 @@ void FGenericPlatformSentrySubsystem::Close()
 	isEnabled = false;
 
 #ifdef USE_SENTRY_SESSION_REPLAY
+	if (EngineLoopInitCompleteHandle.IsValid())
+	{
+		FCoreDelegates::OnFEngineLoopInitComplete.Remove(EngineLoopInitCompleteHandle);
+		EngineLoopInitCompleteHandle.Reset();
+	}
+
 	if (SessionReplay)
 	{
 		SessionReplay->Shutdown();
@@ -1393,7 +1399,7 @@ FString FGenericPlatformSentrySubsystem::GetCrashReporterLogoPath() const
 FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
 {
 	const FString DatabasePath = FPaths::Combine(databaseParentPath, TEXT(".sentry-native"));
-	const FString DatabaseFullPath = FPaths::ConvertRelativePathToFull(DatabasePath);
+	const FString DatabaseFullPath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*DatabasePath);
 
 	return DatabaseFullPath;
 }
@@ -1407,6 +1413,32 @@ FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 }
 
 #ifdef USE_SENTRY_SESSION_REPLAY
+void FGenericPlatformSentrySubsystem::StartSessionReplay(const USentrySettings* settings)
+{
+	if (SessionReplay)
+	{
+		return;
+	}
+
+	// Clear replay videos captured during previous session if any
+	IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
+
+	SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
+
+	SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
+	if (SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
+	{
+		SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
+		SetAttribute(TEXT("sentry.replay_id"), FSentryVariant(SessionReplayId));
+		SetAttribute(TEXT("sentry._internal.replay_is_buffering"), FSentryVariant(true));
+	}
+	else
+	{
+		SessionReplay.Reset();
+		SessionReplayId.Reset();
+	}
+}
+
 FString FGenericPlatformSentrySubsystem::GetReplayPath() const
 {
 	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *SessionReplayId));
