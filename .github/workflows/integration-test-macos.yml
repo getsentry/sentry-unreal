@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: "cocoa"
+    secrets:
+      SENTRY_UNREAL_TEST_DSN:
+        required: true
+      SENTRY_API_TOKEN:
+        required: true
 
 jobs:
   integration-test:

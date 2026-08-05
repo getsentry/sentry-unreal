@@ -4,6 +4,13 @@ on:
       unreal-version:
         required: true
         type: string
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_ORG:
+        required: true
+      SENTRY_PROJECT:
+        required: true
 
 jobs:
   test:
