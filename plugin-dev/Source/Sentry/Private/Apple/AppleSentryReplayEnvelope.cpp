@@ -13,8 +13,8 @@
 
 #include "Infrastructure/AppleSentryConverters.h"
 
-#include "JsonObjectConverter.h"
 #include "HAL/FileManager.h"
+#include "JsonObjectConverter.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
