@@ -64,6 +64,12 @@ private:
 
 	bool EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight);
 
+	// Encodes one fence-ready frame and drains produced packets
+	void ProcessFrame(FSentryVideoFrame& Frame);
+
+	// Releases every queued frame back to its pool slot and empties the queue
+	void DrainAndReleaseQueue();
+
 	// Pulls available packets from the encoder, converts them to AVCC samples and emits a fragment at each keyframe boundary
 	void DrainPackets();
 
@@ -93,6 +99,11 @@ private:
 
 	int32 ConsecutiveSendFrameFailures = 0;
 	static constexpr int32 MaxConsecutiveSendFrameFailures = 30;
+
+	// Recheck cadence (ms) while waiting for a frame's GPU write fence to signal
+	static constexpr uint32 FencePollIntervalMs = 2;
+	// Idle wait (ms) when there is no work: encoding disabled or an empty queue
+	static constexpr uint32 IdlePollIntervalMs = 50;
 
 	// Capture config
 	uint32 Width = 0;
