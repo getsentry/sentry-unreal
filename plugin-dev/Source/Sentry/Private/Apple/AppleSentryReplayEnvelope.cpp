@@ -253,12 +253,12 @@ bool FAppleSentryReplayEnvelope::CaptureForCrashEvent(SentryObjCEvent* event, co
 		return false;
 	}
 
-	const FString NativeVideoPath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*videoPath);
+	const FString platformVideoPath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*videoPath);
 
-	NSData* video = [NSData dataWithContentsOfFile:NativeVideoPath.GetNSString()];
+	NSData* video = [NSData dataWithContentsOfFile:platformVideoPath.GetNSString()];
 	if (video == nil || video.length == 0)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to read video file at %s"), *NativeVideoPath);
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to read video file at %s"), *platformVideoPath);
 		return false;
 	}
 
