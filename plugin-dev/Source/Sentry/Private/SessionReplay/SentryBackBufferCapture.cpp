@@ -8,6 +8,7 @@
 #include "SentryVideoEncoder.h"
 #include "SentryVideoFrame.h"
 
+#include "DynamicRHI.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GlobalShader.h"
 #include "HAL/PlatformTime.h"
@@ -254,6 +255,9 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
 #endif
 
+	EncoderFrame->ReadyFence->Clear();
+	RHICmdList.WriteGPUFence(EncoderFrame->ReadyFence);
+
 	EncoderFrame->CaptureTimeSeconds = Now;
 
 	Encoder.SubmitFrame(EncoderFrame);
@@ -320,7 +324,12 @@ TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> FSentryBackBufferCapture::Acq
 			Frame.Texture = FRHICommandListImmediate::Get().CreateTexture(Desc);
 		}
 
-		if (!Frame.Texture.IsValid())
+		if (!Frame.ReadyFence.IsValid())
+		{
+			Frame.ReadyFence = RHICreateGPUFence(TEXT("SentrySessionReplayFrameFence"));
+		}
+
+		if (!Frame.Texture.IsValid() || !Frame.ReadyFence.IsValid())
 		{
 			Frame.Release();
 			return nullptr;
