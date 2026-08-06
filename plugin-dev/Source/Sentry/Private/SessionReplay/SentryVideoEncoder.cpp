@@ -6,6 +6,7 @@
 
 #include "SentryDefines.h"
 #include "SentrySessionReplayRecorder.h"
+#include "SentryVideoFrame.h"
 
 #include "HAL/Event.h"
 #include "HAL/PlatformMisc.h"
@@ -85,20 +86,20 @@ void FSentryVideoEncoder::StopEncoder()
 	}
 }
 
-void FSentryVideoEncoder::SubmitFrame(const FTextureRHIRef& Texture, double CaptureTimeSeconds)
+void FSentryVideoEncoder::SubmitFrame(const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame)
 {
-	if (!Texture.IsValid() || bStopRequested || bEncodingDisabled)
+	if (!Frame.IsValid() || !Frame->Texture.IsValid() || bStopRequested || bEncodingDisabled)
 	{
+		if (Frame.IsValid())
+		{
+			Frame->Release();
+		}
 		return;
 	}
 
 	{
 		FScopeLock Lock(&QueueLock);
-		if (PendingQueue.Num() >= MaxQueueDepth)
-		{
-			PendingQueue.RemoveAt(0, 1, EAllowShrinking::No);
-		}
-		PendingQueue.Add(FPendingFrame{ Texture, CaptureTimeSeconds });
+		PendingQueue.Add(Frame);
 	}
 	if (WakeEvent)
 	{
@@ -130,115 +131,158 @@ uint32 FSentryVideoEncoder::Run()
 {
 	while (!bStopRequested)
 	{
-		TArray<FPendingFrame> Frames;
-		{
-			FScopeLock Lock(&QueueLock);
-			Swap(Frames, PendingQueue);
-		}
-
 		if (bEncodingDisabled)
 		{
+			DrainAndReleaseQueue();
 			if (WakeEvent)
 			{
-				WakeEvent->Wait(50);
+				WakeEvent->Wait(IdlePollIntervalMs);
 			}
 			continue;
 		}
 
-		for (const FPendingFrame& Frame : Frames)
+		TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> Frame;
 		{
-			const FTextureRHIRef& FrameTexture = Frame.Texture;
-			if (!FrameTexture.IsValid())
+			FScopeLock Lock(&QueueLock);
+			if (PendingQueue.Num() > 0)
 			{
-				continue;
+				Frame = PendingQueue[0];
 			}
-			const uint32 ResW = FrameTexture->GetSizeX();
-			const uint32 ResH = FrameTexture->GetSizeY();
-			if (!EnsureEncoderOpen(ResW, ResH))
-			{
-				if (bEncodingDisabled)
-				{
-					break;
-				}
-				continue;
-			}
-
-			TSharedRef<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(Encoder->GetDevice().ToSharedRef(),
-				FVideoResourceRHI::FRawData{ FrameTexture, nullptr, 0 });
-
-			bool bForceKeyframe = false;
-			if (LastForcedKeyframeTime <= 0.0 || (Frame.CaptureTimeSeconds - LastForcedKeyframeTime) >= FragmentSeconds)
-			{
-				bForceKeyframe = true;
-				LastForcedKeyframeTime = Frame.CaptureTimeSeconds;
-			}
-
-			if (CaptureTimeBaseSeconds < 0.0)
-			{
-				CaptureTimeBaseSeconds = Frame.CaptureTimeSeconds;
-			}
-
-			// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
-#if PLATFORM_APPLE
-			static constexpr double SendTimestampScale = 1'000'000.0;
-#else
-			static constexpr double SendTimestampScale = 1'000.0;
-#endif
-
-			const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
-			const double ScaledTimestamp = TimestampSeconds * SendTimestampScale;
-
-#if PLATFORM_APPLE
-			// Restart the encoder every hour of recording. On Apple platforms this stays well clear of the
-			// uint32-microseconds wrap at ~71 min which would otherwise feed VT a backward PTS
-			// and corrupt all subsequent fragments. On Windows the natural wrap is at ~49 days
-			// so realistically periodic refresh of encoder state won't be needed there
-			constexpr double RestartThreshold = 3600.0 * SendTimestampScale;
-			if (ScaledTimestamp > RestartThreshold)
-			{
-				UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder has been running for %.0f s; restarting to refresh state."), TimestampSeconds);
-				Restart();
-				continue;
-			}
-#endif
-
-			const uint32 SendTimestamp = static_cast<uint32>(ScaledTimestamp);
-
-			const FAVResult Result = Encoder->SendFrame(Resource, SendTimestamp, bForceKeyframe);
-			if (Result.IsSuccess())
-			{
-				bFirstFrameValidated = true;
-				ConsecutiveSendFrameFailures = 0;
-			}
-			else if (!bFirstFrameValidated)
-			{
-				UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder rejected the first frame. Recording disabled for this session."));
-				bEncodingDisabled.AtomicSet(true);
-				break;
-			}
-			else
-			{
-				if (++ConsecutiveSendFrameFailures >= MaxConsecutiveSendFrameFailures)
-				{
-					UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder failed %d consecutive frames. Recording disabled for this session."), ConsecutiveSendFrameFailures);
-					bEncodingDisabled.AtomicSet(true);
-					break;
-				}
-
-				UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success (%d in a row)"), ConsecutiveSendFrameFailures);
-			}
-
-			DrainPackets();
 		}
 
-		Frames.Reset();
-
-		if (WakeEvent)
+		if (!Frame.IsValid())
 		{
-			WakeEvent->Wait(50);
+			if (WakeEvent)
+			{
+				WakeEvent->Wait(IdlePollIntervalMs);
+			}
+			continue;
+		}
+
+		if (!Frame->IsGpuWriteComplete())
+		{
+			// The GPU hasn't finished writing this frame's texture yet and handing it to the
+			// encoder now is the race that can hang the device - instead, wait briefly and recheck.
+			// Polling must not be spun on to block (see FRHIGPUFence::Poll), so we yield between checks
+			if (WakeEvent)
+			{
+				WakeEvent->Wait(FencePollIntervalMs);
+			}
+			continue;
+		}
+
+		{
+			FScopeLock Lock(&QueueLock);
+			if (PendingQueue.Num() > 0)
+			{
+				PendingQueue.RemoveAt(0, 1, EAllowShrinking::No);
+			}
+		}
+
+		ProcessFrame(*Frame);
+
+		Frame->Release();
+	}
+
+	DrainAndReleaseQueue();
+
+	return 0;
+}
+
+void FSentryVideoEncoder::ProcessFrame(FSentryVideoFrame& Frame)
+{
+	const FTextureRHIRef& FrameTexture = Frame.Texture;
+	if (!FrameTexture.IsValid())
+	{
+		return;
+	}
+
+	const uint32 ResW = FrameTexture->GetSizeX();
+	const uint32 ResH = FrameTexture->GetSizeY();
+	if (!EnsureEncoderOpen(ResW, ResH))
+	{
+		return;
+	}
+
+	TSharedRef<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(Encoder->GetDevice().ToSharedRef(),
+		FVideoResourceRHI::FRawData{ FrameTexture, nullptr, 0 });
+
+	bool bForceKeyframe = false;
+	if (LastForcedKeyframeTime <= 0.0 || (Frame.CaptureTimeSeconds - LastForcedKeyframeTime) >= FragmentSeconds)
+	{
+		bForceKeyframe = true;
+		LastForcedKeyframeTime = Frame.CaptureTimeSeconds;
+	}
+
+	if (CaptureTimeBaseSeconds < 0.0)
+	{
+		CaptureTimeBaseSeconds = Frame.CaptureTimeSeconds;
+	}
+
+	// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
+#if PLATFORM_APPLE
+	static constexpr double SendTimestampScale = 1'000'000.0;
+#else
+	static constexpr double SendTimestampScale = 1'000.0;
+#endif
+
+	const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
+	const double ScaledTimestamp = TimestampSeconds * SendTimestampScale;
+
+#if PLATFORM_APPLE
+	// Restart the encoder every hour of recording. On Apple platforms this stays well clear of the
+	// uint32-microseconds wrap at ~71 min which would otherwise feed VT a backward PTS
+	// and corrupt all subsequent fragments. On Windows the natural wrap is at ~49 days
+	// so realistically periodic refresh of encoder state won't be needed there
+	constexpr double RestartThreshold = 3600.0 * SendTimestampScale;
+	if (ScaledTimestamp > RestartThreshold)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder has been running for %.0f s; restarting to refresh state."), TimestampSeconds);
+		Restart();
+		return;
+	}
+#endif
+
+	const uint32 SendTimestamp = static_cast<uint32>(ScaledTimestamp);
+
+	const FAVResult Result = Encoder->SendFrame(Resource, SendTimestamp, bForceKeyframe);
+	if (Result.IsSuccess())
+	{
+		bFirstFrameValidated = true;
+		ConsecutiveSendFrameFailures = 0;
+	}
+	else if (!bFirstFrameValidated)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder rejected the first frame. Recording disabled for this session."));
+		bEncodingDisabled.AtomicSet(true);
+		return;
+	}
+	else
+	{
+		if (++ConsecutiveSendFrameFailures >= MaxConsecutiveSendFrameFailures)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder failed %d consecutive frames. Recording disabled for this session."), ConsecutiveSendFrameFailures);
+			bEncodingDisabled.AtomicSet(true);
+			return;
+		}
+
+		UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success (%d in a row)"), ConsecutiveSendFrameFailures);
+	}
+
+	DrainPackets();
+}
+
+void FSentryVideoEncoder::DrainAndReleaseQueue()
+{
+	FScopeLock Lock(&QueueLock);
+	for (const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& FramePtr : PendingQueue)
+	{
+		if (FramePtr.IsValid())
+		{
+			FramePtr->Release();
 		}
 	}
-	return 0;
+	PendingQueue.Reset();
 }
 
 bool FSentryVideoEncoder::ShouldSwapDimensions(uint32 ResourceWidth, uint32 ResourceHeight) const
@@ -358,11 +402,6 @@ void FSentryVideoEncoder::Restart()
 	bInitSegmentPublished = false;
 	bFirstFrameValidated = false;
 	ConsecutiveSendFrameFailures = 0;
-
-	{
-		FScopeLock Lock(&QueueLock);
-		PendingQueue.Reset();
-	}
 }
 
 void FSentryVideoEncoder::FlushCurrentFragment()
