@@ -9,18 +9,19 @@
 #include "SentryUnit.h"
 
 #include "Engine/Engine.h"
+#include "HAL/PlatformTime.h"
 
 extern ENGINE_API float GAverageFPS;
 
 FSentryPerfFrameTimeMonitor::FSentryPerfFrameTimeMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes)
-	: SampleInterval(1)
-	, FrameCount(0)
+	: SampleIntervalSeconds(1.0)
+	, LastEmitTime(0.0)
 	, MetricAttributes(InMetricAttributes)
 {
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	SampleInterval = FMath::Max(Settings->FrameTimeSampleInterval, 1);
+	SampleIntervalSeconds = FMath::Max(static_cast<double>(Settings->FrameTimeSampleInterval), 0.05);
 }
 
 void FSentryPerfFrameTimeMonitor::StartCharting()
@@ -29,12 +30,12 @@ void FSentryPerfFrameTimeMonitor::StartCharting()
 
 void FSentryPerfFrameTimeMonitor::ProcessFrame(const FFrameData& FrameData)
 {
-	++FrameCount;
-
-	if (FrameCount % SampleInterval != 0)
+	const double Now = FPlatformTime::Seconds();
+	if (Now - LastEmitTime < SampleIntervalSeconds)
 	{
 		return;
 	}
+	LastEmitTime = Now;
 
 	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
 	if (!Sentry || !Sentry->IsEnabled())

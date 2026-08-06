@@ -2,13 +2,18 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> The experimental frame time metrics setting `FrameTimeSampleInterval` now specifies seconds instead of a frame count (default `1.0`), so any previously configured value is reinterpreted as seconds.
+
 ### Fixes
 
-- The app hang detection now correctly pauses when the game switched from foreground to background. This prevents false positive app hang events ([#1506](https://github.com/getsentry/sentry-unreal/pull/1506))
 - Fix Android `minifyRelease` R8 build failure caused by missing `android.os.ProfilingManager`/`ProfilingResult` class references in the Java SDK ([#1505](https://github.com/getsentry/sentry-unreal/pull/1505))
-- Skip transient overlay windows during session replay capture ([#1512](https://github.com/getsentry/sentry-unreal/pull/1512))
-- Defer Session Replay capture on desktop until engine initialization is complete ([#1514](https://github.com/getsentry/sentry-unreal/pull/1514))
+- Fix session replay GPU hang under load ([#1517](https://github.com/getsentry/sentry-unreal/pull/1517))
 - Fix iOS session replay upload after a crash by resolving the sandbox video path ([#1518](https://github.com/getsentry/sentry-unreal/pull/1518))
+- Skip transient overlay windows during session replay capture ([#1512](https://github.com/getsentry/sentry-unreal/pull/1512))
+- Defer session replay capture on desktop until engine initialization is complete ([#1514](https://github.com/getsentry/sentry-unreal/pull/1514))
+- Sample frame time metrics on a wall-clock interval instead of every Nth frame ([#1522](https://github.com/getsentry/sentry-unreal/pull/1522))
+- The app hang detection now correctly pauses when the game switches from foreground to background. This prevents false positive app hang events ([#1506](https://github.com/getsentry/sentry-unreal/pull/1506))
 
 ### Dependencies
 
@@ -21,9 +26,9 @@
 - Bump Android Gradle Plugin from v6.16.0 to v6.17.0 ([#1507](https://github.com/getsentry/sentry-unreal/pull/1507))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6170)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.16.0...6.17.0)
-- Bump Cocoa SDK from v9.23.0 to v9.24.0 ([#1504](https://github.com/getsentry/sentry-unreal/pull/1504))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9240)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.23.0...9.24.0)
+- Bump Cocoa SDK from v9.23.0 to v9.25.0 ([#1504](https://github.com/getsentry/sentry-unreal/pull/1504), [#1520](https://github.com/getsentry/sentry-unreal/pull/1520))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9250)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.23.0...9.25.0)
 
 ## 1.18.0
 
