@@ -21,9 +21,6 @@ FSentryPerfFrameTimeMonitor::FSentryPerfFrameTimeMonitor(TSharedPtr<FSentryPerfM
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
-	// Mirror the ClampMin on FrameTimeSampleInterval (SentrySettings.h) so a hand-edited config that
-	// bypasses the editor can't request a sub-minimum (or zero) interval that would emit metrics on every
-	// frame. Keep this value in sync with that ClampMin.
 	SampleIntervalSeconds = FMath::Max(static_cast<double>(Settings->FrameTimeSampleInterval), 0.05);
 }
 
