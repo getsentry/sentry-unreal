@@ -418,9 +418,9 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableAutoFrameTimeMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
-		Meta = (DisplayName = "Frame time sample interval (frames)", ToolTip = "Emit performance metrics every Nth frame. Higher values reduce network and storage overhead at the cost of granularity. At 60 FPS, a value of 30 emits ~2 samples per second.",
-			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 1))
-	int32 FrameTimeSampleInterval;
+		Meta = (DisplayName = "Frame time sample interval (seconds)", ToolTip = "How often to sample frame time metrics (frame time, thread times, GPU time, FPS). The cadence is measured in wall-clock time, so the sampling rate is independent of frame rate. Default: 1 second.",
+			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 0.05))
+	float FrameTimeSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Collect game stats metrics", ToolTip = "Periodically collect game stats (e.g., process memory usage, active UObject count). Requires metrics to be enabled.",
