@@ -629,37 +629,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	if (bNativeHangTracking && isEnabled)
 	{
-		bAppIsActive.AtomicSet(true);
-		bAppIsForeground.AtomicSet(true);
-
-		// OnEndFrame is broadcast on the game thread, so the first invocation latches it as the monitored
-		// thread and every subsequent frame refreshes the heartbeat the daemon watches for staleness
-		AppHangHeartbeatHandle = FCoreDelegates::OnEndFrame.AddLambda([this]()
-		{
-			// Prevent a late frame callback from rearming the watchdog after the app becomes inactive.
-			if (bAppIsActive && bAppIsForeground)
-			{
-				sentry_app_hang_heartbeat();
-			}
-		});
-		AppHangWillDeactivateHandle = FCoreDelegates::ApplicationWillDeactivateDelegate.AddLambda([this]()
-		{
-			bAppIsActive.AtomicSet(false);
-			sentry_app_hang_pause();
-		});
-		AppHangWillEnterBackgroundHandle = FCoreDelegates::ApplicationWillEnterBackgroundDelegate.AddLambda([this]()
-		{
-			bAppIsForeground.AtomicSet(false);
-			sentry_app_hang_pause();
-		});
-		AppHangHasEnteredForegroundHandle = FCoreDelegates::ApplicationHasEnteredForegroundDelegate.AddLambda([this]()
-		{
-			bAppIsForeground.AtomicSet(true);
-		});
-		AppHangHasReactivatedHandle = FCoreDelegates::ApplicationHasReactivatedDelegate.AddLambda([this]()
-		{
-			bAppIsActive.AtomicSet(true);
-		});
+		ConfigureAppHangTracking();
 	}
 
 	// Best-effort at writing user consent to disk so that user consent can change at runtime and persist
@@ -706,31 +676,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 void FGenericPlatformSentrySubsystem::Close()
 {
-	if (AppHangHeartbeatHandle.IsValid())
-	{
-		FCoreDelegates::OnEndFrame.Remove(AppHangHeartbeatHandle);
-		AppHangHeartbeatHandle.Reset();
-	}
-	if (AppHangWillDeactivateHandle.IsValid())
-	{
-		FCoreDelegates::ApplicationWillDeactivateDelegate.Remove(AppHangWillDeactivateHandle);
-		AppHangWillDeactivateHandle.Reset();
-	}
-	if (AppHangWillEnterBackgroundHandle.IsValid())
-	{
-		FCoreDelegates::ApplicationWillEnterBackgroundDelegate.Remove(AppHangWillEnterBackgroundHandle);
-		AppHangWillEnterBackgroundHandle.Reset();
-	}
-	if (AppHangHasEnteredForegroundHandle.IsValid())
-	{
-		FCoreDelegates::ApplicationHasEnteredForegroundDelegate.Remove(AppHangHasEnteredForegroundHandle);
-		AppHangHasEnteredForegroundHandle.Reset();
-	}
-	if (AppHangHasReactivatedHandle.IsValid())
-	{
-		FCoreDelegates::ApplicationHasReactivatedDelegate.Remove(AppHangHasReactivatedHandle);
-		AppHangHasReactivatedHandle.Reset();
-	}
+	ResetAppHangTracking();
 
 	isEnabled = false;
 
@@ -1297,6 +1243,28 @@ void FGenericPlatformSentrySubsystem::TryCaptureGpuDump()
 			MakeShareable(new FGenericPlatformSentryAttachment(NvdbgPath, FPaths::GetCleanFilename(NvdbgPath), TEXT("application/octet-stream")));
 
 		AddFileAttachment(NvdbgAttachment);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::ConfigureAppHangTracking()
+{
+	// OnEndFrame is broadcast on the game thread, so the first invocation latches it as the monitored
+	// thread and every subsequent frame refreshes the heartbeat the daemon watches for staleness
+	AppHangHeartbeatHandle = FCoreDelegates::OnEndFrame.AddLambda([this]()
+	{
+		if (IsAppHangTrackingActive())
+		{
+			sentry_app_hang_heartbeat();
+		}
+	});
+}
+
+void FGenericPlatformSentrySubsystem::ResetAppHangTracking()
+{
+	if (AppHangHeartbeatHandle.IsValid())
+	{
+		FCoreDelegates::OnEndFrame.Remove(AppHangHeartbeatHandle);
+		AppHangHeartbeatHandle.Reset();
 	}
 }
 

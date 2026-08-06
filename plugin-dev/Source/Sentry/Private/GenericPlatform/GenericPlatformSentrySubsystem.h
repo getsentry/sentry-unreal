@@ -94,6 +94,10 @@ protected:
 	virtual void ConfigureScreenshotCapturing(sentry_options_t* Options) {}
 	virtual void ConfigureSessionReplayCapturing(sentry_options_t* Options) {}
 
+	virtual void ConfigureAppHangTracking();
+	virtual void ResetAppHangTracking();
+	virtual bool IsAppHangTrackingActive() const { return true; }
+
 	void ConfigureCrashReporterAppearance(const USentrySettings* Settings);
 
 	FString GetHandlerPath() const;
@@ -159,14 +163,7 @@ private:
 
 	bool bNativeHangTracking;
 
-	FThreadSafeBool bAppIsActive;
-	FThreadSafeBool bAppIsForeground;
-
 	FDelegateHandle AppHangHeartbeatHandle;
-	FDelegateHandle AppHangWillDeactivateHandle;
-	FDelegateHandle AppHangWillEnterBackgroundHandle;
-	FDelegateHandle AppHangHasEnteredForegroundHandle;
-	FDelegateHandle AppHangHasReactivatedHandle;
 
 	FDateTime initTimestamp;
 

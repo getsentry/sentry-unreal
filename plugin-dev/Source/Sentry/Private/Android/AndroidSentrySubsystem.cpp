@@ -132,7 +132,6 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 
 	if (IsEnabled() && bNdkAppHangTracking)
 	{
-		bAppIsActive.AtomicSet(true);
 		bAppIsForeground.AtomicSet(true);
 
 		// OnEndFrame is broadcast on the game thread, so the first heartbeat latches it as the
@@ -140,16 +139,11 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 		// for staleness before capturing an app-hang event.
 		OnEndFrameDelegateHandle = FCoreDelegates::OnEndFrame.AddLambda([this]()
 		{
-			// Prevent a late frame callback from rearming the watchdog after the app becomes inactive.
-			if (bAppIsActive && bAppIsForeground)
+			// Prevent a late frame callback from rearming the watchdog after the app goes to the background.
+			if (bAppIsForeground)
 			{
 				PumpAppHangHeartbeat();
 			}
-		});
-		OnWillDeactivateDelegateHandle = FCoreDelegates::ApplicationWillDeactivateDelegate.AddLambda([this]()
-		{
-			bAppIsActive.AtomicSet(false);
-			PauseAppHangTracking();
 		});
 		OnWillEnterBackgroundDelegateHandle = FCoreDelegates::ApplicationWillEnterBackgroundDelegate.AddLambda([this]()
 		{
@@ -159,10 +153,6 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 		OnHasEnteredForegroundDelegateHandle = FCoreDelegates::ApplicationHasEnteredForegroundDelegate.AddLambda([this]()
 		{
 			bAppIsForeground.AtomicSet(true);
-		});
-		OnHasReactivatedDelegateHandle = FCoreDelegates::ApplicationHasReactivatedDelegate.AddLambda([this]()
-		{
-			bAppIsActive.AtomicSet(true);
 		});
 	}
 }
@@ -181,12 +171,6 @@ void FAndroidSentrySubsystem::Close()
 		OnEndFrameDelegateHandle.Reset();
 	}
 
-	if (OnWillDeactivateDelegateHandle.IsValid())
-	{
-		FCoreDelegates::ApplicationWillDeactivateDelegate.Remove(OnWillDeactivateDelegateHandle);
-		OnWillDeactivateDelegateHandle.Reset();
-	}
-
 	if (OnWillEnterBackgroundDelegateHandle.IsValid())
 	{
 		FCoreDelegates::ApplicationWillEnterBackgroundDelegate.Remove(OnWillEnterBackgroundDelegateHandle);
@@ -197,12 +181,6 @@ void FAndroidSentrySubsystem::Close()
 	{
 		FCoreDelegates::ApplicationHasEnteredForegroundDelegate.Remove(OnHasEnteredForegroundDelegateHandle);
 		OnHasEnteredForegroundDelegateHandle.Reset();
-	}
-
-	if (OnHasReactivatedDelegateHandle.IsValid())
-	{
-		FCoreDelegates::ApplicationHasReactivatedDelegate.Remove(OnHasReactivatedDelegateHandle);
-		OnHasReactivatedDelegateHandle.Reset();
 	}
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "flush", "(J)V", (jlong)3000);
