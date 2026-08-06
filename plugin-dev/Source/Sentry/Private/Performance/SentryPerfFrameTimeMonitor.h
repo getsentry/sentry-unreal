@@ -28,7 +28,7 @@ public:
 	virtual void StopCharting() override;
 
 private:
-	int32 SampleInterval;
-	uint64 FrameCount;
+	double SampleIntervalSeconds;
+	double LastEmitTime;
 	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 };
