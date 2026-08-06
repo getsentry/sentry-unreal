@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changes
+
+- Frame time metrics are now sampled on a wall-clock interval instead of every Nth frame, so the sampling rate no longer scales with frame rate. The `FrameTimeSampleInterval` setting changes from a frame count to a number of seconds (default `1.0`); existing configured values are reinterpreted from frames to seconds ([#1522](https://github.com/getsentry/sentry-unreal/pull/1522))
+
 ### Fixes
 
 - Fix session replay GPU hang under load ([#1517](https://github.com/getsentry/sentry-unreal/pull/1517))
