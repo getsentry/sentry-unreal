@@ -5,10 +5,6 @@
 > [!IMPORTANT]
 > The experimental frame time metrics setting `FrameTimeSampleInterval` now specifies seconds instead of a frame count (default `1.0`), so any previously configured value is reinterpreted as seconds.
 
-### Changes
-
-- Sample frame time metrics on a wall-clock interval instead of every Nth frame ([#1522](https://github.com/getsentry/sentry-unreal/pull/1522))
-
 ### Fixes
 
 - Fix session replay GPU hang under load ([#1517](https://github.com/getsentry/sentry-unreal/pull/1517))
@@ -16,6 +12,7 @@
 - Skip transient overlay windows during session replay capture ([#1512](https://github.com/getsentry/sentry-unreal/pull/1512))
 - Defer Session Replay capture on desktop until engine initialization is complete ([#1514](https://github.com/getsentry/sentry-unreal/pull/1514))
 - Fix iOS session replay upload after a crash by resolving the sandbox video path ([#1518](https://github.com/getsentry/sentry-unreal/pull/1518))
+- Sample frame time metrics on a wall-clock interval instead of every Nth frame ([#1522](https://github.com/getsentry/sentry-unreal/pull/1522))
 
 ### Dependencies
 
