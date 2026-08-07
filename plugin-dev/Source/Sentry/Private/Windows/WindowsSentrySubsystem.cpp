@@ -139,4 +139,19 @@ FString FWindowsSentrySubsystem::GetDeviceType() const
 	return FMicrosoftSentrySubsystem::GetDeviceType();
 }
 
+void FWindowsSentrySubsystem::ConfigureAppHangTracking()
+{
+	FGenericPlatformSentrySubsystem::ConfigureAppHangTracking();
+}
+
+void FWindowsSentrySubsystem::ResetAppHangTracking()
+{
+	FGenericPlatformSentrySubsystem::ResetAppHangTracking();
+}
+
+bool FWindowsSentrySubsystem::IsAppHangTrackingActive() const
+{
+	return FGenericPlatformSentrySubsystem::IsAppHangTrackingActive();
+}
+
 #endif // USE_SENTRY_NATIVE && !SENTRY_WINGDK

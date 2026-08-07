@@ -13,6 +13,7 @@
 #include "GenericPlatform/GenericPlatformSentryAttachment.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
 
@@ -144,6 +145,64 @@ void FMicrosoftSentrySubsystem::Close()
 	}
 
 	FGenericPlatformSentrySubsystem::Close();
+}
+
+void FMicrosoftSentrySubsystem::ConfigureAppHangTracking()
+{
+	bAppIsActive.AtomicSet(true);
+	bAppIsForeground.AtomicSet(true);
+
+	FGenericPlatformSentrySubsystem::ConfigureAppHangTracking();
+
+	AppHangWillDeactivateHandle = FCoreDelegates::ApplicationWillDeactivateDelegate.AddLambda([this]()
+	{
+		bAppIsActive.AtomicSet(false);
+		sentry_app_hang_pause();
+	});
+	AppHangWillEnterBackgroundHandle = FCoreDelegates::ApplicationWillEnterBackgroundDelegate.AddLambda([this]()
+	{
+		bAppIsForeground.AtomicSet(false);
+		sentry_app_hang_pause();
+	});
+	AppHangHasEnteredForegroundHandle = FCoreDelegates::ApplicationHasEnteredForegroundDelegate.AddLambda([this]()
+	{
+		bAppIsForeground.AtomicSet(true);
+	});
+	AppHangHasReactivatedHandle = FCoreDelegates::ApplicationHasReactivatedDelegate.AddLambda([this]()
+	{
+		bAppIsActive.AtomicSet(true);
+	});
+}
+
+void FMicrosoftSentrySubsystem::ResetAppHangTracking()
+{
+	FGenericPlatformSentrySubsystem::ResetAppHangTracking();
+
+	if (AppHangWillDeactivateHandle.IsValid())
+	{
+		FCoreDelegates::ApplicationWillDeactivateDelegate.Remove(AppHangWillDeactivateHandle);
+		AppHangWillDeactivateHandle.Reset();
+	}
+	if (AppHangWillEnterBackgroundHandle.IsValid())
+	{
+		FCoreDelegates::ApplicationWillEnterBackgroundDelegate.Remove(AppHangWillEnterBackgroundHandle);
+		AppHangWillEnterBackgroundHandle.Reset();
+	}
+	if (AppHangHasEnteredForegroundHandle.IsValid())
+	{
+		FCoreDelegates::ApplicationHasEnteredForegroundDelegate.Remove(AppHangHasEnteredForegroundHandle);
+		AppHangHasEnteredForegroundHandle.Reset();
+	}
+	if (AppHangHasReactivatedHandle.IsValid())
+	{
+		FCoreDelegates::ApplicationHasReactivatedDelegate.Remove(AppHangHasReactivatedHandle);
+		AppHangHasReactivatedHandle.Reset();
+	}
+}
+
+bool FMicrosoftSentrySubsystem::IsAppHangTrackingActive() const
+{
+	return bAppIsActive && bAppIsForeground;
 }
 
 #include "Microsoft/HideMicrosoftPlatformTypes.h"
