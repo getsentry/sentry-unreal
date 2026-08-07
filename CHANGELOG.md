@@ -13,7 +13,7 @@
 - Skip transient overlay windows during session replay capture ([#1512](https://github.com/getsentry/sentry-unreal/pull/1512))
 - Defer session replay capture on desktop until engine initialization is complete ([#1514](https://github.com/getsentry/sentry-unreal/pull/1514))
 - Sample frame time metrics on a wall-clock interval instead of every Nth frame ([#1522](https://github.com/getsentry/sentry-unreal/pull/1522))
-- The app hang detection now correctly pauses when the game switches from foreground to background. This prevents false positive app hang events ([#1506](https://github.com/getsentry/sentry-unreal/pull/1506))
+- Pause native app-hang detection while the app is backgrounded ([#1523](https://github.com/getsentry/sentry-unreal/pull/1523))
 
 ### Dependencies
 
