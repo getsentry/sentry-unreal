@@ -7,6 +7,7 @@
 #include "MicrosoftSentryCrashLogger.h"
 
 #include "GenericPlatform/GenericPlatformSentrySubsystem.h"
+#include "HAL/ThreadSafeBool.h"
 
 class FMicrosoftSentrySubsystem : public FGenericPlatformSentrySubsystem
 {
@@ -23,9 +24,21 @@ protected:
 
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
 
+	virtual void ConfigureAppHangTracking() override;
+	virtual void ResetAppHangTracking() override;
+	virtual bool IsAppHangTrackingActive() const override;
+
 private:
 	/** Crash logger for safe stack trace logging during crashes */
 	TUniquePtr<FMicrosoftSentryCrashLogger> CrashLogger;
+
+	FThreadSafeBool bAppIsActive;
+	FThreadSafeBool bAppIsForeground;
+
+	FDelegateHandle AppHangWillDeactivateHandle;
+	FDelegateHandle AppHangWillEnterBackgroundHandle;
+	FDelegateHandle AppHangHasEnteredForegroundHandle;
+	FDelegateHandle AppHangHasReactivatedHandle;
 };
 
 #endif // USE_SENTRY_NATIVE
