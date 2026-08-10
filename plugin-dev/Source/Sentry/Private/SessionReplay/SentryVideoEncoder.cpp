@@ -336,8 +336,6 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 				Width, Height, ResourceWidth, ResourceHeight);
 			bResolutionChanged = true;
 
-			// The capture pool textures were recreated at the new size, so wrappers
-			// cached for the old ones are stale and will never be reused - drop them.
 			ResourceCache.Empty();
 		}
 		return true;
