@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.19.0
 
 > [!IMPORTANT]
 > The experimental frame time metrics setting `FrameTimeSampleInterval` now specifies seconds instead of a frame count (default `1.0`), so any previously configured value is reinterpreted as seconds.
