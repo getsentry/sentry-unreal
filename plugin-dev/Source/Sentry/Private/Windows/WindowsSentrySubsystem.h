@@ -28,6 +28,10 @@ protected:
 	virtual bool IsScreenshotSupported() const override { return true; }
 	virtual bool IsOutOfProcessScreenshotEnabled() const override { return bOutOfProcessScreenshots; }
 
+	virtual void ConfigureAppHangTracking() override;
+	virtual void ResetAppHangTracking() override;
+	virtual bool IsAppHangTrackingActive() const override;
+
 private:
 	/** Wine/Proton detection info */
 	FWineProtonInfo WineProtonInfo;
