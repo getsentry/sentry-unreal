@@ -67,6 +67,9 @@ private:
 	// Encodes one fence-ready frame and drains produced packets
 	void ProcessFrame(FSentryVideoFrame& Frame);
 
+	// Returns a cached FVideoResourceRHI wrapping Texture, creating one on first use
+	TSharedPtr<FVideoResourceRHI> AcquireVideoResource(const FTextureRHIRef& Texture);
+
 	// Releases every queued frame back to its pool slot and empties the queue
 	void DrainAndReleaseQueue();
 
@@ -93,6 +96,13 @@ private:
 	EDeviceScreenOrientation ExpectedOrientation = EDeviceScreenOrientation::Unknown;
 
 	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
+
+	struct FCachedVideoResource
+	{
+		FTextureRHIRef Texture;
+		TSharedPtr<FVideoResourceRHI> Resource;
+	};
+	TMap<FRHITexture*, FCachedVideoResource> ResourceCache;
 
 	bool bFirstFrameValidated = false;
 	FThreadSafeBool bEncodingDisabled;

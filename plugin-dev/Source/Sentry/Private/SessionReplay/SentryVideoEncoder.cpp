@@ -124,6 +124,7 @@ void FSentryVideoEncoder::Stop()
 void FSentryVideoEncoder::Exit()
 {
 	Encoder.Reset();
+	ResourceCache.Empty();
 	bEncoderOpen = false;
 }
 
@@ -204,9 +205,6 @@ void FSentryVideoEncoder::ProcessFrame(FSentryVideoFrame& Frame)
 		return;
 	}
 
-	TSharedRef<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(Encoder->GetDevice().ToSharedRef(),
-		FVideoResourceRHI::FRawData{ FrameTexture, nullptr, 0 });
-
 	bool bForceKeyframe = false;
 	if (LastForcedKeyframeTime <= 0.0 || (Frame.CaptureTimeSeconds - LastForcedKeyframeTime) >= FragmentSeconds)
 	{
@@ -245,6 +243,12 @@ void FSentryVideoEncoder::ProcessFrame(FSentryVideoFrame& Frame)
 
 	const uint32 SendTimestamp = static_cast<uint32>(ScaledTimestamp);
 
+	const TSharedPtr<FVideoResourceRHI> Resource = AcquireVideoResource(FrameTexture);
+	if (!Resource.IsValid())
+	{
+		return;
+	}
+
 	const FAVResult Result = Encoder->SendFrame(Resource, SendTimestamp, bForceKeyframe);
 	if (Result.IsSuccess())
 	{
@@ -270,6 +274,30 @@ void FSentryVideoEncoder::ProcessFrame(FSentryVideoFrame& Frame)
 	}
 
 	DrainPackets();
+}
+
+TSharedPtr<FVideoResourceRHI> FSentryVideoEncoder::AcquireVideoResource(const FTextureRHIRef& Texture)
+{
+	if (ResourceCache.Num() > 0)
+	{
+		const FTextureRHIRef& CachedTexture = ResourceCache.CreateConstIterator().Value().Texture;
+		if (CachedTexture->GetSizeX() != Texture->GetSizeX() || CachedTexture->GetSizeY() != Texture->GetSizeY())
+		{
+			ResourceCache.Empty();
+		}
+	}
+
+	if (const FCachedVideoResource* Cached = ResourceCache.Find(Texture.GetReference()))
+	{
+		return Cached->Resource;
+	}
+
+	TSharedPtr<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(Encoder->GetDevice().ToSharedRef(),
+		FVideoResourceRHI::FRawData{ Texture, nullptr, 0 });
+
+	ResourceCache.Add(Texture.GetReference(), FCachedVideoResource{ Texture, Resource });
+
+	return Resource;
 }
 
 void FSentryVideoEncoder::DrainAndReleaseQueue()
@@ -387,6 +415,7 @@ void FSentryVideoEncoder::Restart()
 	FlushCurrentFragment();
 
 	Encoder.Reset();
+	ResourceCache.Empty();
 
 	bEncoderOpen = false;
 

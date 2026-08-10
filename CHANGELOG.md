@@ -13,6 +13,7 @@
 - Skip transient overlay windows during session replay capture ([#1512](https://github.com/getsentry/sentry-unreal/pull/1512))
 - Defer session replay capture on desktop until engine initialization is complete ([#1514](https://github.com/getsentry/sentry-unreal/pull/1514))
 - Sample frame time metrics on a wall-clock interval instead of every Nth frame ([#1522](https://github.com/getsentry/sentry-unreal/pull/1522))
+- Reduce per-frame allocations in the session replay encoder ([#1527](https://github.com/getsentry/sentry-unreal/pull/1527))
 - Pause native app-hang detection while the app is backgrounded ([#1523](https://github.com/getsentry/sentry-unreal/pull/1523))
 
 ### Dependencies
