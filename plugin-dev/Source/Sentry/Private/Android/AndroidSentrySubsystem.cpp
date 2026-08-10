@@ -132,10 +132,28 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 
 	if (IsEnabled() && bNdkAppHangTracking)
 	{
+		bAppIsForeground.AtomicSet(true);
+
 		// OnEndFrame is broadcast on the game thread, so the first heartbeat latches it as the
 		// monitored thread and every subsequent frame refreshes the heartbeat sentry-native watches
 		// for staleness before capturing an app-hang event.
-		OnEndFrameDelegateHandle = FCoreDelegates::OnEndFrame.AddRaw(this, &FAndroidSentrySubsystem::PumpAppHangHeartbeat);
+		OnEndFrameDelegateHandle = FCoreDelegates::OnEndFrame.AddLambda([this]()
+		{
+			// Prevent a late frame callback from rearming the watchdog after the app goes to the background.
+			if (bAppIsForeground)
+			{
+				PumpAppHangHeartbeat();
+			}
+		});
+		OnWillEnterBackgroundDelegateHandle = FCoreDelegates::ApplicationWillEnterBackgroundDelegate.AddLambda([this]()
+		{
+			bAppIsForeground.AtomicSet(false);
+			PauseAppHangTracking();
+		});
+		OnHasEnteredForegroundDelegateHandle = FCoreDelegates::ApplicationHasEnteredForegroundDelegate.AddLambda([this]()
+		{
+			bAppIsForeground.AtomicSet(true);
+		});
 	}
 }
 
@@ -151,6 +169,18 @@ void FAndroidSentrySubsystem::Close()
 	{
 		FCoreDelegates::OnEndFrame.Remove(OnEndFrameDelegateHandle);
 		OnEndFrameDelegateHandle.Reset();
+	}
+
+	if (OnWillEnterBackgroundDelegateHandle.IsValid())
+	{
+		FCoreDelegates::ApplicationWillEnterBackgroundDelegate.Remove(OnWillEnterBackgroundDelegateHandle);
+		OnWillEnterBackgroundDelegateHandle.Reset();
+	}
+
+	if (OnHasEnteredForegroundDelegateHandle.IsValid())
+	{
+		FCoreDelegates::ApplicationHasEnteredForegroundDelegate.Remove(OnHasEnteredForegroundDelegateHandle);
+		OnHasEnteredForegroundDelegateHandle.Reset();
 	}
 
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "flush", "(J)V", (jlong)3000);
@@ -551,24 +581,55 @@ FString FAndroidSentrySubsystem::TryCaptureScreenshot() const
 
 void FAndroidSentrySubsystem::PumpAppHangHeartbeat()
 {
-	if (!AppHangHeartbeatFunc)
+	ResolveAppHangFunctions();
+
+	if (AppHangHeartbeatFunc)
 	{
-		// libsentry.so is loaded asynchronously by the Java SDK (io.sentry.ndk.SentryNdk), so resolve
-		// the symbol lazily against the already-loaded library rather than linking it at build time.
-		if (void* libsentryHandle = dlopen("libsentry.so", RTLD_NOLOAD | RTLD_NOW))
+		AppHangHeartbeatFunc();
+	}
+}
+
+void FAndroidSentrySubsystem::PauseAppHangTracking()
+{
+	ResolveAppHangFunctions();
+
+	if (AppHangPauseFunc)
+	{
+		AppHangPauseFunc();
+	}
+}
+
+void FAndroidSentrySubsystem::ResolveAppHangFunctions()
+{
+	if (AppHangHeartbeatFunc && AppHangPauseFunc)
+	{
+		return;
+	}
+
+	// libsentry.so is loaded asynchronously by the Java SDK (io.sentry.ndk.SentryNdk), so resolve
+	// symbols lazily against the already-loaded library rather than linking them at build time.
+	if (void* libsentryHandle = dlopen("libsentry.so", RTLD_NOLOAD | RTLD_NOW))
+	{
+		if (!AppHangHeartbeatFunc)
 		{
 			AppHangHeartbeatFunc = reinterpret_cast<void (*)()>(dlsym(libsentryHandle, "sentry_app_hang_heartbeat"));
-			dlclose(libsentryHandle);
 
 			if (AppHangHeartbeatFunc)
 			{
 				UE_LOG(LogSentrySdk, Log, TEXT("Resolved sentry_app_hang_heartbeat for NDK app-hang tracking."));
 			}
 		}
-	}
 
-	if (AppHangHeartbeatFunc)
-	{
-		AppHangHeartbeatFunc();
+		if (!AppHangPauseFunc)
+		{
+			AppHangPauseFunc = reinterpret_cast<void (*)()>(dlsym(libsentryHandle, "sentry_app_hang_pause"));
+
+			if (AppHangPauseFunc)
+			{
+				UE_LOG(LogSentrySdk, Log, TEXT("Resolved sentry_app_hang_pause for NDK app-hang tracking."));
+			}
+		}
+
+		dlclose(libsentryHandle);
 	}
 }
