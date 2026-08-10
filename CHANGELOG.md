@@ -13,6 +13,7 @@
 - Defer Session Replay capture on desktop until engine initialization is complete ([#1514](https://github.com/getsentry/sentry-unreal/pull/1514))
 - Fix iOS session replay upload after a crash by resolving the sandbox video path ([#1518](https://github.com/getsentry/sentry-unreal/pull/1518))
 - Sample frame time metrics on a wall-clock interval instead of every Nth frame ([#1522](https://github.com/getsentry/sentry-unreal/pull/1522))
+- Reduce per-frame allocations in the session replay encoder ([#1527](https://github.com/getsentry/sentry-unreal/pull/1527))
 
 ### Dependencies
 
