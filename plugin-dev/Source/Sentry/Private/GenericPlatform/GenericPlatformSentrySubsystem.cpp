@@ -557,7 +557,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	ConfigureNetworkConnectFunc(options);
 	ConfigureStackCaptureStrategy(options);
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#if PLATFORM_MICROSOFT || PLATFORM_MAC || PLATFORM_LINUX
 	bNativeHangTracking = settings->EnableHangTracking && settings->UseNativeHangTracking;
 	if (bNativeHangTracking)
 	{
