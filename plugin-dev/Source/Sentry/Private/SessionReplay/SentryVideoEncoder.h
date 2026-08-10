@@ -67,6 +67,10 @@ private:
 	// Encodes one fence-ready frame and drains produced packets
 	void ProcessFrame(FSentryVideoFrame& Frame);
 
+	// Returns a cached FVideoResourceRHI wrapping Texture, creating one on first use.
+	// Encoder must be open. Encoder-thread only.
+	TSharedPtr<FVideoResourceRHI> AcquireVideoResource(const FTextureRHIRef& Texture);
+
 	// Releases every queued frame back to its pool slot and empties the queue
 	void DrainAndReleaseQueue();
 
@@ -93,6 +97,21 @@ private:
 	EDeviceScreenOrientation ExpectedOrientation = EDeviceScreenOrientation::Unknown;
 
 	TSharedPtr<TVideoEncoder<FVideoResourceRHI>> Encoder;
+
+	// Reuses one FVideoResourceRHI wrapper per input texture so the AVCodecs
+	// resource mapping/registration runs once per texture instead of on every
+	// SendFrame. The capture side recycles a small fixed texture pool, so this map
+	// stays small. Keyed by the raw texture pointer; the FTextureRHIRef held in the
+	// value pins that texture alive, so its address can't be recycled by a different
+	// texture while cached (no ABA). Encoder-thread only, and bound to the current
+	// encoder's device - emptied on encoder teardown (Restart/Exit) and on a capture
+	// resolution change.
+	struct FCachedVideoResource
+	{
+		FTextureRHIRef Texture;
+		TSharedPtr<FVideoResourceRHI> Resource;
+	};
+	TMap<FRHITexture*, FCachedVideoResource> ResourceCache;
 
 	bool bFirstFrameValidated = false;
 	FThreadSafeBool bEncodingDisabled;
