@@ -278,6 +278,15 @@ void FSentryVideoEncoder::ProcessFrame(FSentryVideoFrame& Frame)
 
 TSharedPtr<FVideoResourceRHI> FSentryVideoEncoder::AcquireVideoResource(const FTextureRHIRef& Texture)
 {
+	if (ResourceCache.Num() > 0)
+	{
+		const FTextureRHIRef& CachedTexture = ResourceCache.CreateConstIterator().Value().Texture;
+		if (CachedTexture->GetSizeX() != Texture->GetSizeX() || CachedTexture->GetSizeY() != Texture->GetSizeY())
+		{
+			ResourceCache.Empty();
+		}
+	}
+
 	if (const FCachedVideoResource* Cached = ResourceCache.Find(Texture.GetReference()))
 	{
 		return Cached->Resource;
@@ -330,16 +339,11 @@ bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 Resourc
 		const bool bSameTransposedSize = ExpectedOrientation != EDeviceScreenOrientation::Unknown &&
 										 ResourceWidth == Height && ResourceHeight == Width;
 
-		if (!bSameSize && !bSameTransposedSize)
+		if (!bSameSize && !bSameTransposedSize && !bResolutionChanged)
 		{
-			if (!bResolutionChanged)
-			{
-				UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size and may be cropped or black."),
-					Width, Height, ResourceWidth, ResourceHeight);
-				bResolutionChanged = true;
-			}
-
-			ResourceCache.Empty();
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size and may be cropped or black."),
+				Width, Height, ResourceWidth, ResourceHeight);
+			bResolutionChanged = true;
 		}
 		return true;
 	}
