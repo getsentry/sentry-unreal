@@ -8,6 +8,7 @@
 #include "SentrySubsystem.h"
 
 #include "HAL/PlatformProcess.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/Guid.h"
 
 void FSentryFeedbackTest::Run()
@@ -29,8 +30,14 @@ void FSentryFeedbackTest::Run()
 
 	Subsystem->CaptureFeedback(Feedback);
 
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
+	UE_LOG(LogSentrySample, Log, TEXT("FEEDBACK_TOKEN: %s\n"), *Token);
+#else
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
 	UE_LOG(LogSentrySample, Display, TEXT("FEEDBACK_TOKEN: %s\n"), *Token);
+#endif
 
 #if PLATFORM_ANDROID
 	FPlatformProcess::Sleep(1.0f);
