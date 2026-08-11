@@ -199,6 +199,7 @@ Source/Sentry/Private/SentryAttachment.cpp
 Source/Sentry/Private/SentryBeforeBreadcrumbHandler.cpp
 Source/Sentry/Private/SentryBeforeLogHandler.cpp
 Source/Sentry/Private/SentryBeforeMetricHandler.cpp
+Source/Sentry/Private/SentryBeforeSendFeedbackHandler.cpp
 Source/Sentry/Private/SentryBeforeSendHandler.cpp
 Source/Sentry/Private/SentryBreadcrumb.cpp
 Source/Sentry/Private/SentryDefines.h
@@ -263,6 +264,7 @@ Source/Sentry/Public/SentryAttachment.h
 Source/Sentry/Public/SentryBeforeBreadcrumbHandler.h
 Source/Sentry/Public/SentryBeforeLogHandler.h
 Source/Sentry/Public/SentryBeforeMetricHandler.h
+Source/Sentry/Public/SentryBeforeSendFeedbackHandler.h
 Source/Sentry/Public/SentryBeforeSendHandler.h
 Source/Sentry/Public/SentryBreadcrumb.h
 Source/Sentry/Public/SentryDataTypes.h
@@ -521,6 +523,8 @@ Source/ThirdParty/Mac/Native/lib/libsentry.a
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/_CodeSignature/CodeResources
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/CodeResources
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Info.plist
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/._Sentry.CrashReporter.deps.json
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/._Sentry.CrashReporter.runtimeconfig.json
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrgcexp.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libclrjit.dylib
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/MacOS/libcoreclr.dylib

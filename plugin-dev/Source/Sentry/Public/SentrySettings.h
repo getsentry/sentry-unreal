@@ -10,6 +10,7 @@
 #include "SentrySettings.generated.h"
 
 class USentryBeforeSendHandler;
+class USentryBeforeSendFeedbackHandler;
 class USentryBeforeBreadcrumbHandler;
 class USentryBeforeLogHandler;
 class USentryBeforeMetricHandler;
@@ -478,6 +479,10 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
 		Meta = (DisplayName = "Custom `beforeSend` event handler", ToolTip = "Custom handler for processing events before sending them to Sentry."))
 	TSubclassOf<USentryBeforeSendHandler> BeforeSendHandler;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
+		Meta = (DisplayName = "Custom `beforeSendFeedback` handler", ToolTip = "Custom handler for processing user feedback before sending it to Sentry."))
+	TSubclassOf<USentryBeforeSendFeedbackHandler> BeforeSendFeedbackHandler;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Hooks",
 		Meta = (DisplayName = "Custom `beforeBreadcrumb` event handler", ToolTip = "Custom handler for processing breadcrumbs before adding them to the scope."))
