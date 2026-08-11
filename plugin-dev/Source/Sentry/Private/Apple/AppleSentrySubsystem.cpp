@@ -21,10 +21,12 @@
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
 #include "SentryBeforeMetricHandler.h"
+#include "SentryBeforeSendFeedbackHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 #include "SentryLog.h"
 #include "SentryMetric.h"
 #include "SentrySamplingContext.h"
@@ -55,6 +57,8 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	USentryBeforeLogHandler* beforeLogHandler = callbackHandlers.BeforeLogHandler;
 	USentryBeforeMetricHandler* beforeMetricHandler = callbackHandlers.BeforeMetricHandler;
 	USentryTraceSampler* traceSampler = callbackHandlers.TraceSampler;
+
+	beforeSendFeedbackHandler = callbackHandlers.BeforeSendFeedbackHandler;
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
@@ -532,6 +536,20 @@ bool FAppleSentrySubsystem::IsNativeHangTrackingEnabled() const
 
 void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
+	if (beforeSendFeedbackHandler != nullptr && SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		TSentryCallbackGuard<USentryBeforeSendFeedbackHandler> ReentrancyGuard;
+		if (!ReentrancyGuard.IsReentrant())
+		{
+			USentryFeedback* FeedbackToProcess = USentryFeedback::Create(feedback);
+			USentryFeedback* ProcessedFeedback = beforeSendFeedbackHandler->HandleBeforeSendFeedback(FeedbackToProcess, nullptr);
+			if (!ProcessedFeedback)
+			{
+				return;
+			}
+		}
+	}
+
 	TSharedPtr<FAppleSentryFeedback> feedbackApple = StaticCastSharedPtr<FAppleSentryFeedback>(feedback);
 
 	SentryObjCId* associatedEventId = nil;
