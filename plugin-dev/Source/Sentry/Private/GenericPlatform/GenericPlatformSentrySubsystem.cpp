@@ -94,15 +94,15 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSendFeedback(sentry_value_t feedback, sentry_hint_t* hint, void* closure)
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (closure)
 	{
-		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSendFeedback(feedback, hint, closure);
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSendFeedback(event, hint, closure);
 	}
 	else
 	{
-		return feedback;
+		return event;
 	}
 }
 
@@ -209,30 +209,32 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 	return ProcessedEvent ? event : sentry_value_new_null();
 }
 
-sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSendFeedback(sentry_value_t feedback, sentry_hint_t* hint, void* closure)
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (!closure || this != closure)
 	{
-		return feedback;
+		return event;
 	}
 
 	USentryBeforeSendFeedbackHandler* Handler = GetBeforeSendFeedbackHandler();
 	if (!Handler)
 	{
 		// If custom handler isn't set skip further processing
-		return feedback;
+		return event;
 	}
 
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		return feedback;
+		return event;
 	}
 
 	TSentryCallbackGuard<USentryBeforeSendFeedbackHandler> ReentrancyGuard;
 	if (ReentrancyGuard.IsReentrant())
 	{
-		return feedback;
+		return event;
 	}
+
+	sentry_value_t feedback = sentry_value_get_by_key(sentry_value_get_by_key(event, "contexts"), "feedback");
 
 	USentryFeedback* FeedbackToProcess = USentryFeedback::Create(MakeShareable(new FGenericPlatformSentryFeedback(feedback)));
 
@@ -240,11 +242,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSendFeedback(sentry_valu
 
 	if (!ProcessedFeedback)
 	{
-		sentry_value_decref(feedback);
+		sentry_value_decref(event);
 		return sentry_value_new_null();
 	}
 
-	return feedback;
+	return event;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure)
