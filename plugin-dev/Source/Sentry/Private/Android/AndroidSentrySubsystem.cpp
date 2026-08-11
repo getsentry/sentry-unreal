@@ -50,6 +50,7 @@ FAndroidSentrySubsystem::~FAndroidSentrySubsystem()
 void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
 	USentryBeforeSendHandler* beforeSendHandler = callbackHandlers.BeforeSendHandler;
+	USentryBeforeSendFeedbackHandler* beforeSendFeedbackHandler = callbackHandlers.BeforeSendFeedbackHandler;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumbHandler = callbackHandlers.BeforeBreadcrumbHandler;
 	USentryBeforeLogHandler* beforeLogHandler = callbackHandlers.BeforeLogHandler;
 	USentryBeforeMetricHandler* beforeMetricHandler = callbackHandlers.BeforeMetricHandler;
@@ -105,6 +106,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	if (beforeSendHandler != nullptr)
 	{
 		SettingsJson->SetNumberField(TEXT("beforeSendHandler"), (jlong)beforeSendHandler);
+	}
+	if (beforeSendFeedbackHandler != nullptr)
+	{
+		SettingsJson->SetNumberField(TEXT("beforeSendFeedbackHandler"), (jlong)beforeSendFeedbackHandler);
 	}
 	if (beforeLogHandler != nullptr)
 	{

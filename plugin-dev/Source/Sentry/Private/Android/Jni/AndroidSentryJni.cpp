@@ -2,6 +2,7 @@
 
 #include "Android/AndroidSentryBreadcrumb.h"
 #include "Android/AndroidSentryEvent.h"
+#include "Android/AndroidSentryFeedback.h"
 #include "Android/AndroidSentryHint.h"
 #include "Android/AndroidSentryLog.h"
 #include "Android/AndroidSentryMetric.h"
@@ -17,10 +18,12 @@
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
 #include "SentryBeforeMetricHandler.h"
+#include "SentryBeforeSendFeedbackHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 #include "SentryHint.h"
 #include "SentryLog.h"
 #include "SentryMetric.h"
@@ -72,6 +75,29 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 	USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
 
 	return ProcessedEvent ? event : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSendFeedback(JNIEnv* env, jclass clazz, jlong objAddr, jobject feedback, jobject hint)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return feedback;
+	}
+
+	TSentryCallbackGuard<USentryBeforeSendFeedbackHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return feedback;
+	}
+
+	USentryBeforeSendFeedbackHandler* handler = reinterpret_cast<USentryBeforeSendFeedbackHandler*>(objAddr);
+
+	USentryFeedback* FeedbackToProcess = USentryFeedback::Create(MakeShareable(new FAndroidSentryFeedback(feedback)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
+
+	USentryFeedback* ProcessedFeedback = handler->HandleBeforeSendFeedback(FeedbackToProcess, HintToProcess);
+
+	return ProcessedFeedback ? feedback : nullptr;
 }
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)
