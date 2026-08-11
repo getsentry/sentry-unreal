@@ -18,7 +18,7 @@ void FSentryFeedbackTest::Run()
 
 	const FString EventId = Subsystem->CaptureMessage(TEXT("Integration test feedback anchor event"), ESentryLevel::Info);
 
-	const FString Token = FGuid::NewGuid().ToString(EGuidFormats::DigitsLower);
+	const FString Token = FGuid::NewGuid().ToString(EGuidFormats::Digits);
 	const FString Message = FString::Printf(TEXT("Integration test feedback %s"), *Token);
 
 	USentryFeedback* Feedback = NewObject<USentryFeedback>();
