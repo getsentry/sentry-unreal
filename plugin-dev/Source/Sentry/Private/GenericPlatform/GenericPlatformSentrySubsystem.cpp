@@ -17,10 +17,12 @@
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
 #include "SentryBeforeMetricHandler.h"
+#include "SentryBeforeSendFeedbackHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 #include "SentryLog.h"
 #include "SentryMetric.h"
 #include "SentryModule.h"
@@ -89,6 +91,18 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	else
 	{
 		return event;
+	}
+}
+
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSendFeedback(sentry_value_t feedback, sentry_hint_t* hint, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSendFeedback(feedback, hint, closure);
+	}
+	else
+	{
+		return feedback;
 	}
 }
 
@@ -193,6 +207,44 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, nullptr);
 
 	return ProcessedEvent ? event : sentry_value_new_null();
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSendFeedback(sentry_value_t feedback, sentry_hint_t* hint, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return feedback;
+	}
+
+	USentryBeforeSendFeedbackHandler* Handler = GetBeforeSendFeedbackHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return feedback;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return feedback;
+	}
+
+	TSentryCallbackGuard<USentryBeforeSendFeedbackHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return feedback;
+	}
+
+	USentryFeedback* FeedbackToProcess = USentryFeedback::Create(MakeShareable(new FGenericPlatformSentryFeedback(feedback)));
+
+	USentryFeedback* ProcessedFeedback = Handler->HandleBeforeSendFeedback(FeedbackToProcess, nullptr);
+
+	if (!ProcessedFeedback)
+	{
+		sentry_value_decref(feedback);
+		return sentry_value_new_null();
+	}
+
+	return feedback;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure)
@@ -468,6 +520,7 @@ void FGenericPlatformSentrySubsystem::AttachStackTrace(sentry_value_t target)
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	: bUseNativeBackend(false)
 	, beforeSend(nullptr)
+	, beforeSendFeedback(nullptr)
 	, beforeBreadcrumb(nullptr)
 	, beforeLog(nullptr)
 	, beforeMetric(nullptr)
@@ -489,6 +542,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	bUseNativeBackend = settings->UseNativeBackend;
 
 	beforeSend = callbackHandlers.BeforeSendHandler;
+	beforeSendFeedback = callbackHandlers.BeforeSendFeedbackHandler;
 	beforeBreadcrumb = callbackHandlers.BeforeBreadcrumbHandler;
 	beforeLog = callbackHandlers.BeforeLogHandler;
 	beforeMetric = callbackHandlers.BeforeMetricHandler;
@@ -581,6 +635,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
 	sentry_options_set_before_send(options, HandleBeforeSend, this);
+	sentry_options_set_before_send_feedback(options, HandleBeforeSendFeedback, this);
 	sentry_options_set_before_send_log(options, HandleBeforeLog, this);
 	sentry_options_set_on_crash(options, HandleOnCrash, this);
 	sentry_options_set_shutdown_timeout(options, settings->ShutdownTimeout);
@@ -1179,6 +1234,11 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler() const
 {
 	return beforeSend;
+}
+
+USentryBeforeSendFeedbackHandler* FGenericPlatformSentrySubsystem::GetBeforeSendFeedbackHandler() const
+{
+	return beforeSendFeedback;
 }
 
 USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler() const
