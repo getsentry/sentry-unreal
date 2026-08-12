@@ -6,7 +6,7 @@
 
 #include "SentryBeforeSendFeedbackHandler.generated.h"
 
-class USentryFeedback;
+class USentryEvent;
 class USentryHint;
 
 UCLASS(Blueprintable)
@@ -16,6 +16,6 @@ class SENTRY_API USentryBeforeSendFeedbackHandler : public UObject
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	USentryFeedback* HandleBeforeSendFeedback(USentryFeedback* Feedback, USentryHint* Hint);
-	virtual USentryFeedback* HandleBeforeSendFeedback_Implementation(USentryFeedback* Feedback, USentryHint* Hint);
+	USentryEvent* HandleBeforeSendFeedback(USentryEvent* Event, USentryHint* Hint);
+	virtual USentryEvent* HandleBeforeSendFeedback_Implementation(USentryEvent* Event, USentryHint* Hint);
 };

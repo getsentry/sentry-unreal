@@ -22,7 +22,6 @@
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
-#include "SentryFeedback.h"
 #include "SentryLog.h"
 #include "SentryMetric.h"
 #include "SentryModule.h"
@@ -234,13 +233,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSendFeedback(sentry_valu
 		return event;
 	}
 
-	sentry_value_t feedback = sentry_value_get_by_key(sentry_value_get_by_key(event, "contexts"), "feedback");
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, false)));
 
-	USentryFeedback* FeedbackToProcess = USentryFeedback::Create(MakeShareable(new FGenericPlatformSentryFeedback(feedback)));
+	USentryEvent* ProcessedEvent = Handler->HandleBeforeSendFeedback(EventToProcess, nullptr);
 
-	USentryFeedback* ProcessedFeedback = Handler->HandleBeforeSendFeedback(FeedbackToProcess, nullptr);
-
-	if (!ProcessedFeedback)
+	if (!ProcessedEvent)
 	{
 		sentry_value_decref(event);
 		return sentry_value_new_null();

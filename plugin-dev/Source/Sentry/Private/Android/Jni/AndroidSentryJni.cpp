@@ -2,7 +2,6 @@
 
 #include "Android/AndroidSentryBreadcrumb.h"
 #include "Android/AndroidSentryEvent.h"
-#include "Android/AndroidSentryFeedback.h"
 #include "Android/AndroidSentryHint.h"
 #include "Android/AndroidSentryLog.h"
 #include "Android/AndroidSentryMetric.h"
@@ -23,7 +22,6 @@
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
-#include "SentryFeedback.h"
 #include "SentryHint.h"
 #include "SentryLog.h"
 #include "SentryMetric.h"
@@ -77,27 +75,27 @@ JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* e
 	return ProcessedEvent ? event : nullptr;
 }
 
-JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSendFeedback(JNIEnv* env, jclass clazz, jlong objAddr, jobject feedback, jobject hint)
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSendFeedback(JNIEnv* env, jclass clazz, jlong objAddr, jobject event, jobject hint)
 {
 	if (!SentryCallbackUtils::IsCallbackSafeToRun())
 	{
-		return feedback;
+		return event;
 	}
 
 	TSentryCallbackGuard<USentryBeforeSendFeedbackHandler> ReentrancyGuard;
 	if (ReentrancyGuard.IsReentrant())
 	{
-		return feedback;
+		return event;
 	}
 
 	USentryBeforeSendFeedbackHandler* handler = reinterpret_cast<USentryBeforeSendFeedbackHandler*>(objAddr);
 
-	USentryFeedback* FeedbackToProcess = USentryFeedback::Create(MakeShareable(new FAndroidSentryFeedback(feedback)));
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAndroidSentryEvent(event)));
 	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
 
-	USentryFeedback* ProcessedFeedback = handler->HandleBeforeSendFeedback(FeedbackToProcess, HintToProcess);
+	USentryEvent* ProcessedEvent = handler->HandleBeforeSendFeedback(EventToProcess, HintToProcess);
 
-	return ProcessedFeedback ? feedback : nullptr;
+	return ProcessedEvent ? event : nullptr;
 }
 
 JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)

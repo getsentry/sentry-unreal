@@ -15,7 +15,6 @@ class FGenericPlatformSentryFeedback : public ISentryFeedback
 public:
 	FGenericPlatformSentryFeedback();
 	FGenericPlatformSentryFeedback(const FString& message);
-	explicit FGenericPlatformSentryFeedback(sentry_value_t feedback);
 	virtual ~FGenericPlatformSentryFeedback() override;
 
 	sentry_value_t GetNativeObject();

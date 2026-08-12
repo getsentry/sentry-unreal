@@ -2,10 +2,10 @@
 
 #include "SentryBeforeSendFeedbackHandler.h"
 
-#include "SentryFeedback.h"
+#include "SentryEvent.h"
 #include "SentryHint.h"
 
-USentryFeedback* USentryBeforeSendFeedbackHandler::HandleBeforeSendFeedback_Implementation(USentryFeedback* Feedback, USentryHint* Hint)
+USentryEvent* USentryBeforeSendFeedbackHandler::HandleBeforeSendFeedback_Implementation(USentryEvent* Event, USentryHint* Hint)
 {
-	return Feedback;
+	return Event;
 }
