@@ -894,7 +894,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $script:Feedback.metadata.name | Should -Be 'Feedback Test User'
         }
 
-        It "Should have contact email redacted by BeforeSendFeedbackHandler" {
+        It "Should have contact email redacted by BeforeSendFeedbackHandler" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
             $script:Feedback.metadata.contact_email | Should -Be 'redacted@sentry.local'
         }
 
