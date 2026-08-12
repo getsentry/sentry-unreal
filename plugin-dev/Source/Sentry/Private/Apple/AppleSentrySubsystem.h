@@ -10,8 +10,6 @@
 #include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
 
-class USentryBeforeSendFeedbackHandler;
-
 class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
@@ -85,8 +83,6 @@ protected:
 	int32 maxAttachmentSize = 0;
 
 private:
-	USentryBeforeSendFeedbackHandler* beforeSendFeedbackHandler = nullptr;
-
 #ifdef USE_SENTRY_SESSION_REPLAY
 	void StartSessionReplay(const USentrySettings* settings);
 
