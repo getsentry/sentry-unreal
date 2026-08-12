@@ -27,35 +27,6 @@ jobs:
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
 
     steps:
-      - name: Install oras
-        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
-
-      - name: Download Unreal Engine
-        env:
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "$GITHUB_TOKEN" | oras login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          # Retry the pull - the runner's network occasionally drops connections mid-download
-          for attempt in 1 2 3; do
-            oras pull "ghcr.io/getsentry/unreal-docker:$UNREAL_VERSION-mac" && break
-            [ "$attempt" = 3 ] && exit 1
-            rm -f ue.zip.part-*
-            sleep 10
-          done
-          cat ue.zip.part-* > ue.zip
-          rm ue.zip.part-*
-
-      - name: Install Unreal Engine
-        run: |
-          mkdir -p "$HOME/UnrealEngine"
-          unzip -q ue.zip -d "$HOME/UnrealEngine"
-          rm ue.zip
-          UE_ROOT="$HOME/UnrealEngine"
-          echo "UE_ROOT=$UE_ROOT" >> "$GITHUB_ENV"
-          # Zip archives may not preserve execute permissions
-          chmod -R u+x "$UE_ROOT/Engine/Build/BatchFiles" "$UE_ROOT/Engine/Binaries" || true
-
       - name: Download package
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
