@@ -25,6 +25,7 @@ jobs:
     env:
       DISALLOW_RAW_POINTERS: 'true'
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
+      UE_ROOT: '$HOME/UnrealEngine'
 
     steps:
       - name: Download package
