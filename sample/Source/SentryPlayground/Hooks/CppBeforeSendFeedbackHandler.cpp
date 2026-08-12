@@ -3,14 +3,15 @@
 #include "CppBeforeSendFeedbackHandler.h"
 
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 #include "SentryHint.h"
-#include "SentryVariant.h"
 
 USentryEvent* UCppBeforeSendFeedbackHandler::HandleBeforeSendFeedback_Implementation(USentryEvent* Event, USentryHint* Hint)
 {
-	TMap<FString, FSentryVariant> Feedback = Event->GetContext(TEXT("feedback"));
-	Feedback.Add(TEXT("contact_email"), FSentryVariant(TEXT("redacted@sentry.local")));
-	Event->SetContext(TEXT("feedback"), Feedback);
+	if (USentryFeedback* Feedback = Event->GetFeedback())
+	{
+		Feedback->SetContactEmail(TEXT("redacted@sentry.local"));
+	}
 
 	return Super::HandleBeforeSendFeedback_Implementation(Event, Hint);
 }
