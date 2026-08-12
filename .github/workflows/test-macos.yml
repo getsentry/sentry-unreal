@@ -27,6 +27,11 @@ jobs:
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
 
     steps:
+      - name: Set Unreal Engine path
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: echo "UE_ROOT=$HOME/UnrealEngine" >> "$GITHUB_ENV"
+
       - name: Download package
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
@@ -84,7 +89,6 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
-          UE_ROOT="$HOME/UnrealEngine"
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
