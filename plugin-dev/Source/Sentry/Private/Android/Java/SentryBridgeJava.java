@@ -31,6 +31,7 @@ import io.sentry.SentryReplayOptions;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
 import io.sentry.exception.ExceptionMechanismException;
+import io.sentry.protocol.Feedback;
 import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
@@ -286,6 +287,10 @@ public class SentryBridgeJava {
 
 	public static Object getContext(final SentryEvent event, final String key) {
 		return event.getContexts().get(key);
+	}
+
+	public static Feedback getFeedback(final SentryEvent event) {
+		return event.getContexts().getFeedback();
 	}
 
 	public static void removeContext(final SentryEvent event, final String key) {

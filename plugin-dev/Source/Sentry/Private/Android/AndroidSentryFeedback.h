@@ -13,6 +13,7 @@ class FAndroidSentryFeedback : public ISentryFeedback, public FSentryJavaObjectW
 {
 public:
 	FAndroidSentryFeedback(const FString& message);
+	FAndroidSentryFeedback(jobject feedback);
 
 	void SetupClassMethods();
 

@@ -198,6 +198,11 @@ bool FAppleSentryEvent::IsCrash() const
 	return EventApple.error != nullptr;
 }
 
+TSharedPtr<ISentryFeedback> FAppleSentryEvent::GetFeedback() const
+{
+	return nullptr;
+}
+
 bool FAppleSentryEvent::IsAnr() const
 {
 	bool isErrorLevel = EventApple.level == SentryObjCLevelError;

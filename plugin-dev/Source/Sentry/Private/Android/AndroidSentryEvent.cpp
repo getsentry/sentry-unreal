@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryEvent.h"
+#include "AndroidSentryFeedback.h"
 #include "AndroidSentryId.h"
 #include "AndroidSentryMessage.h"
 
@@ -212,6 +213,18 @@ TMap<FString, FSentryVariant> FAndroidSentryEvent::GetExtras() const
 bool FAndroidSentryEvent::IsCrash() const
 {
 	return CallMethod<bool>(IsCrashMethod);
+}
+
+TSharedPtr<ISentryFeedback> FAndroidSentryEvent::GetFeedback() const
+{
+	auto feedback = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "getFeedback", "(Lio/sentry/SentryEvent;)Lio/sentry/protocol/Feedback;",
+		GetJObject());
+	if (!feedback)
+	{
+		return nullptr;
+	}
+
+	return MakeShareable(new FAndroidSentryFeedback(*feedback));
 }
 
 bool FAndroidSentryEvent::IsAnr() const

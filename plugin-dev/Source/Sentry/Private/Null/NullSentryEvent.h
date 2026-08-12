@@ -34,6 +34,7 @@ public:
 	virtual TMap<FString, FSentryVariant> GetExtras() const override { return TMap<FString, FSentryVariant>(); }
 	virtual bool IsCrash() const override { return false; }
 	virtual bool IsAnr() const override { return false; }
+	virtual TSharedPtr<ISentryFeedback> GetFeedback() const override { return nullptr; }
 };
 
 typedef FNullSentryEvent FPlatformSentryEvent;

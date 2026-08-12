@@ -8,6 +8,7 @@
 #include "SentryVariant.h"
 
 class ISentryId;
+class ISentryFeedback;
 
 class ISentryEvent
 {
@@ -39,4 +40,5 @@ public:
 	virtual TMap<FString, FSentryVariant> GetExtras() const = 0;
 	virtual bool IsCrash() const = 0;
 	virtual bool IsAnr() const = 0;
+	virtual TSharedPtr<ISentryFeedback> GetFeedback() const = 0;
 };

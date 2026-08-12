@@ -15,6 +15,13 @@ FAndroidSentryFeedback::FAndroidSentryFeedback(const FString& message)
 	SetupClassMethods();
 }
 
+FAndroidSentryFeedback::FAndroidSentryFeedback(jobject feedback)
+	: FSentryJavaObjectWrapper(SentryJavaClasses::Feedback, feedback)
+	, Hint(nullptr)
+{
+	SetupClassMethods();
+}
+
 void FAndroidSentryFeedback::SetupClassMethods()
 {
 	GetMessageMethod = GetMethod("getMessage", "()Ljava/lang/String;");

@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryEvent.h"
+#include "GenericPlatformSentryFeedback.h"
 #include "GenericPlatformSentryId.h"
 
 #include "SentryDefines.h"
@@ -292,6 +293,18 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryEvent::GetExtras() const
 bool FGenericPlatformSentryEvent::IsCrash() const
 {
 	return IsCrashEvent;
+}
+
+TSharedPtr<ISentryFeedback> FGenericPlatformSentryEvent::GetFeedback() const
+{
+	sentry_value_t contexts = sentry_value_get_by_key(Event, "contexts");
+	sentry_value_t feedback = sentry_value_get_by_key(contexts, "feedback");
+	if (sentry_value_is_null(feedback))
+	{
+		return nullptr;
+	}
+
+	return MakeShareable(new FGenericPlatformSentryFeedback(feedback));
 }
 
 bool FGenericPlatformSentryEvent::IsAnr() const
