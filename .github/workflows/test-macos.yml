@@ -25,7 +25,6 @@ jobs:
     env:
       DISALLOW_RAW_POINTERS: 'true'
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
-      UE_ROOT: '$HOME/UnrealEngine'
 
     steps:
       - name: Download package
@@ -85,6 +84,7 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
+          UE_ROOT="$HOME/UnrealEngine"
           "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
             -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
             -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
