@@ -275,6 +275,7 @@ ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_level_
 
 	switch (level)
 	{
+	case SENTRY_LEVEL_TRACE:
 	case SENTRY_LEVEL_DEBUG:
 		Level = ESentryLevel::Debug;
 		break;
@@ -441,6 +442,9 @@ ELogVerbosity::Type FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(
 
 	switch (level)
 	{
+	case SENTRY_LEVEL_TRACE:
+		LogVerbosity = ELogVerbosity::VeryVerbose;
+		break;
 	case SENTRY_LEVEL_DEBUG:
 		LogVerbosity = ELogVerbosity::Verbose;
 		break;
