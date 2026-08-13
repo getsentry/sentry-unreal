@@ -193,7 +193,7 @@ TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLogLevelToN
 
 	jfieldID debugEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "DEBUG", "Lio/sentry/SentryLogLevel;");
 	jfieldID infoEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "INFO", "Lio/sentry/SentryLogLevel;");
-	jfieldID warningEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "WARNING", "Lio/sentry/SentryLogLevel;");
+	jfieldID warningEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "WARN", "Lio/sentry/SentryLogLevel;");
 	jfieldID errorEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "ERROR", "Lio/sentry/SentryLogLevel;");
 	jfieldID fatalEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "FATAL", "Lio/sentry/SentryLogLevel;");
 
@@ -231,21 +231,23 @@ ESentryLevel FAndroidSentryConverters::SentryLogLevelToUnreal(jobject level)
 
 	int levelValue = NativeLevel.CallMethod<int>(OrdinalMethod);
 
+	// See SentryLogLevel.java for the ordinal mapping
 	switch (levelValue)
 	{
 	case 0:
+	case 1:
 		unrealLevel = ESentryLevel::Debug;
 		break;
-	case 1:
+	case 2:
 		unrealLevel = ESentryLevel::Info;
 		break;
-	case 2:
+	case 3:
 		unrealLevel = ESentryLevel::Warning;
 		break;
-	case 3:
+	case 4:
 		unrealLevel = ESentryLevel::Error;
 		break;
-	case 4:
+	case 5:
 		unrealLevel = ESentryLevel::Fatal;
 		break;
 	default:
