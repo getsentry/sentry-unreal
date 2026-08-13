@@ -9,6 +9,7 @@
 ### Fixes
 
 - Map `SENTRY_LEVEL_TRACE` in the native log-level converters so trace-level logs no longer emit a spurious "Unknown sentry level" warning ([#1534](https://github.com/getsentry/sentry-unreal/pull/1534))
+- Fix Android structured log levels being mapped to the wrong severity ([#1537](https://github.com/getsentry/sentry-unreal/pull/1537))
 
 ### Dependencies
 
