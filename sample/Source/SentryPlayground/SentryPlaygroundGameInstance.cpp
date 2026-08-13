@@ -49,6 +49,7 @@ TSharedPtr<FSentryBaseIntegrationTest> USentryPlaygroundGameInstance::CheckForPe
 		{ TEXT("crash-memory-corruption"), []{ return MakeShared<FSentryCrashTest>(TEXT("crash-memory-corruption"), ESentryAppTerminationType::MemoryCorruption); } },
 		{ TEXT("crash-assert"),            []{ return MakeShared<FSentryCrashTest>(TEXT("crash-assert"),            ESentryAppTerminationType::Assert); } },
 		{ TEXT("crash-oom"),               []{ return MakeShared<FSentryCrashTest>(TEXT("crash-oom"),               ESentryAppTerminationType::OutOfMemory); } },
+		{ TEXT("crash-alloc-corruption"),  []{ return MakeShared<FSentryCrashTest>(TEXT("crash-alloc-corruption"),  ESentryAppTerminationType::AllocatorCorruption); } },
 		{ TEXT("message-capture"),         []{ return MakeShared<FSentryMessageTest>(); } },
 		{ TEXT("feedback-capture"),        []{ return MakeShared<FSentryFeedbackTest>(); } },
 		{ TEXT("log-capture"),             []{ return MakeShared<FSentryLogTest>(); } },

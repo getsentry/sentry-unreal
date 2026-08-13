@@ -2,6 +2,8 @@
 
 #include "SentryPlaygroundCrashUtils.h"
 
+#include "SentryPlaygroundCorruptibleMalloc.h"
+
 #include "SentryGCCallback.h"
 
 #include "SentryErrorOutputDevice.h"
@@ -15,7 +17,6 @@
 #if PLATFORM_MICROSOFT
 #include "Microsoft/WindowsHWrapper.h"
 #endif
-
 
 void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 {
@@ -64,6 +65,13 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 				void* ptr = FMemory::Malloc(1024);
 				FMemory::Free(ptr);
 				FMemory::Free(ptr);
+			}
+			break;
+		case ESentryAppTerminationType::AllocatorCorruption:
+			{
+				FSentryCorruptibleMalloc::ArmForNextCrash();
+				volatile char* ptr = nullptr;
+				*ptr += 1;
 			}
 			break;
 		case ESentryAppTerminationType::RenderThreadCrash:
