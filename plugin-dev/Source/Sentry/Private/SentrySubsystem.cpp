@@ -179,10 +179,7 @@ void USentrySubsystem::Initialize()
 		ConfigureHangTracking();
 	}
 
-	if (Settings->EnableMetrics)
-	{
-		ConfigurePerformanceMetrics();
-	}
+	ConfigurePerformanceMetrics();
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)

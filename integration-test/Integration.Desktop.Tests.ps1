@@ -922,7 +922,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             # Override default project settings to avoid double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
-            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableStructuredLogging=True"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
 
             # -log-capture triggers integration test log scenario in the sample app
@@ -1024,7 +1023,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
-            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableMetrics=True"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
 
             # -metric-capture triggers integration test metric scenario in the sample app

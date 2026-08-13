@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> Structured logging and metrics are now always enabled, having been on by default since `1.11.0`. The corresponding `EnableStructuredLogging` and `EnableMetrics` settings are deprecated and no longer have any effect.
+>
+> We recognize that this change may inconvenience applications that relied on the opt-out. Use a `BeforeLogHandler` or `BeforeMetricHandler` to filter logs or metrics before they are sent. We made this tradeoff deliberately because consistent behavior across SDK integrations will help most users successfully adopt these features.
+
+### Behavioral Changes
+
+- Structured logging and metrics are now always enabled
+
 ### Features
 
 - Add `beforeSendFeedback` callback for user feedback filtering ([#1528](https://github.com/getsentry/sentry-unreal/pull/1528))

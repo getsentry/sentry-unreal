@@ -184,7 +184,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-        $logIntentArgs = "-e cmdline -log-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableStructuredLogging=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
+        $logIntentArgs = "-e cmdline -log-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
         $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
 
         Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
@@ -194,7 +194,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         # ==========================================
 
         Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
-        $metricIntentArgs = "-e cmdline -metric-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableMetrics=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
+        $metricIntentArgs = "-e cmdline -metric-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
         $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
 
         Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
