@@ -6,6 +6,10 @@
 
 - Add `beforeSendFeedback` callback for user feedback filtering ([#1528](https://github.com/getsentry/sentry-unreal/pull/1528))
 
+### Fixes
+
+- Map `SENTRY_LEVEL_TRACE` in the native log-level converters so trace-level logs no longer emit a spurious "Unknown sentry level" warning ([#1534](https://github.com/getsentry/sentry-unreal/pull/1534))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.25.0 to v9.26.0 ([#1532](https://github.com/getsentry/sentry-unreal/pull/1532))
