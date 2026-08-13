@@ -393,59 +393,53 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable large attachments (for desktop and consoles only)", ToolTip = "When enabled, attachments above an internal size threshold are uploaded out-of-band via a separate request. When disabled, oversized attachments are rejected by Sentry. Currently supported on Windows, Linux, Mac (with native backend) and consoles."))
 	bool EnableLargeAttachments;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
-		Meta = (DisplayName = "Enable structured logging", ToolTip = "Flag indicating whether to enable structured logging that forwards UE_LOG calls to Sentry logger."))
+	UPROPERTY(Config, Meta = (DeprecatedProperty, DeprecationMessage = "Structured logging is now always enabled. This setting no longer has any effect and will be removed in the future."))
 	bool EnableStructuredLogging;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Structured Logging",
-		Meta = (DisplayName = "Structured logging categories", ToolTip = "List of UE_LOG categories to forward to Sentry structured logging. Leave empty to forward all.", EditCondition = "EnableStructuredLogging"))
+		Meta = (DisplayName = "Structured logging categories", ToolTip = "List of UE_LOG categories to forward to Sentry structured logging. Leave empty to forward all."))
 	TArray<FString> StructuredLoggingCategories;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Structured Logging",
-		Meta = (DisplayName = "Forward log messages with verbosity level", EditCondition = "EnableStructuredLogging"))
+		Meta = (DisplayName = "Forward log messages with verbosity level"))
 	FStructuredLoggingLevels StructuredLoggingLevels;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Structured Logging",
-		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether to also send breadcrumbs when structured logging is enabled.", EditCondition = "EnableStructuredLogging"))
+		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether to also send breadcrumbs when structured logging is enabled."))
 	bool bSendBreadcrumbsWithStructuredLogging;
 
-	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics",
-		Meta = (DisplayName = "Enable metrics", ToolTip = "Flag indicating whether to enable the Sentry metrics API for tracking counters, distributions, and gauges."))
+	UPROPERTY(Config, Meta = (DeprecatedProperty, DeprecationMessage = "The Sentry metrics API is now always enabled. This setting no longer has any effect and will be removed in the future."))
 	bool EnableMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
-		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS). Requires metrics to be enabled.",
-			EditCondition = "EnableMetrics"))
+		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS)."))
 	bool EnableAutoFrameTimeMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Frame time sample interval (seconds)", ToolTip = "How often to sample frame time metrics (frame time, thread times, GPU time, FPS). Default: 1 second.",
-			EditCondition = "EnableAutoFrameTimeMetrics && EnableMetrics", ClampMin = 0.05))
+			EditCondition = "EnableAutoFrameTimeMetrics", ClampMin = 0.05))
 	float FrameTimeSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
-		Meta = (DisplayName = "Collect game stats metrics", ToolTip = "Periodically collect game stats (e.g., process memory usage, active UObject count). Requires metrics to be enabled.",
-			EditCondition = "EnableMetrics"))
+		Meta = (DisplayName = "Collect game stats metrics", ToolTip = "Periodically collect game stats (e.g., process memory usage, active UObject count)."))
 	bool EnableAutoGameStatsMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Game stats sample interval (seconds)", ToolTip = "How often to sample game stats metrics (memory, UObject count). Default: 60 seconds.",
-			EditCondition = "EnableAutoGameStatsMetrics && EnableMetrics", ClampMin = 1))
+			EditCondition = "EnableAutoGameStatsMetrics", ClampMin = 1))
 	int32 GameStatsSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
-		Meta = (DisplayName = "Collect GC pause metrics (UE 5.5+)", ToolTip = "Emit a metric for each garbage collection pause duration. GC pauses are a common source of hitches in Unreal Engine games. Requires Unreal Engine 5.5 or later.",
-			EditCondition = "EnableMetrics"))
+		Meta = (DisplayName = "Collect GC pause metrics (UE 5.5+)", ToolTip = "Emit a metric for each garbage collection pause duration. GC pauses are a common source of hitches in Unreal Engine games. Requires Unreal Engine 5.5 or later."))
 	bool EnableAutoGCMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
-		Meta = (DisplayName = "Collect network metrics (UE 5.7+)", ToolTip = "Emit network performance metrics (ping, bandwidth, packet loss, jitter) during active multiplayer sessions. Only active when a network driver is present. Requires Unreal Engine 5.7 or later.",
-			EditCondition = "EnableMetrics"))
+		Meta = (DisplayName = "Collect network metrics (UE 5.7+)", ToolTip = "Emit network performance metrics (ping, bandwidth, packet loss, jitter) during active multiplayer sessions. Only active when a network driver is present. Requires Unreal Engine 5.7 or later."))
 	bool EnableAutoNetworkMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Metrics|Performance",
 		Meta = (DisplayName = "Network metrics sample interval (seconds)", ToolTip = "How often to sample network metrics. Default: 10 seconds.",
-			EditCondition = "EnableAutoNetworkMetrics && EnableMetrics", ClampMin = 1))
+			EditCondition = "EnableAutoNetworkMetrics", ClampMin = 1))
 	int32 NetworkMetricsSampleInterval;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Breadcrumbs",

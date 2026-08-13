@@ -84,8 +84,8 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("enableTombstone"),
 		settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneOnly || settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneMergedWithNdk);
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
-	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), settings->EnableStructuredLogging);
-	SettingsJson->SetBoolField(TEXT("enableMetrics"), settings->EnableMetrics);
+	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), true);
+	SettingsJson->SetBoolField(TEXT("enableMetrics"), true);
 	SettingsJson->SetStringField(TEXT("deviceType"), GetDeviceType());
 	if (settings->EnableOfflineCaching)
 	{

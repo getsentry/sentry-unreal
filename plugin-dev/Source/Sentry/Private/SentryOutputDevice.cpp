@@ -28,7 +28,6 @@ FSentryOutputDevice::FSentryOutputDevice()
 	StructuredLoggingFlags.Add(ESentryLevel::Info, Settings->StructuredLoggingLevels.bOnInfoLog);
 	StructuredLoggingFlags.Add(ESentryLevel::Debug, Settings->StructuredLoggingLevels.bOnDebugLog);
 
-	bIsStructuredLoggingEnabled = Settings->EnableStructuredLogging;
 	StructuredLoggingCategories = Settings->StructuredLoggingCategories;
 	bSendBreadcrumbsWithStructuredLogging = Settings->bSendBreadcrumbsWithStructuredLogging;
 }
@@ -63,7 +62,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 	ESentryLevel Level = SentryLogUtils::ConvertLogVerbosityToSentryLevel(Verbosity);
 	const FString CategoryString = Category.ToString();
 
-	if (bIsStructuredLoggingEnabled && ShouldForwardToStructuredLogging(CategoryString, Level))
+	if (ShouldForwardToStructuredLogging(CategoryString, Level))
 	{
 		// Use level-specific logging methods
 		switch (Level)
