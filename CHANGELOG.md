@@ -6,6 +6,12 @@
 
 - Add `beforeSendFeedback` callback for user feedback filtering ([#1528](https://github.com/getsentry/sentry-unreal/pull/1528))
 
+### Dependencies
+
+- Bump Cocoa SDK from v9.25.0 to v9.26.0 ([#1532](https://github.com/getsentry/sentry-unreal/pull/1532))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9260)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.25.0...9.26.0)
+
 ## 1.19.0
 
 > [!IMPORTANT]
