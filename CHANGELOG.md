@@ -9,7 +9,7 @@
 
 ### Behavioral Changes
 
-- Structured logging and metrics are now always enabled
+- Structured logging and metrics are now always enabled ([#1538](https://github.com/getsentry/sentry-unreal/pull/1538))
 
 ### Features
 
