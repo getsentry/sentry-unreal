@@ -348,9 +348,11 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalEnvelopeApi
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalPerformanceApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalProfilingApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalReplayApi.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalScopeApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalScreenApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalScreenshotApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalSdkApi.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalSerializerApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalSwizzleApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalUserApi.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCInternalViewHierarchyApi.h
@@ -386,6 +388,7 @@ Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCStacktrace.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCThread.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCTraceContext.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCTraceHeader.h
+Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCTransaction.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCTransactionContext.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCTransactionNameSource.h
 Source/ThirdParty/IOS/SentryObjC.framework/Headers/SentryObjCUnit.h
@@ -471,9 +474,11 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalEnvelopeApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalPerformanceApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalProfilingApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalReplayApi.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalScopeApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalScreenApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalScreenshotApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalSdkApi.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalSerializerApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalSwizzleApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalUserApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCInternalViewHierarchyApi.h
@@ -509,6 +514,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCStacktrace.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCThread.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCTraceContext.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCTraceHeader.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCTransaction.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCTransactionContext.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCTransactionNameSource.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCUnit.h
