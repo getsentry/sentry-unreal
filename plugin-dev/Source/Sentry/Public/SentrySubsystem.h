@@ -20,6 +20,7 @@ class USentryEvent;
 class USentryFeedback;
 class USentryUser;
 class USentryBeforeSendHandler;
+class USentryBeforeSendFeedbackHandler;
 class USentryBeforeBreadcrumbHandler;
 class USentryBeforeLogHandler;
 class USentryBeforeMetricHandler;
@@ -621,6 +622,10 @@ private:
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;
+
+	UPROPERTY()
+	USentryBeforeSendFeedbackHandler* BeforeSendFeedbackHandler;
+
 	UPROPERTY()
 	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler;
 

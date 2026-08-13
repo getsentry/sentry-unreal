@@ -39,6 +39,7 @@ public:
 	virtual TMap<FString, FSentryVariant> GetExtras() const override;
 	virtual bool IsCrash() const override;
 	virtual bool IsAnr() const override;
+	virtual TSharedPtr<ISentryFeedback> GetFeedback() const override;
 
 private:
 	FSentryJavaMethod GetIdMethod;

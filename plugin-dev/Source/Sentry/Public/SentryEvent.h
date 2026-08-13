@@ -9,6 +9,7 @@
 #include "SentryEvent.generated.h"
 
 class USentryId;
+class USentryFeedback;
 class ISentryEvent;
 
 /**
@@ -123,4 +124,8 @@ public:
 	/** Gets flag indicating whether the event is an Application Not Responding (ANR) error. */
 	UFUNCTION(BlueprintPure, Category = "Sentry", Meta = (DisplayName = "Is App Not Responding"))
 	bool IsAnr() const;
+
+	/** Gets the user feedback carried by the event, or null if the event isn't a feedback event. */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	USentryFeedback* GetFeedback() const;
 };

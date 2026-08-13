@@ -3,6 +3,7 @@
 #pragma once
 
 class USentryBeforeSendHandler;
+class USentryBeforeSendFeedbackHandler;
 class USentryBeforeBreadcrumbHandler;
 class USentryBeforeLogHandler;
 class USentryBeforeMetricHandler;
@@ -16,6 +17,7 @@ class USentryTraceSampler;
 struct FSentryCallbackHandlers
 {
 	USentryBeforeSendHandler* BeforeSendHandler = nullptr;
+	USentryBeforeSendFeedbackHandler* BeforeSendFeedbackHandler = nullptr;
 	USentryBeforeBreadcrumbHandler* BeforeBreadcrumbHandler = nullptr;
 	USentryBeforeLogHandler* BeforeLogHandler = nullptr;
 	USentryBeforeMetricHandler* BeforeMetricHandler = nullptr;

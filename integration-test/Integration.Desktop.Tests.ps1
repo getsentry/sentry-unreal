@@ -818,6 +818,92 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
+    Context "Feedback Capture Tests" {
+        BeforeAll {
+            $script:FeedbackResult = $null
+            $script:Feedback = $null
+            $script:FeedbackEventIds = $null
+            $script:FeedbackToken = $null
+
+            Write-Host "Running feedback capture test..." -ForegroundColor Yellow
+
+            $appArgs = @(
+                '-nullrhi',     # Runs without graphics rendering (headless mode)
+                '-unattended',  # Disables user prompts and interactive dialogs
+                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
+                '-nosplash',    # Prevents splash screen and dialogs
+                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
+            )
+
+            # Override default project settings to avoid double initialization
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
+
+            # -feedback-capture triggers integration test feedback scenario in the sample app
+            $script:FeedbackResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-feedback-capture') + $appArgs) -join ' ')
+
+            Write-Host "Feedback test executed. Exit code: $($script:FeedbackResult.ExitCode)" -ForegroundColor Cyan
+
+            # The anchor event ID (feedback is associated with it)
+            $script:FeedbackEventIds = Get-EventIds -AppOutput $script:FeedbackResult.Output -ExpectedCount 1
+
+            # The unique token embedded in the feedback message (format: FEEDBACK_TOKEN: <token>)
+            $tokenLine = $script:FeedbackResult.Output | Where-Object { $_ -match 'FEEDBACK_TOKEN:\s*(\S+)' } | Select-Object -First 1
+            if ($tokenLine -match 'FEEDBACK_TOKEN:\s*(\S+)') {
+                $script:FeedbackToken = $Matches[1]
+                Write-Host "Feedback token captured: $($script:FeedbackToken)" -ForegroundColor Cyan
+            }
+
+            if ($script:FeedbackToken) {
+                try {
+                    $script:Feedback = Get-SentryTestFeedback -MessageContains $script:FeedbackToken
+                    Write-Host "Feedback fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch feedback from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No feedback token found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:FeedbackResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:FeedbackResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should output feedback token" {
+            $script:FeedbackToken | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should capture feedback in Sentry" {
+            $script:Feedback | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have feedback message" {
+            $script:Feedback.metadata.message | Should -Match $script:FeedbackToken
+        }
+
+        It "Should have feedback name" {
+            $script:Feedback.metadata.name | Should -Be 'Feedback Test User'
+        }
+
+        It "Should have contact email redacted by BeforeSendFeedbackHandler" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+            $script:Feedback.metadata.contact_email | Should -Be 'redacted@sentry.local'
+        }
+
+        It "Should be associated with the captured event" {
+            $script:FeedbackEventIds | Should -Not -BeNullOrEmpty
+            ($script:Feedback.associatedEventId -replace '-', '') | Should -Be ($script:FeedbackEventIds[0] -replace '-', '')
+        }
+    }
+
     Context "Structured Logging Tests" {
         BeforeAll {
             $script:LogResult = $null

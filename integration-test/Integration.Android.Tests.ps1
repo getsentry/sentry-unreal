@@ -170,6 +170,16 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 
         # ==========================================
+        # RUN: Feedback test - captures user feedback
+        # ==========================================
+
+        Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
+        $feedbackIntentArgs = "-e cmdline -feedback-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
+        $global:AndroidFeedbackResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $feedbackIntentArgs
+
+        Write-Host "Feedback test exit code: $($global:AndroidFeedbackResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
         # RUN 4: Log test - captures structured log
         # ==========================================
 
@@ -439,6 +449,68 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
             $modified | Should -Not -BeNullOrEmpty
             $modified.data.handler_key | Should -Be 'handler_value'
+        }
+    }
+
+    Context "Feedback Capture Tests" {
+        BeforeAll {
+            $script:FeedbackResult = $global:AndroidFeedbackResult
+            $script:Feedback = $null
+            $script:FeedbackToken = $null
+
+            # The anchor event ID (feedback is associated with it)
+            $script:FeedbackEventIds = Get-EventIds -AppOutput $FeedbackResult.Output -ExpectedCount 1
+
+            # The unique token embedded in the feedback message (format: FEEDBACK_TOKEN: <token>)
+            $tokenLine = $FeedbackResult.Output | Where-Object { $_ -match 'FEEDBACK_TOKEN:\s*(\S+)' } | Select-Object -First 1
+            if ($tokenLine -match 'FEEDBACK_TOKEN:\s*(\S+)') {
+                $script:FeedbackToken = $Matches[1]
+                Write-Host "Feedback token captured: $($script:FeedbackToken)" -ForegroundColor Cyan
+            }
+
+            if ($script:FeedbackToken) {
+                try {
+                    $script:Feedback = Get-SentryTestFeedback -MessageContains $script:FeedbackToken
+                    Write-Host "Feedback fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch feedback from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No feedback token found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $FeedbackResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should output feedback token" {
+            $script:FeedbackToken | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should capture feedback in Sentry" {
+            $script:Feedback | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have feedback message" {
+            $script:Feedback.metadata.message | Should -Match $script:FeedbackToken
+        }
+
+        It "Should have feedback name" {
+            $script:Feedback.metadata.name | Should -Be 'Feedback Test User'
+        }
+
+        It "Should have contact email redacted by BeforeSendFeedbackHandler" {
+            $script:Feedback.metadata.contact_email | Should -Be 'redacted@sentry.local'
+        }
+
+        It "Should be associated with the captured event" {
+            $script:FeedbackEventIds | Should -Not -BeNullOrEmpty
+            ($script:Feedback.associatedEventId -replace '-', '') | Should -Be ($script:FeedbackEventIds[0] -replace '-', '')
         }
     }
 

@@ -20,6 +20,12 @@ FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback(const FString& me
 	sentry_value_set_by_key(Feedback, "message", sentry_value_new_string(TCHAR_TO_UTF8(*message)));
 }
 
+FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback(sentry_value_t feedback)
+	: Hint(nullptr)
+{
+	Feedback = feedback;
+}
+
 FGenericPlatformSentryFeedback::~FGenericPlatformSentryFeedback()
 {
 	// Put custom destructor logic here if needed

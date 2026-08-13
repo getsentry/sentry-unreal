@@ -1,8 +1,10 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentryEvent.h"
+#include "SentryFeedback.h"
 
 #include "HAL/PlatformSentryEvent.h"
+#include "Interface/SentryFeedbackInterface.h"
 #include "Interface/SentryIdInterface.h"
 
 void USentryEvent::Initialize()
@@ -20,6 +22,18 @@ FString USentryEvent::GetId() const
 		return FString();
 
 	return idNativeImpl->ToString();
+}
+
+USentryFeedback* USentryEvent::GetFeedback() const
+{
+	if (!NativeImpl)
+		return nullptr;
+
+	TSharedPtr<ISentryFeedback> feedbackNativeImpl = NativeImpl->GetFeedback();
+	if (!feedbackNativeImpl)
+		return nullptr;
+
+	return USentryFeedback::Create(feedbackNativeImpl);
 }
 
 void USentryEvent::SetMessage(const FString& Message)

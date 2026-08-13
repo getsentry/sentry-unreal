@@ -105,6 +105,7 @@ The following test switches are supported:
 - `-crash-assert` - `check()` assertion failure
 - `-crash-oom` - out-of-memory crash
 - `-message-capture` - capture a message event
+- `-feedback-capture` - capture user feedback associated with an event
 - `-log-capture` - capture a structured log
 - `-metric-capture` - emit a metric
 - `-tracing-capture` - capture a transaction/span

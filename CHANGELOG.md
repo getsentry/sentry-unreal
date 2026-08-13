@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add `beforeSendFeedback` callback for user feedback filtering ([#1528](https://github.com/getsentry/sentry-unreal/pull/1528))
+
 ## 1.19.0
 
 > [!IMPORTANT]

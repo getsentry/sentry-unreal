@@ -17,6 +17,7 @@ class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
 class USentryEvent;
+class USentryBeforeSendFeedbackHandler;
 
 #if USE_SENTRY_NATIVE
 
@@ -75,6 +76,7 @@ public:
 	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
+	USentryBeforeSendFeedbackHandler* GetBeforeSendFeedbackHandler() const;
 	USentryBeforeBreadcrumbHandler* GetBeforeBreadcrumbHandler() const;
 	USentryBeforeLogHandler* GetBeforeLogHandler() const;
 	USentryBeforeMetricHandler* GetBeforeMetricHandler() const;
@@ -109,6 +111,7 @@ protected:
 	virtual FString GetCrashReporterExecutableName() const { return TEXT("invalid"); }
 
 	virtual sentry_value_t OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash);
+	virtual sentry_value_t OnBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure);
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure);
 	virtual sentry_value_t OnBeforeLog(sentry_value_t log, void* closure);
 	virtual sentry_value_t OnBeforeMetric(sentry_value_t metric, void* closure);
@@ -139,6 +142,7 @@ private:
 	 * Static wrappers that are passed to the Sentry library.
 	 */
 	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
+	static sentry_value_t HandleBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure);
 	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure);
 	static sentry_value_t HandleBeforeLog(sentry_value_t log, void* closure);
 	static sentry_value_t HandleBeforeMetric(sentry_value_t metric, void* closure);
@@ -146,6 +150,7 @@ private:
 	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure);
 
 	USentryBeforeSendHandler* beforeSend;
+	USentryBeforeSendFeedbackHandler* beforeSendFeedback;
 	USentryBeforeBreadcrumbHandler* beforeBreadcrumb;
 	USentryBeforeLogHandler* beforeLog;
 	USentryBeforeMetricHandler* beforeMetric;

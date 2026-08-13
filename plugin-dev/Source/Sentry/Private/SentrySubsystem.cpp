@@ -6,6 +6,7 @@
 #include "SentryBeforeBreadcrumbHandler.h"
 #include "SentryBeforeLogHandler.h"
 #include "SentryBeforeMetricHandler.h"
+#include "SentryBeforeSendFeedbackHandler.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
@@ -114,6 +115,11 @@ void USentrySubsystem::Initialize()
 			? NewObject<USentryBeforeSendHandler>(this, static_cast<UClass*>(Settings->BeforeSendHandler))
 			: nullptr;
 
+	BeforeSendFeedbackHandler =
+		Settings->BeforeSendFeedbackHandler != nullptr
+			? NewObject<USentryBeforeSendFeedbackHandler>(this, static_cast<UClass*>(Settings->BeforeSendFeedbackHandler))
+			: nullptr;
+
 	BeforeBreadcrumbHandler =
 		Settings->BeforeBreadcrumbHandler != nullptr
 			? NewObject<USentryBeforeBreadcrumbHandler>(this, static_cast<UClass*>(Settings->BeforeBreadcrumbHandler))
@@ -136,6 +142,7 @@ void USentrySubsystem::Initialize()
 
 	FSentryCallbackHandlers CallbackHandlers;
 	CallbackHandlers.BeforeSendHandler = BeforeSendHandler;
+	CallbackHandlers.BeforeSendFeedbackHandler = BeforeSendFeedbackHandler;
 	CallbackHandlers.BeforeBreadcrumbHandler = BeforeBreadcrumbHandler;
 	CallbackHandlers.BeforeLogHandler = BeforeLogHandler;
 	CallbackHandlers.BeforeMetricHandler = BeforeMetricHandler;

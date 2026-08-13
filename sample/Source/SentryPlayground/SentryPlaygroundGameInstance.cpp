@@ -6,6 +6,7 @@
 
 #include "SentryPlayground/IntegrationTests/SentryCrashTest.h"
 #include "SentryPlayground/IntegrationTests/SentryEnsureTest.h"
+#include "SentryPlayground/IntegrationTests/SentryFeedbackTest.h"
 #include "SentryPlayground/IntegrationTests/SentryHangTest.h"
 #include "SentryPlayground/IntegrationTests/SentryInitOnlyTest.h"
 #include "SentryPlayground/IntegrationTests/SentryBaseIntegrationTest.h"
@@ -49,6 +50,7 @@ TSharedPtr<FSentryBaseIntegrationTest> USentryPlaygroundGameInstance::CheckForPe
 		{ TEXT("crash-assert"),            []{ return MakeShared<FSentryCrashTest>(TEXT("crash-assert"),            ESentryAppTerminationType::Assert); } },
 		{ TEXT("crash-oom"),               []{ return MakeShared<FSentryCrashTest>(TEXT("crash-oom"),               ESentryAppTerminationType::OutOfMemory); } },
 		{ TEXT("message-capture"),         []{ return MakeShared<FSentryMessageTest>(); } },
+		{ TEXT("feedback-capture"),        []{ return MakeShared<FSentryFeedbackTest>(); } },
 		{ TEXT("log-capture"),             []{ return MakeShared<FSentryLogTest>(); } },
 		{ TEXT("metric-capture"),          []{ return MakeShared<FSentryMetricTest>(); } },
 		{ TEXT("tracing-capture"),         []{ return MakeShared<FSentryTracingTest>(); } },

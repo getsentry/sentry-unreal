@@ -31,6 +31,7 @@ import io.sentry.SentryReplayOptions;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
 import io.sentry.exception.ExceptionMechanismException;
+import io.sentry.protocol.Feedback;
 import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
@@ -48,6 +49,7 @@ import io.sentry.util.TracingUtils;
 public class SentryBridgeJava {
 	public static native void onConfigureScope(long callbackAddr, IScope scope);
 	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
+	public static native SentryEvent onBeforeSendFeedback(long handlerAddr, SentryEvent event, Hint hint);
 	public static native Breadcrumb onBeforeBreadcrumb(long handlerAddr, Breadcrumb breadcrumb, Hint hint);
 	public static native SentryLogEvent onBeforeLog(long handlerAddr, SentryLogEvent logEvent);
 	public static native SentryMetricsEvent onBeforeMetric(long handlerAddr, SentryMetricsEvent metricEvent);
@@ -129,6 +131,10 @@ public class SentryBridgeJava {
 					else {
 						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
 								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), deviceType));
+					}
+
+					if (settingJson.has("beforeSendFeedbackHandler")) {
+						options.setBeforeSendFeedback(new SentryUnrealBeforeSendFeedbackCallback(settingJson.getLong("beforeSendFeedbackHandler")));
 					}
 
 					if (settingJson.has("beforeLogHandler")) {
@@ -281,6 +287,10 @@ public class SentryBridgeJava {
 
 	public static Object getContext(final SentryEvent event, final String key) {
 		return event.getContexts().get(key);
+	}
+
+	public static Feedback getFeedback(final SentryEvent event) {
+		return event.getContexts().getFeedback();
 	}
 
 	public static void removeContext(final SentryEvent event, final String key) {
@@ -548,6 +558,22 @@ public class SentryBridgeJava {
 
 			if (beforeSendAddr != 0) {
 				return onBeforeSend(beforeSendAddr, event, hint);
+			}
+			return event;
+		}
+	}
+
+	private static class SentryUnrealBeforeSendFeedbackCallback implements SentryOptions.BeforeSendCallback {
+		private final long beforeSendFeedbackAddr;
+
+		public SentryUnrealBeforeSendFeedbackCallback(long beforeSendFeedbackAddr) {
+			this.beforeSendFeedbackAddr = beforeSendFeedbackAddr;
+		}
+
+		@Override
+		public SentryEvent execute(SentryEvent event, Hint hint) {
+			if (beforeSendFeedbackAddr != 0) {
+				return onBeforeSendFeedback(beforeSendFeedbackAddr, event, hint);
 			}
 			return event;
 		}
