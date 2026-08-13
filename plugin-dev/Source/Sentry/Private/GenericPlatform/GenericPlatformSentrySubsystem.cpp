@@ -205,7 +205,13 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 
 	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, nullptr);
 
-	return ProcessedEvent ? event : sentry_value_new_null();
+	if (!ProcessedEvent)
+	{
+		sentry_value_decref(event);
+		return sentry_value_new_null();
+	}
+
+	return event;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure)
@@ -280,7 +286,13 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_
 
 	USentryBreadcrumb* ProcessedBreadcrumb = Handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
 
-	return ProcessedBreadcrumb ? breadcrumb : sentry_value_new_null();
+	if (!ProcessedBreadcrumb)
+	{
+		sentry_value_decref(breadcrumb);
+		return sentry_value_new_null();
+	}
+
+	return breadcrumb;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, void* closure)
@@ -318,7 +330,13 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, 
 
 	USentryLog* ProcessedLogData = Handler->HandleBeforeLog(LogData);
 
-	return ProcessedLogData ? log : sentry_value_new_null();
+	if (!ProcessedLogData)
+	{
+		sentry_value_decref(log);
+		return sentry_value_new_null();
+	}
+
+	return log;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t metric, void* closure)
@@ -356,7 +374,13 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 
 	USentryMetric* ProcessedMetricData = Handler->HandleBeforeMetric(MetricData);
 
-	return ProcessedMetricData ? metric : sentry_value_new_null();
+	if (!ProcessedMetricData)
+	{
+		sentry_value_decref(metric);
+		return sentry_value_new_null();
+	}
+
+	return metric;
 }
 
 sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
