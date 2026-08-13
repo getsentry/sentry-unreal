@@ -6,6 +6,12 @@
 
 - Add `beforeSendFeedback` callback for user feedback filtering ([#1528](https://github.com/getsentry/sentry-unreal/pull/1528))
 
+### Dependencies
+
+- Bump Java SDK from v8.52.0 to v8.53.0 ([#1533](https://github.com/getsentry/sentry-unreal/pull/1533))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8530)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.52.0...8.53.0)
+
 ## 1.19.0
 
 > [!IMPORTANT]
