@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.20.0
 
 > [!IMPORTANT]
 > Structured logging and metrics are now always enabled, having been on by default since `1.11.0`. The corresponding `EnableStructuredLogging` and `EnableMetrics` settings are deprecated and no longer have any effect.
