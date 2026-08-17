@@ -488,8 +488,8 @@ void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttach
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
-	sentry_attachment_t* nativeAttachment =
-		sentry_attach_file(TCHAR_TO_UTF8(*platformAttachment->GetPath()));
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_file(TCHAR_TO_UTF8(*platformAttachment->GetPath()));
 
 	if (!platformAttachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
@@ -497,7 +497,7 @@ void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttach
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
-	platformAttachment->SetNativeObject(nativeAttachment);
+	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 
 	attachments.Add(platformAttachment);
 }
@@ -508,13 +508,13 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 
 	const TArray<uint8>& byteBuf = platformAttachment->GetDataByRef();
 
-	sentry_attachment_t* nativeAttachment =
-		sentry_attach_bytes(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_bytes(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
 
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
-	platformAttachment->SetNativeObject(nativeAttachment);
+	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 
 	attachments.Add(platformAttachment);
 }
@@ -871,14 +871,14 @@ void FGenericPlatformSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachm
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
-	sentry_attachment_t* nativeAttachment = platformAttachment->GetNativeObject();
+	sentry_uuid_t uuid = platformAttachment->GetUuid();
 
-	if (!nativeAttachment)
+	if (sentry_uuid_is_nil(&uuid))
 		return;
 
-	sentry_remove_attachment(nativeAttachment);
+	sentry_remove_attachment(uuid);
 
-	platformAttachment->SetNativeObject(nullptr);
+	platformAttachment->SetUuid(sentry_uuid_nil());
 }
 
 void FGenericPlatformSentrySubsystem::ClearAttachments()
@@ -991,10 +991,11 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 
 	sentry_scope_t* scope = sentry_local_scope_new();
 
-	sentry_attachment_t* screenshotAttachment =
-		sentry_scope_attach_file(scope, TCHAR_TO_UTF8(*ScreenshotPath));
+	sentry_value_t screenshotAttachment =
+		sentry_attachment_from_file(TCHAR_TO_UTF8(*ScreenshotPath));
 	sentry_attachment_set_filename(screenshotAttachment, "screenshot.png");
 	sentry_attachment_set_content_type(screenshotAttachment, "image/png");
+	sentry_scope_add_attachment(scope, screenshotAttachment);
 
 	sentry_uuid_t id = sentry_scope_capture_event(scope, exceptionEvent);
 

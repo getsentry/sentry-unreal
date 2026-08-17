@@ -75,8 +75,8 @@ void FMicrosoftSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> 
 {
 	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
 
-	sentry_attachment_t* nativeAttachment =
-		sentry_attach_filew(*platformAttachment->GetPath());
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_filew(*platformAttachment->GetPath());
 
 	if (!platformAttachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filenamew(nativeAttachment, *platformAttachment->GetFilename());
@@ -84,7 +84,7 @@ void FMicrosoftSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> 
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
-	platformAttachment->SetNativeObject(nativeAttachment);
+	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 
 	attachments.Add(platformAttachment);
 }
@@ -95,13 +95,13 @@ void FMicrosoftSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> 
 
 	const TArray<uint8>& byteBuf = platformAttachment->GetDataByRef();
 
-	sentry_attachment_t* nativeAttachment =
-		sentry_attach_bytesw(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), *platformAttachment->GetFilename());
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_bytesw(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), *platformAttachment->GetFilename());
 
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
-	platformAttachment->SetNativeObject(nativeAttachment);
+	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 
 	attachments.Add(platformAttachment);
 }
