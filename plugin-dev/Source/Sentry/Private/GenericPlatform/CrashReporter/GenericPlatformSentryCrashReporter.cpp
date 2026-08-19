@@ -99,6 +99,27 @@ void FGenericPlatformSentryCrashReporter::SetContext(const FString& key, const T
 	UpdateCrashReporterConfig();
 }
 
+void FGenericPlatformSentryCrashReporter::UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	TSharedPtr<FJsonObject> contextConfig = crashReporterConfig->HasField(TEXT("contexts"))
+												? crashReporterConfig->GetObjectField(TEXT("contexts"))
+												: MakeShareable(new FJsonObject);
+
+	TSharedPtr<FJsonObject> valuesConfig = contextConfig->HasField(key)
+											   ? contextConfig->GetObjectField(key)
+											   : MakeShareable(new FJsonObject);
+
+	for (auto it = values.CreateConstIterator(); it; ++it)
+	{
+		valuesConfig->SetField(it.Key(), FGenericPlatformSentryConverters::VariantToJsonValue(it.Value()));
+	}
+
+	contextConfig->SetObjectField(key, valuesConfig);
+	crashReporterConfig->SetObjectField(TEXT("contexts"), contextConfig);
+
+	UpdateCrashReporterConfig();
+}
+
 void FGenericPlatformSentryCrashReporter::SetTag(const FString& key, const FString& value)
 {
 	TSharedPtr<FJsonObject> tagsConfig;

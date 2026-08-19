@@ -994,7 +994,7 @@ void USentrySubsystem::AddDeviceContext()
 	DeviceContext.Add(TEXT("number_of_cores_including_hyperthreads"), FString::FromInt(FPlatformMisc::NumberOfCoresIncludingHyperthreads()));
 	DeviceContext.Add(TEXT("physical_memory_size_gb"), FString::FromInt(MemoryConstants.TotalPhysicalGB));
 
-	SubsystemNativeImpl->SetContext(TEXT("device"), DeviceContext);
+	SubsystemNativeImpl->UpdateContext(TEXT("device"), DeviceContext);
 }
 
 void USentrySubsystem::PromoteTags()

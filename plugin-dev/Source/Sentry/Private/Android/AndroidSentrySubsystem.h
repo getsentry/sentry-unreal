@@ -38,6 +38,7 @@ public:
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
 	virtual void RemoveUser() override;
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
+	virtual void UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
 	virtual void SetTag(const FString& key, const FString& value) override;
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;

@@ -434,6 +434,12 @@ void FAndroidSentrySubsystem::SetContext(const FString& key, const TMap<FString,
 		*FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantMapToNative(values)->GetJObject());
 }
 
+void FAndroidSentrySubsystem::UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "updateContext", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+		*FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantMapToNative(values)->GetJObject());
+}
+
 void FAndroidSentrySubsystem::SetTag(const FString& key, const FString& value)
 {
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V",

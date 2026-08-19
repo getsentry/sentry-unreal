@@ -1088,6 +1088,16 @@ void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<
 	}
 }
 
+void FGenericPlatformSentrySubsystem::UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	sentry_update_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+
+	if (crashReporter)
+	{
+		crashReporter->UpdateContext(key, values);
+	}
+}
+
 void FGenericPlatformSentrySubsystem::SetTag(const FString& key, const FString& value)
 {
 	sentry_set_tag(TCHAR_TO_UTF8(*key), TCHAR_TO_UTF8(*value));
