@@ -15,8 +15,8 @@ public:
 	FGenericPlatformSentryAttachment(const FString& path, const FString& filename, const FString& contentType);
 	virtual ~FGenericPlatformSentryAttachment() override;
 
-	void SetNativeObject(sentry_attachment_t* attachment);
-	sentry_attachment_t* GetNativeObject();
+	void SetUuid(sentry_uuid_t uuid);
+	sentry_uuid_t GetUuid();
 
 	virtual TArray<uint8> GetData() const override;
 	virtual FString GetPath() const override;
@@ -31,7 +31,7 @@ private:
 	FString Filename;
 	FString ContentType;
 
-	sentry_attachment_t* Attachment;
+	sentry_uuid_t Uuid;
 };
 
 typedef FGenericPlatformSentryAttachment FPlatformSentryAttachment;

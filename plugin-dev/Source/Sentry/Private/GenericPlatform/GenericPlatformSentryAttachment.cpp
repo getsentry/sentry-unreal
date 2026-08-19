@@ -5,12 +5,12 @@
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryAttachment::FGenericPlatformSentryAttachment(const TArray<uint8>& data, const FString& filename, const FString& contentType)
-	: Data(data), Filename(filename), ContentType(contentType), Attachment(nullptr)
+	: Data(data), Filename(filename), ContentType(contentType), Uuid(sentry_uuid_nil())
 {
 }
 
 FGenericPlatformSentryAttachment::FGenericPlatformSentryAttachment(const FString& path, const FString& filename, const FString& contentType)
-	: Path(path), Filename(filename), ContentType(contentType), Attachment(nullptr)
+	: Path(path), Filename(filename), ContentType(contentType), Uuid(sentry_uuid_nil())
 {
 }
 
@@ -19,14 +19,14 @@ FGenericPlatformSentryAttachment::~FGenericPlatformSentryAttachment()
 	// Put custom destructor logic here if needed
 }
 
-void FGenericPlatformSentryAttachment::SetNativeObject(sentry_attachment_t* attachment)
+void FGenericPlatformSentryAttachment::SetUuid(sentry_uuid_t uuid)
 {
-	Attachment = attachment;
+	Uuid = uuid;
 }
 
-sentry_attachment_t* FGenericPlatformSentryAttachment::GetNativeObject()
+sentry_uuid_t FGenericPlatformSentryAttachment::GetUuid()
 {
-	return Attachment;
+	return Uuid;
 }
 
 TArray<uint8> FGenericPlatformSentryAttachment::GetData() const
