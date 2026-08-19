@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Stop overwriting native-collected device context on consoles ([#1542](https://github.com/getsentry/sentry-unreal/pull/1542))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v6.18.0 to v6.19.0 ([#1539](https://github.com/getsentry/sentry-unreal/pull/1539))
