@@ -1094,7 +1094,7 @@ void FGenericPlatformSentrySubsystem::UpdateContext(const FString& key, const TM
 
 	if (crashReporter)
 	{
-		crashReporter->SetContext(key, values);
+		crashReporter->UpdateContext(key, values);
 	}
 }
 
