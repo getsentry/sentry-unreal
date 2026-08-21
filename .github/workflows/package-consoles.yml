@@ -1,0 +1,372 @@
+name: Package sample for consoles
+
+# Packages the sample for XSX / PS5 / Switch on a self-hosted Windows runner,
+# using a pre-built installed engine and AutoSDK bundles pulled from Google Drive.
+#
+# Disk: the engine expands to ~121 GB and the AutoSDK bundles to ~18 GB, so this
+# will not run on a GitHub-hosted runner. It needs a self-hosted machine with
+# ~200 GB free. Both trees are cached on the runner between runs and only
+# re-downloaded when the version marker changes or -force_refresh is set.
+#
+# Console SDKs are NOT installed on the runner. Everything resolves through
+# AutoSDK from UE_SDKS_ROOT.
+
+on:
+  # workflow_dispatch only becomes available once this file is on the default
+  # branch, so a push trigger is included to allow iterating on a feature branch.
+  # Narrow or drop it once the workflow is on main.
+  push:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/package-consoles.yml'
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: Unreal Engine version
+        required: true
+        default: '5.8'
+        type: choice
+        options:
+          - '5.8'
+      engine_download_link:
+        description: Google Drive URL of the pre-built engine archive (zip)
+        required: false
+        type: string
+      autosdk_download_link:
+        description: Google Drive URL of the AutoSDK archive (zip of the three bundles)
+        required: false
+        type: string
+      platforms:
+        description: Console(s) to package
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - XSX
+          - PS5
+          - Switch
+      force_refresh:
+        description: Re-download engine and AutoSDK even if already present
+        required: false
+        default: false
+        type: boolean
+
+# On a push trigger there are no inputs, so fall back to repository variables.
+# Set these under Settings > Secrets and variables > Actions > Variables:
+#   UE_ENGINE_DOWNLOAD_LINK   - Drive URL of the pre-built engine zip
+#   AUTOSDK_DOWNLOAD_LINK     - Drive URL of autosdk-ue5.8.1-consoles.zip
+
+env:
+  # Where the engine and AutoSDK live on the runner. Kept off the workspace so
+  # they survive between runs.
+  UE_INSTALL_ROOT: C:\ue-consoles
+  AUTOSDK_ROOT: C:\AutoSDK
+
+jobs:
+  package:
+    name: Package (${{ inputs.platforms || 'all' }})
+    runs-on: windows-latest-16-cores
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      # Required so `gh run download` can read artifacts from the ci.yml run.
+      actions: read
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: checkout
+
+      - name: Preflight disk space
+        shell: pwsh
+        run: |
+          $free = [math]::Round((Get-PSDrive C).Free / 1GB, 1)
+          Write-Host "C: free = $free GB"
+          if ($free -lt 200) {
+            Write-Warning "Less than 200 GB free. The engine (~121 GB) plus AutoSDK (~18 GB) plus cook output may not fit."
+          }
+
+      - name: Restore engine + AutoSDK from runner cache
+        id: local-cache
+        shell: pwsh
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+          FORCE: ${{ inputs.force_refresh }}
+        run: |
+          $marker = Join-Path $env:UE_INSTALL_ROOT '.version'
+          $sdkMarker = Join-Path $env:AUTOSDK_ROOT '.version'
+          $hit = $false
+          if ($env:FORCE -ne 'true' -and (Test-Path $marker) -and (Test-Path $sdkMarker)) {
+            if ((Get-Content $marker -Raw).Trim() -eq $env:UE_VERSION) { $hit = $true }
+          }
+          Write-Host "local cache hit: $hit"
+          "hit=$hit" >> $env:GITHUB_OUTPUT
+
+      - name: Install gdown
+        if: steps.local-cache.outputs.hit != 'True'
+        run: pipx install gdown
+
+      - name: Download engine archive
+        if: steps.local-cache.outputs.hit != 'True'
+        shell: pwsh
+        env:
+          DOWNLOAD_LINK: ${{ inputs.engine_download_link || vars.UE_ENGINE_DOWNLOAD_LINK }}
+        run: |
+          if (-not $env:DOWNLOAD_LINK) {
+            throw 'No engine download link. Pass engine_download_link, or set the UE_ENGINE_DOWNLOAD_LINK repository variable.'
+          }
+          gdown --fuzzy "$env:DOWNLOAD_LINK" -O ue.zip
+
+      - name: Download AutoSDK bundles
+        if: steps.local-cache.outputs.hit != 'True'
+        shell: pwsh
+        env:
+          DOWNLOAD_LINK: ${{ inputs.autosdk_download_link || vars.AUTOSDK_DOWNLOAD_LINK }}
+        run: |
+          if (-not $env:DOWNLOAD_LINK) {
+            throw 'No AutoSDK download link. Pass autosdk_download_link, or set the AUTOSDK_DOWNLOAD_LINK repository variable.'
+          }
+          gdown --fuzzy "$env:DOWNLOAD_LINK" -O autosdk.zip
+          # Outer archive is a store-only container; the three platform bundles
+          # (plus their .sha256/.json) sit at its root.
+          New-Item -ItemType Directory -Path autosdk-packages -Force | Out-Null
+          tar -x -f autosdk.zip -C autosdk-packages
+          if ($LASTEXITCODE -ne 0) { throw "autosdk.zip extract failed ($LASTEXITCODE)" }
+          Remove-Item autosdk.zip -Force
+          Get-ChildItem autosdk-packages -Recurse -File | Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,1)}}
+
+      - name: Verify AutoSDK checksums
+        if: steps.local-cache.outputs.hit != 'True'
+        shell: pwsh
+        run: |
+          $bad = $false
+          Get-ChildItem autosdk-packages -Recurse -Filter *.sha256 | ForEach-Object {
+            $expected = ((Get-Content $_.FullName -Raw) -split '\s+')[0].ToLowerInvariant()
+            $zip = $_.FullName -replace '\.sha256$', ''
+            if (-not (Test-Path $zip)) { Write-Error "missing archive for $($_.Name)"; $bad = $true; return }
+            $actual = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($expected -eq $actual) { Write-Host "  OK       $(Split-Path $zip -Leaf)" }
+            else { Write-Error "  MISMATCH $(Split-Path $zip -Leaf)"; $bad = $true }
+          }
+          if ($bad) { exit 1 }
+
+      - name: Extract engine and AutoSDK
+        if: steps.local-cache.outputs.hit != 'True'
+        shell: pwsh
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+        run: |
+          foreach ($d in $env:UE_INSTALL_ROOT, $env:AUTOSDK_ROOT) {
+            if (Test-Path $d) { Remove-Item $d -Recurse -Force }
+            New-Item -ItemType Directory -Path $d -Force | Out-Null
+          }
+
+          # tar (bsdtar, ships with Windows) preserves the archives' internal
+          # paths. Do NOT use Expand-Archive: it is far slower on multi-GB input.
+          Write-Host 'Extracting engine...'
+          tar -x -f ue.zip -C $env:UE_INSTALL_ROOT
+          if ($LASTEXITCODE -ne 0) { throw "engine extract failed ($LASTEXITCODE)" }
+
+          # Each AutoSDK archive carries the HostWin64\<Platform>\<Version>
+          # prefix, so they merge into one root with no path juggling.
+          Get-ChildItem autosdk-packages -Recurse -Filter *.zip | ForEach-Object {
+            Write-Host "Extracting $($_.Name)..."
+            tar -x -f $_.FullName -C $env:AUTOSDK_ROOT
+            if ($LASTEXITCODE -ne 0) { throw "$($_.Name) extract failed ($LASTEXITCODE)" }
+          }
+
+          $env:UE_VERSION | Set-Content (Join-Path $env:UE_INSTALL_ROOT '.version')
+          $env:UE_VERSION | Set-Content (Join-Path $env:AUTOSDK_ROOT '.version')
+          Remove-Item ue.zip -Force -ErrorAction SilentlyContinue
+          Remove-Item autosdk-packages -Recurse -Force -ErrorAction SilentlyContinue
+
+      - name: Configure AutoSDK environment
+        shell: pwsh
+        run: |
+          # The engine archive unpacks with a "Windows" root folder.
+          $engineRoot = Join-Path $env:UE_INSTALL_ROOT 'Windows'
+          if (-not (Test-Path (Join-Path $engineRoot 'Engine'))) {
+            $found = Get-ChildItem $env:UE_INSTALL_ROOT -Directory |
+              Where-Object { Test-Path (Join-Path $_.FullName 'Engine') } | Select-Object -First 1
+            if (-not $found) { throw "no Engine directory under $env:UE_INSTALL_ROOT" }
+            $engineRoot = $found.FullName
+          }
+
+          "UE_ROOT=$engineRoot" >> $env:GITHUB_ENV
+          "UE_SDKS_ROOT=$env:AUTOSDK_ROOT" >> $env:GITHUB_ENV
+
+          # GDK covers compile AND package at BUILD.
+          # Nintendo packages an .nsp at BUILD (only HtcTools device-deploy is skipped).
+          # PS5 needs PACKAGE to produce a .pkg: setup.bat then runs
+          # PublishingToolsInstaller to provide prospero-pub-cmd.exe. That installs
+          # software onto the runner and needs admin, so only request it when
+          # actually building PS5.
+          $levels = if ('${{ inputs.platforms }}' -in @('PS5', 'all')) {
+            'PS5=PACKAGE;GDK=BUILD;NINTENDO=BUILD'
+          } else {
+            'GDK=BUILD;NINTENDO=BUILD'
+          }
+          "UE_AUTOSDK_SPECIFIC_LEVELS=$levels" >> $env:GITHUB_ENV
+          Write-Host "UE_ROOT=$engineRoot"
+          Write-Host "UE_AUTOSDK_SPECIFIC_LEVELS=$levels"
+
+      - name: Verify SDKs resolve through AutoSDK
+        shell: pwsh
+        run: |
+          # UnrealBuildTool.exe targets a .NET runtime the runner may not have.
+          # Use the one the engine ships with, exactly as Build.bat/RunUAT.bat do.
+          $dotnet = Get-ChildItem "$env:UE_ROOT\Engine\Binaries\ThirdParty\DotNet" -Recurse -Filter dotnet.exe |
+            Select-Object -First 1 -ExpandProperty FullName
+          & $dotnet "$env:UE_ROOT\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" `
+            -Mode=ValidatePlatforms -Platforms=XSX+PS5+Switch -OutputSDKs
+
+          # AutoSDK matches the bundle directory name against the engine's
+          # MainVersion with an exact string compare, so a stale bundle is
+          # silently ignored rather than reported. Fail loudly instead.
+          foreach ($p in 'GDK', 'PS5', 'Nintendo') {
+            $f = "$env:UE_SDKS_ROOT\HostWin64\$p\CurrentlyInstalled.txt"
+            if (Test-Path $f) {
+              $state = (Get-Content $f) -join ' / '
+              Write-Host "  $p -> $state"
+              if ($state -notmatch 'AutoSDK') { Write-Error "$p did not resolve through AutoSDK" }
+            }
+          }
+
+      # sample/Plugins/sentry is gitignored, so the plugin has to come from CI.
+      # ci.yml uploads it as an artifact named after the commit sha, so find the
+      # newest successful ci.yml run on main and take the artifact from there.
+      - name: Download plugin package from latest successful main
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          $run = gh run list --repo "$env:REPO" --workflow ci.yml --branch main `
+                             --status success --limit 1 --json databaseId,headSha,displayTitle |
+                 ConvertFrom-Json | Select-Object -First 1
+          if (-not $run) { throw "No successful ci.yml run found on main." }
+
+          Write-Host "run    : $($run.databaseId)"
+          Write-Host "commit : $($run.headSha)"
+          Write-Host "title  : $($run.displayTitle)"
+
+          New-Item -ItemType Directory -Path plugin-pkg -Force | Out-Null
+          # The artifact is named after that run's head sha.
+          gh run download $run.databaseId --repo "$env:REPO" --name $run.headSha --dir plugin-pkg
+          if ($LASTEXITCODE -ne 0) { throw "failed to download artifact '$($run.headSha)' from run $($run.databaseId)" }
+          Get-ChildItem plugin-pkg -Recurse -File | Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,2)}}
+
+          "PLUGIN_SOURCE_SHA=$($run.headSha)" >> $env:GITHUB_ENV
+
+      - name: Extract package to sample/Plugins
+        shell: pwsh
+        env:
+          UNREAL_VERSION: ${{ inputs.ue_version || '5.8' }}
+        run: |
+          $dest = "${{ github.workspace }}\checkout\sample\Plugins\sentry"
+          $pkg = Get-ChildItem plugin-pkg -Recurse -Filter "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" |
+                 Select-Object -First 1
+          if (-not $pkg) {
+            $available = (Get-ChildItem plugin-pkg -Recurse -File | Select-Object -ExpandProperty Name) -join ', '
+            throw "No plugin package for engine $env:UNREAL_VERSION. Artifact contained: $available"
+          }
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          Expand-Archive -Path $pkg.FullName -DestinationPath $dest -Force
+          Write-Host "injected $($pkg.Name) (from $env:PLUGIN_SOURCE_SHA)"
+
+      - name: Compute DDC cache key
+        id: ddc-cache-key
+        shell: pwsh
+        env:
+          HASH: ${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          UNREAL_VERSION: ${{ inputs.ue_version }}
+        run: |
+          $key = "ue-${env:UNREAL_VERSION}-consoles-ddc-${env:HASH}"
+          "key=$key" >> $env:GITHUB_OUTPUT
+          Write-Host "DDC cache key: $key"
+
+      - name: Configure project-local DDC
+        shell: pwsh
+        run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
+
+      # Console shader compilation from a cold DDC is the dominant cost here -
+      # a first XSX cook spends ~25 min on global SF_XSX_SM6 shaders alone.
+      - name: Restore cached DDC
+        id: cache-ddc
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+          restore-keys: |
+            ue-${{ inputs.ue_version }}-consoles-ddc
+
+      - name: Update engine's build configuration
+        shell: pwsh
+        run: |
+          $dir = "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool"
+          New-Item -ItemType Directory -Path $dir -Force | Out-Null
+          Copy-Item -Path 'checkout/.github/BuildConfiguration.xml' -Destination "$dir\BuildConfiguration.xml" -Force
+
+      - name: Package
+        id: package
+        shell: pwsh
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          $selected = '${{ inputs.platforms }}'
+          $targets = if ($selected -eq 'all') { @('XSX', 'Switch', 'PS5') } else { @($selected) }
+
+          $project = "${{ github.workspace }}\checkout\sample\SentryPlayground.uproject"
+          $failed = @()
+
+          foreach ($t in $targets) {
+            Write-Host "::group::BuildCookRun $t"
+            & "$env:UE_ROOT\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun `
+              -project="$project" `
+              -archivedirectory="${{ github.workspace }}\checkout\sample\Builds\$t" `
+              -platform="$t" `
+              -clientconfig=Development `
+              -nop4 `
+              -cook `
+              -build `
+              -stage `
+              -prereqs `
+              -package `
+              -archive `
+              -WaitForUATMutex
+            $code = $LASTEXITCODE
+            Write-Host "::endgroup::"
+            if ($code -ne 0) { $failed += "$t (exit $code)" }
+            Write-Host "$t -> exit $code"
+          }
+
+          if ($failed.Count -gt 0) { throw "failed: $($failed -join ', ')" }
+
+      - name: Save DDC to cache
+        if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+
+      - name: Upload console builds
+        if: ${{ success() }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.ue_version }} sample build (consoles)
+          path: checkout/sample/Builds/
+          retention-days: 1
+
+      - name: Collect logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.ue_version }} console packaging logs
+          path: |
+            checkout/sample/Saved/Logs
+            ${{ env.USERPROFILE }}/AppData/Roaming/Unreal Engine/AutomationTool/Logs
+          retention-days: 3
