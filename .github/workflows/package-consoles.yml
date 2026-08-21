@@ -203,17 +203,19 @@ jobs:
           "UE_ROOT=$engineRoot" >> $env:GITHUB_ENV
           "UE_SDKS_ROOT=$env:AUTOSDK_ROOT" >> $env:GITHUB_ENV
 
+          # A push trigger supplies no inputs, so default to 'all'.
+          $selected = '${{ inputs.platforms }}'
+          if (-not $selected) { $selected = 'all' }
+
           # GDK covers compile AND package at BUILD.
           # Nintendo packages an .nsp at BUILD (only HtcTools device-deploy is skipped).
           # PS5 needs PACKAGE to produce a .pkg: setup.bat then runs
-          # PublishingToolsInstaller to provide prospero-pub-cmd.exe. That installs
-          # software onto the runner and needs admin, so only request it when
-          # actually building PS5.
-          $levels = if ('${{ inputs.platforms }}' -in @('PS5', 'all')) {
-            'PS5=PACKAGE;GDK=BUILD;NINTENDO=BUILD'
-          } else {
-            'GDK=BUILD;NINTENDO=BUILD'
-          }
+          # PublishingToolsInstaller to provide prospero-pub-cmd.exe, which installs
+          # software onto the runner - so only ask for it when PS5 is actually built.
+          # Every platform is listed explicitly: an omitted platform defaults to
+          # FULL, which is more invasive than either level we want.
+          $ps5Level = if ($selected -in @('PS5', 'all')) { 'PACKAGE' } else { 'BUILD' }
+          $levels = "PS5=$ps5Level;GDK=BUILD;NINTENDO=BUILD"
           "UE_AUTOSDK_SPECIFIC_LEVELS=$levels" >> $env:GITHUB_ENV
           Write-Host "UE_ROOT=$engineRoot"
           Write-Host "UE_AUTOSDK_SPECIFIC_LEVELS=$levels"
@@ -323,8 +325,17 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
+          # A push trigger supplies no inputs, so default to 'all'. Without this
+          # $targets becomes @('') and RunUAT silently falls back to Win64.
           $selected = '${{ inputs.platforms }}'
+          if (-not $selected) { $selected = 'all' }
           $targets = if ($selected -eq 'all') { @('XSX', 'Switch', 'PS5') } else { @($selected) }
+
+          $valid = @('XSX', 'Switch', 'PS5')
+          foreach ($t in $targets) {
+            if ($t -notin $valid) { throw "Invalid platform '$t'. Expected one of: $($valid -join ', ')" }
+          }
+          Write-Host "packaging: $($targets -join ', ')"
 
           $project = "${{ github.workspace }}\checkout\sample\SentryPlayground.uproject"
           $failed = @()
@@ -367,12 +378,35 @@ jobs:
           path: checkout/sample/Builds/
           retention-days: 1
 
-      - name: Collect logs on failure
+      # USERPROFILE is not available in the `env` context, so gather the logs
+      # into the workspace first and upload from there.
+      - name: Gather logs
+        if: ${{ failure() }}
+        shell: pwsh
+        run: |
+          $dest = "${{ github.workspace }}\failure-logs"
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          $sources = @(
+            "$env:USERPROFILE\AppData\Roaming\Unreal Engine\AutomationTool\Logs",
+            "$env:USERPROFILE\AppData\Local\UnrealBuildTool",
+            "${{ github.workspace }}\checkout\sample\Saved\Logs"
+          )
+          foreach ($s in $sources) {
+            if (Test-Path $s) {
+              $name = ($s -replace '[:\\]', '_')
+              Copy-Item $s -Destination (Join-Path $dest $name) -Recurse -Force -ErrorAction SilentlyContinue
+              Write-Host "collected $s"
+            } else {
+              Write-Host "absent    $s"
+            }
+          }
+          Get-ChildItem $dest -Recurse -File | Select-Object -First 40 FullName, Length | Format-Table -AutoSize
+
+      - name: Upload logs on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.ue_version }} console packaging logs
-          path: |
-            checkout/sample/Saved/Logs
-            ${{ env.USERPROFILE }}/AppData/Roaming/Unreal Engine/AutomationTool/Logs
+          name: console packaging logs (${{ github.run_id }})
+          path: failure-logs
+          if-no-files-found: warn
           retention-days: 3
