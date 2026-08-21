@@ -29,14 +29,6 @@ on:
         type: choice
         options:
           - '5.8'
-      engine_download_link:
-        description: Google Drive URL of the pre-built engine archive (zip)
-        required: false
-        type: string
-      autosdk_download_link:
-        description: Google Drive URL of the AutoSDK archive (zip of the three bundles)
-        required: false
-        type: string
       platforms:
         description: Console(s) to package
         required: true
@@ -53,9 +45,11 @@ on:
         default: false
         type: boolean
 
-# On a push trigger there are no inputs, so fall back to repository variables.
-# Set these under Settings > Secrets and variables > Actions > Variables:
-#   UE_ENGINE_DOWNLOAD_LINK   - Drive URL of the pre-built engine zip
+# Download links come from repository SECRETS, never from inputs or variables:
+# this repo is public, so dispatch inputs and `vars` are visible in run logs,
+# whereas secrets are masked. Set under
+# Settings > Secrets and variables > Actions > Secrets:
+#   UE_CONSOLES_DOWNLOAD_LINK - Drive URL of the pre-built engine zip
 #   AUTOSDK_DOWNLOAD_LINK     - Drive URL of autosdk-ue5.8.1-consoles.zip
 
 env:
@@ -112,23 +106,35 @@ jobs:
         if: steps.local-cache.outputs.hit != 'True'
         shell: pwsh
         env:
-          DOWNLOAD_LINK: ${{ inputs.engine_download_link || vars.UE_ENGINE_DOWNLOAD_LINK }}
+          DOWNLOAD_LINK: ${{ secrets.UE_CONSOLES_DOWNLOAD_LINK }}
         run: |
           if (-not $env:DOWNLOAD_LINK) {
-            throw 'No engine download link. Pass engine_download_link, or set the UE_ENGINE_DOWNLOAD_LINK repository variable.'
+            throw 'No engine download link. Set the UE_CONSOLES_DOWNLOAD_LINK repository secret.'
           }
-          gdown --fuzzy "$env:DOWNLOAD_LINK" -O ue.zip
+          # gdown 5.x dropped --fuzzy (fuzzy parsing is now the default), so pass
+          # the bare file id, which every version accepts. The id is never echoed:
+          # it is the shareable part of the link and this repo is public.
+          $id = if ($env:DOWNLOAD_LINK -match '/d/([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                elseif ($env:DOWNLOAD_LINK -match '[?&]id=([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                else { $env:DOWNLOAD_LINK }
+          gdown "$id" -O ue.zip 2>&1 | ForEach-Object { $_ -replace [regex]::Escape($id), '***' }
+          if ($LASTEXITCODE -ne 0) { throw "gdown failed ($LASTEXITCODE)" }
+          Write-Host "downloaded $([math]::Round((Get-Item ue.zip).Length/1GB,2)) GB"
 
       - name: Download AutoSDK bundles
         if: steps.local-cache.outputs.hit != 'True'
         shell: pwsh
         env:
-          DOWNLOAD_LINK: ${{ inputs.autosdk_download_link || vars.AUTOSDK_DOWNLOAD_LINK }}
+          DOWNLOAD_LINK: ${{ secrets.AUTOSDK_DOWNLOAD_LINK }}
         run: |
           if (-not $env:DOWNLOAD_LINK) {
-            throw 'No AutoSDK download link. Pass autosdk_download_link, or set the AUTOSDK_DOWNLOAD_LINK repository variable.'
+            throw 'No AutoSDK download link. Set the AUTOSDK_DOWNLOAD_LINK repository secret.'
           }
-          gdown --fuzzy "$env:DOWNLOAD_LINK" -O autosdk.zip
+          $id = if ($env:DOWNLOAD_LINK -match '/d/([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                elseif ($env:DOWNLOAD_LINK -match '[?&]id=([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                else { $env:DOWNLOAD_LINK }
+          gdown "$id" -O autosdk.zip 2>&1 | ForEach-Object { $_ -replace [regex]::Escape($id), '***' }
+          if ($LASTEXITCODE -ne 0) { throw "gdown failed ($LASTEXITCODE)" }
           # Outer archive is a store-only container; the three platform bundles
           # (plus their .sha256/.json) sit at its root.
           New-Item -ItemType Directory -Path autosdk-packages -Force | Out-Null
