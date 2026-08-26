@@ -664,8 +664,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_shutdown_timeout(options, settings->ShutdownTimeout);
 	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
 	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
-	sentry_options_set_enable_logs(options, true);
-	sentry_options_set_enable_metrics(options, true);
 	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
 	sentry_options_set_http_retry(options, 1);
 	sentry_options_set_enable_large_attachments(options, settings->EnableLargeAttachments);
