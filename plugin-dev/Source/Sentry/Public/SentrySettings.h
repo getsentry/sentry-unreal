@@ -522,6 +522,11 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryCrashReportingMode CrashReportingMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Thread stackwalk mode", ToolTip = "Controls which threads have their stack walked client-side. Walking every thread gives the most context but can noticeably delay crash processing in applications with a high thread count, such as editor builds. Requires native stackwalking to be enabled in the crash reporting mode.",
+			EditCondition = "UseNativeBackend"))
+	ESentryThreadStackwalkMode ThreadStackwalkMode;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
 			EditCondition = "!UseNativeBackend"))
 	bool CrashpadWaitForUpload;

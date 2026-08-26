@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add thread stackwalk mode setting for the native backend ([#1546](https://github.com/getsentry/sentry-unreal/pull/1546))
+
 ### Fixes
 
 - Stop overwriting native-collected device context on consoles ([#1542](https://github.com/getsentry/sentry-unreal/pull/1542))

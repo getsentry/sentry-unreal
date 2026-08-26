@@ -62,3 +62,12 @@ enum class ESentryCrashReportingMode : uint8
 	// Client-side stack unwinding with minidump attached for deep debugging. Best of both worlds.
 	NativeStackwalkingWithMinidump,
 };
+
+UENUM(BlueprintType)
+enum class ESentryThreadStackwalkMode : uint8
+{
+	// Walk the crashed thread only. Other threads are reported with their id and name, but without a stacktrace.
+	CrashedThreadOnly,
+	// Walk every thread of the crashed process. Most context, but slower for apps with a high thread count.
+	AllThreads,
+};
