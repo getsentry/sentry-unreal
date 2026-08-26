@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add crash upload mode setting for the native backend ([#1547](https://github.com/getsentry/sentry-unreal/pull/1547))
+
 ### Fixes
 
 - Stop overwriting native-collected device context on consoles ([#1542](https://github.com/getsentry/sentry-unreal/pull/1542))

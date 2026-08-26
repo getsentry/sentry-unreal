@@ -522,6 +522,11 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryCrashReportingMode CrashReportingMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+		Meta = (DisplayName = "Crash upload mode", ToolTip = "Controls what happens after crash data is captured. Sync keeps the crashed application blocked until the crash daemon finishes uploading. Async lets it terminate immediately while the daemon continues uploading in the background, which avoids long freezes when sending large crash payloads.",
+			EditCondition = "UseNativeBackend"))
+	ESentryCrashUploadMode CrashUploadMode;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
 			EditCondition = "!UseNativeBackend"))
 	bool CrashpadWaitForUpload;

@@ -28,6 +28,7 @@ public:
 	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 	static sentry_minidump_mode_t MinidumpModeToNative(ESentryMinidumpMode mode);
 	static sentry_crash_reporting_mode_t CrashReportingModeToNative(ESentryCrashReportingMode mode);
+	static sentry_crash_upload_mode_t CrashUploadModeToNative(ESentryCrashUploadMode mode);
 
 	/** Conversions from native types */
 	static ESentryLevel SentryLevelToUnreal(sentry_value_t level);

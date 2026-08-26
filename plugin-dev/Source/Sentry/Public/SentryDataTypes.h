@@ -62,3 +62,12 @@ enum class ESentryCrashReportingMode : uint8
 	// Client-side stack unwinding with minidump attached for deep debugging. Best of both worlds.
 	NativeStackwalkingWithMinidump,
 };
+
+UENUM(BlueprintType)
+enum class ESentryCrashUploadMode : uint8
+{
+	// Keep the crashed app alive until the crash daemon finishes uploading. Most reliable delivery.
+	Sync,
+	// Let the crashed app terminate once crash data is captured. The daemon uploads in the background.
+	Async,
+};
