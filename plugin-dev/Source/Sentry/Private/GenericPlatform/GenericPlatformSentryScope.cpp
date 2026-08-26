@@ -213,9 +213,9 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 		sentry_scope_set_fingerprints(scope, FGenericPlatformSentryConverters::StringArrayToNative(Fingerprint));
 	}
 
-	for (const auto& TagItem : Tags)
+	if (Tags.Num() > 0)
 	{
-		sentry_scope_set_tag(scope, TCHAR_TO_UTF8(*TagItem.Key), TCHAR_TO_UTF8(*TagItem.Value));
+		sentry_scope_set_tags(scope, FGenericPlatformSentryConverters::StringMapToNative(Tags));
 	}
 
 	for (const auto& ExtraItem : Extra)
