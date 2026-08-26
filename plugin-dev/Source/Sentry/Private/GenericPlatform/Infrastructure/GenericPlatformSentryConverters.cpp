@@ -256,6 +256,20 @@ sentry_crash_reporting_mode_t FGenericPlatformSentryConverters::CrashReportingMo
 	}
 }
 
+sentry_crash_upload_mode_t FGenericPlatformSentryConverters::CrashUploadModeToNative(ESentryCrashUploadMode mode)
+{
+	switch (mode)
+	{
+	case ESentryCrashUploadMode::Sync:
+		return SENTRY_CRASH_UPLOAD_MODE_SYNC;
+	case ESentryCrashUploadMode::Async:
+		return SENTRY_CRASH_UPLOAD_MODE_ASYNC;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown crash upload mode value used. Sync will be returned."));
+		return SENTRY_CRASH_UPLOAD_MODE_SYNC;
+	}
+}
+
 ESentryLevel FGenericPlatformSentryConverters::SentryLevelToUnreal(sentry_value_t level)
 {
 	FString levelStr = FString(UTF8_TO_TCHAR(sentry_value_as_string(level)));
