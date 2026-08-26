@@ -9,6 +9,7 @@
 ### Fixes
 
 - Stop overwriting native-collected device context on consoles ([#1542](https://github.com/getsentry/sentry-unreal/pull/1542))
+- Fix crashes going unreported after first-time DSN setup until editor restart ([#1545](https://github.com/getsentry/sentry-unreal/pull/1545))
 
 ### Dependencies
 
