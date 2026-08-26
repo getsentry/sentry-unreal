@@ -658,8 +658,6 @@ FString FSentrySettingsCustomization::GetLinuxBinariesDirPath() const
 
 int32 FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt() const
 {
-	USentrySubsystem* SentrySubsystem = GEngine->GetEngineSubsystem<USentrySubsystem>();
-
 	USentrySettings* Settings = FSentryModule::Get().GetSettings();
 
 	if (Settings->Dsn.IsEmpty())
@@ -667,7 +665,7 @@ int32 FSentrySettingsCustomization::GetGeneralSettingsStatusAsInt() const
 		return static_cast<int32>(ESentrySettingsStatus::DsnMissing);
 	}
 
-	if (Settings->IsDirty() && SentrySubsystem->IsEnabled())
+	if (Settings->IsDirty())
 	{
 		return static_cast<int32>(ESentrySettingsStatus::Modified);
 	}
