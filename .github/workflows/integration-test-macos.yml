@@ -63,12 +63,22 @@ jobs:
           cmake -B build -S .
           Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
+      - name: Collect app logs and crash reports
+        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+        run: |
+          DEST="$GITHUB_WORKSPACE/integration-test/output/diagnostics"
+          mkdir -p "$DEST/app-logs" "$DEST/crash-reports"
+          # Packaged Mac games log to ~/Library/Logs/<ProjectName> (FPaths::ProjectLogDir -> FMacPlatformProcess::UserLogsDir)
+          cp -R "$HOME/Library/Logs/SentryPlayground/." "$DEST/app-logs/" 2>/dev/null || echo "No app logs found"
+          # macOS records an .ips report for every process terminated by a signal, including the intentional test crashes.
+          # Collect reports for pwsh too: a launch that dies before execve is reported against the parent image, not the app.
+          find "$HOME/Library/Logs/DiagnosticReports" -maxdepth 1 -type f \( -name 'SentryPlayground*' -o -name 'pwsh*' \) -exec cp {} "$DEST/crash-reports/" \; 2>/dev/null || true
+          echo "Collected:"
+          find "$DEST" -type f -exec basename {} \;
+
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} integration test output (macOS, ${{ inputs.backend }})
-          path: |
-            integration-test/output/
-            sample-build/**/Saved/Logs/
-            ~/Library/Application Support/Epic/SentryPlayground/Saved/Logs/
+          path: integration-test/output/
