@@ -5,6 +5,7 @@
 ### Features
 
 - Add crash upload mode setting for the native backend ([#1547](https://github.com/getsentry/sentry-unreal/pull/1547))
+- Add `SetTags` to Sentry subsystem for updating multiple tags in one go ([#1550](https://github.com/getsentry/sentry-unreal/pull/1550))
 
 ### Fixes
 

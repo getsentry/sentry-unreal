@@ -1107,6 +1107,16 @@ void FGenericPlatformSentrySubsystem::SetTag(const FString& key, const FString& 
 	}
 }
 
+void FGenericPlatformSentrySubsystem::SetTags(const TMap<FString, FString>& tags)
+{
+	sentry_set_tags(FGenericPlatformSentryConverters::StringMapToNative(tags));
+
+	if (crashReporter)
+	{
+		crashReporter->SetTags(tags);
+	}
+}
+
 void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
 {
 	sentry_remove_tag(TCHAR_TO_UTF8(*key));
