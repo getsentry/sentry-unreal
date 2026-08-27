@@ -612,6 +612,16 @@ void FAppleSentrySubsystem::SetTag(const FString& key, const FString& value)
 	}];
 }
 
+void FAppleSentrySubsystem::SetTags(const TMap<FString, FString>& tags)
+{
+	[SENTRY_APPLE_CLASS(SentryObjCSDK) configureScope:^(SentryObjCScope* scope) {
+		for (const auto& tag : tags)
+		{
+			[scope setTagValue:tag.Value.GetNSString() forKey:tag.Key.GetNSString()];
+		}
+	}];
+}
+
 void FAppleSentrySubsystem::RemoveTag(const FString& key)
 {
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) configureScope:^(SentryObjCScope* scope) {

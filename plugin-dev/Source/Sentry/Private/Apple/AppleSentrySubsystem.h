@@ -42,6 +42,7 @@ public:
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
 	virtual void UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
 	virtual void SetTag(const FString& key, const FString& value) override;
+	virtual void SetTags(const TMap<FString, FString>& tags) override;
 	virtual void RemoveTag(const FString& key) override;
 	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;
 	virtual void RemoveAttribute(const FString& key) override;
