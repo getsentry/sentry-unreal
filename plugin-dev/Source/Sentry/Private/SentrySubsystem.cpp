@@ -653,6 +653,18 @@ void USentrySubsystem::SetTag(const FString& Key, const FString& Value)
 	SubsystemNativeImpl->SetTag(Key, Value);
 }
 
+void USentrySubsystem::SetTags(const TMap<FString, FString>& Tags)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->SetTags(Tags);
+}
+
 void USentrySubsystem::RemoveTag(const FString& Key)
 {
 	check(SubsystemNativeImpl);
