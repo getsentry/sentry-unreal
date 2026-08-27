@@ -132,6 +132,19 @@ BeforeAll {
         throw "Application not found at: $script:AppPath"
     }
 
+    # Command-line switches shared by every scenario
+    $script:BaseAppArgs = @(
+        '-nullrhi',     # Runs without graphics rendering (headless mode)
+        '-unattended',  # Disables user prompts and interactive dialogs
+        '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
+        '-nosplash',    # Prevents splash screen and dialogs
+        '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
+    )
+
+    if ($IsMacOS) {
+        $script:BaseAppArgs += '-llm'
+    }
+
     # Connect to Sentry API
     Write-Host "Connecting to Sentry API..." -ForegroundColor Yellow
     Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
@@ -169,13 +182,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running $crashTypeName crash test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"               # Prevents double initialization
@@ -295,13 +302,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running ensure capture test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
@@ -402,13 +403,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running hang tracking test ($($_.Name))..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
@@ -509,13 +504,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running session replay crash test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
@@ -531,7 +520,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # On macOS the cocoa backend builds and sends the replay envelope during the
             # relaunch, which requires AttachSessionReplay to remain enabled.
             if (-not $script:IsNativeBackend) {
-                $flushArgs = @('-init-only', '-nullrhi', '-unattended', '-stdout', '-nosplash')
+                $flushArgs = @('-init-only') + $script:BaseAppArgs
                 $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
                 $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=True"
                 Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($flushArgs -join ' ')
@@ -652,13 +641,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running message capture test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings to avoid double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
@@ -827,13 +810,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running feedback capture test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings to avoid double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
@@ -912,13 +889,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running structured logging test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings to avoid double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
@@ -1013,13 +984,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running metrics capture test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
@@ -1162,13 +1127,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             Write-Host "Running tracing capture test..." -ForegroundColor Yellow
 
-            $appArgs = @(
-                '-nullrhi',     # Runs without graphics rendering (headless mode)
-                '-unattended',  # Disables user prompts and interactive dialogs
-                '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
-                '-nosplash',    # Prevents splash screen and dialogs
-                '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
-            )
+            $appArgs = @($script:BaseAppArgs)
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
