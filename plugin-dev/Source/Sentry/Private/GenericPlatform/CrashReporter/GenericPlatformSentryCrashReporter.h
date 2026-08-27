@@ -23,6 +23,7 @@ public:
 	void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values);
 	void UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values);
 	void SetTag(const FString& key, const FString& value);
+	void SetTags(const TMap<FString, FString>& tags);
 	void RemoveTag(const FString& key);
 
 protected:
