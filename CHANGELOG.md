@@ -7,6 +7,9 @@
 - Bump Android Gradle Plugin from v6.19.0 to v6.20.0 ([#1553](https://github.com/getsentry/sentry-unreal/pull/1553))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6200)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.19.0...6.20.0)
+- Bump Cocoa SDK from v9.26.0 to v9.26.1 ([#1552](https://github.com/getsentry/sentry-unreal/pull/1552))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9261)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.26.0...9.26.1)
 
 ## 1.21.0
 
