@@ -1,0 +1,159 @@
+name: Build UE consoles runner image
+
+# Bakes a pre-built Unreal Engine (with XSX / PS5 / Switch platform files) and the
+# matching AutoSDK bundles into a Windows runner image. Console SDKs are not
+# installed on the runner - everything resolves through AutoSDK from UE_SDKS_ROOT.
+#
+# Download links come from repository secrets, since dispatch inputs and `vars`
+# are visible in run logs of this public repo:
+#   UE_CONSOLES_DOWNLOAD_LINK - Drive URL of the pre-built engine zip
+#   AUTOSDK_DOWNLOAD_LINK     - Drive URL of autosdk-ue5.8.1-consoles.zip
+
+on:
+  # workflow_dispatch only becomes available once this file is on the default
+  # branch; the push trigger allows the first run from a feature branch.
+  push:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/custom-image-consoles.yml'
+  workflow_dispatch:
+
+env:
+  UE_INSTALL_ROOT: C:\UnrealEngine
+  AUTOSDK_ROOT: C:\AutoSDK
+
+jobs:
+  create-image:
+    name: Create Windows image with UE consoles distro
+    runs-on: unreal-image-creating-runner-windows
+    snapshot: unreal-image-consoles
+    environment:
+      name: main
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install gdown
+        run: pipx install gdown
+
+      - name: Download engine archive
+        shell: pwsh
+        env:
+          DOWNLOAD_LINK: ${{ secrets.UE_CONSOLES_DOWNLOAD_LINK }}
+        run: |
+          if (-not $env:DOWNLOAD_LINK) {
+            throw 'No engine download link. Set the UE_CONSOLES_DOWNLOAD_LINK repository secret.'
+          }
+          # gdown 5.x dropped --fuzzy, so pass the bare file id that every version accepts.
+          $id = if ($env:DOWNLOAD_LINK -match '/d/([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                elseif ($env:DOWNLOAD_LINK -match '[?&]id=([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                else { $env:DOWNLOAD_LINK }
+          gdown "$id" -O ue.zip 2>&1 | ForEach-Object { $_ -replace [regex]::Escape($id), '***' }
+          if ($LASTEXITCODE -ne 0) { throw "gdown failed ($LASTEXITCODE)" }
+
+      - name: Download AutoSDK bundles
+        shell: pwsh
+        env:
+          DOWNLOAD_LINK: ${{ secrets.AUTOSDK_DOWNLOAD_LINK }}
+        run: |
+          if (-not $env:DOWNLOAD_LINK) {
+            throw 'No AutoSDK download link. Set the AUTOSDK_DOWNLOAD_LINK repository secret.'
+          }
+          $id = if ($env:DOWNLOAD_LINK -match '/d/([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                elseif ($env:DOWNLOAD_LINK -match '[?&]id=([A-Za-z0-9_-]{10,})') { $Matches[1] }
+                else { $env:DOWNLOAD_LINK }
+          gdown "$id" -O autosdk.zip 2>&1 | ForEach-Object { $_ -replace [regex]::Escape($id), '***' }
+          if ($LASTEXITCODE -ne 0) { throw "gdown failed ($LASTEXITCODE)" }
+          New-Item -ItemType Directory -Path autosdk-packages -Force | Out-Null
+          tar -x -f autosdk.zip -C autosdk-packages
+          if ($LASTEXITCODE -ne 0) { throw "autosdk.zip extract failed ($LASTEXITCODE)" }
+          Remove-Item autosdk.zip -Force
+
+      - name: Extract engine and AutoSDK
+        shell: pwsh
+        run: |
+          foreach ($d in $env:UE_INSTALL_ROOT, $env:AUTOSDK_ROOT) {
+            if (Test-Path $d) { Remove-Item $d -Recurse -Force }
+            New-Item -ItemType Directory -Path $d -Force | Out-Null
+          }
+
+          # tar (bsdtar) is used over Expand-Archive, which is far slower on multi-GB input.
+          Write-Host 'Extracting engine...'
+          tar -x -f ue.zip -C $env:UE_INSTALL_ROOT
+          if ($LASTEXITCODE -ne 0) { throw "engine extract failed ($LASTEXITCODE)" }
+          Remove-Item ue.zip -Force
+
+          # Each AutoSDK archive carries the HostWin64\<Platform>\<Version> prefix,
+          # so they merge into one root with no path juggling.
+          Get-ChildItem autosdk-packages -Recurse -Filter *.zip | ForEach-Object {
+            Write-Host "Extracting $($_.Name)..."
+            tar -x -f $_.FullName -C $env:AUTOSDK_ROOT
+            if ($LASTEXITCODE -ne 0) { throw "$($_.Name) extract failed ($LASTEXITCODE)" }
+          }
+          Remove-Item autosdk-packages -Recurse -Force
+
+      - name: Configure AutoSDK environment
+        shell: pwsh
+        run: |
+          # The engine archive unpacks with a "Windows" root folder.
+          $engineRoot = Join-Path $env:UE_INSTALL_ROOT 'Windows'
+          if (-not (Test-Path (Join-Path $engineRoot 'Engine'))) {
+            $found = Get-ChildItem $env:UE_INSTALL_ROOT -Directory |
+              Where-Object { Test-Path (Join-Path $_.FullName 'Engine') } | Select-Object -First 1
+            if (-not $found) { throw "no Engine directory under $env:UE_INSTALL_ROOT" }
+            $engineRoot = $found.FullName
+          }
+
+          # GDK compiles and packages at BUILD, Nintendo packages an .nsp at BUILD,
+          # and PS5 needs PACKAGE for prospero-pub-cmd.exe. Every platform is listed
+          # explicitly: an omitted one defaults to the more invasive FULL.
+          $levels = 'PS5=PACKAGE;GDK=BUILD;NINTENDO=BUILD'
+
+          # Machine scope so the values survive into the snapshot, GITHUB_ENV so the
+          # verification step below sees them in this run.
+          [Environment]::SetEnvironmentVariable('UE_ROOT', $engineRoot, 'Machine')
+          [Environment]::SetEnvironmentVariable('UE_SDKS_ROOT', $env:AUTOSDK_ROOT, 'Machine')
+          [Environment]::SetEnvironmentVariable('UE_AUTOSDK_SPECIFIC_LEVELS', $levels, 'Machine')
+          "UE_ROOT=$engineRoot" >> $env:GITHUB_ENV
+          "UE_SDKS_ROOT=$env:AUTOSDK_ROOT" >> $env:GITHUB_ENV
+          "UE_AUTOSDK_SPECIFIC_LEVELS=$levels" >> $env:GITHUB_ENV
+          Write-Host "UE_ROOT=$engineRoot"
+          Write-Host "UE_SDKS_ROOT=$env:AUTOSDK_ROOT"
+          Write-Host "UE_AUTOSDK_SPECIFIC_LEVELS=$levels"
+
+      # Runs each platform's AutoSDK setup.bat, so the snapshot ships with the SDKs set up.
+      - name: Verify SDKs resolve through AutoSDK
+        shell: pwsh
+        run: |
+          # UnrealBuildTool.exe targets a .NET runtime the runner may not have, so use
+          # the one the engine ships with, exactly as Build.bat/RunUAT.bat do.
+          $dotnet = Get-ChildItem "$env:UE_ROOT\Engine\Binaries\ThirdParty\DotNet" -Recurse -Filter dotnet.exe |
+            Select-Object -First 1 -ExpandProperty FullName
+          & $dotnet "$env:UE_ROOT\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" `
+            -Mode=ValidatePlatforms -Platforms=XSX+PS5+Switch -OutputSDKs
+
+          # AutoSDK compares the bundle directory name against the engine's MainVersion
+          # exactly, so a stale bundle is silently ignored. Fail loudly instead.
+          $bad = $false
+          foreach ($p in 'GDK', 'PS5', 'Nintendo') {
+            $f = "$env:UE_SDKS_ROOT\HostWin64\$p\CurrentlyInstalled.txt"
+            if (-not (Test-Path $f)) { Write-Error "$p was never set up ($f missing)"; $bad = $true; continue }
+            $state = (Get-Content $f) -join ' / '
+            Write-Host "  $p -> $state"
+            if ($state -notmatch 'AutoSDK') { Write-Error "$p did not resolve through AutoSDK"; $bad = $true }
+          }
+          if ($bad) { exit 1 }
+
+      - name: Report image contents
+        shell: pwsh
+        run: |
+          Write-Host "engine  : $env:UE_ROOT"
+          Write-Host "autosdk : $env:UE_SDKS_ROOT"
+          Get-PSDrive -PSProvider FileSystem | Format-Table -AutoSize Name,
+            @{Name='Used(GB)';Expression={[math]::Round($_.Used/1GB,2)}},
+            @{Name='Free(GB)';Expression={[math]::Round($_.Free/1GB,2)}}
