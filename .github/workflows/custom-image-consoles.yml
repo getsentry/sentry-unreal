@@ -2,19 +2,17 @@ name: Build UE consoles runner image
 
 # Bakes a pre-built Unreal Engine (with XSX / PS5 / Switch platform files) and the
 # matching AutoSDK bundles into a Windows runner image. Console SDKs are not
-# installed on the runner - everything resolves through AutoSDK from UE_SDKS_ROOT.
+# installed on the runner directly - everything resolves through AutoSDK from UE_SDKS_ROOT.
 #
 # Download links come from repository secrets, since dispatch inputs and `vars`
 # are visible in run logs of this public repo:
 #   UE_CONSOLES_DOWNLOAD_LINK - Drive URL of the pre-built engine zip
-#   AUTOSDK_DOWNLOAD_LINK     - Drive URL of autosdk-ue5.8.1-consoles.zip
+#   AUTOSDK_DOWNLOAD_LINK     - Drive URL of the autosdk bundle zip
 
 on:
   workflow_dispatch:
   schedule:
-    # Offset from the 06:00 slot the other image workflows use: this shares the
-    # unreal-image-creating-runner-windows pool with custom-image-windows.yml.
-    - cron: '0 8 * * 1'
+    - cron: '0 6 * * 1'
 
 env:
   UE_INSTALL_ROOT: C:\UnrealEngine
@@ -121,7 +119,6 @@ jobs:
           Write-Host "UE_SDKS_ROOT=$env:AUTOSDK_ROOT"
           Write-Host "UE_AUTOSDK_SPECIFIC_LEVELS=$levels"
 
-      # Runs each platform's AutoSDK setup.bat, so the snapshot ships with the SDKs set up.
       - name: Verify SDKs resolve through AutoSDK
         shell: pwsh
         run: |
