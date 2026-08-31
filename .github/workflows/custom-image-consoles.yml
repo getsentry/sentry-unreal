@@ -11,6 +11,10 @@ name: Build UE consoles runner image
 
 on:
   workflow_dispatch:
+  schedule:
+    # Offset from the 06:00 slot the other image workflows use: this shares the
+    # unreal-image-creating-runner-windows pool with custom-image-windows.yml.
+    - cron: '0 8 * * 1'
 
 env:
   UE_INSTALL_ROOT: C:\UnrealEngine
