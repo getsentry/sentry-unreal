@@ -8,6 +8,13 @@ name: Publish UE consoles OCI artifacts
 # file. Download links come from the `main` environment secrets.
 
 on:
+  # A workflow that has never run is not dispatchable, so the push trigger
+  # provides the first run from this branch. Goes away with the file.
+  push:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/ue-oci-consoles.yml'
   workflow_dispatch:
 
 env:
