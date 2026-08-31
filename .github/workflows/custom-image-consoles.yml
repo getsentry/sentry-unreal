@@ -147,6 +147,50 @@ jobs:
           }
           if ($bad) { exit 1 }
 
+      # Smoke-test each console toolchain end to end. The private plugin extensions
+      # are deliberately NOT installed, so the Sentry plugin falls back to its Null
+      # implementation - enough to prove the platform cooks and links.
+      - name: Sanity check - cook sample for consoles
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ./scripts/init-win.ps1
+
+          $failed = @()
+          foreach ($p in 'XSX', 'PS5', 'Switch') {
+            Write-Host "::group::BuildCookRun $p"
+            & "$env:UE_ROOT\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun `
+              -project="$PWD\sample\SentryPlayground.uproject" `
+              -platform=$p `
+              -clientconfig=Development `
+              -nop4 `
+              -cook `
+              -build `
+              -stage `
+              -WaitForUATMutex
+            $code = $LASTEXITCODE
+            Write-Host "::endgroup::"
+            Write-Host "$p -> exit $code"
+            if ($code -ne 0) { $failed += "$p (exit $code)" }
+          }
+          # Every platform is attempted before failing, so one run reports all three.
+          if ($failed.Count -gt 0) { throw "console sanity check failed: $($failed -join ', ')" }
+
+      - name: Remove sample build output
+        if: ${{ success() }}
+        shell: pwsh
+        run: |
+          # init-win.ps1 symlinks plugin-dev into sample/Plugins. Delete the reparse
+          # point itself - a plain -Recurse would follow it and eat the real sources.
+          Get-ChildItem 'sample\Plugins' -Force -ErrorAction SilentlyContinue |
+            Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint } |
+            ForEach-Object { $_.Delete() }
+
+          foreach ($d in 'sample\Plugins', 'sample\Binaries', 'sample\Intermediate', 'sample\Saved', 'sample\DerivedDataCache', 'plugin-dev\Source\ThirdParty') {
+            if (Test-Path $d) { Remove-Item $d -Recurse -Force -ErrorAction SilentlyContinue }
+          }
+
       - name: Report image contents
         shell: pwsh
         run: |
