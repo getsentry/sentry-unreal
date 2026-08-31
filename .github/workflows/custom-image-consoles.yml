@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 env:
-  UE_INSTALL_ROOT: C:\UnrealEngine
+  UE_INSTALL_ROOT: C:\UnrealEngine\5.8.1
   AUTOSDK_ROOT: C:\AutoSDK
 
 jobs:
