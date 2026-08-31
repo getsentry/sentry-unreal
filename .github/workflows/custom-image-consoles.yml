@@ -10,13 +10,6 @@ name: Build UE consoles runner image
 #   AUTOSDK_DOWNLOAD_LINK     - Drive URL of autosdk-ue5.8.1-consoles.zip
 
 on:
-  # workflow_dispatch only becomes available once this file is on the default
-  # branch; the push trigger allows the first run from a feature branch.
-  push:
-    branches:
-      - '**'
-    paths:
-      - '.github/workflows/custom-image-consoles.yml'
   workflow_dispatch:
 
 env:
