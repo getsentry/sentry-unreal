@@ -5,7 +5,7 @@ name: Publish UE consoles OCI artifacts
 # location rather than one tied to a personal account.
 #
 # Run this once, switch the image workflow over to the registry, then delete this
-# file. Download links come from the `main` environment secrets.
+# file. Download links come from the repository secrets.
 
 on:
   # A workflow that has never run is not dispatchable, so the push trigger
@@ -25,8 +25,6 @@ jobs:
   publish:
     name: Publish ${{ matrix.tag }}
     runs-on: ubuntu-latest
-    environment:
-      name: main
     permissions:
       contents: read
       packages: write
