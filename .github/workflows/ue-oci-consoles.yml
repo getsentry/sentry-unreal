@@ -1,0 +1,75 @@
+name: Publish UE consoles OCI artifacts
+
+# TEMPORARY. Moves the pre-built console engine and the AutoSDK bundles off Google
+# Drive and into ghcr, so custom-image-consoles.yml can pull them from a shared
+# location rather than one tied to a personal account.
+#
+# Run this once, switch the image workflow over to the registry, then delete this
+# file. Download links come from the `main` environment secrets.
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  UE_VERSION: '5.8'
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.tag }}
+    runs-on: ubuntu-latest
+    environment:
+      name: main
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      # One runner per artifact, so each gets a full disk to itself.
+      matrix:
+        include:
+          - tag: consoles
+            secret: UE_CONSOLES_DOWNLOAD_LINK
+          - tag: autosdk
+            secret: AUTOSDK_DOWNLOAD_LINK
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Free up disk space
+        run: ./scripts/clean-storage-linux.sh
+
+      - name: Install oras
+        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
+
+      - name: Download archive
+        env:
+          DOWNLOAD_LINK: ${{ secrets[matrix.secret] }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DOWNLOAD_LINK" ]; then
+            echo "No download link. Set the ${{ matrix.secret }} repository secret." >&2
+            exit 1
+          fi
+          pipx install gdown
+          # gdown 5.x dropped --fuzzy (fuzzy parsing is now the default), so pass the
+          # bare file id, which every version accepts.
+          id=$(printf '%s' "$DOWNLOAD_LINK" | sed -nE 's#.*/d/([A-Za-z0-9_-]{10,}).*#\1#p;s#.*[?&]id=([A-Za-z0-9_-]{10,}).*#\1#p' | head -1)
+          id=${id:-$DOWNLOAD_LINK}
+          gdown "$id" -O archive.zip 2>&1 | sed "s/$id/***/g"
+          ls -lh archive.zip
+          df -h /
+
+      - name: Push archive to the registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Layers are capped well below the archive size, so split as the macOS
+          # workflow does. The image workflow reassembles with `cat`.
+          split -b 4G archive.zip archive.zip.part-
+          rm archive.zip
+          ls -lh archive.zip.part-*
+          echo "$GITHUB_TOKEN" | oras login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
+          oras push "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-${{ matrix.tag }}" archive.zip.part-*
