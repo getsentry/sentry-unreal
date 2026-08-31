@@ -4,10 +4,8 @@ name: Build UE consoles runner image
 # matching AutoSDK bundles into a Windows runner image. Console SDKs are not
 # installed on the runner directly - everything resolves through AutoSDK from UE_SDKS_ROOT.
 #
-# Download links come from repository secrets, since dispatch inputs and `vars`
-# are visible in run logs of this public repo:
-#   UE_CONSOLES_DOWNLOAD_LINK - Drive URL of the pre-built engine zip
-#   AUTOSDK_DOWNLOAD_LINK     - Drive URL of the autosdk bundle zip
+# Both trees are pulled from ghcr as OCI artifacts, published by
+# ue-oci-consoles.yml as unreal-docker:5.8-consoles and :5.8-autosdk.
 
 on:
   workflow_dispatch:
@@ -15,6 +13,8 @@ on:
     - cron: '0 6 * * 1'
 
 env:
+  REGISTRY: ghcr.io
+  UE_VERSION: '5.8'
   UE_INSTALL_ROOT: C:\UnrealEngine
   AUTOSDK_ROOT: C:\AutoSDK
 
@@ -26,42 +26,44 @@ jobs:
 
     permissions:
       contents: read
+      packages: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Install gdown
-        run: pipx install gdown
+      - name: Install oras
+        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
 
-      - name: Download engine archive
+      - name: Log in to the registry
         shell: pwsh
         env:
-          DOWNLOAD_LINK: ${{ secrets.UE_CONSOLES_DOWNLOAD_LINK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if (-not $env:DOWNLOAD_LINK) {
-            throw 'No engine download link. Set the UE_CONSOLES_DOWNLOAD_LINK repository secret.'
-          }
-          # gdown 5.x dropped --fuzzy, so pass the bare file id that every version accepts.
-          $id = if ($env:DOWNLOAD_LINK -match '/d/([A-Za-z0-9_-]{10,})') { $Matches[1] }
-                elseif ($env:DOWNLOAD_LINK -match '[?&]id=([A-Za-z0-9_-]{10,})') { $Matches[1] }
-                else { $env:DOWNLOAD_LINK }
-          gdown "$id" -O ue.zip 2>&1 | ForEach-Object { $_ -replace [regex]::Escape($id), '***' }
-          if ($LASTEXITCODE -ne 0) { throw "gdown failed ($LASTEXITCODE)" }
+          $env:GITHUB_TOKEN | oras login $env:REGISTRY -u $env:GITHUB_ACTOR --password-stdin
+          if ($LASTEXITCODE -ne 0) { throw "oras login failed ($LASTEXITCODE)" }
 
-      - name: Download AutoSDK bundles
+      # Both artifacts were split into 4 GB parts to stay under the registry's layer
+      # limit, and both use the same part names, so each is pulled into its own
+      # directory and reassembled from there.
+      - name: Pull engine archive
         shell: pwsh
-        env:
-          DOWNLOAD_LINK: ${{ secrets.AUTOSDK_DOWNLOAD_LINK }}
         run: |
-          if (-not $env:DOWNLOAD_LINK) {
-            throw 'No AutoSDK download link. Set the AUTOSDK_DOWNLOAD_LINK repository secret.'
-          }
-          $id = if ($env:DOWNLOAD_LINK -match '/d/([A-Za-z0-9_-]{10,})') { $Matches[1] }
-                elseif ($env:DOWNLOAD_LINK -match '[?&]id=([A-Za-z0-9_-]{10,})') { $Matches[1] }
-                else { $env:DOWNLOAD_LINK }
-          gdown "$id" -O autosdk.zip 2>&1 | ForEach-Object { $_ -replace [regex]::Escape($id), '***' }
-          if ($LASTEXITCODE -ne 0) { throw "gdown failed ($LASTEXITCODE)" }
+          oras pull "$env:REGISTRY/getsentry/unreal-docker:$env:UE_VERSION-consoles" -o engine-parts
+          if ($LASTEXITCODE -ne 0) { throw "oras pull failed ($LASTEXITCODE)" }
+          ./scripts/join-parts.ps1 -PartsDir engine-parts -Destination ue.zip
+          Remove-Item engine-parts -Recurse -Force
+
+      - name: Pull AutoSDK bundles
+        shell: pwsh
+        run: |
+          oras pull "$env:REGISTRY/getsentry/unreal-docker:$env:UE_VERSION-autosdk" -o autosdk-parts
+          if ($LASTEXITCODE -ne 0) { throw "oras pull failed ($LASTEXITCODE)" }
+          ./scripts/join-parts.ps1 -PartsDir autosdk-parts -Destination autosdk.zip
+          Remove-Item autosdk-parts -Recurse -Force
+
+          # Outer archive is a store-only container; the three platform bundles
+          # (plus their .sha256) sit at its root.
           New-Item -ItemType Directory -Path autosdk-packages -Force | Out-Null
           tar -x -f autosdk.zip -C autosdk-packages
           if ($LASTEXITCODE -ne 0) { throw "autosdk.zip extract failed ($LASTEXITCODE)" }
