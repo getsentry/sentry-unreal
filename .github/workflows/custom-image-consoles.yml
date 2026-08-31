@@ -147,6 +147,26 @@ jobs:
           }
           if ($bad) { exit 1 }
 
+      # cmake-driven console builds (sentry-playstation's ps5 presets) read the SDK
+      # root from SCE_ROOT_DIR, which AutoSDK only exports inside UBT's own process.
+      # Derive it from the bundle so plain cmake invocations work on this image too.
+      - name: Export console SDK roots
+        shell: pwsh
+        run: |
+          $toolchain = Get-ChildItem $env:UE_SDKS_ROOT -Recurse -Filter PS5.cmake -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -like '*\Prospero\Tools\CMake\PS5.cmake' } | Select-Object -First 1
+          if (-not $toolchain) {
+            Write-Host 'PS5 bundle layout:'
+            Get-ChildItem "$env:UE_SDKS_ROOT\HostWin64\PS5" -Recurse -Depth 3 -Directory |
+              Select-Object -ExpandProperty FullName | Write-Host
+            throw 'Prospero\Tools\CMake\PS5.cmake not found - cannot derive SCE_ROOT_DIR'
+          }
+          # <root>\Prospero\Tools\CMake\PS5.cmake -> <root>
+          $sceRoot = $toolchain.Directory.Parent.Parent.Parent.FullName
+          [Environment]::SetEnvironmentVariable('SCE_ROOT_DIR', $sceRoot, 'Machine')
+          "SCE_ROOT_DIR=$sceRoot" >> $env:GITHUB_ENV
+          Write-Host "SCE_ROOT_DIR=$sceRoot"
+
       - name: Report image contents
         shell: pwsh
         run: |
