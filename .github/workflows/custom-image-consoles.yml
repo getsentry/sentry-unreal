@@ -156,7 +156,7 @@ jobs:
             Write-Host "::group::BuildCookRun $p"
             & "$env:UE_ROOT\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun `
               -project="$PWD\sample\SentryPlayground.uproject" `
-              -platform=$p `
+              -platform="$p" `
               -clientconfig=Development `
               -UBTArgs="-AllCores" `
               -nop4 `
