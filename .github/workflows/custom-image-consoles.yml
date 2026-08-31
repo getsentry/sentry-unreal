@@ -158,6 +158,7 @@ jobs:
               -project="$PWD\sample\SentryPlayground.uproject" `
               -platform=$p `
               -clientconfig=Development `
+              -UBTArgs="-AllCores" `
               -nop4 `
               -cook `
               -build `
