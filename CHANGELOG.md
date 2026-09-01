@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add thread stackwalk mode setting for the native backend ([#1546](https://github.com/getsentry/sentry-unreal/pull/1546))
+
 ### Dependencies
 
 - Bump Android Gradle Plugin from v6.19.0 to v6.20.0 ([#1553](https://github.com/getsentry/sentry-unreal/pull/1553))
