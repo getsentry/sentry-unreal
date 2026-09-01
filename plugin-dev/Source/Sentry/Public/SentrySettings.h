@@ -526,7 +526,7 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "UseNativeBackend"))
 	ESentryThreadStackwalkMode ThreadStackwalkMode;
 
-  UPROPERTY(Config, EditAnywhere, Category = "General|Native",
+	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Crash upload mode", ToolTip = "Controls what happens after crash data is captured. Sync keeps the crashed application blocked until the crash daemon finishes uploading. Async lets it terminate immediately while the daemon continues uploading in the background, which avoids long freezes when sending large crash payloads.",
 			EditCondition = "UseNativeBackend"))
 	ESentryCrashUploadMode CrashUploadMode;

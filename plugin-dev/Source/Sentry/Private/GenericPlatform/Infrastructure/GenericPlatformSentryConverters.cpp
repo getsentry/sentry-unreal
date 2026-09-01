@@ -267,7 +267,7 @@ sentry_thread_stackwalk_mode_t FGenericPlatformSentryConverters::ThreadStackwalk
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown thread stackwalk mode value used. AllThreads will be returned."));
 		return SENTRY_THREAD_STACKWALK_MODE_ALL;
-  }
+	}
 }
 
 sentry_crash_upload_mode_t FGenericPlatformSentryConverters::CrashUploadModeToNative(ESentryCrashUploadMode mode)
