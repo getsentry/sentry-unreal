@@ -47,27 +47,26 @@ jobs:
       # limit, and both use the same part names, so each is pulled into its own
       # directory and reassembled from there.
       - name: Pull engine archive
-        shell: pwsh
+        shell: bash
         run: |
-          oras pull "$env:REGISTRY/getsentry/unreal-docker:$env:UE_VERSION-consoles" -o engine-parts
-          if ($LASTEXITCODE -ne 0) { throw "oras pull failed ($LASTEXITCODE)" }
-          ./scripts/join-parts.ps1 -PartsDir engine-parts -Destination ue.zip
-          Remove-Item engine-parts -Recurse -Force
+          oras pull "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-consoles" -o engine-parts
+          # 'split -b 4G' names parts .part-aa, .part-ab, ... so the glob orders them
+          # correctly. bash, not pwsh - there 'cat' is Get-Content, which mangles binary.
+          cat engine-parts/* > ue.zip
+          rm -rf engine-parts
 
       - name: Pull AutoSDK bundles
-        shell: pwsh
+        shell: bash
         run: |
-          oras pull "$env:REGISTRY/getsentry/unreal-docker:$env:UE_VERSION-autosdk" -o autosdk-parts
-          if ($LASTEXITCODE -ne 0) { throw "oras pull failed ($LASTEXITCODE)" }
-          ./scripts/join-parts.ps1 -PartsDir autosdk-parts -Destination autosdk.zip
-          Remove-Item autosdk-parts -Recurse -Force
+          oras pull "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-autosdk" -o autosdk-parts
+          cat autosdk-parts/* > autosdk.zip
+          rm -rf autosdk-parts
 
           # Outer archive is a store-only container; the three platform bundles
           # (plus their .sha256) sit at its root.
-          New-Item -ItemType Directory -Path autosdk-packages -Force | Out-Null
+          mkdir -p autosdk-packages
           tar -x -f autosdk.zip -C autosdk-packages
-          if ($LASTEXITCODE -ne 0) { throw "autosdk.zip extract failed ($LASTEXITCODE)" }
-          Remove-Item autosdk.zip -Force
+          rm -f autosdk.zip
 
       - name: Extract engine and AutoSDK
         shell: pwsh
