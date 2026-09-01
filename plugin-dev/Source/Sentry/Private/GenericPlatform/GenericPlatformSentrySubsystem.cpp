@@ -673,6 +673,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		sentry_options_set_minidump_mode(options, FGenericPlatformSentryConverters::MinidumpModeToNative(settings->MinidumpMode));
 		sentry_options_set_crash_reporting_mode(options, FGenericPlatformSentryConverters::CrashReportingModeToNative(settings->CrashReportingMode));
 		sentry_options_set_thread_stackwalk_mode(options, FGenericPlatformSentryConverters::ThreadStackwalkModeToNative(settings->ThreadStackwalkMode));
+		sentry_options_set_crash_upload_mode(options, FGenericPlatformSentryConverters::CrashUploadModeToNative(settings->CrashUploadMode));
 	}
 
 	if (beforeBreadcrumb)
@@ -1104,6 +1105,16 @@ void FGenericPlatformSentrySubsystem::SetTag(const FString& key, const FString& 
 	if (crashReporter)
 	{
 		crashReporter->SetTag(key, value);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetTags(const TMap<FString, FString>& tags)
+{
+	sentry_set_tags(FGenericPlatformSentryConverters::StringMapToNative(tags));
+
+	if (crashReporter)
+	{
+		crashReporter->SetTags(tags);
 	}
 }
 

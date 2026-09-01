@@ -71,3 +71,12 @@ enum class ESentryThreadStackwalkMode : uint8
 	// Walk every thread of the crashed process. Most context, but slower for apps with a high thread count.
 	AllThreads,
 };
+
+UENUM(BlueprintType)
+enum class ESentryCrashUploadMode : uint8
+{
+	// Keep the crashed app alive until the crash daemon finishes uploading. Most reliable delivery.
+	Sync,
+	// Let the crashed app terminate once crash data is captured. The daemon uploads in the background.
+	Async,
+};

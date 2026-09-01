@@ -398,6 +398,14 @@ public:
 	void SetTag(const FString& Key, const FString& Value);
 
 	/**
+	 * Sets multiple global tags at once. Tags that aren't listed remain unchanged.
+	 *
+	 * @param Tags Tag key/value pairs.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetTags(const TMap<FString, FString>& Tags);
+
+	/**
 	 * Removes global tag.
 	 *
 	 * @param Key Tag key.

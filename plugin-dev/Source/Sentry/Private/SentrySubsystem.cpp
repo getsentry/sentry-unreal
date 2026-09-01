@@ -653,6 +653,18 @@ void USentrySubsystem::SetTag(const FString& Key, const FString& Value)
 	SubsystemNativeImpl->SetTag(Key, Value);
 }
 
+void USentrySubsystem::SetTags(const TMap<FString, FString>& Tags)
+{
+	check(SubsystemNativeImpl);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	SubsystemNativeImpl->SetTags(Tags);
+}
+
 void USentrySubsystem::RemoveTag(const FString& Key)
 {
 	check(SubsystemNativeImpl);
@@ -1004,34 +1016,41 @@ void USentrySubsystem::PromoteTags()
 	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
 	check(Settings);
 
+	TMap<FString, FString> PromotedTags;
+
 	if (Settings->TagsPromotion.bPromoteBuildConfiguration)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Configuration"), LexToString(FApp::GetBuildConfiguration()));
+		PromotedTags.Add(TEXT("Configuration"), LexToString(FApp::GetBuildConfiguration()));
 	}
 
 	if (Settings->TagsPromotion.bPromoteTargetType)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Target Type"), LexToString(FApp::GetBuildTargetType()));
+		PromotedTags.Add(TEXT("Target Type"), LexToString(FApp::GetBuildTargetType()));
 	}
 
 	if (Settings->TagsPromotion.bPromoteEngineMode)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Engine Mode"), FGenericPlatformMisc::GetEngineMode());
+		PromotedTags.Add(TEXT("Engine Mode"), FGenericPlatformMisc::GetEngineMode());
 	}
 
 	if (Settings->TagsPromotion.bPromoteIsGame)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Is game"), LexToString(FApp::IsGame()));
+		PromotedTags.Add(TEXT("Is game"), LexToString(FApp::IsGame()));
 	}
 
 	if (Settings->TagsPromotion.bPromoteIsStandalone)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Is standalone"), LexToString(FApp::IsStandalone()));
+		PromotedTags.Add(TEXT("Is standalone"), LexToString(FApp::IsStandalone()));
 	}
 
 	if (Settings->TagsPromotion.bPromoteIsUnattended)
 	{
-		SubsystemNativeImpl->SetTag(TEXT("Is unattended"), LexToString(FApp::IsUnattended()));
+		PromotedTags.Add(TEXT("Is unattended"), LexToString(FApp::IsUnattended()));
+	}
+
+	if (PromotedTags.Num() > 0)
+	{
+		SubsystemNativeImpl->SetTags(PromotedTags);
 	}
 }
 

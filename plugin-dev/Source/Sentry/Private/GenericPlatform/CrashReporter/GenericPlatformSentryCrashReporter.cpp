@@ -139,6 +139,22 @@ void FGenericPlatformSentryCrashReporter::SetTag(const FString& key, const FStri
 	UpdateCrashReporterConfig();
 }
 
+void FGenericPlatformSentryCrashReporter::SetTags(const TMap<FString, FString>& tags)
+{
+	TSharedPtr<FJsonObject> tagsConfig = crashReporterConfig->HasField(TEXT("tags"))
+											 ? crashReporterConfig->GetObjectField(TEXT("tags"))
+											 : MakeShareable(new FJsonObject);
+
+	for (auto it = tags.CreateConstIterator(); it; ++it)
+	{
+		tagsConfig->SetStringField(it.Key(), it.Value());
+	}
+
+	crashReporterConfig->SetObjectField(TEXT("tags"), tagsConfig);
+
+	UpdateCrashReporterConfig();
+}
+
 void FGenericPlatformSentryCrashReporter::RemoveTag(const FString& key)
 {
 	TSharedPtr<FJsonObject> tagsConfig;

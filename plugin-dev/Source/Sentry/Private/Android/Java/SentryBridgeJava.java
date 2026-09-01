@@ -242,6 +242,17 @@ public class SentryBridgeJava {
 		});
 	}
 
+	public static void setTags(final HashMap<String, String> tags) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				for (Map.Entry<String, String> tag : tags.entrySet()) {
+					scope.setTag(tag.getKey(), tag.getValue());
+				}
+			}
+		});
+	}
+
 	public static void removeTag(final String key) {
 		Sentry.configureScope(new ScopeCallback() {
 			@Override
