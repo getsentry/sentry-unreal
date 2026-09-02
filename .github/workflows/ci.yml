@@ -314,8 +314,7 @@ jobs:
   test-consoles:
     needs: [package-preparation]
     name: ${{ matrix.name }}
-    if: >-
-      github.event_name == 'push' || (contains(github.event.pull_request.labels.*.name, 'run-console-checks') && !github.event.pull_request.head.repo.fork)
+    if: github.event_name == 'push'
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     strategy:
