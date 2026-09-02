@@ -82,6 +82,7 @@ jobs:
           & "$env:UE_ROOT\Engine\Build\BatchFiles\Build.bat" `
             SentryPlayground '${{ inputs.platform }}' Development `
             -project="$env:GITHUB_WORKSPACE\checkout\sample\SentryPlayground.uproject" `
+            -log="$env:GITHUB_WORKSPACE\checkout\sample\Saved\Logs\UnrealBuildTool.txt" `
             -NoHotReload `
             -AllCores
 
