@@ -817,7 +817,6 @@ void FAppleSentrySubsystem::UploadGameLogForEvent(TSharedPtr<ISentryId> eventId,
 
 void FAppleSentrySubsystem::AddGameLogAttachmentToScope(SentryObjCScope* scope) const
 {
-	// If writing logs to a file is disabled (i.e. default behavior for Shipping builds) skip the attachment
 #if !NO_LOGGING
 	if (!isGameLogAttachmentEnabled)
 	{
@@ -842,7 +841,6 @@ void FAppleSentrySubsystem::AddGameLogAttachmentToScope(SentryObjCScope* scope) 
 
 void FAppleSentrySubsystem::AddScreenshotAttachmentToScope(SentryObjCScope* scope) const
 {
-	// On UIKit platforms screenshots are attached to non-fatal events by the Cocoa SDK itself (see `attachScreenshot`)
 #if !SENTRY_OBJC_UIKIT_AVAILABLE
 	if (!isScreenshotAttachmentEnabled || IsRunningCommandlet())
 	{
