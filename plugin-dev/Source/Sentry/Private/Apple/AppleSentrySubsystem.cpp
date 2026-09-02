@@ -770,6 +770,18 @@ void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> event
 		return;
 	}
 
+	if (!eventId || !eventId->IsValid())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Skipping attachment upload for an event that wasn't sent: %s"), *filePath);
+
+		if (deleteAfterUpload && !fileManager.Delete(*filePath))
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete file attachment: %s"), *filePath);
+		}
+
+		return;
+	}
+
 	const FString& filePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*filePath);
 
 	SentryObjCAttachment* attachment = [[SENTRY_APPLE_CLASS(SentryObjCAttachment) alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];

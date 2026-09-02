@@ -10,4 +10,5 @@ public:
 	virtual ~ISentryId() = default;
 
 	virtual FString ToString() const = 0;
+	virtual bool IsValid() const = 0;
 };

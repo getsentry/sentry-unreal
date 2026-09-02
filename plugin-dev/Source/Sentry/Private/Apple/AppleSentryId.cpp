@@ -37,4 +37,16 @@ FString FAppleSentryId::ToString() const
 	return FString(IdApple.sentryIdString);
 }
 
+bool FAppleSentryId::IsValid() const
+{
+	if (IdApple == nil)
+	{
+		return false;
+	}
+
+	SentryObjCId* EmptyId = [SENTRY_APPLE_CLASS(SentryObjCId) empty];
+
+	return ![IdApple.sentryIdString isEqualToString:EmptyId.sentryIdString];
+}
+
 #endif // !USE_SENTRY_NATIVE
