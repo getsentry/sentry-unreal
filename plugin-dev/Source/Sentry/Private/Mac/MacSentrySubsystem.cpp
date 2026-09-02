@@ -130,19 +130,6 @@ void FMacSentrySubsystem::Close()
 	FAppleSentrySubsystem::Close();
 }
 
-TSharedPtr<ISentryId> FMacSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
-{
-	TSharedPtr<ISentryId> id = FAppleSentrySubsystem::CaptureEnsure(type, message);
-
-	if (isScreenshotAttachmentEnabled && !IsRunningCommandlet())
-	{
-		const FString& screenshotPath = TryCaptureScreenshot();
-		UploadScreenshotForEvent(id, screenshotPath);
-	}
-
-	return id;
-}
-
 FString FMacSentrySubsystem::TryCaptureScreenshot() const
 {
 	NSWindow* MainWindow = [NSApp mainWindow];

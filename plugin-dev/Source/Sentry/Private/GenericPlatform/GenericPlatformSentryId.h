@@ -19,6 +19,7 @@ public:
 	sentry_uuid_t GetNativeObject();
 
 	virtual FString ToString() const override;
+	virtual bool IsValid() const override;
 
 private:
 	sentry_uuid_t Id;
