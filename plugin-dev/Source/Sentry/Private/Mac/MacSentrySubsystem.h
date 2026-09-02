@@ -37,8 +37,6 @@ public:
 	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
 	virtual void Close() override;
 
-	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
-
 	virtual FString TryCaptureScreenshot() const override;
 
 	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
