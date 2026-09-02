@@ -10,6 +10,8 @@
 #include "SessionReplay/SentrySessionReplayRecorder.h"
 #endif
 
+@class SentryObjCScope;
+
 class FAppleSentrySubsystem : public ISentrySubsystem
 {
 public:
@@ -70,6 +72,9 @@ protected:
 
 	void UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const;
 	void UploadGameLogForEvent(TSharedPtr<ISentryId> eventId, const FString& logFilePath) const;
+
+	void AddGameLogAttachmentToScope(SentryObjCScope* scope) const;
+	void AddScreenshotAttachmentToScope(SentryObjCScope* scope) const;
 
 	virtual FString GetScreenshotPath() const;
 	virtual FString GetLatestScreenshot() const;

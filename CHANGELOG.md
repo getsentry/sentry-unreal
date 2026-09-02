@@ -8,7 +8,7 @@
 
 ### Fixes
 
-- Fix eventless attachments being uploaded on Mac/iOS ([#1558](https://github.com/getsentry/sentry-unreal/pull/1558))
+- Fix eventless attachments being uploaded on Mac/iOS ([#1558](https://github.com/getsentry/sentry-unreal/pull/1558), [#1559](https://github.com/getsentry/sentry-unreal/pull/1559))
 
 ### Dependencies
 
