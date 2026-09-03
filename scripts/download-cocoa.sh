@@ -54,7 +54,7 @@ for (( i = libraryCount - 1; i >= 0; i-- )); do
     libraryIdentifier=$(plutil -extract "AvailableLibraries.$i.LibraryIdentifier" raw "$xcframeworkManifest")
 
     case "$libraryIdentifier" in
-        ios-arm64 | ios-arm64_x86_64-simulator) plutil -remove "AvailableLibraries.$i.DebugSymbolsPath" "$xcframeworkManifest" ;;
+        ios-arm64 | ios-arm64_x86_64-simulator) plutil -remove "AvailableLibraries.$i.DebugSymbolsPath" "$xcframeworkManifest" || true ;;
         *) plutil -remove "AvailableLibraries.$i" "$xcframeworkManifest" ;;
     esac
 done
