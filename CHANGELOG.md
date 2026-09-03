@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Java SDK from v8.54.0 to v8.55.0 ([#1560](https://github.com/getsentry/sentry-unreal/pull/1560))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8550)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.54.0...8.55.0)
+
 ## 1.22.0
 
 ### Features
