@@ -1,0 +1,76 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_ORG:
+        required: true
+      SENTRY_PROJECT:
+        required: true
+
+jobs:
+  test:
+    name: Test
+    runs-on:
+      - bitrise_pool_name:gdx
+
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      DISALLOW_RAW_POINTERS: 'true'
+      SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
+
+    steps:
+      - name: Set Unreal Engine path
+        run: echo "UE_ROOT=$HOME/UnrealEngine" >> "$GITHUB_ENV"
+
+      - name: Download package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: ${{ github.sha }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: checkout
+
+      - name: Extract package to sample/Plugins
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: unzip -q sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
+
+      - name: Update engine's build configuration
+        run: |
+          mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
+          cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
+
+      # Compiles and links the game target for iOS devices. Staging and packaging are skipped
+      # since those require signing credentials that aren't available on CI.
+      - name: Build
+        id: run-build
+        timeout-minutes: 90
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          "$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh" SentryPlayground IOS Development \
+            -Project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+            -SkipDeploy \
+            -AllCores \
+            -waitmutex
+
+      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
+      - name: Collect build logs
+        if: ${{ always() && (steps.run-build.outcome == 'failure' || steps.run-build.outcome == 'cancelled') }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build logs (iOS)
+          path: |
+            ~/Library/Logs/Unreal Engine
+            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
