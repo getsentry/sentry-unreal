@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add support for iOS Simulator builds on UE 5.5 and newer ([#1560](https://github.com/getsentry/sentry-unreal/pull/1560))
+- Add support for iOS Simulator builds on UE 5.5 and newer ([#1561](https://github.com/getsentry/sentry-unreal/pull/1561))
 
 ## 1.22.0
 
