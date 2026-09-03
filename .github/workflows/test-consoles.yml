@@ -1,0 +1,96 @@
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: Unreal platform name passed to UBT (XSX, PS5, Switch, ...)
+        required: true
+        type: string
+      extension-repo:
+        description: Repository whose CI builds the plugin extension for this platform
+        required: true
+        type: string
+      extension-artifact:
+        description: Name of the CI artifact holding the built plugin extension
+        required: true
+        type: string
+      backend:
+        description: Crash handler backend to build against
+        required: false
+        type: string
+        default: ""
+    secrets:
+      GH_TOKEN:
+        description: Token with read access to the private console extension repositories
+        required: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-unreal-image-consoles
+    timeout-minutes: 90
+
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: ${{ github.sha }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: checkout
+
+      - name: Extract package to sample/Plugins
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem "sentry-unreal-*.zip" | Where-Object { $_.Name -notmatch '-engine' } | Select-Object -First 1
+          $dest = "$env:GITHUB_WORKSPACE\checkout\sample\Plugins\sentry"
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          tar -x -f $zip.FullName -C $dest
+
+      - name: Download ${{ inputs.platform }} plugin extension
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          $repo = '${{ inputs.extension-repo }}'
+          $runId = gh run list --repo $repo --workflow ci.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId'
+          gh run download $runId --repo $repo --name '${{ inputs.extension-artifact }}' `
+            --dir "checkout/sample/Platforms/${{ inputs.platform }}/Plugins/Sentry"
+
+      - name: Select crash handler backend
+        if: ${{ inputs.backend == 'native' }}
+        shell: pwsh
+        run: |
+          $dir = "checkout/sample/Platforms/${{ inputs.platform }}/Config"
+          New-Item -ItemType Directory -Path $dir -Force | Out-Null
+          @(
+            '[/Script/Sentry.SentrySettings]'
+            'UseNativeBackend=True'
+          ) | Add-Content -Path "$dir/${{ inputs.platform }}Engine.ini"
+
+      - name: Update engine's build configuration
+        shell: pwsh
+        run: |
+          $dir = "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool"
+          New-Item -ItemType Directory -Path $dir -Force | Out-Null
+          Copy-Item "checkout\.github\BuildConfiguration.xml" -Destination $dir -Force
+
+      - name: Build sample for ${{ inputs.platform }}
+        id: build
+        shell: pwsh
+        run: |
+          & "$env:UE_ROOT\Engine\Build\BatchFiles\Build.bat" `
+            SentryPlayground '${{ inputs.platform }}' Development `
+            -project="$env:GITHUB_WORKSPACE\checkout\sample\SentryPlayground.uproject" `
+            -log="$env:GITHUB_WORKSPACE\checkout\sample\Saved\Logs\UnrealBuildTool.txt" `
+            -NoHotReload `
+            -AllCores
+
+      - name: Collect build logs
+        if: ${{ failure() && steps.build.outcome == 'failure' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: Build logs (${{ inputs.platform }}${{ inputs.backend && format(', {0}', inputs.backend) || '' }})
+          path: |
+            checkout/sample/Saved/Logs
+          if-no-files-found: ignore

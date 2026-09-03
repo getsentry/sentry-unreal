@@ -1,0 +1,199 @@
+name: Build UE consoles runner image
+
+# Bakes a pre-built Unreal Engine (with XSX / PS5 / Switch platform files) and the
+# matching AutoSDK bundles into a Windows runner image. Console SDKs are not
+# installed on the runner directly - everything resolves through AutoSDK from UE_SDKS_ROOT.
+#
+# Both trees are pulled from ghcr as OCI artifacts, published by
+# ue-oci-consoles.yml as unreal-docker:5.8-consoles and :5.8-autosdk.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+env:
+  REGISTRY: ghcr.io
+  UE_VERSION: '5.8'
+  UE_INSTALL_ROOT: C:\UnrealEngine
+  AUTOSDK_ROOT: C:\AutoSDK
+
+jobs:
+  create-image:
+    name: Create Windows image with UE consoles distro
+    runs-on: unreal-image-creating-runner-windows
+    snapshot: unreal-image-consoles
+    environment:
+      name: main
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install oras
+        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
+
+      - name: Log in to the registry
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $env:GITHUB_TOKEN | oras login $env:REGISTRY -u $env:GITHUB_ACTOR --password-stdin
+          if ($LASTEXITCODE -ne 0) { throw "oras login failed ($LASTEXITCODE)" }
+
+      # Both artifacts were split into 4 GB parts to stay under the registry's layer
+      # limit, and both use the same part names, so each is pulled into its own
+      # directory and reassembled from there.
+      - name: Pull engine archive
+        shell: bash
+        run: |
+          oras pull "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-consoles" -o engine-parts
+          # 'split -b 4G' names parts .part-aa, .part-ab, ... so the glob orders them
+          # correctly. bash, not pwsh - there 'cat' is Get-Content, which mangles binary.
+          cat engine-parts/* > ue.zip
+          rm -rf engine-parts
+
+      - name: Pull AutoSDK bundles
+        shell: bash
+        run: |
+          oras pull "$REGISTRY/getsentry/unreal-docker:$UE_VERSION-autosdk" -o autosdk-parts
+          cat autosdk-parts/* > autosdk.zip
+          rm -rf autosdk-parts
+
+          # Outer archive is a store-only container; the three platform bundles
+          # (plus their .sha256) sit at its root.
+          mkdir -p autosdk-packages
+          tar -x -f autosdk.zip -C autosdk-packages
+          rm -f autosdk.zip
+
+      - name: Extract engine and AutoSDK
+        shell: pwsh
+        run: |
+          foreach ($d in $env:UE_INSTALL_ROOT, $env:AUTOSDK_ROOT) {
+            if (Test-Path $d) { Remove-Item $d -Recurse -Force }
+            New-Item -ItemType Directory -Path $d -Force | Out-Null
+          }
+
+          # tar (bsdtar) is used over Expand-Archive, which is far slower on multi-GB input.
+          Write-Host 'Extracting engine...'
+          tar -x -f ue.zip -C $env:UE_INSTALL_ROOT
+          if ($LASTEXITCODE -ne 0) { throw "engine extract failed ($LASTEXITCODE)" }
+          Remove-Item ue.zip -Force
+
+          # Each AutoSDK archive carries the HostWin64\<Platform>\<Version> prefix,
+          # so they merge into one root with no path juggling.
+          Get-ChildItem autosdk-packages -Recurse -Filter *.zip | ForEach-Object {
+            Write-Host "Extracting $($_.Name)..."
+            tar -x -f $_.FullName -C $env:AUTOSDK_ROOT
+            if ($LASTEXITCODE -ne 0) { throw "$($_.Name) extract failed ($LASTEXITCODE)" }
+          }
+          Remove-Item autosdk-packages -Recurse -Force
+
+      - name: Configure AutoSDK environment
+        shell: pwsh
+        run: |
+          # The engine archive unpacks with a "Windows" root folder.
+          $engineRoot = Join-Path $env:UE_INSTALL_ROOT 'Windows'
+          if (-not (Test-Path (Join-Path $engineRoot 'Engine'))) {
+            $found = Get-ChildItem $env:UE_INSTALL_ROOT -Directory |
+              Where-Object { Test-Path (Join-Path $_.FullName 'Engine') } | Select-Object -First 1
+            if (-not $found) { throw "no Engine directory under $env:UE_INSTALL_ROOT" }
+            $engineRoot = $found.FullName
+          }
+
+          # GDK compiles and packages at BUILD, Nintendo packages an .nsp at BUILD,
+          # and PS5 needs PACKAGE for prospero-pub-cmd.exe. Every platform is listed
+          # explicitly: an omitted one defaults to the more invasive FULL.
+          $levels = 'PS5=PACKAGE;GDK=BUILD;NINTENDO=BUILD'
+
+          # Machine scope so the values survive into the snapshot, GITHUB_ENV so the
+          # verification step below sees them in this run.
+          [Environment]::SetEnvironmentVariable('UE_ROOT', $engineRoot, 'Machine')
+          [Environment]::SetEnvironmentVariable('UE_SDKS_ROOT', $env:AUTOSDK_ROOT, 'Machine')
+          [Environment]::SetEnvironmentVariable('UE_AUTOSDK_SPECIFIC_LEVELS', $levels, 'Machine')
+          "UE_ROOT=$engineRoot" >> $env:GITHUB_ENV
+          "UE_SDKS_ROOT=$env:AUTOSDK_ROOT" >> $env:GITHUB_ENV
+          "UE_AUTOSDK_SPECIFIC_LEVELS=$levels" >> $env:GITHUB_ENV
+          Write-Host "UE_ROOT=$engineRoot"
+          Write-Host "UE_SDKS_ROOT=$env:AUTOSDK_ROOT"
+          Write-Host "UE_AUTOSDK_SPECIFIC_LEVELS=$levels"
+
+      - name: Verify SDKs resolve through AutoSDK
+        shell: pwsh
+        run: |
+          # UnrealBuildTool.exe targets a .NET runtime the runner may not have, so use
+          # the one the engine ships with, exactly as Build.bat/RunUAT.bat do.
+          $dotnet = Get-ChildItem "$env:UE_ROOT\Engine\Binaries\ThirdParty\DotNet" -Recurse -Filter dotnet.exe |
+            Select-Object -First 1 -ExpandProperty FullName
+          & $dotnet "$env:UE_ROOT\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" `
+            -Mode=ValidatePlatforms -Platforms=XSX+PS5+Switch -OutputSDKs
+
+          # AutoSDK compares the bundle directory name against the engine's MainVersion
+          # exactly, so a stale bundle is silently ignored. Fail loudly instead.
+          $bad = $false
+          foreach ($p in 'GDK', 'PS5', 'Nintendo') {
+            $f = "$env:UE_SDKS_ROOT\HostWin64\$p\CurrentlyInstalled.txt"
+            if (-not (Test-Path $f)) { Write-Error "$p was never set up ($f missing)"; $bad = $true; continue }
+            $state = (Get-Content $f) -join ' / '
+            Write-Host "  $p -> $state"
+            if ($state -notmatch 'AutoSDK') { Write-Error "$p did not resolve through AutoSDK"; $bad = $true }
+          }
+          if ($bad) { exit 1 }
+
+      # Smoke-test each console toolchain end to end. The private plugin extensions
+      # are deliberately NOT installed, so the Sentry plugin falls back to its Null
+      # implementation - enough to prove the platform cooks and links.
+      - name: Sanity check - cook sample for consoles
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ./scripts/init-win.ps1
+
+          $failed = @()
+          foreach ($p in 'XSX', 'PS5', 'Switch') {
+            Write-Host "::group::BuildCookRun $p"
+            & "$env:UE_ROOT\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun `
+              -project="$PWD\sample\SentryPlayground.uproject" `
+              -platform="$p" `
+              -clientconfig=Development `
+              -UBTArgs="-AllCores" `
+              -nop4 `
+              -cook `
+              -build `
+              -stage `
+              -WaitForUATMutex
+            $code = $LASTEXITCODE
+            Write-Host "::endgroup::"
+            Write-Host "$p -> exit $code"
+            if ($code -ne 0) { $failed += "$p (exit $code)" }
+          }
+          # Every platform is attempted before failing, so one run reports all three.
+          if ($failed.Count -gt 0) { throw "console sanity check failed: $($failed -join ', ')" }
+
+      - name: Remove sample build output
+        if: ${{ success() }}
+        shell: pwsh
+        run: |
+          # init-win.ps1 symlinks plugin-dev into sample/Plugins. Delete the reparse
+          # point itself - a plain -Recurse would follow it and eat the real sources.
+          Get-ChildItem 'sample\Plugins' -Force -ErrorAction SilentlyContinue |
+            Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint } |
+            ForEach-Object { $_.Delete() }
+
+          foreach ($d in 'sample\Plugins', 'sample\Binaries', 'sample\Intermediate', 'sample\Saved', 'sample\DerivedDataCache', 'plugin-dev\Source\ThirdParty') {
+            if (Test-Path $d) { Remove-Item $d -Recurse -Force -ErrorAction SilentlyContinue }
+          }
+
+      - name: Report image contents
+        shell: pwsh
+        run: |
+          Write-Host "engine  : $env:UE_ROOT"
+          Write-Host "autosdk : $env:UE_SDKS_ROOT"
+          Get-PSDrive -PSProvider FileSystem | Format-Table -AutoSize Name,
+            @{Name='Used(GB)';Expression={[math]::Round($_.Used/1GB,2)}},
+            @{Name='Free(GB)';Expression={[math]::Round($_.Free/1GB,2)}}

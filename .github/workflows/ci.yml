@@ -311,6 +311,43 @@ jobs:
     with:
       unreal-version: ${{ matrix.unreal }}
 
+  test-consoles:
+    needs: [package-preparation]
+    name: ${{ matrix.name }}
+    if: github.event_name == 'push'
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: XSX (breakpad)
+            platform: XSX
+            backend: breakpad
+            extension-repo: getsentry/sentry-xbox
+            extension-artifact: scarlett-unreal
+          - name: XSX (native)
+            platform: XSX
+            backend: native
+            extension-repo: getsentry/sentry-xbox
+            extension-artifact: scarlett-unreal-outproc
+          - name: PS5
+            platform: PS5
+            backend: ""
+            extension-repo: getsentry/sentry-playstation
+            extension-artifact: ps5-unreal
+          - name: Switch
+            platform: Switch
+            backend: ""
+            extension-repo: getsentry/sentry-switch
+            extension-artifact: nx64-unreal-sdk21
+    uses: ./.github/workflows/test-consoles.yml
+    with:
+      platform: ${{ matrix.platform }}
+      backend: ${{ matrix.backend }}
+      extension-repo: ${{ matrix.extension-repo }}
+      extension-artifact: ${{ matrix.extension-artifact }}
+
   integration-test-linux:
     needs: [test-linux, generate-test-matrix]
     name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
