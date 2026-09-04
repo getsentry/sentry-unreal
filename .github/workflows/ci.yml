@@ -24,14 +24,14 @@ jobs:
     uses: ./.github/workflows/sdk-download.yml
     with:
       target: IOS
-      runsOn: ubuntu-latest
+      runsOn: macos-latest
 
   macos-cocoa-sdk:
     uses: ./.github/workflows/sdk-download.yml
     with:
       target: Mac
       backend: cocoa
-      runsOn: ubuntu-latest
+      runsOn: macos-latest
 
   macos-native-sdk:
     uses: ./.github/workflows/sdk-build.yml

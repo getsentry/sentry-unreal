@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add support for iOS Simulator builds on UE 5.5 and newer ([#1561](https://github.com/getsentry/sentry-unreal/pull/1561))
+
 ### Dependencies
 
 - Bump Java SDK from v8.54.0 to v8.55.0 ([#1560](https://github.com/getsentry/sentry-unreal/pull/1560))

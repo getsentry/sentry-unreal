@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<root>
-    <init>
-        <log text="Sentry SDK iOS UPL initialization"/>
-        <copyDir src="$S(PluginDir)/../ThirdParty/IOS/SentryObjC.framework" dst="$S(BuildDir)/Frameworks/SentryObjC.framework" />
-    </init>
-</root>
