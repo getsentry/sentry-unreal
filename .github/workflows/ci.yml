@@ -296,6 +296,25 @@ jobs:
       unreal-version: ${{ matrix.unreal }}
     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
+  test-ios:
+    needs: [package-preparation]
+    name: iOS UE ${{ matrix.unreal }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Must match an engine version published to the registry by the ue-oci-macos workflow
+        unreal: ['5.8']
+    uses: ./.github/workflows/test-ios.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
+
   test-android:
     needs: [package-preparation, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
