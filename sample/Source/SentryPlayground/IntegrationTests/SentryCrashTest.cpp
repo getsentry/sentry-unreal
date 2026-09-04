@@ -44,8 +44,8 @@ void FSentryCrashTest::Run()
 
 	Subsystem->SetTag(TEXT("test.crash_id"), EventId);
 
-#if PLATFORM_ANDROID
-	FPlatformProcess::Sleep(1.0f);
+#if PLATFORM_ANDROID || PLATFORM_IOS
+	FPlatformProcess::Sleep(5.0f);
 #endif
 
 	if (CrashType == ESentryAppTerminationType::OutOfMemory)
