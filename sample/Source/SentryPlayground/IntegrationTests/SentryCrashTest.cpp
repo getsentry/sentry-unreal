@@ -45,9 +45,7 @@ void FSentryCrashTest::Run()
 	Subsystem->SetTag(TEXT("test.crash_id"), EventId);
 
 #if PLATFORM_ANDROID || PLATFORM_IOS
-	// Crashing immediately kills the app before the device automation finishes verifying the
-	// launch, which on SauceLabs tears down the session along with the remaining test actions
-	FPlatformProcess::Sleep(10.0f);
+	FPlatformProcess::Sleep(5.0f);
 #endif
 
 	if (CrashType == ESentryAppTerminationType::OutOfMemory)
