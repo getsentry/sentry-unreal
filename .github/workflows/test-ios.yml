@@ -137,7 +137,6 @@ jobs:
             -AdditionalCookerOptions="-skipminspeccheck" \
             -nop4 \
             -cook \
-            -iterate \
             -build \
             -stage \
             -package \
