@@ -68,7 +68,7 @@ jobs:
         env:
           MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-        run: fastlane prepare_signing
+        run: fastlane prepare_signing --verbose
 
       - name: Build
         id: run-build
