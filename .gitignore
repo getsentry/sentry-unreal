@@ -41,6 +41,7 @@ plugin-dev/Source/ThirdParty/CLI/*
 sample/.sentry-native
 sample/.vsconfig
 sample/SentryPlayground.uproject.DotSettings.user
+sample/Platforms/*/Config/*.ini
 
 # Visual Studio solution file from building Sentry Native
 *.sln
