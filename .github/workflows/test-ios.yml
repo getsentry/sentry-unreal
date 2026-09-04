@@ -15,6 +15,8 @@ on:
         required: true
       MATCH_PASSWORD:
         required: true
+      APPLE_TEAM_ID:
+        required: true
 
 jobs:
   test:
@@ -120,6 +122,12 @@ jobs:
 
           echo "::error::No installed provisioning profile named '$PROFILE_NAME'"
           exit 1
+
+      - name: Configure iOS signing
+        shell: pwsh
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: ./checkout/scripts/configure-ios-signing.ps1 -ProjectPath checkout/sample -TeamId $env:APPLE_TEAM_ID
 
       - name: Build
         id: run-build
