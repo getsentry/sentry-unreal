@@ -53,9 +53,6 @@ jobs:
           mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
           cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
 
-      # ruby/setup-ruby can't be used on this pool: its prebuilt macOS rubies are compiled
-      # for the GitHub-hosted runner layout, so it tries to mkdir /Users/runner, which the
-      # 'vagrant' user here cannot create. Homebrew's fastlane bundles its own ruby.
       - name: Install fastlane
         run: |
           if ! command -v fastlane >/dev/null 2>&1; then
@@ -69,6 +66,30 @@ jobs:
           MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: fastlane prepare_signing
+
+      - name: Stage provisioning profile
+        env:
+          PROFILE_NAME: match Development io.sentry.sdk.unreal.sample
+        run: |
+          TARGET="$GITHUB_WORKSPACE/checkout/sample/Build/IOS/match.mobileprovision"
+          mkdir -p "$(dirname "$TARGET")"
+
+          for dir in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" \
+                     "$HOME/Library/MobileDevice/Provisioning Profiles"; do
+            [ -d "$dir" ] || continue
+            for profile in "$dir"/*.mobileprovision; do
+              [ -e "$profile" ] || continue
+              name=$(security cms -D -i "$profile" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || true)
+              if [ "$name" = "$PROFILE_NAME" ]; then
+                cp "$profile" "$TARGET"
+                echo "Staged '$name' from $profile"
+                exit 0
+              fi
+            done
+          done
+
+          echo "::error::No installed provisioning profile named '$PROFILE_NAME'"
+          exit 1
 
       - name: Build
         id: run-build
@@ -101,7 +122,6 @@ jobs:
           fi
           echo "Built: $IPA"
 
-          # An unsigned .ipa installs nowhere - fail loudly here rather than on the device
           unzip -q -o "$IPA" -d "$RUNNER_TEMP/ipa"
           codesign -dv --verbose=4 "$RUNNER_TEMP/ipa"/Payload/*.app
 
