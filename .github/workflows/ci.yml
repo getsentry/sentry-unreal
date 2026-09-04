@@ -418,6 +418,23 @@ jobs:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
 
+  integration-test-ios:
+    needs: [test-ios]
+    name: iOS UE ${{ matrix.unreal }}
+    secrets:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        unreal: ['5.8']
+    uses: ./.github/workflows/integration-test-ios.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
   integration-test-android:
     needs: [test-android, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}

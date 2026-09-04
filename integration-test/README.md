@@ -7,6 +7,7 @@ Supports testing on:
 - **Linux** - Desktop (x64)
 - **macOS** - Desktop (arm64)
 - **Android** - Local device/emulator (via adb) or SauceLabs Real Device Cloud
+- **iOS** - SauceLabs Real Device Cloud
 
 The desktop test script (`Integration.Desktop.Tests.ps1`) auto-detects the host platform and adjusts test selection based on the active crash handler backend (Crashpad/Cocoa/Breakpad vs. Native). Some tests are skipped on certain backend combinations — see notes under [Test Coverage](#test-coverage).
 
@@ -37,6 +38,10 @@ The desktop test script (`Integration.Desktop.Tests.ps1`) auto-detects the host 
   - `SAUCE_REGION` - SauceLabs region (e.g., `us-west-1`, `eu-central-1`)
   - `SAUCE_DEVICE_NAME` - Device name available in the specified region (must match region datacenter suffix)
   - `SAUCE_SESSION_NAME` - Session name for SauceLabs dashboard (optional, defaults to "App Runner Android Test")
+
+### iOS-Specific Requirements
+
+iOS is tested on physical devices only — the plugin ships a device-only (arm64) `SentryObjC.framework`, so the simulator is not an option. Requires the same SauceLabs account and environment variables as Android, plus a signed `.ipa` (see `fastlane/` and the `test-ios` CI workflow).
 
 **Note**: The device name must match a device available in your SauceLabs region. Device names include a datacenter suffix that must align with the region:
 - `us-west-1` → devices ending in `_sjc1` (San Jose DC1)
@@ -135,6 +140,26 @@ $env:SAUCE_SESSION_NAME = "My Custom Test Session"  # Optional, defaults to "App
 # Run tests (uses ADB by default)
 cd integration-test
 Invoke-Pester Integration.Android.Tests.ps1
+```
+
+### iOS
+
+```powershell
+# Set environment variables
+$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
+$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
+$env:SENTRY_UNREAL_TEST_APP_PATH = "./path/to/SentryPlayground.ipa"
+
+# Set credentials (SauceLabs is the only supported target)
+$env:SAUCE_USERNAME = "your-saucelabs-username"
+$env:SAUCE_ACCESS_KEY = "your-saucelabs-access-key"
+$env:SAUCE_REGION = "us-west-1"
+$env:SAUCE_DEVICE_NAME = "iPhone_17_*_real_sjc1"
+$env:SAUCE_SESSION_NAME = "My Custom Test Session"
+
+# Run tests
+cd integration-test
+Invoke-Pester Integration.iOS.Tests.ps1
 ```
 
 **Note**: Ensure `SAUCE_DEVICE_NAME` matches a device available in your `SAUCE_REGION`. See the [SauceLabs Platform Configurator](https://app.saucelabs.com/live/web-testing) to find available devices for your region.
