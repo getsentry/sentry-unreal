@@ -67,17 +67,47 @@ jobs:
 
       - name: Build
         id: run-build
-        timeout-minutes: 90
+        timeout-minutes: 150
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
-          "$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh" SentryPlayground IOS Development \
-            -Project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
-            -SkipDeploy \
-            -AllCores \
-            -waitmutex
+          "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
+            -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+            -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
+            -platform=IOS \
+            -UBTArgs="-AllCores" \
+            -AdditionalCookerOptions="-skipminspeccheck" \
+            -nop4 \
+            -cook \
+            -iterate \
+            -build \
+            -stage \
+            -package \
+            -archive
+
+      - name: Verify IPA and code signature
+        run: |
+          IPA=$(find "$GITHUB_WORKSPACE/checkout/sample/Builds/IOS" -name '*.ipa' | head -n 1)
+          if [ -z "$IPA" ]; then
+            echo "::error::No .ipa produced by BuildCookRun"
+            exit 1
+          fi
+          echo "Built: $IPA"
+
+          # An unsigned .ipa installs nowhere - fail loudly here rather than on the device
+          unzip -q -o "$IPA" -d "$RUNNER_TEMP/ipa"
+          codesign -dv --verbose=4 "$RUNNER_TEMP/ipa"/Payload/*.app
+
+      - name: Upload sample build (iOS)
+        if: ${{ success() && steps.run-build.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (iOS)
+          path: checkout/sample/Builds/IOS/*.ipa
+          if-no-files-found: error
+          retention-days: 1
 
       # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
       - name: Collect build logs
