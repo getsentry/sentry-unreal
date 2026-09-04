@@ -53,7 +53,7 @@ jobs:
           mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
           cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
 
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@dffb23f65a78bba8db45d387d5ea1bbd6be3ef18 # v1.293.0
         with:
           bundler-cache: true
           working-directory: checkout
