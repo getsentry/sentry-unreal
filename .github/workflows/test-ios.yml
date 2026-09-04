@@ -53,7 +53,13 @@ jobs:
           mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
           cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
 
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: checkout
+
       - name: "Import certificate and profile"
+        working-directory: checkout
         env:
           MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
