@@ -111,7 +111,7 @@ function buildSentryCocoa()
 
     try
     {
-        make build-xcframework-sentryobjc-dynamic SDKS=iphoneos,macosx
+        make build-xcframework-sentryobjc-dynamic SDKS=iphoneos,iphonesimulator,macosx
 
         if ($LASTEXITCODE -ne 0)
         {
@@ -139,15 +139,38 @@ function buildSentryCocoa()
 
     New-Item $iosOutDir -ItemType Directory > $null
 
-    Copy-Item "$xcframeworkPath/ios-arm64/SentryObjC.framework" -Destination "$iosOutDir/SentryObjC.framework" -Recurse
-
     New-Item "$iosOutDir/SentryObjC.embeddedframework" -ItemType Directory > $null
     Copy-Item "$xcframeworkPath/ios-arm64/SentryObjC.framework" -Destination "$iosOutDir/SentryObjC.embeddedframework/SentryObjC.framework" -Recurse
+
+    New-Item "$iosOutDir/SentryObjC.xcframework/ios-arm64" -ItemType Directory -Force > $null
+    New-Item "$iosOutDir/SentryObjC.xcframework/ios-arm64_x86_64-simulator" -ItemType Directory -Force > $null
+
+    Copy-Item "$xcframeworkPath/ios-arm64/SentryObjC.framework" -Destination "$iosOutDir/SentryObjC.xcframework/ios-arm64/SentryObjC.framework" -Recurse
+    Copy-Item "$xcframeworkPath/ios-arm64_x86_64-simulator/SentryObjC.framework" -Destination "$iosOutDir/SentryObjC.xcframework/ios-arm64_x86_64-simulator/SentryObjC.framework" -Recurse
+    Copy-Item "$xcframeworkPath/Info.plist" -Destination "$iosOutDir/SentryObjC.xcframework/Info.plist"
+
+    $xcframeworkManifest = "$iosOutDir/SentryObjC.xcframework/Info.plist"
+    $libraryCount = [int](plutil -extract AvailableLibraries raw $xcframeworkManifest)
+
+    for ($i = $libraryCount - 1; $i -ge 0; $i--)
+    {
+        $libraryIdentifier = plutil -extract "AvailableLibraries.$i.LibraryIdentifier" raw $xcframeworkManifest
+
+        if ($libraryIdentifier -in @("ios-arm64", "ios-arm64_x86_64-simulator"))
+        {
+            plutil -remove "AvailableLibraries.$i.DebugSymbolsPath" $xcframeworkManifest 2> $null
+        }
+        else
+        {
+            plutil -remove "AvailableLibraries.$i" $xcframeworkManifest
+        }
+    }
 
     Push-Location $iosOutDir
     try
     {
         zip -r "SentryObjC.embeddedframework.zip" "SentryObjC.embeddedframework"
+        zip -r "SentryObjC.xcframework.zip" "SentryObjC.xcframework"
     }
     finally
     {
@@ -155,6 +178,7 @@ function buildSentryCocoa()
     }
 
     Remove-Item "$iosOutDir/SentryObjC.embeddedframework" -Recurse -Force
+    Remove-Item "$iosOutDir/SentryObjC.xcframework" -Recurse -Force
 
     Write-Host "Successfully built Sentry Cocoa for iOS"
 

@@ -65,11 +65,11 @@ public class Sentry : ModuleRules
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));
 
+#if UE_5_5_OR_LATER
+			PublicAdditionalFrameworks.Add(new Framework("SentryObjC", Path.Combine(PlatformThirdPartyPath, "SentryObjC.xcframework.zip"), null, true));
+#else
 			PublicAdditionalFrameworks.Add(new Framework("SentryObjC", Path.Combine(PlatformThirdPartyPath, "SentryObjC.embeddedframework.zip"), null, true));
-
-			string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-
-			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(PluginPath, "Sentry_IOS_UPL.xml"));
+#endif
 
 			PublicDefinitions.Add("USE_SENTRY_NATIVE=0");
 			PublicDefinitions.Add("COCOAPODS=0");
