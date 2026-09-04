@@ -56,7 +56,6 @@ jobs:
       - uses: ruby/setup-ruby@dffb23f65a78bba8db45d387d5ea1bbd6be3ef18 # v1.293.0
         with:
           bundler-cache: true
-          ruby-version: '3.3'
           working-directory: checkout
 
       - name: "Import certificate and profile"
