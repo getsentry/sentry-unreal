@@ -107,8 +107,8 @@ jobs:
 
     env:
       APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
-      APPLE_CERT_PATH: ${{ runner.temp }}/certs.p12
-      APPLE_API_KEY_PATH: ${{ runner.temp }}/apple_key.json
+      APPLE_CERT_PATH: /tmp/certs.p12
+      APPLE_API_KEY_PATH: /tmp/apple_key.json
 
     steps:
       - name: Checkout
