@@ -104,6 +104,12 @@ jobs:
     needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native]
     name: Package
     runs-on: ubuntu-latest
+
+    env:
+      APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+      APPLE_CERT_PATH: /tmp/certs.p12
+      APPLE_API_KEY_PATH: /tmp/apple_key.json
+
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -189,6 +195,48 @@ jobs:
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Crashpad/bin/crashpad_handler
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Native/bin/sentry-crash
           chmod +x plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
+
+      - name: Install rcodesign
+        if: env.APPLE_CERT_DATA != ''
+        env:
+          RCODESIGN_VERSION: 0.29.0
+          RCODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
+        run: |
+          curl -fsSL "https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign/${RCODESIGN_VERSION}/apple-codesign-${RCODESIGN_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            -o rcodesign.tar.gz
+          echo "${RCODESIGN_CHECKSUM}  rcodesign.tar.gz" | sha256sum -c -
+          tar -xz --strip-components=1 -C /tmp -f rcodesign.tar.gz
+          sudo mv /tmp/rcodesign /usr/local/bin/rcodesign
+          rm rcodesign.tar.gz
+
+      - name: Sign macOS binaries
+        if: env.APPLE_CERT_DATA != ''
+        env:
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+        run: |
+          echo "$APPLE_CERT_DATA" | base64 --decode > "$APPLE_CERT_PATH"
+
+          rcodesign sign --for-notarization \
+            --p12-file "$APPLE_CERT_PATH" --p12-password "$APPLE_CERT_PASSWORD" \
+            plugin-dev/Source/ThirdParty/Mac/Cocoa/bin/SentryObjC.dylib
+          rcodesign sign --for-notarization \
+            --p12-file "$APPLE_CERT_PATH" --p12-password "$APPLE_CERT_PASSWORD" \
+            plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
+
+      - name: Notarize macOS binaries
+        if: env.APPLE_CERT_DATA != ''
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          echo "$APPLE_API_KEY" | base64 --decode > "$APPLE_API_KEY_PATH"
+
+          zip -j macos-binaries.zip \
+            plugin-dev/Source/ThirdParty/Mac/Cocoa/bin/SentryObjC.dylib \
+            plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
+          rcodesign notary-submit --wait \
+            --api-key-file "$APPLE_API_KEY_PATH" \
+            macos-binaries.zip
+          rm macos-binaries.zip
 
       - name: Prepare Sentry packages for release
         shell: pwsh
