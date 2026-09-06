@@ -106,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+      DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
       APPLE_CERT_PATH: /tmp/certs.p12
       APPLE_API_KEY_PATH: /tmp/apple_key.json
 
@@ -197,7 +197,7 @@ jobs:
           chmod +x plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
 
       - name: Install rcodesign
-        if: env.APPLE_CERT_DATA != ''
+        if: env.DO_CODESIGN == '1'
         env:
           RCODESIGN_VERSION: 0.29.0
           RCODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
@@ -210,8 +210,9 @@ jobs:
           rm rcodesign.tar.gz
 
       - name: Sign macOS binaries
-        if: env.APPLE_CERT_DATA != ''
+        if: env.DO_CODESIGN == '1'
         env:
+          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
           APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
         run: |
           echo "$APPLE_CERT_DATA" | base64 --decode > "$APPLE_CERT_PATH"
@@ -224,7 +225,7 @@ jobs:
             plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
 
       - name: Notarize macOS binaries
-        if: env.APPLE_CERT_DATA != ''
+        if: env.DO_CODESIGN == '1'
         env:
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
         run: |
