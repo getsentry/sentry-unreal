@@ -34,6 +34,14 @@ To keep this notice accurate without manual upkeep on every dependency bump, exa
 - **Modified:** No — unmodified upstream release build
 - **Purpose / when it runs:** The sentry-native out-of-process crash handler. Serves the same role as `crashpad_handler`, but is used when the **native** backend is selected instead of Crashpad. Runtime, on the player's machine.
 
+### `sentry-wer.dll`
+
+- **Location:** `Source/ThirdParty/{Win64,WinArm64}/Native/bin/`
+- **Source:** [getsentry/sentry-native](https://github.com/getsentry/sentry-native)
+- **Version:** see the "Native SDK" entry under `### Dependencies` in `CHANGELOG.md`
+- **Modified:** No — unmodified upstream release build
+- **Purpose / when it runs:** Windows Error Reporting helper module loaded when the **native** backend is used — the native-backend counterpart to `crashpad_wer.dll` — to capture certain Windows crash types. Runtime, on the player's machine.
+
 ### `sentry-cli-Windows-x86_64.exe`, `sentry-cli-Linux-x86_64`, `sentry-cli-Darwin-universal`
 
 - **Location:** `Source/ThirdParty/CLI/`
