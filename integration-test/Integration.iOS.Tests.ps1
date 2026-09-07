@@ -1,0 +1,810 @@
+# Integration tests for Sentry Unreal SDK on iOS
+#
+# Usage:
+#   Invoke-Pester Integration.iOS.Tests.ps1
+#
+# Requires:
+# - Pre-built IPA
+# - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_TEST_APP_PATH
+# - SauceLabs: SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION, SAUCE_DEVICE_NAME, SAUCE_SESSION_NAME
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+BeforeDiscovery {
+    $TestTargets = @()
+
+    # Detect if running in CI environment
+    $isCI = $env:CI -eq 'true'
+
+    # iOS builds target physical arm64 devices only, so SauceLabs is the sole test target
+    if ($env:SAUCE_USERNAME -and $env:SAUCE_ACCESS_KEY -and $env:SAUCE_REGION -and $env:SAUCE_DEVICE_NAME -and $env:SAUCE_SESSION_NAME) {
+        $TestTargets += @{
+            Platform     = 'SauceLabs'
+            ProviderName = 'iOSSauceLabs'
+        }
+    }
+    else {
+        $message = "SauceLabs credentials not found"
+        if ($isCI) {
+            throw "$message. These are required in CI."
+        }
+        else {
+            Write-Host "$message. iOS integration tests will be skipped."
+        }
+    }
+
+    if ($TestTargets.Count -eq 0) {
+        Write-Warning "No iOS test targets detected. Integration tests will be skipped."
+        Write-Warning "To run iOS integration tests, set SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION, SAUCE_DEVICE_NAME and SAUCE_SESSION_NAME"
+    }
+}
+
+BeforeAll {
+    # Check if configuration file exists
+    $configFile = "$PSScriptRoot/TestConfig.local.ps1"
+    if (-not (Test-Path $configFile)) {
+        throw "Configuration file '$configFile' not found. Run 'cmake -B build -S .' first"
+    }
+
+    # Load configuration (provides $global:AppRunnerPath)
+    . $configFile
+
+    # Import app-runner modules (SentryApiClient, test utilities)
+    . "$global:AppRunnerPath/import-modules.ps1"
+
+    # Validate environment variables (test-specific only, not provider-specific)
+    $script:DSN = $env:SENTRY_UNREAL_TEST_DSN
+    $script:AuthToken = $env:SENTRY_AUTH_TOKEN
+    $script:IpaPath = $env:SENTRY_UNREAL_TEST_APP_PATH
+
+    if (-not $script:DSN) {
+        throw "Environment variable SENTRY_UNREAL_TEST_DSN must be set"
+    }
+
+    if (-not $script:AuthToken) {
+        throw "Environment variable SENTRY_AUTH_TOKEN must be set"
+    }
+
+    if (-not $script:IpaPath) {
+        throw "Environment variable SENTRY_UNREAL_TEST_APP_PATH must be set"
+    }
+
+    # Validate app path
+    if (-not (Test-Path $script:IpaPath)) {
+        throw "Application not found at: $script:IpaPath"
+    }
+
+    # Connect to Sentry API
+    Write-Host "Connecting to Sentry API..." -ForegroundColor Yellow
+    Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
+
+    # Create output directory
+    $script:OutputDir = "$PSScriptRoot/output"
+    if (-not (Test-Path $script:OutputDir)) {
+        New-Item -ItemType Directory -Path $script:OutputDir | Out-Null
+    }
+
+    $script:BundleId = "io.sentry.sdk.unreal.sample"
+
+    # UE writes its log into the app's public Documents container (see FIOSOutputDeviceFile),
+    # which Appium can pull. Device syslog drops UE output under load, so read the file instead.
+    $script:LogFilePath = "@${script:BundleId}:documents/SentryPlayground/Saved/Logs/SentryPlayground.log"
+
+    $script:SentrySettings = '-ini:Engine:[/Script/Sentry.SentrySettings]'
+
+    # Launch the app on the connected device and return its captured output
+    function Invoke-iOSTestAction {
+        param (
+            [Parameter(Mandatory = $true)]
+            [string[]]$Arguments
+        )
+
+        # Appium passes these straight through to argv, which UE folds into its command line
+        return Invoke-DeviceApp -ExecutablePath $script:BundleId -Arguments $Arguments -LogFilePath $script:LogFilePath
+    }
+}
+
+Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTargets {
+
+    BeforeAll {
+        # Connect to iOS device (provider validates its own env vars)
+        Write-Host "Connecting to iOS device via $Platform..." -ForegroundColor Yellow
+        Connect-Device -Platform $ProviderName
+
+        # Install IPA
+        Write-Host "Installing IPA via $Platform..." -ForegroundColor Yellow
+        Install-DeviceApp -Path $script:IpaPath
+
+        # All actions run upfront to minimize device idle time - SauceLabs sessions time out
+        # while the harness polls the Sentry API between launches.
+
+        # ==========================================
+        # RUN 1: Crash test - captures crash report
+        # ==========================================
+        # The crash is captured but NOT uploaded yet (Cocoa behavior).
+
+        Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
+        $global:iOSCrashResult = Invoke-iOSTestAction -Arguments @('-crash-capture')
+
+        Write-Host "Crash test exit code: $($global:iOSCrashResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 2: Init-only - flushes crash event from Run 1
+        # ==========================================
+        # Cocoa sends crash reports on the next app launch, so run the app again to upload it.
+
+        Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
+        $global:iOSInitOnlyResult = Invoke-iOSTestAction -Arguments @('-init-only')
+
+        Write-Host "Init-only exit code: $($global:iOSInitOnlyResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 3: Message test - captures message
+        # ==========================================
+
+        Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
+        $global:iOSMessageResult = Invoke-iOSTestAction -Arguments @(
+            '-message-capture',
+            "$script:SentrySettings`:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler",
+            "$script:SentrySettings`:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
+        )
+
+        Write-Host "Message test exit code: $($global:iOSMessageResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 4: Feedback test - captures user feedback
+        # ==========================================
+
+        Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
+        $global:iOSFeedbackResult = Invoke-iOSTestAction -Arguments @(
+            '-feedback-capture',
+            "$script:SentrySettings`:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
+        )
+
+        Write-Host "Feedback test exit code: $($global:iOSFeedbackResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 5: Log test - captures structured log
+        # ==========================================
+
+        Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
+        $global:iOSLogResult = Invoke-iOSTestAction -Arguments @(
+            '-log-capture',
+            "$script:SentrySettings`:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
+        )
+
+        Write-Host "Log test exit code: $($global:iOSLogResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 6: Metric test - captures custom metric
+        # ==========================================
+
+        Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
+        $global:iOSMetricResult = Invoke-iOSTestAction -Arguments @(
+            '-metric-capture',
+            "$script:SentrySettings`:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
+        )
+
+        Write-Host "Metric test exit code: $($global:iOSMetricResult.ExitCode)" -ForegroundColor Cyan
+
+        # ==========================================
+        # RUN 7: Tracing test - captures transaction
+        # ==========================================
+
+        Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
+        $global:iOSTracingResult = Invoke-iOSTestAction -Arguments @(
+            '-tracing-capture',
+            "$script:SentrySettings`:EnableTracing=True",
+            "$script:SentrySettings`:SamplingType=TracesSampler",
+            "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+        )
+
+        Write-Host "Tracing test exit code: $($global:iOSTracingResult.ExitCode)" -ForegroundColor Cyan
+    }
+
+    AfterAll {
+        # Disconnect from iOS device
+        Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
+        Disconnect-Device
+
+        Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
+    }
+
+    Context "Crash Capture Tests" {
+        BeforeAll {
+            # Crash event is sent during the INIT-ONLY run (Run 2)
+            # But the crash_id comes from the CRASH run (Run 1)
+            $script:CrashResult = $global:iOSCrashResult
+            $script:CrashEvent = $null
+
+            # Parse crash event ID from crash run output
+            $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Crash ID captured: $($eventIds[0])" -ForegroundColor Cyan
+                $crashId = $eventIds[0]
+
+                # Fetch crash event using the tag (event was sent during init-only run)
+                try {
+                    $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
+                    Write-Host "Crash event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch crash event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No crash event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output event ID before crash" {
+            $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should capture crash event in Sentry (uploaded during init-only run)" {
+            $script:CrashEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct event type and platform" {
+            $script:CrashEvent.type | Should -Be 'error'
+            $script:CrashEvent.platform | Should -Be 'cocoa'
+        }
+
+        It "Should have exception information" {
+            $script:CrashEvent.exception | Should -Not -BeNullOrEmpty
+            $script:CrashEvent.exception.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have stack trace" {
+            $exception = $script:CrashEvent.exception.values[0]
+            $exception.stacktrace | Should -Not -BeNullOrEmpty
+            $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have user context" {
+            $script:CrashEvent.user | Should -Not -BeNullOrEmpty
+            $script:CrashEvent.user.username | Should -Be 'TestUser'
+            $script:CrashEvent.user.email | Should -Be 'user-mail@test.abc'
+            $script:CrashEvent.user.id | Should -Be '12345'
+        }
+
+        It "Should have test.crash_id tag for correlation" {
+            $tags = $script:CrashEvent.tags
+            $crashIdTag = $tags | Where-Object { $_.key -eq 'test.crash_id' }
+            $crashIdTag | Should -Not -BeNullOrEmpty
+            $crashIdTag.value | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have integration test tag" {
+            $tags = $script:CrashEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should have breadcrumbs from before crash" {
+            $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
+            $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context "Message Capture Tests" {
+        BeforeAll {
+            $script:MessageResult = $global:iOSMessageResult
+            $script:MessageEvent = $null
+
+            # Parse event ID from output
+            $eventIds = Get-EventIds -AppOutput $MessageResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Message event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                # Fetch event from Sentry (with polling)
+                try {
+                    $script:MessageEvent = Get-SentryTestEvent -EventId $eventIds[0]
+                    Write-Host "Message event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch message event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No message event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $MessageResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $MessageResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture message event in Sentry" {
+            $script:MessageEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct platform" {
+            $script:MessageEvent.platform | Should -Be 'cocoa'
+        }
+
+        It "Should have message content" {
+            $script:MessageEvent.message | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.message.formatted | Should -Match 'Integration test message'
+        }
+
+        # Release override is not applied by the Cocoa SDK
+        It "Should have overridden release" -Skip {
+            $script:MessageEvent.release.version | Should -Be 'test-release@1.0.0'
+        }
+
+        It "Should have overridden environment" {
+            ($script:MessageEvent.tags | Where-Object { $_.key -eq 'environment' }).value | Should -Be 'test-environment'
+        }
+
+        It "Should have user context" {
+            $script:MessageEvent.user | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.user.username | Should -Be 'TestUser'
+        }
+
+        It "Should have integration test tag" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should have global breadcrumbs" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Integration test started' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Context configuration finished' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeSendHandler assertions
+        It "Should have tag added by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'before_send.handled' }).value | Should -Be 'true'
+        }
+
+        It "Should not have tag removed by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            $tags | Where-Object { $_.key -eq 'tag_to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have extra added by BeforeSendHandler" {
+            $script:MessageEvent.context.handler_added | Should -Be 'added_value'
+        }
+
+        It "Should not have extra removed by BeforeSendHandler" {
+            $script:MessageEvent.context.extra_to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should not have context removed by BeforeSendHandler" {
+            $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
+        }
+
+        # Device context assertions
+        It "Should have device_type in device context" {
+            $script:MessageEvent.contexts.device | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.device.device_type | Should -Be 'Handheld'
+        }
+
+        # Global scope context assertions
+        It "Should have custom context from global scope" {
+            $script:MessageEvent.contexts.test_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.test_context.context_key | Should -Be 'context_value'
+        }
+
+        # Local scope enrichment assertions
+        It "Should have local scope tag" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'scope.locality' }).value | Should -Be 'local'
+        }
+
+        It "Should have local scope extra" {
+            $script:MessageEvent.context.local_extra | Should -Be 'local_extra_value'
+        }
+
+        It "Should have local scope context" {
+            $script:MessageEvent.contexts.local_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.local_context.local_key | Should -Be 'local_value'
+        }
+
+        It "Should have local scope breadcrumb" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Local scope breadcrumb' -and $_.category -eq 'test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeBreadcrumbHandler assertions
+        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
+            $modified | Should -Not -BeNullOrEmpty
+            $modified.data.handler_key | Should -Be 'handler_value'
+        }
+    }
+
+    Context "Feedback Capture Tests" {
+        BeforeAll {
+            $script:FeedbackResult = $global:iOSFeedbackResult
+            $script:Feedback = $null
+            $script:FeedbackToken = $null
+
+            # The anchor event ID (feedback is associated with it)
+            $script:FeedbackEventIds = Get-EventIds -AppOutput $FeedbackResult.Output -ExpectedCount 1
+
+            # The unique token embedded in the feedback message (format: FEEDBACK_TOKEN: <token>)
+            $tokenLine = $FeedbackResult.Output | Where-Object { $_ -match 'FEEDBACK_TOKEN:\s*(\S+)' } | Select-Object -First 1
+            if ($tokenLine -match 'FEEDBACK_TOKEN:\s*(\S+)') {
+                $script:FeedbackToken = $Matches[1]
+                Write-Host "Feedback token captured: $($script:FeedbackToken)" -ForegroundColor Cyan
+            }
+
+            if ($script:FeedbackToken) {
+                try {
+                    $script:Feedback = Get-SentryTestFeedback -MessageContains $script:FeedbackToken
+                    Write-Host "Feedback fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch feedback from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No feedback token found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $FeedbackResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should output feedback token" {
+            $script:FeedbackToken | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should capture feedback in Sentry" {
+            $script:Feedback | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have feedback message" {
+            $script:Feedback.metadata.message | Should -Match $script:FeedbackToken
+        }
+
+        It "Should have feedback name" {
+            $script:Feedback.metadata.name | Should -Be 'Feedback Test User'
+        }
+
+        # BeforeSendFeedbackHandler is not invoked by the Cocoa SDK
+        It "Should have contact email redacted by BeforeSendFeedbackHandler" -Skip {
+            $script:Feedback.metadata.contact_email | Should -Be 'redacted@sentry.local'
+        }
+
+        It "Should be associated with the captured event" {
+            $script:FeedbackEventIds | Should -Not -BeNullOrEmpty
+            ($script:Feedback.associatedEventId -replace '-', '') | Should -Be ($script:FeedbackEventIds[0] -replace '-', '')
+        }
+    }
+
+    Context "Structured Logging Tests" {
+        BeforeAll {
+            $script:LogResult = $global:iOSLogResult
+            $script:CapturedLogs = @()
+            $script:TestId = $null
+
+            # Parse test ID from output (format: LOG_TRIGGERED: <test-id>)
+            $logTriggeredLines = @($script:LogResult.Output | Where-Object { $_ -match 'LOG_TRIGGERED: ' })
+            if ($logTriggeredLines.Count -gt 0) {
+                $script:TestId = ($logTriggeredLines[0] -split 'LOG_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
+
+                # Fetch logs from Sentry with automatic polling
+                try {
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
+                }
+                catch {
+                    Write-Host "Warning: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No LOG_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output LOG_TRIGGERED with test ID" {
+            $script:TestId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:LogResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture structured log in Sentry" {
+            $script:CapturedLogs | Should -Not -BeNullOrEmpty
+            $script:CapturedLogs.Count | Should -BeGreaterThan 0
+        }
+
+        It "Should have correct log message with format specifiers delivered verbatim" {
+            $log = $script:CapturedLogs[0]
+            $log.message | Should -Be '[LogSentryTest] Integration test structured log metadata="%s" (%d fields)'
+        }
+
+        It "Should have correct severity level" {
+            $log = $script:CapturedLogs[0]
+            $log.severity | Should -Be 'warn'
+        }
+
+        It "Should have test_id attribute matching captured ID" {
+            $log = $script:CapturedLogs[0]
+            $log.'test_id' | Should -Be $script:TestId
+        }
+
+        It "Should have attribute added by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.'to_be_removed' | Should -BeNullOrEmpty
+        }
+
+        It "Should have global attribute set on subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.global_attr | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.global_removed | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Metrics Capture Tests" {
+        BeforeAll {
+            $script:MetricResult = $global:iOSMetricResult
+            $script:CapturedCounterMetrics = @()
+            $script:CapturedDistributionMetrics = @()
+            $script:CapturedGaugeMetrics = @()
+            $script:TestId = $null
+
+            # Parse test ID from output (format: METRIC_TRIGGERED: <test-id>)
+            $metricTriggeredLines = @($script:MetricResult.Output | Where-Object { $_ -match 'METRIC_TRIGGERED: ' })
+            if ($metricTriggeredLines.Count -gt 0) {
+                $script:TestId = ($metricTriggeredLines[0] -split 'METRIC_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
+
+                # Fetch all three metric types from Sentry with automatic polling
+                $metricFields = @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
+
+                try {
+                    $script:CapturedCounterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (counter): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedDistributionMetrics = Get-SentryTestMetric -MetricName 'test.integration.distribution' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (distribution): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedGaugeMetrics = Get-SentryTestMetric -MetricName 'test.integration.gauge' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (gauge): $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No METRIC_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output METRIC_TRIGGERED with test ID" {
+            $script:TestId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:MetricResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        # Counter metric assertions
+        It "Should capture counter metric in Sentry" {
+            $script:CapturedCounterMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct counter metric name and type" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.counter'
+            $metric.'metric.type' | Should -Be 'counter'
+        }
+
+        It "Should have correct counter metric value" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.value | Should -Be 1.0
+        }
+
+        # Distribution metric assertions
+        It "Should capture distribution metric in Sentry" {
+            $script:CapturedDistributionMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct distribution metric name and type" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.distribution'
+            $metric.'metric.type' | Should -Be 'distribution'
+        }
+
+        It "Should have correct distribution metric value" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.value | Should -Be 42.5
+        }
+
+        # Gauge metric assertions
+        It "Should capture gauge metric in Sentry" {
+            $script:CapturedGaugeMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct gauge metric name and type" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.gauge'
+            $metric.'metric.type' | Should -Be 'gauge'
+        }
+
+        It "Should have correct gauge metric value" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.value | Should -Be 15.0
+        }
+
+        # BeforeMetricHandler attribute assertions (verified on counter, applies to all)
+        It "Should have attribute added by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'to_be_removed' | Should -BeNullOrEmpty
+        }
+
+        It "Should have test_id attribute matching captured ID" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.test_id | Should -Be $script:TestId
+        }
+
+        It "Should have global attribute set on subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_attr | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_removed | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Tracing Capture Tests" {
+        BeforeAll {
+            $script:TracingResult = $global:iOSTracingResult
+            $script:TransactionEvent = $null
+            $script:TraceId = $null
+
+            # Parse trace ID from output (format: TRACE_CAPTURED: <trace-id>)
+            $traceLines = @($script:TracingResult.Output | Where-Object { $_ -match 'TRACE_CAPTURED: ' })
+            if ($traceLines.Count -gt 0) {
+                $script:TraceId = ($traceLines[0] -split 'TRACE_CAPTURED: ')[-1].Trim()
+                Write-Host "Captured Trace ID: $($script:TraceId)" -ForegroundColor Cyan
+
+                # Fetch transaction from Sentry using Get-SentryTestTransaction
+                try {
+                    $script:TransactionEvent = Get-SentryTestTransaction -TraceId $script:TraceId
+                    Write-Host "Transaction fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch transaction from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No TRACE_CAPTURED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output TRACE_CAPTURED with trace ID" {
+            $script:TraceId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:TracingResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture transaction in Sentry" {
+            $script:TransactionEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct transaction name" {
+            $script:TransactionEvent.title | Should -Be 'integration.tracing.test'
+        }
+
+        It "Should have correct transaction operation" {
+            $script:TransactionEvent.contexts.trace.op | Should -Be 'e2e.test'
+        }
+
+        It "Should have test tags on transaction" {
+            $tags = $script:TransactionEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.type' }).value | Should -Be 'tracing'
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should not have tag removed from transaction" {
+            $tags = $script:TransactionEvent.tags
+            $tags | Where-Object { $_.key -eq 'tracing.to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have transaction data" {
+            $script:TransactionEvent.contexts.trace.data.test_data | Should -Not -BeNullOrEmpty
+            $script:TransactionEvent.contexts.trace.data.test_data.data_key | Should -Be 'data_value'
+        }
+
+        It "Should not have data removed from transaction" {
+            $script:TransactionEvent.contexts.trace.data.data_to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should have child spans" {
+            $script:TransactionEvent.spans | Should -Not -BeNullOrEmpty
+            $script:TransactionEvent.spans.Count | Should -BeGreaterOrEqual 2
+        }
+
+        It "Should have child span with correct operation and description" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $childSpan | Should -Not -BeNullOrEmpty
+            $childSpan.description | Should -Be 'Child span description'
+        }
+
+        It "Should have data on child span" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $childSpan.data.span_data | Should -Not -BeNullOrEmpty
+            $childSpan.data.span_data.span_key | Should -Be 'span_value'
+        }
+
+        It "Should have grandchild span with correct operation and description" {
+            $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
+            $grandchildSpan | Should -Not -BeNullOrEmpty
+            $grandchildSpan.description | Should -Be 'Grandchild span description'
+        }
+
+        It "Should have correct span hierarchy" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
+            $grandchildSpan.parent_span_id | Should -Be $childSpan.span_id
+        }
+    }
+}
+
+AfterAll {
+    # Disconnect from Sentry API
+    Write-Host "Disconnecting from Sentry API..." -ForegroundColor Yellow
+    Disconnect-SentryApi
+
+    Write-Host "Integration tests complete" -ForegroundColor Green
+}
