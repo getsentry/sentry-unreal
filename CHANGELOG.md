@@ -5,6 +5,7 @@
 ### Features
 
 - Add support for iOS Simulator builds on UE 5.5 and newer ([#1561](https://github.com/getsentry/sentry-unreal/pull/1561))
+- Add Windows Error Reporting support for the native backend ([#1568](https://github.com/getsentry/sentry-unreal/pull/1568))
 
 ### Dependencies
 
