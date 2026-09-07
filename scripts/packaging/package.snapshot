@@ -723,6 +723,7 @@ Source/ThirdParty/Win64/Crashpad/lib/crashpad_zlib.lib
 Source/ThirdParty/Win64/Crashpad/lib/mini_chromium.lib
 Source/ThirdParty/Win64/Crashpad/lib/sentry.lib
 Source/ThirdParty/Win64/Native/bin/sentry-crash.exe
+Source/ThirdParty/Win64/Native/bin/sentry-wer.dll
 Source/ThirdParty/Win64/Native/include/sentry.h
 Source/ThirdParty/Win64/Native/lib/sentry-wer.lib
 Source/ThirdParty/Win64/Native/lib/sentry.lib
@@ -743,6 +744,7 @@ Source/ThirdParty/WinArm64/Crashpad/lib/crashpad_zlib.lib
 Source/ThirdParty/WinArm64/Crashpad/lib/mini_chromium.lib
 Source/ThirdParty/WinArm64/Crashpad/lib/sentry.lib
 Source/ThirdParty/WinArm64/Native/bin/sentry-crash.exe
+Source/ThirdParty/WinArm64/Native/bin/sentry-wer.dll
 Source/ThirdParty/WinArm64/Native/include/sentry.h
 Source/ThirdParty/WinArm64/Native/lib/sentry-wer.lib
 Source/ThirdParty/WinArm64/Native/lib/sentry.lib

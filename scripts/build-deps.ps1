@@ -337,6 +337,7 @@ function buildSentryNative()
 
     Get-ChildItem -Path "$NativePath/install_native/lib" -Filter "*.lib" -Recurse | Copy-Item -Destination "$nativeDir/lib"
     Copy-Item "$NativePath/install_native/bin/sentry-crash.exe" -Destination "$nativeDir/bin"
+    Copy-Item "$NativePath/install_native/bin/sentry-wer.dll" -Destination "$nativeDir/bin"
     Copy-Item "$NativePath/install_native/include/sentry.h" -Destination "$nativeDir/include"
 }
 
