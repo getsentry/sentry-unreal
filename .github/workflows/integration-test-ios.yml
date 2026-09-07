@@ -19,13 +19,6 @@ jobs:
     name: Integration Test
     runs-on: ubuntu-latest
 
-    env:
-      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      SAUCE_REGION: us-west-1
-      SAUCE_DEVICE_NAME: iPhone_17_*_real_sjc1
-      SAUCE_SESSION_NAME: UE ${{ inputs.unreal-version }} iOS Integration Test
-
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -42,6 +35,11 @@ jobs:
         shell: pwsh
         working-directory: integration-test
         env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          SAUCE_REGION: us-west-1
+          SAUCE_DEVICE_NAME: iPhone_17_*_real_sjc1
+          SAUCE_SESSION_NAME: UE ${{ inputs.unreal-version }} iOS Integration Test
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground.ipa
