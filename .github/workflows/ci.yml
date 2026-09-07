@@ -215,6 +215,10 @@ jobs:
           APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
           APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
         run: |
+          if [ -z "$APPLE_CERT_DATA" ]; then
+            echo "::error title=Codesign failed::Missing Apple signing certificate (APPLE_CERT_DATA)."
+            exit 1
+          fi
           echo "$APPLE_CERT_DATA" | base64 --decode > "$APPLE_CERT_PATH"
 
           rcodesign sign --for-notarization \
@@ -229,6 +233,10 @@ jobs:
         env:
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
         run: |
+          if [ -z "$APPLE_API_KEY" ]; then
+            echo "::error title=Notarization failed::Missing Apple API key (APPLE_API_KEY)."
+            exit 1
+          fi
           echo "$APPLE_API_KEY" | base64 --decode > "$APPLE_API_KEY_PATH"
 
           zip -j macos-binaries.zip \
