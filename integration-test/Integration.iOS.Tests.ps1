@@ -108,106 +108,108 @@ BeforeAll {
 Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTargets {
 
     BeforeAll {
-        # Connect to iOS device (provider validates its own env vars)
-        Write-Host "Connecting to iOS device via $Platform..." -ForegroundColor Yellow
-        Connect-Device -Platform $ProviderName
+        try {
+            # Connect to iOS device (provider validates its own env vars)
+            Write-Host "Connecting to iOS device via $Platform..." -ForegroundColor Yellow
+            Connect-Device -Platform $ProviderName
 
-        # Install IPA
-        Write-Host "Installing IPA via $Platform..." -ForegroundColor Yellow
-        Install-DeviceApp -Path $script:IpaPath
+            # Install IPA
+            Write-Host "Installing IPA via $Platform..." -ForegroundColor Yellow
+            Install-DeviceApp -Path $script:IpaPath
 
-        # All actions run upfront to minimize device idle time - SauceLabs sessions time out
-        # while the harness polls the Sentry API between launches.
+            # All actions run upfront to minimize device idle time - SauceLabs sessions time out
+            # while the harness polls the Sentry API between launches.
 
-        # ==========================================
-        # RUN 1: Crash test - captures crash report
-        # ==========================================
-        # The crash is captured but NOT uploaded yet (Cocoa behavior).
+            # ==========================================
+            # RUN 1: Crash test - captures crash report
+            # ==========================================
+            # The crash is captured but NOT uploaded yet (Cocoa behavior).
 
-        Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-        $global:iOSCrashResult = Invoke-iOSTestAction -Arguments @('-crash-capture')
+            Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
+            $global:iOSCrashResult = Invoke-iOSTestAction -Arguments @('-crash-capture')
 
-        Write-Host "Crash test exit code: $($global:iOSCrashResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "Crash test exit code: $($global:iOSCrashResult.ExitCode)" -ForegroundColor Cyan
 
-        # ==========================================
-        # RUN 2: Init-only - flushes crash event from Run 1
-        # ==========================================
-        # Cocoa sends crash reports on the next app launch, so run the app again to upload it.
+            # ==========================================
+            # RUN 2: Init-only - flushes crash event from Run 1
+            # ==========================================
+            # Cocoa sends crash reports on the next app launch, so run the app again to upload it.
 
-        Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
-        $global:iOSInitOnlyResult = Invoke-iOSTestAction -Arguments @('-init-only')
+            Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
+            $global:iOSInitOnlyResult = Invoke-iOSTestAction -Arguments @('-init-only')
 
-        Write-Host "Init-only exit code: $($global:iOSInitOnlyResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "Init-only exit code: $($global:iOSInitOnlyResult.ExitCode)" -ForegroundColor Cyan
 
-        # ==========================================
-        # RUN 3: Message test - captures message
-        # ==========================================
+            # ==========================================
+            # RUN 3: Message test - captures message
+            # ==========================================
 
-        Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-        $global:iOSMessageResult = Invoke-iOSTestAction -Arguments @(
-            '-message-capture',
-            "$script:SentrySettings`:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler",
-            "$script:SentrySettings`:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
-        )
+            Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
+            $global:iOSMessageResult = Invoke-iOSTestAction -Arguments @(
+                '-message-capture',
+                "$script:SentrySettings`:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler",
+                "$script:SentrySettings`:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
+            )
 
-        Write-Host "Message test exit code: $($global:iOSMessageResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "Message test exit code: $($global:iOSMessageResult.ExitCode)" -ForegroundColor Cyan
 
-        # ==========================================
-        # RUN 4: Feedback test - captures user feedback
-        # ==========================================
+            # ==========================================
+            # RUN 4: Feedback test - captures user feedback
+            # ==========================================
 
-        Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
-        $global:iOSFeedbackResult = Invoke-iOSTestAction -Arguments @(
-            '-feedback-capture',
-            "$script:SentrySettings`:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
-        )
+            Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
+            $global:iOSFeedbackResult = Invoke-iOSTestAction -Arguments @(
+                '-feedback-capture',
+                "$script:SentrySettings`:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
+            )
 
-        Write-Host "Feedback test exit code: $($global:iOSFeedbackResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "Feedback test exit code: $($global:iOSFeedbackResult.ExitCode)" -ForegroundColor Cyan
 
-        # ==========================================
-        # RUN 5: Log test - captures structured log
-        # ==========================================
+            # ==========================================
+            # RUN 5: Log test - captures structured log
+            # ==========================================
 
-        Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-        $global:iOSLogResult = Invoke-iOSTestAction -Arguments @(
-            '-log-capture',
-            "$script:SentrySettings`:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
-        )
+            Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
+            $global:iOSLogResult = Invoke-iOSTestAction -Arguments @(
+                '-log-capture',
+                "$script:SentrySettings`:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
+            )
 
-        Write-Host "Log test exit code: $($global:iOSLogResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "Log test exit code: $($global:iOSLogResult.ExitCode)" -ForegroundColor Cyan
 
-        # ==========================================
-        # RUN 6: Metric test - captures custom metric
-        # ==========================================
+            # ==========================================
+            # RUN 6: Metric test - captures custom metric
+            # ==========================================
 
-        Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
-        $global:iOSMetricResult = Invoke-iOSTestAction -Arguments @(
-            '-metric-capture',
-            "$script:SentrySettings`:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
-        )
+            Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
+            $global:iOSMetricResult = Invoke-iOSTestAction -Arguments @(
+                '-metric-capture',
+                "$script:SentrySettings`:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
+            )
 
-        Write-Host "Metric test exit code: $($global:iOSMetricResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "Metric test exit code: $($global:iOSMetricResult.ExitCode)" -ForegroundColor Cyan
 
-        # ==========================================
-        # RUN 7: Tracing test - captures transaction
-        # ==========================================
+            # ==========================================
+            # RUN 7: Tracing test - captures transaction
+            # ==========================================
 
-        Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
-        $global:iOSTracingResult = Invoke-iOSTestAction -Arguments @(
-            '-tracing-capture',
-            "$script:SentrySettings`:EnableTracing=True",
-            "$script:SentrySettings`:SamplingType=TracesSampler",
-            "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
-        )
+            Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
+            $global:iOSTracingResult = Invoke-iOSTestAction -Arguments @(
+                '-tracing-capture',
+                "$script:SentrySettings`:EnableTracing=True",
+                "$script:SentrySettings`:SamplingType=TracesSampler",
+                "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+            )
 
-        Write-Host "Tracing test exit code: $($global:iOSTracingResult.ExitCode)" -ForegroundColor Cyan
+            Write-Host "Tracing test exit code: $($global:iOSTracingResult.ExitCode)" -ForegroundColor Cyan
+        }
+        finally {
+            Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
+            Disconnect-Device
+        }
     }
 
     AfterAll {
-        # Disconnect from iOS device
-        Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
-        Disconnect-Device
-
         Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
     }
 
