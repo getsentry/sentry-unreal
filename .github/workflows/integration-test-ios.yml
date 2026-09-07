@@ -20,7 +20,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GITHUB_TOKEN: ${{ github.token }}
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       SAUCE_REGION: us-west-1
