@@ -1,0 +1,209 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_ORG:
+        required: true
+      SENTRY_PROJECT:
+        required: true
+      MATCH_GIT_PRIVATE_KEY:
+        required: true
+      MATCH_PASSWORD:
+        required: true
+      APPLE_TEAM_ID:
+        required: true
+
+jobs:
+  test:
+    name: Test
+    runs-on:
+      - bitrise_pool_name:gdx
+
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      DISALLOW_RAW_POINTERS: 'true'
+      SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
+
+    steps:
+      - name: Set Unreal Engine path
+        run: echo "UE_ROOT=$HOME/UnrealEngine" >> "$GITHUB_ENV"
+
+      - name: Download package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: ${{ github.sha }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: checkout
+
+      - name: Extract package to sample/Plugins
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: unzip -q sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
+
+      - name: Compute DDC cache key
+        id: ddc-cache-key
+        env:
+          HASH: ${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: |
+          KEY="ue-${UNREAL_VERSION}-ios-ddc-${HASH}"
+          echo "key=${KEY}" >> "$GITHUB_OUTPUT"
+          echo "DDC cache key: ${KEY}"
+
+      - name: Install PowerShell
+        run: |
+          mkdir -p "$HOME/.pwsh"
+          curl -fsSL "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-osx-arm64.tar.gz" | tar -xz -C "$HOME/.pwsh"
+          chmod +x "$HOME/.pwsh/pwsh"
+          echo "$HOME/.pwsh" >> "$GITHUB_PATH"
+
+      - name: Configure project-local DDC
+        shell: pwsh
+        run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
+
+      - name: Restore cached DDC
+        id: cache-ddc
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+          restore-keys: |
+            ue-${{ inputs.unreal-version }}-ios-ddc
+
+      - name: Update engine's build configuration
+        run: |
+          mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
+          cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
+
+      - name: Install fastlane
+        run: |
+          if ! command -v fastlane >/dev/null 2>&1; then
+            brew install fastlane
+          fi
+          fastlane --version
+
+      - name: "Import certificate and profile"
+        working-directory: checkout
+        env:
+          MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: fastlane prepare_signing
+
+      - name: Stage provisioning profile
+        env:
+          PROFILE_NAME: match Development io.sentry.sdk.unreal.sample
+        run: |
+          TARGET="$GITHUB_WORKSPACE/checkout/sample/Build/IOS/match.mobileprovision"
+          mkdir -p "$(dirname "$TARGET")"
+
+          for dir in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" \
+                     "$HOME/Library/MobileDevice/Provisioning Profiles"; do
+            [ -d "$dir" ] || continue
+            for profile in "$dir"/*.mobileprovision; do
+              [ -e "$profile" ] || continue
+              name=$(security cms -D -i "$profile" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || true)
+              if [ "$name" = "$PROFILE_NAME" ]; then
+                cp "$profile" "$TARGET"
+                echo "Staged '$name' from $profile"
+                exit 0
+              fi
+            done
+          done
+
+          echo "::error::No installed provisioning profile named '$PROFILE_NAME'"
+          exit 1
+
+      - name: Configure iOS signing
+        shell: pwsh
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: ./checkout/scripts/configure-ios-signing.ps1 -ProjectPath checkout/sample -TeamId $env:APPLE_TEAM_ID
+
+      - name: Build
+        id: run-build
+        timeout-minutes: 150
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
+            -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
+            -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
+            -platform=IOS \
+            -UBTArgs="-AllCores" \
+            -AdditionalCookerOptions="-skipminspeccheck" \
+            -nop4 \
+            -cook \
+            -build \
+            -stage \
+            -package \
+            -archive
+
+      - name: Check for DDC content
+        id: ddc-exists
+        if: ${{ always() }}
+        run: echo "exists=$([ -d checkout/sample/DerivedDataCache ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+
+      # Save DDC even when the build failed or timed out so that shader
+      # compilation progress carries over to the next attempt
+      - name: Save DDC to cache
+        if: ${{ always() && steps.ddc-exists.outputs.exists == 'true' && steps.cache-ddc.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+
+      # On a Mac host UE archives a .app, not an .ipa - an .ipa is just a zip
+      # containing Payload/<App>.app, so build one from the archived bundle.
+      - name: Package and verify IPA
+        run: |
+          ARCHIVE_DIR="$GITHUB_WORKSPACE/checkout/sample/Builds/IOS"
+          APP=$(find "$ARCHIVE_DIR" -maxdepth 1 -name '*.app' | head -n 1)
+          if [ -z "$APP" ]; then
+            echo "::error::No .app produced by BuildCookRun in $ARCHIVE_DIR"
+            exit 1
+          fi
+
+          if [ ! -f "$APP/embedded.mobileprovision" ]; then
+            echo "::error::$APP has no embedded provisioning profile - it will not install on a device"
+            exit 1
+          fi
+          codesign -dv --verbose=4 "$APP"
+
+          rm -rf "$RUNNER_TEMP/ipa"
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
+
+          IPA="${APP%.app}.ipa"
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$IPA" Payload)
+          echo "Built: $IPA"
+
+      - name: Upload sample build (iOS)
+        if: ${{ success() && steps.run-build.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (iOS)
+          path: checkout/sample/Builds/IOS/*.ipa
+          if-no-files-found: error
+          retention-days: 1
+
+      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
+      - name: Collect build logs
+        if: ${{ always() && (steps.run-build.outcome == 'failure' || steps.run-build.outcome == 'cancelled') }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build logs (iOS)
+          path: |
+            ~/Library/Logs/Unreal Engine
+            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved

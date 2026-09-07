@@ -104,6 +104,12 @@ jobs:
     needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native]
     name: Package
     runs-on: ubuntu-latest
+
+    env:
+      DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
+      APPLE_CERT_PATH: /tmp/certs.p12
+      APPLE_API_KEY_PATH: /tmp/apple_key.json
+
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -189,6 +195,57 @@ jobs:
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Crashpad/bin/crashpad_handler
           chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Native/bin/sentry-crash
           chmod +x plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
+
+      - name: Install rcodesign
+        if: env.DO_CODESIGN == '1'
+        env:
+          RCODESIGN_VERSION: 0.29.0
+          RCODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
+        run: |
+          curl -fsSL "https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign/${RCODESIGN_VERSION}/apple-codesign-${RCODESIGN_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            -o rcodesign.tar.gz
+          echo "${RCODESIGN_CHECKSUM}  rcodesign.tar.gz" | sha256sum -c -
+          tar -xz --strip-components=1 -C /tmp -f rcodesign.tar.gz
+          sudo mv /tmp/rcodesign /usr/local/bin/rcodesign
+          rm rcodesign.tar.gz
+
+      - name: Sign macOS binaries
+        if: env.DO_CODESIGN == '1'
+        env:
+          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_CERT_DATA" ]; then
+            echo "::error title=Codesign failed::Missing Apple signing certificate (APPLE_CERT_DATA)."
+            exit 1
+          fi
+          echo "$APPLE_CERT_DATA" | base64 --decode > "$APPLE_CERT_PATH"
+
+          rcodesign sign --for-notarization \
+            --p12-file "$APPLE_CERT_PATH" --p12-password "$APPLE_CERT_PASSWORD" \
+            plugin-dev/Source/ThirdParty/Mac/Cocoa/bin/SentryObjC.dylib
+          rcodesign sign --for-notarization \
+            --p12-file "$APPLE_CERT_PATH" --p12-password "$APPLE_CERT_PASSWORD" \
+            plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
+
+      - name: Notarize macOS binaries
+        if: env.DO_CODESIGN == '1'
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          if [ -z "$APPLE_API_KEY" ]; then
+            echo "::error title=Notarization failed::Missing Apple API key (APPLE_API_KEY)."
+            exit 1
+          fi
+          echo "$APPLE_API_KEY" | base64 --decode > "$APPLE_API_KEY_PATH"
+
+          zip -j macos-binaries.zip \
+            plugin-dev/Source/ThirdParty/Mac/Cocoa/bin/SentryObjC.dylib \
+            plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
+          rcodesign notary-submit --wait \
+            --api-key-file "$APPLE_API_KEY_PATH" \
+            macos-binaries.zip
+          rm macos-binaries.zip
 
       - name: Prepare Sentry packages for release
         shell: pwsh
@@ -296,6 +353,26 @@ jobs:
       unreal-version: ${{ matrix.unreal }}
     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
+  test-ios:
+    needs: [package-preparation]
+    name: iOS UE ${{ matrix.unreal }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Must match an engine version published to the registry by the ue-oci-macos workflow
+        unreal: ['5.8']
+    uses: ./.github/workflows/test-ios.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
+
   test-android:
     needs: [package-preparation, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
@@ -398,6 +475,23 @@ jobs:
     with:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
+
+  integration-test-ios:
+    needs: [test-ios]
+    name: iOS UE ${{ matrix.unreal }}
+    secrets:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        unreal: ['5.8']
+    uses: ./.github/workflows/integration-test-ios.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
 
   integration-test-android:
     needs: [test-android, generate-test-matrix]
