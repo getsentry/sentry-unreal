@@ -23,6 +23,8 @@ jobs:
     name: Create Windows image with UE consoles distro
     runs-on: unreal-image-creating-runner-windows
     snapshot: unreal-image-consoles
+    environment:
+      name: main
 
     permissions:
       contents: read
