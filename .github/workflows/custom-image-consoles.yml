@@ -64,12 +64,6 @@ jobs:
           cat autosdk-parts/* > autosdk.zip
           rm -rf autosdk-parts
 
-          # Outer archive is a store-only container; the three platform bundles
-          # (plus their .sha256) sit at its root.
-          mkdir -p autosdk-packages
-          tar -x -f autosdk.zip -C autosdk-packages
-          rm -f autosdk.zip
-
       - name: Extract engine and AutoSDK
         shell: pwsh
         run: |
@@ -79,10 +73,19 @@ jobs:
           }
 
           # tar (bsdtar) is used over Expand-Archive, which is far slower on multi-GB input.
+          # It must run from pwsh: under 'shell: bash' the same command resolves to Git for
+          # Windows' GNU tar, which does not understand zip archives at all.
           Write-Host 'Extracting engine...'
           tar -x -f ue.zip -C $env:UE_INSTALL_ROOT
           if ($LASTEXITCODE -ne 0) { throw "engine extract failed ($LASTEXITCODE)" }
           Remove-Item ue.zip -Force
+
+          # Outer AutoSDK archive is a store-only container; the three platform bundles
+          # (plus their .sha256) sit at its root.
+          New-Item -ItemType Directory -Path autosdk-packages -Force | Out-Null
+          tar -x -f autosdk.zip -C autosdk-packages
+          if ($LASTEXITCODE -ne 0) { throw "autosdk.zip extract failed ($LASTEXITCODE)" }
+          Remove-Item autosdk.zip -Force
 
           # Each AutoSDK archive carries the HostWin64\<Platform>\<Version> prefix,
           # so they merge into one root with no path juggling.
