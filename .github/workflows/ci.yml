@@ -109,29 +109,30 @@ jobs:
       APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
     uses: ./.github/workflows/package.yml
 
-  package-validation:
-    needs: [package]
-    name: Check snapshot
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   package-validation:
+#     needs: [package]
+#     name: Check snapshot
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Download packages
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: ${{ github.sha }}
+#       - name: Download packages
+#         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+#         with:
+#           name: ${{ github.sha }}
 
-      # If this step fails, you can accept the new file content by
-      # running the following script locally with 'accept' as an argument
-      # and committing the new snapshot file to your branch. i.e:
-      # pwsh ./scripts/test-contents.ps1 accept
-      - name: Verify package content against snapshot
-        shell: pwsh
-        run: ./scripts/packaging/test-contents.ps1
+#       # If this step fails, you can accept the new file content by
+#       # running the following script locally with 'accept' as an argument
+#       # and committing the new snapshot file to your branch. i.e:
+#       # pwsh ./scripts/test-contents.ps1 accept
+#       - name: Verify package content against snapshot
+#         shell: pwsh
+#         run: ./scripts/packaging/test-contents.ps1
 
-  # Resolves the engine-version matrix once for all test platforms. PRs run the legacy 4.27
-  # (where supported) plus the 3 latest versions; pushes to main/release run the full set.
+#   # Resolves the engine-version matrix once for all test platforms. PRs run the legacy 4.27
+#   # (where supported) plus the 3 latest versions; pushes to main/release run the full set.
   generate-test-matrix:
     runs-on: ubuntu-latest
     outputs:
@@ -143,17 +144,10 @@ jobs:
         env:
           IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
-          if [[ "$IS_PR" == "true" ]]; then
-            # PRs: legacy 4.27 (where supported) + 3 latest
-            echo 'linux=["4.27","5.6","5.7","5.8"]'   >> "$GITHUB_OUTPUT"
-            echo 'windows=["4.27","5.6","5.7","5.8"]' >> "$GITHUB_OUTPUT"
-            echo 'android=["5.6","5.7","5.8"]'        >> "$GITHUB_OUTPUT"
-          else
-            # main / release: full set
-            echo 'linux=["4.27","5.2","5.3","5.4","5.5","5.6","5.7","5.8"]' >> "$GITHUB_OUTPUT"
-            echo 'windows=["4.27","5.5","5.6","5.7","5.8"]'                 >> "$GITHUB_OUTPUT"
-            echo 'android=["5.4","5.5","5.6","5.7","5.8"]'                  >> "$GITHUB_OUTPUT"
-          fi
+          # TEMP(debug/ue427-linux-hang): 4.27 Linux only; other platforms disabled.
+          echo 'linux=["4.27"]' >> "$GITHUB_OUTPUT"
+          echo 'windows=[]'     >> "$GITHUB_OUTPUT"
+          echo 'android=[]'     >> "$GITHUB_OUTPUT"
 
   test-linux:
     needs: [package, generate-test-matrix]
@@ -170,113 +164,119 @@ jobs:
     with:
       unreal-version: ${{ matrix.unreal }}
 
-  test-windows:
-    needs: [package, generate-test-matrix]
-    name: Windows UE ${{ matrix.unreal }}
-    secrets:
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-    strategy:
-      fail-fast: false
-      matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
-    uses: ./.github/workflows/test-windows.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   test-windows:
+#     needs: [package, generate-test-matrix]
+#     name: Windows UE ${{ matrix.unreal }}
+#     secrets:
+#       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+#       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+#       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
+#     uses: ./.github/workflows/test-windows.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
 
-  test-macos:
-    needs: [package]
-    name: macOS UE ${{ matrix.unreal }}
-    secrets:
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # Must match an engine version published to the registry by the ue-oci-macos workflow
-        unreal: ['5.8']
-    uses: ./.github/workflows/test-macos.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
-    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   test-macos:
+#     needs: [package]
+#     name: macOS UE ${{ matrix.unreal }}
+#     secrets:
+#       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+#       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+#       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         # Must match an engine version published to the registry by the ue-oci-macos workflow
+#         unreal: ['5.8']
+#     uses: ./.github/workflows/test-macos.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
+#     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
-  test-ios:
-    needs: [package]
-    name: iOS UE ${{ matrix.unreal }}
-    secrets:
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-      MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
-      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # Must match an engine version published to the registry by the ue-oci-macos workflow
-        unreal: ['5.8']
-    uses: ./.github/workflows/test-ios.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
-    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   test-ios:
+#     needs: [package]
+#     name: iOS UE ${{ matrix.unreal }}
+#     secrets:
+#       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+#       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+#       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+#       MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+#       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+#       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         # Must match an engine version published to the registry by the ue-oci-macos workflow
+#         unreal: ['5.8']
+#     uses: ./.github/workflows/test-ios.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
+#     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
-  test-android:
-    needs: [package, generate-test-matrix]
-    name: Android UE ${{ matrix.unreal }}
-    secrets:
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-    strategy:
-      fail-fast: false
-      matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
-    uses: ./.github/workflows/test-android.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   test-android:
+#     needs: [package, generate-test-matrix]
+#     name: Android UE ${{ matrix.unreal }}
+#     secrets:
+#       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+#       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+#       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
+#     uses: ./.github/workflows/test-android.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
 
-  test-consoles:
-    needs: [package]
-    name: ${{ matrix.name }}
-    if: github.event_name == 'push'
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: XSX (breakpad)
-            platform: XSX
-            backend: breakpad
-            extension-repo: getsentry/sentry-xbox
-            extension-artifact: scarlett-unreal
-          - name: XSX (native)
-            platform: XSX
-            backend: native
-            extension-repo: getsentry/sentry-xbox
-            extension-artifact: scarlett-unreal-outproc
-          - name: PS5
-            platform: PS5
-            backend: ""
-            extension-repo: getsentry/sentry-playstation
-            extension-artifact: ps5-unreal
-          - name: Switch
-            platform: Switch
-            backend: ""
-            extension-repo: getsentry/sentry-switch
-            extension-artifact: nx64-unreal-sdk21
-    uses: ./.github/workflows/test-consoles.yml
-    with:
-      platform: ${{ matrix.platform }}
-      backend: ${{ matrix.backend }}
-      extension-repo: ${{ matrix.extension-repo }}
-      extension-artifact: ${{ matrix.extension-artifact }}
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   test-consoles:
+#     needs: [package]
+#     name: ${{ matrix.name }}
+#     if: github.event_name == 'push'
+#     secrets:
+#       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         include:
+#           - name: XSX (breakpad)
+#             platform: XSX
+#             backend: breakpad
+#             extension-repo: getsentry/sentry-xbox
+#             extension-artifact: scarlett-unreal
+#           - name: XSX (native)
+#             platform: XSX
+#             backend: native
+#             extension-repo: getsentry/sentry-xbox
+#             extension-artifact: scarlett-unreal-outproc
+#           - name: PS5
+#             platform: PS5
+#             backend: ""
+#             extension-repo: getsentry/sentry-playstation
+#             extension-artifact: ps5-unreal
+#           - name: Switch
+#             platform: Switch
+#             backend: ""
+#             extension-repo: getsentry/sentry-switch
+#             extension-artifact: nx64-unreal-sdk21
+#     uses: ./.github/workflows/test-consoles.yml
+#     with:
+#       platform: ${{ matrix.platform }}
+#       backend: ${{ matrix.backend }}
+#       extension-repo: ${{ matrix.extension-repo }}
+#       extension-artifact: ${{ matrix.extension-artifact }}
 
   integration-test-linux:
     needs: [test-linux, generate-test-matrix]
-    name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
+    # TEMP(debug/ue427-linux-hang): repeated runs; the hang is intermittent (~1 in 3).
+    name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }}) run ${{ matrix.run }}
     secrets:
       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
       SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
@@ -285,76 +285,82 @@ jobs:
       matrix:
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
         backend: [crashpad, native]
+        run: [1, 2, 3]
     uses: ./.github/workflows/integration-test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
+      run-index: ${{ matrix.run }}
 
-  integration-test-windows:
-    needs: [test-windows, generate-test-matrix]
-    name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
-    secrets:
-      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
-      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
-        backend: [crashpad, native]
-        exclude:
-          - unreal: '4.27'
-    uses: ./.github/workflows/integration-test-windows.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
-      backend: ${{ matrix.backend }}
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   integration-test-windows:
+#     needs: [test-windows, generate-test-matrix]
+#     name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
+#     secrets:
+#       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+#       SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
+#         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
+#         backend: [crashpad, native]
+#         exclude:
+#           - unreal: '4.27'
+#     uses: ./.github/workflows/integration-test-windows.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
+#       backend: ${{ matrix.backend }}
 
-  integration-test-macos:
-    needs: [test-macos]
-    name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
-    secrets:
-      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
-      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-    strategy:
-      fail-fast: false
-      matrix:
-        unreal: ['5.8']
-        backend: [cocoa, native]
-    uses: ./.github/workflows/integration-test-macos.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
-      backend: ${{ matrix.backend }}
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   integration-test-macos:
+#     needs: [test-macos]
+#     name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
+#     secrets:
+#       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+#       SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         unreal: ['5.8']
+#         backend: [cocoa, native]
+#     uses: ./.github/workflows/integration-test-macos.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
+#       backend: ${{ matrix.backend }}
 
-  integration-test-ios:
-    needs: [test-ios]
-    name: iOS UE ${{ matrix.unreal }}
-    secrets:
-      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
-      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        unreal: ['5.8']
-    uses: ./.github/workflows/integration-test-ios.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   integration-test-ios:
+#     needs: [test-ios]
+#     name: iOS UE ${{ matrix.unreal }}
+#     secrets:
+#       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+#       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+#       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+#       SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+#     strategy:
+#       fail-fast: false
+#       max-parallel: 1
+#       matrix:
+#         unreal: ['5.8']
+#     uses: ./.github/workflows/integration-test-ios.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
 
-  integration-test-android:
-    needs: [test-android, generate-test-matrix]
-    name: Android UE ${{ matrix.unreal }}
-    secrets:
-      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
-      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
-    uses: ./.github/workflows/integration-test-android.yml
-    with:
-      unreal-version: ${{ matrix.unreal }}
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   integration-test-android:
+#     needs: [test-android, generate-test-matrix]
+#     name: Android UE ${{ matrix.unreal }}
+#     secrets:
+#       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+#       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+#       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+#       SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+#     strategy:
+#       fail-fast: false
+#       max-parallel: 1
+#       matrix:
+#         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
+#     uses: ./.github/workflows/integration-test-android.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}

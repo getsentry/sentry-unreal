@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: "crashpad"
+      # TEMP(debug/ue427-linux-hang): distinguishes repeated runs of the same config.
+      run-index:
+        required: false
+        type: string
+        default: "1"
     secrets:
       SENTRY_UNREAL_TEST_DSN:
         required: true
@@ -18,6 +23,8 @@ jobs:
   integration-test:
     name: Integration Test
     runs-on: ubuntu-latest
+    # TEMP(debug/ue427-linux-hang): the hang otherwise burns ~25 min until cancelled.
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -35,6 +42,45 @@ jobs:
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground/Plugins/sentry/Binaries/Linux/*
 
+      # TEMP(debug/ue427-linux-hang): dump thread stacks if the app wedges, then
+      # kill it so the suite fails fast instead of hanging the job.
+      - name: Start hang watchdog
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq gdb
+          mkdir -p "${{ github.workspace }}/hang-dumps"
+          cat > /tmp/watchdog.sh <<'WD'
+          #!/bin/bash
+          OUT="$1"; THRESHOLD="${2:-150}"
+          while true; do
+            for p in $(pgrep -f "Binaries/Linux/SentryPlayground" 2>/dev/null); do
+              et=$(ps -o etimes= -p "$p" 2>/dev/null | tr -d ' ')
+              [ -z "$et" ] && continue
+              if [ "$et" -ge "$THRESHOLD" ]; then
+                f="$OUT/hang-$(date +%H%M%S)-$p.txt"
+                {
+                  echo "=== SentryPlayground pid=$p alive ${et}s (threshold ${THRESHOLD}s) ==="
+                  echo "=== all threads (wchan) ==="
+                  ps -eLo pid,tid,comm,wchan:40,stat
+                  echo "=== per-task state ==="
+                  for t in /proc/$p/task/*; do
+                    echo "-- tid $(basename "$t") comm=$(cat "$t/comm" 2>/dev/null) wchan=$(cat "$t/wchan" 2>/dev/null)"
+                  done
+                  echo "=== helper processes ==="
+                  ps -eo pid,ppid,etimes,comm,args | grep -Ei "crashpad_handler|sentry-crash" | grep -v grep
+                } > "$f" 2>&1
+                echo "=== gdb thread apply all bt ===" >> "$f"
+                sudo gdb -p "$p" -batch -ex "set pagination off" -ex "info threads"                      -ex "thread apply all bt" >> "$f" 2>&1
+                echo "=== watchdog killing pid $p ===" >> "$f"
+                sudo kill -9 "$p" 2>/dev/null
+              fi
+            done
+            sleep 5
+          done
+          WD
+          chmod +x /tmp/watchdog.sh
+          nohup /tmp/watchdog.sh "${{ github.workspace }}/hang-dumps" 150 >/tmp/watchdog.log 2>&1 &
+          echo "hang watchdog started (threshold 150s)"
+
       - name: Run integration tests
         id: run-integration-tests
         shell: pwsh
@@ -47,11 +93,20 @@ jobs:
           cmake -B build -S .
           Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
+      # TEMP(debug/ue427-linux-hang): stack dumps are the point of this branch.
+      - name: Upload hang dumps
+        if: ${{ always() }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} hang dumps (Linux, ${{ inputs.backend }}, run ${{ inputs.run-index }})
+          path: hang-dumps/
+          if-no-files-found: ignore
+
       - name: Upload integration test output
         if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} integration test output (Linux, ${{ inputs.backend }})
+          name: UE ${{ inputs.unreal-version }} integration test output (Linux, ${{ inputs.backend }}, run ${{ inputs.run-index }})
           path: |
             integration-test/output/
             sample-build/SentryPlayground/Saved/Logs/
