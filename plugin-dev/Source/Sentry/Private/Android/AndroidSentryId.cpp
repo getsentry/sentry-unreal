@@ -31,8 +31,3 @@ FString FAndroidSentryId::ToString() const
 {
 	return CallMethod<FString>(ToStringMethod);
 }
-
-bool FAndroidSentryId::IsValid() const
-{
-	return !CallStaticMethod<bool>(SentryJavaClasses::SentryBridgeJava, "isEmptyId", "(Lio/sentry/protocol/SentryId;)Z", GetJObject());
-}

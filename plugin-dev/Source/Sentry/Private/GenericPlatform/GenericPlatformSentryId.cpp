@@ -40,9 +40,4 @@ FString FGenericPlatformSentryId::ToString() const
 	return SanitizedIdString;
 }
 
-bool FGenericPlatformSentryId::IsValid() const
-{
-	return sentry_uuid_is_nil(&Id) == 0;
-}
-
 #endif

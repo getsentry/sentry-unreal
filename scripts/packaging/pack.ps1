@@ -20,7 +20,6 @@ function packFiles()
     Copy-Item "$projectRoot/plugin-dev/*" "$projectRoot/package-release/" -Exclude $exclude -Recurse
     Copy-Item "$projectRoot/CHANGELOG.md" -Destination "$projectRoot/package-release/CHANGELOG.md"
     Copy-Item "$projectRoot/LICENSE" -Destination "$projectRoot/package-release/LICENSE"
-    Copy-Item "$projectRoot/BUNDLED-EXECUTABLES.md" -Destination "$projectRoot/package-release/BUNDLED-EXECUTABLES.md"
 
     # We know the file is meant to be UTF8, so let's be explicit
     $sentrySubsystemHeader = Get-Content "$projectRoot/plugin-dev/Source/Sentry/Public/SentrySubsystem.h" -Encoding UTF8

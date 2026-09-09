@@ -312,10 +312,6 @@ public class SentryBridgeJava {
 		}
 	}
 
-	public static boolean isEmptyId(final SentryId id) {
-		return id == null || SentryId.EMPTY_ID.equals(id);
-	}
-
 	public static void setContext(final SentryEvent event, final String key, final Object values) {
 		event.getContexts().put(key, values);
 	}

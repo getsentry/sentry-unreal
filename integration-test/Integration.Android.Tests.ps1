@@ -127,106 +127,104 @@ BeforeAll {
 Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTargets {
 
     BeforeAll {
-        try {
-            # Connect to Android device (provider validates its own env vars)
-            Write-Host "Connecting to Android via $Platform..." -ForegroundColor Yellow
-            Connect-Device -Platform $ProviderName
+        # Connect to Android device (provider validates its own env vars)
+        Write-Host "Connecting to Android via $Platform..." -ForegroundColor Yellow
+        Connect-Device -Platform $ProviderName
 
-            # Install APK
-            Write-Host "Installing APK via $Platform..." -ForegroundColor Yellow
-            Install-DeviceApp -Path $script:ApkPath
+        # Install APK
+        Write-Host "Installing APK via $Platform..." -ForegroundColor Yellow
+        Install-DeviceApp -Path $script:ApkPath
 
-            # ==========================================
-            # RUN 1: Crash test - creates minidump
-            # ==========================================
-            # The crash is captured but NOT uploaded yet (Android behavior).
+        # ==========================================
+        # RUN 1: Crash test - creates minidump
+        # ==========================================
+        # The crash is captured but NOT uploaded yet (Android behavior).
 
-            Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-            $crashIntentArgs = "-e cmdline -crash-capture"
-            $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $crashIntentArgs
+        Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
+        $crashIntentArgs = "-e cmdline -crash-capture"
+        $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $crashIntentArgs
 
-            Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
+        Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
 
-            # ==========================================
-            # RUN 2: Init-only - flushes crash event from Run 1
-            # ==========================================
-            # The crash is captured but NOT uploaded immediately on Android,
-            # so we need to run the app again to send it to Sentry.
-            # -init-only allows starting the app to flush captured events and quit right after.
+        # ==========================================
+        # RUN 2: Init-only - flushes crash event from Run 1
+        # ==========================================
+        # The crash is captured but NOT uploaded immediately on Android,
+        # so we need to run the app again to send it to Sentry.
+        # -init-only allows starting the app to flush captured events and quit right after.
 
-            Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
-            $initOnlyIntentArgs = "-e cmdline -init-only"
-            $global:AndroidInitOnlyResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $initOnlyIntentArgs
+        Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
+        $initOnlyIntentArgs = "-e cmdline -init-only"
+        $global:AndroidInitOnlyResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $initOnlyIntentArgs
 
-            Write-Host "Init-only exit code: $($global:AndroidInitOnlyResult.ExitCode)" -ForegroundColor Cyan
+        Write-Host "Init-only exit code: $($global:AndroidInitOnlyResult.ExitCode)" -ForegroundColor Cyan
 
-            # ==========================================
-            # RUN 3: Message test - captures message
-            # ==========================================
+        # ==========================================
+        # RUN 3: Message test - captures message
+        # ==========================================
 
-            Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-            $messageIntentArgs = "-e cmdline -message-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
-            $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $messageIntentArgs
+        Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
+        $messageIntentArgs = "-e cmdline -message-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
+        $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $messageIntentArgs
 
-            Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
+        Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
 
-            # ==========================================
-            # RUN: Feedback test - captures user feedback
-            # ==========================================
+        # ==========================================
+        # RUN: Feedback test - captures user feedback
+        # ==========================================
 
-            Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
-            $feedbackIntentArgs = "-e cmdline -feedback-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
-            $global:AndroidFeedbackResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $feedbackIntentArgs
+        Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
+        $feedbackIntentArgs = "-e cmdline -feedback-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
+        $global:AndroidFeedbackResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $feedbackIntentArgs
 
-            Write-Host "Feedback test exit code: $($global:AndroidFeedbackResult.ExitCode)" -ForegroundColor Cyan
+        Write-Host "Feedback test exit code: $($global:AndroidFeedbackResult.ExitCode)" -ForegroundColor Cyan
 
-            # ==========================================
-            # RUN 4: Log test - captures structured log
-            # ==========================================
+        # ==========================================
+        # RUN 4: Log test - captures structured log
+        # ==========================================
 
-            Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-            $logIntentArgs = "-e cmdline -log-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
-            $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
+        Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
+        $logIntentArgs = "-e cmdline -log-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
+        $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
 
-            Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
+        Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
 
-            # ==========================================
-            # RUN 4: Metric test - captures custom metric
-            # ==========================================
+        # ==========================================
+        # RUN 4: Metric test - captures custom metric
+        # ==========================================
 
-            Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
-            $metricIntentArgs = "-e cmdline -metric-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
-            $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
+        Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
+        $metricIntentArgs = "-e cmdline -metric-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
+        $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
 
-            Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
+        Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
 
-            # ==========================================
-            # RUN 5: Tracing test - captures transaction
-            # ==========================================
+        # ==========================================
+        # RUN 5: Tracing test - captures transaction
+        # ==========================================
 
-            Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
-            $tracingIntentArgs = "-e cmdline -tracing-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
-            $global:AndroidTracingResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $tracingIntentArgs
+        Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
+        $tracingIntentArgs = "-e cmdline -tracing-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+        $global:AndroidTracingResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $tracingIntentArgs
 
-            Write-Host "Tracing test exit code: $($global:AndroidTracingResult.ExitCode)" -ForegroundColor Cyan
+        Write-Host "Tracing test exit code: $($global:AndroidTracingResult.ExitCode)" -ForegroundColor Cyan
 
-            # ==========================================
-            # RUN 7: Hang test - captures app-hang event
-            # ==========================================
+        # ==========================================
+        # RUN 7: Hang test - captures app-hang event
+        # ==========================================
 
-            Write-Host "Running hang-capture test on $Platform..." -ForegroundColor Yellow
-            $hangIntentArgs = "-e cmdline -hang-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableHangTracking=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:UseNativeHangTracking=True"
-            $global:AndroidHangResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $hangIntentArgs
+        Write-Host "Running hang-capture test on $Platform..." -ForegroundColor Yellow
+        $hangIntentArgs = "-e cmdline -hang-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableHangTracking=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:UseNativeHangTracking=True"
+        $global:AndroidHangResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $hangIntentArgs
 
-            Write-Host "Hang test exit code: $($global:AndroidHangResult.ExitCode)" -ForegroundColor Cyan
-        }
-        finally {
-            Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
-            Disconnect-Device
-        }
+        Write-Host "Hang test exit code: $($global:AndroidHangResult.ExitCode)" -ForegroundColor Cyan
     }
 
     AfterAll {
+        # Disconnect from Android device
+        Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
+        Disconnect-Device
+
         Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
     }
 

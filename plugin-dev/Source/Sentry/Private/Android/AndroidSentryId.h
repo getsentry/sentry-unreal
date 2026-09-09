@@ -16,7 +16,6 @@ public:
 	void SetupClassMethods();
 
 	virtual FString ToString() const override;
-	virtual bool IsValid() const override;
 
 private:
 	FSentryJavaMethod ToStringMethod;
