@@ -256,19 +256,20 @@ sentry_crash_reporting_mode_t FGenericPlatformSentryConverters::CrashReportingMo
 	}
 }
 
-sentry_thread_stackwalk_mode_t FGenericPlatformSentryConverters::ThreadStackwalkModeToNative(ESentryThreadStackwalkMode mode)
-{
-	switch (mode)
-	{
-	case ESentryThreadStackwalkMode::CrashedThreadOnly:
-		return SENTRY_THREAD_STACKWALK_MODE_CRASHED_ONLY;
-	case ESentryThreadStackwalkMode::AllThreads:
-		return SENTRY_THREAD_STACKWALK_MODE_ALL;
-	default:
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown thread stackwalk mode value used. AllThreads will be returned."));
-		return SENTRY_THREAD_STACKWALK_MODE_ALL;
-	}
-}
+// TEMP(debug/ue427-linux-hang): sentry_thread_stackwalk_mode_t does not exist in 0.16.4.
+// sentry_thread_stackwalk_mode_t FGenericPlatformSentryConverters::ThreadStackwalkModeToNative(ESentryThreadStackwalkMode mode)
+// {
+// 	switch (mode)
+// 	{
+// 	case ESentryThreadStackwalkMode::CrashedThreadOnly:
+// 		return SENTRY_THREAD_STACKWALK_MODE_CRASHED_ONLY;
+// 	case ESentryThreadStackwalkMode::AllThreads:
+// 		return SENTRY_THREAD_STACKWALK_MODE_ALL;
+// 	default:
+// 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown thread stackwalk mode value used. AllThreads will be returned."));
+// 		return SENTRY_THREAD_STACKWALK_MODE_ALL;
+// 	}
+// }
 
 sentry_crash_upload_mode_t FGenericPlatformSentryConverters::CrashUploadModeToNative(ESentryCrashUploadMode mode)
 {
