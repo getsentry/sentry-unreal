@@ -63,6 +63,17 @@ enum class ESentryCrashReportingMode : uint8
 	NativeStackwalkingWithMinidump,
 };
 
+// TEMP(debug/ue427-linux-hang): layout probe. Structural clone of the UENUM ba480b42 added.
+// Never read anywhere; exists only to trigger the same UHT regeneration.
+UENUM(BlueprintType)
+enum class ESentryStackwalkProbeMode : uint8
+{
+	// Walk the crashed thread only. Other threads are reported with their id and name, but without a stacktrace.
+	CrashedThreadOnly,
+	// Walk every thread of the crashed process. Most context, but slower for apps with a high thread count.
+	AllThreads,
+};
+
 UENUM(BlueprintType)
 enum class ESentryCrashUploadMode : uint8
 {
