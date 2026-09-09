@@ -10,7 +10,7 @@
 	"DocsURL": "https://docs.sentry.io/platforms/unreal/",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/99f5c02de5fa49ab97976a3a852e5408",
 	"SupportURL": "https://docs.sentry.io/support/",
-	"CanContainContent": false,
+	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
@@ -31,6 +31,11 @@
 	"Plugins": [
 		{
 			"Name": "AVCodecsCore",
+			"Enabled": false,
+			"Optional": true
+		},
+		{
+			"Name": "ToolsetRegistry",
 			"Enabled": false,
 			"Optional": true
 		}

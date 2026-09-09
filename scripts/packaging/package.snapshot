@@ -1,6 +1,10 @@
-CHANGELOG.md
 BUNDLED-EXECUTABLES.md
+CHANGELOG.md
 Config/FilterPlugin.ini
+Content/Python/init_unreal.py
+Content/Python/sentry_unreal/__init__.py
+Content/Python/sentry_unreal/skills/__init__.py
+Content/Python/sentry_unreal/skills/configure.py
 Gradle/gradle-wrapper.properties
 LICENSE
 Resources/Icon128.png
@@ -748,3 +752,6 @@ Source/ThirdParty/WinArm64/Native/include/sentry.h
 Source/ThirdParty/WinArm64/Native/lib/sentry-wer.lib
 Source/ThirdParty/WinArm64/Native/lib/sentry.lib
 Source/ThirdParty/WinArm64/Sentry.CrashReporter.exe
+Source/Toolsets/Private/SentryToolset.cpp
+Source/Toolsets/Private/SentryToolset.h
+Source/Toolsets/Private/Tests/SentryToolset.spec.cpp
