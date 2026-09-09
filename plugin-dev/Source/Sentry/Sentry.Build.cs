@@ -158,6 +158,7 @@ public class Sentry : ModuleRules
 			if (bUseNativeBackend)
 			{
 				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry-crash.exe"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "sentry-crash.exe"));
+				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "sentry-wer.dll"), Path.Combine(PlatformThirdPartyPath, Backend, "bin", "sentry-wer.dll"));
 
 				PublicAdditionalLibraries.Add(Path.Combine(PlatformThirdPartyPath, Backend, "lib", "sentry-wer.lib"));
 			}
