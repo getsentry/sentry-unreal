@@ -256,6 +256,25 @@ sentry_crash_reporting_mode_t FGenericPlatformSentryConverters::CrashReportingMo
 	}
 }
 
+// TEMP(debug/ue427-linux-hang): layout-perturbation probe. Mirrors the size and shape of the
+// converter ba480b42 added, but maps to the crash reporting mode that is already applied, so
+// calling it cannot change behaviour.
+sentry_crash_reporting_mode_t FGenericPlatformSentryConverters::CrashReportingModeToNativeProbe(ESentryCrashReportingMode mode)
+{
+	switch (mode)
+	{
+	case ESentryCrashReportingMode::Minidump:
+		return SENTRY_CRASH_REPORTING_MODE_MINIDUMP;
+	case ESentryCrashReportingMode::NativeStackwalking:
+		return SENTRY_CRASH_REPORTING_MODE_NATIVE;
+	case ESentryCrashReportingMode::NativeStackwalkingWithMinidump:
+		return SENTRY_CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown crash reporting mode value used. NativeStackwalkingWithMinidump will be returned."));
+		return SENTRY_CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP;
+	}
+}
+
 sentry_crash_upload_mode_t FGenericPlatformSentryConverters::CrashUploadModeToNative(ESentryCrashUploadMode mode)
 {
 	switch (mode)
