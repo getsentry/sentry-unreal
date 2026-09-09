@@ -319,7 +319,7 @@ jobs:
       matrix:
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
         backend: [crashpad, native]
-        run: [1, 2, 3]
+        run: [1, 2, 3, 4, 5, 6]
     uses: ./.github/workflows/integration-test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
