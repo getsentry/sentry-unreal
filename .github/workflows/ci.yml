@@ -238,17 +238,10 @@ jobs:
         env:
           IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
-          if [[ "$IS_PR" == "true" ]]; then
-            # PRs: legacy 4.27 (where supported) + 3 latest
-            echo 'linux=[\"4.27\"]' >> \"$GITHUB_OUTPUT\"
-            echo 'windows=[]' >> \"$GITHUB_OUTPUT\"
-            echo 'android=[]' >> \"$GITHUB_OUTPUT\"
-          else
-            # main / release: full set
-            echo 'linux=[\"4.27\"]' >> \"$GITHUB_OUTPUT\"
-            echo 'windows=[]' >> \"$GITHUB_OUTPUT\"
-            echo 'android=[]' >> \"$GITHUB_OUTPUT\"
-          fi
+          # TEMP(debug): 4.27 Linux only; other platforms disabled.
+          echo 'linux=["4.27"]' >> "$GITHUB_OUTPUT"
+          echo 'windows=[]' >> "$GITHUB_OUTPUT"
+          echo 'android=[]' >> "$GITHUB_OUTPUT"
 
   test-linux:
     needs: [package-preparation, generate-test-matrix]
