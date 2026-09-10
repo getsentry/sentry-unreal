@@ -293,6 +293,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $modified | Should -Not -BeNullOrEmpty
             $modified.data.handler_key | Should -Be 'handler_value'
         }
+
+        # Memory exhaustion makes attachment delivery unreliable, so OOM is left out
+        It "Should have game log attached to the crash event" -Skip:($Name -eq 'OutOfMemory') {
+            $attachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+            $attachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
+        }
     }
 
     Context "Ensure Capture Tests" {

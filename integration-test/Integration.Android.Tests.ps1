@@ -142,7 +142,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # The crash is captured but NOT uploaded yet (Android behavior).
 
             Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-            $crashIntentArgs = "-e cmdline -crash-capture"
+            $crashIntentArgs = "-e cmdline -crash-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableAutoLogAttachment=True"
             $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $crashIntentArgs
 
             Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
@@ -155,7 +155,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # -init-only allows starting the app to flush captured events and quit right after.
 
             Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
-            $initOnlyIntentArgs = "-e cmdline -init-only"
+            $initOnlyIntentArgs = "-e cmdline -init-only\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableAutoLogAttachment=True"
             $global:AndroidInitOnlyResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $initOnlyIntentArgs
 
             Write-Host "Init-only exit code: $($global:AndroidInitOnlyResult.ExitCode)" -ForegroundColor Cyan
@@ -306,6 +306,11 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have breadcrumbs from before crash" {
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have game log attached to the crash event" {
+            $attachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+            $attachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
         }
     }
 

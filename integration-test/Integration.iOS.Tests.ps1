@@ -126,7 +126,10 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # The crash is captured but NOT uploaded yet (Cocoa behavior).
 
             Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-            $global:iOSCrashResult = Invoke-iOSTestAction -Arguments @('-crash-capture')
+            $global:iOSCrashResult = Invoke-iOSTestAction -Arguments @(
+                '-crash-capture',
+                "$script:SentrySettings`:EnableAutoLogAttachment=True"
+            )
 
             Write-Host "Crash test exit code: $($global:iOSCrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -136,7 +139,10 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # Cocoa sends crash reports on the next app launch, so run the app again to upload it.
 
             Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
-            $global:iOSInitOnlyResult = Invoke-iOSTestAction -Arguments @('-init-only')
+            $global:iOSInitOnlyResult = Invoke-iOSTestAction -Arguments @(
+                '-init-only',
+                "$script:SentrySettings`:EnableAutoLogAttachment=True"
+            )
 
             Write-Host "Init-only exit code: $($global:iOSInitOnlyResult.ExitCode)" -ForegroundColor Cyan
 
@@ -289,6 +295,11 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
         It "Should have breadcrumbs from before crash" {
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have game log attached to the crash event" {
+            $attachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+            $attachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
         }
     }
 
