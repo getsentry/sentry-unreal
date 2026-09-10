@@ -17,4 +17,5 @@ mkdir "${sentryArtifactsDestination}/lib"
 
 cp ${sentryNativeRoot}/install_native/lib/*.lib ${sentryArtifactsDestination}/lib
 cp ${sentryNativeRoot}/install_native/bin/sentry-crash.exe ${sentryArtifactsDestination}/bin/sentry-crash.exe
+cp ${sentryNativeRoot}/install_native/bin/sentry-wer.dll ${sentryArtifactsDestination}/bin/sentry-wer.dll
 cp ${sentryNativeRoot}/install_native/include/sentry.h ${sentryArtifactsDestination}/include/sentry.h
