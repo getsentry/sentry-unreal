@@ -21,8 +21,4 @@ public:
 	static FSentryEditorModule& Get();
 
 	static const FName ModuleName;
-
-private:
-	/** Defers AI toolset registration until the engine is fully initialized. Unused if toolset support isn't compiled in. */
-	FDelegateHandle PostEngineInitHandle;
 };

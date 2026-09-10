@@ -5,6 +5,8 @@ Content/Python/init_unreal.py
 Content/Python/sentry_unreal/__init__.py
 Content/Python/sentry_unreal/skills/__init__.py
 Content/Python/sentry_unreal/skills/configure.py
+Content/Python/sentry_unreal/toolsets/__init__.py
+Content/Python/sentry_unreal/toolsets/sentry.py
 Gradle/gradle-wrapper.properties
 LICENSE
 Resources/Icon128.png
@@ -379,6 +381,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCFeedbackForm.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCFeedbackSource.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCFrame.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCGeo.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCHint.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCHttpStatusCodeRange.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCHub.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCId.h
@@ -413,6 +416,8 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricValue.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCNSError.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCPrivateSDKOnly.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCProfileLifecycle.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCProfileOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCRedactRegionType.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCReplayApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCReplayOptions.h
@@ -728,6 +733,7 @@ Source/ThirdParty/Win64/Crashpad/lib/crashpad_zlib.lib
 Source/ThirdParty/Win64/Crashpad/lib/mini_chromium.lib
 Source/ThirdParty/Win64/Crashpad/lib/sentry.lib
 Source/ThirdParty/Win64/Native/bin/sentry-crash.exe
+Source/ThirdParty/Win64/Native/bin/sentry-wer.dll
 Source/ThirdParty/Win64/Native/include/sentry.h
 Source/ThirdParty/Win64/Native/lib/sentry-wer.lib
 Source/ThirdParty/Win64/Native/lib/sentry.lib
@@ -748,10 +754,8 @@ Source/ThirdParty/WinArm64/Crashpad/lib/crashpad_zlib.lib
 Source/ThirdParty/WinArm64/Crashpad/lib/mini_chromium.lib
 Source/ThirdParty/WinArm64/Crashpad/lib/sentry.lib
 Source/ThirdParty/WinArm64/Native/bin/sentry-crash.exe
+Source/ThirdParty/WinArm64/Native/bin/sentry-wer.dll
 Source/ThirdParty/WinArm64/Native/include/sentry.h
 Source/ThirdParty/WinArm64/Native/lib/sentry-wer.lib
 Source/ThirdParty/WinArm64/Native/lib/sentry.lib
 Source/ThirdParty/WinArm64/Sentry.CrashReporter.exe
-Source/Toolsets/Private/SentryToolset.cpp
-Source/Toolsets/Private/SentryToolset.h
-Source/Toolsets/Private/Tests/SentryToolset.spec.cpp

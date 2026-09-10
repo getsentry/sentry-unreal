@@ -8,13 +8,6 @@
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 
-#ifdef SENTRY_WITH_TOOLSETS
-#include "SentryToolset.h"
-
-#include "Misc/CoreDelegates.h"
-#include "ToolsetRegistry/UToolsetRegistry.h"
-#endif
-
 #define LOCTEXT_NAMESPACE "FSentryEditorModule"
 
 const FName FSentryEditorModule::ModuleName = "SentryEditor";
@@ -27,27 +20,12 @@ void FSentryEditorModule::StartupModule()
 	PropertyModule.RegisterCustomClassLayout("SentrySettings", FOnGetDetailCustomizationInstance::CreateStatic(&FSentrySettingsCustomization::MakeInstance));
 	PropertyModule.RegisterCustomPropertyTypeLayout("SentryCrashReporterImagery", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FSentryCrashReporterImageryCustomization::MakeInstance));
 	PropertyModule.NotifyCustomizationModuleChanged();
-
-#ifdef SENTRY_WITH_TOOLSETS
-	// The toolset registry is an editor subsystem, so it's not available until the engine is fully initialized.
-	PostEngineInitHandle = FCoreDelegates::GetOnPostEngineInit().AddLambda([]()
-	{
-		UToolsetRegistry::RegisterToolsetClass(USentryToolset::StaticClass());
-	});
-#endif
 }
 
 void FSentryEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
-
-#ifdef SENTRY_WITH_TOOLSETS
-	FCoreDelegates::GetOnPostEngineInit().Remove(PostEngineInitHandle);
-	PostEngineInitHandle.Reset();
-
-	UToolsetRegistry::UnregisterToolsetClass(USentryToolset::StaticClass());
-#endif
 }
 
 FSentryEditorModule& FSentryEditorModule::Get()

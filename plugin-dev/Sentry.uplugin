@@ -33,11 +33,6 @@
 			"Name": "AVCodecsCore",
 			"Enabled": false,
 			"Optional": true
-		},
-		{
-			"Name": "ToolsetRegistry",
-			"Enabled": false,
-			"Optional": true
 		}
 	],
 	"PreBuildSteps":
