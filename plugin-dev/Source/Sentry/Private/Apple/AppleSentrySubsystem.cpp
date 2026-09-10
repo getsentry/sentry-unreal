@@ -118,9 +118,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					}
 					return;
 				}
-				// The game log and screenshot captured during the previous app run are attached to the crash
-				// event from `beforeSendWithHint`, which runs before this callback and is the only place where
-				// they can still be added to the event's own envelope.
 				if (settings->AttachSessionReplay)
 				{
 					// Deliver the previous run's replay as a structured envelope so it shows
@@ -178,8 +175,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			}
 			if (beforeBreadcrumbHandler != nullptr)
 			{
-				// `beforeBreadcrumbWithHint` is deprecated on arrival in cocoa - the next major version adds the hint
-				// parameter to `beforeBreadcrumb` directly and removes this callback. Migrate once that lands.
+				// Deprecated in cocoa: the next major version moves the hint parameter into `beforeBreadcrumb`
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 				options.beforeBreadcrumbWithHint = ^SentryObjCBreadcrumb*(SentryObjCBreadcrumb* breadcrumb, SentryObjCHint* hint) {
@@ -248,15 +244,12 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					return ProcessedMetric ? metric : nullptr;
 				};
 			}
-			// This callback is set up unconditionally since the SDK relies on it itself to attach files captured
-			// during the previous app run to the crash event.
-			// `beforeSendWithHint` is deprecated on arrival in cocoa - the next major version adds the hint
-			// parameter to `beforeSend` directly and removes this callback. Migrate once that lands.
+			// Set up unconditionally - the SDK uses this callback itself to attach the previous run's files
+			// Deprecated in cocoa: the next major version moves the hint parameter into `beforeSend`
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 			options.beforeSendWithHint = ^SentryObjCEvent*(SentryObjCEvent* event, SentryObjCHint* hint) {
-				// Attachments are added before the guards below on purpose - a user handler that can't be
-				// invoked shouldn't cost the crash event its attachments.
+				// Added before the guards below so that a skipped user handler doesn't cost the attachments
 				FAppleSentryEvent eventApple(event);
 				if (eventApple.IsCrash())
 				{
@@ -772,8 +765,7 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 
 	IFileManager& fileManager = IFileManager::Get();
 
-	// For fatal events cocoa pre-populates the hint with the crash report's own attachments, so any file
-	// it already provided takes precedence over the ones captured by the plugin.
+	// Cocoa pre-populates the hint with the crash report's own attachments, which take precedence
 	TSet<FString> existingAttachments;
 	for (SentryObjCAttachment* attachment in hint.attachments)
 	{
@@ -784,8 +776,8 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 #if !NO_LOGGING
 	if (isGameLogAttachmentEnabled)
 	{
-		// Unreal creates game log backups automatically on every app run, so the most recent one holds the
-		// output of the run that crashed. The file belongs to the engine and is left in place after sending.
+		// Unreal creates game log backups on every app run, so the most recent one holds the crashed run's
+		// output. The file belongs to the engine and is left in place.
 		const FString& logFilePath = GetLatestGameLog();
 		const FString& logFileName = SentryFileUtils::GetGameLogName();
 
@@ -811,9 +803,8 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 		TArray<uint8> screenshotData;
 		const bool bScreenshotLoaded = FFileHelper::LoadFileToArray(screenshotData, *screenshotPath);
 
-		// Unlike the game log this file is created by the plugin, so it's removed once its contents have been
-		// read. The screenshot is attached as raw data rather than by path for the same reason: cocoa reads
-		// path-based attachments while building the envelope item, which happens after this callback returns.
+		// Attached as raw data rather than by path because the file is deleted here: cocoa reads path-based
+		// attachments while building the envelope item, which happens after this callback returns.
 		if (!fileManager.Delete(*screenshotPath))
 		{
 			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot attachment: %s"), *screenshotPath);

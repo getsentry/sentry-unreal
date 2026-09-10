@@ -43,8 +43,6 @@ void FAppleSentryHint::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 		return;
 	}
 
-	// Cocoa exposes the hint's attachments as a copied array property rather than an `addAttachment`
-	// method, so a new array has to be assigned in order to append to it.
 	HintApple.attachments = [HintApple.attachments arrayByAddingObject:nativeAttachment];
 }
 
