@@ -1,5 +1,5 @@
-CHANGELOG.md
 BUNDLED-EXECUTABLES.md
+CHANGELOG.md
 Config/FilterPlugin.ini
 Gradle/gradle-wrapper.properties
 LICENSE
@@ -375,6 +375,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCFeedbackForm.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCFeedbackSource.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCFrame.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCGeo.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCHint.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCHttpStatusCodeRange.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCHub.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCId.h
@@ -409,6 +410,8 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricValue.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCNSError.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCPrivateSDKOnly.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCProfileLifecycle.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCProfileOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCRedactRegionType.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCReplayApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCReplayOptions.h
