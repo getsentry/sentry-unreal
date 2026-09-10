@@ -195,8 +195,6 @@ TMap<FString, FSentryVariant> FAppleSentryEvent::GetExtras() const
 
 bool FAppleSentryEvent::IsCrash() const
 {
-	// Cocoa's `isFatalEvent` isn't public, so an unhandled mechanism is used to identify a fatal event
-	// restored from the previous app run. Events captured while running carry no mechanism at all.
 	if (EventApple.exceptions == nil)
 	{
 		return false;

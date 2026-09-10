@@ -763,23 +763,14 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 
 	IFileManager& fileManager = IFileManager::Get();
 
-	// Cocoa pre-populates the hint with the crash report's own attachments, which take precedence
-	TSet<FString> existingAttachments;
-	for (SentryObjCAttachment* attachment in hint.attachments)
-	{
-		existingAttachments.Add(FString(attachment.filename));
-	}
-
 	// If writing logs to a file is disabled (i.e. default behavior for Shipping builds) skip the attachment
 #if !NO_LOGGING
 	if (isGameLogAttachmentEnabled)
 	{
-		// Unreal creates game log backups on every app run, so the most recent one holds the crashed run's
-		// output. The file belongs to the engine and is left in place.
 		const FString& logFilePath = GetLatestGameLog();
 		const FString& logFileName = SentryFileUtils::GetGameLogName();
 
-		if (!logFilePath.IsEmpty() && fileManager.FileExists(*logFilePath) && !existingAttachments.Contains(logFileName))
+		if (!logFilePath.IsEmpty() && fileManager.FileExists(*logFilePath))
 		{
 			FAppleSentryAttachment logAttachment(fileManager.ConvertToAbsolutePathForExternalAppForRead(*logFilePath),
 				logFileName, TEXT("text/plain"));
@@ -801,8 +792,6 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 		TArray<uint8> screenshotData;
 		const bool bScreenshotLoaded = FFileHelper::LoadFileToArray(screenshotData, *screenshotPath);
 
-		// Attached as raw data rather than by path because the file is deleted here: cocoa reads path-based
-		// attachments while building the envelope item, which happens after this callback returns.
 		if (!fileManager.Delete(*screenshotPath))
 		{
 			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot attachment: %s"), *screenshotPath);
@@ -814,12 +803,9 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 			return;
 		}
 
-		if (!existingAttachments.Contains(TEXT("screenshot.png")))
-		{
-			FAppleSentryAttachment screenshotAttachment(screenshotData, TEXT("screenshot.png"), TEXT("image/png"));
+		FAppleSentryAttachment screenshotAttachment(screenshotData, TEXT("screenshot.png"), TEXT("image/png"));
 
-			hint.attachments = [hint.attachments arrayByAddingObject:screenshotAttachment.GetNativeObject()];
-		}
+		hint.attachments = [hint.attachments arrayByAddingObject:screenshotAttachment.GetNativeObject()];
 	}
 }
 
