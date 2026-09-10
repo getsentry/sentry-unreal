@@ -244,12 +244,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					return ProcessedMetric ? metric : nullptr;
 				};
 			}
-			// Set up unconditionally - the SDK uses this callback itself to attach the previous run's files
 			// Deprecated in cocoa: the next major version moves the hint parameter into `beforeSend`
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 			options.beforeSendWithHint = ^SentryObjCEvent*(SentryObjCEvent* event, SentryObjCHint* hint) {
-				// Added before the guards below so that a skipped user handler doesn't cost the attachments
 				FAppleSentryEvent eventApple(event);
 				if (eventApple.IsCrash())
 				{
