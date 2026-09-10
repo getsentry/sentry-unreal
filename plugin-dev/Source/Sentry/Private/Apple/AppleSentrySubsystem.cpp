@@ -789,6 +789,8 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 			return;
 		}
 
+		// Attached as data, not by path - the file is deleted below and cocoa reads paths only later,
+		// when building the envelope item
 		TArray<uint8> screenshotData;
 		const bool bScreenshotLoaded = FFileHelper::LoadFileToArray(screenshotData, *screenshotPath);
 
