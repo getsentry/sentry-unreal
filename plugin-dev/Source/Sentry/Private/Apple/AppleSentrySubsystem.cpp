@@ -66,7 +66,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
 	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
-	maxAttachmentSize = settings->MaxAttachmentSize;
 
 	FString prevSessionReplayPath;
 	FString prevSessionReplaySidecarPath;
@@ -119,18 +118,9 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					}
 					return;
 				}
-				if (settings->AttachScreenshot)
-				{
-					// If a screenshot was captured during assertion/crash in the previous app run
-					// find the most recent one and upload it to Sentry.
-					UploadScreenshotForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestScreenshot());
-				}
-				if (settings->EnableAutoLogAttachment)
-				{
-					// Unreal creates game log backups automatically on every app run. If logging is enabled for current configuration, SDK can
-					// find the most recent one and upload it to Sentry.
-					UploadGameLogForEvent(MakeShareable(new FAppleSentryId(event.eventId)), GetLatestGameLog());
-				}
+				// The game log and screenshot captured during the previous app run are attached to the crash
+				// event from `beforeSendWithHint`, which runs before this callback and is the only place where
+				// they can still be added to the event's own envelope.
 				if (settings->AttachSessionReplay)
 				{
 					// Deliver the previous run's replay as a structured envelope so it shows
@@ -258,34 +248,46 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					return ProcessedMetric ? metric : nullptr;
 				};
 			}
-			if (beforeSendHandler != nullptr)
-			{
-				// `beforeSendWithHint` is deprecated on arrival in cocoa - the next major version adds the hint
-				// parameter to `beforeSend` directly and removes this callback. Migrate once that lands.
+			// This callback is set up unconditionally since the SDK relies on it itself to attach files captured
+			// during the previous app run to the crash event.
+			// `beforeSendWithHint` is deprecated on arrival in cocoa - the next major version adds the hint
+			// parameter to `beforeSend` directly and removes this callback. Migrate once that lands.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-				options.beforeSendWithHint = ^SentryObjCEvent*(SentryObjCEvent* event, SentryObjCHint* hint) {
-					if (!SentryCallbackUtils::IsCallbackSafeToRun())
-					{
-						// Event will be sent without calling a `onBeforeSend` handler
-						return event;
-					}
+			options.beforeSendWithHint = ^SentryObjCEvent*(SentryObjCEvent* event, SentryObjCHint* hint) {
+				// Attachments are added before the guards below on purpose - a user handler that can't be
+				// invoked shouldn't cost the crash event its attachments.
+				FAppleSentryEvent eventApple(event);
+				if (eventApple.IsCrash())
+				{
+					AddCrashAttachmentsToHint(hint);
+				}
 
-					TSentryCallbackGuard<USentryBeforeSendHandler> ReentrancyGuard;
-					if (ReentrancyGuard.IsReentrant())
-					{
-						return event;
-					}
+				if (beforeSendHandler == nullptr)
+				{
+					return event;
+				}
 
-					USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAppleSentryEvent(event)));
-					USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAppleSentryHint(hint)));
+				if (!SentryCallbackUtils::IsCallbackSafeToRun())
+				{
+					// Event will be sent without calling a `onBeforeSend` handler
+					return event;
+				}
 
-					USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, HintToProcess);
+				TSentryCallbackGuard<USentryBeforeSendHandler> ReentrancyGuard;
+				if (ReentrancyGuard.IsReentrant())
+				{
+					return event;
+				}
 
-					return ProcessedEvent ? event : nullptr;
-				};
+				USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAppleSentryEvent(event)));
+				USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAppleSentryHint(hint)));
+
+				USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, HintToProcess);
+
+				return ProcessedEvent ? event : nullptr;
+			};
 #pragma clang diagnostic pop
-			}
 		}];
 
 		dispatch_group_leave(sentryDispatchGroup);
@@ -761,72 +763,75 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	return MakeShareable(new FAppleSentryTransactionContext(transactionContext));
 }
 
-void FAppleSentrySubsystem::UploadAttachmentForEvent(TSharedPtr<ISentryId> eventId, const FString& filePath, const FString& name, bool deleteAfterUpload) const
+void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) const
 {
+	if (hint == nil)
+	{
+		return;
+	}
+
 	IFileManager& fileManager = IFileManager::Get();
-	if (!fileManager.FileExists(*filePath))
+
+	// For fatal events cocoa pre-populates the hint with the crash report's own attachments, so any file
+	// it already provided takes precedence over the ones captured by the plugin.
+	TSet<FString> existingAttachments;
+	for (SentryObjCAttachment* attachment in hint.attachments)
 	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload attachment - file path provided did not exist: %s"), *filePath);
-		return;
+		existingAttachments.Add(FString(attachment.filename));
 	}
 
-	if (!eventId || !eventId->IsValid())
-	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Skipping attachment upload for an event that wasn't sent: %s"), *filePath);
-
-		if (deleteAfterUpload && !fileManager.Delete(*filePath))
-		{
-			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete file attachment: %s"), *filePath);
-		}
-
-		return;
-	}
-
-	const FString& filePathExt = fileManager.ConvertToAbsolutePathForExternalAppForRead(*filePath);
-
-	SentryObjCAttachment* attachment = [[SENTRY_APPLE_CLASS(SentryObjCAttachment) alloc] initWithPath:filePathExt.GetNSString() filename:name.GetNSString()];
-
-	SentryObjCEnvelopeItem* envelopeItem = [[SENTRY_APPLE_CLASS(SentryObjCEnvelopeItem) alloc] initWithAttachment:attachment maxAttachmentSize:maxAttachmentSize];
-	if (envelopeItem == nil)
-	{
-		UE_LOG(LogSentrySdk, Error, TEXT("Failed to upload attachment - file exceeds max attachment size or could not be read: %s"), *filePath);
-		return;
-	}
-
-	SentryObjCId* id = StaticCastSharedPtr<FAppleSentryId>(eventId)->GetNativeObject();
-
-	SentryObjCEnvelopeHeader* envelopeHeader = [[SENTRY_APPLE_CLASS(SentryObjCEnvelopeHeader) alloc] initWithId:id traceContext:nil];
-
-	SentryObjCEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryObjCEnvelope) alloc] initWithHeader:envelopeHeader singleItem:envelopeItem];
-
-	[[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] envelope] capture:envelope];
-
-	if (deleteAfterUpload)
-	{
-		if (!fileManager.Delete(*filePath))
-		{
-			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete file attachment after upload: %s"), *filePath);
-		}
-	}
-}
-
-void FAppleSentrySubsystem::UploadScreenshotForEvent(TSharedPtr<ISentryId> eventId, const FString& screenshotPath) const
-{
-	if (screenshotPath.IsEmpty())
-	{
-		// Screenshot capturing is a best-effort solution so if one wasn't captured (path is empty) skip the upload
-		return;
-	}
-
-	UploadAttachmentForEvent(eventId, screenshotPath, TEXT("screenshot.png"), true);
-}
-
-void FAppleSentrySubsystem::UploadGameLogForEvent(TSharedPtr<ISentryId> eventId, const FString& logFilePath) const
-{
-	// If writing logs to a file is disabled (i.e. default behavior for Shipping builds) skip the upload
+	// If writing logs to a file is disabled (i.e. default behavior for Shipping builds) skip the attachment
 #if !NO_LOGGING
-	UploadAttachmentForEvent(eventId, logFilePath, SentryFileUtils::GetGameLogName());
+	if (isGameLogAttachmentEnabled)
+	{
+		// Unreal creates game log backups automatically on every app run, so the most recent one holds the
+		// output of the run that crashed. The file belongs to the engine and is left in place after sending.
+		const FString& logFilePath = GetLatestGameLog();
+		const FString& logFileName = SentryFileUtils::GetGameLogName();
+
+		if (!logFilePath.IsEmpty() && fileManager.FileExists(*logFilePath) && !existingAttachments.Contains(logFileName))
+		{
+			FAppleSentryAttachment logAttachment(fileManager.ConvertToAbsolutePathForExternalAppForRead(*logFilePath),
+				logFileName, TEXT("text/plain"));
+
+			hint.attachments = [hint.attachments arrayByAddingObject:logAttachment.GetNativeObject()];
+		}
+	}
 #endif
+
+	if (isScreenshotAttachmentEnabled)
+	{
+		// Screenshot capturing is a best-effort solution so if one wasn't captured skip the attachment
+		const FString& screenshotPath = GetLatestScreenshot();
+		if (screenshotPath.IsEmpty() || !fileManager.FileExists(*screenshotPath))
+		{
+			return;
+		}
+
+		TArray<uint8> screenshotData;
+		const bool bScreenshotLoaded = FFileHelper::LoadFileToArray(screenshotData, *screenshotPath);
+
+		// Unlike the game log this file is created by the plugin, so it's removed once its contents have been
+		// read. The screenshot is attached as raw data rather than by path for the same reason: cocoa reads
+		// path-based attachments while building the envelope item, which happens after this callback returns.
+		if (!fileManager.Delete(*screenshotPath))
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to delete screenshot attachment: %s"), *screenshotPath);
+		}
+
+		if (!bScreenshotLoaded)
+		{
+			UE_LOG(LogSentrySdk, Error, TEXT("Failed to read screenshot attachment: %s"), *screenshotPath);
+			return;
+		}
+
+		if (!existingAttachments.Contains(TEXT("screenshot.png")))
+		{
+			FAppleSentryAttachment screenshotAttachment(screenshotData, TEXT("screenshot.png"), TEXT("image/png"));
+
+			hint.attachments = [hint.attachments arrayByAddingObject:screenshotAttachment.GetNativeObject()];
+		}
+	}
 }
 
 void FAppleSentrySubsystem::AddGameLogAttachmentToScope(SentryObjCScope* scope) const
