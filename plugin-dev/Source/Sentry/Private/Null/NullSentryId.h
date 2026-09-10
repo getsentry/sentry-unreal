@@ -12,6 +12,7 @@ public:
 	virtual ~FNullSentryId() override = default;
 
 	virtual FString ToString() const override { return TEXT(""); }
+	virtual bool IsValid() const override { return false; }
 };
 
 typedef FNullSentryId FPlatformSentryId;

@@ -19,6 +19,7 @@ public:
 	SentryObjCId* GetNativeObject();
 
 	virtual FString ToString() const override;
+	virtual bool IsValid() const override;
 
 private:
 	SentryObjCId* IdApple;

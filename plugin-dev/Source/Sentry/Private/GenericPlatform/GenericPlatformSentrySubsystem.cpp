@@ -672,9 +672,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	{
 		sentry_options_set_minidump_mode(options, FGenericPlatformSentryConverters::MinidumpModeToNative(settings->MinidumpMode));
 		sentry_options_set_crash_reporting_mode(options, FGenericPlatformSentryConverters::CrashReportingModeToNative(settings->CrashReportingMode));
-		// TEMP(debug/ue427-linux-hang): re-applies the crash reporting mode set on the line above.
-		// Strictly a no-op; occupies the source position ba480b42's line did.
-		sentry_options_set_crash_reporting_mode(options, FGenericPlatformSentryConverters::CrashReportingModeToNativeProbe(settings->CrashReportingMode));
+		sentry_options_set_thread_stackwalk_mode(options, FGenericPlatformSentryConverters::ThreadStackwalkModeToNative(settings->ThreadStackwalkMode));
 		sentry_options_set_crash_upload_mode(options, FGenericPlatformSentryConverters::CrashUploadModeToNative(settings->CrashUploadMode));
 	}
 

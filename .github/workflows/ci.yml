@@ -24,14 +24,14 @@ jobs:
     uses: ./.github/workflows/sdk-download.yml
     with:
       target: IOS
-      runsOn: ubuntu-latest
+      runsOn: macos-latest
 
   macos-cocoa-sdk:
     uses: ./.github/workflows/sdk-download.yml
     with:
       target: Mac
       backend: cocoa
-      runsOn: ubuntu-latest
+      runsOn: macos-latest
 
   macos-native-sdk:
     uses: ./.github/workflows/sdk-build.yml
@@ -100,112 +100,18 @@ jobs:
       backend: native
       runsOn: windows-11-arm
 
-  package-preparation:
+  package:
     needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native]
     name: Package
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          submodules: recursive
+    secrets:
+      APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+      APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+    uses: ./.github/workflows/package.yml
 
-      - name: Download CLI
-        shell: pwsh
-        run: ./scripts/download-cli.ps1
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: Android-sdk
-          path: plugin-dev/Source/ThirdParty/Android
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: IOS-sdk
-          path: plugin-dev/Source/ThirdParty/IOS
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: Mac-cocoa-sdk
-          path: plugin-dev/Source/ThirdParty/Mac
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: Mac-native-sdk
-          path: plugin-dev/Source/ThirdParty/Mac/Native
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: Linux-crashpad-sdk
-          path: plugin-dev/Source/ThirdParty/Linux/Crashpad
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: Linux-native-sdk
-          path: plugin-dev/Source/ThirdParty/Linux/Native
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: LinuxArm64-crashpad-sdk
-          path: plugin-dev/Source/ThirdParty/LinuxArm64/Crashpad
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: LinuxArm64-native-sdk
-          path: plugin-dev/Source/ThirdParty/LinuxArm64/Native
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: Win64-crashpad-sdk
-          path: plugin-dev/Source/ThirdParty/Win64/Crashpad
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: Win64-native-sdk
-          path: plugin-dev/Source/ThirdParty/Win64/Native
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: WinArm64-crashpad-sdk
-          path: plugin-dev/Source/ThirdParty/WinArm64/Crashpad
-
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: WinArm64-native-sdk
-          path: plugin-dev/Source/ThirdParty/WinArm64/Native
-
-      - name: Download Crash Reporter
-        shell: bash
-        run: ./scripts/download-crash-reporter.sh
-
-      # Workaround for https://github.com/actions/download-artifact/issues/14
-      # Adding execute permission for crashpad before preparing final packages
-      # allows to avoid issues with plugin initialization on Unix-based systems.
-      - name: Set permissions for executables
-        shell: pwsh
-        run: |
-          chmod +x plugin-dev/Source/ThirdParty/Linux/Crashpad/bin/crashpad_handler
-          chmod +x plugin-dev/Source/ThirdParty/Linux/Native/bin/sentry-crash
-          chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Crashpad/bin/crashpad_handler
-          chmod +x plugin-dev/Source/ThirdParty/LinuxArm64/Native/bin/sentry-crash
-          chmod +x plugin-dev/Source/ThirdParty/Mac/Native/bin/sentry-crash
-
-      - name: Prepare Sentry packages for release
-        shell: pwsh
-        run: ./scripts/packaging/pack.ps1
-
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
-          name: ${{ github.sha }}
-          if-no-files-found: error
-          path: |
-            sentry-unreal-*.zip
-
-# TEMP(debug): disabled to save runner minutes
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
 #   package-validation:
-#     needs: [package-preparation]
+#     needs: [package]
 #     name: Check snapshot
 #     runs-on: ubuntu-latest
 #     steps:
@@ -238,13 +144,13 @@ jobs:
         env:
           IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
-          # TEMP(debug): 4.27 Linux only; other platforms disabled.
+          # TEMP(debug/ue427-linux-hang): 4.27 Linux only; other platforms disabled.
           echo 'linux=["4.27"]' >> "$GITHUB_OUTPUT"
-          echo 'windows=[]' >> "$GITHUB_OUTPUT"
-          echo 'android=[]' >> "$GITHUB_OUTPUT"
+          echo 'windows=[]'     >> "$GITHUB_OUTPUT"
+          echo 'android=[]'     >> "$GITHUB_OUTPUT"
 
   test-linux:
-    needs: [package-preparation, generate-test-matrix]
+    needs: [package, generate-test-matrix]
     name: Linux UE ${{ matrix.unreal }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -258,9 +164,9 @@ jobs:
     with:
       unreal-version: ${{ matrix.unreal }}
 
-# TEMP(debug): disabled to save runner minutes
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
 #   test-windows:
-#     needs: [package-preparation, generate-test-matrix]
+#     needs: [package, generate-test-matrix]
 #     name: Windows UE ${{ matrix.unreal }}
 #     secrets:
 #       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -274,9 +180,9 @@ jobs:
 #     with:
 #       unreal-version: ${{ matrix.unreal }}
 
-# TEMP(debug): disabled to save runner minutes
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
 #   test-macos:
-#     needs: [package-preparation]
+#     needs: [package]
 #     name: macOS UE ${{ matrix.unreal }}
 #     secrets:
 #       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -292,9 +198,30 @@ jobs:
 #       unreal-version: ${{ matrix.unreal }}
 #     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
-# TEMP(debug): disabled to save runner minutes
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   test-ios:
+#     needs: [package]
+#     name: iOS UE ${{ matrix.unreal }}
+#     secrets:
+#       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+#       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+#       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+#       MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+#       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+#       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         # Must match an engine version published to the registry by the ue-oci-macos workflow
+#         unreal: ['5.8']
+#     uses: ./.github/workflows/test-ios.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
+#     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
+
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
 #   test-android:
-#     needs: [package-preparation, generate-test-matrix]
+#     needs: [package, generate-test-matrix]
 #     name: Android UE ${{ matrix.unreal }}
 #     secrets:
 #       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -308,8 +235,47 @@ jobs:
 #     with:
 #       unreal-version: ${{ matrix.unreal }}
 
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   test-consoles:
+#     needs: [package]
+#     name: ${{ matrix.name }}
+#     if: github.event_name == 'push'
+#     secrets:
+#       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         include:
+#           - name: XSX (breakpad)
+#             platform: XSX
+#             backend: breakpad
+#             extension-repo: getsentry/sentry-xbox
+#             extension-artifact: scarlett-unreal
+#           - name: XSX (native)
+#             platform: XSX
+#             backend: native
+#             extension-repo: getsentry/sentry-xbox
+#             extension-artifact: scarlett-unreal-outproc
+#           - name: PS5
+#             platform: PS5
+#             backend: ""
+#             extension-repo: getsentry/sentry-playstation
+#             extension-artifact: ps5-unreal
+#           - name: Switch
+#             platform: Switch
+#             backend: ""
+#             extension-repo: getsentry/sentry-switch
+#             extension-artifact: nx64-unreal-sdk21
+#     uses: ./.github/workflows/test-consoles.yml
+#     with:
+#       platform: ${{ matrix.platform }}
+#       backend: ${{ matrix.backend }}
+#       extension-repo: ${{ matrix.extension-repo }}
+#       extension-artifact: ${{ matrix.extension-artifact }}
+
   integration-test-linux:
     needs: [test-linux, generate-test-matrix]
+    # TEMP(debug/ue427-linux-hang): repeated runs; the hang is intermittent (~1 in 3).
     name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }}) run ${{ matrix.run }}
     secrets:
       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
@@ -326,7 +292,7 @@ jobs:
       backend: ${{ matrix.backend }}
       run-index: ${{ matrix.run }}
 
-# TEMP(debug): disabled to save runner minutes
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
 #   integration-test-windows:
 #     needs: [test-windows, generate-test-matrix]
 #     name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
@@ -346,7 +312,7 @@ jobs:
 #       unreal-version: ${{ matrix.unreal }}
 #       backend: ${{ matrix.backend }}
 
-# TEMP(debug): disabled to save runner minutes
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
 #   integration-test-macos:
 #     needs: [test-macos]
 #     name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
@@ -363,7 +329,25 @@ jobs:
 #       unreal-version: ${{ matrix.unreal }}
 #       backend: ${{ matrix.backend }}
 
-# TEMP(debug): disabled to save runner minutes
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
+#   integration-test-ios:
+#     needs: [test-ios]
+#     name: iOS UE ${{ matrix.unreal }}
+#     secrets:
+#       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+#       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+#       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+#       SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+#     strategy:
+#       fail-fast: false
+#       max-parallel: 1
+#       matrix:
+#         unreal: ['5.8']
+#     uses: ./.github/workflows/integration-test-ios.yml
+#     with:
+#       unreal-version: ${{ matrix.unreal }}
+
+# TEMP(debug/ue427-linux-hang): disabled to save runner minutes
 #   integration-test-android:
 #     needs: [test-android, generate-test-matrix]
 #     name: Android UE ${{ matrix.unreal }}

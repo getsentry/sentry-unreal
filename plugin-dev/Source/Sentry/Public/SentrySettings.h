@@ -521,12 +521,10 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "UseNativeBackend"))
 	ESentryCrashReportingMode CrashReportingMode;
 
-	// TEMP(debug/ue427-linux-hang): layout probe. Structural clone of ba480b42's UPROPERTY.
-	// Never read; exists only to change USentrySettings' layout and reflection data.
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Stackwalk probe mode", ToolTip = "Debug-only layout probe. Has no effect.",
+		Meta = (DisplayName = "Thread stackwalk mode", ToolTip = "Controls which threads have their stack walked client-side. Walking every thread gives the most context but can noticeably delay crash processing in applications with a high thread count, such as editor builds. Requires native stackwalking to be enabled in the crash reporting mode.",
 			EditCondition = "UseNativeBackend"))
-	ESentryStackwalkProbeMode StackwalkProbeMode;
+	ESentryThreadStackwalkMode ThreadStackwalkMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
 		Meta = (DisplayName = "Crash upload mode", ToolTip = "Controls what happens after crash data is captured. Sync keeps the crashed application blocked until the crash daemon finishes uploading. Async lets it terminate immediately while the daemon continues uploading in the background, which avoids long freezes when sending large crash payloads.",

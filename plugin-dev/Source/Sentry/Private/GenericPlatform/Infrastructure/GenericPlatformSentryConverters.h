@@ -28,8 +28,7 @@ public:
 	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
 	static sentry_minidump_mode_t MinidumpModeToNative(ESentryMinidumpMode mode);
 	static sentry_crash_reporting_mode_t CrashReportingModeToNative(ESentryCrashReportingMode mode);
-	// TEMP(debug/ue427-linux-hang): layout-perturbation probe.
-	static sentry_crash_reporting_mode_t CrashReportingModeToNativeProbe(ESentryCrashReportingMode mode);
+	static sentry_thread_stackwalk_mode_t ThreadStackwalkModeToNative(ESentryThreadStackwalkMode mode);
 	static sentry_crash_upload_mode_t CrashUploadModeToNative(ESentryCrashUploadMode mode);
 
 	/** Conversions from native types */
