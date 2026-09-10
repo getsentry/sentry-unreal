@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Reduce overhead when reading event and scope data on native platforms ([#1576](https://github.com/getsentry/sentry-unreal/pull/1576))
+
 ### Dependencies
 
 - Bump Java SDK from v8.55.0 to v8.56.0 ([#1575](https://github.com/getsentry/sentry-unreal/pull/1575))
