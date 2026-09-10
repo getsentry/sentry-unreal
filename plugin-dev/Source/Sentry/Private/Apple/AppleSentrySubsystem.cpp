@@ -8,6 +8,7 @@
 #include "AppleSentryBreadcrumb.h"
 #include "AppleSentryEvent.h"
 #include "AppleSentryFeedback.h"
+#include "AppleSentryHint.h"
 #include "AppleSentryId.h"
 #include "AppleSentryLog.h"
 #include "AppleSentryMetric.h"
@@ -25,6 +26,7 @@
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
 #include "SentryEvent.h"
+#include "SentryHint.h"
 #include "SentryLog.h"
 #include "SentryMetric.h"
 #include "SentrySamplingContext.h"
@@ -186,7 +188,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			}
 			if (beforeBreadcrumbHandler != nullptr)
 			{
-				options.beforeBreadcrumb = ^SentryObjCBreadcrumb*(SentryObjCBreadcrumb* breadcrumb) {
+				// `beforeBreadcrumbWithHint` is deprecated on arrival in cocoa - the next major version adds the hint
+				// parameter to `beforeBreadcrumb` directly and removes this callback. Migrate once that lands.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+				options.beforeBreadcrumbWithHint = ^SentryObjCBreadcrumb*(SentryObjCBreadcrumb* breadcrumb, SentryObjCHint* hint) {
 					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
@@ -200,11 +206,13 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					}
 
 					USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new FAppleSentryBreadcrumb(breadcrumb)));
+					USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAppleSentryHint(hint)));
 
-					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
+					USentryBreadcrumb* ProcessedBreadcrumb = beforeBreadcrumbHandler->HandleBeforeBreadcrumb(BreadcrumbToProcess, HintToProcess);
 
 					return ProcessedBreadcrumb ? breadcrumb : nullptr;
 				};
+#pragma clang diagnostic pop
 			}
 			if (beforeLogHandler != nullptr)
 			{
@@ -252,7 +260,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			}
 			if (beforeSendHandler != nullptr)
 			{
-				options.beforeSend = ^SentryObjCEvent*(SentryObjCEvent* event) {
+				// `beforeSendWithHint` is deprecated on arrival in cocoa - the next major version adds the hint
+				// parameter to `beforeSend` directly and removes this callback. Migrate once that lands.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+				options.beforeSendWithHint = ^SentryObjCEvent*(SentryObjCEvent* event, SentryObjCHint* hint) {
 					if (!SentryCallbackUtils::IsCallbackSafeToRun())
 					{
 						// Event will be sent without calling a `onBeforeSend` handler
@@ -266,11 +278,13 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					}
 
 					USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAppleSentryEvent(event)));
+					USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAppleSentryHint(hint)));
 
-					USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, nullptr);
+					USentryEvent* ProcessedEvent = beforeSendHandler->HandleBeforeSend(EventToProcess, HintToProcess);
 
 					return ProcessedEvent ? event : nullptr;
 				};
+#pragma clang diagnostic pop
 			}
 		}];
 
