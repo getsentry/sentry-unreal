@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add hint support for macOS/iOS ([#1577](https://github.com/getsentry/sentry-unreal/pull/1577))
+- Add hint support for macOS/iOS ([#1578](https://github.com/getsentry/sentry-unreal/pull/1578))
 
 ### Fixes
 
