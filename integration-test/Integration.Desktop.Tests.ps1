@@ -179,6 +179,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             $script:CrashResult = $null
             $script:CrashEvent = $null
+            $script:CrashAttachments = @()
 
             Write-Host "Running $crashTypeName crash test..." -ForegroundColor Yellow
 
@@ -218,6 +219,15 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 }
                 catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:CrashEvent) {
+                    try {
+                        $script:CrashAttachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch crash event attachments from Sentry: $_" -ForegroundColor Red
+                    }
                 }
             }
             else {
@@ -294,10 +304,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $modified.data.handler_key | Should -Be 'handler_value'
         }
 
-        # Memory exhaustion makes attachment delivery unreliable, so OOM is left out
-        It "Should have game log attached to the crash event" -Skip:($Name -eq 'OutOfMemory') {
-            $attachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
-            $attachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
+        It "Should have game log attached to the crash event" {
+            $script:CrashAttachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
         }
     }
 
