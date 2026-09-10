@@ -353,14 +353,12 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 {
 	TMap<FString, FSentryVariant> unrealMap;
 
-	const sentry_value_foreach_key_value_function_t addPair = [](const char* key, sentry_value_t value, void* userdata) -> int
+	sentry_value_foreach_key_value(map, [](const char* key, sentry_value_t value, void* userdata)
 	{
 		auto* outMap = static_cast<TMap<FString, FSentryVariant>*>(userdata);
 		outMap->Add(UTF8_TO_TCHAR(key), VariantToUnreal(value));
 		return 0;
-	};
-
-	sentry_value_foreach_key_value(map, addPair, &unrealMap);
+	}, &unrealMap);
 
 	return unrealMap;
 }
@@ -382,14 +380,12 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 {
 	TMap<FString, FString> unrealMap;
 
-	const sentry_value_foreach_key_value_function_t addPair = [](const char* key, sentry_value_t value, void* userdata) -> int
+	sentry_value_foreach_key_value(map, [](const char* key, sentry_value_t value, void* userdata)
 	{
 		auto* outMap = static_cast<TMap<FString, FString>*>(userdata);
 		outMap->Add(UTF8_TO_TCHAR(key), UTF8_TO_TCHAR(sentry_value_as_string(value)));
 		return 0;
-	};
-
-	sentry_value_foreach_key_value(map, addPair, &unrealMap);
+	}, &unrealMap);
 
 	return unrealMap;
 }
