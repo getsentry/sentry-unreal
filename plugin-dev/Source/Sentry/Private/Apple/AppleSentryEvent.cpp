@@ -195,7 +195,25 @@ TMap<FString, FSentryVariant> FAppleSentryEvent::GetExtras() const
 
 bool FAppleSentryEvent::IsCrash() const
 {
-	return EventApple.error != nullptr;
+	// Cocoa marks crash events internally via `isFatalEvent` which isn't part of its public API, so the
+	// event is classified by its exception mechanism instead. An unhandled mechanism identifies a fatal
+	// event restored from the previous app run - a crash, a watchdog termination or a fatal app hang.
+	// Events captured while the app is running (errors, exceptions, ensures) carry no mechanism at all.
+	// This matches how `SentryEvent.isCrashed()` is defined in the Java SDK.
+	if (EventApple.exceptions == nil)
+	{
+		return false;
+	}
+
+	for (SentryObjCException* exception in EventApple.exceptions)
+	{
+		if (exception.mechanism != nil && exception.mechanism.handled != nil && ![exception.mechanism.handled boolValue])
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 TSharedPtr<ISentryFeedback> FAppleSentryEvent::GetFeedback() const
