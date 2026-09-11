@@ -6,6 +6,8 @@
 
 #if PLATFORM_ANDROID
 #include "Android/AndroidSentryHint.h"
+#elif PLATFORM_APPLE && !USE_SENTRY_NATIVE
+#include "Apple/AppleSentryHint.h"
 #else
 #include "Null/NullSentryHint.h"
 #endif

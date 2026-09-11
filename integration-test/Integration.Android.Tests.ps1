@@ -122,6 +122,9 @@ BeforeAll {
 
     $script:PackageName = "io.sentry.unreal.sample"
     $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
+
+    # Project setting overrides shared by every scenario, appended to each scenario's intent extras
+    $script:BaseAppArgs = "\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableAutoLogAttachment=True"
 }
 
 Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTargets {
@@ -142,7 +145,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # The crash is captured but NOT uploaded yet (Android behavior).
 
             Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-            $crashIntentArgs = "-e cmdline -crash-capture"
+            $crashIntentArgs = "-e cmdline -crash-capture$script:BaseAppArgs"
             $global:AndroidCrashResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $crashIntentArgs
 
             Write-Host "Crash test exit code: $($global:AndroidCrashResult.ExitCode)" -ForegroundColor Cyan
@@ -155,7 +158,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # -init-only allows starting the app to flush captured events and quit right after.
 
             Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
-            $initOnlyIntentArgs = "-e cmdline -init-only"
+            $initOnlyIntentArgs = "-e cmdline -init-only$script:BaseAppArgs"
             $global:AndroidInitOnlyResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $initOnlyIntentArgs
 
             Write-Host "Init-only exit code: $($global:AndroidInitOnlyResult.ExitCode)" -ForegroundColor Cyan
@@ -165,7 +168,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # ==========================================
 
             Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-            $messageIntentArgs = "-e cmdline -message-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
+            $messageIntentArgs = "-e cmdline -message-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler$script:BaseAppArgs"
             $global:AndroidMessageResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $messageIntentArgs
 
             Write-Host "Message test exit code: $($global:AndroidMessageResult.ExitCode)" -ForegroundColor Cyan
@@ -175,7 +178,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # ==========================================
 
             Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
-            $feedbackIntentArgs = "-e cmdline -feedback-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
+            $feedbackIntentArgs = "-e cmdline -feedback-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler$script:BaseAppArgs"
             $global:AndroidFeedbackResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $feedbackIntentArgs
 
             Write-Host "Feedback test exit code: $($global:AndroidFeedbackResult.ExitCode)" -ForegroundColor Cyan
@@ -185,7 +188,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # ==========================================
 
             Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-            $logIntentArgs = "-e cmdline -log-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
+            $logIntentArgs = "-e cmdline -log-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler$script:BaseAppArgs"
             $global:AndroidLogResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $logIntentArgs
 
             Write-Host "Log test exit code: $($global:AndroidLogResult.ExitCode)" -ForegroundColor Cyan
@@ -195,7 +198,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # ==========================================
 
             Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
-            $metricIntentArgs = "-e cmdline -metric-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
+            $metricIntentArgs = "-e cmdline -metric-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler$script:BaseAppArgs"
             $global:AndroidMetricResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $metricIntentArgs
 
             Write-Host "Metric test exit code: $($global:AndroidMetricResult.ExitCode)" -ForegroundColor Cyan
@@ -205,7 +208,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # ==========================================
 
             Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
-            $tracingIntentArgs = "-e cmdline -tracing-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+            $tracingIntentArgs = "-e cmdline -tracing-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler$script:BaseAppArgs"
             $global:AndroidTracingResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $tracingIntentArgs
 
             Write-Host "Tracing test exit code: $($global:AndroidTracingResult.ExitCode)" -ForegroundColor Cyan
@@ -215,7 +218,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # ==========================================
 
             Write-Host "Running hang-capture test on $Platform..." -ForegroundColor Yellow
-            $hangIntentArgs = "-e cmdline -hang-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableHangTracking=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:UseNativeHangTracking=True"
+            $hangIntentArgs = "-e cmdline -hang-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableHangTracking=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:UseNativeHangTracking=True$script:BaseAppArgs"
             $global:AndroidHangResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $hangIntentArgs
 
             Write-Host "Hang test exit code: $($global:AndroidHangResult.ExitCode)" -ForegroundColor Cyan
@@ -236,6 +239,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # But the crash_id comes from the CRASH run (Run 1)
             $script:CrashResult = $global:AndroidCrashResult
             $script:CrashEvent = $null
+            $script:CrashAttachments = @()
     
             # Parse crash event ID from crash run output
             $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
@@ -251,6 +255,15 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
                 }
                 catch {
                     Write-Host "Failed to fetch crash event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:CrashEvent) {
+                    try {
+                        $script:CrashAttachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch crash event attachments from Sentry: $_" -ForegroundColor Red
+                    }
                 }
             }
             else {
@@ -306,6 +319,10 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         It "Should have breadcrumbs from before crash" {
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have game log attached to the crash event" {
+            $script:CrashAttachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
         }
     }
 

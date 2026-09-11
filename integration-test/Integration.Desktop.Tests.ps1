@@ -179,6 +179,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             $script:CrashResult = $null
             $script:CrashEvent = $null
+            $script:CrashAttachments = @()
 
             Write-Host "Running $crashTypeName crash test..." -ForegroundColor Yellow
 
@@ -218,6 +219,15 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 }
                 catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:CrashEvent) {
+                    try {
+                        $script:CrashAttachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch crash event attachments from Sentry: $_" -ForegroundColor Red
+                    }
                 }
             }
             else {
@@ -292,6 +302,10 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
             $modified | Should -Not -BeNullOrEmpty
             $modified.data.handler_key | Should -Be 'handler_value'
+        }
+
+        It "Should have game log attached to the crash event" {
+            $script:CrashAttachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
         }
     }
 

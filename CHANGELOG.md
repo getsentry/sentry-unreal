@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add hint support for macOS/iOS ([#1578](https://github.com/getsentry/sentry-unreal/pull/1578))
+
 ### Fixes
 
 - Reduce overhead when reading event and scope data on native platforms ([#1576](https://github.com/getsentry/sentry-unreal/pull/1576))
