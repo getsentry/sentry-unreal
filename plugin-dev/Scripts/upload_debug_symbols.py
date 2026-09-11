@@ -145,15 +145,7 @@ def collect_symbol_files_from_receipt(receipt_path, project_dir, engine_dir):
     return files
 
 
-def main():
-    target_platform = sys.argv[1]
-    target_name = sys.argv[2]
-    target_type = sys.argv[3]
-    target_config = sys.argv[4]
-    project_file = sys.argv[5]
-    plugin_dir = sys.argv[6]
-    engine_dir = sys.argv[7]
-
+def run(target_platform, target_name, target_type, target_config, project_file, plugin_dir, engine_dir):
     log("Start debug symbols upload")
 
     # Skip editor builds
@@ -306,4 +298,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(run(*sys.argv[1:8]))

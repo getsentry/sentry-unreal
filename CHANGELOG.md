@@ -9,6 +9,7 @@
 ### Fixes
 
 - Reduce overhead when reading event and scope data on native platforms ([#1576](https://github.com/getsentry/sentry-unreal/pull/1576))
+- Replace the plugin's shell-based post-build steps with Python to comply with FAB publishing requirements ([#1580](https://github.com/getsentry/sentry-unreal/pull/1580))
 
 ### Dependencies
 
