@@ -699,9 +699,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
 
 	isEnabled = initResult == 0 ? true : false;
-
-	sentry_clear_crashed_last_run();
-
 	isStackTraceEnabled = settings->AttachStacktrace;
 	isPiiAttachmentEnabled = settings->SendDefaultPii;
 
