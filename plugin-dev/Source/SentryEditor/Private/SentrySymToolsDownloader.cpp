@@ -32,7 +32,7 @@ const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Da
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Linux-x86_64");
 #endif
 
-const FString FSentrySymToolsDownloader::SentrySymUploadScriptName = TEXT("upload-debug-symbols.py");
+const FString FSentrySymToolsDownloader::SentrySymUploadScriptName = TEXT("upload_debug_symbols.py");
 
 void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 {
