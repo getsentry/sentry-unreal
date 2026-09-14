@@ -195,7 +195,20 @@ TMap<FString, FSentryVariant> FAppleSentryEvent::GetExtras() const
 
 bool FAppleSentryEvent::IsCrash() const
 {
-	return EventApple.error != nullptr;
+	if (EventApple.exceptions == nil)
+	{
+		return false;
+	}
+
+	for (SentryObjCException* exception in EventApple.exceptions)
+	{
+		if (exception.mechanism != nil && exception.mechanism.handled != nil && ![exception.mechanism.handled boolValue])
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 TSharedPtr<ISentryFeedback> FAppleSentryEvent::GetFeedback() const

@@ -5,7 +5,6 @@
 #include "SentryDefines.h"
 
 #include "Dom/JsonObject.h"
-#include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 #include "UObject/Class.h"
@@ -354,35 +353,13 @@ TMap<FString, FSentryVariant> FGenericPlatformSentryConverters::VariantMapToUnre
 {
 	TMap<FString, FSentryVariant> unrealMap;
 
-	char* jsonString = sentry_value_to_json(map);
-	if (!jsonString)
+	sentry_value_foreach_key_value(map, [](const char* key, sentry_value_t value, void* userdata)
 	{
-		return unrealMap;
-	}
+		auto* outMap = static_cast<TMap<FString, FSentryVariant>*>(userdata);
+		outMap->Add(UTF8_TO_TCHAR(key), VariantToUnreal(value));
+		return 0;
+	}, &unrealMap);
 
-	FString mapJsonString = FString(UTF8_TO_TCHAR(jsonString));
-	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
-	{
-		sentry_string_free(jsonString);
-		return unrealMap;
-	}
-
-	TSharedPtr<FJsonObject> jsonObject;
-	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
-	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonObject);
-	if (!bDeserializeSuccess)
-	{
-		UE_LOG(LogSentrySdk, Error, TEXT("VariantToUnreal failed to deserialize map Json."));
-		sentry_string_free(jsonString);
-		return unrealMap;
-	}
-
-	for (const auto& pair : jsonObject->Values)
-	{
-		unrealMap.Add(FString(*pair.Key), VariantToUnreal(sentry_value_get_by_key(map, TCHAR_TO_UTF8(*pair.Key))));
-	}
-
-	sentry_string_free(jsonString);
 	return unrealMap;
 }
 
@@ -403,36 +380,13 @@ TMap<FString, FString> FGenericPlatformSentryConverters::StringMapToUnreal(sentr
 {
 	TMap<FString, FString> unrealMap;
 
-	char* jsonString = sentry_value_to_json(map);
-	if (!jsonString)
+	sentry_value_foreach_key_value(map, [](const char* key, sentry_value_t value, void* userdata)
 	{
-		return unrealMap;
-	}
+		auto* outMap = static_cast<TMap<FString, FString>*>(userdata);
+		outMap->Add(UTF8_TO_TCHAR(key), UTF8_TO_TCHAR(sentry_value_as_string(value)));
+		return 0;
+	}, &unrealMap);
 
-	FString mapJsonString = FString(UTF8_TO_TCHAR(jsonString));
-	if (mapJsonString.IsEmpty() || mapJsonString.Equals(TEXT("null")))
-	{
-		sentry_string_free(jsonString);
-		return unrealMap;
-	}
-
-	TSharedPtr<FJsonObject> jsonObject;
-	TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(mapJsonString);
-	bool bDeserializeSuccess = FJsonSerializer::Deserialize(jsonReader, jsonObject);
-	if (!bDeserializeSuccess)
-	{
-		UE_LOG(LogSentrySdk, Error, TEXT("StringMapToUnreal failed to deserialize map Json."));
-		sentry_string_free(jsonString);
-		return unrealMap;
-	}
-
-	for (const auto& pair : jsonObject->Values)
-	{
-		FString key(*pair.Key);
-		unrealMap.Add(key, jsonObject->GetStringField(key));
-	}
-
-	sentry_string_free(jsonString);
 	return unrealMap;
 }
 

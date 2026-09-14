@@ -54,9 +54,7 @@ FString FGenericPlatformSentryEvent::GetMessage() const
 
 void FGenericPlatformSentryEvent::SetLevel(ESentryLevel level)
 {
-	FString levelStr = FGenericPlatformSentryConverters::SentryLevelToString(level).ToLower();
-	if (!levelStr.IsEmpty())
-		sentry_value_set_by_key(Event, "level", sentry_value_new_string(TCHAR_TO_UTF8(*levelStr)));
+	sentry_event_set_level(Event, FGenericPlatformSentryConverters::SentryLevelToNative(level));
 }
 
 ESentryLevel FGenericPlatformSentryEvent::GetLevel() const

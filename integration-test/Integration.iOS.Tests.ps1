@@ -93,6 +93,11 @@ BeforeAll {
 
     $script:SentrySettings = '-ini:Engine:[/Script/Sentry.SentrySettings]'
 
+    # Project setting overrides shared by every scenario
+    $script:BaseAppArgs = @(
+        "$script:SentrySettings`:EnableAutoLogAttachment=True"  # Enables log attachment
+    )
+
     # Launch the app on the connected device and return its captured output
     function Invoke-iOSTestAction {
         param (
@@ -126,7 +131,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # The crash is captured but NOT uploaded yet (Cocoa behavior).
 
             Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-            $global:iOSCrashResult = Invoke-iOSTestAction -Arguments @('-crash-capture')
+            $global:iOSCrashResult = Invoke-iOSTestAction -Arguments (@('-crash-capture') + $script:BaseAppArgs)
 
             Write-Host "Crash test exit code: $($global:iOSCrashResult.ExitCode)" -ForegroundColor Cyan
 
@@ -136,7 +141,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # Cocoa sends crash reports on the next app launch, so run the app again to upload it.
 
             Write-Host "Running init-only to flush crash event on $Platform..." -ForegroundColor Yellow
-            $global:iOSInitOnlyResult = Invoke-iOSTestAction -Arguments @('-init-only')
+            $global:iOSInitOnlyResult = Invoke-iOSTestAction -Arguments (@('-init-only') + $script:BaseAppArgs)
 
             Write-Host "Init-only exit code: $($global:iOSInitOnlyResult.ExitCode)" -ForegroundColor Cyan
 
@@ -145,11 +150,11 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # ==========================================
 
             Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
-            $global:iOSMessageResult = Invoke-iOSTestAction -Arguments @(
+            $global:iOSMessageResult = Invoke-iOSTestAction -Arguments (@(
                 '-message-capture',
                 "$script:SentrySettings`:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler",
                 "$script:SentrySettings`:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
-            )
+            ) + $script:BaseAppArgs)
 
             Write-Host "Message test exit code: $($global:iOSMessageResult.ExitCode)" -ForegroundColor Cyan
 
@@ -158,10 +163,10 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # ==========================================
 
             Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
-            $global:iOSFeedbackResult = Invoke-iOSTestAction -Arguments @(
+            $global:iOSFeedbackResult = Invoke-iOSTestAction -Arguments (@(
                 '-feedback-capture',
                 "$script:SentrySettings`:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
-            )
+            ) + $script:BaseAppArgs)
 
             Write-Host "Feedback test exit code: $($global:iOSFeedbackResult.ExitCode)" -ForegroundColor Cyan
 
@@ -170,10 +175,10 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # ==========================================
 
             Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
-            $global:iOSLogResult = Invoke-iOSTestAction -Arguments @(
+            $global:iOSLogResult = Invoke-iOSTestAction -Arguments (@(
                 '-log-capture',
                 "$script:SentrySettings`:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
-            )
+            ) + $script:BaseAppArgs)
 
             Write-Host "Log test exit code: $($global:iOSLogResult.ExitCode)" -ForegroundColor Cyan
 
@@ -182,10 +187,10 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # ==========================================
 
             Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
-            $global:iOSMetricResult = Invoke-iOSTestAction -Arguments @(
+            $global:iOSMetricResult = Invoke-iOSTestAction -Arguments (@(
                 '-metric-capture',
                 "$script:SentrySettings`:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
-            )
+            ) + $script:BaseAppArgs)
 
             Write-Host "Metric test exit code: $($global:iOSMetricResult.ExitCode)" -ForegroundColor Cyan
 
@@ -194,12 +199,12 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # ==========================================
 
             Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
-            $global:iOSTracingResult = Invoke-iOSTestAction -Arguments @(
+            $global:iOSTracingResult = Invoke-iOSTestAction -Arguments (@(
                 '-tracing-capture',
                 "$script:SentrySettings`:EnableTracing=True",
                 "$script:SentrySettings`:SamplingType=TracesSampler",
                 "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
-            )
+            ) + $script:BaseAppArgs)
 
             Write-Host "Tracing test exit code: $($global:iOSTracingResult.ExitCode)" -ForegroundColor Cyan
         }
@@ -219,6 +224,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # But the crash_id comes from the CRASH run (Run 1)
             $script:CrashResult = $global:iOSCrashResult
             $script:CrashEvent = $null
+            $script:CrashAttachments = @()
 
             # Parse crash event ID from crash run output
             $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
@@ -234,6 +240,15 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
                 }
                 catch {
                     Write-Host "Failed to fetch crash event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:CrashEvent) {
+                    try {
+                        $script:CrashAttachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch crash event attachments from Sentry: $_" -ForegroundColor Red
+                    }
                 }
             }
             else {
@@ -289,6 +304,10 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
         It "Should have breadcrumbs from before crash" {
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have game log attached to the crash event" {
+            $script:CrashAttachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
         }
     }
 

@@ -35,25 +35,16 @@
 			"Optional": true
 		}
 	],
-	"PreBuildSteps":
-	{
-		"Mac": [
-			"chmod +x \"$(PluginDir)/Scripts/post-build-steps-mac.sh\""
-		],
-		"Linux": [
-			"chmod +x \"$(PluginDir)/Scripts/post-build-steps-linux.sh\""
-		]
-	},
 	"PostBuildSteps":
 	{
 		"Mac": [
-			"\"$(PluginDir)/Scripts/post-build-steps-mac.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+			"\"$(EngineDir)/Binaries/ThirdParty/Python3/Mac/bin/python3\" \"$(PluginDir)/Scripts/post_build_steps.py\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		],
 		"Linux": [
-			"\"$(PluginDir)/Scripts/post-build-steps-linux.sh\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+			"\"$(EngineDir)/Binaries/ThirdParty/Python3/Linux/bin/python3\" \"$(PluginDir)/Scripts/post_build_steps.py\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		],
 		"Win64": [
-			"\"$(PluginDir)/Scripts/post-build-steps-win.bat\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+			"\"$(EngineDir)/Binaries/ThirdParty/Python3/Win64/python.exe\" \"$(PluginDir)/Scripts/post_build_steps.py\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
 		]
 	}
 }

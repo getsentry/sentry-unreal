@@ -2,11 +2,26 @@
 
 ## Unreleased
 
+### Features
+
+- Add hint support for macOS/iOS ([#1578](https://github.com/getsentry/sentry-unreal/pull/1578))
+
+### Fixes
+
+- Reduce overhead when reading event and scope data on native platforms ([#1576](https://github.com/getsentry/sentry-unreal/pull/1576))
+- Replace the plugin's shell-based post-build steps with Python to comply with FAB publishing requirements ([#1580](https://github.com/getsentry/sentry-unreal/pull/1580))
+
 ### Dependencies
 
 - Bump Java SDK from v8.55.0 to v8.56.0 ([#1575](https://github.com/getsentry/sentry-unreal/pull/1575))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8560)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.55.0...8.56.0)
+- Bump Cocoa SDK from v9.27.0 to v9.28.0 ([#1574](https://github.com/getsentry/sentry-unreal/pull/1574))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9280)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.27.0...9.28.0)
+- Bump Android Gradle Plugin from v6.21.0 to v6.22.0 ([#1579](https://github.com/getsentry/sentry-unreal/pull/1579))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6220)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.21.0...6.22.0)
 
 ## 1.23.0
 
