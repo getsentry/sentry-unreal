@@ -15,7 +15,7 @@ def _subsystem():
 def _settings():
     # Not the class default object - the SDK reads its own instance, and changes to the default
     # object would never reach it.
-    settings = unreal.SentrySettings.get_active_settings()
+    settings = unreal.SentryEditorSettingsLibrary.get_active_settings()
     if settings is None:
         raise RuntimeError('Sentry settings are not available.')
     return settings
@@ -61,7 +61,7 @@ class SentryTools(unreal.ToolsetDefinition):
 
         settings = _settings()
         settings.set_editor_property('dsn', dsn)
-        settings.save_setting_to_config('Dsn')
+        unreal.SentryEditorSettingsLibrary.save_setting_to_config(settings, 'Dsn')
 
     @toolset_registry.tool_call
     @staticmethod

@@ -3,7 +3,6 @@
 #include "SentrySettings.h"
 #include "SentryBeforeSendHandler.h"
 #include "SentryDefines.h"
-#include "SentryModule.h"
 #include "SentryTraceSampler.h"
 
 #include "Misc/App.h"
@@ -258,24 +257,3 @@ void USentrySettings::LoadDebugSymbolsProperties()
 		}
 	}
 }
-
-#if WITH_EDITOR
-USentrySettings* USentrySettings::GetActiveSettings()
-{
-	return FSentryModule::IsAvailable() ? FSentryModule::Get().GetSettings() : nullptr;
-}
-
-bool USentrySettings::SaveSettingToConfig(FName PropertyName)
-{
-	const FProperty* Property = GetClass()->FindPropertyByName(PropertyName);
-	if (!Property)
-	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry setting `%s` - nothing was saved."), *PropertyName.ToString());
-		return false;
-	}
-
-	UpdateSinglePropertyInConfigFile(Property, GetDefaultConfigFilename());
-
-	return true;
-}
-#endif
