@@ -81,6 +81,12 @@ BeforeDiscovery {
         $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
     }
 
+    if ($IsLinux -and $env:SENTRY_UNREAL_TEST_ENGINE_VERSION -eq '4.27') {
+        # UE 4.27's crash handler may deadlock on the corrupted
+        # allocator causing the sample app to never exit and making CI test unreliable
+        $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'MemoryCorruption' }
+    }
+
     # Define hang detection mechanisms to test
     $TestHangMechanisms = @(
         @{ Name = 'Engine'; ExceptionType = 'App Hanging'; ExceptionValuePattern = '^Application not responding$'; ExpectsCrashTypeTag = $true  }
