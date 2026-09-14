@@ -60,9 +60,9 @@ To keep this notice accurate without manual upkeep on every dependency bump, exa
 
 ## Scripts (first-party, build-time only)
 
-### `post-build-steps-win.bat`, `post-build-steps-linux.sh`, `post-build-steps-mac.sh`
+### `post_build_steps.py`, `upload_debug_symbols.py`
 
 - **Location:** `Scripts/`
 - **Source:** Authored by Sentry (first-party); version matches the plugin (`Sentry.uplugin` `VersionName`)
 - **Modified:** N/A — first-party
-- **Purpose / when it runs:** Registered as `PreBuildSteps` / `PostBuildSteps` in `Sentry.uplugin`, so Unreal Build Tool runs them automatically after the plugin is built — **on the developer's or CI machine, never inside a shipped title**. They (1) copy the crash-handler / crash-reporter binaries into `Binaries/<Platform>/` (Epic's Fab pre-build step strips "extra" binaries out of `Source/ThirdParty`, so they are restored to the location the packaged plugin expects); (2) `chmod +x` the bundled binaries, because some distribution channels do not preserve the executable bit; (3) upload debug symbols to Sentry via `sentry-cli`.
+- **Purpose / when it runs:** `post_build_steps.py` is registered as `PostBuildSteps` in `Sentry.uplugin`, so Unreal Build Tool runs it automatically after the plugin is built — **on the developer's or CI machine, never inside a shipped title**. It is executed with the Python interpreter bundled with the engine (`Engine/Binaries/ThirdParty/Python3/`). It (1) copies the crash-handler / crash-reporter binaries into `Binaries/<Platform>/` (Epic's Fab pre-build step strips "extra" binaries out of `Source/ThirdParty`, so they are restored to the location the packaged plugin expects); (2) `chmod +x` the bundled binaries, because some distribution channels do not preserve the executable bit; (3) calls into `upload_debug_symbols.py` to upload debug symbols to Sentry via `sentry-cli`.
