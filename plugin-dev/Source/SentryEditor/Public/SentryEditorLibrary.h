@@ -10,6 +10,15 @@
 
 class USentrySettings;
 
+UENUM(BlueprintType)
+enum class ESentryDsnSource : uint8
+{
+	None,
+	EditorDsn,
+	Dsn,
+	EnvironmentVariable
+};
+
 /**
  * Editor utilities for inspecting and persisting Sentry plugin settings.
  */
@@ -38,4 +47,13 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static bool SaveSettingToConfig(USentrySettings* Settings, FName PropertyName);
+
+	/**
+	 * Gets where the DSN used by the SDK comes from, following the same precedence as
+	 * USentrySettings::GetEffectiveDsn but without disclosing the value.
+	 *
+	 * @return The source of the effective DSN, or None if no DSN is available.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Sentry")
+	static ESentryDsnSource GetDsnSource();
 };

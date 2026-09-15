@@ -31,3 +31,29 @@ bool USentryEditorLibrary::SaveSettingToConfig(USentrySettings* Settings, FName 
 
 	return true;
 }
+
+ESentryDsnSource USentryEditorLibrary::GetDsnSource()
+{
+	const USentrySettings* Settings = GetActiveSettings();
+	if (!Settings)
+	{
+		return ESentryDsnSource::None;
+	}
+
+	if (GIsEditor && !Settings->EditorDsn.IsEmpty())
+	{
+		return ESentryDsnSource::EditorDsn;
+	}
+
+	if (!Settings->Dsn.IsEmpty())
+	{
+		return ESentryDsnSource::Dsn;
+	}
+
+	if (!FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_DSN")).IsEmpty())
+	{
+		return ESentryDsnSource::EnvironmentVariable;
+	}
+
+	return ESentryDsnSource::None;
+}

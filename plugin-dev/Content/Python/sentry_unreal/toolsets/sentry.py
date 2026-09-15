@@ -37,20 +37,28 @@ class SentryTools(unreal.ToolsetDefinition):
 
     @toolset_registry.tool_call
     @staticmethod
-    def is_dsn_configured() -> bool:
-        """Checks whether a DSN is configured, without disclosing its value.
+    def get_dsn_source() -> str:
+        """Reports where the DSN used by the SDK in the editor comes from, without disclosing its
+        value. An editor DSN overrides the project DSN in the editor, and the project DSN
+        overrides the SENTRY_DSN environment variable.
 
         Returns:
-            True if a DSN is set in the plugin settings.
+            One of 'editor_dsn', 'project_dsn', 'environment_variable', or 'none' if no DSN is
+            available.
         """
-        return bool(_settings().get_editor_property('dsn'))
+        return {
+            unreal.SentryDsnSource.EDITOR_DSN: 'editor_dsn',
+            unreal.SentryDsnSource.DSN: 'project_dsn',
+            unreal.SentryDsnSource.ENVIRONMENT_VARIABLE: 'environment_variable',
+        }.get(unreal.SentryEditorLibrary.get_dsn_source(), 'none')
 
     @toolset_registry.tool_call
     @staticmethod
     def set_dsn(dsn: str) -> None:
-        """Sets the DSN and persists it to the project's default engine config, leaving every other
-        entry in that file untouched. The SDK keeps running with its previous settings until it is
-        reinitialized.
+        """Sets the project DSN and persists it to the project's default engine config, leaving every
+        other entry in that file untouched. The SDK keeps running with its previous settings until
+        it is reinitialized. Fails if an editor DSN is set, since it would keep overriding the
+        project DSN in the editor.
         This should ONLY be called after getting explicit direction or permission from the user.
 
         Args:
@@ -58,6 +66,12 @@ class SentryTools(unreal.ToolsetDefinition):
         """
         if not dsn:
             raise ValueError('dsn must not be empty.')
+
+        if unreal.SentryEditorLibrary.get_dsn_source() == unreal.SentryDsnSource.EDITOR_DSN:
+            raise RuntimeError(
+                'An editor DSN is set and overrides the project DSN in the editor, so the new DSN '
+                'would not take effect here. The editor DSN has to be changed or cleared in the '
+                'plugin settings first.')
 
         settings = _settings()
         settings.set_editor_property('dsn', dsn)

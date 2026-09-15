@@ -41,8 +41,13 @@ Step 2.
 
 ## Step 2 - Set the DSN
 
-Ask the plugin's tools whether the SDK is enabled and whether a DSN is configured. If both are true,
-go to Step 3.
+Ask the plugin's tools whether the SDK is enabled and where its DSN comes from. If the SDK is enabled
+and has a DSN, go to Step 3.
+
+If the DSN comes from an editor DSN, setting a project DSN won't change what the editor uses and the
+plugin's tools refuse to do it. Tell the user, and have them change or clear the editor DSN in the
+plugin settings before continuing. A DSN from the SENTRY_DSN environment variable is fine to replace:
+a project DSN takes precedence over it.
 
 Otherwise take the DSN from Sentry: `find_organizations`, then `find_projects`, then `find_dsns` for
 the chosen project. Ask which organization and project to use. If none fits, `create_project`
