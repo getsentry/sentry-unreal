@@ -131,7 +131,8 @@ class SentryTools(unreal.ToolsetDefinition):
     @toolset_registry.tool_call
     @staticmethod
     def get_setting(name: str) -> str:
-        """Reads the current value of a Sentry plugin setting from the running editor. Composite
+        """Reads the current value of a Sentry plugin setting from the running editor. The DSN and
+        the debug symbol upload credentials are never disclosed and are refused here. Composite
         settings (structs and arrays) are not supported.
 
         Args:
@@ -141,6 +142,11 @@ class SentryTools(unreal.ToolsetDefinition):
         Returns:
             The value in text form, for example 'True', '0.5', or an enum entry name.
         """
+        if name.replace('_', '').lower() in _GUARDED_SETTINGS:
+            raise ValueError(
+                f"'{name}' is not disclosed here: the DSN has dedicated tools, and debug symbol "
+                'upload credentials are secrets.')
+
         value = _settings().get_editor_property(name)
 
         if isinstance(value, bool):
