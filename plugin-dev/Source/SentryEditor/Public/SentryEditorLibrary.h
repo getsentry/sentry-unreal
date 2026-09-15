@@ -6,7 +6,7 @@
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "SentryEditorSettingsLibrary.generated.h"
+#include "SentryEditorLibrary.generated.h"
 
 class USentrySettings;
 
@@ -14,7 +14,7 @@ class USentrySettings;
  * Editor utilities for inspecting and persisting Sentry plugin settings.
  */
 UCLASS()
-class SENTRYEDITOR_API USentryEditorSettingsLibrary : public UBlueprintFunctionLibrary
+class SENTRYEDITOR_API USentryEditorLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

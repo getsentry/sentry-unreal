@@ -1,18 +1,18 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "SentryEditorSettingsLibrary.h"
+#include "SentryEditorLibrary.h"
 
 #include "SentryModule.h"
 #include "SentrySettings.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSentryEditor, Log, All);
 
-USentrySettings* USentryEditorSettingsLibrary::GetActiveSettings()
+USentrySettings* USentryEditorLibrary::GetActiveSettings()
 {
 	return FSentryModule::IsAvailable() ? FSentryModule::Get().GetSettings() : nullptr;
 }
 
-bool USentryEditorSettingsLibrary::SaveSettingToConfig(USentrySettings* Settings, FName PropertyName)
+bool USentryEditorLibrary::SaveSettingToConfig(USentrySettings* Settings, FName PropertyName)
 {
 	if (!Settings)
 	{
