@@ -54,9 +54,10 @@ values from whichever source it is - a partial set is a skip, not an error:
 
 - A `sentry.properties` file at the project root with `defaults.project`, `defaults.org` and
   `auth.token`. Filling in the Debug Symbols fields in the editor settings writes this file. It
-  holds a secret: make sure it is gitignored and never committed. The two defaults are not
-  secret - if the file doesn't exist you can create it with them and leave `auth.token` for the
-  user to add; if it exists, don't open it - have the user make any changes.
+  holds a secret: make sure it is gitignored and never committed - and if it ever was committed,
+  the fix is revoking the token in Sentry, not deleting the line. The two defaults are not secret:
+  if the file doesn't exist you can create it with them and leave `auth.token` for the user to
+  add; if it exists, don't open it - have the user make any changes.
 - Environment variables `SENTRY_PROJECT`, `SENTRY_ORG` and `SENTRY_AUTH_TOKEN` - the right choice
   for CI, where they belong in the secret store. `SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY=True` also
   overrides the enable flag there, so CI can upload without changing the project config.
@@ -85,7 +86,9 @@ This proves everything except the build hook itself, which needs no proving beyo
 plugin. Tell the user what to expect on the next build or packaging of a non-editor target:
 `Sentry:` lines in the build log, ending in either `Upload finished` or a skip reason naming
 exactly what is missing. Readable frames - with source context if sources were included - are
-judged on events from builds made after symbols went up; events stored before stay unreadable.
+judged on events from builds made after symbols went up. Events stored before don't fix
+themselves, though crash events are native and can be reprocessed in Sentry to apply a later
+upload on request.
 
 ## What "done" looks like
 

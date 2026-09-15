@@ -79,6 +79,10 @@ message rather than on a new issue appearing.
 When it lands, show the user what Sentry actually captured - the issue title, the message, and the
 direct issue URL - not just a link. Then offer to resolve the test issue as cleanup.
 
+A verified editor event is not the finish line: crashes from packaged builds arrive with
+unreadable stack traces unless debug symbols are uploaded, which the plugin can automate. Raise
+it as the natural next step once the test event is confirmed.
+
 Without the Sentry MCP, say plainly that arrival cannot be confirmed from here and tell the user
 what to look for.
 

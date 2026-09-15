@@ -24,6 +24,10 @@ stats monitors - a crash-attached session replay clip, user feedback, screenshot
 attachments, and release-health session tracking. Not available in this SDK: profiling and cron
 monitors - say so instead of improvising them.
 
+Unlike Sentry's web and mobile replays, the replay clip (and screenshots) record the actual
+rendered frames with no masking or redaction - raise the privacy implications when the game
+shows user-generated content or personal data.
+
 Signal availability differs per platform, and on unsupported platforms the APIs compile but
 no-op, so nothing fails loudly. Check the plugin's documentation or platform sources before
 promising a signal on the user's target platforms.
