@@ -233,8 +233,8 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 
 void FGenericPlatformSentryScope::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope)
 {
-	sentry_attachment_t* nativeAttachment =
-		sentry_scope_attach_file(scope, TCHAR_TO_UTF8(*attachment->GetPath()));
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_file(TCHAR_TO_UTF8(*attachment->GetPath()));
 
 	if (!attachment->GetFilename().IsEmpty())
 		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetFilename()));
@@ -242,20 +242,20 @@ void FGenericPlatformSentryScope::AddFileAttachment(TSharedPtr<FGenericPlatformS
 	if (!attachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
 
-	attachment->SetNativeObject(nativeAttachment);
+	attachment->SetUuid(sentry_scope_add_attachment(scope, nativeAttachment));
 }
 
 void FGenericPlatformSentryScope::AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope)
 {
 	const TArray<uint8>& byteBuf = attachment->GetDataByRef();
 
-	sentry_attachment_t* nativeAttachment =
-		sentry_scope_attach_bytes(scope, reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_bytes(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
 
 	if (!attachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
 
-	attachment->SetNativeObject(nativeAttachment);
+	attachment->SetUuid(sentry_scope_add_attachment(scope, nativeAttachment));
 }
 
 #endif
