@@ -100,9 +100,10 @@ the `Sentry:` lines - and `Upload finished` - in their next build log.
 
 
 @agent_skill
-class SentryUploadSymbolsSkill(unreal.AgentSkill):
-    """Sets up automatic debug symbol upload for an Unreal Engine project so that crash stack
-    traces in Sentry are readable. Use when enabling or troubleshooting symbol upload, or when
-    event stack frames show hex addresses or unreadable names instead of source locations."""
+class SentryFixStackTracesSkill(unreal.AgentSkill):
+    """Makes crash stack traces from an Unreal Engine project readable in Sentry by setting up
+    the plugin's automatic debug symbol upload. Use when frames in Sentry show hex addresses or
+    unreadable names instead of source locations, or when enabling or troubleshooting symbol
+    upload."""
 
     instructions = _INSTRUCTIONS
