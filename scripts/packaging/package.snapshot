@@ -5,6 +5,7 @@ Content/Python/init_unreal.py
 Content/Python/sentry_unreal/__init__.py
 Content/Python/sentry_unreal/skills/__init__.py
 Content/Python/sentry_unreal/skills/get_started.py
+Content/Python/sentry_unreal/skills/instrument.py
 Content/Python/sentry_unreal/skills/upload_symbols.py
 Content/Python/sentry_unreal/toolsets/__init__.py
 Content/Python/sentry_unreal/toolsets/sentry.py

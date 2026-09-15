@@ -21,6 +21,43 @@ def _settings():
     return settings
 
 
+# Settings with dedicated handling that the generic setting tools must not touch: the DSN has its
+# own tools, and the debug symbol upload credentials belong in sentry.properties, not the project
+# config.
+_GUARDED_SETTINGS = {'dsn', 'authtoken', 'projectname', 'orgname'}
+
+
+def _enum_entry_name(value):
+    for name in dir(type(value)):
+        if not name.startswith('_') and getattr(type(value), name, None) == value:
+            return name
+    return str(value)
+
+
+def _parse_setting_value(current, value):
+    if isinstance(current, bool):
+        lowered = value.strip().lower()
+        if lowered in ('true', '1'):
+            return True
+        if lowered in ('false', '0'):
+            return False
+        raise ValueError(f"'{value}' is not a valid boolean.")
+    if isinstance(current, unreal.EnumBase):
+        normalized = value.replace('_', '').lower()
+        for name in dir(type(current)):
+            entry = getattr(type(current), name, None)
+            if isinstance(entry, type(current)) and name.replace('_', '').lower() == normalized:
+                return entry
+        raise ValueError(f"'{value}' is not an entry of {type(current).__name__}.")
+    if isinstance(current, int):
+        return int(value)
+    if isinstance(current, float):
+        return float(value)
+    if isinstance(current, str):
+        return value
+    raise ValueError('Composite settings are not supported.')
+
+
 @unreal.uclass()
 class SentryTools(unreal.ToolsetDefinition):
     """Inspects and configures the Sentry SDK in the running editor process."""
@@ -90,6 +127,57 @@ class SentryTools(unreal.ToolsetDefinition):
         subsystem = _subsystem()
         subsystem.initialize()
         return subsystem.is_enabled()
+
+    @toolset_registry.tool_call
+    @staticmethod
+    def get_setting(name: str) -> str:
+        """Reads the current value of a Sentry plugin setting from the running editor. Composite
+        settings (structs and arrays) are not supported.
+
+        Args:
+            name: The setting's property name as it appears in the project config, for example
+                'EnableTracing'.
+
+        Returns:
+            The value in text form, for example 'True', '0.5', or an enum entry name.
+        """
+        value = _settings().get_editor_property(name)
+
+        if isinstance(value, bool):
+            return 'True' if value else 'False'
+        if isinstance(value, unreal.EnumBase):
+            return _enum_entry_name(value)
+        if isinstance(value, (int, float, str)):
+            return str(value)
+
+        raise ValueError('Composite settings are not supported.')
+
+    @toolset_registry.tool_call
+    @staticmethod
+    def set_setting(name: str, value: str) -> None:
+        """Sets a Sentry plugin setting on the running editor and persists it to the project's
+        default engine config, leaving every other entry in that file untouched. Runtime settings
+        take effect once the SDK is reinitialized; settings the plugin reads at build time take
+        effect on the next C++ build. The DSN and the debug symbol upload credentials have
+        dedicated handling and are refused here. Composite settings (structs and arrays) are not
+        supported.
+        This should ONLY be called after getting explicit direction or permission from the user.
+
+        Args:
+            name: The setting's property name as it appears in the project config, for example
+                'EnableTracing'.
+            value: The new value in text form, for example 'True', '0.5', or an enum entry name.
+        """
+        if name.replace('_', '').lower() in _GUARDED_SETTINGS:
+            raise ValueError(
+                f"'{name}' is not handled here: the DSN has dedicated tools, and debug symbol "
+                'upload credentials belong in sentry.properties.')
+
+        settings = _settings()
+        settings.set_editor_property(name, _parse_setting_value(settings.get_editor_property(name), value))
+
+        if not unreal.SentryEditorLibrary.save_setting_to_config(settings, name):
+            raise RuntimeError(f"Setting '{name}' was changed but could not be persisted.")
 
     @toolset_registry.tool_call
     @staticmethod
