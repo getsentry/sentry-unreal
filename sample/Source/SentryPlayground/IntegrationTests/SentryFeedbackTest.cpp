@@ -4,7 +4,9 @@
 
 #include "SentryPlayground/SentryPlayground.h"
 
+#include "SentryAttachment.h"
 #include "SentryFeedback.h"
+#include "SentryScope.h"
 #include "SentrySubsystem.h"
 
 #include "HAL/PlatformProcess.h"
@@ -28,7 +30,18 @@ void FSentryFeedbackTest::Run()
 	Feedback->SetContactEmail(TEXT("feedback-user@example.com"));
 	Feedback->SetAssociatedEvent(EventId);
 
-	Subsystem->CaptureFeedback(Feedback);
+	const FString AttachmentContent = TEXT("Integration test feedback attachment");
+	FTCHARToUTF8 AttachmentUtf8(*AttachmentContent);
+	TArray<uint8> AttachmentData(reinterpret_cast<const uint8*>(AttachmentUtf8.Get()), AttachmentUtf8.Length());
+
+	USentryAttachment* Attachment = NewObject<USentryAttachment>();
+	Attachment->InitializeWithData(AttachmentData, TEXT("feedback-attachment.txt"), TEXT("text/plain"));
+	Feedback->AddAttachment(Attachment);
+
+	Subsystem->CaptureFeedbackWithScope(Feedback, FConfigureScopeNativeDelegate::CreateLambda([](USentryScope* Scope)
+		{
+			Scope->SetTag(TEXT("scope.locality"), TEXT("local"));
+		}));
 
 	// Workaround for duplicated log messages in UE 4.27 on Linux
 #if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)

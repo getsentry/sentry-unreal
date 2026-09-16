@@ -48,6 +48,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;
+	virtual void CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
 	virtual void RemoveUser() override;
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;

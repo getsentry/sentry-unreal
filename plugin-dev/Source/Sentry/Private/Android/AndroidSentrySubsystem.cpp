@@ -415,6 +415,18 @@ void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedba
 		feedbackAndroid->GetJObject(), hintAndroid ? hintAndroid->GetJObject() : nullptr);
 }
 
+void FAndroidSentrySubsystem::CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope)
+{
+	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);
+
+	TSharedPtr<FAndroidSentryHint> hintAndroid = feedbackAndroid->GetHint();
+
+	int64 scopeCallbackId = AndroidSentryScopeCallback::SaveDelegate(onConfigureScope);
+
+	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureFeedbackWithScope", "(Lio/sentry/protocol/Feedback;Lio/sentry/Hint;J)Lio/sentry/protocol/SentryId;",
+		feedbackAndroid->GetJObject(), hintAndroid ? hintAndroid->GetJObject() : nullptr, scopeCallbackId);
+}
+
 void FAndroidSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
 {
 	TSharedPtr<FAndroidSentryUser> userAndroid = StaticCastSharedPtr<FAndroidSentryUser>(user);

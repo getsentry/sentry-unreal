@@ -566,6 +566,13 @@ void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback
 													  attachments:attachments];
 }
 
+void FAppleSentrySubsystem::CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope)
+{
+	UE_LOG(LogSentrySdk, Warning, TEXT("Configuring scope for user feedback isn't supported on Mac/iOS - scope changes will be ignored."));
+
+	CaptureFeedback(feedback);
+}
+
 void FAppleSentrySubsystem::SetUser(TSharedPtr<ISentryUser> user)
 {
 	TSharedPtr<FAppleSentryUser> userIOS = StaticCastSharedPtr<FAppleSentryUser>(user);

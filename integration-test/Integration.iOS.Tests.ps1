@@ -131,7 +131,10 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # The crash is captured but NOT uploaded yet (Cocoa behavior).
 
             Write-Host "Running crash-capture test (will crash) on $Platform..." -ForegroundColor Yellow
-            $global:iOSCrashResult = Invoke-iOSTestAction -Arguments (@('-crash-capture') + $script:BaseAppArgs)
+            $global:iOSCrashResult = Invoke-iOSTestAction -Arguments (@(
+                '-crash-capture',
+                "$script:SentrySettings`:EnableAppNotRespondingTracking=False"
+            ) + $script:BaseAppArgs)
 
             Write-Host "Crash test exit code: $($global:iOSCrashResult.ExitCode)" -ForegroundColor Cyan
 

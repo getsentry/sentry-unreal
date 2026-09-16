@@ -188,6 +188,16 @@ public class SentryBridgeJava {
 		return eventId;
 	}
 
+	public static SentryId captureFeedbackWithScope(final Feedback feedback, final Hint hint, final long callback) throws InterruptedException {
+		SentryId feedbackId = Sentry.captureFeedback(feedback, hint, new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				onConfigureScope(callback, scope);
+			}
+		});
+		return feedbackId;
+	}
+
 	public static SentryId captureException(final String type, final String value, final Attachment screenshotAttachment) {
 		SentryException exception = new SentryException();
 		exception.setType(type);

@@ -1,27 +1,23 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryFeedback.h"
-#include "GenericPlatformSentryAttachment.h"
 
 #include "Infrastructure/GenericPlatformSentryConverters.h"
 
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback()
-	: Hint(nullptr)
 {
 	Feedback = sentry_value_new_object();
 }
 
 FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback(const FString& message)
-	: Hint(nullptr)
 {
 	Feedback = sentry_value_new_object();
 	sentry_value_set_by_key(Feedback, "message", sentry_value_new_string(TCHAR_TO_UTF8(*message)));
 }
 
 FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback(sentry_value_t feedback)
-	: Hint(nullptr)
 {
 	Feedback = feedback;
 }
@@ -80,56 +76,7 @@ FString FGenericPlatformSentryFeedback::GetAssociatedEvent() const
 
 void FGenericPlatformSentryFeedback::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 {
-	if (!Hint)
-	{
-		Hint = sentry_hint_new();
-	}
-
-	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
-
-	if (platformAttachment)
-	{
-		if (!platformAttachment->GetPath().IsEmpty())
-		{
-			AddFileAttachment(platformAttachment);
-		}
-		else
-		{
-			AddByteAttachment(platformAttachment);
-		}
-	}
-}
-
-sentry_hint_t* FGenericPlatformSentryFeedback::GetHintNativeObject()
-{
-	return Hint;
-}
-
-void FGenericPlatformSentryFeedback::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment)
-{
-	sentry_value_t nativeAttachment =
-		sentry_attachment_from_file(TCHAR_TO_UTF8(*attachment->GetPath()));
-
-	if (!attachment->GetFilename().IsEmpty())
-		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetFilename()));
-
-	if (!attachment->GetContentType().IsEmpty())
-		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
-
-	attachment->SetUuid(sentry_hint_add_attachment(Hint, nativeAttachment));
-}
-
-void FGenericPlatformSentryFeedback::AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment)
-{
-	const TArray<uint8>& byteBuf = attachment->GetDataByRef();
-
-	sentry_value_t nativeAttachment =
-		sentry_attachment_from_bytes(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*attachment->GetFilename()));
-
-	if (!attachment->GetContentType().IsEmpty())
-		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
-
-	attachment->SetUuid(sentry_hint_add_attachment(Hint, nativeAttachment));
+	Attachments.Add(attachment);
 }
 
 #endif

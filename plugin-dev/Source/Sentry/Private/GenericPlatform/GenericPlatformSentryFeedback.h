@@ -8,8 +8,6 @@
 
 #if USE_SENTRY_NATIVE
 
-class FGenericPlatformSentryAttachment;
-
 class FGenericPlatformSentryFeedback : public ISentryFeedback
 {
 public:
@@ -29,20 +27,14 @@ public:
 	virtual FString GetAssociatedEvent() const override;
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 
-	sentry_hint_t* GetHintNativeObject();
-
-protected:
-	virtual void AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment);
-	virtual void AddByteAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment);
-
-	sentry_hint_t* Hint;
+	const TArray<TSharedPtr<ISentryAttachment>>& GetAttachments() const { return Attachments; }
 
 private:
 	sentry_value_t Feedback;
+
+	TArray<TSharedPtr<ISentryAttachment>> Attachments;
 };
 
-#if !PLATFORM_MICROSOFT
 typedef FGenericPlatformSentryFeedback FPlatformSentryFeedback;
-#endif
 
 #endif
