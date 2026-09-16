@@ -40,6 +40,7 @@ public:
 	virtual bool IsHangTrackingSupported() const override;
 	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;
+	virtual void CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
 	virtual void RemoveUser() override;
 	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;

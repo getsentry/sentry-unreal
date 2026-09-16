@@ -357,6 +357,19 @@ public:
 	void CaptureFeedback(USentryFeedback* Feedback);
 
 	/**
+	 * Captures a user feedback with a configurable scope.
+	 * This allows modifying a scope without affecting other events.
+	 *
+	 * @param Feedback The feedback to send to Sentry.
+	 * @param OnConfigureScope The callback to configure the scope.
+	 *
+	 * @note Scope configuration is ignored on Mac/iOS.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void CaptureFeedbackWithScope(USentryFeedback* Feedback, const FConfigureScopeDelegate& OnConfigureScope);
+	void CaptureFeedbackWithScope(USentryFeedback* Feedback, const FConfigureScopeNativeDelegate& OnConfigureScope);
+
+	/**
 	 * Captures a user feedback.
 	 *
 	 * @param Message User feedback message (required).
