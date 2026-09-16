@@ -578,6 +578,35 @@ void USentrySubsystem::CaptureFeedback(USentryFeedback* Feedback)
 	SubsystemNativeImpl->CaptureFeedback(Feedback->GetNativeObject());
 }
 
+void USentrySubsystem::CaptureFeedbackWithScope(USentryFeedback* Feedback, const FConfigureScopeDelegate& OnConfigureScope)
+{
+	CaptureFeedbackWithScope(Feedback, FConfigureScopeNativeDelegate::CreateUFunction(const_cast<UObject*>(OnConfigureScope.GetUObject()), OnConfigureScope.GetFunctionName()));
+}
+
+void USentrySubsystem::CaptureFeedbackWithScope(USentryFeedback* Feedback, const FConfigureScopeNativeDelegate& OnConfigureScope)
+{
+	check(SubsystemNativeImpl);
+	check(Feedback);
+
+	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
+	{
+		return;
+	}
+
+	if (!Feedback)
+	{
+		return;
+	}
+
+	const auto ConfigureScopeLambda = FSentryScopeDelegate::CreateLambda([OnConfigureScope](TSharedPtr<ISentryScope> NativeScope)
+	{
+		USentryScope* UnrealScope = USentryScope::Create(NativeScope);
+		OnConfigureScope.ExecuteIfBound(UnrealScope);
+	});
+
+	SubsystemNativeImpl->CaptureFeedbackWithScope(Feedback->GetNativeObject(), ConfigureScopeLambda);
+}
+
 void USentrySubsystem::CaptureFeedbackWithParams(const FString& Message, const FString& Name, const FString& Email, const FString& EventId)
 {
 	check(SubsystemNativeImpl);

@@ -1044,9 +1044,16 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungTh
 
 void FGenericPlatformSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
+	CaptureFeedbackWithScope(feedback, FSentryScopeDelegate());
+}
+
+void FGenericPlatformSentrySubsystem::CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope)
+{
 	TSharedPtr<FGenericPlatformSentryFeedback> Feedback = StaticCastSharedPtr<FGenericPlatformSentryFeedback>(feedback);
 
 	TSharedPtr<FPlatformSentryScope> LocalScope = MakeShareable(new FPlatformSentryScope());
+	onConfigureScope.ExecuteIfBound(LocalScope);
+
 	for (const TSharedPtr<ISentryAttachment>& Attachment : Feedback->GetAttachments())
 	{
 		LocalScope->AddAttachment(Attachment);
