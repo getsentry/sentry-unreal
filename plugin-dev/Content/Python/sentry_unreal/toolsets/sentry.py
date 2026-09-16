@@ -21,10 +21,10 @@ def _settings():
     return settings
 
 
-# Settings with dedicated handling that the generic setting tools must not touch: the DSN has its
-# own tools, and the debug symbol upload credentials belong in sentry.properties, not the project
-# config.
-_GUARDED_SETTINGS = {'dsn', 'authtoken', 'projectname', 'orgname'}
+# Settings with dedicated handling that the generic setting tools must not touch: the DSNs have
+# their own tools, and the debug symbol upload credentials belong in sentry.properties, not the
+# project config.
+_GUARDED_SETTINGS = {'dsn', 'editordsn', 'authtoken', 'projectname', 'orgname'}
 
 
 def _enum_entry_name(value):
@@ -144,7 +144,7 @@ class SentryTools(unreal.ToolsetDefinition):
         """
         if name.replace('_', '').lower() in _GUARDED_SETTINGS:
             raise ValueError(
-                f"'{name}' is not disclosed here: the DSN has dedicated tools, and debug symbol "
+                f"'{name}' is not disclosed here: DSNs have dedicated handling, and debug symbol "
                 'upload credentials are secrets.')
 
         value = _settings().get_editor_property(name)
@@ -176,7 +176,7 @@ class SentryTools(unreal.ToolsetDefinition):
         """
         if name.replace('_', '').lower() in _GUARDED_SETTINGS:
             raise ValueError(
-                f"'{name}' is not handled here: the DSN has dedicated tools, and debug symbol "
+                f"'{name}' is not handled here: DSNs have dedicated handling, and debug symbol "
                 'upload credentials belong in sentry.properties.')
 
         settings = _settings()
@@ -203,4 +203,8 @@ class SentryTools(unreal.ToolsetDefinition):
         if not subsystem.is_enabled():
             raise RuntimeError('Sentry SDK is not running, so no event can be captured.')
 
-        return subsystem.capture_message(message)
+        event_id = subsystem.capture_message(message)
+        if not event_id:
+            raise RuntimeError('The event was not captured - it may have been dropped by the SDK '
+                               'or filtered out before sending.')
+        return event_id

@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add editor AI toolset and agent skills for Unreal MCP integration ([#1584](https://github.com/getsentry/sentry-unreal/pull/1584))
 - Add hint support for macOS/iOS ([#1578](https://github.com/getsentry/sentry-unreal/pull/1578))
 
 ### Fixes
