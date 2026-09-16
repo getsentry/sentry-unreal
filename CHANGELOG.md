@@ -5,7 +5,7 @@
 ### Features
 
 - Add hint support for macOS/iOS ([#1578](https://github.com/getsentry/sentry-unreal/pull/1578))
-- Add API for capturing user feedback with a local scope ([#TODO](https://github.com/getsentry/sentry-unreal/pull/TODO))
+- Add API for capturing user feedback with a local scope ([#1585](https://github.com/getsentry/sentry-unreal/pull/1585))
 
 ### Fixes
 
