@@ -35,6 +35,8 @@
 #include "Utils/SentryFileUtils.h"
 #include "Utils/SentryScreenshotUtils.h"
 
+#include "HAL/PlatformSentryScope.h"
+
 #include "Infrastructure/GenericPlatformSentryConverters.h"
 
 #include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
@@ -1044,7 +1046,16 @@ void FGenericPlatformSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback
 {
 	TSharedPtr<FGenericPlatformSentryFeedback> Feedback = StaticCastSharedPtr<FGenericPlatformSentryFeedback>(feedback);
 
-	sentry_capture_feedback_with_hint(Feedback->GetNativeObject(), Feedback->GetHintNativeObject());
+	TSharedPtr<FPlatformSentryScope> LocalScope = MakeShareable(new FPlatformSentryScope());
+	for (const TSharedPtr<ISentryAttachment>& Attachment : Feedback->GetAttachments())
+	{
+		LocalScope->AddAttachment(Attachment);
+	}
+
+	sentry_scope_t* scope = sentry_local_scope_new();
+	LocalScope->Apply(scope);
+
+	sentry_scope_capture_feedback(scope, Feedback->GetNativeObject(), nullptr);
 }
 
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
