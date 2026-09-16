@@ -23,6 +23,9 @@
 - Bump Android Gradle Plugin from v6.21.0 to v6.22.0 ([#1579](https://github.com/getsentry/sentry-unreal/pull/1579))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6220)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.21.0...6.22.0)
+- Bump CLI from v3.7.0 to v3.8.0 ([#1587](https://github.com/getsentry/sentry-unreal/pull/1587))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#380)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.7.0...3.8.0)
 
 ## 1.23.0
 
