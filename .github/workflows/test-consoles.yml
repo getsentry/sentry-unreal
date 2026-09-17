@@ -51,22 +51,26 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          PLATFORM: ${{ inputs.platform }}
+          REPO: ${{ inputs.extension-repo }}
+          ARTIFACT: ${{ inputs.extension-artifact }}
         run: |
-          $repo = '${{ inputs.extension-repo }}'
-          $runId = gh run list --repo $repo --workflow ci.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId'
-          gh run download $runId --repo $repo --name '${{ inputs.extension-artifact }}' `
-            --dir "checkout/sample/Platforms/${{ inputs.platform }}/Plugins/Sentry"
+          $runId = gh run list --repo "$env:REPO" --workflow ci.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId'
+          gh run download $runId --repo "$env:REPO" --name "$env:ARTIFACT" `
+            --dir "checkout/sample/Platforms/$env:PLATFORM/Plugins/Sentry"
 
       - name: Select crash handler backend
         if: ${{ inputs.backend == 'native' }}
         shell: pwsh
+        env:
+          PLATFORM: ${{ inputs.platform }}
         run: |
-          $dir = "checkout/sample/Platforms/${{ inputs.platform }}/Config"
+          $dir = "checkout/sample/Platforms/$env:PLATFORM/Config"
           New-Item -ItemType Directory -Path $dir -Force | Out-Null
           @(
             '[/Script/Sentry.SentrySettings]'
             'UseNativeBackend=True'
-          ) | Add-Content -Path "$dir/${{ inputs.platform }}Engine.ini"
+          ) | Add-Content -Path "$dir/$($env:PLATFORM)Engine.ini"
 
       - name: Update engine's build configuration
         shell: pwsh
@@ -78,9 +82,11 @@ jobs:
       - name: Build sample for ${{ inputs.platform }}
         id: build
         shell: pwsh
+        env:
+          PLATFORM: ${{ inputs.platform }}
         run: |
           & "$env:UE_ROOT\Engine\Build\BatchFiles\Build.bat" `
-            SentryPlayground '${{ inputs.platform }}' Development `
+            SentryPlayground "$env:PLATFORM" Development `
             -project="$env:GITHUB_WORKSPACE\checkout\sample\SentryPlayground.uproject" `
             -log="$env:GITHUB_WORKSPACE\checkout\sample\Saved\Logs\UnrealBuildTool.txt" `
             -NoHotReload `
