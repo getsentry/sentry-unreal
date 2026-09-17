@@ -1,0 +1,3 @@
+# Vendored three.js (used for the 3D view). Fetched on demand — not committed.
+# The viewer falls back to a 2D top-down view when it is absent.
+three.min.js
