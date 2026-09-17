@@ -12,6 +12,7 @@
 - Reduce overhead when reading event and scope data on native platforms ([#1576](https://github.com/getsentry/sentry-unreal/pull/1576))
 - Replace the plugin's shell-based post-build steps with Python to comply with FAB publishing requirements ([#1580](https://github.com/getsentry/sentry-unreal/pull/1580))
 - Fix duplicate automatic breadcrumbs after re-initializing the SDK ([#1590](https://github.com/getsentry/sentry-unreal/pull/1590))
+- Respect per-platform config file overrides when uploading debug symbols automatically ([#1589](https://github.com/getsentry/sentry-unreal/pull/1589))
 
 ### Dependencies
 
