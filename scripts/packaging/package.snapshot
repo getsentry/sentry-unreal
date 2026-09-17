@@ -407,7 +407,6 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricsApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricValue.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCNSError.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCOptions.h
-Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCPrivateSDKOnly.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCProfileLifecycle.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCProfileOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCRedactRegionType.h
