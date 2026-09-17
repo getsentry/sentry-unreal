@@ -12,12 +12,22 @@ def log(message):
     print(f"Sentry: {message}", flush=True)
 
 
+def get_file_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        bom = f.read(2)
+
+    if bom in (b'\xff\xfe', b'\xfe\xff'):
+        return 'utf-16'
+
+    return 'utf-8-sig'
+
+
 def parse_config_value(file_path, key, section=None):
     if not os.path.exists(file_path):
         return None
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding=get_file_encoding(file_path)) as f:
             in_section = (section is None)
 
             for line in f:
@@ -42,8 +52,29 @@ def parse_config_value(file_path, key, section=None):
     return None
 
 
-def check_target_enabled(config_path, target_setting_key, target_name):
-    targets_list = parse_config_value(config_path, target_setting_key, '/Script/Sentry.SentrySettings')
+def get_config_paths(project_dir, target_platform):
+    ini_platform = 'Windows' if target_platform == 'Win64' else target_platform
+
+    return [
+        os.path.join(project_dir, 'Config', 'DefaultEngine.ini'),
+        os.path.join(project_dir, 'Config', ini_platform, f'{ini_platform}Engine.ini'),
+        os.path.join(project_dir, 'Platforms', ini_platform, 'Config', f'{ini_platform}Engine.ini'),
+    ]
+
+
+def get_setting_value(config_paths, key):
+    value = None
+
+    for config_path in config_paths:
+        file_value = parse_config_value(config_path, key, '/Script/Sentry.SentrySettings')
+        if file_value is not None:
+            value = file_value
+
+    return value
+
+
+def check_target_enabled(config_paths, target_setting_key, target_name):
+    targets_list = get_setting_value(config_paths, target_setting_key)
 
     if not targets_list:
         return True  # If not specified, assume enabled
@@ -163,10 +194,13 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
 
     project_binaries_path = os.path.join(project_dir, 'Binaries', target_platform)
 
-    config_path = os.path.join(project_dir, 'Config', 'DefaultEngine.ini')
+    config_paths = get_config_paths(project_dir, target_platform)
+
+    found_config_paths = [path for path in config_paths if os.path.exists(path)]
+    log(f"Reading plugin settings from: {', '.join(found_config_paths) if found_config_paths else 'no config files found'}")
 
     # Check if upload is enabled
-    upload_symbols = parse_config_value(config_path, 'UploadSymbolsAutomatically', '/Script/Sentry.SentrySettings')
+    upload_symbols = get_setting_value(config_paths, 'UploadSymbolsAutomatically')
 
     # Check environment variable override
     env_override = os.environ.get('SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY')
@@ -180,23 +214,23 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
         return 0
 
     # Check if target type is enabled
-    if not check_target_enabled(config_path, 'EnableBuildTargets', target_type):
+    if not check_target_enabled(config_paths, 'EnableBuildTargets', target_type):
         log(f"Automatic symbols upload is disabled for target type {target_type}. Skipping...")
         return 0
 
     # Check if build configuration is enabled
-    if not check_target_enabled(config_path, 'EnableBuildConfigurations', target_config):
+    if not check_target_enabled(config_paths, 'EnableBuildConfigurations', target_config):
         log(f"Automatic symbols upload is disabled for build configuration {target_config}. Skipping...")
         return 0
 
     # Determine include sources flag
-    include_sources = parse_config_value(config_path, 'IncludeSources', '/Script/Sentry.SentrySettings')
+    include_sources = get_setting_value(config_paths, 'IncludeSources')
     cli_args = []
     if include_sources == "True":
         cli_args.append('--include-sources')
 
     # Get CLI log level
-    cli_log_level = parse_config_value(config_path, 'DiagnosticLevel', '/Script/Sentry.SentrySettings')
+    cli_log_level = get_setting_value(config_paths, 'DiagnosticLevel')
     if not cli_log_level:
         cli_log_level = "info"
 
