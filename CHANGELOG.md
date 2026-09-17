@@ -12,12 +12,14 @@
 
 - Reduce overhead when reading event and scope data on native platforms ([#1576](https://github.com/getsentry/sentry-unreal/pull/1576))
 - Replace the plugin's shell-based post-build steps with Python to comply with FAB publishing requirements ([#1580](https://github.com/getsentry/sentry-unreal/pull/1580))
+- Fix duplicate automatic breadcrumbs after re-initializing the SDK ([#1590](https://github.com/getsentry/sentry-unreal/pull/1590))
+- Respect per-platform config file overrides when uploading debug symbols automatically ([#1589](https://github.com/getsentry/sentry-unreal/pull/1589))
 
 ### Dependencies
 
-- Bump Java SDK from v8.55.0 to v8.56.0 ([#1575](https://github.com/getsentry/sentry-unreal/pull/1575))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8560)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.55.0...8.56.0)
+- Bump Java SDK from v8.55.0 to v8.57.0 ([#1575](https://github.com/getsentry/sentry-unreal/pull/1575), [#1588](https://github.com/getsentry/sentry-unreal/pull/1588))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8570)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.55.0...8.57.0)
 - Bump Cocoa SDK from v9.27.0 to v9.28.0 ([#1574](https://github.com/getsentry/sentry-unreal/pull/1574))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9280)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.27.0...9.28.0)
