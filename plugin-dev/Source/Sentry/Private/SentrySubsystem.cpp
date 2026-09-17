@@ -66,8 +66,6 @@ void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void USentrySubsystem::Deinitialize()
 {
-	DisableAutomaticBreadcrumbs();
-
 	Close();
 
 	Super::Deinitialize();
@@ -199,6 +197,8 @@ void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsNativeDele
 
 void USentrySubsystem::Close()
 {
+	DisableAutomaticBreadcrumbs();
+
 	if (GLog && OutputDevice)
 	{
 		GLog->RemoveOutputDevice(OutputDevice.Get());
@@ -1141,26 +1141,31 @@ void USentrySubsystem::DisableAutomaticBreadcrumbs()
 	if (PreLoadMapDelegate.IsValid())
 	{
 		FCoreUObjectDelegates::PreLoadMap.Remove(PreLoadMapDelegate);
+		PreLoadMapDelegate.Reset();
 	}
 
 	if (PostLoadMapDelegate.IsValid())
 	{
 		FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(PostLoadMapDelegate);
+		PostLoadMapDelegate.Reset();
 	}
 
 	if (GameStateChangedDelegate.IsValid())
 	{
 		FCoreDelegates::GameStateClassChanged.Remove(GameStateChangedDelegate);
+		GameStateChangedDelegate.Reset();
 	}
 
 	if (UserActivityChangedDelegate.IsValid())
 	{
 		FCoreDelegates::UserActivityStringChanged.Remove(UserActivityChangedDelegate);
+		UserActivityChangedDelegate.Reset();
 	}
 
 	if (GameSessionIDChangedDelegate.IsValid())
 	{
 		FCoreDelegates::GameSessionIDChanged.Remove(GameSessionIDChangedDelegate);
+		GameSessionIDChangedDelegate.Reset();
 	}
 }
 
