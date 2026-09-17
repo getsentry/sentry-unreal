@@ -136,8 +136,8 @@ class SentryTools(unreal.ToolsetDefinition):
         settings (structs and arrays) are not supported.
 
         Args:
-            name: The setting's property name as it appears in the project config, for example
-                'EnableTracing'.
+            name: The setting's name, either as it appears in the project config ('EnableTracing')
+                or as Unreal's Python API exposes it ('enable_tracing').
 
         Returns:
             The value in text form, for example 'True', '0.5', or an enum entry name.
@@ -170,8 +170,8 @@ class SentryTools(unreal.ToolsetDefinition):
         This should ONLY be called after getting explicit direction or permission from the user.
 
         Args:
-            name: The setting's property name as it appears in the project config, for example
-                'EnableTracing'.
+            name: The setting's name, either as it appears in the project config ('EnableTracing')
+                or as Unreal's Python API exposes it ('enable_tracing').
             value: The new value in text form, for example 'True', '0.5', or an enum entry name.
         """
         if name.replace('_', '').lower() in _GUARDED_SETTINGS:

@@ -42,11 +42,23 @@ public:
 	 * that file untouched.
 	 *
 	 * @param Settings The settings object holding the value to persist.
-	 * @param PropertyName The name of the setting to persist, for example "Dsn".
+	 * @param PropertyName The name of the setting to persist, in either of the forms accepted by
+	 * ResolveSettingName, for example "Dsn".
 	 * @return True if the setting was found and written.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	static bool SaveSettingToConfig(USentrySettings* Settings, FName PropertyName);
+
+	/**
+	 * Resolves a setting name to the property name declared in C++. Accepts that name as-is (for
+	 * example "EnableTracing") as well as the name Unreal's Python API exposes the setting under
+	 * ("enable_tracing"), including boolean settings whose "b" prefix Python drops
+	 * ("require_user_consent" for "bRequireUserConsent").
+	 *
+	 * @param PropertyName The setting name in either form.
+	 * @return The property name as declared in C++, or None if no setting matches.
+	 */
+	static FName ResolveSettingName(FName PropertyName);
 
 	/**
 	 * Gets where the DSN used by the SDK comes from, following the same precedence as
