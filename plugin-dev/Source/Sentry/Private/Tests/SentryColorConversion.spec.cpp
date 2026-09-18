@@ -14,6 +14,12 @@ BEGIN_DEFINE_SPEC(SentryColorConversionSpec, "Sentry.SessionReplay.ColorConversi
 	// centre sample of each plane.
 	void ConvertFlat(uint8 B, uint8 G, uint8 R, uint32 Width, uint32 Height, uint8 & OutY, uint8 & OutU, uint8 & OutV);
 
+	// Fills a BGRA image with a horizontal split - left half colour A, right half
+	// colour B - so a downscale can be checked for averaging as well as placement.
+	void ConvertSplit(uint8 B0, uint8 G0, uint8 R0, uint8 B1, uint8 G1, uint8 R1,
+		uint32 SrcW, uint32 SrcH, uint32 SplitCol, uint32 DstW, uint32 DstH,
+		TArray<uint8> & OutY, int32 & OutYStride);
+
 END_DEFINE_SPEC(SentryColorConversionSpec)
 
 void SentryColorConversionSpec::ConvertFlat(uint8 B, uint8 G, uint8 R, uint32 Width, uint32 Height, uint8& OutY, uint8& OutU, uint8& OutV)
@@ -53,6 +59,42 @@ void SentryColorConversionSpec::ConvertFlat(uint8 B, uint8 G, uint8 R, uint32 Wi
 	OutY = PlaneY[(static_cast<int64>(Height) / 2) * YStride + Width / 2];
 	OutU = PlaneU[(static_cast<int64>(ChromaHeight) / 2) * CStride + (CStride / 2)];
 	OutV = PlaneV[(static_cast<int64>(ChromaHeight) / 2) * CStride + (CStride / 2)];
+}
+
+void SentryColorConversionSpec::ConvertSplit(uint8 B0, uint8 G0, uint8 R0, uint8 B1, uint8 G1, uint8 R1,
+	uint32 SrcW, uint32 SrcH, uint32 SplitCol, uint32 DstW, uint32 DstH,
+	TArray<uint8>& OutY, int32& OutYStride)
+{
+	const int32 SrcStride = static_cast<int32>(SrcW) * 4 + 32;
+
+	TArray<uint8> Source;
+	Source.SetNumUninitialized(SrcStride * static_cast<int32>(SrcH));
+	FMemory::Memset(Source.GetData(), 0xCD, Source.Num());
+
+	for (uint32 Row = 0; Row < SrcH; ++Row)
+	{
+		uint8* RowPtr = Source.GetData() + static_cast<int64>(Row) * SrcStride;
+		for (uint32 Col = 0; Col < SrcW; ++Col)
+		{
+			const bool bLeft = Col < SplitCol;
+			RowPtr[Col * 4 + 0] = bLeft ? B0 : B1;
+			RowPtr[Col * 4 + 1] = bLeft ? G0 : G1;
+			RowPtr[Col * 4 + 2] = bLeft ? R0 : R1;
+			RowPtr[Col * 4 + 3] = 0xFF;
+		}
+	}
+
+	OutYStride = static_cast<int32>(DstW);
+	const int32 CStride = static_cast<int32>((DstW + 1) / 2);
+	const int32 ChromaHeight = static_cast<int32>((DstH + 1) / 2);
+
+	TArray<uint8> PlaneU, PlaneV;
+	OutY.SetNumZeroed(OutYStride * static_cast<int32>(DstH));
+	PlaneU.SetNumZeroed(CStride * ChromaHeight);
+	PlaneV.SetNumZeroed(CStride * ChromaHeight);
+
+	FSentryColorConversion::BgraToI420Scaled(Source.GetData(), SrcStride, SrcW, SrcH, DstW, DstH,
+		OutY.GetData(), PlaneU.GetData(), PlaneV.GetData(), OutYStride, CStride);
 }
 
 void SentryColorConversionSpec::Define()
@@ -129,6 +171,93 @@ void SentryColorConversionSpec::Define()
 			TestTrue("luma in range", Y >= 16 && Y <= 235);
 			TestTrue("Cb in range", U >= 16 && U <= 240);
 			TestTrue("Cr in range", V >= 16 && V <= 240);
+		});
+	});
+
+	Describe("Scaled BGRA to I420", [this]()
+	{
+		It("should preserve aspect ratio and force even dimensions", [this]()
+		{
+			uint32 W = 0, H = 0;
+			FSentryColorConversion::ComputeScaledSize(3840, 2160, 720, W, H);
+			TestEqual("height", static_cast<int32>(H), 720);
+			TestEqual("width", static_cast<int32>(W), 1280);
+
+			// 1828x1142 is the odd-sized window the desktop capture actually produced
+			FSentryColorConversion::ComputeScaledSize(1828, 1142, 720, W, H);
+			TestEqual("height", static_cast<int32>(H), 720);
+			TestTrue("width is even", (W % 2) == 0);
+			TestTrue("aspect preserved", FMath::Abs(static_cast<int32>(W) - 1152) <= 2);
+		});
+
+		It("should leave the size alone when already within the limit", [this]()
+		{
+			uint32 W = 0, H = 0;
+			FSentryColorConversion::ComputeScaledSize(1280, 720, 720, W, H);
+			TestEqual("width", static_cast<int32>(W), 1280);
+			TestEqual("height", static_cast<int32>(H), 720);
+
+			FSentryColorConversion::ComputeScaledSize(3840, 2160, 0, W, H);
+			TestEqual("width", static_cast<int32>(W), 3840);
+			TestEqual("height", static_cast<int32>(H), 2160);
+		});
+
+		It("should round odd source dimensions down to even", [this]()
+		{
+			uint32 W = 0, H = 0;
+			FSentryColorConversion::ComputeScaledSize(1921, 1081, 0, W, H);
+			TestEqual("width", static_cast<int32>(W), 1920);
+			TestEqual("height", static_cast<int32>(H), 1080);
+		});
+
+		It("should match the unscaled path at identity scale", [this]()
+		{
+			TArray<uint8> Scaled;
+			int32 Stride = 0;
+			ConvertSplit(0, 0, 0, 255, 255, 255, 64, 64, 32, 64, 64, Scaled, Stride);
+
+			TestEqual("left luma", static_cast<int32>(Scaled[Stride * 32 + 8]), 16);
+			TestEqual("right luma", static_cast<int32>(Scaled[Stride * 32 + 56]), 235);
+		});
+
+		It("should keep the split in place after a 4x downscale", [this]()
+		{
+			TArray<uint8> Scaled;
+			int32 Stride = 0;
+			ConvertSplit(0, 0, 0, 255, 255, 255, 256, 256, 128, 64, 64, Scaled, Stride);
+
+			// Sampled well inside each half, so the boundary column is not involved
+			TestEqual("left luma", static_cast<int32>(Scaled[Stride * 32 + 8]), 16);
+			TestEqual("right luma", static_cast<int32>(Scaled[Stride * 32 + 56]), 235);
+		});
+
+		It("should average across the boundary rather than dropping pixels", [this]()
+		{
+			TArray<uint8> Scaled;
+			int32 Stride = 0;
+			// At a 2:1 scale a split on an even column always lands on a box
+			// boundary, so put it on an odd one: destination column 10 then covers
+			// source columns 20 and 21, one from each half
+			ConvertSplit(0, 0, 0, 255, 255, 255, 64, 64, 21, 32, 32, Scaled, Stride);
+
+			// A box filter must land between the extremes here; nearest-neighbour
+			// would snap to one end
+			const int32 Boundary = static_cast<int32>(Scaled[Stride * 16 + 10]);
+			TestTrue("boundary is averaged", Boundary > 16 && Boundary < 235);
+		});
+
+		It("should refuse to scale up rather than read out of bounds", [this]()
+		{
+			TArray<uint8> Y, U, V, Src;
+			Y.SetNumZeroed(64 * 64);
+			U.SetNumZeroed(32 * 32);
+			V.SetNumZeroed(32 * 32);
+			Src.SetNumZeroed(32 * 32 * 4);
+
+			FSentryColorConversion::BgraToI420Scaled(Src.GetData(), 32 * 4, 32, 32, 64, 64,
+				Y.GetData(), U.GetData(), V.GetData(), 64, 32);
+
+			TestEqual("output untouched", static_cast<int32>(Y[0]), 0);
 		});
 	});
 }
