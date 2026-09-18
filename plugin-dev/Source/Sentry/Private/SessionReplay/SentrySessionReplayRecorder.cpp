@@ -207,6 +207,14 @@ void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment, uin
 	Entry.DurationTicks = DurationTicks;
 
 	FragmentRing.Add(MoveTemp(Entry));
+
+	// Until a clip exists on disk there is nothing for a crash handler to attach,
+	// so don't wait for the next rotation tick. A crash shortly after rendering
+	// starts is exactly when the window is smallest and the replay most wanted.
+	if (!bSnapshotOnDisk && RotationWake)
+	{
+		RotationWake->Trigger();
+	}
 }
 
 bool FSentrySessionReplayRecorder::Init()
