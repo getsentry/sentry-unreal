@@ -121,6 +121,13 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 		return;
 	}
 
+	// Runs every presented frame, not just on capture ticks, so a landed readback
+	// is handed over within a frame or two rather than a capture interval
+	if (bCpuReadback)
+	{
+		DrainReadyReadbacks_RenderThread();
+	}
+
 	const double Now = FPlatformTime::Seconds();
 	if (Now < NextCaptureTime)
 	{
@@ -265,12 +272,18 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 	}
 #endif
 
+	EncoderFrame->CaptureTimeSeconds = Now;
+
 	if (bCpuReadback)
 	{
 		// FRHIGPUTextureReadback owns the staging copy and tracks its own
-		// completion, so no fence is needed on this path
+		// completion, so no fence is needed on this path. The frame is handed to
+		// the encoder later, by DrainReadyReadbacks_RenderThread, once the pixels
+		// can be copied out on this thread
 		RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc));
 		EncoderFrame->Readback->EnqueueCopy(RHICmdList, EncoderTex.GetReference());
+		EncoderFrame->bReadbackPending = true;
+		return;
 	}
 	else
 	{
@@ -284,9 +297,50 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 		RHICmdList.WriteGPUFence(EncoderFrame->ReadyFence);
 	}
 
-	EncoderFrame->CaptureTimeSeconds = Now;
-
 	Encoder.SubmitFrame(EncoderFrame);
+}
+
+void FSentryBackBufferCapture::DrainReadyReadbacks_RenderThread()
+{
+	for (const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Slot : EncoderPool)
+	{
+		if (!Slot.IsValid() || !Slot->bReadbackPending || !Slot->Readback.IsValid())
+		{
+			continue;
+		}
+		if (!Slot->Readback->IsReady())
+		{
+			continue;
+		}
+
+		FSentryVideoFrame& Frame = *Slot;
+		Frame.bReadbackPending = false;
+
+		int32 RowPitchInPixels = 0;
+		const uint8* Pixels = static_cast<const uint8*>(Frame.Readback->Lock(RowPitchInPixels));
+
+		if (Pixels != nullptr && RowPitchInPixels > 0)
+		{
+			const int32 RowPitchBytes = RowPitchInPixels * 4;
+			const int64 Required = static_cast<int64>(RowPitchBytes) * Frame.Height;
+
+			if (Frame.CpuPixels.Num() != Required)
+			{
+				Frame.CpuPixels.SetNumUninitialized(Required);
+			}
+			FMemory::Memcpy(Frame.CpuPixels.GetData(), Pixels, Required);
+			Frame.CpuRowPitchBytes = RowPitchBytes;
+		}
+		else
+		{
+			Frame.CpuPixels.Reset();
+			Frame.CpuRowPitchBytes = 0;
+		}
+
+		Frame.Readback->Unlock();
+
+		Encoder.SubmitFrame(Slot);
+	}
 }
 
 FTextureRHIRef FSentryBackBufferCapture::AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,

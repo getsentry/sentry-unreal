@@ -66,6 +66,14 @@ void FSentryReplayFragmentAssembler::AddAccessUnit(const uint8* AnnexB, int64 Si
 	SampleClock += Sample.Duration;
 
 	CurrentSamples.Add(MoveTemp(Sample));
+
+	// Every frame is independently decodable on the software path, so close the
+	// fragment now rather than holding it open for a keyframe that is a whole
+	// capture interval away
+	if (bFlushEveryKeyframe && bKeyframe)
+	{
+		Flush();
+	}
 }
 
 void FSentryReplayFragmentAssembler::Flush()

@@ -13,7 +13,6 @@
 #include "HAL/Event.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
-#include "RHIGPUReadback.h"
 
 #include "codec_api.h"
 #include "codec_app_def.h"
@@ -152,17 +151,6 @@ uint32 FSentryOpenH264Encoder::Run()
 			continue;
 		}
 
-		if (!Frame->IsGpuWriteComplete())
-		{
-			// The GPU readback hasn't landed yet. Yield rather than spin, for
-			// the same reason the hardware path does
-			if (WakeEvent)
-			{
-				WakeEvent->Wait(ReadbackPollIntervalMs);
-			}
-			continue;
-		}
-
 		{
 			FScopeLock Lock(&QueueLock);
 			if (PendingQueue.Num() > 0)
@@ -183,8 +171,9 @@ uint32 FSentryOpenH264Encoder::Run()
 
 void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 {
-	if (!Frame.Readback.IsValid())
+	if (Frame.CpuPixels.Num() == 0 || Frame.CpuRowPitchBytes <= 0)
 	{
+		LogOnce(bLoggedNoReadback, TEXT("frame arrived without readback pixels"));
 		return;
 	}
 
@@ -199,16 +188,13 @@ void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 	// reported once and then ignored, matching the hardware path
 	if (FrameWidth != Width || FrameHeight != Height)
 	{
+		LogOnce(bLoggedSizeMismatch, TEXT("frame size differs from the size the encoder opened with"));
 		return;
 	}
 
-	int32 RowPitchInPixels = 0;
-	const uint8* Bgra = static_cast<const uint8*>(Frame.Readback->Lock(RowPitchInPixels));
-	if (Bgra == nullptr)
-	{
-		Frame.Readback->Unlock();
-		return;
-	}
+	// Pixels were copied out on the render thread; this thread makes no RHI calls
+	const uint8* Bgra = Frame.CpuPixels.GetData();
+	const int32 RowPitchBytes = Frame.CpuRowPitchBytes;
 
 	const int32 YStride = static_cast<int32>(Width);
 	const int32 CStride = static_cast<int32>((Width + 1) / 2);
@@ -225,10 +211,14 @@ void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 	uint8* PlaneU = PlaneY + YSize;
 	uint8* PlaneV = PlaneU + CSize;
 
-	FSentryColorConversion::BgraToI420(Bgra, RowPitchInPixels * 4, Width, Height,
-		PlaneY, PlaneU, PlaneV, YStride, CStride);
+	if (!bLoggedFirstReadback)
+	{
+		bLoggedFirstReadback = true;
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame read back (%ux%u, row pitch %d bytes)"), Width, Height, RowPitchBytes);
+	}
 
-	Frame.Readback->Unlock();
+	FSentryColorConversion::BgraToI420(Bgra, RowPitchBytes, Width, Height,
+		PlaneY, PlaneU, PlaneV, YStride, CStride);
 
 	if (CaptureTimeBaseSeconds < 0.0)
 	{
@@ -257,8 +247,14 @@ void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 	SFrameBSInfo Info;
 	FMemory::Memzero(Info);
 
-	if (Encoder->EncodeFrame(&Picture, &Info) != cmResultSuccess)
+	const int EncodeResult = Encoder->EncodeFrame(&Picture, &Info);
+	if (EncodeResult != cmResultSuccess)
 	{
+		if (!bLoggedEncodeFailure)
+		{
+			bLoggedEncodeFailure = true;
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: EncodeFrame returned %d. Further occurrences are not logged."), EncodeResult);
+		}
 		if (++ConsecutiveEncodeFailures >= MaxConsecutiveEncodeFailures)
 		{
 			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder failed %d consecutive frames. Recording disabled for this session."), ConsecutiveEncodeFailures);
@@ -270,6 +266,7 @@ void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 
 	if (Info.eFrameType == videoFrameTypeSkip)
 	{
+		LogOnce(bLoggedFrameSkipped, TEXT("encoder skipped a frame"));
 		return;
 	}
 
@@ -292,7 +289,14 @@ void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 
 	if (AccessUnit.Num() == 0)
 	{
+		LogOnce(bLoggedEmptyAccessUnit, TEXT("encoder produced an empty access unit"));
 		return;
+	}
+
+	if (!bLoggedFirstEncode)
+	{
+		bLoggedFirstEncode = true;
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame encoded (%d bytes, type %d)"), AccessUnit.Num(), static_cast<int32>(Info.eFrameType));
 	}
 
 	// Sample duration is the gap to the previous sample, so playback follows the
@@ -348,12 +352,20 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 	Params.iPicWidth = static_cast<int>(FrameWidth);
 	Params.iPicHeight = static_cast<int>(FrameHeight);
 	Params.iTargetBitrate = BitrateBps;
-	Params.iRCMode = RC_BITRATE_MODE;
 	Params.fMaxFrameRate = static_cast<float>(Framerate);
 	Params.iTemporalLayerNum = 1;
 	Params.iSpatialLayerNum = 1;
 	Params.bEnableDenoise = false;
+
+	// openh264 refuses to rate-control in RC_BITRATE_MODE unless frame skipping is
+	// allowed ("bitrate can't be controlled ... without enabling skip frame"), and
+	// silently ignores iTargetBitrate. Skipping frames is wrong for a recorder -
+	// a dropped frame is a second of missing replay - so cap quality instead and
+	// let resolution and frame rate set the size, which they dominate anyway.
 	Params.bEnableFrameSkip = false;
+	Params.iRCMode = RC_QUALITY_MODE;
+	Params.iMaxQp = 40;
+	Params.iMinQp = 18;
 
 	// Single-threaded: session replay encodes a couple of frames per second, and
 	// this keeps openh264's thread pool (and its CPU-count probing) out of the
@@ -401,12 +413,26 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 	Height = FrameHeight;
 	Assembler.SetDimensions(Width, Height);
 
+	// Every frame is an IDR here, so a fragment never has to wait for the next
+	// keyframe. At the frame rates replay records at, holding one open would keep
+	// the most recent second off disk
+	Assembler.SetFlushEveryKeyframe(true);
+
 	bEncoderOpen = true;
 
-	UE_LOG(LogSentrySdk, Log, TEXT("Session replay: openh264 encoder opened %ux%u @ %u fps, %d kbps (software, every frame a keyframe)"),
-		Width, Height, Framerate, BitrateBps / 1000);
+	UE_LOG(LogSentrySdk, Log, TEXT("Session replay: openh264 encoder opened %ux%u @ %u fps, QP %d-%d (software, every frame a keyframe)"),
+		Width, Height, Framerate, Params.iMinQp, Params.iMaxQp);
 
 	return true;
+}
+
+void FSentryOpenH264Encoder::LogOnce(bool& bFlag, const TCHAR* Message)
+{
+	if (!bFlag)
+	{
+		bFlag = true;
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: %s. Further occurrences are not logged."), Message);
+	}
 }
 
 void FSentryOpenH264Encoder::CloseEncoder()

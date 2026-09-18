@@ -31,6 +31,17 @@ public:
 	void SetDimensions(uint32 InWidth, uint32 InHeight);
 
 	/**
+	 * Closes a fragment after every keyframe instead of waiting for the next one.
+	 *
+	 * A fragment normally stays open until the following keyframe arrives, which
+	 * costs one capture interval of latency. That is fine at 30 fps and ruinous at
+	 * 1 fps, where it means the most recent second is never on disk - and a crash
+	 * shortly after the first frame produces no clip at all. Backends that make
+	 * every frame an IDR should enable this.
+	 */
+	void SetFlushEveryKeyframe(bool bInFlushEveryKeyframe) { bFlushEveryKeyframe = bInFlushEveryKeyframe; }
+
+	/**
 	 * Feeds one encoded access unit.
 	 *
 	 * @param AnnexB       access unit as an Annex-B byte stream
@@ -64,6 +75,7 @@ private:
 	TArray<uint8> CachedSps;
 	TArray<uint8> CachedPps;
 	bool bInitSegmentPublished = false;
+	bool bFlushEveryKeyframe = false;
 };
 
 #endif // USE_SENTRY_SESSION_REPLAY

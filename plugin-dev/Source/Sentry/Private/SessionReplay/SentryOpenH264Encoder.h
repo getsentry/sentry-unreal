@@ -69,6 +69,10 @@ private:
 	// Releases every queued frame back to its pool slot and empties the queue
 	void DrainAndReleaseQueue();
 
+	// Warns the first time a per-frame path bails out, so a silently stalled
+	// pipeline is visible without flooding the log at the capture rate
+	static void LogOnce(bool& bFlag, const TCHAR* Message);
+
 	FSentrySessionReplayRecorder& Recorder;
 	FSentryReplayFragmentAssembler Assembler;
 
@@ -76,6 +80,15 @@ private:
 	bool bEncoderOpen = false;
 	bool bResolutionChanged = false;
 	FThreadSafeBool bEncodingDisabled;
+
+	bool bLoggedFirstEncode = false;
+	bool bLoggedFirstReadback = false;
+	bool bLoggedSizeMismatch = false;
+	bool bLoggedEncodeFailure = false;
+	bool bLoggedNoReadback = false;
+	bool bLoggedLockFailed = false;
+	bool bLoggedFrameSkipped = false;
+	bool bLoggedEmptyAccessUnit = false;
 
 	int32 ConsecutiveEncodeFailures = 0;
 	static constexpr int32 MaxConsecutiveEncodeFailures = 30;

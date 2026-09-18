@@ -270,19 +270,47 @@ public class Sentry : ModuleRules
 	// ship their own encoder override this.
 	protected virtual bool HasSessionReplayEncoder(ReadOnlyTargetRules Target)
 	{
-		return IsPluginEnabled(Target, "AVCodecsCore");
+		return GetSoftwareEncoderPath(Target) != null || IsPluginEnabled(Target, "AVCodecsCore");
 	}
 
 	// Adds whatever the platform's session-replay encoder needs to link, and
 	// defines which backend SessionReplay/ compiles.
 	protected virtual void AddSessionReplayEncoderDependencies(ReadOnlyTargetRules Target)
 	{
+		string SoftwareEncoderPath = GetSoftwareEncoderPath(Target);
+		if (SoftwareEncoderPath != null)
+		{
+			Console.WriteLine("Sentry: session replay using the openh264 software encoder from {0}", SoftwareEncoderPath);
+
+			PublicIncludePaths.Add(Path.Combine(SoftwareEncoderPath, "include"));
+			PublicAdditionalLibraries.Add(Path.Combine(SoftwareEncoderPath, "lib", "openh264_enc.lib"));
+			PublicDefinitions.Add("SENTRY_REPLAY_ENCODER_OPENH264=1");
+			return;
+		}
+
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"AVCodecsCore",
 			"AVCodecsCoreRHI",
 		});
 		PublicDefinitions.Add("SENTRY_REPLAY_ENCODER_AVCODECS=1");
+	}
+
+	// Development-only opt-in: lets desktop builds exercise the software encoder
+	// that consoles use, so its behaviour can be iterated on without a devkit and
+	// a console CI cycle. Set SENTRY_REPLAY_SOFTWARE_ENCODER=1 and drop the lib in
+	// Source/ThirdParty/<Platform>/openh264/{include,lib}. Returns null when not
+	// opted in or when the lib is absent, leaving the normal AVCodecs path intact.
+	private string GetSoftwareEncoderPath(ReadOnlyTargetRules Target)
+	{
+		if (Environment.GetEnvironmentVariable("SENTRY_REPLAY_SOFTWARE_ENCODER") != "1")
+		{
+			return null;
+		}
+
+		string Candidate = Path.Combine(PluginDirectory, "Source", "ThirdParty", Target.Platform.ToString(), "openh264");
+
+		return File.Exists(Path.Combine(Candidate, "lib", "openh264_enc.lib")) ? Candidate : null;
 	}
 
 	private bool IsPluginEnabled(ReadOnlyTargetRules Target, string PluginName)

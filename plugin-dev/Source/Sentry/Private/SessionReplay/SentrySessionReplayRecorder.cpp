@@ -48,7 +48,13 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	FragmentSeconds = Settings->SessionReplayOptions.FragmentSeconds;
 	RotationIntervalSeconds = Settings->SessionReplayOptions.RotationIntervalSeconds;
 
-	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
+	// A fragment is at most FragmentSeconds long, but a backend that closes one per
+	// keyframe (the software encoder does, since every frame is an IDR) makes them
+	// a single capture interval instead. Size the ring for whichever is shorter, or
+	// the retained window collapses to a fraction of the configured duration.
+	const float FrameSeconds = 1.0f / FMath::Max(1, Settings->SessionReplayOptions.Framerate);
+	const float ShortestFragmentSeconds = FMath::Max(0.01f, FMath::Min(FragmentSeconds, FrameSeconds));
+	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / ShortestFragmentSeconds));
 	FragmentRing.Empty(FragmentRingCapacity);
 
 	AttachmentPath = ReplayPath;

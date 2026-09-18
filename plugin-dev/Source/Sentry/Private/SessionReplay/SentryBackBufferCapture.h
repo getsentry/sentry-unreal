@@ -72,6 +72,11 @@ private:
 	// Captures a single backbuffer frame and forwards it to the encoder (render thread)
 	void CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer);
 
+	// Copies out any readback that has landed and submits those frames to the
+	// encoder. Must run on the render thread: FRHIGPUTextureReadback::Lock maps a
+	// staging surface through the immediate command list
+	void DrainReadyReadbacks_RenderThread();
+
 	// Returns the cached texture, recreated when any of (Width, Height, Format,
 	// Flags) differs from the previous call. Returns null on creation failure
 	static FTextureRHIRef AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
