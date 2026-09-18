@@ -253,17 +253,36 @@ public class Sentry : ModuleRules
 			}
 		}
 
-		if (bAttachSessionReplay && IsSessionReplaySupported(Target) && IsPluginEnabled(Target, "AVCodecsCore"))
+		if (bAttachSessionReplay && IsSessionReplaySupported(Target) && HasSessionReplayEncoder(Target))
 		{
 			PrivateDependencyModuleNames.AddRange(new string[]
 			{
 				"RHI",
 				"RenderCore",
-				"AVCodecsCore",
-				"AVCodecsCoreRHI",
 			});
+			AddSessionReplayEncoderDependencies(Target);
 			PublicDefinitions.Add("USE_SENTRY_SESSION_REPLAY=1");
 		}
+	}
+
+	// Whether an H.264 encoder is available for session replay on this platform.
+	// Desktop and iOS use the engine's AVCodecs plugin; console extensions that
+	// ship their own encoder override this.
+	protected virtual bool HasSessionReplayEncoder(ReadOnlyTargetRules Target)
+	{
+		return IsPluginEnabled(Target, "AVCodecsCore");
+	}
+
+	// Adds whatever the platform's session-replay encoder needs to link, and
+	// defines which backend SessionReplay/ compiles.
+	protected virtual void AddSessionReplayEncoderDependencies(ReadOnlyTargetRules Target)
+	{
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"AVCodecsCore",
+			"AVCodecsCoreRHI",
+		});
+		PublicDefinitions.Add("SENTRY_REPLAY_ENCODER_AVCODECS=1");
 	}
 
 	private bool IsPluginEnabled(ReadOnlyTargetRules Target, string PluginName)
@@ -289,7 +308,7 @@ public class Sentry : ModuleRules
 		return false;
 	}
 
-	private bool IsSessionReplaySupported(ReadOnlyTargetRules Target)
+	protected virtual bool IsSessionReplaySupported(ReadOnlyTargetRules Target)
 	{
 		// On Windows/Linux Arm64, session replay capturing is not supported
 		// On Android, session replay capturing is handled by sentry-java

@@ -4,10 +4,11 @@
 
 #ifdef USE_SENTRY_SESSION_REPLAY
 
+#include "ISentryVideoEncoder.h"
 #include "SentryBackBufferCapture.h"
 #include "SentryDefines.h"
+#include "SentryFMP4Writer.h"
 #include "SentrySettings.h"
-#include "SentryVideoEncoder.h"
 
 #include "HAL/Event.h"
 #include "HAL/FileManager.h"
@@ -59,7 +60,15 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 
 	bSnapshotOnDisk.AtomicSet(false);
 
-	Encoder = MakeUnique<FSentryVideoEncoder>(*this, static_cast<uint32>(Settings->SessionReplayOptions.Framerate), Settings->SessionReplayOptions.BitrateKbps, Settings->SessionReplayOptions.FragmentSeconds);
+	Encoder = CreateSentryVideoEncoder(*this, static_cast<uint32>(Settings->SessionReplayOptions.Framerate),
+		Settings->SessionReplayOptions.BitrateKbps, Settings->SessionReplayOptions.FragmentSeconds);
+	if (!Encoder.IsValid())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay disabled: no video encoder available for this platform"));
+
+		return false;
+	}
+
 	if (!Encoder->StartEncoder())
 	{
 		Encoder.Reset();

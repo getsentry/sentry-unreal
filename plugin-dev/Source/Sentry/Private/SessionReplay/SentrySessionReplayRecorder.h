@@ -15,7 +15,7 @@
 
 class FRunnableThread;
 class FEvent;
-class FSentryVideoEncoder;
+class ISentryVideoEncoder;
 class FSentryBackBufferCapture;
 class USentrySettings;
 
@@ -83,7 +83,7 @@ private:
 
 	int32 FragmentRingCapacity = 24;
 
-	TUniquePtr<FSentryVideoEncoder> Encoder;
+	TUniquePtr<ISentryVideoEncoder> Encoder;
 	TUniquePtr<FSentryBackBufferCapture> Capture;
 
 	struct FFragment

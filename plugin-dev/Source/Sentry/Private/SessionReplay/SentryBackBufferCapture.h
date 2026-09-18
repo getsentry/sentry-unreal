@@ -15,7 +15,7 @@
 #include "Templates/SharedPointer.h"
 
 struct FSentryVideoFrame;
-class FSentryVideoEncoder;
+class ISentryVideoEncoder;
 class ISlateViewportProvider;
 class SWindow;
 
@@ -38,7 +38,7 @@ class SWindow;
 class FSentryBackBufferCapture
 {
 public:
-	explicit FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder);
+	explicit FSentryBackBufferCapture(ISentryVideoEncoder& InEncoder);
 	~FSentryBackBufferCapture();
 
 	// Subscribes to OnBackBufferReadyToPresent (game thread)
@@ -83,7 +83,7 @@ private:
 	TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> AcquireFrame_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
-	FSentryVideoEncoder& Encoder;
+	ISentryVideoEncoder& Encoder;
 
 	FDelegateHandle BackBufferReadyHandle;
 
@@ -94,6 +94,10 @@ private:
 	// BGRA8 RenderTargetable texture. Used on Apple platforms as the draw pass output
 	// before the final hardware copy into the CPUReadback EncoderPool slot
 	FCachedTexture Converted;
+
+	// Cached from the encoder at construction: software encoders need the frame
+	// read back into system memory instead of consuming the GPU resource
+	bool bCpuReadback = false;
 
 	// Number of encoder frames pooled
 	static constexpr int32 FramePoolSize = 5;

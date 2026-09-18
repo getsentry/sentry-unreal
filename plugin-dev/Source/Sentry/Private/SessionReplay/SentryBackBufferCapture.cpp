@@ -4,9 +4,11 @@
 
 #ifdef USE_SENTRY_SESSION_REPLAY
 
+#include "ISentryVideoEncoder.h"
 #include "SentryDefines.h"
-#include "SentryVideoEncoder.h"
 #include "SentryVideoFrame.h"
+
+#include "RHIGPUReadback.h"
 
 #include "DynamicRHI.h"
 #include "Framework/Application/SlateApplication.h"
@@ -23,11 +25,12 @@
 #include "Slate/SlateViewportProvider.h"
 #endif
 
-FSentryBackBufferCapture::FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder)
+FSentryBackBufferCapture::FSentryBackBufferCapture(ISentryVideoEncoder& InEncoder)
 	: Encoder(InEncoder)
 {
 	EncoderPool.SetNum(FramePoolSize);
 	CapturePeriodSeconds = 1.0 / static_cast<double>(FMath::Max(1u, Encoder.GetFramerate()));
+	bCpuReadback = Encoder.RequiresCpuReadableFrames();
 }
 
 FSentryBackBufferCapture::~FSentryBackBufferCapture()
@@ -143,24 +146,37 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayConverted"));
 #endif
 
+	ETextureCreateFlags PoolFlags;
+	ERHIAccess PoolInitialState;
+
+	if (bCpuReadback)
+	{
+		// Software encoders read through FRHIGPUTextureReadback, which owns its own
+		// staging buffer, so the pool slot stays an ordinary draw target
+		PoolFlags = SrvRt;
+		PoolInitialState = ERHIAccess::SRVGraphics;
+	}
+	else
+	{
 #if PLATFORM_APPLE
-	// VT requires pool slot to have CPUReadback flag so it can be read via Metal's getBytes().
-	// Note: Metal forbids RT|CPUReadback on the same texture so an extra copy is needed (step 3)
-	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::CPUReadback;
-	constexpr ERHIAccess PoolInitialState = ERHIAccess::CPURead;
+		// VT requires pool slot to have CPUReadback flag so it can be read via Metal's getBytes().
+		// Note: Metal forbids RT|CPUReadback on the same texture so an extra copy is needed (step 3)
+		PoolFlags = ETextureCreateFlags::CPUReadback;
+		PoolInitialState = ERHIAccess::CPURead;
 #else
-	// NVENC reads from the pool slot directly. The external-memory flag exposes the
-	// texture's GPU allocation to the encoder; SRV|RT lets the draw pass write into it.
-	// The flag is RHI-specific: D3D (Windows) uses Shared, while Vulkan (Linux, or
-	// Windows -vulkan) needs External so AVCodecs can import it through CUDA. This must
-	// match how the engine's FVideoResourceRHI::Create chooses the flag per RHI, otherwise
-	// the resource has no shareable handle and the encoder rejects every frame.
-	const ETextureCreateFlags InteropFlag = (RHIGetInterfaceType() == ERHIInterfaceType::Vulkan)
-												? ETextureCreateFlags::External
-												: ETextureCreateFlags::Shared;
-	const ETextureCreateFlags PoolFlags = InteropFlag | SrvRt;
-	constexpr ERHIAccess PoolInitialState = ERHIAccess::SRVGraphics;
+		// NVENC reads from the pool slot directly. The external-memory flag exposes the
+		// texture's GPU allocation to the encoder; SRV|RT lets the draw pass write into it.
+		// The flag is RHI-specific: D3D (Windows) uses Shared, while Vulkan (Linux, or
+		// Windows -vulkan) needs External so AVCodecs can import it through CUDA. This must
+		// match how the engine's FVideoResourceRHI::Create chooses the flag per RHI, otherwise
+		// the resource has no shareable handle and the encoder rejects every frame.
+		const ETextureCreateFlags InteropFlag = (RHIGetInterfaceType() == ERHIInterfaceType::Vulkan)
+													? ETextureCreateFlags::External
+													: ETextureCreateFlags::Shared;
+		PoolFlags = InteropFlag | SrvRt;
+		PoolInitialState = ERHIAccess::SRVGraphics;
 #endif
+	}
 
 	if (!ScratchTex.IsValid())
 	{
@@ -249,14 +265,24 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 	}
 #endif
 
+	if (bCpuReadback)
+	{
+		// FRHIGPUTextureReadback owns the staging copy and tracks its own
+		// completion, so no fence is needed on this path
+		RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc));
+		EncoderFrame->Readback->EnqueueCopy(RHICmdList, EncoderTex.GetReference());
+	}
+	else
+	{
 #if PLATFORM_APPLE
-	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::CPURead));
+		RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::CPURead));
 #else
-	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
+		RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
 #endif
 
-	EncoderFrame->ReadyFence->Clear();
-	RHICmdList.WriteGPUFence(EncoderFrame->ReadyFence);
+		EncoderFrame->ReadyFence->Clear();
+		RHICmdList.WriteGPUFence(EncoderFrame->ReadyFence);
+	}
 
 	EncoderFrame->CaptureTimeSeconds = Now;
 
@@ -329,7 +355,12 @@ TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> FSentryBackBufferCapture::Acq
 			Frame.ReadyFence = RHICreateGPUFence(TEXT("SentrySessionReplayFrameFence"));
 		}
 
-		if (!Frame.Texture.IsValid() || !Frame.ReadyFence.IsValid())
+		if (bCpuReadback && !Frame.Readback.IsValid())
+		{
+			Frame.Readback = MakeUnique<FRHIGPUTextureReadback>(TEXT("SentrySessionReplayReadback"));
+		}
+
+		if (!Frame.Texture.IsValid() || !Frame.ReadyFence.IsValid() || (bCpuReadback && !Frame.Readback.IsValid()))
 		{
 			Frame.Release();
 			continue;

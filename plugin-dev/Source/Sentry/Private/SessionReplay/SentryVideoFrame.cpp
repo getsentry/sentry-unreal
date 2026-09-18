@@ -4,6 +4,7 @@
 
 #ifdef USE_SENTRY_SESSION_REPLAY
 
+#include "RHIGPUReadback.h"
 #include "RHIResources.h"
 
 bool FSentryVideoFrame::TryAcquire()
@@ -23,6 +24,12 @@ void FSentryVideoFrame::Release()
 
 bool FSentryVideoFrame::IsGpuWriteComplete() const
 {
+	// Software encoders read back through FRHIGPUTextureReadback, which tracks
+	// its own completion; the fence only guards the hardware path
+	if (Readback.IsValid())
+	{
+		return Readback->IsReady();
+	}
 	return !ReadyFence.IsValid() || (ReadyFence->NumPendingWriteCommands.GetValue() == 0 && ReadyFence->Poll());
 }
 

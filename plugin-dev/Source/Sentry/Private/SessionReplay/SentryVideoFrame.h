@@ -10,6 +10,9 @@
 #include "PixelFormat.h"
 #include "RHIDefinitions.h"
 #include "RHIFwd.h"
+#include "Templates/UniquePtr.h"
+
+class FRHIGPUTextureReadback;
 
 /**
  * A capture texture shared between the render-thread capture
@@ -20,6 +23,15 @@ struct FSentryVideoFrame
 	FTextureRHIRef Texture;
 
 	FGPUFenceRHIRef ReadyFence;
+
+	/**
+	 * Present only for software encoders, which need the pixels in system
+	 * memory. The capture path enqueues the copy on the render thread and the
+	 * encoder thread locks it once IsGpuWriteComplete() reports ready.
+	 *
+	 * When this is set it, rather than ReadyFence, is what gates readiness.
+	 */
+	TUniquePtr<FRHIGPUTextureReadback> Readback;
 
 	double CaptureTimeSeconds = 0.0;
 
