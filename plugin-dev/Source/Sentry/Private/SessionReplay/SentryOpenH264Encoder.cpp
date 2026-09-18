@@ -18,9 +18,10 @@
 #include "codec_app_def.h"
 #include "codec_def.h"
 
-FSentryOpenH264Encoder::FSentryOpenH264Encoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds)
+FSentryOpenH264Encoder::FSentryOpenH264Encoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds, int32 InMaxCaptureHeight)
 	: Recorder(InRecorder)
 	, Assembler(InRecorder)
+	, MaxCaptureHeight(InMaxCaptureHeight)
 	, Framerate(FMath::Max(1u, InFramerate))
 	, BitrateBps(InBitrateKbps * 1000)
 	, FragmentSeconds(InFragmentSeconds)
@@ -186,7 +187,7 @@ void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 
 	// Locked to the resolution the encoder opened with; a later size change is
 	// reported once and then ignored, matching the hardware path
-	if (FrameWidth != Width || FrameHeight != Height)
+	if (FrameWidth != SourceWidth || FrameHeight != SourceHeight)
 	{
 		LogOnce(bLoggedSizeMismatch, TEXT("frame size differs from the size the encoder opened with"));
 		return;
@@ -214,11 +215,11 @@ void FSentryOpenH264Encoder::ProcessFrame(FSentryVideoFrame& Frame)
 	if (!bLoggedFirstReadback)
 	{
 		bLoggedFirstReadback = true;
-		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame read back (%ux%u, row pitch %d bytes)"), Width, Height, RowPitchBytes);
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame read back (%ux%u, row pitch %d bytes)"), SourceWidth, SourceHeight, RowPitchBytes);
 	}
 
-	FSentryColorConversion::BgraToI420(Bgra, RowPitchBytes, Width, Height,
-		PlaneY, PlaneU, PlaneV, YStride, CStride);
+	FSentryColorConversion::BgraToI420Scaled(Bgra, RowPitchBytes, SourceWidth, SourceHeight,
+		Width, Height, PlaneY, PlaneU, PlaneV, YStride, CStride);
 
 	if (CaptureTimeBaseSeconds < 0.0)
 	{
@@ -323,10 +324,10 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 {
 	if (bEncoderOpen)
 	{
-		if ((FrameWidth != Width || FrameHeight != Height) && !bResolutionChanged)
+		if ((FrameWidth != SourceWidth || FrameHeight != SourceHeight) && !bResolutionChanged)
 		{
 			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size."),
-				Width, Height, FrameWidth, FrameHeight);
+				SourceWidth, SourceHeight, FrameWidth, FrameHeight);
 			bResolutionChanged = true;
 		}
 		return true;
@@ -336,6 +337,13 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 	{
 		return false;
 	}
+
+	SourceWidth = FrameWidth;
+	SourceHeight = FrameHeight;
+
+	uint32 EncodeWidth = 0;
+	uint32 EncodeHeight = 0;
+	FSentryColorConversion::ComputeScaledSize(FrameWidth, FrameHeight, MaxCaptureHeight, EncodeWidth, EncodeHeight);
 
 	if (WelsCreateSVCEncoder(&Encoder) != 0 || Encoder == nullptr)
 	{
@@ -349,8 +357,8 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 	Encoder->GetDefaultParams(&Params);
 
 	Params.iUsageType = CAMERA_VIDEO_REAL_TIME;
-	Params.iPicWidth = static_cast<int>(FrameWidth);
-	Params.iPicHeight = static_cast<int>(FrameHeight);
+	Params.iPicWidth = static_cast<int>(EncodeWidth);
+	Params.iPicHeight = static_cast<int>(EncodeHeight);
 	Params.iTargetBitrate = BitrateBps;
 	Params.fMaxFrameRate = static_cast<float>(Framerate);
 	Params.iTemporalLayerNum = 1;
@@ -380,8 +388,8 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 	Params.eSpsPpsIdStrategy = CONSTANT_ID;
 
 	SSpatialLayerConfig& Layer = Params.sSpatialLayers[0];
-	Layer.iVideoWidth = static_cast<int>(FrameWidth);
-	Layer.iVideoHeight = static_cast<int>(FrameHeight);
+	Layer.iVideoWidth = static_cast<int>(EncodeWidth);
+	Layer.iVideoHeight = static_cast<int>(EncodeHeight);
 	Layer.fFrameRate = static_cast<float>(Framerate);
 	Layer.iSpatialBitrate = BitrateBps;
 	Layer.uiProfileIdc = PRO_BASELINE;
@@ -409,8 +417,8 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 	int VideoFormat = videoFormatI420;
 	Encoder->SetOption(ENCODER_OPTION_DATAFORMAT, &VideoFormat);
 
-	Width = FrameWidth;
-	Height = FrameHeight;
+	Width = EncodeWidth;
+	Height = EncodeHeight;
 	Assembler.SetDimensions(Width, Height);
 
 	// Every frame is an IDR here, so a fragment never has to wait for the next
@@ -419,6 +427,12 @@ bool FSentryOpenH264Encoder::EnsureEncoderOpen(uint32 FrameWidth, uint32 FrameHe
 	Assembler.SetFlushEveryKeyframe(true);
 
 	bEncoderOpen = true;
+
+	if (Width != SourceWidth || Height != SourceHeight)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: scaling capture from %ux%u to %ux%u (max capture height %d)"),
+			SourceWidth, SourceHeight, Width, Height, MaxCaptureHeight);
+	}
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Session replay: openh264 encoder opened %ux%u @ %u fps, QP %d-%d (software, every frame a keyframe)"),
 		Width, Height, Framerate, Params.iMinQp, Params.iMaxQp);

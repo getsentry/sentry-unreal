@@ -102,4 +102,149 @@ void FSentryColorConversion::BgraToI420(const uint8* Bgra, int32 SrcStride, uint
 	}
 }
 
+void FSentryColorConversion::ComputeScaledSize(uint32 SrcWidth, uint32 SrcHeight, int32 MaxHeight,
+	uint32& OutWidth, uint32& OutHeight)
+{
+	OutWidth = SrcWidth;
+	OutHeight = SrcHeight;
+
+	if (MaxHeight <= 0 || SrcHeight <= static_cast<uint32>(MaxHeight) || SrcWidth == 0 || SrcHeight == 0)
+	{
+		// Still force even dimensions: 4:2:0 chroma is sampled in 2x2 blocks
+		OutWidth &= ~1u;
+		OutHeight &= ~1u;
+		return;
+	}
+
+	const double Scale = static_cast<double>(MaxHeight) / static_cast<double>(SrcHeight);
+	OutHeight = static_cast<uint32>(MaxHeight);
+	OutWidth = static_cast<uint32>(FMath::RoundToInt(SrcWidth * Scale));
+
+	OutWidth &= ~1u;
+	OutHeight &= ~1u;
+
+	OutWidth = FMath::Max(2u, OutWidth);
+	OutHeight = FMath::Max(2u, OutHeight);
+}
+
+void FSentryColorConversion::BgraToI420Scaled(const uint8* Bgra, int32 SrcStride, uint32 SrcWidth, uint32 SrcHeight,
+	uint32 DstWidth, uint32 DstHeight,
+	uint8* OutY, uint8* OutU, uint8* OutV, int32 YStride, int32 CStride)
+{
+	using namespace SentryColorConversionDetail;
+
+	if (Bgra == nullptr || OutY == nullptr || OutU == nullptr || OutV == nullptr)
+	{
+		return;
+	}
+	if (SrcWidth == 0 || SrcHeight == 0 || DstWidth == 0 || DstHeight == 0)
+	{
+		return;
+	}
+	if (DstWidth > SrcWidth || DstHeight > SrcHeight)
+	{
+		return;
+	}
+	if (SrcStride < static_cast<int32>(SrcWidth) * 4)
+	{
+		return;
+	}
+	if (YStride < static_cast<int32>(DstWidth) || CStride < static_cast<int32>((DstWidth + 1) / 2))
+	{
+		return;
+	}
+
+	// Identity scale is the common desktop case; skip the box-filter arithmetic
+	if (DstWidth == SrcWidth && DstHeight == SrcHeight)
+	{
+		BgraToI420(Bgra, SrcStride, SrcWidth, SrcHeight, OutY, OutU, OutV, YStride, CStride);
+		return;
+	}
+
+	// Luma: average the source box mapping to each destination pixel
+	for (uint32 DstRow = 0; DstRow < DstHeight; ++DstRow)
+	{
+		const uint32 SrcRow0 = (DstRow * SrcHeight) / DstHeight;
+		const uint32 SrcRow1 = FMath::Max(SrcRow0 + 1, ((DstRow + 1) * SrcHeight) / DstHeight);
+		const uint32 RowEnd = FMath::Min(SrcRow1, SrcHeight);
+
+		uint8* DstY = OutY + static_cast<int64>(DstRow) * YStride;
+
+		for (uint32 DstCol = 0; DstCol < DstWidth; ++DstCol)
+		{
+			const uint32 SrcCol0 = (DstCol * SrcWidth) / DstWidth;
+			const uint32 SrcCol1 = FMath::Max(SrcCol0 + 1, ((DstCol + 1) * SrcWidth) / DstWidth);
+			const uint32 ColEnd = FMath::Min(SrcCol1, SrcWidth);
+
+			uint32 SumB = 0, SumG = 0, SumR = 0, Count = 0;
+			for (uint32 Row = SrcRow0; Row < RowEnd; ++Row)
+			{
+				const uint8* SrcPtr = Bgra + static_cast<int64>(Row) * SrcStride + static_cast<int64>(SrcCol0) * 4;
+				for (uint32 Col = SrcCol0; Col < ColEnd; ++Col, SrcPtr += 4)
+				{
+					SumB += SrcPtr[0];
+					SumG += SrcPtr[1];
+					SumR += SrcPtr[2];
+					++Count;
+				}
+			}
+			if (Count == 0)
+			{
+				Count = 1;
+			}
+
+			const int32 B = static_cast<int32>(SumB / Count);
+			const int32 G = static_cast<int32>(SumG / Count);
+			const int32 R = static_cast<int32>(SumR / Count);
+
+			DstY[DstCol] = ClampByte((R * Yr + G * Yg + B * Yb + LumaOffset) >> Q);
+		}
+	}
+
+	// Chroma: same idea over 2x2 destination pixels, so the box is twice as wide
+	const uint32 ChromaWidth = (DstWidth + 1) / 2;
+	const uint32 ChromaHeight = (DstHeight + 1) / 2;
+
+	for (uint32 CRow = 0; CRow < ChromaHeight; ++CRow)
+	{
+		const uint32 SrcRow0 = ((CRow * 2) * SrcHeight) / DstHeight;
+		const uint32 SrcRow1 = FMath::Max(SrcRow0 + 1, ((CRow * 2 + 2) * SrcHeight) / DstHeight);
+		const uint32 RowEnd = FMath::Min(SrcRow1, SrcHeight);
+
+		uint8* DstU = OutU + static_cast<int64>(CRow) * CStride;
+		uint8* DstV = OutV + static_cast<int64>(CRow) * CStride;
+
+		for (uint32 CCol = 0; CCol < ChromaWidth; ++CCol)
+		{
+			const uint32 SrcCol0 = ((CCol * 2) * SrcWidth) / DstWidth;
+			const uint32 SrcCol1 = FMath::Max(SrcCol0 + 1, ((CCol * 2 + 2) * SrcWidth) / DstWidth);
+			const uint32 ColEnd = FMath::Min(SrcCol1, SrcWidth);
+
+			uint32 SumB = 0, SumG = 0, SumR = 0, Count = 0;
+			for (uint32 Row = SrcRow0; Row < RowEnd; ++Row)
+			{
+				const uint8* SrcPtr = Bgra + static_cast<int64>(Row) * SrcStride + static_cast<int64>(SrcCol0) * 4;
+				for (uint32 Col = SrcCol0; Col < ColEnd; ++Col, SrcPtr += 4)
+				{
+					SumB += SrcPtr[0];
+					SumG += SrcPtr[1];
+					SumR += SrcPtr[2];
+					++Count;
+				}
+			}
+			if (Count == 0)
+			{
+				Count = 1;
+			}
+
+			const int32 B = static_cast<int32>(SumB / Count);
+			const int32 G = static_cast<int32>(SumG / Count);
+			const int32 R = static_cast<int32>(SumR / Count);
+
+			DstU[CCol] = ClampByte((R * Ur + G * Ug + B * Ub + ChromaOffset) >> Q);
+			DstV[CCol] = ClampByte((R * Vr + G * Vg + B * Vb + ChromaOffset) >> Q);
+		}
+	}
+}
+
 #endif // USE_SENTRY_SESSION_REPLAY

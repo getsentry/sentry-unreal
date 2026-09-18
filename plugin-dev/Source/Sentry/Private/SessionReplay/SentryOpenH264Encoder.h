@@ -36,7 +36,7 @@ class FSentrySessionReplayRecorder;
 class FSentryOpenH264Encoder : public ISentryVideoEncoder, public FRunnable
 {
 public:
-	FSentryOpenH264Encoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds);
+	FSentryOpenH264Encoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds, int32 InMaxCaptureHeight);
 	virtual ~FSentryOpenH264Encoder() override;
 
 	// ISentryVideoEncoder
@@ -98,8 +98,15 @@ private:
 	static constexpr uint32 IdlePollIntervalMs = 50;
 	static constexpr uint32 ReadbackPollIntervalMs = 2;
 
+	// Encoded size, which is the captured size scaled down to MaxCaptureHeight
 	uint32 Width = 0;
 	uint32 Height = 0;
+
+	// Size the frames actually arrive at, kept so a later change can be detected
+	uint32 SourceWidth = 0;
+	uint32 SourceHeight = 0;
+
+	int32 MaxCaptureHeight;
 	uint32 Framerate;
 	int32 BitrateBps;
 	float FragmentSeconds;

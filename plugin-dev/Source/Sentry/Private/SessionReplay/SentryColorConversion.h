@@ -41,6 +41,27 @@ public:
 	 */
 	static void BgraToI420(const uint8* Bgra, int32 SrcStride, uint32 Width, uint32 Height,
 		uint8* OutY, uint8* OutU, uint8* OutV, int32 YStride, int32 CStride);
+
+	/**
+	 * As BgraToI420, but box-filters the source down to DstWidth x DstHeight on the way.
+	 *
+	 * Encoding cost and clip size both scale with pixel count, and a 4K backbuffer
+	 * is roughly nine times the work of 720p for a recording nobody inspects
+	 * pixel-by-pixel. Scaling here rather than on the GPU keeps the capture path
+	 * free of shaders and RHI-version differences; the readback still moves the
+	 * full frame, but the encode - which dominates - drops with the pixel count.
+	 *
+	 * Dst dimensions must be no larger than the source, and are rounded to even
+	 * numbers by the caller so chroma subsampling stays exact.
+	 */
+	static void BgraToI420Scaled(const uint8* Bgra, int32 SrcStride, uint32 SrcWidth, uint32 SrcHeight,
+		uint32 DstWidth, uint32 DstHeight,
+		uint8* OutY, uint8* OutU, uint8* OutV, int32 YStride, int32 CStride);
+
+	// Largest even-dimensioned size within MaxHeight that preserves aspect ratio.
+	// Returns the source size unchanged when MaxHeight is 0 or already large enough
+	static void ComputeScaledSize(uint32 SrcWidth, uint32 SrcHeight, int32 MaxHeight,
+		uint32& OutWidth, uint32& OutHeight);
 };
 
 #endif // USE_SENTRY_SESSION_REPLAY

@@ -67,7 +67,8 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	bSnapshotOnDisk.AtomicSet(false);
 
 	Encoder = CreateSentryVideoEncoder(*this, static_cast<uint32>(Settings->SessionReplayOptions.Framerate),
-		Settings->SessionReplayOptions.BitrateKbps, Settings->SessionReplayOptions.FragmentSeconds);
+		Settings->SessionReplayOptions.BitrateKbps, Settings->SessionReplayOptions.FragmentSeconds,
+		Settings->SessionReplayOptions.MaxCaptureHeight);
 	if (!Encoder.IsValid())
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay disabled: no video encoder available for this platform"));

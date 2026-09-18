@@ -320,8 +320,13 @@ struct FSentrySessionReplayOptions
 	float RotationIntervalSeconds = 1.0f;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Target framerate", ClampMin = 10, ClampMax = 60))
+		Meta = (DisplayName = "Target framerate", ClampMin = 1, ClampMax = 60))
 	int32 Framerate = 30;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Max capture height", ToolTip = "Frames taller than this are scaled down before encoding, preserving aspect ratio. Encoding cost and clip size both scale with pixel count, so capturing a 4K backbuffer at native resolution is far more expensive than the replay is worth. Set to 0 to capture at native resolution.",
+			ClampMin = 0, ClampMax = 2160))
+	int32 MaxCaptureHeight = 720;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
 		Meta = (DisplayName = "Target bitrate (kbps)", ClampMin = 200, ClampMax = 20000))

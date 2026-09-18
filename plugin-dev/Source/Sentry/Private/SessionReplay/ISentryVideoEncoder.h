@@ -65,6 +65,6 @@ public:
  * build has no encoder available.
  */
 TUniquePtr<ISentryVideoEncoder> CreateSentryVideoEncoder(FSentrySessionReplayRecorder& Recorder,
-	uint32 Framerate, int32 BitrateKbps, float FragmentSeconds);
+	uint32 Framerate, int32 BitrateKbps, float FragmentSeconds, int32 MaxCaptureHeight);
 
 #endif // USE_SENTRY_SESSION_REPLAY
