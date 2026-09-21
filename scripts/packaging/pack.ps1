@@ -18,6 +18,10 @@ function packFiles()
     )
 
     Copy-Item "$projectRoot/plugin-dev/*" "$projectRoot/package-release/" -Exclude $exclude -Recurse
+
+    # Python bytecode caches are nested and aren't reliably excluded by Copy-Item, so remove them here
+    Get-ChildItem "$projectRoot/package-release" -Directory -Recurse -Filter '__pycache__' | Remove-Item -Force -Recurse
+
     Copy-Item "$projectRoot/CHANGELOG.md" -Destination "$projectRoot/package-release/CHANGELOG.md"
     Copy-Item "$projectRoot/LICENSE" -Destination "$projectRoot/package-release/LICENSE"
     Copy-Item "$projectRoot/BUNDLED-EXECUTABLES.md" -Destination "$projectRoot/package-release/BUNDLED-EXECUTABLES.md"

@@ -17,6 +17,10 @@ plugin-dev/Intermediate/*
 # plugin-dev link
 **/Plugins/sentry
 
+# Python
+__pycache__/
+*.pyc
+
 # Other
 .DS_Store
 
