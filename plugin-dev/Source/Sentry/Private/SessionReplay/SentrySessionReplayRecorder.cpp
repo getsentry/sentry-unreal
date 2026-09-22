@@ -6,8 +6,9 @@
 
 #include "SentryBackBufferCapture.h"
 #include "SentryDefines.h"
+#include "SentryFMP4Writer.h"
 #include "SentrySettings.h"
-#include "SentryVideoEncoder.h"
+#include "SentryVideoEncoderInclude.h"
 
 #include "HAL/Event.h"
 #include "HAL/FileManager.h"
@@ -47,8 +48,9 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	FragmentSeconds = Settings->SessionReplayOptions.FragmentSeconds;
 	RotationIntervalSeconds = Settings->SessionReplayOptions.RotationIntervalSeconds;
 
-	FragmentRingCapacity = FMath::Max(2, FMath::CeilToInt(WindowSeconds / FMath::Max(0.1f, FragmentSeconds)));
-	FragmentRing.Empty(FragmentRingCapacity);
+	WindowTicks = static_cast<uint64>(WindowSeconds * FSentryFMP4Writer::TrackTimescale);
+
+	FragmentRing.Empty();
 
 	AttachmentPath = ReplayPath;
 	TempPath = ReplayPath + TEXT(".tmp");
@@ -59,7 +61,13 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 
 	bSnapshotOnDisk.AtomicSet(false);
 
-	Encoder = MakeUnique<FSentryVideoEncoder>(*this, static_cast<uint32>(Settings->SessionReplayOptions.Framerate), Settings->SessionReplayOptions.BitrateKbps, Settings->SessionReplayOptions.FragmentSeconds);
+	FSentryEncoderConfig EncoderConfig;
+	EncoderConfig.Framerate = static_cast<uint32>(Settings->SessionReplayOptions.Framerate);
+	EncoderConfig.BitrateKbps = Settings->SessionReplayOptions.BitrateKbps;
+	EncoderConfig.FragmentSeconds = Settings->SessionReplayOptions.FragmentSeconds;
+
+	Encoder = MakeUnique<FSentryEncoder>(*this, EncoderConfig);
+
 	if (!Encoder->StartEncoder())
 	{
 		Encoder.Reset();
@@ -181,10 +189,6 @@ void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSeg
 void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks)
 {
 	FScopeLock Lock(&RingLock);
-	if (FragmentRing.Num() >= FragmentRingCapacity)
-	{
-		FragmentRing.PopFront();
-	}
 
 	FFragment Entry;
 	Entry.Bytes = MoveTemp(Fragment);
@@ -192,6 +196,22 @@ void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment, uin
 	Entry.DurationTicks = DurationTicks;
 
 	FragmentRing.Add(MoveTemp(Entry));
+
+	// Retain the newest fragments covering WindowTicks. Fragment length varies by
+	// backend: the hardware encoder closes one every FragmentSeconds, the software
+	// one closes one per frame
+	uint64 RetainedTicks = 0;
+	for (int32 i = 0; i < FragmentRing.Num(); ++i)
+	{
+		RetainedTicks += FragmentRing[i].DurationTicks;
+	}
+
+	// Drop the oldest while the rest still covers the window
+	while (FragmentRing.Num() > 1 && RetainedTicks - FragmentRing[0].DurationTicks >= WindowTicks)
+	{
+		RetainedTicks -= FragmentRing[0].DurationTicks;
+		FragmentRing.PopFront();
+	}
 }
 
 bool FSentrySessionReplayRecorder::Init()
