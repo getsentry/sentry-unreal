@@ -6,6 +6,7 @@
 
 - Add hint support for macOS/iOS ([#1578](https://github.com/getsentry/sentry-unreal/pull/1578))
 - Add API for capturing user feedback with a local scope ([#1585](https://github.com/getsentry/sentry-unreal/pull/1585))
+- Allow platform extensions to supply their own session replay video encoder ([#1596](https://github.com/getsentry/sentry-unreal/pull/1596))
 
 ### Fixes
 
