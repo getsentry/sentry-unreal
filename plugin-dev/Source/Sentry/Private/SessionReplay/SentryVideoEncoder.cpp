@@ -2,12 +2,12 @@
 
 #include "SentryVideoEncoder.h"
 
-#ifdef USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY) && defined(SENTRY_REPLAY_ENCODER_AVCODECS)
 
 #include "SentryDefines.h"
-#include "SentrySessionReplayRecorder.h"
 #include "SentryVideoFrame.h"
 
+#include "DynamicRHI.h"
 #include "HAL/Event.h"
 #include "HAL/PlatformMisc.h"
 #include "HAL/RunnableThread.h"
@@ -23,11 +23,11 @@
 #include "Video/VideoEncoder.h"
 #include "Video/VideoPacket.h"
 
-FSentryVideoEncoder::FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds)
-	: Recorder(InRecorder)
-	, Framerate(InFramerate)
-	, BitrateBps(InBitrateKbps * 1000)
-	, FragmentSeconds(InFragmentSeconds)
+FSentryVideoEncoder::FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorder, const FSentryEncoderConfig& InConfig)
+	: FragmentBuilder(InRecorder)
+	, Framerate(InConfig.Framerate)
+	, BitrateBps(InConfig.BitrateKbps * 1000)
+	, FragmentSeconds(InConfig.FragmentSeconds)
 {
 #if PLATFORM_IOS
 	ExpectedOrientation = FPlatformMisc::GetDeviceOrientation();
@@ -86,7 +86,20 @@ void FSentryVideoEncoder::StopEncoder()
 	}
 }
 
-void FSentryVideoEncoder::SubmitFrame(const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame)
+ETextureCreateFlags FSentryVideoEncoder::GetFrameTextureFlags() const
+{
+	// NVENC reads from the pool slot directly. The external-memory flag exposes the
+	// texture's GPU allocation to the encoder. The flag is RHI-specific: D3D (Windows)
+	// uses Shared, while Vulkan (Linux, or Windows -vulkan) needs External so AVCodecs
+	// can import it through CUDA. This must match how the engine's FVideoResourceRHI::Create
+	// chooses the flag per RHI, otherwise the resource has no shareable handle and the
+	// encoder rejects every frame.
+	return (RHIGetInterfaceType() == ERHIInterfaceType::Vulkan)
+			   ? ETextureCreateFlags::External
+			   : ETextureCreateFlags::Shared;
+}
+
+void FSentryVideoEncoder::SubmitFrame(FRHICommandListImmediate& RHICmdList, const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame)
 {
 	if (!Frame.IsValid() || !Frame->Texture.IsValid() || bStopRequested || bEncodingDisabled)
 	{
@@ -412,7 +425,8 @@ void FSentryVideoEncoder::Restart()
 {
 	DrainPackets();
 
-	FlushCurrentFragment();
+	FragmentBuilder.Flush();
+	FragmentBuilder.Reset();
 
 	Encoder.Reset();
 	ResourceCache.Empty();
@@ -423,30 +437,8 @@ void FSentryVideoEncoder::Restart()
 	LastPacketTimestampMs = 0;
 	bHavePrevPacketTimestamp = false;
 	LastForcedKeyframeTime = 0.0;
-	CurrentFragmentDecodeTime = 0;
-	SampleClock = 0;
-	NextFragmentSequence = 1;
-	CachedSps.Empty();
-	CachedPps.Empty();
-	bInitSegmentPublished = false;
 	bFirstFrameValidated = false;
 	ConsecutiveSendFrameFailures = 0;
-}
-
-void FSentryVideoEncoder::FlushCurrentFragment()
-{
-	if (CurrentSamples.Num() > 0 && bInitSegmentPublished)
-	{
-		const uint32 FrameCount = static_cast<uint32>(CurrentSamples.Num());
-		uint64 DurationTicks = 0;
-		for (const FSentryH264Sample& Sample : CurrentSamples)
-		{
-			DurationTicks += Sample.Duration;
-		}
-		TArray<uint8> Fragment = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
-		Recorder.OnFragmentReady(MoveTemp(Fragment), FrameCount, DurationTicks);
-	}
-	CurrentSamples.Reset();
 }
 
 void FSentryVideoEncoder::DrainPackets()
@@ -462,35 +454,6 @@ void FSentryVideoEncoder::DrainPackets()
 		if (Packet.DataSize == 0 || !Packet.DataPtr.IsValid())
 		{
 			continue;
-		}
-
-		TArray<uint8> Sps, Pps;
-		TArray<uint8> Avcc = FSentryFMP4Writer::AnnexBToAvcc(Packet.DataPtr.Get(), Packet.DataSize, &Sps, &Pps);
-
-		if (Sps.Num() > 0 && CachedSps.Num() == 0)
-		{
-			CachedSps = MoveTemp(Sps);
-		}
-		if (Pps.Num() > 0 && CachedPps.Num() == 0)
-		{
-			CachedPps = MoveTemp(Pps);
-		}
-
-		if (!bInitSegmentPublished && CachedSps.Num() > 0 && CachedPps.Num() > 0)
-		{
-			TArray<uint8> Init = FSentryFMP4Writer::BuildInitSegment(Width, Height, CachedSps, CachedPps);
-			Recorder.OnInitSegmentReady(MoveTemp(Init));
-			bInitSegmentPublished = true;
-		}
-
-		if (Avcc.Num() == 0)
-		{
-			continue;
-		}
-
-		if (Packet.bIsKeyframe && CurrentSamples.Num() > 0)
-		{
-			FlushCurrentFragment();
 		}
 
 		// The encoder echoes back the capture timestamp we passed to SendFrame
@@ -524,18 +487,9 @@ void FSentryVideoEncoder::DrainPackets()
 
 		const uint32 DurationTicks = FMath::Max<uint32>(1, static_cast<uint32>(DurationSeconds * FSentryFMP4Writer::TrackTimescale));
 
-		FSentryH264Sample Sample;
-		Sample.AvccBytes = MoveTemp(Avcc);
-		Sample.Duration = DurationTicks;
-
-		if (CurrentSamples.Num() == 0)
-		{
-			CurrentFragmentDecodeTime = SampleClock;
-		}
-		SampleClock += Sample.Duration;
-
-		CurrentSamples.Add(MoveTemp(Sample));
+		FragmentBuilder.SetDimensions(Width, Height);
+		FragmentBuilder.AddAccessUnit(Packet.DataPtr.Get(), Packet.DataSize, Packet.bIsKeyframe, DurationTicks);
 	}
 }
 
-#endif // USE_SENTRY_SESSION_REPLAY
+#endif // USE_SENTRY_SESSION_REPLAY && SENTRY_REPLAY_ENCODER_AVCODECS

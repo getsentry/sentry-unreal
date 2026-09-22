@@ -15,7 +15,7 @@
 #include "Templates/SharedPointer.h"
 
 struct FSentryVideoFrame;
-class FSentryVideoEncoder;
+class ISentryEncoder;
 class ISlateViewportProvider;
 class SWindow;
 
@@ -34,11 +34,15 @@ class SWindow;
  *      "converted" texture because Metal forbids RenderTargetable | CPUReadback.
  *   3. Apple only: hardware-copy converted -> encoder pool slot (CPUReadback BGRA8).
  * The pool slot is then handed to the encoder.
+ *
+ * The encoder is also polled on every presented frame, including the ones
+ * throttling drops, so a backend with render-thread work of its own is not held
+ * to the capture rate.
  */
 class FSentryBackBufferCapture
 {
 public:
-	explicit FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder);
+	explicit FSentryBackBufferCapture(ISentryEncoder& InEncoder);
 	~FSentryBackBufferCapture();
 
 	// Subscribes to OnBackBufferReadyToPresent (game thread)
@@ -83,7 +87,7 @@ private:
 	TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> AcquireFrame_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format,
 		ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName);
 
-	FSentryVideoEncoder& Encoder;
+	ISentryEncoder& Encoder;
 
 	FDelegateHandle BackBufferReadyHandle;
 
