@@ -106,7 +106,7 @@ void FMicrosoftSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> 
 	attachments.Add(platformAttachment);
 }
 
-sentry_value_t FMicrosoftSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
+sentry_value_t FMicrosoftSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	// If crash logging is enabled, log the crash callstack to game log
 	if (CrashLogger)
@@ -134,7 +134,7 @@ sentry_value_t FMicrosoftSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx,
 		}
 	}
 
-	return FGenericPlatformSentrySubsystem::OnCrash(uctx, event, closure);
+	return FGenericPlatformSentrySubsystem::OnCrash(uctx, event, hint, closure);
 }
 
 void FMicrosoftSentrySubsystem::Close()
