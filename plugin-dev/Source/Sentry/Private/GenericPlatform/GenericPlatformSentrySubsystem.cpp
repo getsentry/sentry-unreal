@@ -129,7 +129,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 		// benefit from short-circuiting user callbacks.
 		platformSubsystem->bIsCrashing = true;
 
-		return platformSubsystem->OnCrash(uctx, event, closure);
+		return platformSubsystem->OnCrash(uctx, event, hint, closure);
 	}
 	else
 	{
@@ -169,7 +169,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	return metric;
 }
 
-sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, sentry_hint_t* hint, void* closure, bool isCrash)
 {
 	if (!closure || this != closure)
 	{
@@ -385,7 +385,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 	return metric;
 }
 
-sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
+sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t *hint, void* closure)
 {
 	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
