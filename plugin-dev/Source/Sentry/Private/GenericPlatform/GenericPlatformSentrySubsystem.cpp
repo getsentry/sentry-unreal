@@ -83,7 +83,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (closure)
 	{
@@ -119,7 +119,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (closure)
 	{
@@ -129,7 +129,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 		// benefit from short-circuiting user callbacks.
 		platformSubsystem->bIsCrashing = true;
 
-		return platformSubsystem->OnCrash(uctx, event, closure);
+		return platformSubsystem->OnCrash(uctx, event, hint, closure);
 	}
 	else
 	{
@@ -169,7 +169,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	return metric;
 }
 
-sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, void* hint, void* closure, bool isCrash)
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, sentry_hint_t* hint, void* closure, bool isCrash)
 {
 	if (!closure || this != closure)
 	{
@@ -385,7 +385,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 	return metric;
 }
 
-sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
+sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
@@ -408,7 +408,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 	// At this point crash events are handled the same way as non-fatal ones,
 	// so we defer to `OnBeforeSend` to invoke the custom `beforeSend` handler (if configured)
-	return OnBeforeSend(event, nullptr, closure, true);
+	return OnBeforeSend(event, hint, closure, true);
 }
 
 double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled)
@@ -918,7 +918,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(c
 	onConfigureScope.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent, nullptr);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -955,7 +955,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent, nullptr);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -996,7 +996,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 	sentry_attachment_set_content_type(screenshotAttachment, "image/png");
 	sentry_scope_add_attachment(scope, screenshotAttachment);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, exceptionEvent);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, exceptionEvent, nullptr);
 
 	IFileManager::Get().Delete(*ScreenshotPath);
 

@@ -22,7 +22,7 @@ protected:
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 	virtual void AddByteAttachment(TSharedPtr<ISentryAttachment> attachment) override;
 
-	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) override;
+	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure) override;
 
 	virtual void ConfigureAppHangTracking() override;
 	virtual void ResetAppHangTracking() override;

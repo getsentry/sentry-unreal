@@ -91,14 +91,14 @@ jobs:
     with:
       target: WinArm64
       backend: crashpad
-      runsOn: windows-11-arm
+      runsOn: windows-11-vs2026-arm
 
   windows-arm64-sdk-native:
     uses: ./.github/workflows/sdk-build.yml
     with:
       target: WinArm64
       backend: native
-      runsOn: windows-11-arm
+      runsOn: windows-11-vs2026-arm
 
   package:
     needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native]
