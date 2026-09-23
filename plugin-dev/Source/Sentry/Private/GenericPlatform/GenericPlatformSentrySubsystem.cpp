@@ -119,7 +119,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t *hint, void* closure)
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (closure)
 	{
