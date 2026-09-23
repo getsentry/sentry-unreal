@@ -118,7 +118,7 @@ protected:
 	virtual sentry_value_t OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure);
 	virtual sentry_value_t OnBeforeLog(sentry_value_t log, void* closure);
 	virtual sentry_value_t OnBeforeMetric(sentry_value_t metric, void* closure);
-	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t *hint, void* closure);
+	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure);
 	virtual double OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled);
 
 	virtual bool IsScreenshotSupported() const;

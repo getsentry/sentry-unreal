@@ -385,7 +385,7 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t me
 	return metric;
 }
 
-sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t *hint, void* closure)
+sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
 	{
