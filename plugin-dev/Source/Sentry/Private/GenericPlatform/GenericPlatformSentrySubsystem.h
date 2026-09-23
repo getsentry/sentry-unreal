@@ -144,12 +144,12 @@ private:
 	/**
 	 * Static wrappers that are passed to the Sentry library.
 	 */
-	static sentry_value_t HandleBeforeSend(sentry_value_t event, void* hint, void* closure);
+	static sentry_value_t HandleBeforeSend(sentry_value_t event, sentry_hint_t* hint, void* closure);
 	static sentry_value_t HandleBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure);
 	static sentry_value_t HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure);
 	static sentry_value_t HandleBeforeLog(sentry_value_t log, void* closure);
 	static sentry_value_t HandleBeforeMetric(sentry_value_t metric, void* closure);
-	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure);
+	static sentry_value_t HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t *hint, void* closure);
 	static double HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure);
 
 	USentryBeforeSendHandler* beforeSend;

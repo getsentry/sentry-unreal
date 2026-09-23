@@ -83,7 +83,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, void* hint, void* closure)
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, sentry_hint_t* hint, void* closure)
 {
 	if (closure)
 	{
@@ -119,7 +119,7 @@ static void PrintVerboseLog(sentry_level_t level, const char* message, va_list a
 	}
 }
 
-/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, void* closure)
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t *hint, void* closure)
 {
 	if (closure)
 	{
@@ -918,7 +918,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(c
 	onConfigureScope.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent, nullptr);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -955,7 +955,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent, nullptr);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -996,7 +996,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 	sentry_attachment_set_content_type(screenshotAttachment, "image/png");
 	sentry_scope_add_attachment(scope, screenshotAttachment);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, exceptionEvent);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, exceptionEvent, nullptr);
 
 	IFileManager::Get().Delete(*ScreenshotPath);
 
