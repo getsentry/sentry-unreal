@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#ifdef USE_SENTRY_SESSION_REPLAY
+#if defined(USE_SENTRY_SESSION_REPLAY) && defined(SENTRY_REPLAY_ENCODER_AVCODECS)
 
 #include "Containers/Queue.h"
 #include "HAL/Runnable.h"
@@ -12,45 +12,43 @@
 #include "RHIFwd.h"
 #include "Templates/SharedPointer.h"
 
+#include "SentryFMP4FragmentBuilder.h"
 #include "SentryFMP4Writer.h"
+#include "SentryVideoEncoderInterface.h"
 
 #include "Video/VideoEncoder.h"
 
 class FRunnableThread;
 class FEvent;
+class FRHICommandListImmediate;
 class FVideoResourceRHI;
 
 struct FSentryVideoFrame;
-class FSentrySessionReplayRecorder;
 
 /**
  * Wraps the AVCodecs H.264 encoder and runs on a dedicated thread.
  *
- * Frames arrive from the render-thread capture path via SubmitFrame().
- * The thread submits them to the hardware encoder, polls for output packets,
- * splits Annex-B byte streams into per-NALU AVCC samples, and groups them
- * into fragments delimited by IDR keyframes. Completed fragments are pushed
- * back to the owning recorder via FSentrySessionReplayRecorder::OnFragmentReady.
+ * Frames arrive from the render-thread capture path already written by the GPU;
+ * the thread waits on each frame's fence, submits it to the hardware encoder,
+ * polls for output packets and feeds the resulting access units to the shared
+ * fragment builder.
  */
-class FSentryVideoEncoder : public FRunnable
+class FSentryVideoEncoder : public ISentryEncoder, public FRunnable
 {
 public:
-	FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorder, uint32 InFramerate, int32 InBitrateKbps, float InFragmentSeconds);
+	FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorder, const FSentryEncoderConfig& InConfig);
 
 	virtual ~FSentryVideoEncoder() override;
 
-	bool StartEncoder();
-	void StopEncoder();
-
-	// Enqueues a texture for the encoder thread to process
-	void SubmitFrame(const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame);
-
-	uint32 GetFramerate() const { return Framerate; }
-
-	uint32 GetWidth() const { return Width; }
-	uint32 GetHeight() const { return Height; }
-
-	bool IsEncodingDisabled() const { return bEncodingDisabled; }
+	// ISentryEncoder
+	virtual bool StartEncoder() override;
+	virtual void StopEncoder() override;
+	virtual void SubmitFrame(FRHICommandListImmediate& RHICmdList, const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame) override;
+	virtual ETextureCreateFlags GetFrameTextureFlags() const override;
+	virtual uint32 GetFramerate() const override { return Framerate; }
+	virtual uint32 GetWidth() const override { return Width; }
+	virtual uint32 GetHeight() const override { return Height; }
+	virtual bool IsEncodingDisabled() const override { return bEncodingDisabled; }
 
 	// FRunnable
 	virtual bool Init() override;
@@ -76,9 +74,6 @@ private:
 	// Pulls available packets from the encoder, converts them to AVCC samples and emits a fragment at each keyframe boundary
 	void DrainPackets();
 
-	// Builds a fragment from the accumulated samples and hands it to the recorder
-	void FlushCurrentFragment();
-
 	// Tears down the current encoder and resets per-encoder state so the next frame
 	// re-baselines against a fresh VT timestamp origin and republishes a new init
 	// segment. Used to avoid uint32 overflow of the SendFrame timestamp (~71 min of
@@ -86,7 +81,7 @@ private:
 	// from the encoder thread
 	void Restart();
 
-	FSentrySessionReplayRecorder& Recorder;
+	FSentryFMP4FragmentBuilder FragmentBuilder;
 
 	bool bEncoderOpen = false;
 	bool bResolutionChanged = false;
@@ -136,15 +131,8 @@ private:
 	uint32 LastPacketTimestampMs = 0;
 	bool bHavePrevPacketTimestamp = false;
 	double LastForcedKeyframeTime = 0.0;
-
-	// Fragment-in-progress state
-	TArray<FSentryH264Sample> CurrentSamples;
-	uint64 CurrentFragmentDecodeTime = 0;
-	uint32 NextFragmentSequence = 1;
-	uint64 SampleClock = 0;
-	TArray<uint8> CachedSps;
-	TArray<uint8> CachedPps;
-	bool bInitSegmentPublished = false;
 };
 
-#endif // USE_SENTRY_SESSION_REPLAY
+typedef FSentryVideoEncoder FSentryEncoder;
+
+#endif // USE_SENTRY_SESSION_REPLAY && SENTRY_REPLAY_ENCODER_AVCODECS

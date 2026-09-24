@@ -12,10 +12,10 @@
 #include "HAL/ThreadSafeBool.h"
 
 #include "SentryReplayInfo.h"
+#include "SentryVideoEncoderInterface.h"
 
 class FRunnableThread;
 class FEvent;
-class FSentryVideoEncoder;
 class FSentryBackBufferCapture;
 class USentrySettings;
 
@@ -25,9 +25,9 @@ class USentrySettings;
  * Threads:
  *   - Render thread: backbuffer capture hook copies the swap chain into a
  *     pooled texture and hands it to the encoder.
- *   - Encoder thread (in FSentryVideoEncoder): drains the AVCodecs encoder
- *     and publishes init segment + complete fragments back to us via the
- *     OnInitSegmentReady / OnFragmentReady callbacks below.
+ *   - Encoder thread (owned by the ISentryEncoder backend): drains the
+ *     encoder and publishes init segment + complete fragments back to us
+ *     via the OnInitSegmentReady / OnFragmentReady callbacks below.
  *   - Rotation thread (this class's FRunnable): periodically composes
  *     `init + last N fragments` into a temp file and atomically renames
  *     it into place over the attachment path.
@@ -81,9 +81,7 @@ private:
 	float FragmentSeconds = 0.5f;
 	float RotationIntervalSeconds = 1.0f;
 
-	int32 FragmentRingCapacity = 24;
-
-	TUniquePtr<FSentryVideoEncoder> Encoder;
+	TUniquePtr<ISentryEncoder> Encoder;
 	TUniquePtr<FSentryBackBufferCapture> Capture;
 
 	struct FFragment
@@ -97,6 +95,9 @@ private:
 	FCriticalSection RingLock;
 	TArray<uint8> InitSegment;
 	TRingBuffer<FFragment> FragmentRing;
+
+	// WindowSeconds expressed in FSentryFMP4Writer::TrackTimescale ticks
+	uint64 WindowTicks = 0;
 
 	int32 LatestFrameCount = 0;
 	int64 LatestDurationMs = 0;

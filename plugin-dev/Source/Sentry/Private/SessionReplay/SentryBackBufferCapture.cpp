@@ -5,7 +5,7 @@
 #ifdef USE_SENTRY_SESSION_REPLAY
 
 #include "SentryDefines.h"
-#include "SentryVideoEncoder.h"
+#include "SentryVideoEncoderInterface.h"
 #include "SentryVideoFrame.h"
 
 #include "DynamicRHI.h"
@@ -23,7 +23,7 @@
 #include "Slate/SlateViewportProvider.h"
 #endif
 
-FSentryBackBufferCapture::FSentryBackBufferCapture(FSentryVideoEncoder& InEncoder)
+FSentryBackBufferCapture::FSentryBackBufferCapture(ISentryEncoder& InEncoder)
 	: Encoder(InEncoder)
 {
 	EncoderPool.SetNum(FramePoolSize);
@@ -118,6 +118,11 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 		return;
 	}
 
+	// Every presented frame, not just capture ticks, so an encoder with
+	// render-thread work outstanding makes progress at the present rate rather
+	// than the far slower capture rate
+	Encoder.Poll();
+
 	const double Now = FPlatformTime::Seconds();
 	if (Now < NextCaptureTime)
 	{
@@ -149,16 +154,9 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::CPUReadback;
 	constexpr ERHIAccess PoolInitialState = ERHIAccess::CPURead;
 #else
-	// NVENC reads from the pool slot directly. The external-memory flag exposes the
-	// texture's GPU allocation to the encoder; SRV|RT lets the draw pass write into it.
-	// The flag is RHI-specific: D3D (Windows) uses Shared, while Vulkan (Linux, or
-	// Windows -vulkan) needs External so AVCodecs can import it through CUDA. This must
-	// match how the engine's FVideoResourceRHI::Create chooses the flag per RHI, otherwise
-	// the resource has no shareable handle and the encoder rejects every frame.
-	const ETextureCreateFlags InteropFlag = (RHIGetInterfaceType() == ERHIInterfaceType::Vulkan)
-												? ETextureCreateFlags::External
-												: ETextureCreateFlags::Shared;
-	const ETextureCreateFlags PoolFlags = InteropFlag | SrvRt;
+	// SRV|RT lets the draw pass write into the slot; the encoder adds whatever its
+	// own access to the texture needs
+	const ETextureCreateFlags PoolFlags = SrvRt | Encoder.GetFrameTextureFlags();
 	constexpr ERHIAccess PoolInitialState = ERHIAccess::SRVGraphics;
 #endif
 
@@ -260,7 +258,7 @@ void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIR
 
 	EncoderFrame->CaptureTimeSeconds = Now;
 
-	Encoder.SubmitFrame(EncoderFrame);
+	Encoder.SubmitFrame(RHICmdList, EncoderFrame);
 }
 
 FTextureRHIRef FSentryBackBufferCapture::AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,

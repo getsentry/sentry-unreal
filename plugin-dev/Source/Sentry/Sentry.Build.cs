@@ -253,17 +253,44 @@ public class Sentry : ModuleRules
 			}
 		}
 
-		if (bAttachSessionReplay && IsSessionReplaySupported(Target) && IsPluginEnabled(Target, "AVCodecsCore"))
+		if (bAttachSessionReplay && IsSessionReplaySupported(Target) && IsEncoderAvailable(Target))
 		{
-			PrivateDependencyModuleNames.AddRange(new string[]
-			{
-				"RHI",
-				"RenderCore",
-				"AVCodecsCore",
-				"AVCodecsCoreRHI",
-			});
-			PublicDefinitions.Add("USE_SENTRY_SESSION_REPLAY=1");
+			AddEncoderDependencies(Target);
 		}
+	}
+
+	protected virtual bool IsSessionReplaySupported(ReadOnlyTargetRules Target)
+	{
+		// On Windows/Linux Arm64, session replay capturing is not supported
+		// On Android, session replay capturing is handled by sentry-java
+
+#if UE_5_8_OR_LATER
+		if (Target.Platform == UnrealTargetPlatform.IOS)
+		{
+			return true;
+		}
+#endif
+
+		return Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux;
+	}
+
+	protected virtual bool IsEncoderAvailable(ReadOnlyTargetRules Target)
+	{
+		return IsPluginEnabled(Target, "AVCodecsCore");
+	}
+
+	protected virtual void AddEncoderDependencies(ReadOnlyTargetRules Target)
+	{
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"RHI",
+			"RenderCore",
+			"AVCodecsCore",
+			"AVCodecsCoreRHI",
+		});
+
+		PublicDefinitions.Add("USE_SENTRY_SESSION_REPLAY=1");
+		PublicDefinitions.Add("SENTRY_REPLAY_ENCODER_AVCODECS=1");
 	}
 
 	private bool IsPluginEnabled(ReadOnlyTargetRules Target, string PluginName)
@@ -287,21 +314,6 @@ public class Sentry : ModuleRules
 			}
 		}
 		return false;
-	}
-
-	private bool IsSessionReplaySupported(ReadOnlyTargetRules Target)
-	{
-		// On Windows/Linux Arm64, session replay capturing is not supported
-		// On Android, session replay capturing is handled by sentry-java
-
-#if UE_5_8_OR_LATER
-		if (Target.Platform == UnrealTargetPlatform.IOS)
-		{
-			return true;
-		}
-#endif
-
-		return Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux;
 	}
 
 	private void StageCrashReporterResources(ReadOnlyTargetRules Target)

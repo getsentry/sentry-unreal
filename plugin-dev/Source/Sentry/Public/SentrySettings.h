@@ -320,7 +320,7 @@ struct FSentrySessionReplayOptions
 	float RotationIntervalSeconds = 1.0f;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
-		Meta = (DisplayName = "Target framerate", ClampMin = 10, ClampMax = 60))
+		Meta = (DisplayName = "Target framerate", ClampMin = 1, ClampMax = 60))
 	int32 Framerate = 30;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General",
