@@ -112,6 +112,8 @@ Source/Sentry/Private/GenericPlatform/GenericPlatformSentryEvent.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryEvent.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryFeedback.h
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryHint.cpp
+Source/Sentry/Private/GenericPlatform/GenericPlatformSentryHint.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.cpp
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryId.h
 Source/Sentry/Private/GenericPlatform/GenericPlatformSentryLog.cpp
@@ -174,6 +176,8 @@ Source/Sentry/Private/Microsoft/Infrastructure/MicrosoftSentryConverters.cpp
 Source/Sentry/Private/Microsoft/Infrastructure/MicrosoftSentryConverters.h
 Source/Sentry/Private/Microsoft/MicrosoftSentryCrashLogger.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentryCrashLogger.h
+Source/Sentry/Private/Microsoft/MicrosoftSentryHint.cpp
+Source/Sentry/Private/Microsoft/MicrosoftSentryHint.h
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.cpp
 Source/Sentry/Private/Microsoft/MicrosoftSentryScope.h
 Source/Sentry/Private/Microsoft/MicrosoftSentrySubsystem.cpp
