@@ -17,6 +17,7 @@ class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
 class USentryEvent;
+class USentryHint;
 class USentryBeforeSendFeedbackHandler;
 
 #if USE_SENTRY_NATIVE
@@ -85,8 +86,10 @@ public:
 	USentryBeforeMetricHandler* GetBeforeMetricHandler() const;
 	USentryTraceSampler* GetTraceSampler() const;
 
-	void TryCaptureScreenshot();
-	void TryCaptureGpuDump();
+	FString TryCaptureScreenshot() const;
+	FString TryCaptureGpuDump() const;
+
+	TArray<FString> GetSessionGpuShaderDebugInfoPaths() const;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) {}
@@ -178,6 +181,7 @@ private:
 	FString databaseParentPath;
 
 	TStrongObjectPtr<USentryEvent> PooledCrashEvent;
+	TStrongObjectPtr<USentryHint> PooledCrashHint;
 
 	FThreadSafeBool bIsCrashing;
 
