@@ -60,7 +60,6 @@ jobs:
           if (-not $runId) {
             throw "No unexpired '$env:ARTIFACT' artifact found on main in $env:REPO"
           }
-          Write-Host "Using $env:REPO run $runId (https://github.com/$env:REPO/actions/runs/$runId)"
           gh run download $runId --repo "$env:REPO" --name "$env:ARTIFACT" `
             --dir "checkout/sample/Platforms/$env:PLATFORM/Plugins/Sentry"
 
