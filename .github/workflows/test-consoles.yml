@@ -55,7 +55,12 @@ jobs:
           REPO: ${{ inputs.extension-repo }}
           ARTIFACT: ${{ inputs.extension-artifact }}
         run: |
-          $runId = gh run list --repo "$env:REPO" --workflow ci.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId'
+          $runId = gh api "repos/$env:REPO/actions/artifacts?name=$env:ARTIFACT&per_page=100" `
+            --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | last | .workflow_run.id'
+          if (-not $runId) {
+            throw "No unexpired '$env:ARTIFACT' artifact found on main in $env:REPO"
+          }
+          Write-Host "Using $env:REPO run $runId (https://github.com/$env:REPO/actions/runs/$runId)"
           gh run download $runId --repo "$env:REPO" --name "$env:ARTIFACT" `
             --dir "checkout/sample/Platforms/$env:PLATFORM/Plugins/Sentry"
 
