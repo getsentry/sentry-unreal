@@ -240,7 +240,7 @@ jobs:
   test-consoles:
     needs: [package]
     name: ${{ matrix.name }}
-    if: github.event_name == 'push'
+    # if: github.event_name == 'push'
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     strategy:
