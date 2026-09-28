@@ -12,6 +12,8 @@ public:
 	virtual ~FNullSentryHint() override = default;
 
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override {}
+	virtual int32 RemoveAttachments(const FString& filenamePattern) override { return 0; }
+	virtual void ClearAttachments() override {}
 };
 
 typedef FNullSentryHint FPlatformSentryHint;

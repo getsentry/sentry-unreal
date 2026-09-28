@@ -9,6 +9,7 @@
 - Add hint support for Windows/Linux and other `sentry-native` platforms ([#1600](https://github.com/getsentry/sentry-unreal/pull/1600))
 - Add API for capturing user feedback with a local scope ([#1585](https://github.com/getsentry/sentry-unreal/pull/1585))
 - Allow platform extensions to supply their own session replay video encoder ([#1596](https://github.com/getsentry/sentry-unreal/pull/1596))
+- Add API for removing attachments from event hint by filename pattern or clearing them all
 
 ### Fixes
 

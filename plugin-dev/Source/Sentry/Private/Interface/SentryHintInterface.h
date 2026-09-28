@@ -12,4 +12,6 @@ public:
 	virtual ~ISentryHint() = default;
 
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) = 0;
+	virtual int32 RemoveAttachments(const FString& filenamePattern) = 0;
+	virtual void ClearAttachments() = 0;
 };

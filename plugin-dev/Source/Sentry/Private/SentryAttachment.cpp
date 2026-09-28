@@ -4,14 +4,16 @@
 
 #include "HAL/PlatformSentryAttachment.h"
 
+#include "Misc/Paths.h"
+
 void USentryAttachment::InitializeWithData(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType /* = FString(TEXT("application/octet-stream")) */)
 {
-	NativeImpl = CreateSharedSentryAttachment(Data, Filename, ContentType);
+	NativeImpl = CreateSharedSentryAttachment(Data, FPaths::GetCleanFilename(Filename), ContentType);
 }
 
 void USentryAttachment::InitializeWithPath(const FString& Path, const FString& Filename, const FString& ContentType /* = FString(TEXT("application/octet-stream")) */)
 {
-	NativeImpl = CreateSharedSentryAttachment(Path, Filename, ContentType);
+	NativeImpl = CreateSharedSentryAttachment(Path, FPaths::GetCleanFilename(Filename.IsEmpty() ? Path : Filename), ContentType);
 }
 
 TArray<uint8> USentryAttachment::GetData() const

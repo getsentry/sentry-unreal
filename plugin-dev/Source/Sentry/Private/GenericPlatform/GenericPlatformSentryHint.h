@@ -18,6 +18,8 @@ public:
 	virtual ~FGenericPlatformSentryHint() override = default;
 
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+	virtual int32 RemoveAttachments(const FString& filenamePattern) override;
+	virtual void ClearAttachments() override;
 
 protected:
 	virtual void AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment);
