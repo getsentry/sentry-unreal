@@ -4,6 +4,7 @@
 
 #include "SentryPlayground/SentryPlayground.h"
 
+#include "SentryAttachment.h"
 #include "SentryBreadcrumb.h"
 #include "SentryScope.h"
 #include "SentrySubsystem.h"
@@ -44,6 +45,17 @@ void FSentryMessageTest::Run()
 			Breadcrumb->SetCategory(TEXT("test"));
 			Breadcrumb->SetType(TEXT("info"));
 			Scope->AddBreadcrumb(Breadcrumb);
+
+			// Local scope attachments (one persists, one for beforeSend to remove)
+			const TArray<uint8> AttachmentData = { 'T', 'E', 'S', 'T' };
+
+			USentryAttachment* KeptAttachment = NewObject<USentryAttachment>();
+			KeptAttachment->InitializeWithData(AttachmentData, TEXT("attachment_to_be_kept.txt"), TEXT("text/plain"));
+			Scope->AddAttachment(KeptAttachment);
+
+			USentryAttachment* RemovedAttachment = NewObject<USentryAttachment>();
+			RemovedAttachment->InitializeWithData(AttachmentData, TEXT("attachment_to_be_removed.txt"), TEXT("text/plain"));
+			Scope->AddAttachment(RemovedAttachment);
 		}),
 		ESentryLevel::Info);
 
