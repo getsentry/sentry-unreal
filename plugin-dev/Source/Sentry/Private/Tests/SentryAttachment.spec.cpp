@@ -63,7 +63,7 @@ void SentryAttachmentSpec::Define()
 			TestEqual("Path", SentryAttachment->GetPath(), TestPath);
 			TestEqual("Filename", SentryAttachment->GetFilename(), TestFilename);
 			TestEqual("Content type", SentryAttachment->GetContentType(), TestContentType);
-			TestTrue("Data", SentryAttachment->GetData().IsEmpty());
+			TestEqual("Data", SentryAttachment->GetData().Num(), 0);
 		});
 
 		It("should use default content type if not specified", [this]()
