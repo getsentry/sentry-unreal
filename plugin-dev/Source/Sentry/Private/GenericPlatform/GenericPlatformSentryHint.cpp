@@ -35,6 +35,45 @@ void FGenericPlatformSentryHint::AddAttachment(TSharedPtr<ISentryAttachment> att
 	}
 }
 
+int32 FGenericPlatformSentryHint::RemoveAttachments(const FString& filenamePattern)
+{
+	if (!Hint)
+	{
+		return 0;
+	}
+
+	sentry_value_t attachments = sentry_hint_get_attachments(Hint);
+
+	TArray<sentry_uuid_t> matchedIds;
+	for (size_t i = 0; i < sentry_value_get_length(attachments); ++i)
+	{
+		sentry_value_t attachment = sentry_value_get_by_index(attachments, i);
+
+		const FString filename = UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_key(attachment, "filename")));
+		if (filename.MatchesWildcard(filenamePattern))
+		{
+			matchedIds.Add(sentry_uuid_from_string(sentry_value_as_string(sentry_value_get_by_key(attachment, "id"))));
+		}
+	}
+
+	for (const sentry_uuid_t& id : matchedIds)
+	{
+		sentry_hint_remove_attachment(Hint, id);
+	}
+
+	return matchedIds.Num();
+}
+
+void FGenericPlatformSentryHint::ClearAttachments()
+{
+	if (!Hint)
+	{
+		return;
+	}
+
+	sentry_hint_clear_attachments(Hint);
+}
+
 void FGenericPlatformSentryHint::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment)
 {
 	sentry_value_t nativeAttachment =

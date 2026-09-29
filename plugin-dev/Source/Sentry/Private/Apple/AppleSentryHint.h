@@ -18,6 +18,8 @@ public:
 	SentryObjCHint* GetNativeObject();
 
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+	virtual int32 RemoveAttachments(const FString& filenamePattern) override;
+	virtual void ClearAttachments() override;
 
 private:
 	SentryObjCHint* HintApple;

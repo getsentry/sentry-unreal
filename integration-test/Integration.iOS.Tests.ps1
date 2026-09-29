@@ -318,6 +318,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
         BeforeAll {
             $script:MessageResult = $global:iOSMessageResult
             $script:MessageEvent = $null
+            $script:MessageAttachments = @()
 
             # Parse event ID from output
             $eventIds = Get-EventIds -AppOutput $MessageResult.Output -ExpectedCount 1
@@ -332,6 +333,15 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
                 }
                 catch {
                     Write-Host "Failed to fetch message event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:MessageEvent) {
+                    try {
+                        $script:MessageAttachments = Get-SentryTestEventAttachments -EventId $script:MessageEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch message event attachments from Sentry: $_" -ForegroundColor Red
+                    }
                 }
             }
             else {
@@ -411,6 +421,14 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
 
         It "Should not have context removed by BeforeSendHandler" {
             $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
+        }
+
+        It "Should have local scope attachment" {
+            $script:MessageAttachments | Where-Object { $_.name -eq 'attachment_to_be_kept.txt' } | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should not have attachment removed by BeforeSendHandler" {
+            $script:MessageAttachments | Where-Object { $_.name -eq 'attachment_to_be_removed.txt' } | Should -BeNullOrEmpty
         }
 
         # Device context assertions

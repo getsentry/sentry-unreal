@@ -208,6 +208,7 @@ Desktop-only; skipped on macOS (sentry-cocoa provides its own AppHang detection 
 - User context is included
 - Integration test tags are set
 - Breadcrumbs are collected
+- Local scope attachment is present and attachment removed by BeforeSendHandler is absent
 
 **Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
 

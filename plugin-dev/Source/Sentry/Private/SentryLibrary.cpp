@@ -15,6 +15,8 @@
 #include "HAL/PlatformSentryTransactionContext.h"
 #include "HAL/PlatformSentryUser.h"
 
+#include "Misc/Paths.h"
+
 USentryEvent* USentryLibrary::CreateSentryEvent(const FString& Message, ESentryLevel Level)
 {
 	USentryEvent* Event = USentryEvent::Create(CreateSharedSentryEvent());
@@ -76,12 +78,12 @@ USentryBreadcrumb* USentryLibrary::CreateSentryBreadcrumb(const FString& Message
 
 USentryAttachment* USentryLibrary::CreateSentryAttachmentWithData(const TArray<uint8>& Data, const FString& Filename, const FString& ContentType)
 {
-	return USentryAttachment::Create(CreateSharedSentryAttachment(Data, Filename, ContentType));
+	return USentryAttachment::Create(CreateSharedSentryAttachment(Data, FPaths::GetCleanFilename(Filename), ContentType));
 }
 
 USentryAttachment* USentryLibrary::CreateSentryAttachmentWithPath(const FString& Path, const FString& Filename, const FString& ContentType)
 {
-	return USentryAttachment::Create(CreateSharedSentryAttachment(Path, Filename, ContentType));
+	return USentryAttachment::Create(CreateSharedSentryAttachment(Path, FPaths::GetCleanFilename(Filename.IsEmpty() ? Path : Filename), ContentType));
 }
 
 USentryTransactionContext* USentryLibrary::CreateSentryTransactionContext(const FString& Name, const FString& Operation)

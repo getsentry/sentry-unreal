@@ -15,9 +15,14 @@ public:
 	void SetupClassMethods();
 
 	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+	virtual int32 RemoveAttachments(const FString& filenamePattern) override;
+	virtual void ClearAttachments() override;
 
 private:
 	FSentryJavaMethod AddAttachmentMethod;
+	FSentryJavaMethod GetAttachmentsMethod;
+	FSentryJavaMethod ReplaceAttachmentsMethod;
+	FSentryJavaMethod ClearAttachmentsMethod;
 };
 
 typedef FAndroidSentryHint FPlatformSentryHint;

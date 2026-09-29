@@ -46,4 +46,34 @@ void FAppleSentryHint::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
 	HintApple.attachments = [HintApple.attachments arrayByAddingObject:nativeAttachment];
 }
 
+int32 FAppleSentryHint::RemoveAttachments(const FString& filenamePattern)
+{
+	NSMutableArray<SentryObjCAttachment*>* keptAttachments = [NSMutableArray array];
+	int32 removedCount = 0;
+
+	for (SentryObjCAttachment* attachment in HintApple.attachments)
+	{
+		if (FString(attachment.filename).MatchesWildcard(filenamePattern))
+		{
+			++removedCount;
+		}
+		else
+		{
+			[keptAttachments addObject:attachment];
+		}
+	}
+
+	if (removedCount > 0)
+	{
+		HintApple.attachments = keptAttachments;
+	}
+
+	return removedCount;
+}
+
+void FAppleSentryHint::ClearAttachments()
+{
+	HintApple.attachments = @[];
+}
+
 #endif // !USE_SENTRY_NATIVE

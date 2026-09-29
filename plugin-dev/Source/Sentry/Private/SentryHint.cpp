@@ -17,3 +17,19 @@ void USentryHint::AddAttachment(USentryAttachment* Attachment)
 
 	NativeImpl->AddAttachment(Attachment->GetNativeObject());
 }
+
+int32 USentryHint::RemoveAttachments(const FString& FilenamePattern)
+{
+	if (!NativeImpl)
+		return 0;
+
+	return NativeImpl->RemoveAttachments(FilenamePattern);
+}
+
+void USentryHint::ClearAttachments()
+{
+	if (!NativeImpl)
+		return;
+
+	NativeImpl->ClearAttachments();
+}

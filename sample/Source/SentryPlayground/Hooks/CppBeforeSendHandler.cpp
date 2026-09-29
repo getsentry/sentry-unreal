@@ -19,5 +19,11 @@ USentryEvent* UCppBeforeSendHandler::HandleBeforeSend_Implementation(USentryEven
 	// Contexts
 	Event->RemoveContext(TEXT("context_removed_by_handler"));
 
+	// Attachments
+	if (Hint)
+	{
+		Hint->RemoveAttachments(TEXT("attachment_to_be_removed*"));
+	}
+
 	return Super::HandleBeforeSend_Implementation(Event, Hint);
 }

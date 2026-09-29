@@ -658,6 +658,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         BeforeAll {
             $script:MessageResult = $null
             $script:MessageEvent = $null
+            $script:MessageAttachments = @()
 
             Write-Host "Running message capture test..." -ForegroundColor Yellow
 
@@ -686,6 +687,15 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
                 }
                 catch {
                     Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:MessageEvent) {
+                    try {
+                        $script:MessageAttachments = Get-SentryTestEventAttachments -EventId $script:MessageEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch message event attachments from Sentry: $_" -ForegroundColor Red
+                    }
                 }
             }
             else {
@@ -773,6 +783,14 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
         It "Should not have context removed by BeforeSendHandler" {
             $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
+        }
+
+        It "Should have local scope attachment" {
+            $script:MessageAttachments | Where-Object { $_.name -eq 'attachment_to_be_kept.txt' } | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should not have attachment removed by BeforeSendHandler" {
+            $script:MessageAttachments | Where-Object { $_.name -eq 'attachment_to_be_removed.txt' } | Should -BeNullOrEmpty
         }
 
         # Device context assertions
