@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Cocoa SDK from v9.29.2 to v9.30.0 ([#1606](https://github.com/getsentry/sentry-unreal/pull/1606))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9300)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.29.2...9.30.0)
+
 ## 1.24.0
 
 ### Features
