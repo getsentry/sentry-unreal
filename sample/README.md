@@ -46,6 +46,7 @@ Here's a breakdown of the important sample project files and folders:
 │       │   ├── 📄 SentryMetricTest.cpp/.h               # Counter/distribution/gauge metrics
 │       │   ├── 📄 SentryReplayTest.cpp/.h               # Session Replay envelope capture
 │       │   ├── 📄 SentryTracingTest.cpp/.h              # Transactions and spans
+│       │   ├── 📄 SentryTracingTimestampsTest.cpp/.h    # Transactions and spans with explicit timestamps
 │       │   ├── 📄 SentryEnsureTest.cpp/.h               # Non-fatal ensure() capture
 │       │   ├── 📄 SentryHangTest.cpp/.h                 # Application hang detection
 │       │   └── 📄 SentryInitOnlyTest.cpp/.h             # SDK init smoke test
@@ -110,6 +111,7 @@ The following test switches are supported:
 - `-log-capture` - capture a structured log
 - `-metric-capture` - emit a metric
 - `-tracing-capture` - capture a transaction/span
+- `-tracing-timestamps-capture` - capture a transaction/span with explicit start and end timestamps
 - `-ensure-capture` - trigger a non-fatal `ensure()`
 - `-hang-capture` - simulate an application hang
 - `-replay-capture` - capture session replay clip

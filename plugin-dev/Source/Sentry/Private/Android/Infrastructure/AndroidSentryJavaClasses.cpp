@@ -30,6 +30,7 @@ const FSentryJavaClass SentryJavaClasses::SentryTraceHeader		= FSentryJavaClass 
 const FSentryJavaClass SentryJavaClasses::SentryLogEvent		= FSentryJavaClass { "io/sentry/SentryLogEvent", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::SentryLogLevel		= FSentryJavaClass { "io/sentry/SentryLogLevel", ESentryJavaClassType::External };
 const FSentryJavaClass SentryJavaClasses::SentryMetricsEvent	= FSentryJavaClass { "io/sentry/SentryMetricsEvent", ESentryJavaClassType::External };
+const FSentryJavaClass SentryJavaClasses::SentryLongDate		= FSentryJavaClass { "io/sentry/SentryLongDate", ESentryJavaClassType::External };
 
 // System Java classes definitions
 const FSentryJavaClass SentryJavaClasses::ArrayList				= FSentryJavaClass { "java/util/ArrayList", ESentryJavaClassType::System };
@@ -75,6 +76,7 @@ void SentryJavaClasses::InitJavaClassRefsCache()
 	JavaClassRefsCache.Add(SentryLogEvent.Name, FindJavaClassRef(SentryLogEvent));
 	JavaClassRefsCache.Add(SentryLogLevel.Name, FindJavaClassRef(SentryLogLevel));
 	JavaClassRefsCache.Add(SentryMetricsEvent.Name, FindJavaClassRef(SentryMetricsEvent));
+	JavaClassRefsCache.Add(SentryLongDate.Name, FindJavaClassRef(SentryLongDate));
 
 	// System Java classes definitions
 	JavaClassRefsCache.Add(ArrayList.Name, FindJavaClassRef(ArrayList));

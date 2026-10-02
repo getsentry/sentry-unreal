@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Explicit timestamps are now respected on macOS, iOS and Android when starting or finishing transactions and spans ([#XXXX](https://github.com/getsentry/sentry-unreal/pull/XXXX))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.29.2 to v9.30.0 ([#1606](https://github.com/getsentry/sentry-unreal/pull/1606))

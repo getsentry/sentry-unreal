@@ -15,6 +15,7 @@
 #include "SentryPlayground/IntegrationTests/SentryMetricTest.h"
 #include "SentryPlayground/IntegrationTests/SentryReplayTest.h"
 #include "SentryPlayground/IntegrationTests/SentryTracingTest.h"
+#include "SentryPlayground/IntegrationTests/SentryTracingTimestampsTest.h"
 #include "SentryPlayground/Utils/SentryPlaygroundCrashUtils.h"
 
 #include "SentryModule.h"
@@ -55,6 +56,7 @@ TSharedPtr<FSentryBaseIntegrationTest> USentryPlaygroundGameInstance::CheckForPe
 		{ TEXT("log-capture"),             []{ return MakeShared<FSentryLogTest>(); } },
 		{ TEXT("metric-capture"),          []{ return MakeShared<FSentryMetricTest>(); } },
 		{ TEXT("tracing-capture"),         []{ return MakeShared<FSentryTracingTest>(); } },
+		{ TEXT("tracing-timestamps-capture"), []{ return MakeShared<FSentryTracingTimestampsTest>(); } },
 		{ TEXT("ensure-capture"),          []{ return MakeShared<FSentryEnsureTest>(); } },
 		{ TEXT("hang-capture"),            []{ return MakeShared<FSentryHangTest>(); } },
 		{ TEXT("replay-capture"),          []{ return MakeShared<FSentryReplayTest>(); } },
