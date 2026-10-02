@@ -56,7 +56,7 @@ TSharedPtr<FSentryBaseIntegrationTest> USentryPlaygroundGameInstance::CheckForPe
 		{ TEXT("log-capture"),             []{ return MakeShared<FSentryLogTest>(); } },
 		{ TEXT("metric-capture"),          []{ return MakeShared<FSentryMetricTest>(); } },
 		{ TEXT("tracing-capture"),         []{ return MakeShared<FSentryTracingTest>(); } },
-		{ TEXT("tracing-timestamp"), []{ return MakeShared<FSentryTracingTimestampsTest>(); } },
+		{ TEXT("tracing-timestamp"),       []{ return MakeShared<FSentryTracingTimestampsTest>(); } },
 		{ TEXT("ensure-capture"),          []{ return MakeShared<FSentryEnsureTest>(); } },
 		{ TEXT("hang-capture"),            []{ return MakeShared<FSentryHangTest>(); } },
 		{ TEXT("replay-capture"),          []{ return MakeShared<FSentryReplayTest>(); } },
