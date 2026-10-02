@@ -81,7 +81,6 @@ void FGenericPlatformSentrySpan::Finish()
 		return;
 	}
 
-	// sentry-native takes ownership of the span on finish
 	sentry_span_finish(Span);
 	Span = nullptr;
 }

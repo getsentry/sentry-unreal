@@ -82,7 +82,6 @@ void FGenericPlatformSentryTransaction::Finish()
 		return;
 	}
 
-	// sentry-native takes ownership of the transaction on finish
 	sentry_transaction_finish(Transaction);
 	Transaction = nullptr;
 }
