@@ -8,7 +8,7 @@
 
 ### Fixes
 
-- Fix `BeforeSend` handler receiving transactions on macOS/iOS
+- Fix `BeforeSend` handler receiving transactions on macOS/iOS ([#1610](https://github.com/getsentry/sentry-unreal/pull/1610))
 
 ### Dependencies
 
