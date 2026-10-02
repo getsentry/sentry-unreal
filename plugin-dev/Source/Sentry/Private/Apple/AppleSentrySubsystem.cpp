@@ -248,6 +248,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 			options.beforeSendWithHint = ^SentryObjCEvent*(SentryObjCEvent* event, SentryObjCHint* hint) {
+				if ([event.type isEqualToString:@"transaction"])
+				{
+					return event;
+				}
+
 				FAppleSentryEvent eventApple(event);
 				if (eventApple.IsCrash())
 				{
