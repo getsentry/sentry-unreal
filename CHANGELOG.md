@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix crash when a span is finished twice or used from multiple threads on Windows/Linux and other `sentry-native` platforms
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.29.2 to v9.30.0 ([#1606](https://github.com/getsentry/sentry-unreal/pull/1606))

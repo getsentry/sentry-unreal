@@ -39,7 +39,7 @@ USentrySpan* USentrySpan::StartChildWithTimestamp(const FString& Operation, cons
 
 void USentrySpan::Finish()
 {
-	if (!NativeImpl)
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
 	NativeImpl->Finish();
@@ -47,7 +47,7 @@ void USentrySpan::Finish()
 
 void USentrySpan::FinishWithTimestamp(int64 Timestamp)
 {
-	if (!NativeImpl)
+	if (!NativeImpl || NativeImpl->IsFinished())
 		return;
 
 	NativeImpl->FinishWithTimestamp(Timestamp);

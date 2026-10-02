@@ -32,9 +32,7 @@ public:
 private:
 	sentry_span_t* Span;
 
-	FCriticalSection CriticalSection;
-
-	bool isFinished;
+	mutable FCriticalSection CriticalSection;
 };
 
 typedef FGenericPlatformSentrySpan FPlatformSentrySpan;
