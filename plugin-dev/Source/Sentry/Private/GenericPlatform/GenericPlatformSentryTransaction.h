@@ -33,9 +33,7 @@ public:
 private:
 	sentry_transaction_t* Transaction;
 
-	FCriticalSection CriticalSection;
-
-	bool isFinished;
+	mutable FCriticalSection CriticalSection;
 };
 
 typedef FGenericPlatformSentryTransaction FPlatformSentryTransaction;

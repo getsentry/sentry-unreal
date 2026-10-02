@@ -14,17 +14,25 @@ void CopySpanTracingHeader(const char* key, const char* value, void* userdata)
 
 FGenericPlatformSentrySpan::FGenericPlatformSentrySpan(sentry_span_t* span)
 	: Span(span)
-	, isFinished(false)
 {
 }
 
 sentry_span_t* FGenericPlatformSentrySpan::GetNativeObject()
 {
+	FScopeLock Lock(&CriticalSection);
+
 	return Span;
 }
 
 TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChild(const FString& operation, const FString& description, bool bindToScope)
 {
+	FScopeLock Lock(&CriticalSection);
+
+	if (!Span)
+	{
+		return nullptr;
+	}
+
 	if (sentry_span_t* nativeSpan = sentry_span_start_child(Span, TCHAR_TO_UTF8(*operation), TCHAR_TO_UTF8(*description)))
 	{
 		if (bindToScope)
@@ -42,6 +50,13 @@ TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChild(const FString& op
 
 TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& description, int64 timestamp, bool bindToScope)
 {
+	FScopeLock Lock(&CriticalSection);
+
+	if (!Span)
+	{
+		return nullptr;
+	}
+
 	if (sentry_span_t* nativeSpan = sentry_span_start_child_ts(Span, TCHAR_TO_UTF8(*operation), TCHAR_TO_UTF8(*description), timestamp))
 	{
 		if (bindToScope)
@@ -59,53 +74,86 @@ TSharedPtr<ISentrySpan> FGenericPlatformSentrySpan::StartChildWithTimestamp(cons
 
 void FGenericPlatformSentrySpan::Finish()
 {
-	sentry_span_finish(Span);
+	FScopeLock Lock(&CriticalSection);
 
-	isFinished = true;
+	if (!Span)
+	{
+		return;
+	}
+
+	sentry_span_finish(Span);
+	Span = nullptr;
 }
 
 void FGenericPlatformSentrySpan::FinishWithTimestamp(int64 timestamp)
 {
-	sentry_span_finish_ts(Span, timestamp);
+	FScopeLock Lock(&CriticalSection);
 
-	isFinished = true;
+	if (!Span)
+	{
+		return;
+	}
+
+	sentry_span_finish_ts(Span, timestamp);
+	Span = nullptr;
 }
 
 bool FGenericPlatformSentrySpan::IsFinished() const
 {
-	return isFinished;
+	FScopeLock Lock(&CriticalSection);
+
+	return Span == nullptr;
 }
 
 void FGenericPlatformSentrySpan::SetTag(const FString& key, const FString& value)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_set_tag(Span, TCHAR_TO_UTF8(*key), TCHAR_TO_UTF8(*value));
+	if (Span)
+	{
+		sentry_span_set_tag(Span, TCHAR_TO_UTF8(*key), TCHAR_TO_UTF8(*value));
+	}
 }
 
 void FGenericPlatformSentrySpan::RemoveTag(const FString& key)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_remove_tag(Span, TCHAR_TO_UTF8(*key));
+	if (Span)
+	{
+		sentry_span_remove_tag(Span, TCHAR_TO_UTF8(*key));
+	}
 }
 
 void FGenericPlatformSentrySpan::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_set_data(Span, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+	if (Span)
+	{
+		sentry_span_set_data(Span, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+	}
 }
 
 void FGenericPlatformSentrySpan::RemoveData(const FString& key)
 {
 	FScopeLock Lock(&CriticalSection);
 
-	sentry_span_remove_data(Span, TCHAR_TO_UTF8(*key));
+	if (Span)
+	{
+		sentry_span_remove_data(Span, TCHAR_TO_UTF8(*key));
+	}
 }
 
 void FGenericPlatformSentrySpan::GetTrace(FString& name, FString& value)
 {
+	FScopeLock Lock(&CriticalSection);
+
+	if (!Span)
+	{
+		return;
+	}
+
 	sentry_value_t tracingHeader = sentry_value_new_object();
 
 	sentry_span_iter_headers(Span, CopySpanTracingHeader, &tracingHeader);
