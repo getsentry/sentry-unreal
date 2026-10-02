@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add support for explicit timestamps when starting or finishing transactions and spans on macOS, iOS and Android ([#XXXX](https://github.com/getsentry/sentry-unreal/pull/XXXX))
+- Add support for explicit timestamps when starting or finishing transactions and spans on macOS, iOS and Android ([#1608](https://github.com/getsentry/sentry-unreal/pull/1608))
 
 ### Dependencies
 
