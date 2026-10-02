@@ -15,6 +15,7 @@ void FAndroidSentryTransactionOptions::SetupClassMethods()
 {
 	SetCustomSamplingContextMethod = GetMethod("setCustomSamplingContext", "(Lio/sentry/CustomSamplingContext;)V");
 	SetBindToScopeMethod = GetMethod("setBindToScope", "(Z)V");
+	SetStartTimestampMethod = GetMethod("setStartTimestamp", "(Lio/sentry/SentryDate;)V");
 }
 
 void FAndroidSentryTransactionOptions::SetCustomSamplingContext(const TMap<FString, FSentryVariant>& data)
@@ -33,4 +34,9 @@ void FAndroidSentryTransactionOptions::SetCustomSamplingContext(const TMap<FStri
 void FAndroidSentryTransactionOptions::SetBindToScope(bool bindToScope)
 {
 	CallMethod<void>(SetBindToScopeMethod, bindToScope);
+}
+
+void FAndroidSentryTransactionOptions::SetStartTimestamp(int64 timestamp)
+{
+	CallMethod<void>(SetStartTimestampMethod, FAndroidSentryConverters::TimestampToNative(timestamp)->GetJObject());
 }

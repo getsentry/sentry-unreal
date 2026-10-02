@@ -130,6 +130,11 @@ TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::VariantMapToNativ
 	return NativeHashMap;
 }
 
+TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::TimestampToNative(int64 timestamp)
+{
+	return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLongDate, "(J)V", (jlong)(timestamp * 1000)));
+}
+
 jbyteArray FAndroidSentryConverters::ByteArrayToNative(const TArray<uint8>& byteArray)
 {
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();

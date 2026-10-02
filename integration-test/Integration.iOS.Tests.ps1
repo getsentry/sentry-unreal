@@ -210,6 +210,20 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             ) + $script:BaseAppArgs)
 
             Write-Host "Tracing test exit code: $($global:iOSTracingResult.ExitCode)" -ForegroundColor Cyan
+
+            # ==========================================
+            # RUN 8: Tracing timestamps test - captures transaction with explicit timestamps
+            # ==========================================
+
+            Write-Host "Running tracing-timestamp test on $Platform..." -ForegroundColor Yellow
+            $global:iOSTracingTimestampsResult = Invoke-iOSTestAction -Arguments (@(
+                '-tracing-timestamp',
+                "$script:SentrySettings`:EnableTracing=True",
+                "$script:SentrySettings`:SamplingType=TracesSampler",
+                "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+            ) + $script:BaseAppArgs)
+
+            Write-Host "Tracing timestamps test exit code: $($global:iOSTracingTimestampsResult.ExitCode)" -ForegroundColor Cyan
         }
         finally {
             Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
@@ -839,6 +853,77 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
             $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
             $grandchildSpan.parent_span_id | Should -Be $childSpan.span_id
+        }
+    }
+
+    Context "Tracing Timestamps Tests" {
+        BeforeAll {
+            $script:TracingTimestampsResult = $global:iOSTracingTimestampsResult
+            $script:TransactionEvent = $null
+            $script:TraceId = $null
+            $script:BaseTimestamp = $null
+
+            # Parse base timestamp the explicit timings are offset from (format: TRACE_BASE_TIMESTAMP: <microseconds>)
+            $timestampLines = @($script:TracingTimestampsResult.Output | Where-Object { $_ -match 'TRACE_BASE_TIMESTAMP: ' })
+            if ($timestampLines.Count -gt 0) {
+                $script:BaseTimestamp = [double]($timestampLines[0] -split 'TRACE_BASE_TIMESTAMP: ')[-1].Trim() / 1e6
+            }
+
+            # Parse trace ID from output (format: TRACE_CAPTURED: <trace-id>)
+            $traceLines = @($script:TracingTimestampsResult.Output | Where-Object { $_ -match 'TRACE_CAPTURED: ' })
+            if ($traceLines.Count -gt 0) {
+                $script:TraceId = ($traceLines[0] -split 'TRACE_CAPTURED: ')[-1].Trim()
+                Write-Host "Captured Trace ID: $($script:TraceId)" -ForegroundColor Cyan
+
+                try {
+                    $script:TransactionEvent = Get-SentryTestTransaction -TraceId $script:TraceId
+                    Write-Host "Transaction fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch transaction from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No TRACE_CAPTURED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output TRACE_CAPTURED with trace ID" {
+            $script:TraceId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TRACE_BASE_TIMESTAMP" {
+            $script:BaseTimestamp | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:TracingTimestampsResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture transaction in Sentry" {
+            $script:TransactionEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have explicit transaction start timestamp" {
+            [math]::Abs([double]$script:TransactionEvent.startTimestamp - ($script:BaseTimestamp - 10)) | Should -BeLessOrEqual 1
+        }
+
+        It "Should have explicit transaction end timestamp" {
+            [math]::Abs([double]$script:TransactionEvent.endTimestamp - ($script:BaseTimestamp - 2)) | Should -BeLessOrEqual 1
+        }
+
+        It "Should have explicit child span start timestamp" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.timestamps.child' }
+            $childSpan | Should -Not -BeNullOrEmpty
+            [math]::Abs([double]$childSpan.start_timestamp - ($script:BaseTimestamp - 8)) | Should -BeLessOrEqual 1
+        }
+
+        It "Should have explicit child span end timestamp" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.timestamps.child' }
+            $childSpan | Should -Not -BeNullOrEmpty
+            [math]::Abs([double]$childSpan.timestamp - ($script:BaseTimestamp - 5)) | Should -BeLessOrEqual 1
         }
     }
 }

@@ -17,7 +17,10 @@ FAndroidSentryTransaction::FAndroidSentryTransaction(jobject transaction)
 void FAndroidSentryTransaction::SetupClassMethods()
 {
 	StartChildMethod = GetMethod("startChild", "(Ljava/lang/String;Ljava/lang/String;)Lio/sentry/ISpan;");
+	StartChildWithTimestampMethod = GetMethod("startChild", "(Ljava/lang/String;Ljava/lang/String;Lio/sentry/SentryDate;)Lio/sentry/ISpan;");
 	FinishMethod = GetMethod("finish", "()V");
+	FinishWithTimestampMethod = GetMethod("finish", "(Lio/sentry/SpanStatus;Lio/sentry/SentryDate;)V");
+	GetStatusMethod = GetMethod("getStatus", "()Lio/sentry/SpanStatus;");
 	IsFinishedMethod = GetMethod("isFinished", "()Z");
 	SetNameMethod = GetMethod("setName", "(Ljava/lang/String;)V");
 	SetTagMethod = GetMethod("setTag", "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -33,8 +36,8 @@ TSharedPtr<ISentrySpan> FAndroidSentryTransaction::StartChildSpan(const FString&
 
 TSharedPtr<ISentrySpan> FAndroidSentryTransaction::StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Android."));
-	return StartChildSpan(operation, desctiption, bindToScope);
+	auto span = CallObjectMethod<jobject>(StartChildWithTimestampMethod, *GetJString(operation), *GetJString(desctiption), FAndroidSentryConverters::TimestampToNative(timestamp)->GetJObject());
+	return MakeShareable(new FAndroidSentrySpan(*span));
 }
 
 void FAndroidSentryTransaction::Finish()
@@ -44,8 +47,8 @@ void FAndroidSentryTransaction::Finish()
 
 void FAndroidSentryTransaction::FinishWithTimestamp(int64 timestamp)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Finishing transaction with explicit timestamp not supported on Android."));
-	Finish();
+	auto status = CallObjectMethod<jobject>(GetStatusMethod);
+	CallMethod<void>(FinishWithTimestampMethod, *status, FAndroidSentryConverters::TimestampToNative(timestamp)->GetJObject());
 }
 
 bool FAndroidSentryTransaction::IsFinished() const

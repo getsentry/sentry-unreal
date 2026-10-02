@@ -564,8 +564,16 @@ TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithCont
 
 TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Setting transaction timestamp explicitly not supported on Android."));
-	return StartTransactionWithContext(context, bindToScope);
+	TSharedPtr<FAndroidSentryTransactionContext> transactionContextAndroid = StaticCastSharedPtr<FAndroidSentryTransactionContext>(context);
+
+	TSharedPtr<FAndroidSentryTransactionOptions> transactionOptionsAndroid = MakeShareable(new FAndroidSentryTransactionOptions());
+	transactionOptionsAndroid->SetBindToScope(bindToScope);
+	transactionOptionsAndroid->SetStartTimestamp(timestamp);
+
+	auto transaction = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "startTransaction", "(Lio/sentry/TransactionContext;Lio/sentry/TransactionOptions;)Lio/sentry/ITransaction;",
+		transactionContextAndroid->GetJObject(), transactionOptionsAndroid->GetJObject());
+
+	return MakeShareable(new FAndroidSentryTransaction(*transaction));
 }
 
 TSharedPtr<ISentryTransaction> FAndroidSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options)
