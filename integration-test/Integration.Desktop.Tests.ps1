@@ -1291,8 +1291,8 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:SamplingType=TracesSampler"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
 
-            # -tracing-timestamps-capture triggers tracing test scenario with explicit timestamps in the sample app
-            $script:TracingTimestampsResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-tracing-timestamps-capture') + $appArgs) -join ' ')
+            # -tracing-timestamp triggers tracing test scenario with explicit timestamps in the sample app
+            $script:TracingTimestampsResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-tracing-timestamp') + $appArgs) -join ' ')
 
             Write-Host "Tracing timestamps test executed. Exit code: $($script:TracingTimestampsResult.ExitCode)" -ForegroundColor Cyan
 

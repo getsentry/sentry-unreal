@@ -7,7 +7,7 @@
 class FSentryTracingTimestampsTest : public FSentryBaseIntegrationTest
 {
 public:
-	FSentryTracingTimestampsTest() : FSentryBaseIntegrationTest(TEXT("tracing-timestamps-capture")) {}
+	FSentryTracingTimestampsTest() : FSentryBaseIntegrationTest(TEXT("tracing-timestamp")) {}
 
 	virtual void Run() override;
 };

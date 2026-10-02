@@ -111,7 +111,7 @@ The following test switches are supported:
 - `-log-capture` - capture a structured log
 - `-metric-capture` - emit a metric
 - `-tracing-capture` - capture a transaction/span
-- `-tracing-timestamps-capture` - capture a transaction/span with explicit start and end timestamps
+- `-tracing-timestamp` - capture a transaction/span with explicit start and end timestamps
 - `-ensure-capture` - trigger a non-fatal `ensure()`
 - `-hang-capture` - simulate an application hang
 - `-replay-capture` - capture session replay clip

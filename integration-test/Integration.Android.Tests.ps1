@@ -217,8 +217,8 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # RUN 6: Tracing timestamps test - captures transaction with explicit timestamps
             # ==========================================
 
-            Write-Host "Running tracing-timestamps-capture test on $Platform..." -ForegroundColor Yellow
-            $tracingTimestampsIntentArgs = "-e cmdline -tracing-timestamps-capture\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler$script:BaseAppArgs"
+            Write-Host "Running tracing-timestamp test on $Platform..." -ForegroundColor Yellow
+            $tracingTimestampsIntentArgs = "-e cmdline -tracing-timestamp\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableTracing=True\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:SamplingType=TracesSampler\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:TracesSampler=/Script/SentryPlayground.CppTraceSampler$script:BaseAppArgs"
             $global:AndroidTracingTimestampsResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $tracingTimestampsIntentArgs
 
             Write-Host "Tracing timestamps test exit code: $($global:AndroidTracingTimestampsResult.ExitCode)" -ForegroundColor Cyan

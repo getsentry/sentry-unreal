@@ -215,9 +215,9 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             # RUN 8: Tracing timestamps test - captures transaction with explicit timestamps
             # ==========================================
 
-            Write-Host "Running tracing-timestamps-capture test on $Platform..." -ForegroundColor Yellow
+            Write-Host "Running tracing-timestamp test on $Platform..." -ForegroundColor Yellow
             $global:iOSTracingTimestampsResult = Invoke-iOSTestAction -Arguments (@(
-                '-tracing-timestamps-capture',
+                '-tracing-timestamp',
                 "$script:SentrySettings`:EnableTracing=True",
                 "$script:SentrySettings`:SamplingType=TracesSampler",
                 "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
