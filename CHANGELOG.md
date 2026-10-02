@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add support for explicit timestamps when starting or finishing transactions and spans on macOS, iOS and Android ([#1608](https://github.com/getsentry/sentry-unreal/pull/1608))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.29.2 to v9.30.0 ([#1606](https://github.com/getsentry/sentry-unreal/pull/1606))

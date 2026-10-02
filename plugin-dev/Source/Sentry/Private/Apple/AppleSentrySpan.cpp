@@ -43,8 +43,9 @@ TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChild(const FString& operation, c
 
 TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Starting child span with explicit timestamp not supported on Mac/iOS."));
-	return StartChild(operation, desctiption, bindToScope);
+	TSharedPtr<ISentrySpan> span = StartChild(operation, desctiption, bindToScope);
+	StaticCastSharedPtr<FAppleSentrySpan>(span)->GetNativeObject().startTimestamp = FAppleSentryConverters::TimestampToNative(timestamp);
+	return span;
 }
 
 void FAppleSentrySpan::Finish()
@@ -54,8 +55,8 @@ void FAppleSentrySpan::Finish()
 
 void FAppleSentrySpan::FinishWithTimestamp(int64 timestamp)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Finishing span with explicit timestamp not supported on Mac/iOS."));
-	Finish();
+	SpanApple.timestamp = FAppleSentryConverters::TimestampToNative(timestamp);
+	[SpanApple finish];
 }
 
 bool FAppleSentrySpan::IsFinished() const

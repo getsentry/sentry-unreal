@@ -22,6 +22,7 @@ public:
 	static NSDictionary* StringMapToNative(const TMap<FString, FString>& map);
 	static NSArray* StringArrayToNative(const TArray<FString>& array);
 	static NSData* ByteDataToNative(const TArray<uint8>& array);
+	static NSDate* TimestampToNative(int64 timestamp);
 	static id VariantToNative(const FSentryVariant& variant);
 	static NSArray* VariantArrayToNative(const TArray<FSentryVariant>& variantArray);
 	static NSDictionary* VariantMapToNative(const TMap<FString, FSentryVariant>& variantMap);

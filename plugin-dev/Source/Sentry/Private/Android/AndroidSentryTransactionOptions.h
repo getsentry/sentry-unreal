@@ -15,10 +15,12 @@ public:
 
 	void SetCustomSamplingContext(const TMap<FString, FSentryVariant>& data);
 	void SetBindToScope(bool bindToScope);
+	void SetStartTimestamp(int64 timestamp);
 
 private:
 	FSentryJavaMethod SetCustomSamplingContextMethod;
 	FSentryJavaMethod SetBindToScopeMethod;
+	FSentryJavaMethod SetStartTimestampMethod;
 };
 
 typedef FAndroidSentryTransactionOptions FPlatformSentryTransactionOptions;

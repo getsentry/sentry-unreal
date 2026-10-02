@@ -715,8 +715,9 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 
 TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope)
 {
-	UE_LOG(LogSentrySdk, Log, TEXT("Setting transaction timestamp explicitly not supported on Mac/iOS."));
-	return StartTransactionWithContext(context, bindToScope);
+	TSharedPtr<ISentryTransaction> transaction = StartTransactionWithContext(context, bindToScope);
+	StaticCastSharedPtr<FAppleSentryTransaction>(transaction)->GetNativeObject().startTimestamp = FAppleSentryConverters::TimestampToNative(timestamp);
+	return transaction;
 }
 
 TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options)

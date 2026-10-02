@@ -27,7 +27,10 @@ public:
 
 private:
 	FSentryJavaMethod StartChildMethod;
+	FSentryJavaMethod StartChildWithTimestampMethod;
 	FSentryJavaMethod FinishMethod;
+	FSentryJavaMethod FinishWithTimestampMethod;
+	FSentryJavaMethod GetStatusMethod;
 	FSentryJavaMethod IsFinishedMethod;
 	FSentryJavaMethod SetNameMethod;
 	FSentryJavaMethod SetTagMethod;

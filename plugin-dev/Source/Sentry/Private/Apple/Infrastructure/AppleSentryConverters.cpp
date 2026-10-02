@@ -94,6 +94,11 @@ NSData* FAppleSentryConverters::ByteDataToNative(const TArray<uint8>& array)
 	return [NSData dataWithBytes:array.GetData() length:array.Num()];
 }
 
+NSDate* FAppleSentryConverters::TimestampToNative(int64 timestamp)
+{
+	return [NSDate dateWithTimeIntervalSince1970:(NSTimeInterval)timestamp / 1e6];
+}
+
 id FAppleSentryConverters::VariantToNative(const FSentryVariant& variant)
 {
 	switch (variant.GetType())
