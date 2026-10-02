@@ -1172,6 +1172,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableTracing=True"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:SamplingType=TracesSampler"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
 
             # -tracing-capture triggers tracing test scenario in the sample app
             $script:TracingResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-tracing-capture') + $appArgs) -join ' ')
@@ -1228,6 +1229,11 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $tags = $script:TransactionEvent.tags
             ($tags | Where-Object { $_.key -eq 'test.type' }).value | Should -Be 'tracing'
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should not pass transaction through BeforeSendHandler" {
+            $tags = $script:TransactionEvent.tags
+            $tags | Where-Object { $_.key -eq 'before_send.handled' } | Should -BeNullOrEmpty
         }
 
         It "Should not have tag removed from transaction" {

@@ -206,7 +206,8 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
                 '-tracing-capture',
                 "$script:SentrySettings`:EnableTracing=True",
                 "$script:SentrySettings`:SamplingType=TracesSampler",
-                "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+                "$script:SentrySettings`:TracesSampler=/Script/SentryPlayground.CppTraceSampler",
+                "$script:SentrySettings`:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
             ) + $script:BaseAppArgs)
 
             Write-Host "Tracing test exit code: $($global:iOSTracingResult.ExitCode)" -ForegroundColor Cyan
@@ -810,6 +811,11 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             $tags = $script:TransactionEvent.tags
             ($tags | Where-Object { $_.key -eq 'test.type' }).value | Should -Be 'tracing'
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should not pass transaction through BeforeSendHandler" {
+            $tags = $script:TransactionEvent.tags
+            $tags | Where-Object { $_.key -eq 'before_send.handled' } | Should -BeNullOrEmpty
         }
 
         It "Should not have tag removed from transaction" {
