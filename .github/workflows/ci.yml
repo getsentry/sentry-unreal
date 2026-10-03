@@ -61,7 +61,7 @@ jobs:
     with:
       target: LinuxArm64
       backend: crashpad
-      runsOn: ubuntu-22.04-arm
+      runsOn: ubuntu-24.04-arm
       container: arm64v8/ubuntu:20.04
 
   linux-arm64-sdk-native:
@@ -69,7 +69,7 @@ jobs:
     with:
       target: LinuxArm64
       backend: native
-      runsOn: ubuntu-22.04-arm
+      runsOn: ubuntu-24.04-arm
       container: arm64v8/ubuntu:20.04
 
   windows-sdk-crashpad:
