@@ -100,3 +100,11 @@ void USentrySpan::GetTrace(FString& name, FString& value)
 
 	NativeImpl->GetTrace(name, value);
 }
+
+TMap<FString, FString> USentrySpan::GetTraceHeaders()
+{
+	if (!NativeImpl || NativeImpl->IsFinished())
+		return TMap<FString, FString>();
+
+	return NativeImpl->GetTraceHeaders();
+}

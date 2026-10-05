@@ -23,4 +23,5 @@ public:
 	virtual void SetData(const FString& key, const TMap<FString, FSentryVariant>& values) = 0;
 	virtual void RemoveData(const FString& key) = 0;
 	virtual void GetTrace(FString& name, FString& value) = 0;
+	virtual TMap<FString, FString> GetTraceHeaders() = 0;
 };

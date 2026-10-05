@@ -87,6 +87,8 @@ protected:
 	bool isSessionReplayAttachmentEnabled = false;
 
 private:
+	TMap<FString, FString> ParseSentryBaggage(const TArray<FString>& baggageHeaders) const;
+
 #ifdef USE_SENTRY_SESSION_REPLAY
 	void StartSessionReplay(const USentrySettings* settings);
 

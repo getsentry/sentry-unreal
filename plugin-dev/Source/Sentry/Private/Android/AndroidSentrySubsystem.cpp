@@ -595,6 +595,11 @@ TSharedPtr<ISentryTransactionContext> FAndroidSentrySubsystem::ContinueTrace(con
 	auto transactionContext = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "continueTrace", "(Ljava/lang/String;Ljava/util/List;)Lio/sentry/TransactionContext;",
 		*FSentryJavaObjectWrapper::GetJString(sentryTrace), FAndroidSentryConverters::StringArrayToNative(baggageHeaders)->GetJObject());
 
+	if (!transactionContext)
+	{
+		return nullptr;
+	}
+
 	return MakeShareable(new FAndroidSentryTransactionContext(*transactionContext));
 }
 

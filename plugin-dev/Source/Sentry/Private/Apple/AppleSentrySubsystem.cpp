@@ -41,7 +41,9 @@
 #include "Utils/SentryCallbackUtils.h"
 #include "Utils/SentryFileUtils.h"
 
+#include "Algo/AllOf.h"
 #include "CoreGlobals.h"
+#include "GenericPlatform/GenericPlatformHttp.h"
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
@@ -739,9 +741,15 @@ TSharedPtr<ISentryTransaction> FAppleSentrySubsystem::StartTransactionWithContex
 TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
 {
 	TArray<FString> traceParts;
-	sentryTrace.ParseIntoArray(traceParts, TEXT("-"));
+	sentryTrace.ParseIntoArray(traceParts, TEXT("-"), false);
 
-	if (traceParts.Num() < 2)
+	if (traceParts.Num() < 2 || traceParts.Num() > 3)
+	{
+		return nullptr;
+	}
+
+	if (traceParts[0].Len() != 32 || !Algo::AllOf(traceParts[0], FChar::IsHexDigit) ||
+		traceParts[1].Len() != 16 || !Algo::AllOf(traceParts[1], FChar::IsHexDigit))
 	{
 		return nullptr;
 	}
@@ -749,20 +757,43 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	SentryObjCSampleDecision sampleDecision = SentryObjCSampleDecisionUndecided;
 	if (traceParts.Num() == 3)
 	{
-		sampleDecision = traceParts[2].Equals(TEXT("1")) ? SentryObjCSampleDecisionYes : SentryObjCSampleDecisionNo;
+		if (traceParts[2] == TEXT("1"))
+		{
+			sampleDecision = SentryObjCSampleDecisionYes;
+		}
+		else if (traceParts[2] == TEXT("0"))
+		{
+			sampleDecision = SentryObjCSampleDecisionNo;
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 
-	SentryObjCId* traceId = [[SENTRY_APPLE_CLASS(SentryObjCId) alloc] initWithUUIDString:traceParts[0].GetNSString()];
+	const TMap<FString, FString> baggage = ParseSentryBaggage(baggageHeaders);
+
+	NSNumber* parentSampleRate = FAppleSentryConverters::NumberStringToNative(baggage.FindRef(TEXT("sample_rate")));
+	NSNumber* parentSampleRand = FAppleSentryConverters::NumberStringToNative(baggage.FindRef(TEXT("sample_rand")));
+
+	SentryObjCId* traceId = [[[SENTRY_APPLE_CLASS(SentryObjCId) alloc] initWithUUIDString:traceParts[0].GetNSString()] autorelease];
+	SentryObjCSpanId* spanId = [[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] init] autorelease];
+	SentryObjCSpanId* parentSpanId = [[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] initWithValue:traceParts[1].GetNSString()] autorelease];
 
 	SentryObjCTransactionContext* transactionContext = [[SENTRY_APPLE_CLASS(SentryObjCTransactionContext) alloc] initWithName:@"<unlabeled transaction>" operation:@"default"
 																													  traceId:traceId
-																													   spanId:[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] init]
-																												 parentSpanId:[[SENTRY_APPLE_CLASS(SentryObjCSpanId) alloc] initWithValue:traceParts[1].GetNSString()]
+																													   spanId:spanId
+																												 parentSpanId:parentSpanId
 																												parentSampled:sampleDecision
-																											 parentSampleRate:nil
-																											 parentSampleRand:nil];
+																											 parentSampleRate:parentSampleRate
+																											 parentSampleRand:parentSampleRand];
 
-	// currently `sentry-cocoa` doesn't have API for `SentryTransactionContext` to set `baggageHeaders`
+	// `sentry-cocoa` reads `sampleRate`/`sampleRand` (not the parent ones) when inheriting the parent sampling decision
+	transactionContext.sampleRate = parentSampleRate;
+	transactionContext.sampleRand = parentSampleRand;
+
+	// Currently `sentry-cocoa` has no API to inject the remaining incoming DSC (release, environment, etc.)
+	// See https://github.com/getsentry/sentry-cocoa/issues/8277
 
 	return MakeShareable(new FAppleSentryTransactionContext(transactionContext));
 }
@@ -954,6 +985,33 @@ bool FAppleSentrySubsystem::GetLatestSessionReplay(FString& OutReplayPath, FStri
 	OutSidecarPath = LatestSidecar;
 
 	return true;
+}
+
+TMap<FString, FString> FAppleSentrySubsystem::ParseSentryBaggage(const TArray<FString>& baggageHeaders) const
+{
+	TMap<FString, FString> members;
+
+	TArray<FString> entries;
+	FString::Join(baggageHeaders, TEXT(",")).ParseIntoArray(entries, TEXT(","));
+
+	for (const FString& entry : entries)
+	{
+		FString key, value;
+		if (!entry.Split(TEXT("="), &key, &value))
+		{
+			continue;
+		}
+
+		key.TrimStartAndEndInline();
+		if (!key.RemoveFromStart(TEXT("sentry-"), ESearchCase::CaseSensitive) || key.IsEmpty())
+		{
+			continue;
+		}
+
+		members.Add(key, FGenericPlatformHttp::UrlDecode(value.TrimStartAndEnd()));
+	}
+
+	return members;
 }
 
 #ifdef USE_SENTRY_SESSION_REPLAY

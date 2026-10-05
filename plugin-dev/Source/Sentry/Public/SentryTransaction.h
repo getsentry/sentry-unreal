@@ -76,4 +76,8 @@ public:
 	/** Gets trace information that could be sent as a `sentry-trace` header */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void GetTrace(FString& name, FString& value);
+
+	/** Gets trace propagation headers (`sentry-trace`, `baggage`) that could be attached to outgoing requests. */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	TMap<FString, FString> GetTraceHeaders();
 };
