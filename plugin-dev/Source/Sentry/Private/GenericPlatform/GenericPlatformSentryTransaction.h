@@ -29,6 +29,7 @@ public:
 	virtual void SetData(const FString& key, const TMap<FString, FSentryVariant>& values) override;
 	virtual void RemoveData(const FString& key) override;
 	virtual void GetTrace(FString& name, FString& value) override;
+	virtual TMap<FString, FString> GetTraceHeaders() override;
 
 private:
 	sentry_transaction_t* Transaction;

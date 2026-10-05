@@ -165,14 +165,34 @@ void FGenericPlatformSentryTransaction::GetTrace(FString& name, FString& value)
 		return;
 	}
 
-	sentry_value_t tracingHeader = sentry_value_new_object();
+	sentry_value_t tracingHeaders = sentry_value_new_object();
 
-	sentry_transaction_iter_headers(Transaction, CopyTransactionTracingHeader, &tracingHeader);
+	sentry_transaction_iter_headers(Transaction, CopyTransactionTracingHeader, &tracingHeaders);
 
 	name = TEXT("sentry-trace");
-	value = FString(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_key(tracingHeader, "sentry-trace"))));
+	value = FString(UTF8_TO_TCHAR(sentry_value_as_string(sentry_value_get_by_key(tracingHeaders, "sentry-trace"))));
 
-	sentry_value_decref(tracingHeader);
+	sentry_value_decref(tracingHeaders);
+}
+
+TMap<FString, FString> FGenericPlatformSentryTransaction::GetTraceHeaders()
+{
+	FScopeLock Lock(&CriticalSection);
+
+	if (!Transaction)
+	{
+		return TMap<FString, FString>();
+	}
+
+	sentry_value_t tracingHeaders = sentry_value_new_object();
+
+	sentry_transaction_iter_headers(Transaction, CopyTransactionTracingHeader, &tracingHeaders);
+
+	TMap<FString, FString> headers = FGenericPlatformSentryConverters::StringMapToUnreal(tracingHeaders);
+
+	sentry_value_decref(tracingHeaders);
+
+	return headers;
 }
 
 #endif

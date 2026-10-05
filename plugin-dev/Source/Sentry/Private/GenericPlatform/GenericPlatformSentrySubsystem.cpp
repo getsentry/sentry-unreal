@@ -1311,7 +1311,10 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 
 	sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "sentry-trace", TCHAR_TO_UTF8(*sentryTrace));
 
-	// currently `sentry-native` doesn't have API for `sentry_transaction_context_t` to set `baggageHeaders`
+	for (const FString& baggage : baggageHeaders)
+	{
+		sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "baggage", TCHAR_TO_UTF8(*baggage));
+	}
 
 	return transactionContext;
 }

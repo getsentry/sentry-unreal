@@ -26,6 +26,8 @@ void FAndroidSentryTransaction::SetupClassMethods()
 	SetTagMethod = GetMethod("setTag", "(Ljava/lang/String;Ljava/lang/String;)V");
 	SetDataMethod = GetMethod("setData", "(Ljava/lang/String;Ljava/lang/Object;)V");
 	ToSentryTraceMethod = GetMethod("toSentryTrace", "()Lio/sentry/SentryTraceHeader;");
+	ToBaggageHeaderMethod = GetMethod("toBaggageHeader", "(Ljava/util/List;)Lio/sentry/BaggageHeader;");
+	IsNoOpMethod = GetMethod("isNoOp", "()Z");
 }
 
 TSharedPtr<ISentrySpan> FAndroidSentryTransaction::StartChildSpan(const FString& operation, const FString& desctiption, bool bindToScope)
@@ -88,4 +90,30 @@ void FAndroidSentryTransaction::GetTrace(FString& name, FString& value)
 
 	name = TEXT("sentry-trace");
 	value = NativeTraceHeader.CallMethod<FString>(GetValueMethod);
+}
+
+TMap<FString, FString> FAndroidSentryTransaction::GetTraceHeaders()
+{
+	TMap<FString, FString> headers;
+
+	if (CallMethod<bool>(IsNoOpMethod))
+	{
+		return headers;
+	}
+
+	FSentryJavaObjectWrapper NativeTraceHeader(SentryJavaClasses::SentryTraceHeader, *CallObjectMethod<jobject>(ToSentryTraceMethod));
+	FSentryJavaMethod GetTraceValueMethod = NativeTraceHeader.GetMethod("getValue", "()Ljava/lang/String;");
+
+	headers.Add(TEXT("sentry-trace"), NativeTraceHeader.CallMethod<FString>(GetTraceValueMethod));
+
+	auto baggage = CallObjectMethod<jobject>(ToBaggageHeaderMethod, nullptr);
+	if (baggage)
+	{
+		FSentryJavaObjectWrapper NativeBaggageHeader(SentryJavaClasses::BaggageHeader, *baggage);
+		FSentryJavaMethod GetBaggageValueMethod = NativeBaggageHeader.GetMethod("getValue", "()Ljava/lang/String;");
+
+		headers.Add(TEXT("baggage"), NativeBaggageHeader.CallMethod<FString>(GetBaggageValueMethod));
+	}
+
+	return headers;
 }

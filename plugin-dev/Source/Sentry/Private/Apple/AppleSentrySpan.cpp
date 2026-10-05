@@ -92,4 +92,18 @@ void FAppleSentrySpan::GetTrace(FString& name, FString& value)
 	value = FString([traceHeader value]);
 }
 
+TMap<FString, FString> FAppleSentrySpan::GetTraceHeaders()
+{
+	TMap<FString, FString> headers;
+
+	headers.Add(TEXT("sentry-trace"), FString([[SpanApple toTraceHeader] value]));
+
+	if (NSString* baggage = [SpanApple baggageHttpHeader])
+	{
+		headers.Add(TEXT("baggage"), FString(baggage));
+	}
+
+	return headers;
+}
+
 #endif // !USE_SENTRY_NATIVE

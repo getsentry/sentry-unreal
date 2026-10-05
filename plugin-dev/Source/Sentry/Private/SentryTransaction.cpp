@@ -109,3 +109,11 @@ void USentryTransaction::GetTrace(FString& name, FString& value)
 
 	NativeImpl->GetTrace(name, value);
 }
+
+TMap<FString, FString> USentryTransaction::GetTraceHeaders()
+{
+	if (!NativeImpl || NativeImpl->IsFinished())
+		return TMap<FString, FString>();
+
+	return NativeImpl->GetTraceHeaders();
+}

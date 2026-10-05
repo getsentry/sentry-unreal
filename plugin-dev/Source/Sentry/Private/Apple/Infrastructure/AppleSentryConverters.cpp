@@ -99,6 +99,17 @@ NSDate* FAppleSentryConverters::TimestampToNative(int64 timestamp)
 	return [NSDate dateWithTimeIntervalSince1970:(NSTimeInterval)timestamp / 1e6];
 }
 
+NSNumber* FAppleSentryConverters::NumberStringToNative(const FString& string)
+{
+	double number = 0.0;
+	if (!LexTryParseString(number, *string))
+	{
+		return nil;
+	}
+
+	return [NSNumber numberWithDouble:number];
+}
+
 id FAppleSentryConverters::VariantToNative(const FSentryVariant& variant)
 {
 	switch (variant.GetType())
