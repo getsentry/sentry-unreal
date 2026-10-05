@@ -5,7 +5,7 @@
 ### Features
 
 - Add support for explicit timestamps when starting or finishing transactions and spans on macOS, iOS and Android ([#1608](https://github.com/getsentry/sentry-unreal/pull/1608))
-- Keep sampling decisions consistent across services when propagating or continuing traces ([#XXXX](https://github.com/getsentry/sentry-unreal/pull/XXXX))
+- Keep sampling decisions consistent across services when propagating or continuing traces ([#1612](https://github.com/getsentry/sentry-unreal/pull/1612))
 
 ### Fixes
 
