@@ -6,16 +6,20 @@ cd "$(dirname $0)/../plugin-dev/Source/ThirdParty"
 
 findCiRun() {
     echo "Looking for the latest successful CI run on branch '$1'" >/dev/stderr
-    id=$(gh run list --branch $1 --workflow CI \
-        --json 'conclusion,databaseId' --jq 'first(.[] | select(.conclusion == "success") | .databaseId)')
-    if [[ "$id" == "" ]]; then
-        echo "  ... no successful CI run found on $1" >/dev/stderr
-        return 1
-    else
-        echo "  ... found CI run ID: $id" >/dev/stderr
-        echo "$id"
-        return 0
+    commits=""
+    if [[ "$1" != "HEAD" ]]; then
+        commits=$(gh api -X GET "repos/{owner}/{repo}/commits" -f sha="$1" -F per_page=20 --jq '.[].sha' 2>/dev/null) || commits=""
     fi
+    for sha in $commits; do
+        id=$(gh api "repos/{owner}/{repo}/actions/workflows/ci.yml/runs?head_sha=$sha&status=success&per_page=1"             --jq '.workflow_runs[0].id // empty')
+        if [[ "$id" != "" ]]; then
+            echo "  ... found CI run ID: $id (commit $sha)" >/dev/stderr
+            echo "$id"
+            return 0
+        fi
+    done
+    echo "  ... no successful CI run found on $1" >/dev/stderr
+    return 1
 }
 
 runId=$(findCiRun "$(git rev-parse --abbrev-ref HEAD)" || findCiRun main)
