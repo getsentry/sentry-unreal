@@ -5,17 +5,26 @@ Write-Host "Downloading native SDKs from the latest CI pipeline"
 function findCiRun([string] $branch)
 {
     Write-Host "Looking for the latest successful CI run on branch '$branch'"
-    $jsonArray = gh run list --branch $branch --workflow CI --json 'conclusion,databaseId' | ConvertFrom-Json
-    $id = $jsonArray | Where-Object 'conclusion' -EQ 'success' | Select-Object -First 1 -ExpandProperty 'databaseId'
-    if ( "$id" -eq "" )
+    $encodedBranch = [uri]::EscapeDataString($branch)
+    $commits = @()
+    if ($branch -ne "HEAD")
     {
-        Write-Warning "  ... no successful CI run found on $branch"
+        $commits = @(gh api "repos/{owner}/{repo}/commits?sha=$encodedBranch&per_page=20" --jq '.[].sha' 2>$null)
+        if ($LASTEXITCODE -ne 0)
+        {
+            $commits = @()
+        }
     }
-    else
+    foreach ($sha in $commits)
     {
-        Write-Host "  ... found CI run ID: $id"
-        "$id"
+        $id = gh api "repos/{owner}/{repo}/actions/workflows/ci.yml/runs?head_sha=$sha&status=success&per_page=1" --jq '.workflow_runs[0].id // empty'
+        if ( "$id" -ne "" )
+        {
+            Write-Host "  ... found CI run ID: $id (commit $sha)"
+            return "$id"
+        }
     }
+    Write-Warning "  ... no successful CI run found on $branch"
 }
 
 $runId = findCiRun("$(git rev-parse --abbrev-ref HEAD)")
