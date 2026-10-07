@@ -218,20 +218,22 @@ TSharedPtr<ISentryFeedback> FAppleSentryEvent::GetFeedback() const
 
 bool FAppleSentryEvent::IsAnr() const
 {
-	bool isErrorLevel = EventApple.level == SentryObjCLevelError;
-	bool isAppHangException = false;
-	bool isAppHangMechanism = false;
-	bool isAppHangMessage = false;
-
-	if (EventApple.exceptions != nil && EventApple.exceptions.count == 1)
+	if (EventApple.exceptions == nil)
 	{
-		SentryObjCException* exception = EventApple.exceptions[0];
-		isAppHangException = [exception.type isEqualToString:@"App Hanging"];
-		isAppHangMechanism = exception.mechanism != nil && [exception.mechanism.type isEqualToString:@"AppHang"];
-		isAppHangMessage = [exception.value hasPrefix:@"App hanging for at least"];
+		return false;
 	}
 
-	return isErrorLevel && isAppHangException && isAppHangMechanism && isAppHangMessage;
+	// sentry-cocoa sets the `AppHang` mechanism type on every app hang variant (fully/non-fully blocking,
+	// fatal or not), while exception type, value and level vary between them and get rewritten over time
+	for (SentryObjCException* exception in EventApple.exceptions)
+	{
+		if (exception.mechanism != nil && [exception.mechanism.type isEqualToString:@"AppHang"])
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 #endif // !USE_SENTRY_NATIVE

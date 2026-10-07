@@ -11,6 +11,7 @@
 
 - Fix crash when a span is finished twice or used from multiple threads on native platforms ([#1609](https://github.com/getsentry/sentry-unreal/pull/1609))
 - Fix `BeforeSend` handler receiving transactions on macOS/iOS ([#1610](https://github.com/getsentry/sentry-unreal/pull/1610))
+- Fix `IsAnr` returning `false` for most app hang events on macOS/iOS
 
 ### Dependencies
 
