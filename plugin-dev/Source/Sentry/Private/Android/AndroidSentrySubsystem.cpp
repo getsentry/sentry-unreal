@@ -393,6 +393,12 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureHang(uint32 HungThreadId)
 	return nullptr;
 }
 
+TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureScriptError(const FString& type, const FString& message, const FString& platform, const TArray<FSentryScriptStackFrame>& frames)
+{
+	// Not implemented for sentry-java yet
+	return nullptr;
+}
+
 bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
 {
 	// The engine FThreadHeartBeat watcher (FSentryHangWatcher) is never used on Android — CaptureHang is a

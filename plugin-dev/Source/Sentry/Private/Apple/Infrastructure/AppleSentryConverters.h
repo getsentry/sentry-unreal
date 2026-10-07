@@ -12,6 +12,7 @@
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 
 struct FSentryVariant;
+struct FSentryScriptStackFrame;
 
 class FAppleSentryConverters
 {
@@ -28,6 +29,7 @@ public:
 	static NSArray* VariantArrayToNative(const TArray<FSentryVariant>& variantArray);
 	static NSDictionary* VariantMapToNative(const TMap<FString, FSentryVariant>& variantMap);
 	static SentryObjCStacktrace* CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
+	static SentryObjCStacktrace* ScriptCallstackToNative(const TArray<FSentryScriptStackFrame>& callstack, const FString& platform);
 	static SentryObjCAttribute* VariantToAttributeNative(const FSentryVariant& variant);
 	static SentryObjCAttributeContent* VariantToAttributeContentNative(const FSentryVariant& variant);
 	static NSDictionary<NSString*, SentryObjCAttributeContent*>* VariantMapToAttributeContentNative(const TMap<FString, FSentryVariant>& variantMap);
