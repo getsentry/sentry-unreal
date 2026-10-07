@@ -37,6 +37,7 @@ The SDK compiles with three latest engine versions.
 
 ## Blog Posts
 
+* [Unreal MCP now speaks Sentry](https://blog.sentry.io/unreal-mcp-sentry/)
 * [Session Replay for Unreal Engine: see the crash before the crash](https://blog.sentry.io/session-replay-unreal-engine/)
 * [Monitor Unreal Engine Game Performance with Application Metrics](https://blog.sentry.io/unreal-engine-performance-metrics/)
 * [Game Console Support GA](https://blog.sentry.io/error-monitoring-and-crash-reporting-for-gaming-consoles/)
