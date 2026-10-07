@@ -89,8 +89,8 @@ BeforeDiscovery {
 
     # Define hang detection mechanisms to test
     $TestHangMechanisms = @(
-        @{ Name = 'Engine'; ExceptionType = 'App Hanging'; ExceptionValuePattern = '^Application not responding$'; ExpectsCrashTypeTag = $true  }
-        @{ Name = 'Native'; ExceptionType = 'AppHang';     ExceptionValuePattern = 'App hung for at least \d+ ms';   ExpectsCrashTypeTag = $false }
+        @{ Name = 'Engine'; ExceptionType = 'App Hanging'; ExceptionValuePattern = '^Application not responding$' }
+        @{ Name = 'Native'; ExceptionType = 'AppHang';     ExceptionValuePattern = 'App hung for at least \d+ ms' }
     )
 
     if ($IsMacOS) {
@@ -288,7 +288,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:($Name -in @('OutOfMemory', 'MemoryCorruption') -or ($Platform -eq 'MacOS' -and -not $IsNativeBackend)) {
+        It "Should have CrashType tag" -Skip:($Name -in @('OutOfMemory', 'MemoryCorruption')) {
             $tags = $script:CrashEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $Type
         }
@@ -410,7 +410,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+        It "Should have CrashType tag" {
             $tags = $script:EnsureEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Ensure'
         }
@@ -509,7 +509,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
-        It "Should have CrashType tag" -Skip:(-not $ExpectsCrashTypeTag) {
+        It "Should have CrashType tag" {
             $tags = $script:HangEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Hang'
         }

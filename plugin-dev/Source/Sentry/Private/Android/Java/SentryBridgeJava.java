@@ -197,12 +197,13 @@ public class SentryBridgeJava {
 		return feedbackId;
 	}
 
-	public static SentryId captureException(final String type, final String value, final Attachment screenshotAttachment) {
+	public static SentryId captureEnsure(final String type, final String value, final Attachment screenshotAttachment) {
 		SentryException exception = new SentryException();
 		exception.setType(type);
 		exception.setValue(value);
 		SentryEvent event = new SentryEvent();
 		event.setExceptions(Collections.singletonList(exception));
+		event.setTag("CrashType", "Ensure");
 
 		Hint hint = new Hint();
 		if (screenshotAttachment != null) {
@@ -578,6 +579,15 @@ public class SentryBridgeJava {
 
 			if (deviceType != null && !deviceType.isEmpty()) {
 				mergeContext(event, "device", Collections.singletonMap("device_type", deviceType));
+			}
+
+			if (event.getTag("CrashType") == null) {
+				// Fatal hangs are unhandled too, so check them first
+				if (isAnrEvent(event)) {
+					event.setTag("CrashType", "Hang");
+				} else if (event.isCrashed()) {
+					event.setTag("CrashType", "Crash");
+				}
 			}
 
 			if (attachLog) {

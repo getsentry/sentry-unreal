@@ -307,7 +307,12 @@ TSharedPtr<ISentryFeedback> FGenericPlatformSentryEvent::GetFeedback() const
 
 bool FGenericPlatformSentryEvent::IsAnr() const
 {
-	sentry_value_t exception = sentry_value_get_by_key(Event, "exception");
+	return IsAnr(Event);
+}
+
+bool FGenericPlatformSentryEvent::IsAnr(sentry_value_t event)
+{
+	sentry_value_t exception = sentry_value_get_by_key(event, "exception");
 	if (sentry_value_is_null(exception))
 	{
 		return false;

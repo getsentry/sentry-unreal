@@ -27,6 +27,7 @@
 #include "Utils/SentryFileUtils.h"
 
 #include "Dom/JsonObject.h"
+#include "GenericPlatform/GenericPlatformCrashContext.h"
 #include "HAL/FileManager.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/FileHelper.h"
@@ -379,7 +380,7 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureEnsure(const FString& type
 		}
 	}
 
-	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureException", "(Ljava/lang/String;Ljava/lang/String;Lio/sentry/Attachment;)Lio/sentry/protocol/SentryId;",
+	auto id = FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureEnsure", "(Ljava/lang/String;Ljava/lang/String;Lio/sentry/Attachment;)Lio/sentry/protocol/SentryId;",
 		*FSentryJavaObjectWrapper::GetJString(type), *FSentryJavaObjectWrapper::GetJString(message),
 		ScreenshotAttachment.IsValid() ? ScreenshotAttachment->GetJObject() : nullptr);
 
@@ -605,6 +606,17 @@ TSharedPtr<ISentryTransactionContext> FAndroidSentrySubsystem::ContinueTrace(con
 
 void FAndroidSentrySubsystem::HandleAssert()
 {
+	// Set on the NDK scope directly since Java scope sync is asynchronous and may not finish before the crash
+	if (void* libsentryHandle = dlopen("libsentry.so", RTLD_NOLOAD | RTLD_NOW))
+	{
+		if (auto SetTagFunc = reinterpret_cast<void (*)(const char*, const char*)>(dlsym(libsentryHandle, "sentry_set_tag")))
+		{
+			SetTagFunc("CrashType", TCHAR_TO_UTF8(FGenericCrashContext::GetCrashTypeString(ECrashContextType::Assert)));
+		}
+
+		dlclose(libsentryHandle);
+	}
+
 	GError->HandleError();
 	PLATFORM_BREAK();
 }
