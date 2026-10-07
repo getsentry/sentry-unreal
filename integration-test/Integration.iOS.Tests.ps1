@@ -149,7 +149,37 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             Write-Host "Init-only exit code: $($global:iOSInitOnlyResult.ExitCode)" -ForegroundColor Cyan
 
             # ==========================================
-            # RUN 3: Message test - captures message
+            # RUN 3: Assert test - crashes on failed check
+            # ==========================================
+
+            Write-Host "Running crash-assert test (will crash) on $Platform..." -ForegroundColor Yellow
+            $global:iOSAssertResult = Invoke-iOSTestAction -Arguments (@(
+                '-crash-assert',
+                "$script:SentrySettings`:EnableAppNotRespondingTracking=False"
+            ) + $script:BaseAppArgs)
+
+            Write-Host "Assert test exit code: $($global:iOSAssertResult.ExitCode)" -ForegroundColor Cyan
+
+            # ==========================================
+            # RUN 4: Init-only - flushes assert crash event from Run 3
+            # ==========================================
+
+            Write-Host "Running init-only to flush assert crash event on $Platform..." -ForegroundColor Yellow
+            $global:iOSAssertInitOnlyResult = Invoke-iOSTestAction -Arguments (@('-init-only') + $script:BaseAppArgs)
+
+            Write-Host "Init-only exit code: $($global:iOSAssertInitOnlyResult.ExitCode)" -ForegroundColor Cyan
+
+            # ==========================================
+            # RUN 5: Ensure test - captures failed ensure
+            # ==========================================
+
+            Write-Host "Running ensure-capture test on $Platform..." -ForegroundColor Yellow
+            $global:iOSEnsureResult = Invoke-iOSTestAction -Arguments (@('-ensure-capture') + $script:BaseAppArgs)
+
+            Write-Host "Ensure test exit code: $($global:iOSEnsureResult.ExitCode)" -ForegroundColor Cyan
+
+            # ==========================================
+            # RUN 6: Message test - captures message
             # ==========================================
 
             Write-Host "Running message-capture test on $Platform..." -ForegroundColor Yellow
@@ -162,7 +192,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             Write-Host "Message test exit code: $($global:iOSMessageResult.ExitCode)" -ForegroundColor Cyan
 
             # ==========================================
-            # RUN 4: Feedback test - captures user feedback
+            # RUN 7: Feedback test - captures user feedback
             # ==========================================
 
             Write-Host "Running feedback-capture test on $Platform..." -ForegroundColor Yellow
@@ -174,7 +204,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             Write-Host "Feedback test exit code: $($global:iOSFeedbackResult.ExitCode)" -ForegroundColor Cyan
 
             # ==========================================
-            # RUN 5: Log test - captures structured log
+            # RUN 8: Log test - captures structured log
             # ==========================================
 
             Write-Host "Running log-capture test on $Platform..." -ForegroundColor Yellow
@@ -186,7 +216,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             Write-Host "Log test exit code: $($global:iOSLogResult.ExitCode)" -ForegroundColor Cyan
 
             # ==========================================
-            # RUN 6: Metric test - captures custom metric
+            # RUN 9: Metric test - captures custom metric
             # ==========================================
 
             Write-Host "Running metric-capture test on $Platform..." -ForegroundColor Yellow
@@ -198,7 +228,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             Write-Host "Metric test exit code: $($global:iOSMetricResult.ExitCode)" -ForegroundColor Cyan
 
             # ==========================================
-            # RUN 7: Tracing test - captures transaction
+            # RUN 10: Tracing test - captures transaction
             # ==========================================
 
             Write-Host "Running tracing-capture test on $Platform..." -ForegroundColor Yellow
@@ -213,7 +243,7 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             Write-Host "Tracing test exit code: $($global:iOSTracingResult.ExitCode)" -ForegroundColor Cyan
 
             # ==========================================
-            # RUN 8: Tracing timestamps test - captures transaction with explicit timestamps
+            # RUN 11: Tracing timestamps test - captures transaction with explicit timestamps
             # ==========================================
 
             Write-Host "Running tracing-timestamp test on $Platform..." -ForegroundColor Yellow
@@ -319,6 +349,11 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
+        It "Should have CrashType tag" {
+            $tags = $script:CrashEvent.tags
+            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Crash'
+        }
+
         It "Should have breadcrumbs from before crash" {
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
@@ -326,6 +361,107 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
 
         It "Should have game log attached to the crash event" {
             $script:CrashAttachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context "Assert Capture Tests" {
+        BeforeAll {
+            $script:AssertResult = $global:iOSAssertResult
+            $script:AssertEvent = $null
+
+            $eventIds = Get-EventIds -AppOutput $script:AssertResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Assert crash ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                # Assert crash event is sent during the init-only run (Run 4)
+                try {
+                    $script:AssertEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$($eventIds[0])"
+                    Write-Host "Assert crash event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch assert crash event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No assert crash event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output event ID before crash" {
+            $eventIds = Get-EventIds -AppOutput $script:AssertResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should capture assert crash event in Sentry (uploaded during init-only run)" {
+            $script:AssertEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have exception information" {
+            $script:AssertEvent.exception | Should -Not -BeNullOrEmpty
+            $script:AssertEvent.exception.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have stack trace" {
+            $exception = $script:AssertEvent.exception.values[0]
+            $exception.stacktrace | Should -Not -BeNullOrEmpty
+            $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have CrashType tag" {
+            $tags = $script:AssertEvent.tags
+            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Assert'
+        }
+    }
+
+    Context "Ensure Capture Tests" {
+        BeforeAll {
+            $script:EnsureResult = $global:iOSEnsureResult
+            $script:EnsureEvent = $null
+
+            $eventIds = Get-EventIds -AppOutput $script:EnsureResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Ensure event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                try {
+                    $script:EnsureEvent = Get-SentryTestEvent -TagName 'test.ensure_id' -TagValue "$($eventIds[0])"
+                    Write-Host "Ensure event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch ensure event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No ensure event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $script:EnsureResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:EnsureResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture ensure event in Sentry" {
+            $script:EnsureEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have Ensure failed exception type" {
+            $exception = $script:EnsureEvent.exception.values[0]
+            $exception.type | Should -Be 'Ensure failed'
+        }
+
+        It "Should have CrashType tag" {
+            $tags = $script:EnsureEvent.tags
+            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Ensure'
         }
     }
 

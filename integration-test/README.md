@@ -179,6 +179,7 @@ Runs once per crash type. The desktop suite parameterizes over: `NullPointer`, `
 - Stack traces are captured
 - User context is included
 - Integration test tags are set
+- CrashType tag matches the crash type
 - Breadcrumbs are collected
 
 **Note**: On Android and macOS (cocoa backend), the crash event is uploaded on the next app launch (an init-only run), and the crash is captured from the Java layer (platform `java` rather than `native`).
@@ -188,7 +189,7 @@ Runs once per crash type. The desktop suite parameterizes over: `NullPointer`, `
 - Application exits cleanly after a non-fatal `ensure()` failure
 - Event ID is captured from output and TEST_RESULT indicates success
 - Ensure event appears in Sentry with exception type "Ensure failed"
-- Stack trace, user context, and integration test tags are present
+- Stack trace, user context, integration test and CrashType tags are present
 
 ### Hang Tracking Tests
 

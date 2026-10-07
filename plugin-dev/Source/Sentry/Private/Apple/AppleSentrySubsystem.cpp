@@ -261,6 +261,20 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					AddCrashAttachmentsToHint(hint);
 				}
 
+				FString crashType;
+				if (!eventApple.TryGetTag(TEXT("CrashType"), crashType))
+				{
+					// Fatal hangs are unhandled too, so check them first
+					if (eventApple.IsAnr())
+					{
+						SetEventCrashType(event, ECrashContextType::Hang);
+					}
+					else if (eventApple.IsCrash())
+					{
+						SetEventCrashType(event, ECrashContextType::Crash);
+					}
+				}
+
 				if (beforeSendHandler == nullptr)
 				{
 					return event;
@@ -510,6 +524,8 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 
 	SentryObjCEvent* exceptionEvent = [[SENTRY_APPLE_CLASS(SentryObjCEvent) alloc] init];
 	exceptionEvent.exceptions = nativeExceptionArray;
+
+	SetEventCrashType(exceptionEvent, ECrashContextType::Ensure);
 
 	SentryObjCId* nativeId = [SENTRY_APPLE_CLASS(SentryObjCSDK) captureEvent:exceptionEvent withScopeBlock:^(SentryObjCScope* scope) {
 		AddGameLogAttachmentToScope(scope);
@@ -796,6 +812,17 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	// See https://github.com/getsentry/sentry-cocoa/issues/8277
 
 	return MakeShareable(new FAppleSentryTransactionContext(transactionContext));
+}
+
+void FAppleSentrySubsystem::HandleAssert()
+{
+	// Assert crashes are reported on the next launch, so record the type on the scope beforehand
+	SetTag(TEXT("CrashType"), FGenericCrashContext::GetCrashTypeString(ECrashContextType::Assert));
+}
+
+void FAppleSentrySubsystem::SetEventCrashType(SentryObjCEvent* event, ECrashContextType crashType) const
+{
+	FAppleSentryEvent(event).SetTag(TEXT("CrashType"), FGenericCrashContext::GetCrashTypeString(crashType));
 }
 
 void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) const

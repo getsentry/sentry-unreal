@@ -178,6 +178,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
+	if (!isCrash && FGenericPlatformSentryEvent::IsAnr(event))
+	{
+		SetEventCrashType(event, ECrashContextType::Hang);
+	}
+
 	USentryBeforeSendHandler* Handler = GetBeforeSendHandler();
 	if (!Handler)
 	{

@@ -93,6 +93,8 @@ void FIOSSentrySubsystem::InitWithSettings(const USentrySettings* settings, cons
 
 void FIOSSentrySubsystem::HandleAssert()
 {
+	FAppleSentrySubsystem::HandleAssert();
+
 	if (isScreenshotAttachmentEnabled)
 	{
 		TryCaptureScreenshot();
