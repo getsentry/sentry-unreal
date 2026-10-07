@@ -223,8 +223,6 @@ bool FAppleSentryEvent::IsAnr() const
 		return false;
 	}
 
-	// sentry-cocoa sets the `AppHang` mechanism type on every app hang variant (fully/non-fully blocking,
-	// fatal or not), while exception type, value and level vary between them and get rewritten over time
 	for (SentryObjCException* exception in EventApple.exceptions)
 	{
 		if (exception.mechanism != nil && [exception.mechanism.type isEqualToString:@"AppHang"])
