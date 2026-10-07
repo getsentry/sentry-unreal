@@ -30,7 +30,6 @@ import io.sentry.SentryOptions;
 import io.sentry.SentryReplayOptions;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
-import io.sentry.exception.ExceptionMechanismException;
 import io.sentry.protocol.Feedback;
 import io.sentry.protocol.Mechanism;
 import io.sentry.protocol.SentryException;
@@ -313,13 +312,18 @@ public class SentryBridgeJava {
 	}
 
 	public static boolean isAnrEvent(final SentryEvent event) {
-		Throwable throwable = event.getThrowableMechanism();
-		if (throwable instanceof ExceptionMechanismException) {
-			Mechanism m = ((ExceptionMechanismException) throwable).getExceptionMechanism();
-			return m.getType().equals("ANR");
-		} else {
+		if (event.getExceptions() == null) {
 			return false;
 		}
+
+		for (SentryException exception : event.getExceptions()) {
+			final Mechanism mechanism = exception.getMechanism();
+			if ("ApplicationNotResponding".equals(exception.getType()) || (mechanism != null && "AppHang".equals(mechanism.getType()))) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static boolean isEmptyId(final SentryId id) {
