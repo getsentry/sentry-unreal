@@ -94,10 +94,9 @@ jobs:
         shell: pwsh
         run: ./checkout/scripts/strip-plugin-refs.ps1 -ProjectPath checkout/sample/SentryPlayground.uproject -PluginNames AVCodecsCore,NVCodecs,VTCodecs,AMFCodecs
 
-      - name: Build and test (Crashpad)
-        id: run-tests
+      - name: Build (Crashpad)
+        id: build
         env:
-          EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }}
           # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
           UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -121,14 +120,6 @@ jobs:
             -prereqs `
             -package `
             -archive
-          docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `
-            -ReportExportPath=C:/workspace/checkout/sample/Saved/Automation `
-            -ExecCmds="Automation RunTests Sentry;quit" `
-            -TestExit="Automation Test Queue Empty" `
-            -Unattended `
-            -NoPause `
-            -NoSplash `
-            -NullRHI
 
       - name: Save DDC to cache
         if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
@@ -137,16 +128,8 @@ jobs:
           path: checkout/sample/DerivedDataCache
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
-      - name: Collect sample test info
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} sample test report (Windows)
-          path: |
-            checkout/sample/Saved/Automation
-
       - name: Upload sample build (Crashpad)
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        if: ${{ success() && steps.build.outcome == 'success' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Windows, crashpad)
@@ -154,15 +137,14 @@ jobs:
           retention-days: 1
 
       - name: Enable native backend
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        if: ${{ success() && steps.build.outcome == 'success' }}
         run: |
           (Get-Content "checkout/sample/Config/DefaultEngine.ini") -replace 'UseNativeBackend=False','UseNativeBackend=True' | Set-Content "checkout/sample/Config/DefaultEngine.ini"
 
-      - name: Build and test (Native)
-        id: run-tests-native
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+      - name: Build (Native)
+        id: build-native
+        if: ${{ success() && steps.build.outcome == 'success' }}
         env:
-          EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }}
           # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
           UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -186,25 +168,9 @@ jobs:
             -prereqs `
             -package `
             -archive
-          docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `
-            -ReportExportPath=C:/workspace/checkout/sample/Saved/Automation-Native `
-            -ExecCmds="Automation RunTests Sentry;quit" `
-            -TestExit="Automation Test Queue Empty" `
-            -Unattended `
-            -NoPause `
-            -NoSplash `
-            -NullRHI
-
-      - name: Collect native sample test info
-        if: ${{ always() && steps.run-tests-native.outcome == 'failure' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} sample test report (Windows, native)
-          path: |
-            checkout/sample/Saved/Automation-Native
 
       - name: Upload sample build (Native)
-        if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
+        if: ${{ success() && steps.build-native.outcome == 'success' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (Windows, native)

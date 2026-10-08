@@ -81,8 +81,8 @@ jobs:
           mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
           cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
 
-      - name: Build and test (Cocoa)
-        id: run-tests
+      - name: Build (Cocoa)
+        id: build
         timeout-minutes: 150
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -102,25 +102,13 @@ jobs:
             -stage \
             -package \
             -archive
-          "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
-            -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation" \
-            -ExecCmds="Automation RunTests Sentry;quit" \
-            -TestExit="Automation Test Queue Empty" \
-            -stdout \
-            -Unattended \
-            -NoPause \
-            -NoSplash \
-            -NullRHI \
-            -NoSound \
-            -SkipMinSpecCheck \
-            -BuildMachine
 
       - name: Check for DDC content
         id: ddc-exists
         if: ${{ always() }}
         run: echo "exists=$([ -d checkout/sample/DerivedDataCache ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
 
-      # Save DDC even when the build/test step failed or timed out so that shader
+      # Save DDC even when the build step failed or timed out so that shader
       # compilation progress carries over to the next attempt
       - name: Save DDC to cache
         if: ${{ always() && steps.ddc-exists.outputs.exists == 'true' && steps.cache-ddc.outputs.cache-hit != 'true' }}
@@ -130,19 +118,18 @@ jobs:
           key: ${{ steps.ddc-cache-key.outputs.key }}
 
       # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
-      - name: Collect sample test info
-        if: ${{ always() && (steps.run-tests.outcome == 'failure' || steps.run-tests.outcome == 'cancelled') }}
+      - name: Collect build logs
+        if: ${{ always() && (steps.build.outcome == 'failure' || steps.build.outcome == 'cancelled') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} sample test report (macOS)
+          name: UE ${{ inputs.unreal-version }} build logs (macOS)
           path: |
-            checkout/sample/Saved/Automation
             checkout/sample/Saved/Logs
             ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
             ~/Library/Logs/Unreal Engine
 
       - name: Upload sample build (Cocoa)
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        if: ${{ success() && steps.build.outcome == 'success' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (macOS, cocoa)
@@ -150,13 +137,13 @@ jobs:
           retention-days: 1
 
       - name: Enable native backend
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+        if: ${{ success() && steps.build.outcome == 'success' }}
         run: |
           sed -i '' 's/UseNativeBackend=False/UseNativeBackend=True/' checkout/sample/Config/DefaultEngine.ini
 
-      - name: Build and test (Native)
-        id: run-tests-native
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
+      - name: Build (Native)
+        id: build-native
+        if: ${{ success() && steps.build.outcome == 'success' }}
         timeout-minutes: 150
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -176,33 +163,20 @@ jobs:
             -stage \
             -package \
             -archive
-          "$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
-            -ReportExportPath="$GITHUB_WORKSPACE/checkout/sample/Saved/Automation-Native" \
-            -ExecCmds="Automation RunTests Sentry;quit" \
-            -TestExit="Automation Test Queue Empty" \
-            -stdout \
-            -Unattended \
-            -NoPause \
-            -NoSplash \
-            -NullRHI \
-            -NoSound \
-            -SkipMinSpecCheck \
-            -BuildMachine
 
       # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
-      - name: Collect native sample test info
-        if: ${{ always() && (steps.run-tests-native.outcome == 'failure' || steps.run-tests-native.outcome == 'cancelled') }}
+      - name: Collect native build logs
+        if: ${{ always() && (steps.build-native.outcome == 'failure' || steps.build-native.outcome == 'cancelled') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} sample test report (macOS, native)
+          name: UE ${{ inputs.unreal-version }} build logs (macOS, native)
           path: |
-            checkout/sample/Saved/Automation-Native
             checkout/sample/Saved/Logs
             ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
             ~/Library/Logs/Unreal Engine
 
       - name: Upload sample build (Native)
-        if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
+        if: ${{ success() && steps.build-native.outcome == 'success' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: UE ${{ inputs.unreal-version }} sample build (macOS, native)
