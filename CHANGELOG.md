@@ -13,6 +13,7 @@
 - Fix `BeforeSend` handler receiving transactions on macOS/iOS ([#1610](https://github.com/getsentry/sentry-unreal/pull/1610))
 - Fix `IsAnr` returning `false` for most app hang events on macOS, iOS and Android ([#1618](https://github.com/getsentry/sentry-unreal/pull/1618))
 - Fix missing `CrashType` tag on errors captured on Apple/Android and on native app hangs ([#1619](https://github.com/getsentry/sentry-unreal/pull/1619))
+- Fix crash when reading a missing context or other collection from events, scopes, breadcrumbs or users on Android ([#1622](https://github.com/getsentry/sentry-unreal/pull/1622))
 
 ### Dependencies
 
