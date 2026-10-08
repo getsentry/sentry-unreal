@@ -156,7 +156,7 @@ jobs:
             echo 'android=["5.4","5.5","5.6","5.7","5.8"]'                  >> "$GITHUB_OUTPUT"
           fi
 
-  test-linux:
+  build-linux:
     needs: [package, generate-test-matrix]
     name: Linux UE ${{ matrix.unreal }}
     secrets:
@@ -167,11 +167,11 @@ jobs:
       fail-fast: false
       matrix:
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
-    uses: ./.github/workflows/test-linux.yml
+    uses: ./.github/workflows/build-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
-  test-windows:
+  build-windows:
     needs: [package, generate-test-matrix]
     name: Windows UE ${{ matrix.unreal }}
     secrets:
@@ -182,11 +182,11 @@ jobs:
       fail-fast: false
       matrix:
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
-    uses: ./.github/workflows/test-windows.yml
+    uses: ./.github/workflows/build-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
-  test-macos:
+  build-macos:
     needs: [package]
     name: macOS UE ${{ matrix.unreal }}
     secrets:
@@ -198,12 +198,12 @@ jobs:
       matrix:
         # Must match an engine version published to the registry by the ue-oci-macos workflow
         unreal: ['5.8']
-    uses: ./.github/workflows/test-macos.yml
+    uses: ./.github/workflows/build-macos.yml
     with:
       unreal-version: ${{ matrix.unreal }}
     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
-  test-ios:
+  build-ios:
     needs: [package]
     name: iOS UE ${{ matrix.unreal }}
     secrets:
@@ -218,12 +218,12 @@ jobs:
       matrix:
         # Must match an engine version published to the registry by the ue-oci-macos workflow
         unreal: ['5.8']
-    uses: ./.github/workflows/test-ios.yml
+    uses: ./.github/workflows/build-ios.yml
     with:
       unreal-version: ${{ matrix.unreal }}
     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
-  test-android:
+  build-android:
     needs: [package, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
     secrets:
@@ -234,11 +234,11 @@ jobs:
       fail-fast: false
       matrix:
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
-    uses: ./.github/workflows/test-android.yml
+    uses: ./.github/workflows/build-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
-  test-consoles:
+  build-consoles:
     needs: [package]
     name: ${{ matrix.name }}
     if: github.event_name == 'push'
@@ -268,15 +268,15 @@ jobs:
             backend: ""
             extension-repo: getsentry/sentry-switch
             extension-artifact: nx64-unreal-sdk21
-    uses: ./.github/workflows/test-consoles.yml
+    uses: ./.github/workflows/build-consoles.yml
     with:
       platform: ${{ matrix.platform }}
       backend: ${{ matrix.backend }}
       extension-repo: ${{ matrix.extension-repo }}
       extension-artifact: ${{ matrix.extension-artifact }}
 
-  integration-test-linux:
-    needs: [test-linux, generate-test-matrix]
+  test-linux:
+    needs: [build-linux, generate-test-matrix]
     name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets:
       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
@@ -286,13 +286,13 @@ jobs:
       matrix:
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
         backend: [crashpad, native]
-    uses: ./.github/workflows/integration-test-linux.yml
+    uses: ./.github/workflows/test-linux.yml
     with:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
 
-  integration-test-windows:
-    needs: [test-windows, generate-test-matrix]
+  test-windows:
+    needs: [build-windows, generate-test-matrix]
     name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets:
       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
@@ -300,18 +300,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
         backend: [crashpad, native]
-        exclude:
-          - unreal: '4.27'
-    uses: ./.github/workflows/integration-test-windows.yml
+    uses: ./.github/workflows/test-windows.yml
     with:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
 
-  integration-test-macos:
-    needs: [test-macos]
+  test-macos:
+    needs: [build-macos]
     name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets:
       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
@@ -321,13 +318,13 @@ jobs:
       matrix:
         unreal: ['5.8']
         backend: [cocoa, native]
-    uses: ./.github/workflows/integration-test-macos.yml
+    uses: ./.github/workflows/test-macos.yml
     with:
       unreal-version: ${{ matrix.unreal }}
       backend: ${{ matrix.backend }}
 
-  integration-test-ios:
-    needs: [test-ios]
+  test-ios:
+    needs: [build-ios]
     name: iOS UE ${{ matrix.unreal }}
     secrets:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -339,12 +336,12 @@ jobs:
       max-parallel: 1
       matrix:
         unreal: ['5.8']
-    uses: ./.github/workflows/integration-test-ios.yml
+    uses: ./.github/workflows/test-ios.yml
     with:
       unreal-version: ${{ matrix.unreal }}
 
-  integration-test-android:
-    needs: [test-android, generate-test-matrix]
+  test-android:
+    needs: [build-android, generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
     secrets:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -356,6 +353,6 @@ jobs:
       max-parallel: 1
       matrix:
         unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
-    uses: ./.github/workflows/integration-test-android.yml
+    uses: ./.github/workflows/test-android.yml
     with:
       unreal-version: ${{ matrix.unreal }}

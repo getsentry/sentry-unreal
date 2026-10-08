@@ -4,181 +4,82 @@ on:
       unreal-version:
         required: true
         type: string
+      backend:
+        required: false
+        type: string
+        default: "cocoa"
     secrets:
-      SENTRY_AUTH_TOKEN:
+      SENTRY_UNREAL_TEST_DSN:
         required: true
-      SENTRY_ORG:
-        required: true
-      SENTRY_PROJECT:
+      SENTRY_API_TOKEN:
         required: true
 
 jobs:
   test:
     name: Test
-    runs-on:
-      - bitrise_pool_name:gdx
-
-    permissions:
-      contents: read
-      packages: read
-
-    env:
-      DISALLOW_RAW_POINTERS: 'true'
-      SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
+    runs-on: macos-15
 
     steps:
-      - name: Set Unreal Engine path
-        env:
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
-        run: echo "UE_ROOT=$HOME/UnrealEngine" >> "$GITHUB_ENV"
-
-      - name: Download package
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: ${{ github.sha }}
-
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          path: checkout
+          submodules: recursive
 
-      - name: Extract package to sample/Plugins
-        env:
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
-        run: unzip -q sentry-unreal-*-engine"$UNREAL_VERSION".zip -d checkout/sample/Plugins/sentry
+      - name: Download sample build
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (macOS, ${{ inputs.backend }})
+          path: sample-build
 
-      - name: Compute DDC cache key
-        id: ddc-cache-key
-        env:
-          HASH: ${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
+      - name: Locate app and restore execute permissions
+        # The artifact zip round-trip strips unix execute permissions
         run: |
-          KEY="ue-${UNREAL_VERSION}-mac-ddc-${HASH}"
-          echo "key=${KEY}" >> "$GITHUB_OUTPUT"
-          echo "DDC cache key: ${KEY}"
+          APP_BIN="$(find "$GITHUB_WORKSPACE/sample-build" -type f -path '*/SentryPlayground.app/Contents/MacOS/SentryPlayground' | head -n 1)"
+          if [ -z "$APP_BIN" ]; then
+            echo "::error::SentryPlayground.app was not found in the sample build artifact"
+            exit 1
+          fi
+          echo "SENTRY_UNREAL_TEST_APP_PATH=$APP_BIN" >> "$GITHUB_ENV"
+          chmod +x "$(dirname "$APP_BIN")"/*
+          PLUGIN_BINARIES="$(dirname "$APP_BIN")/../UE/SentryPlayground/Plugins/sentry/Binaries/Mac"
+          if [ -d "$PLUGIN_BINARIES" ]; then
+            chmod +x "$PLUGIN_BINARIES"/*
+          fi
 
-      - name: Install PowerShell
-        run: |
-          mkdir -p "$HOME/.pwsh"
-          curl -fsSL "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-osx-arm64.tar.gz" | tar -xz -C "$HOME/.pwsh"
-          chmod +x "$HOME/.pwsh/pwsh"
-          echo "$HOME/.pwsh" >> "$GITHUB_PATH"
-
-      - name: Configure project-local DDC
+      - name: Install Pester
         shell: pwsh
-        run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
-
-      - name: Restore cached DDC
-        id: cache-ddc
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: checkout/sample/DerivedDataCache
-          key: ${{ steps.ddc-cache-key.outputs.key }}
-          restore-keys: |
-            ue-${{ inputs.unreal-version }}-mac-ddc
-
-      - name: Update engine's build configuration
         run: |
-          mkdir -p "$HOME/.config/Unreal Engine/UnrealBuildTool"
-          cp checkout/.github/BuildConfiguration.xml "$HOME/.config/Unreal Engine/UnrealBuildTool/"
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge [version]'5.0' })) {
+            Install-Module Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          }
 
-      - name: Build (Cocoa)
-        id: build
-        timeout-minutes: 150
+      - name: Run unit tests
+        id: run-unit-tests
+        timeout-minutes: 10
+        run: |
+          "$SENTRY_UNREAL_TEST_APP_PATH" \
+            -ExecCmds="Automation RunTests Sentry;Quit" \
+            -ReportExportPath="$GITHUB_WORKSPACE/unit-test-report" \
+            -unattended -nullrhi -nosplash -nosound -stdout -llm
+
+      - name: Run integration tests
+        id: run-integration-tests
+        if: ${{ success() || steps.run-unit-tests.outcome == 'failure' }}
+        shell: pwsh
+        working-directory: integration-test
         env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
         run: |
-          "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
-            -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
-            -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds" \
-            -platform=Mac \
-            -UBTArgs="-AllCores" \
-            -AdditionalCookerOptions="-skipminspeccheck" \
-            -nop4 \
-            -cook \
-            -iterate \
-            -build \
-            -stage \
-            -package \
-            -archive
+          cmake -B build -S .
+          Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
-      - name: Check for DDC content
-        id: ddc-exists
-        if: ${{ always() }}
-        run: echo "exists=$([ -d checkout/sample/DerivedDataCache ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
-
-      # Save DDC even when the build step failed or timed out so that shader
-      # compilation progress carries over to the next attempt
-      - name: Save DDC to cache
-        if: ${{ always() && steps.ddc-exists.outputs.exists == 'true' && steps.cache-ddc.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: checkout/sample/DerivedDataCache
-          key: ${{ steps.ddc-cache-key.outputs.key }}
-
-      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
-      - name: Collect build logs
-        if: ${{ always() && (steps.build.outcome == 'failure' || steps.build.outcome == 'cancelled') }}
+      - name: Upload test output
+        if: ${{ always() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} build logs (macOS)
+          name: UE ${{ inputs.unreal-version }} test output (macOS, ${{ inputs.backend }})
           path: |
-            checkout/sample/Saved/Logs
-            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
-            ~/Library/Logs/Unreal Engine
-
-      - name: Upload sample build (Cocoa)
-        if: ${{ success() && steps.build.outcome == 'success' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} sample build (macOS, cocoa)
-          path: checkout/sample/Builds/Mac/
-          retention-days: 1
-
-      - name: Enable native backend
-        if: ${{ success() && steps.build.outcome == 'success' }}
-        run: |
-          sed -i '' 's/UseNativeBackend=False/UseNativeBackend=True/' checkout/sample/Config/DefaultEngine.ini
-
-      - name: Build (Native)
-        id: build-native
-        if: ${{ success() && steps.build.outcome == 'success' }}
-        timeout-minutes: 150
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        run: |
-          "$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
-            -project="$GITHUB_WORKSPACE/checkout/sample/SentryPlayground.uproject" \
-            -archivedirectory="$GITHUB_WORKSPACE/checkout/sample/Builds-Native" \
-            -platform=Mac \
-            -UBTArgs="-AllCores" \
-            -AdditionalCookerOptions="-skipminspeccheck" \
-            -nop4 \
-            -cook \
-            -iterate \
-            -build \
-            -stage \
-            -package \
-            -archive
-
-      # Runs on failure, timeout and manual job cancellation (outcome == 'cancelled')
-      - name: Collect native build logs
-        if: ${{ always() && (steps.build-native.outcome == 'failure' || steps.build-native.outcome == 'cancelled') }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} build logs (macOS, native)
-          path: |
-            checkout/sample/Saved/Logs
-            ${{ env.UE_ROOT }}/Engine/Programs/AutomationTool/Saved
-            ~/Library/Logs/Unreal Engine
-
-      - name: Upload sample build (Native)
-        if: ${{ success() && steps.build-native.outcome == 'success' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} sample build (macOS, native)
-          path: checkout/sample/Builds-Native/Mac/
-          retention-days: 1
+            unit-test-report/
+            integration-test/output/
+            sample-build/**/Saved/Logs/
+            ~/Library/Application Support/Epic/SentryPlayground/Saved/Logs/

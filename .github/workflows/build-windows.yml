@@ -1,0 +1,178 @@
+on:
+  workflow_call:
+    inputs:
+      unreal-version:
+        required: true
+        type: string
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_ORG:
+        required: true
+      SENTRY_PROJECT:
+        required: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest-unreal
+
+    steps:
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start Docker container
+        env:
+          WORKSPACE_PATH: ${{ github.workspace }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+          DISALLOW_RAW_POINTERS: ${{ inputs.unreal-version == '4.27' && 'false' || 'true' }}
+          SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
+        run: |
+          docker run -td `
+            --name unreal `
+            --volume "${env:WORKSPACE_PATH}:C:/workspace" `
+            --workdir C:/workspace `
+            --env DISALLOW_RAW_POINTERS=${env:DISALLOW_RAW_POINTERS} `
+            --env SENTRY_UNITY_BUILD=${env:SENTRY_UNITY_BUILD} `
+            ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
+
+      - name: Download package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: ${{ github.sha }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: checkout
+
+      - name: Extract package to sample/Plugins
+        env:
+          WORKSPACE_PATH: ${{ github.workspace }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: |
+          New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
+          Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
+
+      - name: Compute DDC cache key
+        id: ddc-cache-key
+        env:
+          HASH: ${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+        run: |
+          $key = "ue-${env:UNREAL_VERSION}-win64-ddc-${env:HASH}"
+          echo "key=${key}" >> $env:GITHUB_OUTPUT
+          echo "DDC cache key: ${key}"
+
+      - name: Configure project-local DDC
+        shell: pwsh
+        run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
+
+      - name: Restore cached DDC
+        id: cache-ddc
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+          restore-keys: |
+            ue-${{ inputs.unreal-version }}-win64-ddc
+
+      - name: Update engine's build configuration
+        run: |
+          docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
+          docker exec unreal powershell -Command 'Copy-Item -Path "C:/workspace/checkout/.github/BuildConfiguration.xml" -Destination "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml" -Force'
+
+      # UE 4.27 doesn't ship the AVCodecs plugins family so references to them have to be stripped from the project file
+      - name: Strip experimental codec plugin refs (UE 4.27)
+        if: ${{ inputs.unreal-version == '4.27' }}
+        shell: pwsh
+        run: ./checkout/scripts/strip-plugin-refs.ps1 -ProjectPath checkout/sample/SentryPlayground.uproject -PluginNames AVCodecsCore,NVCodecs,VTCodecs,AMFCodecs
+
+      - name: Build (Crashpad)
+        id: build
+        env:
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          docker exec `
+            -e SENTRY_AUTH_TOKEN="$env:SENTRY_AUTH_TOKEN" `
+            -e SENTRY_ORG="$env:SENTRY_ORG" `
+            -e SENTRY_PROJECT="$env:SENTRY_PROJECT" `
+            unreal C:\UnrealEngine\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun `
+            -project=C:/workspace/checkout/sample/SentryPlayground.uproject `
+            -archivedirectory=C:/workspace/checkout/sample/Builds `
+            -platform=Win64 `
+            -UBTArgs="$env:UBT_EXTRA_ARGS" `
+            -nop4 `
+            -cook `
+            -iterate `
+            -build `
+            -stage `
+            -prereqs `
+            -package `
+            -archive
+
+      - name: Save DDC to cache
+        if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: checkout/sample/DerivedDataCache
+          key: ${{ steps.ddc-cache-key.outputs.key }}
+
+      - name: Upload sample build (Crashpad)
+        if: ${{ success() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Windows, crashpad)
+          path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
+          retention-days: 1
+
+      - name: Enable native backend
+        if: ${{ success() && steps.build.outcome == 'success' }}
+        run: |
+          (Get-Content "checkout/sample/Config/DefaultEngine.ini") -replace 'UseNativeBackend=False','UseNativeBackend=True' | Set-Content "checkout/sample/Config/DefaultEngine.ini"
+
+      - name: Build (Native)
+        id: build-native
+        if: ${{ success() && steps.build.outcome == 'success' }}
+        env:
+          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
+          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          docker exec `
+            -e SENTRY_AUTH_TOKEN="$env:SENTRY_AUTH_TOKEN" `
+            -e SENTRY_ORG="$env:SENTRY_ORG" `
+            -e SENTRY_PROJECT="$env:SENTRY_PROJECT" `
+            unreal C:\UnrealEngine\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun `
+            -project=C:/workspace/checkout/sample/SentryPlayground.uproject `
+            -archivedirectory=C:/workspace/checkout/sample/Builds-Native `
+            -platform=Win64 `
+            -UBTArgs="$env:UBT_EXTRA_ARGS" `
+            -nop4 `
+            -cook `
+            -iterate `
+            -build `
+            -stage `
+            -prereqs `
+            -package `
+            -archive
+
+      - name: Upload sample build (Native)
+        if: ${{ success() && steps.build-native.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: UE ${{ inputs.unreal-version }} sample build (Windows, native)
+          path: checkout/sample/Builds-Native/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
+          retention-days: 1
