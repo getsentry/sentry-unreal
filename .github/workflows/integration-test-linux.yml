@@ -36,8 +36,18 @@ jobs:
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground.sh
           chmod +x ${{ github.workspace }}/sample-build/SentryPlayground/Plugins/sentry/Binaries/Linux/*
 
+      - name: Run unit tests
+        id: run-unit-tests
+        timeout-minutes: 10
+        run: |
+          "$GITHUB_WORKSPACE/sample-build/SentryPlayground.sh" \
+            -ExecCmds="Automation RunTests Sentry;Quit" \
+            -ReportExportPath="$GITHUB_WORKSPACE/unit-test-report" \
+            -unattended -nullrhi -nosplash -nosound -stdout
+
       - name: Run integration tests
         id: run-integration-tests
+        if: ${{ success() || steps.run-unit-tests.outcome == 'failure' }}
         shell: pwsh
         working-directory: integration-test
         env:
@@ -49,12 +59,13 @@ jobs:
           cmake -B build -S .
           Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
-      - name: Upload integration test output
-        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+      - name: Upload test output
+        if: ${{ always() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} integration test output (Linux, ${{ inputs.backend }})
+          name: UE ${{ inputs.unreal-version }} test output (Linux, ${{ inputs.backend }})
           path: |
+            unit-test-report/
             integration-test/output/
             sample-build/SentryPlayground/Saved/Logs/
             sample-build/SentryPlayground/.sentry-native/**/*.log

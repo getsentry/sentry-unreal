@@ -37,8 +37,22 @@ jobs:
           name: UE ${{ inputs.unreal-version }} sample build (Windows, ${{ inputs.backend }})
           path: sample-build
 
+      - name: Run unit tests
+        id: run-unit-tests
+        timeout-minutes: 10
+        run: |
+          $process = Start-Process -FilePath "${{ github.workspace }}/sample-build/SentryPlayground.exe" -NoNewWindow -Wait -PassThru -ArgumentList @(
+            '-ExecCmds="Automation RunTests Sentry;Quit"',
+            '-ReportExportPath="${{ github.workspace }}/unit-test-report"',
+            '-unattended', '-nullrhi', '-nosplash', '-nosound', '-stdout'
+          )
+          if ($process.ExitCode -ne 0) {
+            throw "Unit tests failed with exit code $($process.ExitCode)"
+          }
+
       - name: Run integration tests
         id: run-integration-tests
+        if: ${{ success() || steps.run-unit-tests.outcome == 'failure' }}
         working-directory: integration-test
         env:
           SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
@@ -48,12 +62,13 @@ jobs:
           cmake -B build -S .
           Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
-      - name: Upload integration test output
-        if: ${{ always() && steps.run-integration-tests.outcome == 'failure' }}
+      - name: Upload test output
+        if: ${{ always() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} integration test output (Windows, ${{ inputs.backend }})
+          name: UE ${{ inputs.unreal-version }} test output (Windows, ${{ inputs.backend }})
           path: |
+            unit-test-report/
             integration-test/output/
             sample-build/SentryPlayground/Saved/Logs/
             sample-build/SentryPlayground/.sentry-native/**/*.log
