@@ -24,6 +24,10 @@ function Get-AutomationTestResults {
             $foundCount = [int]$Matches[1]
         }
         elseif ($line -match 'Test Completed\. Result=\{(?<result>[^}]*)\} Name=\{(?<name>[^}]*)\} Path=\{(?<path>[^}]*)\}') {
+            # Log output may echo the same line more than once (e.g. log and stdout)
+            if ($tests | Where-Object { $_.Path -eq $Matches['path'] }) {
+                continue
+            }
             $tests += [PSCustomObject]@{
                 Result = $Matches['result']
                 Name   = $Matches['name']
@@ -38,7 +42,8 @@ function Get-AutomationTestResults {
     return [PSCustomObject]@{
         FoundCount  = $foundCount
         Tests       = $tests
-        FailedTests = @($tests | Where-Object { $_.Result -ne 'Success' })
+        # UE 4.27 reports passing tests as 'Passed', newer versions as 'Success'
+        FailedTests = @($tests | Where-Object { $_.Result -notin @('Success', 'Passed') })
         ExitCode    = $exitCode
     }
 }
