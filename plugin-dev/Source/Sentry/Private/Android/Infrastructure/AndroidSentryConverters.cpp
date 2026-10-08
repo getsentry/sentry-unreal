@@ -266,6 +266,11 @@ TMap<FString, FString> FAndroidSentryConverters::StringMapToUnreal(jobject map)
 {
 	TMap<FString, FString> result;
 
+	if (!map)
+	{
+		return result;
+	}
+
 	FSentryJavaObjectWrapper NativeMap(SentryJavaClasses::Map, map);
 	FSentryJavaMethod EntrySetMethod = NativeMap.GetMethod("entrySet", "()Ljava/util/Set;");
 
@@ -294,6 +299,11 @@ TMap<FString, FString> FAndroidSentryConverters::StringMapToUnreal(jobject map)
 TArray<FString> FAndroidSentryConverters::StringListToUnreal(jobject stringList)
 {
 	TArray<FString> result;
+
+	if (!stringList)
+	{
+		return result;
+	}
 
 	FSentryJavaObjectWrapper NativeList(SentryJavaClasses::List, stringList);
 	FSentryJavaMethod ToArrayMethod = NativeList.GetMethod("toArray", "()[Ljava/lang/Object;");
@@ -383,6 +393,11 @@ TArray<FSentryVariant> FAndroidSentryConverters::VariantArrayToUnreal(jobject va
 {
 	TArray<FSentryVariant> result;
 
+	if (!variantArray)
+	{
+		return result;
+	}
+
 	FSentryJavaObjectWrapper NativeList(SentryJavaClasses::List, variantArray);
 	FSentryJavaMethod ToArrayMethod = NativeList.GetMethod("toArray", "()[Ljava/lang/Object;");
 	FSentryJavaMethod SizeMethod = NativeList.GetMethod("size", "()I");
@@ -404,6 +419,11 @@ TArray<FSentryVariant> FAndroidSentryConverters::VariantArrayToUnreal(jobject va
 TMap<FString, FSentryVariant> FAndroidSentryConverters::VariantMapToUnreal(jobject variantMap)
 {
 	TMap<FString, FSentryVariant> result;
+
+	if (!variantMap)
+	{
+		return result;
+	}
 
 	FSentryJavaObjectWrapper NativeMap(SentryJavaClasses::Map, variantMap);
 	FSentryJavaMethod EntrySetMethod = NativeMap.GetMethod("entrySet", "()Ljava/util/Set;");
