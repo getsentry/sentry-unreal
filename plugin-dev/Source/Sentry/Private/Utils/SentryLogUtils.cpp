@@ -7,6 +7,7 @@
 #include "HAL/UnrealMemory.h"
 #include "Misc/Char.h"
 #include "Misc/OutputDeviceRedirector.h"
+#include "Misc/Parse.h"
 
 void SentryLogUtils::LogStackTrace(const TCHAR* Heading, const ELogVerbosity::Type LogVerbosity, int FramesToSkip)
 {
@@ -63,10 +64,13 @@ bool SentryLogUtils::IsCallstackLine(const FString& Line)
 		return false;
 	}
 
-	TArray<FString> Parts;
-	Line.ParseIntoArray(Parts, TEXT(" "));
+	const TCHAR* Cursor = *Line;
+	FString FrameIndex, Module, Address;
+	FParse::Token(Cursor, FrameIndex, false);
+	FParse::Token(Cursor, Module, false);
+	FParse::Token(Cursor, Address, false);
 
-	return Parts.Num() >= 3 && Parts[0].IsNumeric() && Parts[2].StartsWith(TEXT("0x"));
+	return FrameIndex.IsNumeric() && Address.StartsWith(TEXT("0x"));
 #else
 	return false;
 #endif
