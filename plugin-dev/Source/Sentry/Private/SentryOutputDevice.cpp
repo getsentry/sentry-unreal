@@ -54,7 +54,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 	}
 
 	const FString Message = FString(V).TrimStartAndEnd();
-	if (Message.IsEmpty() || Message.Contains(TEXT("[Callstack]")))
+	if (Message.IsEmpty() || SentryLogUtils::IsCallstackLine(Message))
 	{
 		return;
 	}

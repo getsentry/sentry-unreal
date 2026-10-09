@@ -5,7 +5,9 @@
 #include "CoreGlobals.h"
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 #include "HAL/UnrealMemory.h"
+#include "Misc/Char.h"
 #include "Misc/OutputDeviceRedirector.h"
+#include "Misc/Parse.h"
 
 void SentryLogUtils::LogStackTrace(const TCHAR* Heading, const ELogVerbosity::Type LogVerbosity, int FramesToSkip)
 {
@@ -45,4 +47,31 @@ ESentryLevel SentryLogUtils::ConvertLogVerbosityToSentryLevel(const ELogVerbosit
 	default:
 		return ESentryLevel::Debug;
 	}
+}
+
+bool SentryLogUtils::IsCallstackLine(const FString& Line)
+{
+	// Frame lines produced by FDebug::LogFormattedMessageWithCallstack
+	if (Line.Contains(TEXT("[Callstack]")))
+	{
+		return true;
+	}
+
+#if PLATFORM_IOS
+	// Apple backtrace frame lines (e.g. "5   MyGame   0x00000001052042b8 Func + 248") don't get the [Callstack] prefix
+	if (Line.IsEmpty() || !FChar::IsDigit(Line[0]))
+	{
+		return false;
+	}
+
+	const TCHAR* Cursor = *Line;
+	FString FrameIndex, Module, Address;
+	FParse::Token(Cursor, FrameIndex, false);
+	FParse::Token(Cursor, Module, false);
+	FParse::Token(Cursor, Address, false);
+
+	return FrameIndex.IsNumeric() && Address.StartsWith(TEXT("0x"));
+#else
+	return false;
+#endif
 }
