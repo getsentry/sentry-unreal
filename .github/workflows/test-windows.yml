@@ -4,209 +4,73 @@ on:
       unreal-version:
         required: true
         type: string
+      backend:
+        required: false
+        type: string
+        default: "crashpad"
     secrets:
-      SENTRY_AUTH_TOKEN:
+      SENTRY_UNREAL_TEST_DSN:
         required: true
-      SENTRY_ORG:
+      SENTRY_API_TOKEN:
         required: true
-      SENTRY_PROJECT:
-        required: true
-
-env:
-  REGISTRY: ghcr.io
 
 jobs:
   test:
     name: Test
-    runs-on: windows-latest-unreal
+    runs-on: windows-2022
 
     steps:
-      - name: Log in to GitHub package registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Start Docker container
-        env:
-          WORKSPACE_PATH: ${{ github.workspace }}
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
-          DISALLOW_RAW_POINTERS: ${{ inputs.unreal-version == '4.27' && 'false' || 'true' }}
-          SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
-        run: |
-          docker run -td `
-            --name unreal `
-            --volume "${env:WORKSPACE_PATH}:C:/workspace" `
-            --workdir C:/workspace `
-            --env DISALLOW_RAW_POINTERS=${env:DISALLOW_RAW_POINTERS} `
-            --env SENTRY_UNITY_BUILD=${env:SENTRY_UNITY_BUILD} `
-            ghcr.io/getsentry/unreal-docker:"$env:UNREAL_VERSION"
-
-      - name: Download package
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: ${{ github.sha }}
-
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          path: checkout
+          submodules: recursive
 
-      - name: Extract package to sample/Plugins
-        env:
-          WORKSPACE_PATH: ${{ github.workspace }}
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
+      # UE 5.2-5.3 require older DirectX runtime to run pre-built test app
+      - name: Install DirectX June 2010 Runtime
         run: |
-          New-Item -ItemType Directory -Path "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
-          Expand-Archive -Path "sentry-unreal-*-engine$env:UNREAL_VERSION.zip" -DestinationPath "$env:WORKSPACE_PATH\checkout\sample\Plugins\sentry" -Force
+          Invoke-WebRequest -Uri "https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe" -OutFile "$env:TEMP\directx_redist.exe"
+          Start-Process -FilePath "$env:TEMP\directx_redist.exe" -ArgumentList "/Q","/T:$env:TEMP\DirectX" -Wait
+          Start-Process -FilePath "$env:TEMP\DirectX\DXSETUP.exe" -ArgumentList "/silent" -Wait
 
-      - name: Compute DDC cache key
-        id: ddc-cache-key
-        env:
-          HASH: ${{ hashFiles('checkout/sample/Content/**', 'checkout/sample/Config/**/*.ini', 'checkout/sample/*.uproject') }}
-          UNREAL_VERSION: ${{ inputs.unreal-version }}
-        run: |
-          $key = "ue-${env:UNREAL_VERSION}-win64-ddc-${env:HASH}"
-          echo "key=${key}" >> $env:GITHUB_OUTPUT
-          echo "DDC cache key: ${key}"
-
-      - name: Configure project-local DDC
-        shell: pwsh
-        run: ./checkout/scripts/configure-local-ddc.ps1 -ProjectPath checkout/sample
-
-      - name: Restore cached DDC
-        id: cache-ddc
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      - name: Download sample build
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
-          path: checkout/sample/DerivedDataCache
-          key: ${{ steps.ddc-cache-key.outputs.key }}
-          restore-keys: |
-            ue-${{ inputs.unreal-version }}-win64-ddc
+          name: UE ${{ inputs.unreal-version }} sample build (Windows, ${{ inputs.backend }})
+          path: sample-build
 
-      - name: Update engine's build configuration
+      - name: Run unit tests
+        id: run-unit-tests
+        timeout-minutes: 10
         run: |
-          docker exec unreal powershell -Command 'New-Item -ItemType Directory -Path "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool" -Force'
-          docker exec unreal powershell -Command 'Copy-Item -Path "C:/workspace/checkout/.github/BuildConfiguration.xml" -Destination "$env:USERPROFILE\AppData\Roaming\Unreal Engine\UnrealBuildTool\BuildConfiguration.xml" -Force'
+          $process = Start-Process -FilePath "${{ github.workspace }}/sample-build/SentryPlayground.exe" -NoNewWindow -Wait -PassThru -ArgumentList @(
+            '-ExecCmds="Automation RunTests Sentry;Quit"',
+            '-ReportExportPath="${{ github.workspace }}/unit-test-report"',
+            '-unattended', '-nullrhi', '-nosplash', '-nosound', '-stdout'
+          )
+          if ($process.ExitCode -ne 0) {
+            throw "Unit tests failed with exit code $($process.ExitCode)"
+          }
 
-      # UE 4.27 doesn't ship the AVCodecs plugins family so references to them have to be stripped from the project file
-      - name: Strip experimental codec plugin refs (UE 4.27)
-        if: ${{ inputs.unreal-version == '4.27' }}
-        shell: pwsh
-        run: ./checkout/scripts/strip-plugin-refs.ps1 -ProjectPath checkout/sample/SentryPlayground.uproject -PluginNames AVCodecsCore,NVCodecs,VTCodecs,AMFCodecs
-
-      - name: Build and test (Crashpad)
-        id: run-tests
+      # Integration tests are supported only for UE 5.2 and newer where CRC can be disabled
+      - name: Run integration tests
+        id: run-integration-tests
+        if: ${{ inputs.unreal-version != '4.27' && (success() || steps.run-unit-tests.outcome == 'failure') }}
+        working-directory: integration-test
         env:
-          EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }}
-          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
-          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          SENTRY_UNREAL_TEST_APP_PATH: ${{ github.workspace }}/sample-build/SentryPlayground.exe
         run: |
-          docker exec `
-            -e SENTRY_AUTH_TOKEN="$env:SENTRY_AUTH_TOKEN" `
-            -e SENTRY_ORG="$env:SENTRY_ORG" `
-            -e SENTRY_PROJECT="$env:SENTRY_PROJECT" `
-            unreal C:\UnrealEngine\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun `
-            -project=C:/workspace/checkout/sample/SentryPlayground.uproject `
-            -archivedirectory=C:/workspace/checkout/sample/Builds `
-            -platform=Win64 `
-            -UBTArgs="$env:UBT_EXTRA_ARGS" `
-            -nop4 `
-            -cook `
-            -iterate `
-            -build `
-            -stage `
-            -prereqs `
-            -package `
-            -archive
-          docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `
-            -ReportExportPath=C:/workspace/checkout/sample/Saved/Automation `
-            -ExecCmds="Automation RunTests Sentry;quit" `
-            -TestExit="Automation Test Queue Empty" `
-            -Unattended `
-            -NoPause `
-            -NoSplash `
-            -NullRHI
+          cmake -B build -S .
+          Invoke-Pester Integration.Desktop.Tests.ps1 -CI
 
-      - name: Save DDC to cache
-        if: ${{ success() && steps.cache-ddc.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: checkout/sample/DerivedDataCache
-          key: ${{ steps.ddc-cache-key.outputs.key }}
-
-      - name: Collect sample test info
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+      - name: Upload test output
+        if: ${{ always() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure') }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: UE ${{ inputs.unreal-version }} sample test report (Windows)
+          name: UE ${{ inputs.unreal-version }} test output (Windows, ${{ inputs.backend }})
           path: |
-            checkout/sample/Saved/Automation
-
-      - name: Upload sample build (Crashpad)
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} sample build (Windows, crashpad)
-          path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
-          retention-days: 1
-
-      - name: Enable native backend
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
-        run: |
-          (Get-Content "checkout/sample/Config/DefaultEngine.ini") -replace 'UseNativeBackend=False','UseNativeBackend=True' | Set-Content "checkout/sample/Config/DefaultEngine.ini"
-
-      - name: Build and test (Native)
-        id: run-tests-native
-        if: ${{ success() && steps.run-tests.outcome == 'success' }}
-        env:
-          EDITOR_BINARY: ${{ inputs.unreal-version == '4.27' && 'UE4Editor.exe' || 'UnrealEditor.exe' }}
-          # Use all logical cores for compilation. '-AllCores' is a UE5-era UBT flag, so skip it on 4.27.
-          UBT_EXTRA_ARGS: ${{ inputs.unreal-version == '4.27' && '' || '-AllCores' }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        run: |
-          docker exec `
-            -e SENTRY_AUTH_TOKEN="$env:SENTRY_AUTH_TOKEN" `
-            -e SENTRY_ORG="$env:SENTRY_ORG" `
-            -e SENTRY_PROJECT="$env:SENTRY_PROJECT" `
-            unreal C:\UnrealEngine\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun `
-            -project=C:/workspace/checkout/sample/SentryPlayground.uproject `
-            -archivedirectory=C:/workspace/checkout/sample/Builds-Native `
-            -platform=Win64 `
-            -UBTArgs="$env:UBT_EXTRA_ARGS" `
-            -nop4 `
-            -cook `
-            -iterate `
-            -build `
-            -stage `
-            -prereqs `
-            -package `
-            -archive
-          docker exec unreal "C:\UnrealEngine\Engine\Binaries\Win64\$env:EDITOR_BINARY" C:/workspace/checkout/sample/SentryPlayground.uproject `
-            -ReportExportPath=C:/workspace/checkout/sample/Saved/Automation-Native `
-            -ExecCmds="Automation RunTests Sentry;quit" `
-            -TestExit="Automation Test Queue Empty" `
-            -Unattended `
-            -NoPause `
-            -NoSplash `
-            -NullRHI
-
-      - name: Collect native sample test info
-        if: ${{ always() && steps.run-tests-native.outcome == 'failure' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} sample test report (Windows, native)
-          path: |
-            checkout/sample/Saved/Automation-Native
-
-      - name: Upload sample build (Native)
-        if: ${{ success() && steps.run-tests-native.outcome == 'success' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: UE ${{ inputs.unreal-version }} sample build (Windows, native)
-          path: checkout/sample/Builds-Native/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
-          retention-days: 1
+            unit-test-report/
+            integration-test/output/
+            sample-build/SentryPlayground/Saved/Logs/
+            sample-build/SentryPlayground/.sentry-native/**/*.log
+          include-hidden-files: true
