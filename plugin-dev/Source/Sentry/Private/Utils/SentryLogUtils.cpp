@@ -66,10 +66,7 @@ bool SentryLogUtils::IsCallstackLine(const FString& Line)
 	TArray<FString> Parts;
 	Line.ParseIntoArray(Parts, TEXT(" "));
 
-	const bool bStartsWithFrameIndex = Parts.Num() >= 3 && Parts[0].IsNumeric();
-	const bool bHasAddressAfterModule = Parts.Num() >= 3 && Parts[2].StartsWith(TEXT("0x"));
-
-	return bStartsWithFrameIndex && bHasAddressAfterModule;
+	return Parts.Num() >= 3 && Parts[0].IsNumeric() && Parts[2].StartsWith(TEXT("0x"));
 #else
 	return false;
 #endif
