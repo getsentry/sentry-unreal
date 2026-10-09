@@ -56,45 +56,21 @@ bool SentryLogUtils::IsCallstackLine(const FString& Line)
 		return true;
 	}
 
-	// Frame lines in Apple's backtrace format (e.g. "5   MyGame   0x00000001052042b8 FuncName + 248") which
-	// don't get the prefix above because they don't start with "0x" (i.e. iOS uses NSThread callStackSymbols)
-	const TCHAR* Ptr = *Line;
-
-	if (!FChar::IsDigit(*Ptr))
+#if PLATFORM_IOS
+	// Apple backtrace frame lines (e.g. "5   MyGame   0x00000001052042b8 Func + 248") don't get the [Callstack] prefix
+	if (Line.IsEmpty() || !FChar::IsDigit(Line[0]))
 	{
 		return false;
 	}
-	while (FChar::IsDigit(*Ptr))
-	{
-		++Ptr;
-	}
 
-	if (!FChar::IsWhitespace(*Ptr))
-	{
-		return false;
-	}
-	while (FChar::IsWhitespace(*Ptr))
-	{
-		++Ptr;
-	}
+	TArray<FString> Parts;
+	Line.ParseIntoArray(Parts, TEXT(" "));
 
-	if (*Ptr == TEXT('\0'))
-	{
-		return false;
-	}
-	while (*Ptr != TEXT('\0') && !FChar::IsWhitespace(*Ptr))
-	{
-		++Ptr;
-	}
+	const bool bStartsWithFrameIndex = Parts.Num() >= 3 && Parts[0].IsNumeric();
+	const bool bHasAddressAfterModule = Parts.Num() >= 3 && Parts[2].StartsWith(TEXT("0x"));
 
-	if (!FChar::IsWhitespace(*Ptr))
-	{
-		return false;
-	}
-	while (FChar::IsWhitespace(*Ptr))
-	{
-		++Ptr;
-	}
-
-	return Ptr[0] == TEXT('0') && (Ptr[1] == TEXT('x') || Ptr[1] == TEXT('X')) && FChar::IsHexDigit(Ptr[2]);
+	return bStartsWithFrameIndex && bHasAddressAfterModule;
+#else
+	return false;
+#endif
 }
