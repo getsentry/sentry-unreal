@@ -413,15 +413,6 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
             $tags = $script:AssertEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Assert'
         }
-
-        # TEMP: verify callstack frame lines are not recorded as breadcrumbs
-        It "Should not have callstack frames as breadcrumbs" {
-            $messages = @($script:AssertEvent.breadcrumbs.values | ForEach-Object { $_.message })
-            Write-Host "Assert event breadcrumbs: $($messages.Count)" -ForegroundColor Cyan
-            $messages | ForEach-Object { Write-Host "  $_" }
-            $frames = @($messages | Where-Object { $_ -match '^\d+\s+\S+\s+0x[0-9a-fA-F]+' -or $_ -match '\[Callstack\]' })
-            $frames.Count | Should -Be 0
-        }
     }
 
     Context "Ensure Capture Tests" {
