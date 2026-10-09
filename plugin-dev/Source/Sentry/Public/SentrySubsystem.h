@@ -665,6 +665,7 @@ private:
 
 	FDelegateHandle OnAssertDelegate;
 	FDelegateHandle OnEnsureDelegate;
+	FDelegateHandle OnVerseRuntimeErrorDelegate;
 
 	TSharedPtr<FSentryHangWatcher> HangWatcher;
 

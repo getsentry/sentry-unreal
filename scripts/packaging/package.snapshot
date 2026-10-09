@@ -275,6 +275,9 @@ Source/Sentry/Private/Utils/SentryPlatformDetectionUtils.h
 Source/Sentry/Private/Utils/SentryPlatformInfo.h
 Source/Sentry/Private/Utils/SentryScreenshotUtils.cpp
 Source/Sentry/Private/Utils/SentryScreenshotUtils.h
+Source/Sentry/Private/Verse/SentryScriptStackFrame.h
+Source/Sentry/Private/Verse/SentryVerseUtils.cpp
+Source/Sentry/Private/Verse/SentryVerseUtils.h
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.cpp
 Source/Sentry/Private/Windows/WindowsSentrySubsystem.h
 Source/Sentry/Public/SentryAttachment.h

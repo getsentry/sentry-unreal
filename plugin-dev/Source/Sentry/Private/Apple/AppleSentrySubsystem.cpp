@@ -535,6 +535,27 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 	return MakeShareable(new FAppleSentryId(nativeId));
 }
 
+TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureScriptError(const FString& type, const FString& message, const FString& platform, const TArray<FSentryScriptStackFrame>& frames)
+{
+	SentryObjCException* nativeException = [[SENTRY_APPLE_CLASS(SentryObjCException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
+
+	SentryObjCMechanism* mechanism = [[SENTRY_APPLE_CLASS(SentryObjCMechanism) alloc] initWithType:platform.GetNSString()];
+	mechanism.handled = @YES;
+	nativeException.mechanism = mechanism;
+
+	if (frames.Num() > 0)
+	{
+		nativeException.stacktrace = FAppleSentryConverters::ScriptCallstackToNative(frames, platform);
+	}
+
+	SentryObjCEvent* exceptionEvent = [[SENTRY_APPLE_CLASS(SentryObjCEvent) alloc] init];
+	exceptionEvent.exceptions = @[ nativeException ];
+
+	SentryObjCId* nativeId = [SENTRY_APPLE_CLASS(SentryObjCSDK) captureEvent:exceptionEvent];
+
+	return MakeShareable(new FAppleSentryId(nativeId));
+}
+
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureHang(uint32 HungThreadId)
 {
 	// Hang tracking is handled by the native Apple SDK via built-in App Hang detection (see EnableAppNotRespondingTracking setting)

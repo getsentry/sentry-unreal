@@ -10,6 +10,8 @@
 
 #include "Utils/SentryCallbackHandlers.h"
 
+#include "Verse/SentryScriptStackFrame.h"
+
 class ISentryAttachment;
 class ISentryBreadcrumb;
 class ISentryEvent;
@@ -51,6 +53,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) = 0;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) = 0;
 	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) = 0;
+	virtual TSharedPtr<ISentryId> CaptureScriptError(const FString& type, const FString& message, const FString& platform, const TArray<FSentryScriptStackFrame>& frames) = 0;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) = 0;
 	virtual void CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope) = 0;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) = 0;

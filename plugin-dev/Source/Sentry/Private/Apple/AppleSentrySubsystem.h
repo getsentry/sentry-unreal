@@ -40,6 +40,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override;
+	virtual TSharedPtr<ISentryId> CaptureScriptError(const FString& type, const FString& message, const FString& platform, const TArray<FSentryScriptStackFrame>& frames) override;
 	virtual bool IsHangTrackingSupported() const override;
 	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;

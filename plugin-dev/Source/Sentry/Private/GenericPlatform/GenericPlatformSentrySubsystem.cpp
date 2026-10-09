@@ -1034,6 +1034,28 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FStri
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureScriptError(const FString& type, const FString& message, const FString& platform, const TArray<FSentryScriptStackFrame>& frames)
+{
+	sentry_value_t exceptionEvent = sentry_value_new_event();
+
+	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_UTF8(*type), TCHAR_TO_UTF8(*message));
+
+	sentry_value_t mechanism = sentry_value_new_object();
+	sentry_value_set_by_key(mechanism, "type", sentry_value_new_string(TCHAR_TO_UTF8(*platform)));
+	sentry_value_set_by_key(mechanism, "handled", sentry_value_new_bool(true));
+	sentry_value_set_by_key(nativeException, "mechanism", mechanism);
+
+	if (frames.Num() > 0)
+	{
+		sentry_value_set_by_key(nativeException, "stacktrace", FGenericPlatformSentryConverters::ScriptCallstackToNative(frames, platform));
+	}
+
+	sentry_event_add_exception(exceptionEvent, nativeException);
+
+	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
 TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungThreadId)
 {
 	sentry_value_t exceptionEvent = sentry_value_new_event();
