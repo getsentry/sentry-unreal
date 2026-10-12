@@ -312,15 +312,15 @@ Source/Sentry/Sentry.Build.cs
 Source/SentryEditor/Private/SentryCrashReporterImageryCustomization.cpp
 Source/SentryEditor/Private/SentryEditorLibrary.cpp
 Source/SentryEditor/Private/SentryEditorModule.cpp
-Source/SentryEditor/Private/SentrySettingsBadges.cpp
 Source/SentryEditor/Private/SentrySettingsCustomization.cpp
+Source/SentryEditor/Private/SentrySettingsLabels.cpp
 Source/SentryEditor/Private/SentrySymToolsDownloader.cpp
 Source/SentryEditor/Private/Tests/SentryEditorLibrary.spec.cpp
 Source/SentryEditor/Public/SentryCrashReporterImageryCustomization.h
 Source/SentryEditor/Public/SentryEditorLibrary.h
 Source/SentryEditor/Public/SentryEditorModule.h
-Source/SentryEditor/Public/SentrySettingsBadges.h
 Source/SentryEditor/Public/SentrySettingsCustomization.h
+Source/SentryEditor/Public/SentrySettingsLabels.h
 Source/SentryEditor/Public/SentrySymToolsDownloader.h
 Source/SentryEditor/SentryEditor.Build.cs
 Source/ThirdParty/Android/sentry-android-core-release.aar

@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "SentrySettingsBadges.h"
+#include "SentrySettingsLabels.h"
 #include "SentrySettings.h"
 
 #include "DetailLayoutBuilder.h"
@@ -15,31 +15,31 @@
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Text/STextBlock.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogSentrySettingsBadges, Log, All);
+DEFINE_LOG_CATEGORY_STATIC(LogSentrySettingsLabels, Log, All);
 
-const FName FSentrySettingsBadges::PlatformsMeta(TEXT("SentryPlatforms"));
-const FName FSentrySettingsBadges::MinEngineMeta(TEXT("SentryMinEngine"));
-const FName FSentrySettingsBadges::RequiresRebuildMeta(TEXT("SentryRequiresRebuild"));
-const FName FSentrySettingsBadges::ExperimentalMeta(TEXT("SentryExperimental"));
+const FName FSentrySettingsLabels::PlatformsMeta(TEXT("SentryPlatforms"));
+const FName FSentrySettingsLabels::MinEngineMeta(TEXT("SentryMinEngine"));
+const FName FSentrySettingsLabels::RequiresRebuildMeta(TEXT("SentryRequiresRebuild"));
+const FName FSentrySettingsLabels::ExperimentalMeta(TEXT("SentryExperimental"));
 
-const FLinearColor FSentrySettingsBadges::PlatformBadgeColor(FColor(40, 46, 54));
-const FLinearColor FSentrySettingsBadges::PlatformBadgeTextColor(FColor(150, 160, 172));
-const FLinearColor FSentrySettingsBadges::ExcludedPlatformBadgeTextColor(FColor(214, 150, 140));
-const FLinearColor FSentrySettingsBadges::EngineBadgeColor(FColor(46, 42, 58));
-const FLinearColor FSentrySettingsBadges::EngineBadgeTextColor(FColor(165, 155, 188));
-const FLinearColor FSentrySettingsBadges::UnsupportedEngineBadgeColor(FColor(128, 34, 34));
-const FLinearColor FSentrySettingsBadges::UnsupportedEngineBadgeTextColor(FColor(255, 205, 205));
-const FLinearColor FSentrySettingsBadges::RebuildBadgeColor(FColor(122, 80, 18));
-const FLinearColor FSentrySettingsBadges::RebuildBadgeTextColor(FColor(255, 218, 160));
-const FLinearColor FSentrySettingsBadges::ExperimentalBadgeColor(FColor(24, 66, 72));
-const FLinearColor FSentrySettingsBadges::ExperimentalBadgeTextColor(FColor(150, 220, 226));
+const FLinearColor FSentrySettingsLabels::PlatformLabelColor(FColor(40, 46, 54));
+const FLinearColor FSentrySettingsLabels::PlatformLabelTextColor(FColor(150, 160, 172));
+const FLinearColor FSentrySettingsLabels::ExcludedPlatformLabelTextColor(FColor(214, 150, 140));
+const FLinearColor FSentrySettingsLabels::EngineLabelColor(FColor(46, 42, 58));
+const FLinearColor FSentrySettingsLabels::EngineLabelTextColor(FColor(165, 155, 188));
+const FLinearColor FSentrySettingsLabels::UnsupportedEngineLabelColor(FColor(128, 34, 34));
+const FLinearColor FSentrySettingsLabels::UnsupportedEngineLabelTextColor(FColor(255, 205, 205));
+const FLinearColor FSentrySettingsLabels::RebuildLabelColor(FColor(122, 80, 18));
+const FLinearColor FSentrySettingsLabels::RebuildLabelTextColor(FColor(255, 218, 160));
+const FLinearColor FSentrySettingsLabels::ExperimentalLabelColor(FColor(24, 66, 72));
+const FLinearColor FSentrySettingsLabels::ExperimentalLabelTextColor(FColor(150, 220, 226));
 
-void FSentrySettingsBadges::AddBadges(IDetailLayoutBuilder& DetailBuilder)
+void FSentrySettingsLabels::AddLabels(IDetailLayoutBuilder& DetailBuilder)
 {
 	for (TFieldIterator<FProperty> It(USentrySettings::StaticClass()); It; ++It)
 	{
 		const FProperty* Property = *It;
-		if (!ShouldAddBadges(Property))
+		if (!ShouldAddLabels(Property))
 		{
 			continue;
 		}
@@ -47,34 +47,34 @@ void FSentrySettingsBadges::AddBadges(IDetailLayoutBuilder& DetailBuilder)
 		TSharedRef<IPropertyHandle> Handle = DetailBuilder.GetProperty(Property->GetFName());
 		if (IDetailPropertyRow* Row = DetailBuilder.EditDefaultProperty(Handle))
 		{
-			AddBadges(*Row, Handle, Property);
+			AddLabels(*Row, Handle, Property);
 		}
 	}
 }
 
-void FSentrySettingsBadges::AddBadges(IDetailPropertyRow& Row, TSharedRef<IPropertyHandle> Handle, const FProperty* Property)
+void FSentrySettingsLabels::AddLabels(IDetailPropertyRow& Row, TSharedRef<IPropertyHandle> Handle, const FProperty* Property)
 {
-	TSharedRef<SHorizontalBox> Badges = SNew(SHorizontalBox);
+	TSharedRef<SHorizontalBox> Labels = SNew(SHorizontalBox);
 	FString FilterString = Handle->GetPropertyDisplayName().ToString();
 
 	if (Property->HasMetaData(PlatformsMeta))
 	{
-		AddPlatformBadges(Property, *Badges, FilterString);
+		AddPlatformLabels(Property, *Labels, FilterString);
 	}
 
 	if (Property->HasMetaData(MinEngineMeta))
 	{
-		AddEngineBadge(Property, Row, *Badges, FilterString);
+		AddEngineLabel(Property, Row, *Labels, FilterString);
 	}
 
 	if (Property->HasMetaData(RequiresRebuildMeta))
 	{
-		AddRebuildBadge(*Badges, FilterString);
+		AddRebuildLabel(*Labels, FilterString);
 	}
 
 	if (Property->HasMetaData(ExperimentalMeta))
 	{
-		AddExperimentalBadge(*Badges, FilterString);
+		AddExperimentalLabel(*Labels, FilterString);
 	}
 
 	TSharedPtr<SWidget> NameWidget;
@@ -100,7 +100,7 @@ void FSentrySettingsBadges::AddBadges(IDetailPropertyRow& Row, TSharedRef<IPrope
 			.VAlign(VAlign_Center)
 			.Padding(8.0f, 0.0f, 0.0f, 0.0f)
 			[
-				Badges
+				Labels
 			]
 		]
 		.ValueContent()
@@ -112,7 +112,7 @@ void FSentrySettingsBadges::AddBadges(IDetailPropertyRow& Row, TSharedRef<IPrope
 	// clang-format on
 }
 
-void FSentrySettingsBadges::AddPlatformBadges(const FProperty* Property, SHorizontalBox& Badges, FString& FilterString)
+void FSentrySettingsLabels::AddPlatformLabels(const FProperty* Property, SHorizontalBox& Labels, FString& FilterString)
 {
 	TArray<FString> Tokens;
 	Property->GetMetaData(PlatformsMeta).ParseIntoArray(Tokens, TEXT(","));
@@ -130,37 +130,37 @@ void FSentrySettingsBadges::AddPlatformBadges(const FProperty* Property, SHorizo
 		const bool bExcluded = Token.RemoveFromStart(TEXT("!"));
 		if (bExcluded != bExclusive)
 		{
-			UE_LOG(LogSentrySettingsBadges, Warning, TEXT("SentryPlatforms of %s mixes included and excluded platforms. Token '%s' is ignored."), *Property->GetName(), *Token);
+			UE_LOG(LogSentrySettingsLabels, Warning, TEXT("SentryPlatforms of %s mixes included and excluded platforms. Token '%s' is ignored."), *Property->GetName(), *Token);
 			continue;
 		}
 
-		FText Label, Name;
-		if (!GetPlatformLabel(Token, Label, Name))
+		FText ShortName, Name;
+		if (!GetPlatformNames(Token, ShortName, Name))
 		{
-			UE_LOG(LogSentrySettingsBadges, Warning, TEXT("SentryPlatforms of %s has an unknown platform '%s'."), *Property->GetName(), *Token);
+			UE_LOG(LogSentrySettingsLabels, Warning, TEXT("SentryPlatforms of %s has an unknown platform '%s'."), *Property->GetName(), *Token);
 			continue;
 		}
 
 		if (bExcluded)
 		{
-			AddBadge(Badges, FText::Format(FText::FromString(TEXT("NOT {0}")), Label),
+			AddLabel(Labels, FText::Format(FText::FromString(TEXT("NOT {0}")), ShortName),
 				FText::Format(FText::FromString(TEXT("This setting has no effect on {0}. It has an effect on all other platforms.")), Name),
-				PlatformBadgeColor, ExcludedPlatformBadgeTextColor);
+				PlatformLabelColor, ExcludedPlatformLabelTextColor);
 
 			FilterString += TEXT(" not ") + Name.ToString();
 		}
 		else
 		{
-			AddBadge(Badges, Label,
+			AddLabel(Labels, ShortName,
 				FText::Format(FText::FromString(TEXT("This setting has an effect on {0}.")), Name),
-				PlatformBadgeColor, PlatformBadgeTextColor);
+				PlatformLabelColor, PlatformLabelTextColor);
 
 			FilterString += TEXT(" ") + Name.ToString();
 		}
 	}
 }
 
-void FSentrySettingsBadges::AddEngineBadge(const FProperty* Property, IDetailPropertyRow& Row, SHorizontalBox& Badges, FString& FilterString)
+void FSentrySettingsLabels::AddEngineLabel(const FProperty* Property, IDetailPropertyRow& Row, SHorizontalBox& Labels, FString& FilterString)
 {
 	const FString MinVersion = Property->GetMetaData(MinEngineMeta);
 
@@ -168,47 +168,47 @@ void FSentrySettingsBadges::AddEngineBadge(const FProperty* Property, IDetailPro
 
 	if (IsEngineVersionSupported(MinVersion))
 	{
-		AddBadge(Badges, FText::FromString(FString::Printf(TEXT("UE %s+"), *MinVersion)),
+		AddLabel(Labels, FText::FromString(FString::Printf(TEXT("UE %s+"), *MinVersion)),
 			FText::Format(FText::FromString(TEXT("This setting needs Unreal Engine {0} or later.")), FText::FromString(MinVersion)),
-			EngineBadgeColor, EngineBadgeTextColor);
+			EngineLabelColor, EngineLabelTextColor);
 	}
 	else
 	{
-		AddBadge(Badges, FText::FromString(FString::Printf(TEXT("UE %s+"), *MinVersion)),
+		AddLabel(Labels, FText::FromString(FString::Printf(TEXT("UE %s+"), *MinVersion)),
 			FText::Format(FText::FromString(TEXT("This setting needs Unreal Engine {0} or later. It has no effect in this engine version.")), FText::FromString(MinVersion)),
-			UnsupportedEngineBadgeColor, UnsupportedEngineBadgeTextColor);
+			UnsupportedEngineLabelColor, UnsupportedEngineLabelTextColor);
 
 		Row.IsEnabled(false);
 	}
 }
 
-void FSentrySettingsBadges::AddRebuildBadge(SHorizontalBox& Badges, FString& FilterString)
+void FSentrySettingsLabels::AddRebuildLabel(SHorizontalBox& Labels, FString& FilterString)
 {
-	AddBadge(Badges, FText::FromString(TEXT("REBUILD")),
+	AddLabel(Labels, FText::FromString(TEXT("REBUILD")),
 		FText::FromString(TEXT("The build reads this setting. Rebuild the project after you change it.")),
-		RebuildBadgeColor, RebuildBadgeTextColor);
+		RebuildLabelColor, RebuildLabelTextColor);
 
 	FilterString += TEXT(" rebuild");
 }
 
-void FSentrySettingsBadges::AddExperimentalBadge(SHorizontalBox& Badges, FString& FilterString)
+void FSentrySettingsLabels::AddExperimentalLabel(SHorizontalBox& Labels, FString& FilterString)
 {
-	AddBadge(Badges, FText::FromString(TEXT("EXPERIMENTAL")),
+	AddLabel(Labels, FText::FromString(TEXT("EXPERIMENTAL")),
 		FText::FromString(TEXT("This feature is experimental. Its behavior can change in a future release.")),
-		ExperimentalBadgeColor, ExperimentalBadgeTextColor);
+		ExperimentalLabelColor, ExperimentalLabelTextColor);
 
 	FilterString += TEXT(" experimental");
 }
 
-void FSentrySettingsBadges::AddBadge(SHorizontalBox& Badges, const FText& Label, const FText& ToolTip, const FLinearColor& Color, const FLinearColor& TextColor)
+void FSentrySettingsLabels::AddLabel(SHorizontalBox& Labels, const FText& Text, const FText& ToolTip, const FLinearColor& Color, const FLinearColor& TextColor)
 {
-	Badges.AddSlot()
+	Labels.AddSlot()
 		.AutoWidth()
 		.Padding(0.0f, 0.0f, 3.0f, 0.0f)
-			[MakeBadge(Label, ToolTip, Color, TextColor)];
+			[MakeLabel(Text, ToolTip, Color, TextColor)];
 }
 
-bool FSentrySettingsBadges::ShouldAddBadges(const FProperty* Property)
+bool FSentrySettingsLabels::ShouldAddLabels(const FProperty* Property)
 {
 	return Property->HasMetaData(PlatformsMeta) ||
 		   Property->HasMetaData(MinEngineMeta) ||
@@ -216,61 +216,61 @@ bool FSentrySettingsBadges::ShouldAddBadges(const FProperty* Property)
 		   Property->HasMetaData(ExperimentalMeta);
 }
 
-bool FSentrySettingsBadges::GetPlatformLabel(const FString& Token, FText& OutLabel, FText& OutName)
+bool FSentrySettingsLabels::GetPlatformNames(const FString& Token, FText& OutShortName, FText& OutName)
 {
 	if (Token == TEXT("Win64"))
 	{
-		OutLabel = FText::FromString(TEXT("WIN"));
+		OutShortName = FText::FromString(TEXT("WIN"));
 		OutName = FText::FromString(TEXT("Windows"));
 	}
 	else if (Token == TEXT("Linux"))
 	{
-		OutLabel = FText::FromString(TEXT("LINUX"));
+		OutShortName = FText::FromString(TEXT("LINUX"));
 		OutName = FText::FromString(TEXT("Linux"));
 	}
 	else if (Token == TEXT("Mac"))
 	{
-		OutLabel = FText::FromString(TEXT("MAC"));
+		OutShortName = FText::FromString(TEXT("MAC"));
 		OutName = FText::FromString(TEXT("macOS"));
 	}
 	else if (Token == TEXT("Mac:Cocoa"))
 	{
-		OutLabel = FText::FromString(TEXT("MAC (COCOA)"));
+		OutShortName = FText::FromString(TEXT("MAC (COCOA)"));
 		OutName = FText::FromString(TEXT("macOS with the default (Cocoa) crash backend"));
 	}
 	else if (Token == TEXT("Mac:Native"))
 	{
-		OutLabel = FText::FromString(TEXT("MAC (NATIVE)"));
+		OutShortName = FText::FromString(TEXT("MAC (NATIVE)"));
 		OutName = FText::FromString(TEXT("macOS with the native crash backend"));
 	}
 	else if (Token == TEXT("IOS"))
 	{
-		OutLabel = FText::FromString(TEXT("IOS"));
+		OutShortName = FText::FromString(TEXT("IOS"));
 		OutName = FText::FromString(TEXT("iOS"));
 	}
 	else if (Token == TEXT("Android"))
 	{
-		OutLabel = FText::FromString(TEXT("ANDROID"));
+		OutShortName = FText::FromString(TEXT("ANDROID"));
 		OutName = FText::FromString(TEXT("Android"));
 	}
 	else if (Token == TEXT("Consoles"))
 	{
-		OutLabel = FText::FromString(TEXT("CONSOLES"));
+		OutShortName = FText::FromString(TEXT("CONSOLES"));
 		OutName = FText::FromString(TEXT("consoles"));
 	}
 	else if (Token == TEXT("Xbox"))
 	{
-		OutLabel = FText::FromString(TEXT("XBOX"));
+		OutShortName = FText::FromString(TEXT("XBOX"));
 		OutName = FText::FromString(TEXT("Xbox"));
 	}
 	else if (Token == TEXT("PS5"))
 	{
-		OutLabel = FText::FromString(TEXT("PS5"));
+		OutShortName = FText::FromString(TEXT("PS5"));
 		OutName = FText::FromString(TEXT("PlayStation 5"));
 	}
 	else if (Token == TEXT("Switch"))
 	{
-		OutLabel = FText::FromString(TEXT("SWITCH"));
+		OutShortName = FText::FromString(TEXT("SWITCH"));
 		OutName = FText::FromString(TEXT("Nintendo Switch"));
 	}
 	else
@@ -281,7 +281,7 @@ bool FSentrySettingsBadges::GetPlatformLabel(const FString& Token, FText& OutLab
 	return true;
 }
 
-bool FSentrySettingsBadges::IsEngineVersionSupported(const FString& MinVersion)
+bool FSentrySettingsLabels::IsEngineVersionSupported(const FString& MinVersion)
 {
 	FString MajorStr, MinorStr;
 	if (!MinVersion.Split(TEXT("."), &MajorStr, &MinorStr))
@@ -295,7 +295,7 @@ bool FSentrySettingsBadges::IsEngineVersionSupported(const FString& MinVersion)
 	return ENGINE_MAJOR_VERSION > Major || (ENGINE_MAJOR_VERSION == Major && ENGINE_MINOR_VERSION >= Minor);
 }
 
-TSharedRef<SWidget> FSentrySettingsBadges::MakeBadge(const FText& Label, const FText& ToolTip, const FLinearColor& Color, const FLinearColor& TextColor)
+TSharedRef<SWidget> FSentrySettingsLabels::MakeLabel(const FText& Text, const FText& ToolTip, const FLinearColor& Color, const FLinearColor& TextColor)
 {
 	// clang-format off
 	return SNew(SBorder)
@@ -305,7 +305,7 @@ TSharedRef<SWidget> FSentrySettingsBadges::MakeBadge(const FText& Label, const F
 		.ToolTipText(ToolTip)
 		[
 			SNew(STextBlock)
-			.Text(Label)
+			.Text(Text)
 			.Font(FCoreStyle::GetDefaultFontStyle("Bold", 7))
 			.ColorAndOpacity(TextColor)
 		];
