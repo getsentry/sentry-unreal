@@ -269,7 +269,9 @@ Test outputs are saved to `integration-test/output/`:
 
 ## CI Integration
 
-See the following workflow files for CI usage examples:
-- `.github/workflows/integration-test-windows.yml` - Windows desktop testing
-- `.github/workflows/integration-test-linux.yml` - Linux desktop testing
-- `.github/workflows/integration-test-android.yml` - Android testing via SauceLabs Real Device Cloud
+See the following workflow files for CI usage examples (each also runs the unit tests in the packaged sample build):
+- `.github/workflows/test-windows.yml` - Windows desktop testing
+- `.github/workflows/test-linux.yml` - Linux desktop testing
+- `.github/workflows/test-macos.yml` - macOS desktop testing
+- `.github/workflows/test-android.yml` - Android testing via SauceLabs Real Device Cloud
+- `.github/workflows/test-ios.yml` - iOS testing via SauceLabs Real Device Cloud

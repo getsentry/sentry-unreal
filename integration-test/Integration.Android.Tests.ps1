@@ -88,6 +88,8 @@ BeforeAll {
     # Import app-runner modules (SentryApiClient, test utilities)
     . "$global:AppRunnerPath/import-modules.ps1"
 
+    . "$PSScriptRoot/AutomationTestUtils.ps1"
+
     # Validate environment variables (test-specific only, not provider-specific)
     $script:DSN = $env:SENTRY_UNREAL_TEST_DSN
     $script:AuthToken = $env:SENTRY_AUTH_TOKEN
@@ -138,6 +140,20 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             # Install APK
             Write-Host "Installing APK via $Platform..." -ForegroundColor Yellow
             Install-DeviceApp -Path $script:ApkPath
+
+            # ==========================================
+            # RUN 0: Unit tests - runs automation tests inside the app
+            # ==========================================
+            # The cmdline extra is re-parsed by the device shell, so quotes and separators are escaped.
+            # Adb provider additionally evaluates arguments with Invoke-Expression, so it needs extra quoting.
+
+            Write-Host "Running unit tests on $Platform..." -ForegroundColor Yellow
+            $unitTestCmdline = '-ExecCmds=\"Automation\ RunTests\ Sentry\;Quit\"\ -unattended'
+            if ($ProviderName -eq 'Adb') {
+                $unitTestCmdline = "'$unitTestCmdline'"
+            }
+            $unitTestIntentArgs = "-e cmdline $unitTestCmdline"
+            $global:AndroidUnitTestResult = Invoke-DeviceApp -ExecutablePath $script:ActivityName -Arguments $unitTestIntentArgs
 
             # ==========================================
             # RUN 1: Crash test - creates minidump
@@ -270,6 +286,26 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
     AfterAll {
         Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
+    }
+
+    Context "Unit Tests" {
+        BeforeAll {
+            $script:UnitTestResults = Get-AutomationTestResults -AppOutput $global:AndroidUnitTestResult.Output
+        }
+
+        It "Should discover unit tests" {
+            $script:UnitTestResults.FoundCount | Should -BeGreaterThan 0
+        }
+
+        It "Should run all unit tests to completion" {
+            $script:UnitTestResults.ExitCode | Should -Not -BeNullOrEmpty -Because "the app should finish the test run without crashing"
+            $script:UnitTestResults.Tests.Count | Should -Be $script:UnitTestResults.FoundCount
+        }
+
+        It "Should pass all unit tests" {
+            @($script:UnitTestResults.FailedTests | ForEach-Object Path) | Should -BeNullOrEmpty
+            $script:UnitTestResults.ExitCode | Should -Be 0
+        }
     }
 
     Context "Crash Capture Tests" {

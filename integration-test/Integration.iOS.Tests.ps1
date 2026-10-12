@@ -53,6 +53,8 @@ BeforeAll {
     # Import app-runner modules (SentryApiClient, test utilities)
     . "$global:AppRunnerPath/import-modules.ps1"
 
+    . "$PSScriptRoot/AutomationTestUtils.ps1"
+
     # Validate environment variables (test-specific only, not provider-specific)
     $script:DSN = $env:SENTRY_UNREAL_TEST_DSN
     $script:AuthToken = $env:SENTRY_AUTH_TOKEN
@@ -124,6 +126,16 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
 
             # All actions run upfront to minimize device idle time - SauceLabs sessions time out
             # while the harness polls the Sentry API between launches.
+
+            # ==========================================
+            # RUN 0: Unit tests - runs automation tests inside the app
+            # ==========================================
+
+            Write-Host "Running unit tests on $Platform..." -ForegroundColor Yellow
+            $global:iOSUnitTestResult = Invoke-iOSTestAction -Arguments @(
+                '-ExecCmds="Automation RunTests Sentry;Quit"',
+                '-unattended'
+            )
 
             # ==========================================
             # RUN 1: Crash test - captures crash report
@@ -264,6 +276,26 @@ Describe 'Sentry Unreal iOS Integration Tests (<Platform>)' -ForEach $TestTarget
 
     AfterAll {
         Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
+    }
+
+    Context "Unit Tests" {
+        BeforeAll {
+            $script:UnitTestResults = Get-AutomationTestResults -AppOutput $global:iOSUnitTestResult.Output
+        }
+
+        It "Should discover unit tests" {
+            $script:UnitTestResults.FoundCount | Should -BeGreaterThan 0
+        }
+
+        It "Should run all unit tests to completion" {
+            $script:UnitTestResults.ExitCode | Should -Not -BeNullOrEmpty -Because "the app should finish the test run without crashing"
+            $script:UnitTestResults.Tests.Count | Should -Be $script:UnitTestResults.FoundCount
+        }
+
+        It "Should pass all unit tests" {
+            @($script:UnitTestResults.FailedTests | ForEach-Object Path) | Should -BeNullOrEmpty
+            $script:UnitTestResults.ExitCode | Should -Be 0
+        }
     }
 
     Context "Crash Capture Tests" {
