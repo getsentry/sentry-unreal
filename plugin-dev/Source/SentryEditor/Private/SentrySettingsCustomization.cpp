@@ -9,6 +9,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "IDetailPropertyRow.h"
 #include "IUATHelperModule.h"
 
 #include "Engine/Engine.h"
@@ -42,6 +43,8 @@
 #include "HAL/PlatformFileManager.h"
 #endif
 
+DEFINE_LOG_CATEGORY_STATIC(LogSentryEditorSettings, Log, All);
+
 const FString FSentrySettingsCustomization::DefaultCrcEndpoint = TEXT("https://datarouter.ol.epicgames.com/datarouter/api/v1/public/data");
 
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata);
@@ -67,6 +70,7 @@ void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 	DrawDebugSymbolsNotice(DetailBuilder);
 	DrawSentryCrashReporterSection(DetailBuilder);
 	DrawUnrealCrashReporterNotice(DetailBuilder);
+	DrawSettingBadges(DetailBuilder);
 
 	SetPropertiesUpdateHandler(DetailBuilder);
 }
@@ -364,6 +368,273 @@ void FSentrySettingsCustomization::DrawDebugSymbolsNotice(IDetailLayoutBuilder& 
 					]
 				]
 			]
+		];
+	// clang-format on
+}
+
+namespace SentrySettingBadges
+{
+const FName PlatformsMeta(TEXT("SentryPlatforms"));
+const FName MinEngineMeta(TEXT("SentryMinEngine"));
+const FName RequiresRebuildMeta(TEXT("SentryRequiresRebuild"));
+const FName ExperimentalMeta(TEXT("SentryExperimental"));
+
+const FLinearColor PlatformColor(FColor(40, 46, 54));
+const FLinearColor PlatformTextColor(FColor(150, 160, 172));
+const FLinearColor ExcludedTextColor(FColor(214, 150, 140));
+const FLinearColor EngineColor(FColor(46, 42, 58));
+const FLinearColor EngineTextColor(FColor(165, 155, 188));
+const FLinearColor RebuildColor(FColor(122, 80, 18));
+const FLinearColor RebuildTextColor(FColor(255, 218, 160));
+const FLinearColor ExperimentalColor(FColor(24, 66, 72));
+const FLinearColor ExperimentalTextColor(FColor(150, 220, 226));
+const FLinearColor EngineUnsupportedColor(FColor(128, 34, 34));
+const FLinearColor EngineUnsupportedTextColor(FColor(255, 205, 205));
+
+bool GetPlatformLabel(const FString& Token, FText& OutLabel, FText& OutName)
+{
+	if (Token == TEXT("Win64"))
+	{
+		OutLabel = FText::FromString(TEXT("WIN"));
+		OutName = FText::FromString(TEXT("Windows"));
+	}
+	else if (Token == TEXT("Linux"))
+	{
+		OutLabel = FText::FromString(TEXT("LINUX"));
+		OutName = FText::FromString(TEXT("Linux"));
+	}
+	else if (Token == TEXT("Mac"))
+	{
+		OutLabel = FText::FromString(TEXT("MAC"));
+		OutName = FText::FromString(TEXT("macOS"));
+	}
+	else if (Token == TEXT("Mac:Cocoa"))
+	{
+		OutLabel = FText::FromString(TEXT("MAC (COCOA)"));
+		OutName = FText::FromString(TEXT("macOS with the default (Cocoa) crash backend"));
+	}
+	else if (Token == TEXT("Mac:Native"))
+	{
+		OutLabel = FText::FromString(TEXT("MAC (NATIVE)"));
+		OutName = FText::FromString(TEXT("macOS with the native crash backend"));
+	}
+	else if (Token == TEXT("IOS"))
+	{
+		OutLabel = FText::FromString(TEXT("IOS"));
+		OutName = FText::FromString(TEXT("iOS"));
+	}
+	else if (Token == TEXT("Android"))
+	{
+		OutLabel = FText::FromString(TEXT("ANDROID"));
+		OutName = FText::FromString(TEXT("Android"));
+	}
+	else if (Token == TEXT("Consoles"))
+	{
+		OutLabel = FText::FromString(TEXT("CONSOLES"));
+		OutName = FText::FromString(TEXT("consoles"));
+	}
+	else if (Token == TEXT("Xbox"))
+	{
+		OutLabel = FText::FromString(TEXT("XBOX"));
+		OutName = FText::FromString(TEXT("Xbox"));
+	}
+	else if (Token == TEXT("PS5"))
+	{
+		OutLabel = FText::FromString(TEXT("PS5"));
+		OutName = FText::FromString(TEXT("PlayStation 5"));
+	}
+	else if (Token == TEXT("Switch"))
+	{
+		OutLabel = FText::FromString(TEXT("SWITCH"));
+		OutName = FText::FromString(TEXT("Nintendo Switch"));
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool IsEngineVersionSupported(const FString& MinVersion)
+{
+	FString MajorStr, MinorStr;
+	if (!MinVersion.Split(TEXT("."), &MajorStr, &MinorStr))
+	{
+		MajorStr = MinVersion;
+	}
+
+	const int32 Major = FCString::Atoi(*MajorStr);
+	const int32 Minor = FCString::Atoi(*MinorStr);
+
+	return ENGINE_MAJOR_VERSION > Major || (ENGINE_MAJOR_VERSION == Major && ENGINE_MINOR_VERSION >= Minor);
+}
+} // namespace SentrySettingBadges
+
+void FSentrySettingsCustomization::DrawSettingBadges(IDetailLayoutBuilder& DetailBuilder)
+{
+	using namespace SentrySettingBadges;
+
+	for (TFieldIterator<FProperty> It(USentrySettings::StaticClass()); It; ++It)
+	{
+		const FProperty* Property = *It;
+
+		const bool bHasPlatforms = Property->HasMetaData(PlatformsMeta);
+		const bool bHasMinEngine = Property->HasMetaData(MinEngineMeta);
+		const bool bRequiresRebuild = Property->HasMetaData(RequiresRebuildMeta);
+		const bool bExperimental = Property->HasMetaData(ExperimentalMeta);
+
+		if (!bHasPlatforms && !bHasMinEngine && !bRequiresRebuild && !bExperimental)
+		{
+			continue;
+		}
+
+		TSharedRef<IPropertyHandle> Handle = DetailBuilder.GetProperty(Property->GetFName());
+		IDetailPropertyRow* Row = DetailBuilder.EditDefaultProperty(Handle);
+		if (!Row)
+		{
+			continue;
+		}
+
+		TSharedRef<SHorizontalBox> Badges = SNew(SHorizontalBox);
+		FString FilterString = Handle->GetPropertyDisplayName().ToString();
+
+		if (bHasPlatforms)
+		{
+			TArray<FString> Tokens;
+			Property->GetMetaData(PlatformsMeta).ParseIntoArray(Tokens, TEXT(","));
+
+			// "!Platform" tokens list the only platforms where the setting has no effect
+			const bool bExclusive = Tokens.ContainsByPredicate([](const FString& Token)
+			{
+				return Token.TrimStart().StartsWith(TEXT("!"));
+			});
+
+			for (FString& Token : Tokens)
+			{
+				Token.TrimStartAndEndInline();
+
+				const bool bExcluded = Token.RemoveFromStart(TEXT("!"));
+				if (bExcluded != bExclusive)
+				{
+					UE_LOG(LogSentryEditorSettings, Warning, TEXT("SentryPlatforms of %s mixes included and excluded platforms. Token '%s' is ignored."), *Property->GetName(), *Token);
+					continue;
+				}
+
+				FText Label, Name;
+				if (!GetPlatformLabel(Token, Label, Name))
+				{
+					UE_LOG(LogSentryEditorSettings, Warning, TEXT("SentryPlatforms of %s has an unknown platform '%s'."), *Property->GetName(), *Token);
+					continue;
+				}
+
+				if (bExcluded)
+				{
+					Badges->AddSlot().AutoWidth().Padding(0.0f, 0.0f, 3.0f, 0.0f)
+						[MakeBadge(FText::Format(FText::FromString(TEXT("NOT {0}")), Label),
+							FText::Format(FText::FromString(TEXT("This setting has no effect on {0}. It has an effect on all other platforms.")), Name),
+							PlatformColor, ExcludedTextColor)];
+
+					FilterString += TEXT(" not ") + Name.ToString();
+				}
+				else
+				{
+					Badges->AddSlot().AutoWidth().Padding(0.0f, 0.0f, 3.0f, 0.0f)
+						[MakeBadge(Label, FText::Format(FText::FromString(TEXT("This setting has an effect on {0}.")), Name), PlatformColor, PlatformTextColor)];
+
+					FilterString += TEXT(" ") + Name.ToString();
+				}
+			}
+		}
+
+		if (bHasMinEngine)
+		{
+			const FString MinVersion = Property->GetMetaData(MinEngineMeta);
+			const bool bSupported = IsEngineVersionSupported(MinVersion);
+
+			Badges->AddSlot().AutoWidth().Padding(0.0f, 0.0f, 3.0f, 0.0f)
+				[MakeBadge(FText::FromString(FString::Printf(TEXT("UE %s+"), *MinVersion)),
+					bSupported
+						? FText::Format(FText::FromString(TEXT("This setting needs Unreal Engine {0} or later.")), FText::FromString(MinVersion))
+						: FText::Format(FText::FromString(TEXT("This setting needs Unreal Engine {0} or later. It has no effect in this engine version.")), FText::FromString(MinVersion)),
+					bSupported ? EngineColor : EngineUnsupportedColor,
+					bSupported ? EngineTextColor : EngineUnsupportedTextColor)];
+
+			if (!bSupported)
+			{
+				Row->IsEnabled(false);
+			}
+		}
+
+		if (bRequiresRebuild)
+		{
+			Badges->AddSlot().AutoWidth().Padding(0.0f, 0.0f, 3.0f, 0.0f)
+				[MakeBadge(FText::FromString(TEXT("REBUILD")),
+					FText::FromString(TEXT("The build reads this setting. Rebuild the project after you change it.")),
+					RebuildColor, RebuildTextColor)];
+
+			FilterString += TEXT(" rebuild");
+		}
+
+		if (bExperimental)
+		{
+			Badges->AddSlot().AutoWidth().Padding(0.0f, 0.0f, 3.0f, 0.0f)
+				[MakeBadge(FText::FromString(TEXT("EXPERIMENTAL")),
+					FText::FromString(TEXT("This feature is experimental. Its behavior can change in a future release.")),
+					ExperimentalColor, ExperimentalTextColor)];
+
+			FilterString += TEXT(" experimental");
+		}
+
+		TSharedPtr<SWidget> NameWidget;
+		TSharedPtr<SWidget> ValueWidget;
+		FDetailWidgetRow DefaultRow;
+		Row->GetDefaultWidgets(NameWidget, ValueWidget, DefaultRow);
+
+		// clang-format off
+		Row->CustomWidget(true)
+			.FilterString(FText::FromString(FilterString))
+			.NameContent()
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				.VAlign(VAlign_Center)
+				[
+					NameWidget.ToSharedRef()
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Center)
+				.Padding(8.0f, 0.0f, 0.0f, 0.0f)
+				[
+					Badges
+				]
+			]
+			.ValueContent()
+			.MinDesiredWidth(DefaultRow.ValueWidget.MinWidth)
+			.MaxDesiredWidth(DefaultRow.ValueWidget.MaxWidth)
+			[
+				ValueWidget.ToSharedRef()
+			];
+		// clang-format on
+	}
+}
+
+TSharedRef<SWidget> FSentrySettingsCustomization::MakeBadge(const FText& Label, const FText& ToolTip, const FLinearColor& Color, const FLinearColor& TextColor)
+{
+	// clang-format off
+	return SNew(SBorder)
+		.BorderImage(FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")))
+		.BorderBackgroundColor(Color)
+		.Padding(FMargin(4.0f, 0.0f))
+		.ToolTipText(ToolTip)
+		[
+			SNew(STextBlock)
+			.Text(Label)
+			.Font(FCoreStyle::GetDefaultFontStyle("Bold", 7))
+			.ColorAndOpacity(TextColor)
 		];
 	// clang-format on
 }
