@@ -187,6 +187,8 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - Package plugin and update snapshot after adding/removing files under `plugin-dev` dir (use `/pack` skill).
 
+- When adding or changing a `USentrySettings` property that may have platform, engine version, rebuild or experimental limitations, consider suggesting a badge via metadata instead of `DisplayName` or `ToolTip` text (see `SentrySettingsBadges.h` for supported keys). Before suggesting, verify in the implementation and native backends that the limitation actually applies. Omit badges when the setting works on all supported platforms and engine versions, and don't badge settings outside the current change.
+
 ### Code Style
 
 - Source files require copyright notice: `Copyright (c) YYYY Sentry. All Rights Reserved.` (for `YYYY` use file creation year)
