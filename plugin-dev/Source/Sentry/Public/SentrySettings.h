@@ -565,8 +565,8 @@ class SENTRY_API USentrySettings : public UObject
 	FSentryCrashReporterAppearance CrashReporterAppearance;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
-		Meta = (DisplayName = "Enable hang tracking", ToolTip = "Track application hangs (unresponsive game thread) using Unreal Engine's built-in FThreadHeartBeat. Only effective in packaged builds.",
-			SentryPlatforms = "Win64,Linux"))
+		Meta = (DisplayName = "Enable hang tracking", ToolTip = "Track application hangs (unresponsive game thread). By default uses Unreal Engine's built-in FThreadHeartBeat, which is available on Windows and Linux only. On other platforms enable `Use native hang tracking`. Only effective in packaged builds.",
+			SentryPlatforms = "Win64,Linux,Mac:Native,Android"))
 	bool EnableHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
