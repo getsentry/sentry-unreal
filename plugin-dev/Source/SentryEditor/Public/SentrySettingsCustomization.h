@@ -39,9 +39,6 @@ private:
 	void DrawSentryCrashReporterSection(IDetailLayoutBuilder& DetailBuilder);
 	void DrawUnrealCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder);
 	void DrawDebugSymbolsNotice(IDetailLayoutBuilder& DetailBuilder);
-	void DrawSettingBadges(IDetailLayoutBuilder& DetailBuilder);
-
-	static TSharedRef<SWidget> MakeBadge(const FText& Label, const FText& ToolTip, const FLinearColor& Color, const FLinearColor& TextColor);
 
 	void SetPropertiesUpdateHandler(IDetailLayoutBuilder& DetailBuilder);
 
