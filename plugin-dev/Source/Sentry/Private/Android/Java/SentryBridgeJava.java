@@ -104,7 +104,7 @@ public class SentryBridgeJava {
 						if (proxy != null) {
 							options.setProxy(proxy);
 						} else {
-							options.getLogger().log(SentryLevel.WARNING, "Invalid proxy URL (expected scheme://[user:pass@]host:port): " + proxyUrl + ". Proxy is ignored");
+							options.getLogger().log(SentryLevel.WARNING, "Invalid or unsupported proxy URL (expected http://[user:pass@]host:port): " + proxyUrl + ". Proxy is ignored");
 						}
 					}
 					if(settingJson.has("tracesSampleRate")) {
@@ -692,7 +692,15 @@ public class SentryBridgeJava {
 			return null;
 		}
 
-		java.net.Proxy.Type type = uri.getScheme().toLowerCase().startsWith("socks") ? java.net.Proxy.Type.SOCKS : java.net.Proxy.Type.HTTP;
+		String scheme = uri.getScheme().toLowerCase();
+		java.net.Proxy.Type type;
+		if (scheme.equals("http")) {
+			type = java.net.Proxy.Type.HTTP;
+		} else if (scheme.startsWith("socks")) {
+			type = java.net.Proxy.Type.SOCKS;
+		} else {
+			return null;
+		}
 
 		String user = null;
 		String pass = null;

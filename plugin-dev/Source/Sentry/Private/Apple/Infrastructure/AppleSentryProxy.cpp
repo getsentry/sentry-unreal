@@ -51,9 +51,9 @@ NSURLSession* FAppleSentryProxy::CreateUrlSession(const FString& proxyUrl)
 	}
 
 	NSString* scheme = components.scheme.lowercaseString;
-	if (![scheme isEqualToString:@"http"] && ![scheme isEqualToString:@"https"])
+	if (![scheme isEqualToString:@"http"])
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Unsupported proxy scheme '%s' (only http and https are supported on Mac/iOS). Proxy is ignored"), *FString(scheme));
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unsupported proxy scheme '%s' (only http is supported on Mac/iOS). Proxy is ignored"), *FString(scheme));
 		return nil;
 	}
 
