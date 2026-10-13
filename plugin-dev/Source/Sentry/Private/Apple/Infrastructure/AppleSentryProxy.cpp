@@ -59,9 +59,9 @@ NSURLSession* FAppleSentryProxy::CreateUrlSession(const FString& proxyUrl)
 
 	NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
 	configuration.connectionProxyDictionary = @{
-		(NSString*)kCFNetworkProxiesHTTPEnable : @YES,
-		(NSString*)kCFNetworkProxiesHTTPProxy : components.host,
-		(NSString*)kCFNetworkProxiesHTTPPort : components.port,
+		@"HTTPEnable" : @YES,
+		@"HTTPProxy" : components.host,
+		@"HTTPPort" : components.port,
 		@"HTTPSEnable" : @YES,
 		@"HTTPSProxy" : components.host,
 		@"HTTPSPort" : components.port
