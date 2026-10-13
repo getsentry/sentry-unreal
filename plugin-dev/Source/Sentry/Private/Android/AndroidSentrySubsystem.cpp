@@ -72,6 +72,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetBoolField(TEXT("debug"), settings->Debug);
 	SettingsJson->SetNumberField(TEXT("sampleRate"), settings->SampleRate);
 	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);
+	SettingsJson->SetNumberField(TEXT("shutdownTimeout"), settings->ShutdownTimeout);
 	SettingsJson->SetBoolField(TEXT("attachScreenshot"), settings->AttachScreenshot);
 	SettingsJson->SetBoolField(TEXT("attachSessionReplay"), settings->AttachSessionReplay);
 	SettingsJson->SetArrayField(TEXT("inAppInclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppInclude));
@@ -189,7 +190,6 @@ void FAndroidSentrySubsystem::Close()
 		OnHasEnteredForegroundDelegateHandle.Reset();
 	}
 
-	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "flush", "(J)V", (jlong)3000);
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::Sentry, "close", "()V");
 }
 
