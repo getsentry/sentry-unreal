@@ -34,6 +34,7 @@
 #include "SentryTraceSampler.h"
 
 #include "Infrastructure/AppleSentryConverters.h"
+#include "Infrastructure/AppleSentryProxy.h"
 
 #include "Convenience/AppleSentryInclude.h"
 #include "Convenience/AppleSentryMacro.h"
@@ -144,6 +145,11 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
+			}
+			if (settings->UseProxy && !settings->ProxyUrl.IsEmpty())
+			{
+				ProxySession = [FAppleSentryProxy::CreateUrlSession(settings->ProxyUrl) retain];
+				options.urlSession = ProxySession;
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
 			options.appHangTimeoutInterval = settings->AppNotRespondingTimeout;
@@ -335,6 +341,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 		}
 #endif
 	}
+	else
+	{
+		ReleaseProxySession();
+	}
 }
 
 void FAppleSentrySubsystem::Close()
@@ -354,6 +364,8 @@ void FAppleSentrySubsystem::Close()
 #endif
 
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) close];
+
+	ReleaseProxySession();
 }
 
 bool FAppleSentrySubsystem::IsEnabled()
@@ -1012,6 +1024,16 @@ bool FAppleSentrySubsystem::GetLatestSessionReplay(FString& OutReplayPath, FStri
 	OutSidecarPath = LatestSidecar;
 
 	return true;
+}
+
+void FAppleSentrySubsystem::ReleaseProxySession()
+{
+	if (ProxySession)
+	{
+		[ProxySession finishTasksAndInvalidate];
+		[ProxySession release];
+		ProxySession = nil;
+	}
 }
 
 TMap<FString, FString> FAppleSentrySubsystem::ParseSentryBaggage(const TArray<FString>& baggageHeaders) const

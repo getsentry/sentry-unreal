@@ -93,6 +93,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	{
 		SettingsJson->SetNumberField(TEXT("maxCacheItems"), settings->CacheMaxItems);
 	}
+	if (settings->UseProxy && !settings->ProxyUrl.IsEmpty())
+	{
+		SettingsJson->SetStringField(TEXT("proxy"), settings->ProxyUrl);
+	}
 	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 	{
 		SettingsJson->SetNumberField(TEXT("tracesSampleRate"), settings->TracesSampleRate);
