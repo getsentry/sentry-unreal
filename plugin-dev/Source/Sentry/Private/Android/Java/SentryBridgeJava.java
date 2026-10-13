@@ -12,6 +12,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -95,6 +97,15 @@ public class SentryBridgeJava {
 					options.getMetrics().setEnabled(settingJson.getBoolean("enableMetrics"));
 					if(settingJson.has("maxCacheItems")) {
 						options.setMaxCacheItems(settingJson.getInt("maxCacheItems"));
+					}
+					if(settingJson.has("proxy")) {
+						String proxyUrl = settingJson.getString("proxy");
+						SentryOptions.Proxy proxy = parseProxy(proxyUrl);
+						if (proxy != null) {
+							options.setProxy(proxy);
+						} else {
+							options.getLogger().log(SentryLevel.WARNING, "Invalid proxy URL (expected scheme://[user:pass@]host:port): " + proxyUrl + ". Proxy is ignored");
+						}
 					}
 					if(settingJson.has("tracesSampleRate")) {
 						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
@@ -668,6 +679,31 @@ public class SentryBridgeJava {
 			}
 			return metricEvent;
 		}
+	}
+
+	private static SentryOptions.Proxy parseProxy(final String proxyUrl) {
+		URI uri;
+		try {
+			uri = new URI(proxyUrl);
+		} catch (URISyntaxException e) {
+			return null;
+		}
+		if (uri.getScheme() == null || uri.getHost() == null || uri.getPort() == -1) {
+			return null;
+		}
+
+		java.net.Proxy.Type type = uri.getScheme().toLowerCase().startsWith("socks") ? java.net.Proxy.Type.SOCKS : java.net.Proxy.Type.HTTP;
+
+		String user = null;
+		String pass = null;
+		String userInfo = uri.getUserInfo();
+		if (userInfo != null) {
+			int separator = userInfo.indexOf(':');
+			user = separator >= 0 ? userInfo.substring(0, separator) : userInfo;
+			pass = separator >= 0 ? userInfo.substring(separator + 1) : null;
+		}
+
+		return new SentryOptions.Proxy(uri.getHost(), String.valueOf(uri.getPort()), type, user, pass);
 	}
 
 	private static byte[] readFileToBytes(File file) throws Exception {
