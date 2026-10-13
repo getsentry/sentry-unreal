@@ -99,6 +99,8 @@ Source/Sentry/Private/Apple/Convenience/AppleSentryInclude.h
 Source/Sentry/Private/Apple/Convenience/AppleSentryMacro.h
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.cpp
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.h
+Source/Sentry/Private/Apple/Infrastructure/AppleSentryProxy.cpp
+Source/Sentry/Private/Apple/Infrastructure/AppleSentryProxy.h
 Source/Sentry/Private/GenericPlatform/Convenience/GenericPlatformSentryInclude.h
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.cpp
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h
