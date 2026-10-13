@@ -688,7 +688,7 @@ public class SentryBridgeJava {
 		} catch (URISyntaxException e) {
 			return null;
 		}
-		if (uri.getScheme() == null || uri.getHost() == null || uri.getPort() == -1) {
+		if (uri.getScheme() == null || uri.getHost() == null || uri.getPort() < 0 || uri.getPort() > 65535) {
 			return null;
 		}
 
