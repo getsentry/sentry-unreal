@@ -340,6 +340,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 		}
 #endif
 	}
+	else
+	{
+		ReleaseProxySession();
+	}
 }
 
 void FAppleSentrySubsystem::Close()
@@ -361,12 +365,7 @@ void FAppleSentrySubsystem::Close()
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) close];
 
-	if (ProxySession)
-	{
-		[ProxySession finishTasksAndInvalidate];
-		[ProxySession release];
-		ProxySession = nil;
-	}
+	ReleaseProxySession();
 }
 
 bool FAppleSentrySubsystem::IsEnabled()
@@ -1025,6 +1024,16 @@ bool FAppleSentrySubsystem::GetLatestSessionReplay(FString& OutReplayPath, FStri
 	OutSidecarPath = LatestSidecar;
 
 	return true;
+}
+
+void FAppleSentrySubsystem::ReleaseProxySession()
+{
+	if (ProxySession)
+	{
+		[ProxySession finishTasksAndInvalidate];
+		[ProxySession release];
+		ProxySession = nil;
+	}
 }
 
 TMap<FString, FString> FAppleSentrySubsystem::ParseSentryBaggage(const TArray<FString>& baggageHeaders) const
