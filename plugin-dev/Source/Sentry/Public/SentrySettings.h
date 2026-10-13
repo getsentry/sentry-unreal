@@ -548,8 +548,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableOnCrashLogging;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
-		Meta = (DisplayName = "Shutdown timeout, milliseconds", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0,
-			SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
+		Meta = (DisplayName = "Shutdown timeout, milliseconds", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0))
 	int32 ShutdownTimeout;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Sentry Crash Reporter",

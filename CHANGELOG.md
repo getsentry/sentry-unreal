@@ -8,6 +8,7 @@
 - Keep sampling decisions consistent across services when propagating or continuing traces ([#1612](https://github.com/getsentry/sentry-unreal/pull/1612))
 - Show plugin settings platform, engine version and rebuild requirements in editor UI ([#1629](https://github.com/getsentry/sentry-unreal/pull/1629))
 - Add HTTP proxy support on Android, macOS and iOS ([#1631](https://github.com/getsentry/sentry-unreal/pull/1631))
+- Apply `ShutdownTimeout` setting on Android, macOS and iOS ([#1632](https://github.com/getsentry/sentry-unreal/pull/1632))
 
 ### Fixes
 
