@@ -46,7 +46,7 @@ NSURLSession* FAppleSentryProxy::CreateUrlSession(const FString& proxyUrl)
 	NSURLComponents* components = [NSURLComponents componentsWithString:proxyUrl.GetNSString()];
 	if (components == nil || components.scheme == nil || components.host.length == 0 || components.port == nil)
 	{
-		UE_LOG(LogSentrySdk, Warning, TEXT("Invalid proxy URL (expected scheme://[user:pass@]host:port): %s. Proxy is ignored"), *proxyUrl);
+		UE_LOG(LogSentrySdk, Warning, TEXT("Invalid proxy URL (expected scheme://[user:pass@]host:port). Proxy is ignored"));
 		return nil;
 	}
 

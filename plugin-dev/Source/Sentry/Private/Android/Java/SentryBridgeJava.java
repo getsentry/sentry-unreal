@@ -104,7 +104,7 @@ public class SentryBridgeJava {
 						if (proxy != null) {
 							options.setProxy(proxy);
 						} else {
-							options.getLogger().log(SentryLevel.WARNING, "Invalid or unsupported proxy URL (expected http://[user:pass@]host:port): " + proxyUrl + ". Proxy is ignored");
+							options.getLogger().log(SentryLevel.WARNING, "Invalid or unsupported proxy URL (expected http://[user:pass@]host:port). Proxy is ignored");
 						}
 					}
 					if(settingJson.has("tracesSampleRate")) {
