@@ -52,6 +52,76 @@
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectThreadContext.h"
 
+@interface FAppleSentryProxyAuthDelegate : NSObject <NSURLSessionTaskDelegate>
+@property(nonatomic, copy) NSString* user;
+@property(nonatomic, copy) NSString* password;
+@end
+
+@implementation FAppleSentryProxyAuthDelegate
+- (void)URLSession:(NSURLSession*)session
+				   task:(NSURLSessionTask*)task
+	didReceiveChallenge:(NSURLAuthenticationChallenge*)challenge
+	  completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential*))completionHandler
+{
+	NSURLProtectionSpace* space = challenge.protectionSpace;
+	if (!space.isProxy || ![space.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPBasic])
+	{
+		completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+		return;
+	}
+	// Give up after a rejected attempt to avoid an endless retry loop with wrong credentials
+	if (self.user == nil || challenge.previousFailureCount > 0)
+	{
+		completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+		return;
+	}
+	NSString* password = self.password != nil ? self.password : @"";
+	completionHandler(NSURLSessionAuthChallengeUseCredential,
+		[NSURLCredential credentialWithUser:self.user password:password persistence:NSURLCredentialPersistenceForSession]);
+}
+
+- (void)dealloc
+{
+	[_user release];
+	[_password release];
+	[super dealloc];
+}
+@end
+
+static NSURLSession* CreateProxyUrlSession(const FString& proxyUrl)
+{
+	NSURLComponents* components = [NSURLComponents componentsWithString:proxyUrl.GetNSString()];
+	if (components == nil || components.scheme == nil || components.host.length == 0 || components.port == nil)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Invalid proxy URL (expected scheme://[user:pass@]host:port): %s. Proxy is ignored"), *proxyUrl);
+		return nil;
+	}
+
+	NSString* scheme = components.scheme.lowercaseString;
+	if (![scheme isEqualToString:@"http"] && ![scheme isEqualToString:@"https"])
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unsupported proxy scheme '%s' (only http and https are supported on Mac/iOS). Proxy is ignored"), *FString(scheme));
+		return nil;
+	}
+
+	// HTTPS proxy keys are macOS-only constants but are honored on iOS too, so use their raw string values
+	NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+	configuration.connectionProxyDictionary = @{
+		(NSString*)kCFNetworkProxiesHTTPEnable : @YES,
+		(NSString*)kCFNetworkProxiesHTTPProxy : components.host,
+		(NSString*)kCFNetworkProxiesHTTPPort : components.port,
+		@"HTTPSEnable" : @YES,
+		@"HTTPSProxy" : components.host,
+		@"HTTPSPort" : components.port
+	};
+
+	FAppleSentryProxyAuthDelegate* delegate = [[[FAppleSentryProxyAuthDelegate alloc] init] autorelease];
+	delegate.user = components.user;
+	delegate.password = components.password;
+
+	return [NSURLSession sessionWithConfiguration:configuration delegate:delegate delegateQueue:nil];
+}
+
 void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
 	USentryBeforeSendHandler* beforeSendHandler = callbackHandlers.BeforeSendHandler;
@@ -143,6 +213,10 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			for (auto it = settings->InAppInclude.CreateConstIterator(); it; ++it)
 			{
 				[options addInAppInclude:it->GetNSString()];
+			}
+			if (settings->UseProxy && !settings->ProxyUrl.IsEmpty())
+			{
+				options.urlSession = CreateProxyUrlSession(settings->ProxyUrl);
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
 			options.appHangTimeoutInterval = settings->AppNotRespondingTimeout;

@@ -507,7 +507,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General|Native",
 		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy",
-			SentryPlatforms = "Win64,Linux,Mac:Native,Android,Consoles"))
+			SentryPlatforms = "Win64,Linux,Mac,Android,IOS,Consoles"))
 	FString ProxyUrl;
 
 	UPROPERTY(Config, EditAnywhere, Category = "General|Native",
