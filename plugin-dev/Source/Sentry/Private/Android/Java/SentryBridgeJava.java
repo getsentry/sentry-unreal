@@ -72,6 +72,7 @@ public class SentryBridgeJava {
 					options.setDebug(settingJson.getBoolean("debug"));
 					options.setSampleRate(settingJson.getDouble("sampleRate"));
 					options.setMaxBreadcrumbs(settingJson.getInt("maxBreadcrumbs"));
+					options.setShutdownTimeoutMillis(settingJson.getLong("shutdownTimeout"));
 					options.setSendDefaultPii(settingJson.getBoolean("sendDefaultPii"));
 					if(settingJson.getBoolean("attachSessionReplay")) {
 						options.getSessionReplay().setSessionSampleRate(1.0);

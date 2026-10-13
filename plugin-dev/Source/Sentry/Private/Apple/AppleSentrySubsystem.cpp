@@ -98,6 +98,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.debug = settings->Debug;
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
+			options.shutdownTimeInterval = settings->ShutdownTimeout / 1000.0;
 			options.sendDefaultPii = settings->SendDefaultPii;
 			options.maxAttachmentSize = settings->MaxAttachmentSize;
 			options.enableLogs = YES;
@@ -352,7 +353,6 @@ void FAppleSentrySubsystem::Close()
 	}
 #endif
 
-	[SENTRY_APPLE_CLASS(SentryObjCSDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) close];
 }
 
