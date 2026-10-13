@@ -147,7 +147,8 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			}
 			if (settings->UseProxy && !settings->ProxyUrl.IsEmpty())
 			{
-				options.urlSession = FAppleSentryProxy::CreateUrlSession(settings->ProxyUrl);
+				ProxySession = [FAppleSentryProxy::CreateUrlSession(settings->ProxyUrl) retain];
+				options.urlSession = ProxySession;
 			}
 			options.enableAppHangTracking = settings->EnableAppNotRespondingTracking;
 			options.appHangTimeoutInterval = settings->AppNotRespondingTimeout;
@@ -359,6 +360,13 @@ void FAppleSentrySubsystem::Close()
 
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) flush:0];
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) close];
+
+	if (ProxySession)
+	{
+		[ProxySession finishTasksAndInvalidate];
+		[ProxySession release];
+		ProxySession = nil;
+	}
 }
 
 bool FAppleSentrySubsystem::IsEnabled()
