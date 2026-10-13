@@ -3,6 +3,7 @@
 #include "SentrySettingsCustomization.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
+#include "SentrySettingsLabels.h"
 #include "SentrySubsystem.h"
 #include "SentrySymToolsDownloader.h"
 
@@ -67,6 +68,7 @@ void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 	DrawDebugSymbolsNotice(DetailBuilder);
 	DrawSentryCrashReporterSection(DetailBuilder);
 	DrawUnrealCrashReporterNotice(DetailBuilder);
+	FSentrySettingsLabels::AddLabels(DetailBuilder);
 
 	SetPropertiesUpdateHandler(DetailBuilder);
 }

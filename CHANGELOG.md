@@ -6,6 +6,7 @@
 
 - Add support for explicit timestamps when starting or finishing transactions and spans on macOS, iOS and Android ([#1608](https://github.com/getsentry/sentry-unreal/pull/1608))
 - Keep sampling decisions consistent across services when propagating or continuing traces ([#1612](https://github.com/getsentry/sentry-unreal/pull/1612))
+- Show plugin settings platform, engine version and rebuild requirements in editor UI ([#1629](https://github.com/getsentry/sentry-unreal/pull/1629))
 
 ### Fixes
 
