@@ -384,62 +384,49 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable for promoted builds only", ToolTip = "Flag indicating whether to enable for promoted builds only."))
 	bool EnableForPromotedBuildsOnly;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Override Windows default crash capturing mechanism", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter.",
 			SentryPlatforms = "Win64,Xbox", SentryMinEngine = "5.2"))
 	bool EnableAutoCrashCapturing;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Use native crash backend", ToolTip = "Use the experimental native backend for crash reporting on Windows, Linux, macOS, and Xbox instead of the default backend (Crashpad on Windows/Linux, sentry-cocoa on macOS, Breakpad on Xbox). Requires rebuild after changing.",
 			SentryPlatforms = "Win64,Linux,Mac,Xbox", SentryRequiresRebuild, SentryExperimental))
 	bool UseNativeBackend;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Minidump capture mode", ToolTip = "Controls how much memory is captured in crash minidumps. Larger captures provide more debugging information but take longer to generate and upload.",
 			EditCondition = "UseNativeBackend"))
 	ESentryMinidumpMode MinidumpMode;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Crash reporting mode", ToolTip = "Controls how crash data is collected and sent to Sentry. Minidump mode sends raw dumps for server-side symbolication. Native stackwalking performs client-side unwinding for faster, smaller payloads.",
 			EditCondition = "UseNativeBackend"))
 	ESentryCrashReportingMode CrashReportingMode;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Thread stackwalk mode", ToolTip = "Controls which threads have their stack walked client-side. Walking every thread gives the most context but can noticeably delay crash processing in applications with a high thread count, such as editor builds. Requires native stackwalking to be enabled in the crash reporting mode.",
 			EditCondition = "UseNativeBackend"))
 	ESentryThreadStackwalkMode ThreadStackwalkMode;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Crash upload mode", ToolTip = "Controls what happens after crash data is captured. Sync keeps the crashed application blocked until the crash daemon finishes uploading. Async lets it terminate immediately while the daemon continues uploading in the background, which avoids long freezes when sending large crash payloads.",
 			EditCondition = "UseNativeBackend"))
 	ESentryCrashUploadMode CrashUploadMode;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Android crash capture mode", ToolTip = "Mechanism used to capture Android crashes and enrich them with additional context.", SentryPlatforms = "Android"))
 	ESentryAndroidCrashBackend AndroidCrashBackend;
 
-	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Crash Handling",
 		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
 			EditCondition = "!UseNativeBackend", SentryPlatforms = "Win64,Linux"))
 	bool CrashpadWaitForUpload;
 
-	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Errors & Crashes",
-		Meta = (DisplayName = "Sentry database location", ToolTip = "Location where Sentry stores its internal/temporary files.",
-			SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
-	ESentryDatabaseLocation DatabaseLocation;
-
-	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Errors & Crashes",
+	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Crash Handling",
 		Meta = (DisplayName = "Enable logging during crash handling", ToolTip = "Flag indicating whether the SDK should log additional crash information (such as stack traces and error messages). This is intended for debug builds only and is not safe for production use.",
 			SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
 	bool EnableOnCrashLogging;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Errors & Crashes",
-		Meta = (DisplayName = "In-app includes", Tooltip = "A list of string prefixes of module names that belong to the app.", SentryPlatforms = "Mac:Cocoa,IOS,Android"))
-	TArray<FString> InAppInclude;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Errors & Crashes",
-		Meta = (DisplayName = "In-app excludes", Tooltip = "A list of string prefixes of module names that don't belong to the app.", SentryPlatforms = "Android"))
-	TArray<FString> InAppExclude;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events",
 		Meta = (DisplayName = "Attach stack trace to manually captured events", ToolTip = "Flag indicating whether to attach stack trace automatically to events captured with CaptureMessage or CaptureEvent. Crashes, asserts and ensures always include a stack trace."))
@@ -487,6 +474,14 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable large attachments", ToolTip = "When enabled, attachments above an internal size threshold are uploaded out-of-band via a separate request. When disabled, oversized attachments are rejected by Sentry.",
 			SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
 	bool EnableLargeAttachments;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Enriching Events",
+		Meta = (DisplayName = "In-app includes", Tooltip = "A list of string prefixes of module names that belong to the app.", SentryPlatforms = "Mac:Cocoa,IOS,Android"))
+	TArray<FString> InAppInclude;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Enriching Events",
+		Meta = (DisplayName = "In-app excludes", Tooltip = "A list of string prefixes of module names that don't belong to the app.", SentryPlatforms = "Android"))
+	TArray<FString> InAppExclude;
 
 	UPROPERTY(Config, EditAnywhere, Category = "App Hangs",
 		Meta = (DisplayName = "Enable hang tracking", ToolTip = "Track application hangs (unresponsive game thread). By default uses Unreal Engine's built-in FThreadHeartBeat, which is available on Windows and Linux only. On other platforms enable `Use native hang tracking`. Only effective in packaged builds."))
@@ -652,6 +647,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Max cache entry age (seconds)", ToolTip = "Maximum age in seconds for cache entries. On startup, entries exceeding this age are removed. Set to 0 for no limit.",
 			EditCondition = "EnableOfflineCaching", ClampMin = 0))
 	int32 CacheMaxAge;
+
+	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Offline Caching",
+		Meta = (DisplayName = "Sentry database location", ToolTip = "Location where Sentry stores its internal/temporary files.",
+			SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
+	ESentryDatabaseLocation DatabaseLocation;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Enable session replay", ToolTip = "Captures a short gameplay video leading up to a crash and sends it to Sentry's Session Replay. On desktop platforms (Windows/Mac/Linux), requires the AVCodecsCore plugin plus a codec plugin matching the GPU vendor (NVCodecs for NVIDIA on Windows/Linux, AMFCodecs for AMD on Windows, VTCodecs on Mac) and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",

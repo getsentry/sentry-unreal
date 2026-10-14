@@ -79,7 +79,7 @@ void FSentrySettingsCustomization::SetCategoryOrder(IDetailLayoutBuilder& Detail
 {
 	static const TCHAR* Categories[] = {
 		TEXT("Core"),
-		TEXT("Errors & Crashes"),
+		TEXT("Crash Handling"),
 		TEXT("Enriching Events"),
 		TEXT("App Hangs"),
 		TEXT("Release Health"),
