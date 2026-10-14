@@ -113,6 +113,12 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		return;
 	}
 
+	if ((PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AttachSessionReplay) && AttachSessionReplay) ||
+		(PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableExternalCrashReporter) && EnableExternalCrashReporter))
+	{
+		return;
+	}
+
 	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, InitAutomatically) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseNativeBackend) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadSymbolsAutomatically) ||
