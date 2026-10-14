@@ -88,6 +88,7 @@ void FSentrySettingsCustomization::SetCategoryOrder(IDetailLayoutBuilder& Detail
 		TEXT("Metrics"),
 		TEXT("Hooks"),
 		TEXT("Privacy & PII"),
+		TEXT("Transport"),
 		TEXT("Offline Caching"),
 		TEXT("Session Replay"),
 		TEXT("Debug Symbols"),

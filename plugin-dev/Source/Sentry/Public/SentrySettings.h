@@ -372,14 +372,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging."))
 	bool Debug;
 
-	UPROPERTY(Config, EditAnywhere, Category = "Core",
-		Meta = (InlineEditConditionToggle))
-	bool UseProxy;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
-		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
-	FString ProxyUrl;
-
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core|Build Filters",
 		Meta = (DisplayName = "Enable for Build Configurations"))
 	FEnableBuildConfigurations EnableBuildConfigurations;
@@ -426,10 +418,6 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
 			EditCondition = "!UseNativeBackend", SentryPlatforms = "Win64,Linux"))
 	bool CrashpadWaitForUpload;
-
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Errors & Crashes",
-		Meta = (DisplayName = "Shutdown timeout, milliseconds", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0))
-	int32 ShutdownTimeout;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",
 		Meta = (DisplayName = "Sentry database location", ToolTip = "Location where Sentry stores its internal/temporary files.",
@@ -528,7 +516,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableAutoSessionTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Release Health",
-		Meta = (DisplayName = "Session timeout, milliseconds", ToolTip = "Time interval after which session will be terminated if application is in background mode.",
+		Meta = (DisplayName = "Session timeout (milliseconds)", ToolTip = "Time interval after which session will be terminated if application is in background mode.",
 			SentryPlatforms = "Mac:Cocoa,IOS,Android"))
 	int32 SessionTimeout;
 
@@ -633,6 +621,18 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
 		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
 	bool bDefaultUserConsentGiven;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Transport",
+		Meta = (InlineEditConditionToggle))
+	bool UseProxy;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Transport",
+		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
+	FString ProxyUrl;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Transport",
+		Meta = (DisplayName = "Shutdown timeout (milliseconds)", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0))
+	int32 ShutdownTimeout;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Offline Caching",
 		Meta = (DisplayName = "Enable offline caching", ToolTip = "Enables persistent caching of envelopes to disk. When enabled, envelopes are stored in a cache directory and retained regardless of send success or failure. The cache is cleaned up on startup based on the limits configured below. Available on Windows, Linux and Xbox only. On Android and Apple caching is enabled by default."))
