@@ -395,14 +395,14 @@ class SENTRY_API USentrySettings : public UObject
 	bool UseNativeBackend;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
-		Meta = (DisplayName = "Minidump capture mode", ToolTip = "Controls how much memory is captured in crash minidumps. Larger captures provide more debugging information but take longer to generate and upload.",
-			EditCondition = "UseNativeBackend"))
-	ESentryMinidumpMode MinidumpMode;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Crash reporting mode", ToolTip = "Controls how crash data is collected and sent to Sentry. Minidump mode sends raw dumps for server-side symbolication. Native stackwalking performs client-side unwinding for faster, smaller payloads.",
 			EditCondition = "UseNativeBackend"))
 	ESentryCrashReportingMode CrashReportingMode;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
+		Meta = (DisplayName = "Minidump capture mode", ToolTip = "Controls how much memory is captured in crash minidumps. Larger captures provide more debugging information but take longer to generate and upload.",
+			EditCondition = "UseNativeBackend && CrashReportingMode != ESentryCrashReportingMode::NativeStackwalking"))
+	ESentryMinidumpMode MinidumpMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Thread stackwalk mode", ToolTip = "Controls which threads have their stack walked client-side. Walking every thread gives the most context but can noticeably delay crash processing in applications with a high thread count, such as editor builds. Requires native stackwalking to be enabled in the crash reporting mode.",
@@ -713,7 +713,8 @@ class SENTRY_API USentrySettings : public UObject
 	FString CrashReporterUrl;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
-		Meta = (DisplayName = "Allow Unreal Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Unreal Crash Reporter."))
+		Meta = (DisplayName = "Allow Unreal Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Unreal Crash Reporter.",
+			SentryPlatforms = "Win64,Linux,Mac:Native"))
 	bool EnableCrashReporterContextPropagation;
 
 #if WITH_EDITOR
