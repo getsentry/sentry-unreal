@@ -381,8 +381,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool UseProxy;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core",
-		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy",
-			SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
+		Meta = (DisplayName = "HTTP proxy", ToolTip = "HTTP proxy through which requests can be tunneled to Sentry.", EditCondition = "UseProxy"))
 	FString ProxyUrl;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Core|Build Filters",
@@ -433,8 +432,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool CrashpadWaitForUpload;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Errors & Crashes",
-		Meta = (DisplayName = "Shutdown timeout, milliseconds", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0,
-			SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
+		Meta = (DisplayName = "Shutdown timeout, milliseconds", ToolTip = "Maximum time to wait for the asynchronous tasks (e.g., in-flight envelope uploads) to finish on shutdown before attempting a forced termination.", ClampMin = 0))
 	int32 ShutdownTimeout;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Errors & Crashes",

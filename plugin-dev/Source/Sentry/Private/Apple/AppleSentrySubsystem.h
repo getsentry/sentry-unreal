@@ -15,6 +15,7 @@
 @class SentryObjCHint;
 @class SentryObjCEvent;
 @class SentryObjCScope;
+@class NSURLSession;
 
 class FAppleSentrySubsystem : public ISentrySubsystem
 {
@@ -93,6 +94,10 @@ protected:
 
 private:
 	TMap<FString, FString> ParseSentryBaggage(const TArray<FString>& baggageHeaders) const;
+
+	void ReleaseProxySession();
+
+	NSURLSession* ProxySession = nullptr;
 
 #ifdef USE_SENTRY_SESSION_REPLAY
 	void StartSessionReplay(const USentrySettings* settings);
