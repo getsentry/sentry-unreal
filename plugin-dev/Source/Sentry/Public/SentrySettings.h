@@ -489,8 +489,7 @@ class SENTRY_API USentrySettings : public UObject
 	FTagsPromotion TagsPromotion;
 
 	UPROPERTY(Config, EditAnywhere, Category = "App Hangs",
-		Meta = (DisplayName = "Enable hang tracking", ToolTip = "Track application hangs (unresponsive game thread). By default uses Unreal Engine's built-in FThreadHeartBeat, which is available on Windows and Linux only. On other platforms enable `Use native hang tracking`. Only effective in packaged builds.",
-			SentryPlatforms = "Win64,Linux,Mac:Native,Android"))
+		Meta = (DisplayName = "Enable hang tracking", ToolTip = "Track application hangs (unresponsive game thread). By default uses Unreal Engine's built-in FThreadHeartBeat, which is available on Windows and Linux only. On other platforms enable `Use native hang tracking`. Only effective in packaged builds."))
 	bool EnableHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "App Hangs",
@@ -503,12 +502,12 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableHangTracking", SentryPlatforms = "Win64,Linux,Mac:Native,Android"))
 	bool UseNativeHangTracking;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "App Hangs",
-		Meta = (DisplayName = "Enable ANR error tracking", Tooltip = "Flag indicating whether to enable tracking of ANR (app not responding) errors.", SentryPlatforms = "Mac:Cocoa,IOS,Android"))
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "App Hangs",
+		Meta = (DisplayName = "Enable main thread hang tracking", ToolTip = "Flag indicating whether to enable tracking of main thread hangs (App Hangs on Apple platforms, ANRs on Android).", SentryPlatforms = "Mac:Cocoa,IOS,Android"))
 	bool EnableAppNotRespondingTracking;
 
-	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "App Hangs",
-		Meta = (DisplayName = "ANR timeout (seconds)", ToolTip = "Duration the main thread must be unresponsive before an ANR/app-hang event is captured. Applied on Apple (iOS/macOS) and on Android API < 30. On Android API >= 30, the OS controls the threshold via ApplicationExitInfo and this value is ignored.",
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "App Hangs",
+		Meta = (DisplayName = "Main thread hang timeout (seconds)", ToolTip = "Duration the main thread must be unresponsive before an ANR/app-hang event is captured. Applied on Apple (iOS/macOS) and on Android API < 30. On Android API >= 30, the OS controls the threshold via ApplicationExitInfo and this value is ignored.",
 			EditCondition = "EnableAppNotRespondingTracking", ClampMin = 1.0f))
 	float AppNotRespondingTimeout;
 
