@@ -365,11 +365,11 @@ class SENTRY_API USentrySettings : public UObject
 	float SampleRate;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
-		Meta = (DisplayName = "Editor DSN", ToolTip = "The Editor DSN (Data Source Name) if you want to isolate editor crashes from packaged game crashes, defaults to Dsn if not provided."))
+		Meta = (DisplayName = "Editor DSN", ToolTip = "DSN (Data Source Name) used when running in the editor. Use it to send events from the editor to a different project than packaged games. Defaults to DSN if not provided."))
 	FString EditorDsn;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Core",
-		Meta = (DisplayName = "Enable SDK diagnostic logging", ToolTip = "Flag indicating whether to enable verbose logging."))
+		Meta = (DisplayName = "Enable SDK diagnostic logging", ToolTip = "Flag indicating whether to print the SDK's internal diagnostic messages to the game log."))
 	bool Debug;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
@@ -442,7 +442,7 @@ class SENTRY_API USentrySettings : public UObject
 	TArray<FString> InAppExclude;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events",
-		Meta = (DisplayName = "Attach stack trace to manually captured events", ToolTip = "Flag indicating whether to attach stack trace automatically to captured events."))
+		Meta = (DisplayName = "Attach stack trace to manually captured events", ToolTip = "Flag indicating whether to attach stack trace automatically to events captured with CaptureMessage or CaptureEvent. Crashes, asserts and ensures always include a stack trace."))
 	bool AttachStacktrace;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Enriching Events",
@@ -466,7 +466,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableAutoLogAttachment;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
-		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach screenshot of the application when an error occurs."))
+		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach a screenshot of the application to crash and ensure events."))
 	bool AttachScreenshot;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
@@ -479,7 +479,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool AttachGpuDump;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Enriching Events|Attachments",
-		Meta = (DisplayName = "Max attachment size (bytes)", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed but this size is planned to be increased. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/",
+		Meta = (DisplayName = "Max attachment size (bytes)", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/",
 			SentryPlatforms = "Mac:Cocoa,IOS"))
 	int32 MaxAttachmentSize;
 
@@ -498,8 +498,8 @@ class SENTRY_API USentrySettings : public UObject
 	float HangTimeoutDuration;
 
 	UPROPERTY(Config, EditAnywhere, Category = "App Hangs",
-		Meta = (DisplayName = "Use native hang tracking", ToolTip = "Detect hangs with the sentry-native SDK's built-in app-hang watchdog instead of Unreal Engine's FThreadHeartBeat-based watcher. Works with any crash handler backend (both Crashpad and Native). Supported on Windows, macOS and Linux. On Android, routes through the NDK app-hang watchdog to monitor the game thread, running alongside (not replacing) the JVM ANR watchdog. Ignored on other platforms.",
-			EditCondition = "EnableHangTracking", SentryPlatforms = "Win64,Linux,Mac:Native,Android"))
+		Meta = (DisplayName = "Use native hang tracking", ToolTip = "Detect hangs with the sentry-native SDK's built-in app-hang watchdog instead of Unreal Engine's FThreadHeartBeat-based watcher. Works with any crash handler backend (both Crashpad and Native). Supported on Windows, Linux, macOS (Native) and Xbox. On Android, routes through the NDK app-hang watchdog to monitor the game thread, running alongside (not replacing) the JVM ANR watchdog. Ignored on other platforms.",
+			EditCondition = "EnableHangTracking", SentryPlatforms = "Win64,Linux,Mac:Native,Android,Xbox"))
 	bool UseNativeHangTracking;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "App Hangs",
@@ -611,11 +611,11 @@ class SENTRY_API USentrySettings : public UObject
 	TSubclassOf<USentryBeforeMetricHandler> BeforeMetricHandler;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
-		Meta = (DisplayName = "Send personally identifiable information", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
+		Meta = (DisplayName = "Send personally identifiable information", ToolTip = "Flag indicating whether to send personally identifiable information (PII), such as the user's IP address, with captured events."))
 	bool SendDefaultPii;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
-		Meta = (DisplayName = "Require User Consent", ToolTip = "True if user's consent is required before uploading crash data.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
+		Meta = (DisplayName = "Require User Consent", ToolTip = "True if user's consent is required before the SDK sends any data to Sentry.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
 	bool bRequireUserConsent;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
@@ -693,7 +693,7 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryCliLogLevel DiagnosticLevel;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Use legacy Sentry Gradle plugin", ToolTip = "Flag indicating whether to use legacy Sentry Gradle plugin for debug symbol upload. No engine's Gradle version bump is required if enabled. This can be used as a fallback if the newer Gradle 7.5 causing compatibility issues with other third-party plugins.",
+		Meta = (DisplayName = "Use legacy Sentry Gradle plugin", ToolTip = "Flag indicating whether to use legacy Sentry Gradle plugin for debug symbol upload. If enabled, the engine's Gradle version does not need to be bumped. This can be used as a fallback if the newer Gradle 7.5 causes compatibility issues with other third-party plugins.",
 			EditCondition = "UploadSymbolsAutomatically", SentryPlatforms = "Android"))
 	bool UseLegacyGradlePlugin;
 
