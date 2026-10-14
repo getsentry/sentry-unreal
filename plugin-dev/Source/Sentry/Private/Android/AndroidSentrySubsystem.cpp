@@ -91,7 +91,8 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetStringField(TEXT("deviceType"), GetDeviceType());
 	if (settings->EnableOfflineCaching)
 	{
-		SettingsJson->SetNumberField(TEXT("maxCacheItems"), settings->CacheMaxItems);
+		// sentry-java treats 0 as an empty cache, while the setting uses 0 for no limit
+		SettingsJson->SetNumberField(TEXT("maxCacheItems"), settings->CacheMaxItems > 0 ? settings->CacheMaxItems : MAX_int32);
 	}
 	if (settings->UseProxy && !settings->ProxyUrl.IsEmpty())
 	{
