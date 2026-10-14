@@ -369,10 +369,6 @@ class SENTRY_API USentrySettings : public UObject
 	float SampleRate;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Core",
-		Meta = (DisplayName = "Attach personally identifiable information", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
-	bool SendDefaultPii;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Core",
 		Meta = (DisplayName = "Enable verbose logging", ToolTip = "Flag indicating whether to enable verbose logging."))
 	bool Debug;
 
@@ -626,11 +622,15 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Custom `beforeMetric` event handler", ToolTip = "Custom handler for processing metrics before sending them to Sentry."))
 	TSubclassOf<USentryBeforeMetricHandler> BeforeMetricHandler;
 
-	UPROPERTY(Config, EditAnywhere, Category = "User Consent",
+	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
+		Meta = (DisplayName = "Send personally identifiable information", ToolTip = "Flag indicating whether to attach personally identifiable information (PII) to captured events."))
+	bool SendDefaultPii;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
 		Meta = (DisplayName = "Require User Consent", ToolTip = "True if user's consent is required before uploading crash data.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
 	bool bRequireUserConsent;
 
-	UPROPERTY(Config, EditAnywhere, Category = "User Consent",
+	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
 		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
 	bool bDefaultUserConsentGiven;
 
