@@ -35,6 +35,8 @@ public:
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 
 private:
+	void SetCategoryOrder(IDetailLayoutBuilder& DetailBuilder);
+
 	void DrawGeneralNotice(IDetailLayoutBuilder& DetailBuilder);
 	void DrawSentryCrashReporterSection(IDetailLayoutBuilder& DetailBuilder);
 	void DrawUnrealCrashReporterNotice(IDetailLayoutBuilder& DetailBuilder);

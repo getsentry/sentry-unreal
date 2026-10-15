@@ -64,6 +64,8 @@ TSharedRef<IDetailCustomization> FSentrySettingsCustomization::MakeInstance()
 
 void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
+	SetCategoryOrder(DetailBuilder);
+
 	DrawGeneralNotice(DetailBuilder);
 	DrawDebugSymbolsNotice(DetailBuilder);
 	DrawSentryCrashReporterSection(DetailBuilder);
@@ -73,9 +75,36 @@ void FSentrySettingsCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 	SetPropertiesUpdateHandler(DetailBuilder);
 }
 
+void FSentrySettingsCustomization::SetCategoryOrder(IDetailLayoutBuilder& DetailBuilder)
+{
+	static const TCHAR* Categories[] = {
+		TEXT("Core"),
+		TEXT("Crash Handling"),
+		TEXT("Enriching Events"),
+		TEXT("App Hangs"),
+		TEXT("Release Health"),
+		TEXT("Tracing"),
+		TEXT("Logs"),
+		TEXT("Metrics"),
+		TEXT("Hooks"),
+		TEXT("Privacy & PII"),
+		TEXT("Transport"),
+		TEXT("Offline Caching"),
+		TEXT("Session Replay"),
+		TEXT("Debug Symbols"),
+		TEXT("Sentry Crash Reporter"),
+		TEXT("Unreal Crash Reporter")
+	};
+
+	for (const TCHAR* Category : Categories)
+	{
+		DetailBuilder.EditCategory(Category);
+	}
+}
+
 void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& DetailBuilder)
 {
-	IDetailCategoryBuilder& GeneralCategory = DetailBuilder.EditCategory(TEXT("General"));
+	IDetailCategoryBuilder& GeneralCategory = DetailBuilder.EditCategory(TEXT("Core"));
 
 	TSharedRef<SWidget> GeneralMissingDsnWidget = MakeGeneralSettingsStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
 		FText::FromString(TEXT("Sentry DSN is not configured.")), FText());
@@ -87,7 +116,7 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 		FText::FromString(TEXT("Sentry is configured.")), FText());
 
 	// clang-format off
-	GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
+	GeneralCategory.AddCustomRow(FText::FromString(TEXT("Core")), false)
 		.WholeRowWidget
 		[
 			SNew(SBorder)
@@ -124,7 +153,7 @@ void FSentrySettingsCustomization::DrawGeneralNotice(IDetailLayoutBuilder& Detai
 			FText::FromString(TEXT("Sentry Linux pre-compiled binaries are ready.")), FText());
 
 		// clang-format off
-		GeneralCategory.AddCustomRow(FText::FromString(TEXT("General")), false)
+		GeneralCategory.AddCustomRow(FText::FromString(TEXT("Core")), false)
 			.WholeRowWidget
 			[
 				SNew(SBorder)
