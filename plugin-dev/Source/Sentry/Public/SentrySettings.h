@@ -372,6 +372,10 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Enable SDK diagnostic logging", ToolTip = "Flag indicating whether to print the SDK's internal diagnostic messages to the game log."))
 	bool Debug;
 
+	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Core",
+		Meta = (DisplayName = "Diagnostic logging level", ToolTip = "Minimum level of SDK diagnostic messages to print.", EditCondition = "Debug"))
+	ESentryLevel DebugLevel;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
 		Meta = (DisplayName = "Enable for Build Configurations"))
 	FEnableBuildConfigurations EnableBuildConfigurations;

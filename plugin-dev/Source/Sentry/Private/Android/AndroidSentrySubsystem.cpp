@@ -70,6 +70,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetNumberField(TEXT("sessionTimeout"), settings->SessionTimeout);
 	SettingsJson->SetBoolField(TEXT("enableStackTrace"), settings->AttachStacktrace);
 	SettingsJson->SetBoolField(TEXT("debug"), settings->Debug);
+	SettingsJson->SetStringField(TEXT("debugLevel"), StaticEnum<ESentryLevel>()->GetNameStringByValue(static_cast<int64>(settings->DebugLevel)).ToUpper());
 	SettingsJson->SetNumberField(TEXT("sampleRate"), settings->SampleRate);
 	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);
 	SettingsJson->SetNumberField(TEXT("shutdownTimeout"), settings->ShutdownTimeout);
