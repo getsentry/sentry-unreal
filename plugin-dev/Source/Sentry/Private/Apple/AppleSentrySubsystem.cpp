@@ -155,7 +155,9 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.appHangTimeoutInterval = settings->AppNotRespondingTimeout;
 			if (settings->EnableOfflineCaching)
 			{
-				options.maxCacheItems = settings->CacheMaxItems;
+				// sentry-cocoa treats 0 as an empty cache, while the setting uses 0 for no limit.
+				// MAX_int32 instead of NSUIntegerMax, which overflows sentry-cocoa's signed conversion.
+				options.maxCacheItems = settings->CacheMaxItems > 0 ? settings->CacheMaxItems : MAX_int32;
 			}
 			if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
 			{

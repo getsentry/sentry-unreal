@@ -18,6 +18,7 @@
 - Fix missing `CrashType` tag on errors captured on Apple/Android and on native app hangs ([#1619](https://github.com/getsentry/sentry-unreal/pull/1619))
 - Fix crash when reading a missing context or other collection from events, scopes, breadcrumbs or users on Android ([#1622](https://github.com/getsentry/sentry-unreal/pull/1622))
 - Fix assertion callstack frames being captured as error breadcrumbs on iOS ([#1627](https://github.com/getsentry/sentry-unreal/pull/1627))
+- Fix `CacheMaxItems` set to `0` dropping all events on macOS, iOS and Android instead of disabling the limit ([#1634](https://github.com/getsentry/sentry-unreal/pull/1634))
 
 ### Dependencies
 
