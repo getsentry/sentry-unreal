@@ -24,7 +24,8 @@ enum class ESentryAppTerminationType : uint8
 	Ensure,
 	Fatal,
 	Hang,
-	AllocatorCorruption
+	AllocatorCorruption,
+	GpuHang
 };
 
 UCLASS()

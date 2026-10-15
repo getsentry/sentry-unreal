@@ -80,6 +80,9 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 		case ESentryAppTerminationType::GpuDebugCrash:
 			GEngine->Exec(nullptr, TEXT("GPUDebugCrash platformbreak"));
 			break;
+		case ESentryAppTerminationType::GpuHang:
+			GEngine->Exec(nullptr, TEXT("GPUDebugCrash hang"));
+			break;
 		case ESentryAppTerminationType::FastFail:
 			{
 #if PLATFORM_MICROSOFT

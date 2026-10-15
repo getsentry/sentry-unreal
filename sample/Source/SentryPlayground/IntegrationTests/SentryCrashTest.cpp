@@ -12,6 +12,8 @@
 
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformProcess.h"
+#include "HAL/PlatformTime.h"
+#include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 
 void FSentryCrashTest::Run()
@@ -53,6 +55,28 @@ void FSentryCrashTest::Run()
 		// Cap process memory so exhausting it doesn't starve the whole machine
 		// (and the out-of-process crash handler with it) on CI runners
 		USentryPlaygroundTestUtils::SetMemoryLimit(4096);
+	}
+
+	if (CrashType == ESentryAppTerminationType::GpuHang)
+	{
+		// The GPU hang must be triggered only once the renderer has been submitting work for a while.
+		// Capture AsShared() so this test stays alive past RunIntegrationTest returning.
+		TSharedRef<FSentryBaseIntegrationTest> Self = AsShared();
+		TSharedRef<bool> bHangTriggered = MakeShared<bool>(false);
+		const double TriggerTime = FPlatformTime::Seconds() + 10.0;
+
+		FCoreDelegates::OnEndFrame.AddLambda([Self, bHangTriggered, TriggerTime]()
+		{
+			if (*bHangTriggered || FPlatformTime::Seconds() < TriggerTime)
+			{
+				return;
+			}
+
+			*bHangTriggered = true;
+
+			USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType::GpuHang);
+		});
+		return;
 	}
 
 	USentryPlaygroundCrashUtils::Terminate(CrashType);
