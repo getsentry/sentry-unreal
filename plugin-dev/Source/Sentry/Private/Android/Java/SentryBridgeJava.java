@@ -72,6 +72,7 @@ public class SentryBridgeJava {
 					options.setSessionTrackingIntervalMillis(settingJson.getLong("sessionTimeout"));
 					options.setAttachStacktrace(settingJson.getBoolean("enableStackTrace"));
 					options.setDebug(settingJson.getBoolean("debug"));
+					options.setDiagnosticLevel(SentryLevel.valueOf(settingJson.getString("debugLevel")));
 					options.setSampleRate(settingJson.getDouble("sampleRate"));
 					options.setMaxBreadcrumbs(settingJson.getInt("maxBreadcrumbs"));
 					options.setShutdownTimeoutMillis(settingJson.getLong("shutdownTimeout"));

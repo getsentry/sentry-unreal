@@ -97,6 +97,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 			options.sessionTrackingIntervalMillis = settings->SessionTimeout;
 			options.attachStacktrace = settings->AttachStacktrace;
 			options.debug = settings->Debug;
+			options.diagnosticLevel = FAppleSentryConverters::SentryLevelToNative(settings->DebugLevel);
 			options.sampleRate = [NSNumber numberWithFloat:settings->SampleRate];
 			options.maxBreadcrumbs = settings->MaxBreadcrumbs;
 			options.shutdownTimeInterval = settings->ShutdownTimeout / 1000.0;

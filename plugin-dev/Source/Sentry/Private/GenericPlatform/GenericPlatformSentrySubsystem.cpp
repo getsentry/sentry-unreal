@@ -685,6 +685,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	sentry_options_set_dist(options, TCHAR_TO_UTF8(*settings->Dist));
 	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
 	sentry_options_set_debug(options, settings->Debug);
+	sentry_options_set_logger_level(options, FGenericPlatformSentryConverters::SentryLevelToNative(settings->DebugLevel));
 	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
 	sentry_options_set_sample_rate(options, settings->SampleRate);
 	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
