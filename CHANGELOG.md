@@ -10,6 +10,7 @@
 - Add HTTP proxy support on Android, macOS and iOS ([#1631](https://github.com/getsentry/sentry-unreal/pull/1631))
 - Apply `ShutdownTimeout` setting on Android, macOS and iOS ([#1632](https://github.com/getsentry/sentry-unreal/pull/1632))
 - Regroup plugin settings into feature-based sections ([#1633](https://github.com/getsentry/sentry-unreal/pull/1633))
+- Add diagnostic logging level setting ([#1637](https://github.com/getsentry/sentry-unreal/pull/1637))
 
 ### Fixes
 

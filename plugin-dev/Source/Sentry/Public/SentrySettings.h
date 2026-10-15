@@ -373,7 +373,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool Debug;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Core",
-		Meta = (DisplayName = "Diagnostic logging level", ToolTip = "Minimum level of the SDK's internal diagnostic messages to print. Messages go to the game log on Windows, Linux, macOS (Native) and consoles, to the Xcode console on macOS and iOS, and to logcat on Android.", EditCondition = "Debug"))
+		Meta = (DisplayName = "Diagnostic logging level", ToolTip = "Minimum level of SDK diagnostic messages to print.", EditCondition = "Debug"))
 	ESentryLevel DebugLevel;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
