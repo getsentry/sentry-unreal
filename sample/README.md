@@ -106,6 +106,7 @@ The following test switches are supported:
 - `-crash-assert` - `check()` assertion failure
 - `-crash-oom` - out-of-memory crash
 - `-crash-alloc-corruption` - latent allocator corruption
+- `-crash-gpu-hang` - GPU hang triggered ~10 seconds after startup (requires a real RHI, i.e. no `-nullrhi`)
 - `-message-capture` - capture a message event
 - `-feedback-capture` - capture user feedback associated with an event
 - `-log-capture` - capture a structured log
