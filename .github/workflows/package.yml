@@ -12,9 +12,15 @@ on:
         required: false
 
 jobs:
-  package-preparation:
-    name: Prepare
+  pack:
+    name: ${{ matrix.engine == 'generic' && 'Generic' || format('UE {0}', matrix.engine) }}
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Must match scripts/packaging/engine-versions.txt
+        engine: ['5.8', '5.7', '5.6', '5.5', '5.4', '5.3', '5.2', '5.1', '5.0', '4.27', 'generic']
 
     env:
       DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
@@ -158,15 +164,27 @@ jobs:
             macos-binaries.zip
           rm macos-binaries.zip
 
-      - name: Prepare Sentry packages for release
+      - name: Pack plugin
         shell: pwsh
-        run: ./scripts/packaging/pack.ps1
+        run: ./scripts/packaging/pack.ps1 -EngineVersion ${{ matrix.engine }}
 
-      - name: Upload release artifacts
+      - name: Upload package
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
-          name: ${{ github.sha }}
+          name: package-${{ matrix.engine }}
           if-no-files-found: error
           path: |
             sentry-unreal-*.zip
+
+  merge:
+    name: Release artifact
+    needs: pack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Merge packages for craft
+        uses: actions/upload-artifact/merge@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+          pattern: package-*
