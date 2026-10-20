@@ -171,7 +171,7 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: package-${{ matrix.engine }}
+          name: sentry-unreal${{ matrix.engine != 'generic' && format('-engine{0}', matrix.engine) || '' }}
           if-no-files-found: error
           path: |
             sentry-unreal-*.zip
@@ -187,4 +187,4 @@ jobs:
         with:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
-          pattern: package-*
+          pattern: sentry-unreal*
