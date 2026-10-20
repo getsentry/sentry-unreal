@@ -633,7 +633,7 @@ void FAppleSentrySubsystem::SetContext(const FString& key, const TMap<FString, F
 void FAppleSentrySubsystem::UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values)
 {
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) configureScope:^(SentryObjCScope* scope) {
-		NSDictionary* contexts = [scope serialize][@"context"];
+		NSDictionary* contexts = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:scope][@"context"];
 		NSDictionary* existing = [contexts objectForKey:key.GetNSString()];
 
 		NSMutableDictionary* merged = existing ? [existing mutableCopy] : [NSMutableDictionary dictionary];
