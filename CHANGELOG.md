@@ -4,7 +4,7 @@
 
 ### Behavioral Changes
 
-- Report Wine and Proton runtime info only through the Native SDK's `wine` context; the plugin no longer sets the `runtime` context or the `compatibility`, `wine_version`, `proton_build` and `proton_experimental` tags ([#XXXX](https://github.com/getsentry/sentry-unreal/pull/XXXX))
+- Report Wine and Proton runtime info only through the Native SDK's `wine` context; the plugin no longer sets the `runtime` context or the `compatibility`, `wine_version`, `proton_build` and `proton_experimental` tags ([#1649](https://github.com/getsentry/sentry-unreal/pull/1649))
 
 ### Fixes
 
