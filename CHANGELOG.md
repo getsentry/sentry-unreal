@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Replace deprecated breadcrumb data setter on macOS and iOS ([#1645](https://github.com/getsentry/sentry-unreal/pull/1645))
+
 ### Dependencies
 
 - Bump CLI from v3.8.0 to v3.8.1 ([#1643](https://github.com/getsentry/sentry-unreal/pull/1643))

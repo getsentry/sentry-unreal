@@ -61,7 +61,16 @@ FString FAppleSentryBreadcrumb::GetCategory() const
 
 void FAppleSentryBreadcrumb::SetData(const TMap<FString, FSentryVariant>& data)
 {
-	BreadcrumbApple.data = FAppleSentryConverters::VariantMapToNative(data);
+	for (NSString* key in [BreadcrumbApple.data allKeys])
+	{
+		[BreadcrumbApple setDataValue:nil forKey:key];
+	}
+
+	NSDictionary* dataNative = FAppleSentryConverters::VariantMapToNative(data);
+	for (NSString* key in dataNative)
+	{
+		[BreadcrumbApple setDataValue:dataNative[key] forKey:key];
+	}
 }
 
 TMap<FString, FSentryVariant> FAppleSentryBreadcrumb::GetData() const
