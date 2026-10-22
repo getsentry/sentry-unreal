@@ -1,5 +1,10 @@
 # Packages plugin files for publishing to GitHub Releases
 
+param(
+    # Package only this engine version (or "generic"). All versions are packaged if omitted.
+    [string]$EngineVersion
+)
+
 . $PSScriptRoot/pack-utils.ps1
 
 $projectRoot = "$PSScriptRoot/../.."
@@ -34,6 +39,15 @@ function packFiles()
 
     $engineVersions = Get-Content "$PSScriptRoot/engine-versions.txt"
     $engineVersions += "generic"
+
+    if ($EngineVersion)
+    {
+        if ($engineVersions -notcontains $EngineVersion)
+        {
+            throw "Unsupported engine version: $EngineVersion"
+        }
+        $engineVersions = @($EngineVersion)
+    }
 
     foreach ($engineVersion in $engineVersions)
     {
