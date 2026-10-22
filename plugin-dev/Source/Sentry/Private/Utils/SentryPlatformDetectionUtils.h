@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SentryPlatformInfo.h"
 
 /**
  * Utility class for detecting platform-specific runtime environments
@@ -14,11 +13,11 @@ class FSentryPlatformDetectionUtils
 public:
 	/**
 	 * Detects if running under Wine or Proton (Windows binaries on Linux)
-	 * Works by checking for Wine's ntdll.dll exports and environment variables
+	 * Works by checking for Wine's ntdll.dll exports
 	 *
-	 * @return Wine/Proton detection information
+	 * @return true if Wine or Proton is detected
 	 */
-	static FWineProtonInfo DetectWineProton();
+	static bool IsRunningUnderWine();
 
 	/**
 	 * Detects if running on Steam Deck hardware using SMBIOS/DMI data.
@@ -50,22 +49,7 @@ public:
 	 */
 	static bool IsRunningSteam();
 
-	/**
-	 * Gets the runtime name for Sentry context based on Wine/Proton info
-	 * Returns "Proton" or "Wine"
-	 */
-	static FString GetRuntimeName(const FWineProtonInfo& WineProtonInfo);
-
-	/**
-	 * Gets the runtime version for Sentry context based on Wine/Proton info
-	 * Returns Proton build name or Wine version
-	 */
-	static FString GetRuntimeVersion(const FWineProtonInfo& WineProtonInfo);
-
 private:
-	/** Parses Wine version string to extract version and Proton information */
-	static void ParseWineVersion(const FString& VersionString, FWineProtonInfo& OutInfo);
-
 	/**
 	 * Parses /etc/os-release (or /run/host/etc/os-release) and returns a map of key-value pairs.
 	 * On Windows under Wine/Proton, reads from the Z: drive mapping.
