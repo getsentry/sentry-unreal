@@ -10,6 +10,8 @@
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include "Windows/HideWindowsPlatformTypes.h"
 #include <winternl.h>
+#elif PLATFORM_LINUX
+#include <sys/utsname.h>
 #endif
 
 bool FSentryPlatformDetectionUtils::IsRunningUnderWine()
@@ -99,6 +101,95 @@ bool FSentryPlatformDetectionUtils::IsRunningSteam()
 	FString SteamOverlayGameId = FPlatformMisc::GetEnvironmentVariable(TEXT("SteamOverlayGameId"));
 
 	return !SteamAppId.IsEmpty() || !SteamGameId.IsEmpty() || !SteamOverlayGameId.IsEmpty();
+}
+
+TMap<FString, FSentryVariant> FSentryPlatformDetectionUtils::MakeOsContext(const FString& Name, bool bPreferDistroVersion)
+{
+	const TMap<FString, FString> OsRelease = ParseOsRelease();
+	const FString DistroName = OsRelease.FindRef(TEXT("NAME"));
+	const FString DistroVersion = OsRelease.FindRef(TEXT("VERSION_ID"));
+	const FString DistroBuild = OsRelease.FindRef(TEXT("BUILD_ID"));
+	const FString DistroPrettyName = OsRelease.FindRef(TEXT("PRETTY_NAME"));
+	const FString KernelVersion = GetKernelVersion();
+
+	TMap<FString, FSentryVariant> OSContext;
+	OSContext.Add(TEXT("type"), TEXT("os"));
+	OSContext.Add(TEXT("name"), Name);
+
+	FString Version = bPreferDistroVersion ? DistroVersion : KernelVersion;
+	if (Version.IsEmpty())
+	{
+		Version = bPreferDistroVersion ? KernelVersion : DistroVersion;
+	}
+	if (!Version.IsEmpty())
+	{
+		OSContext.Add(TEXT("version"), Version);
+	}
+	if (!DistroBuild.IsEmpty())
+	{
+		OSContext.Add(TEXT("build"), DistroBuild);
+	}
+	if (!KernelVersion.IsEmpty())
+	{
+		OSContext.Add(TEXT("kernel_version"), KernelVersion);
+	}
+
+	if (!DistroName.IsEmpty() && !DistroName.Equals(Name, ESearchCase::IgnoreCase))
+	{
+		OSContext.Add(TEXT("distribution_name"), DistroName);
+		if (!DistroVersion.IsEmpty())
+		{
+			OSContext.Add(TEXT("distribution_version"), DistroVersion);
+		}
+		if (!DistroPrettyName.IsEmpty())
+		{
+			OSContext.Add(TEXT("distribution_pretty_name"), DistroPrettyName);
+		}
+	}
+
+	return OSContext;
+}
+
+FString FSentryPlatformDetectionUtils::GetKernelVersion()
+{
+#if PLATFORM_WINDOWS
+	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
+	if (hNtDll == nullptr)
+	{
+		return FString();
+	}
+
+	// wine_get_host_version is exported by Wine's ntdll and reports the host's uname data
+	typedef void(CDECL * wine_get_host_version_t)(const char** sysname, const char** release);
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4191) // unsafe conversion from FARPROC
+#endif
+	wine_get_host_version_t wine_get_host_version =
+		reinterpret_cast<wine_get_host_version_t>(GetProcAddress(hNtDll, "wine_get_host_version"));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+	if (wine_get_host_version != nullptr)
+	{
+		const char* SysName = nullptr;
+		const char* Release = nullptr;
+		wine_get_host_version(&SysName, &Release);
+		if (Release != nullptr)
+		{
+			return FString(UTF8_TO_TCHAR(Release));
+		}
+	}
+#elif PLATFORM_LINUX
+	struct utsname UtsName;
+	if (uname(&UtsName) == 0)
+	{
+		return FString(UTF8_TO_TCHAR(UtsName.release));
+	}
+#endif
+
+	return FString();
 }
 
 TMap<FString, FString> FSentryPlatformDetectionUtils::ParseOsRelease()

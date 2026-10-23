@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "SentryVariant.h"
+
 /**
  * Utility class for detecting platform-specific runtime environments
  * including Wine/Proton, Linux distributions, and handheld devices
@@ -49,7 +51,19 @@ public:
 	 */
 	static bool IsRunningSteam();
 
+	/**
+	 * Builds an OS context for the Linux host using os-release data and the kernel version.
+	 * Works on native Linux and on Windows under Wine/Proton.
+	 *
+	 * @param Name OS name to report (e.g. "SteamOS", "Bazzite", "Linux")
+	 * @param bPreferDistroVersion Whether to report the distro version instead of the kernel version
+	 */
+	static TMap<FString, FSentryVariant> MakeOsContext(const FString& Name, bool bPreferDistroVersion);
+
 private:
+	/** Gets the Linux kernel release of the host */
+	static FString GetKernelVersion();
+
 	/**
 	 * Parses /etc/os-release (or /run/host/etc/os-release) and returns a map of key-value pairs.
 	 * On Windows under Wine/Proton, reads from the Z: drive mapping.
