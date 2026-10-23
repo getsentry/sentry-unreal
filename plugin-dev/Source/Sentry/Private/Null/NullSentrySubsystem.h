@@ -30,6 +30,7 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override { return nullptr; }
 	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override { return nullptr; }
+	virtual TSharedPtr<ISentryId> CaptureScriptError(const FString& type, const FString& message, const FString& platform, const TArray<FSentryScriptStackFrame>& frames) override { return nullptr; }
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override {}
 	virtual void CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope) override {}
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override {}

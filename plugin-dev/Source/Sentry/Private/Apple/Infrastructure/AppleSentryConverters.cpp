@@ -9,6 +9,8 @@
 #include "Apple/AppleSentryScope.h"
 #include "Apple/Convenience/AppleSentryMacro.h"
 
+#include "Verse/SentryScriptStackFrame.h"
+
 SentryObjCLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 {
 	SentryObjCLevel nativeLevel = SentryObjCLevelDebug;
@@ -179,6 +181,41 @@ SentryObjCStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FPr
 	SentryObjCStacktrace* trace = [[SENTRY_APPLE_CLASS(SentryObjCStacktrace) alloc] initWithFrames:arr registers:@{}];
 
 	return trace;
+}
+
+SentryObjCStacktrace* FAppleSentryConverters::ScriptCallstackToNative(const TArray<FSentryScriptStackFrame>& callstack, const FString& platform)
+{
+	NSMutableArray* arr = [NSMutableArray arrayWithCapacity:callstack.Num()];
+
+	for (const FSentryScriptStackFrame& scriptFrame : callstack)
+	{
+		SentryObjCFrame* frame = [[SENTRY_APPLE_CLASS(SentryObjCFrame) alloc] init];
+		frame.platform = platform.GetNSString();
+		frame.function = scriptFrame.Function.GetNSString();
+		frame.fileName = scriptFrame.Filename.GetNSString();
+		frame.inApp = @YES;
+		if (!scriptFrame.Module.IsEmpty())
+		{
+			frame.module = scriptFrame.Module.GetNSString();
+		}
+		if (scriptFrame.LineNumber > 0)
+		{
+			frame.lineNumber = @(scriptFrame.LineNumber);
+		}
+		if (scriptFrame.ColumnNumber > 0)
+		{
+			frame.columnNumber = @(scriptFrame.ColumnNumber);
+		}
+		if (!scriptFrame.ContextLine.IsEmpty())
+		{
+			frame.contextLine = scriptFrame.ContextLine.GetNSString();
+			frame.preContext = StringArrayToNative(scriptFrame.PreContext);
+			frame.postContext = StringArrayToNative(scriptFrame.PostContext);
+		}
+		[arr addObject:frame];
+	}
+
+	return [[SENTRY_APPLE_CLASS(SentryObjCStacktrace) alloc] initWithFrames:arr registers:@{}];
 }
 
 SentryObjCAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSentryVariant& variant)

@@ -4,6 +4,8 @@
 
 #include "SentryDefines.h"
 
+#include "Verse/SentryScriptStackFrame.h"
+
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
@@ -212,6 +214,48 @@ sentry_value_t FGenericPlatformSentryConverters::CallstackToNative(const TArray<
 		if (symbolInfo.ModuleName[0] != '\0')
 		{
 			sentry_value_set_by_key(frame, "package", sentry_value_new_string(symbolInfo.ModuleName));
+		}
+
+		sentry_value_append(frames, frame);
+	}
+
+	sentry_value_t stacktrace = sentry_value_new_object();
+	sentry_value_set_by_key(stacktrace, "frames", frames);
+
+	return stacktrace;
+}
+
+sentry_value_t FGenericPlatformSentryConverters::ScriptCallstackToNative(const TArray<FSentryScriptStackFrame>& callstack, const FString& platform)
+{
+	sentry_value_t frames = sentry_value_new_list();
+	for (const FSentryScriptStackFrame& scriptFrame : callstack)
+	{
+		sentry_value_t frame = sentry_value_new_object();
+		sentry_value_set_by_key(frame, "platform", sentry_value_new_string(TCHAR_TO_UTF8(*platform)));
+		sentry_value_set_by_key(frame, "function", sentry_value_new_string(TCHAR_TO_UTF8(*scriptFrame.Function)));
+		if (!scriptFrame.RawFunction.IsEmpty())
+		{
+			sentry_value_set_by_key(frame, "raw_function", sentry_value_new_string(TCHAR_TO_UTF8(*scriptFrame.RawFunction)));
+		}
+		if (!scriptFrame.Module.IsEmpty())
+		{
+			sentry_value_set_by_key(frame, "module", sentry_value_new_string(TCHAR_TO_UTF8(*scriptFrame.Module)));
+		}
+		sentry_value_set_by_key(frame, "filename", sentry_value_new_string(TCHAR_TO_UTF8(*scriptFrame.Filename)));
+		sentry_value_set_by_key(frame, "in_app", sentry_value_new_bool(true));
+		if (scriptFrame.LineNumber > 0)
+		{
+			sentry_value_set_by_key(frame, "lineno", sentry_value_new_int32(scriptFrame.LineNumber));
+		}
+		if (scriptFrame.ColumnNumber > 0)
+		{
+			sentry_value_set_by_key(frame, "colno", sentry_value_new_int32(scriptFrame.ColumnNumber));
+		}
+		if (!scriptFrame.ContextLine.IsEmpty())
+		{
+			sentry_value_set_by_key(frame, "context_line", sentry_value_new_string(TCHAR_TO_UTF8(*scriptFrame.ContextLine)));
+			sentry_value_set_by_key(frame, "pre_context", StringArrayToNative(scriptFrame.PreContext));
+			sentry_value_set_by_key(frame, "post_context", StringArrayToNative(scriptFrame.PostContext));
 		}
 
 		sentry_value_append(frames, frame);

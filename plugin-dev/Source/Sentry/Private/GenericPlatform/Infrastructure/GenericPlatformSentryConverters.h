@@ -11,6 +11,7 @@
 #if USE_SENTRY_NATIVE
 
 class FJsonValue;
+struct FSentryScriptStackFrame;
 
 class FGenericPlatformSentryConverters
 {
@@ -26,6 +27,7 @@ public:
 	static sentry_value_t VariantMapToAttributesNative(const TMap<FString, FSentryVariant>& map);
 	static sentry_value_t AddressToNative(uint64 address);
 	static sentry_value_t CallstackToNative(const TArray<FProgramCounterSymbolInfo>& callstack);
+	static sentry_value_t ScriptCallstackToNative(const TArray<FSentryScriptStackFrame>& callstack, const FString& platform);
 	static sentry_minidump_mode_t MinidumpModeToNative(ESentryMinidumpMode mode);
 	static sentry_crash_reporting_mode_t CrashReportingModeToNative(ESentryCrashReportingMode mode);
 	static sentry_thread_stackwalk_mode_t ThreadStackwalkModeToNative(ESentryThreadStackwalkMode mode);

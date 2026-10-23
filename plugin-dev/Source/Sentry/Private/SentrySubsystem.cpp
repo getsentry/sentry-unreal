@@ -47,6 +47,11 @@
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
 
+#if !UE_VERSION_OLDER_THAN(6, 0, 0)
+#include "Verse/SentryVerseUtils.h"
+#include "VerseVM/VVMRuntimeError.h"
+#endif
+
 void USentrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -172,6 +177,21 @@ void USentrySubsystem::Initialize()
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
 
+#if !UE_VERSION_OLDER_THAN(6, 0, 0)
+	OnVerseRuntimeErrorDelegate = FVerseRuntimeErrorDelegates::OnVerseRuntimeError.AddWeakLambda(this, [this](const Verse::ERuntimeDiagnostic Diagnostic, const FText& Message, const FString& RuntimeErrorText)
+	{
+		verify(SubsystemNativeImpl);
+
+		const Verse::SRuntimeDiagnosticInfo& DiagnosticInfo = Verse::GetRuntimeDiagnosticInfo(Diagnostic);
+		const FString ErrorMessage = Message.IsEmpty() ? FString(UTF8_TO_TCHAR(DiagnosticInfo.Description)) : FSentryVerseUtils::GetUserMessage(Message.ToString());
+
+		TArray<FSentryScriptStackFrame> Frames = FSentryVerseUtils::ParseCallstack(RuntimeErrorText);
+		FSentryVerseUtils::AddSourceContext(Frames);
+
+		SubsystemNativeImpl->CaptureScriptError(UTF8_TO_TCHAR(DiagnosticInfo.Name), ErrorMessage, TEXT("verse"), Frames);
+	});
+#endif
+
 	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported() && !SubsystemNativeImpl->IsNativeHangTrackingEnabled())
 	{
 		ConfigureHangTracking();
@@ -222,6 +242,14 @@ void USentrySubsystem::Close()
 		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
 		OnEnsureDelegate.Reset();
 	}
+
+#if !UE_VERSION_OLDER_THAN(6, 0, 0)
+	if (OnVerseRuntimeErrorDelegate.IsValid())
+	{
+		FVerseRuntimeErrorDelegates::OnVerseRuntimeError.Remove(OnVerseRuntimeErrorDelegate);
+		OnVerseRuntimeErrorDelegate.Reset();
+	}
+#endif
 
 	if (HangWatcher.IsValid())
 	{
