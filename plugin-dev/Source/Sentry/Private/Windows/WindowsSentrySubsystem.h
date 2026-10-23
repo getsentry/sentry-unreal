@@ -4,8 +4,6 @@
 
 #if USE_SENTRY_NATIVE && !SENTRY_WINGDK
 
-#include "Utils/SentryPlatformInfo.h"
-
 #include "Microsoft/MicrosoftSentrySubsystem.h"
 
 class FWindowsSentrySubsystem : public FMicrosoftSentrySubsystem
@@ -33,8 +31,8 @@ protected:
 	virtual bool IsAppHangTrackingActive() const override;
 
 private:
-	/** Wine/Proton detection info */
-	FWineProtonInfo WineProtonInfo;
+	/** Whether running under Wine or Proton */
+	bool bIsRunningUnderWine = false;
 
 	/** Whether native out-of-process screenshot capturing is enabled */
 	bool bOutOfProcessScreenshots = false;

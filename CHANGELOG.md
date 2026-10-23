@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- Report Wine and Proton runtime info only through the Native SDK's `wine` context; the plugin no longer sets the `runtime` context or the `compatibility`, `wine_version`, `proton_build` and `proton_experimental` tags ([#1649](https://github.com/getsentry/sentry-unreal/pull/1649))
+
 ### Fixes
 
 - Replace deprecated breadcrumb data setter on macOS and iOS ([#1645](https://github.com/getsentry/sentry-unreal/pull/1645))
