@@ -21,6 +21,9 @@
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
 
+#include "Integrations/SentryBreadcrumbsIntegration.h"
+#include "Integrations/SentryIntegration.h"
+
 #include "Interface/SentrySubsystemInterface.h"
 
 #include "HAL/PlatformSentryFeedback.h"
@@ -159,7 +162,8 @@ void USentrySubsystem::Initialize()
 	AddDeviceContext();
 
 	PromoteTags();
-	ConfigureBreadcrumbs();
+
+	SetupIntegrations(*Settings);
 
 	ConfigureOutputDevice();
 	ConfigureErrorOutputDevice();
@@ -197,7 +201,7 @@ void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsNativeDele
 
 void USentrySubsystem::Close()
 {
-	DisableAutomaticBreadcrumbs();
+	TeardownIntegrations();
 
 	if (GLog && OutputDevice)
 	{
@@ -1083,90 +1087,37 @@ void USentrySubsystem::PromoteTags()
 	}
 }
 
-void USentrySubsystem::ConfigureBreadcrumbs()
+void USentrySubsystem::SetupIntegrations(const USentrySettings& Settings)
 {
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	check(Settings);
+	const TSharedRef<ISentrySubsystem> NativeImpl = SubsystemNativeImpl.ToSharedRef();
 
-	if (Settings->AutomaticBreadcrumbs.bOnMapLoadingStarted)
+	// Integrations are torn down in reverse order
+	AddIntegration(MakeShared<FSentryBreadcrumbsIntegration>(NativeImpl), Settings);
+}
+
+void USentrySubsystem::AddIntegration(const TSharedRef<ISentryIntegration>& Integration, const USentrySettings& Settings)
+{
+	if (Integration->Setup(Settings))
 	{
-		PreLoadMapDelegate = FCoreUObjectDelegates::PreLoadMap.AddWeakLambda(this, [this](const FString& MapName)
-		{
-			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), MapName } }, ESentryLevel::Info);
-		});
+		UE_LOG(LogSentrySdk, Log, TEXT("Sentry integration added: %s"), Integration->GetName());
+		Integrations.Add(Integration);
 	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnMapLoaded)
+	else
 	{
-		PostLoadMapDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddWeakLambda(this, [this](UWorld* World)
-		{
-			if (World)
-			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), World->GetMapName() } }, ESentryLevel::Info);
-			}
-			else
-			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Error"), TEXT("Map load failed") } }, ESentryLevel::Error);
-			}
-		});
-	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnGameStateClassChanged)
-	{
-		GameStateChangedDelegate = FCoreDelegates::GameStateClassChanged.AddWeakLambda(this, [this](const FString& GameState)
-		{
-			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("GameState"), GameState } }, ESentryLevel::Info);
-		});
-	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnUserActivityStringChanged)
-	{
-		UserActivityChangedDelegate = FCoreDelegates::UserActivityStringChanged.AddWeakLambda(this, [this](const FString& Activity)
-		{
-			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Activity"), Activity } }, ESentryLevel::Info);
-		});
-	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnGameSessionIDChanged)
-	{
-		GameSessionIDChangedDelegate = FCoreDelegates::GameSessionIDChanged.AddWeakLambda(this, [this](const FString& SessionId)
-		{
-			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Session ID"), SessionId } }, ESentryLevel::Info);
-		});
+		// Integration may have bound some of its hooks before opting out, so clean them up
+		// to avoid leaving dangling callbacks once it's destroyed
+		Integration->Teardown();
 	}
 }
 
-void USentrySubsystem::DisableAutomaticBreadcrumbs()
+void USentrySubsystem::TeardownIntegrations()
 {
-	if (PreLoadMapDelegate.IsValid())
+	for (int32 Index = Integrations.Num() - 1; Index >= 0; --Index)
 	{
-		FCoreUObjectDelegates::PreLoadMap.Remove(PreLoadMapDelegate);
-		PreLoadMapDelegate.Reset();
+		Integrations[Index]->Teardown();
 	}
 
-	if (PostLoadMapDelegate.IsValid())
-	{
-		FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(PostLoadMapDelegate);
-		PostLoadMapDelegate.Reset();
-	}
-
-	if (GameStateChangedDelegate.IsValid())
-	{
-		FCoreDelegates::GameStateClassChanged.Remove(GameStateChangedDelegate);
-		GameStateChangedDelegate.Reset();
-	}
-
-	if (UserActivityChangedDelegate.IsValid())
-	{
-		FCoreDelegates::UserActivityStringChanged.Remove(UserActivityChangedDelegate);
-		UserActivityChangedDelegate.Reset();
-	}
-
-	if (GameSessionIDChangedDelegate.IsValid())
-	{
-		FCoreDelegates::GameSessionIDChanged.Remove(GameSessionIDChangedDelegate);
-		GameSessionIDChangedDelegate.Reset();
-	}
+	Integrations.Empty();
 }
 
 bool USentrySubsystem::IsCurrentBuildConfigurationEnabled() const
