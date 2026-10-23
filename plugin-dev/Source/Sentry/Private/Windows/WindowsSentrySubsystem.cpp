@@ -25,7 +25,6 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 		ConfigureCrashReporterAppearance(Settings);
 	}
 
-	// Wine/Proton runtime context is reported by sentry-native
 	if (bIsRunningUnderWine && IsEnabled())
 	{
 		// Override OS context when running under Wine/Proton (always show Linux host, not Windows)
