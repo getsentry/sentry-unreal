@@ -29,6 +29,7 @@ class USentryTraceSampler;
 class USentryTransactionContext;
 
 class ISentrySubsystem;
+class ISentryIntegration;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
 class FSentryHangWatcher;
@@ -603,11 +604,14 @@ private:
 	/** Promote specified values to tags for all events captured by Sentry SDK. */
 	void PromoteTags();
 
-	/** Subscribe to specified game events in order to add corresponding breadcrumbs automatically. */
-	void ConfigureBreadcrumbs();
+	/** Set up all SDK integrations. */
+	void SetupIntegrations(const USentrySettings& Settings);
 
-	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
-	void DisableAutomaticBreadcrumbs();
+	/** Set up the given integration and keep it if it's needed for the current configuration. */
+	void AddIntegration(const TSharedRef<ISentryIntegration>& Integration, const USentrySettings& Settings);
+
+	/** Tear down all integrations in reverse order of their setup. */
+	void TeardownIntegrations();
 
 	/** Check whether the event capturing should be enabled for the current build configuration */
 	bool IsCurrentBuildConfigurationEnabled() const;
@@ -657,11 +661,7 @@ private:
 	UPROPERTY()
 	USentryTraceSampler* TraceSampler;
 
-	FDelegateHandle PreLoadMapDelegate;
-	FDelegateHandle PostLoadMapDelegate;
-	FDelegateHandle GameStateChangedDelegate;
-	FDelegateHandle UserActivityChangedDelegate;
-	FDelegateHandle GameSessionIDChangedDelegate;
+	TArray<TSharedRef<ISentryIntegration>> Integrations;
 
 	FDelegateHandle OnAssertDelegate;
 	FDelegateHandle OnEnsureDelegate;
