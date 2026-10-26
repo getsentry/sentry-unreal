@@ -8,10 +8,6 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-#ifdef USE_SENTRY_SESSION_REPLAY
-#include "SessionReplay/SentrySessionReplayRecorder.h"
-#endif
-
 @class SentryObjCHint;
 @class SentryObjCEvent;
 @class SentryObjCScope;
@@ -41,8 +37,6 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override;
-	virtual bool IsHangTrackingSupported() const override;
-	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;
 	virtual void CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
@@ -70,6 +64,9 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	virtual void HandleAssert() override;
+	virtual bool IsHangTrackingSupported() const override;
+	virtual bool IsNativeHangTrackingEnabled() const override;
+	virtual FString GetSessionReplayDirectory() const override;
 
 	virtual FString TryCaptureScreenshot() const { return FString(); };
 
@@ -90,7 +87,6 @@ protected:
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
-	bool isSessionReplayAttachmentEnabled = false;
 
 private:
 	TMap<FString, FString> ParseSentryBaggage(const TArray<FString>& baggageHeaders) const;
@@ -98,18 +94,6 @@ private:
 	void ReleaseProxySession();
 
 	NSURLSession* ProxySession = nullptr;
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-	void StartSessionReplay(const USentrySettings* settings);
-
-	FString GetReplayPath() const;
-
-	FString SessionReplayId;
-
-	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
-
-	FDelegateHandle EngineLoopInitCompleteHandle;
-#endif
 };
 
 #endif // !USE_SENTRY_NATIVE

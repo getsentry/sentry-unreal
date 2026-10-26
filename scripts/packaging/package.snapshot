@@ -162,6 +162,8 @@ Source/Sentry/Private/Integrations/SentryHangTrackingIntegration.h
 Source/Sentry/Private/Integrations/SentryIntegration.h
 Source/Sentry/Private/Integrations/SentryPerformanceMetricsIntegration.cpp
 Source/Sentry/Private/Integrations/SentryPerformanceMetricsIntegration.h
+Source/Sentry/Private/Integrations/SentrySessionReplayIntegration.cpp
+Source/Sentry/Private/Integrations/SentrySessionReplayIntegration.h
 Source/Sentry/Private/Interface/SentryAttachmentInterface.h
 Source/Sentry/Private/Interface/SentryBreadcrumbInterface.h
 Source/Sentry/Private/Interface/SentryEventInterface.h

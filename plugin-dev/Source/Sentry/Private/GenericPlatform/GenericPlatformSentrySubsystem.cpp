@@ -739,6 +739,14 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		ConfigureAppHangTracking();
 	}
 
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (isEnabled && settings->AttachSessionReplay)
+	{
+		// Crashed runs' replays are already queued with the crash, so any leftovers can be safely cleaned up
+		IFileManager::Get().DeleteDirectory(*GetSessionReplayDirectory(), false, true);
+	}
+#endif
+
 	// Best-effort at writing user consent to disk so that user consent can change at runtime and persist
 	// We should never have a valid user consent state return "Unknown", so assume that no consent value is written if we see this
 	if (settings->bRequireUserConsent && GetUserConsent() == EUserConsent::Unknown)
@@ -758,28 +766,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	// which can re-trigger memory-related crashes (e.g. stack overflow).
 	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
 	PooledCrashHint = TStrongObjectPtr<USentryHint>(NewObject<USentryHint>());
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-	if (isEnabled && settings->AttachSessionReplay)
-	{
-		// The recorder hooks the Slate backbuffer, which isn't available yet if Sentry is initialized
-		// before the engine loop finishes. Defer the start until engine init completes in that case.
-		if (GIsRunning)
-		{
-			StartSessionReplay(settings);
-		}
-		else
-		{
-			if (!EngineLoopInitCompleteHandle.IsValid())
-			{
-				EngineLoopInitCompleteHandle = FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this, settings]
-				{
-					StartSessionReplay(settings);
-				});
-			}
-		}
-	}
-#endif
 }
 
 void FGenericPlatformSentrySubsystem::Close()
@@ -787,20 +773,6 @@ void FGenericPlatformSentrySubsystem::Close()
 	ResetAppHangTracking();
 
 	isEnabled = false;
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-	if (EngineLoopInitCompleteHandle.IsValid())
-	{
-		FCoreDelegates::OnFEngineLoopInitComplete.Remove(EngineLoopInitCompleteHandle);
-		EngineLoopInitCompleteHandle.Reset();
-	}
-
-	if (SessionReplay)
-	{
-		SessionReplay->Shutdown();
-		SessionReplay.Reset();
-	}
-#endif
 
 	PooledCrashEvent.Reset();
 	PooledCrashHint.Reset();
@@ -1325,6 +1297,11 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 	return transactionContext;
 }
 
+FString FGenericPlatformSentrySubsystem::GetSessionReplayDirectory() const
+{
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(GetDatabasePath(), TEXT("replays")));
+}
+
 USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler() const
 {
 	return beforeSend;
@@ -1522,39 +1499,5 @@ FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
 
 	return ScreenshotFullPath;
 }
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-void FGenericPlatformSentrySubsystem::StartSessionReplay(const USentrySettings* settings)
-{
-	if (SessionReplay)
-	{
-		return;
-	}
-
-	// Clear replay videos captured during previous session if any
-	IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("replays")), false, true);
-
-	SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
-
-	SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
-	if (SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
-	{
-		SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
-		SetAttribute(TEXT("sentry.replay_id"), FSentryVariant(SessionReplayId));
-		SetAttribute(TEXT("sentry._internal.replay_is_buffering"), FSentryVariant(true));
-	}
-	else
-	{
-		SessionReplay.Reset();
-		SessionReplayId.Reset();
-	}
-}
-
-FString FGenericPlatformSentrySubsystem::GetReplayPath() const
-{
-	const FString ReplayPath = FPaths::Combine(GetDatabasePath(), TEXT("replays"), FString::Printf(TEXT("replay-%s.mp4"), *SessionReplayId));
-	return FPaths::ConvertRelativePathToFull(ReplayPath);
-}
-#endif
 
 #endif

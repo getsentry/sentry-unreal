@@ -17,7 +17,7 @@
 class FRunnableThread;
 class FEvent;
 class FSentryBackBufferCapture;
-class USentrySettings;
+struct FSentrySessionReplayOptions;
 
 /**
  * Owns the session-replay capture pipeline (crash-attached gameplay video).
@@ -38,7 +38,7 @@ public:
 	FSentrySessionReplayRecorder();
 	virtual ~FSentrySessionReplayRecorder() override;
 
-	bool Initialize(const USentrySettings* Settings, const FString& ReplayId, const FString& ReplayPath);
+	bool Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& ReplayId, const FString& ReplayPath);
 	void Shutdown();
 
 	bool IsEnabled() const { return bEnabled; }

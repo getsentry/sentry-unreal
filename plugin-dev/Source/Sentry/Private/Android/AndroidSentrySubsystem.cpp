@@ -400,18 +400,6 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureHang(uint32 HungThreadId)
 	return nullptr;
 }
 
-bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
-{
-	// The engine FThreadHeartBeat watcher (FSentryHangWatcher) is never used on Android — CaptureHang is a
-	// no-op here. Keep this false so the top-level subsystem does not create that watcher.
-	return false;
-}
-
-bool FAndroidSentrySubsystem::IsNativeHangTrackingEnabled() const
-{
-	return bNdkAppHangTracking;
-}
-
 void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);
@@ -625,6 +613,24 @@ void FAndroidSentrySubsystem::HandleAssert()
 
 	GError->HandleError();
 	PLATFORM_BREAK();
+}
+
+bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
+{
+	// The engine FThreadHeartBeat watcher (FSentryHangWatcher) is never used on Android — CaptureHang is a
+	// no-op here. Keep this false so the top-level subsystem does not create that watcher.
+	return false;
+}
+
+bool FAndroidSentrySubsystem::IsNativeHangTrackingEnabled() const
+{
+	return bNdkAppHangTracking;
+}
+
+FString FAndroidSentrySubsystem::GetSessionReplayDirectory() const
+{
+	// Session replay on Android is recorded by sentry-java itself
+	return FString();
 }
 
 FString FAndroidSentrySubsystem::TryCaptureScreenshot() const
