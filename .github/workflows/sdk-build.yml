@@ -101,7 +101,7 @@ jobs:
         if: ${{ inputs.target == 'Android' }}
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
 
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
