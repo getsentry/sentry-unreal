@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 
 class FSentryPerfMetricAttributes;
+class ISentrySubsystem;
 
 /**
  * Consumes per-frame performance data from the engine's FPerformanceTrackingSystem.
@@ -20,7 +21,7 @@ class FSentryPerfMetricAttributes;
 class FSentryPerfFrameTimeMonitor : public IPerformanceDataConsumer
 {
 public:
-	explicit FSentryPerfFrameTimeMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes);
+	FSentryPerfFrameTimeMonitor(const TSharedRef<ISentrySubsystem>& InNativeImpl, TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes, float InSampleIntervalSeconds);
 
 	// IPerformanceDataConsumer
 	virtual void StartCharting() override;
@@ -30,5 +31,6 @@ public:
 private:
 	double SampleIntervalSeconds;
 	double LastEmitTime;
+	TSharedRef<ISentrySubsystem> NativeImpl;
 	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 };
