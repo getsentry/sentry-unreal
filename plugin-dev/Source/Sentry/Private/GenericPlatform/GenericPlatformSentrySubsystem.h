@@ -9,10 +9,6 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-#ifdef USE_SENTRY_SESSION_REPLAY
-#include "SessionReplay/SentrySessionReplayRecorder.h"
-#endif
-
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
@@ -78,6 +74,7 @@ public:
 	virtual bool IsHangTrackingSupported() const override { return false; }
 	virtual bool IsNativeHangTrackingEnabled() const override { return bNativeHangTracking; }
 	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
+	virtual FString GetSessionReplayDirectory() const override;
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
 	USentryBeforeSendFeedbackHandler* GetBeforeSendFeedbackHandler() const;
@@ -184,18 +181,6 @@ private:
 	TStrongObjectPtr<USentryHint> PooledCrashHint;
 
 	FThreadSafeBool bIsCrashing;
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-	void StartSessionReplay(const USentrySettings* settings);
-
-	FString GetReplayPath() const;
-
-	FString SessionReplayId;
-
-	TUniquePtr<FSentrySessionReplayRecorder> SessionReplay;
-
-	FDelegateHandle EngineLoopInitCompleteHandle;
-#endif
 };
 
 #endif

@@ -68,7 +68,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
-	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
 
 	FString prevSessionReplayPath;
 	FString prevSessionReplaySidecarPath;
@@ -319,32 +318,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	dispatch_group_wait(sentryDispatchGroup, DISPATCH_TIME_FOREVER);
 	dispatch_release(sentryDispatchGroup);
 
-	if (IsEnabled())
-	{
-#ifdef USE_SENTRY_SESSION_REPLAY
-		if (settings->AttachSessionReplay)
-		{
-			// The recorder hooks the Slate backbuffer, which isn't available yet if Sentry is initialized
-			// before the engine loop finishes. Defer the start until engine init completes in that case.
-			if (GIsRunning)
-			{
-				StartSessionReplay(settings);
-			}
-			else if (!EngineLoopInitCompleteHandle.IsValid())
-			{
-				// OnFEngineLoopInitComplete broadcasts exactly once. Don't Remove() this binding from inside
-				// the callback: RemoveDelegateInstance calls Unbind() synchronously, freeing this lambda's own
-				// storage (captured `this`/`settings`), so any subsequent access is a use-after-free. The
-				// binding is torn down later in Close() instead.
-				EngineLoopInitCompleteHandle = FCoreDelegates::OnFEngineLoopInitComplete.AddLambda([this, settings]
-				{
-					StartSessionReplay(settings);
-				});
-			}
-		}
-#endif
-	}
-	else
+	if (!IsEnabled())
 	{
 		ReleaseProxySession();
 	}
@@ -352,20 +326,6 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 
 void FAppleSentrySubsystem::Close()
 {
-#ifdef USE_SENTRY_SESSION_REPLAY
-	if (EngineLoopInitCompleteHandle.IsValid())
-	{
-		FCoreDelegates::OnFEngineLoopInitComplete.Remove(EngineLoopInitCompleteHandle);
-		EngineLoopInitCompleteHandle.Reset();
-	}
-
-	if (SessionReplay)
-	{
-		SessionReplay->Shutdown();
-		SessionReplay.Reset();
-	}
-#endif
-
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) close];
 
 	ReleaseProxySession();
@@ -554,16 +514,6 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureHang(uint32 HungThreadId)
 {
 	// Hang tracking is handled by the native Apple SDK via built-in App Hang detection (see EnableAppNotRespondingTracking setting)
 	return nullptr;
-}
-
-bool FAppleSentrySubsystem::IsHangTrackingSupported() const
-{
-	return false;
-}
-
-bool FAppleSentrySubsystem::IsNativeHangTrackingEnabled() const
-{
-	return false;
 }
 
 void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
@@ -835,6 +785,21 @@ void FAppleSentrySubsystem::HandleAssert()
 	SetTag(TEXT("CrashType"), FGenericCrashContext::GetCrashTypeString(ECrashContextType::Assert));
 }
 
+bool FAppleSentrySubsystem::IsHangTrackingSupported() const
+{
+	return false;
+}
+
+bool FAppleSentrySubsystem::IsNativeHangTrackingEnabled() const
+{
+	return false;
+}
+
+FString FAppleSentrySubsystem::GetSessionReplayDirectory() const
+{
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
+}
+
 void FAppleSentrySubsystem::SetEventCrashType(SentryObjCEvent* event, ECrashContextType crashType) const
 {
 	FAppleSentryEvent(event).SetTag(TEXT("CrashType"), FGenericCrashContext::GetCrashTypeString(crashType));
@@ -991,7 +956,7 @@ FString FAppleSentrySubsystem::GetLatestScreenshot() const
 
 bool FAppleSentrySubsystem::GetLatestSessionReplay(FString& OutReplayPath, FString& OutSidecarPath) const
 {
-	const FString& ReplaysDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"));
+	const FString ReplaysDir = GetSessionReplayDirectory();
 
 	TArray<FString> Replays;
 	IFileManager::Get().FindFiles(Replays, *ReplaysDir, TEXT("*.mp4"));
@@ -1065,36 +1030,5 @@ TMap<FString, FString> FAppleSentrySubsystem::ParseSentryBaggage(const TArray<FS
 
 	return members;
 }
-
-#ifdef USE_SENTRY_SESSION_REPLAY
-void FAppleSentrySubsystem::StartSessionReplay(const USentrySettings* settings)
-{
-	if (SessionReplay)
-	{
-		return;
-	}
-
-	SessionReplayId = FGuid::NewGuid().ToString(EGuidFormats::Digits).ToLower();
-
-	SessionReplay = MakeUnique<FSentrySessionReplayRecorder>();
-	if (SessionReplay->Initialize(settings, SessionReplayId, GetReplayPath()))
-	{
-		SetContext(TEXT("replay"), { { TEXT("replay_id"), FSentryVariant(SessionReplayId) } });
-		SetAttribute(TEXT("sentry.replay_id"), FSentryVariant(SessionReplayId));
-		SetAttribute(TEXT("sentry._internal.replay_is_buffering"), FSentryVariant(true));
-	}
-	else
-	{
-		SessionReplay.Reset();
-		SessionReplayId.Reset();
-	}
-}
-
-FString FAppleSentrySubsystem::GetReplayPath() const
-{
-	const FString ReplayPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays"), FString::Printf(TEXT("replay-%s.mp4"), *SessionReplayId));
-	return FPaths::ConvertRelativePathToFull(ReplayPath);
-}
-#endif
 
 #endif // !USE_SENTRY_NATIVE
