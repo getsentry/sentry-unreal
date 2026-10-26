@@ -11,6 +11,7 @@
 #if !UE_VERSION_OLDER_THAN(5, 7, 0)
 
 class FSentryPerfMetricAttributes;
+class ISentrySubsystem;
 
 struct FSentryNetworkMetricMapping
 {
@@ -23,7 +24,7 @@ struct FSentryNetworkMetricMapping
 /**
  * Periodically polls network metrics from UNetDriver's UNetworkMetricsDatabase and emits them as Sentry metrics.
  *
- * The NetDriver reference is set reactively via SetNetDriver() when FWorldDelegates::OnNetDriverCreated fires.
+ * The NetDriver reference is set reactively when FWorldDelegates::OnNetDriverCreated fires.
  * Uses a ticker to poll on a configurable interval (default 10 seconds).
  *
  * Emits (when available):
@@ -40,17 +41,18 @@ struct FSentryNetworkMetricMapping
 class FSentryPerfNetworkMonitor
 {
 public:
-	explicit FSentryPerfNetworkMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes);
+	FSentryPerfNetworkMonitor(const TSharedRef<ISentrySubsystem>& InNativeImpl, TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes, int32 InSampleIntervalSeconds);
 	~FSentryPerfNetworkMonitor();
 
-	void SetNetDriver(UNetDriver* InNetDriver);
-
 private:
+	void OnNetDriverCreated(UWorld* World, UNetDriver* NetDriver);
 	bool OnTick(float DeltaTime);
 
+	TSharedRef<ISentrySubsystem> NativeImpl;
 	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 	TWeakObjectPtr<UNetDriver> WeakNetDriver;
 	FTSTicker::FDelegateHandle TickerHandle;
+	FDelegateHandle NetDriverCreatedHandle;
 
 	static const TArray<FSentryNetworkMetricMapping> MetricMappings;
 };

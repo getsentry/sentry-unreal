@@ -32,14 +32,6 @@ class ISentrySubsystem;
 class ISentryIntegration;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
-class FSentryPerfFrameTimeMonitor;
-class FSentryPerfMetricAttributes;
-class FSentryPerfGCMonitor;
-class FSentryPerfGameStatsMonitor;
-
-#if !UE_VERSION_OLDER_THAN(5, 7, 0)
-class FSentryPerfNetworkMonitor;
-#endif
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -627,9 +619,6 @@ private:
 	/** Add custom Sentry output device to intercept errors */
 	void ConfigureErrorOutputDevice();
 
-	/** Set up automatic performance metrics (frame time, GC pause time, etc.) */
-	void ConfigurePerformanceMetrics();
-
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 
@@ -661,14 +650,4 @@ private:
 
 	FDelegateHandle OnAssertDelegate;
 	FDelegateHandle OnEnsureDelegate;
-
-	TSharedPtr<FSentryPerfMetricAttributes> PerfMetricAttributes;
-	TSharedPtr<FSentryPerfFrameTimeMonitor> PerfFrameTimeMonitor;
-	TSharedPtr<FSentryPerfGameStatsMonitor> PerfGameStatsMonitor;
-	TSharedPtr<FSentryPerfGCMonitor> PerfGCMonitor;
-
-#if !UE_VERSION_OLDER_THAN(5, 7, 0)
-	TSharedPtr<FSentryPerfNetworkMonitor> PerfNetworkMonitor;
-	FDelegateHandle OnNetDriverCreatedHandle;
-#endif
 };
