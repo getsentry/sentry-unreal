@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
-#include "Utils/SentryHangWatcher.h"
+#include "HangTracking/SentryHangWatcher.h"
 
 #include "SentryDefines.h"
 
@@ -45,11 +45,11 @@ FSentryHangWatcher::~FSentryHangWatcher()
 	}
 }
 
-void FSentryHangWatcher::Start()
+bool FSentryHangWatcher::Start()
 {
 	if (bRunning)
 	{
-		return;
+		return true;
 	}
 
 	FThreadHeartBeat& HeartBeat = FThreadHeartBeat::Get();
@@ -58,7 +58,7 @@ void FSentryHangWatcher::Start()
 	if (HangDuration <= 0.0)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Engine's HangDuration is 0 — heartbeat monitor thread is not running. Set HangDuration > 0 in [Core.System] to enable hang tracking."));
-		return;
+		return false;
 	}
 
 	if (HangTimeoutSeconds < EngineStuckDuration)
@@ -89,6 +89,8 @@ void FSentryHangWatcher::Start()
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Hang watcher started (timeout: %.1fs, engine stuck duration: %.1fs, engine hang duration: %.1fs)."),
 		HangTimeoutSeconds, EngineStuckDuration, HangDuration);
+
+	return true;
 }
 
 void FSentryHangWatcher::Stop()
