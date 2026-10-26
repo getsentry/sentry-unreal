@@ -20,7 +20,7 @@ public:
 	virtual void Teardown() override;
 
 private:
-	void OnEnsure();
-
 	TSharedRef<ISentrySubsystem> NativeImpl;
+
+	FDelegateHandle EnsureHandle;
 };

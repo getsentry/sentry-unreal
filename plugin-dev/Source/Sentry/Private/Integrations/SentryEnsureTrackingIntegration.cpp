@@ -14,19 +14,22 @@ FSentryEnsureTrackingIntegration::FSentryEnsureTrackingIntegration(const TShared
 
 bool FSentryEnsureTrackingIntegration::Setup(const USentrySettings& Settings)
 {
-	FCoreDelegates::OnHandleSystemEnsure.AddRaw(this, &FSentryEnsureTrackingIntegration::OnEnsure);
+	// Called from the thread that hit the ensure, which may still be running after teardown.
+	// Capture the native implementation by value so the handler doesn't depend on this integration's lifetime.
+	EnsureHandle = FCoreDelegates::OnHandleSystemEnsure.AddLambda([NativeImpl = NativeImpl]()
+	{
+		FString EnsureMessage = GErrorHist;
+		NativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
+	});
 
 	return true;
 }
 
 void FSentryEnsureTrackingIntegration::Teardown()
 {
-	FCoreDelegates::OnHandleSystemEnsure.RemoveAll(this);
-}
-
-void FSentryEnsureTrackingIntegration::OnEnsure()
-{
-	// Called from the thread that hit the ensure
-	FString EnsureMessage = GErrorHist;
-	NativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
+	if (EnsureHandle.IsValid())
+	{
+		FCoreDelegates::OnHandleSystemEnsure.Remove(EnsureHandle);
+		EnsureHandle.Reset();
+	}
 }

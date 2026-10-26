@@ -23,7 +23,13 @@ bool FSentryAssertTrackingIntegration::Setup(const USentrySettings& Settings)
 	}
 
 	ErrorOutputDevice = MakeUnique<FSentryErrorOutputDevice>(GError);
-	ErrorOutputDevice->OnAssert.AddRaw(this, &FSentryAssertTrackingIntegration::OnAssert);
+
+	// Called from the thread that hit the assertion, which may still be running after teardown.
+	// Capture the native implementation by value so the handler doesn't depend on this integration's lifetime.
+	AssertHandle = ErrorOutputDevice->OnAssert.AddLambda([NativeImpl = NativeImpl](const FString& Message)
+	{
+		NativeImpl->HandleAssert();
+	});
 
 	GError = ErrorOutputDevice.Get();
 
@@ -34,15 +40,10 @@ void FSentryAssertTrackingIntegration::Teardown()
 {
 	if (GError && ErrorOutputDevice)
 	{
-		ErrorOutputDevice->OnAssert.RemoveAll(this);
+		ErrorOutputDevice->OnAssert.Remove(AssertHandle);
+		AssertHandle.Reset();
 
 		GError = ErrorOutputDevice->GetParentDevice();
 		ErrorOutputDevice.Reset();
 	}
-}
-
-void FSentryAssertTrackingIntegration::OnAssert(const FString& Message)
-{
-	// Called from the thread that hit the assertion
-	NativeImpl->HandleAssert();
 }

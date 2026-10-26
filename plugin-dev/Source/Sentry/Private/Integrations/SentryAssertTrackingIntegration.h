@@ -23,9 +23,8 @@ public:
 	virtual void Teardown() override;
 
 private:
-	void OnAssert(const FString& Message);
-
 	TSharedRef<ISentrySubsystem> NativeImpl;
 
 	TUniquePtr<FSentryErrorOutputDevice> ErrorOutputDevice;
+	FDelegateHandle AssertHandle;
 };
