@@ -153,8 +153,12 @@ Source/Sentry/Private/HAL/PlatformSentrySubsystem.h
 Source/Sentry/Private/HAL/PlatformSentryTransaction.h
 Source/Sentry/Private/HAL/PlatformSentryTransactionContext.h
 Source/Sentry/Private/HAL/PlatformSentryUser.h
+Source/Sentry/Private/HangTracking/SentryHangWatcher.cpp
+Source/Sentry/Private/HangTracking/SentryHangWatcher.h
 Source/Sentry/Private/Integrations/SentryBreadcrumbsIntegration.cpp
 Source/Sentry/Private/Integrations/SentryBreadcrumbsIntegration.h
+Source/Sentry/Private/Integrations/SentryHangTrackingIntegration.cpp
+Source/Sentry/Private/Integrations/SentryHangTrackingIntegration.h
 Source/Sentry/Private/Integrations/SentryIntegration.h
 Source/Sentry/Private/Interface/SentryAttachmentInterface.h
 Source/Sentry/Private/Interface/SentryBreadcrumbInterface.h
@@ -271,8 +275,6 @@ Source/Sentry/Private/Utils/SentryCallbackUtils.cpp
 Source/Sentry/Private/Utils/SentryCallbackUtils.h
 Source/Sentry/Private/Utils/SentryFileUtils.cpp
 Source/Sentry/Private/Utils/SentryFileUtils.h
-Source/Sentry/Private/Utils/SentryHangWatcher.cpp
-Source/Sentry/Private/Utils/SentryHangWatcher.h
 Source/Sentry/Private/Utils/SentryLogUtils.cpp
 Source/Sentry/Private/Utils/SentryLogUtils.h
 Source/Sentry/Private/Utils/SentryPlatformDetectionUtils.cpp

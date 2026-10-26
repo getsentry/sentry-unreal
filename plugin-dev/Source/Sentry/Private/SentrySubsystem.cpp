@@ -22,6 +22,7 @@
 #include "SentryUser.h"
 
 #include "Integrations/SentryBreadcrumbsIntegration.h"
+#include "Integrations/SentryHangTrackingIntegration.h"
 #include "Integrations/SentryIntegration.h"
 
 #include "Interface/SentrySubsystemInterface.h"
@@ -31,7 +32,6 @@
 #include "HAL/PlatformSentrySubsystem.h"
 
 #include "Utils/SentryCallbackHandlers.h"
-#include "Utils/SentryHangWatcher.h"
 
 #include "Performance/SentryPerfFrameTimeMonitor.h"
 #include "Performance/SentryPerfGCMonitor.h"
@@ -176,11 +176,6 @@ void USentrySubsystem::Initialize()
 		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
 	});
 
-	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported() && !SubsystemNativeImpl->IsNativeHangTrackingEnabled())
-	{
-		ConfigureHangTracking();
-	}
-
 	ConfigurePerformanceMetrics();
 }
 
@@ -225,12 +220,6 @@ void USentrySubsystem::Close()
 	{
 		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
 		OnEnsureDelegate.Reset();
-	}
-
-	if (HangWatcher.IsValid())
-	{
-		HangWatcher->Stop();
-		HangWatcher.Reset();
 	}
 
 	if (PerfFrameTimeMonitor.IsValid())
@@ -1093,6 +1082,7 @@ void USentrySubsystem::SetupIntegrations(const USentrySettings& Settings)
 
 	// Integrations are torn down in reverse order
 	AddIntegration(MakeShared<FSentryBreadcrumbsIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryHangTrackingIntegration>(NativeImpl), Settings);
 }
 
 void USentrySubsystem::AddIntegration(const TSharedRef<ISentryIntegration>& Integration, const USentrySettings& Settings)
@@ -1196,19 +1186,6 @@ void USentrySubsystem::ConfigureErrorOutputDevice()
 		});
 		GError = OutputDeviceError.Get();
 	}
-}
-
-void USentrySubsystem::ConfigureHangTracking()
-{
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	check(Settings);
-
-	HangWatcher = MakeShared<FSentryHangWatcher>(Settings->HangTimeoutDuration);
-	HangWatcher->OnHangDetected.BindLambda([this](uint32 HungThreadId, double HangDuration)
-	{
-		SubsystemNativeImpl->CaptureHang(HungThreadId);
-	});
-	HangWatcher->Start();
 }
 
 void USentrySubsystem::ConfigurePerformanceMetrics()

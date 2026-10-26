@@ -32,7 +32,6 @@ class ISentrySubsystem;
 class ISentryIntegration;
 class FSentryOutputDevice;
 class FSentryErrorOutputDevice;
-class FSentryHangWatcher;
 class FSentryPerfFrameTimeMonitor;
 class FSentryPerfMetricAttributes;
 class FSentryPerfGCMonitor;
@@ -628,9 +627,6 @@ private:
 	/** Add custom Sentry output device to intercept errors */
 	void ConfigureErrorOutputDevice();
 
-	/** Set up hang watcher for detecting unresponsive threads */
-	void ConfigureHangTracking();
-
 	/** Set up automatic performance metrics (frame time, GC pause time, etc.) */
 	void ConfigurePerformanceMetrics();
 
@@ -665,8 +661,6 @@ private:
 
 	FDelegateHandle OnAssertDelegate;
 	FDelegateHandle OnEnsureDelegate;
-
-	TSharedPtr<FSentryHangWatcher> HangWatcher;
 
 	TSharedPtr<FSentryPerfMetricAttributes> PerfMetricAttributes;
 	TSharedPtr<FSentryPerfFrameTimeMonitor> PerfFrameTimeMonitor;
