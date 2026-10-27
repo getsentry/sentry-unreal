@@ -34,11 +34,6 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
-	FIntVector ViewportSize(CurrentViewport->GetSizeXY().X, CurrentViewport->GetSizeXY().Y, 0);
-
-	TArray<FColor>* Bitmap = new TArray<FColor>();
-	Bitmap->SetNumZeroed(ViewportSize.X * ViewportSize.Y);
-
 	if (!FSlateApplication::IsInitialized())
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("Slate application required for screenshot capturing is not initialized"));
@@ -52,12 +47,24 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 	}
 
 	TSharedPtr<SWindow> WindowPtr = GameViewportClient->GetWindow();
+	if (!WindowPtr.IsValid())
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Game viewport window required for screenshot capturing is not valid"));
+		return false;
+	}
+
 	TSharedRef<SWidget> WindowRef = WindowPtr.ToSharedRef();
+
+	FIntVector ViewportSize(CurrentViewport->GetSizeXY().X, CurrentViewport->GetSizeXY().Y, 0);
+
+	TArray<FColor>* Bitmap = new TArray<FColor>();
+	Bitmap->SetNumZeroed(ViewportSize.X * ViewportSize.Y);
 
 	bool bScreenshotSuccessful = FSlateApplication::Get().TakeScreenshot(WindowRef, *Bitmap, ViewportSize);
 	if (!bScreenshotSuccessful)
 	{
 		UE_LOG(LogSentrySdk, Error, TEXT("Failed to capture screenshot"));
+		delete Bitmap;
 		return false;
 	}
 
