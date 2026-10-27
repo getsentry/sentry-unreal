@@ -10,7 +10,6 @@
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
-#include "SentryErrorOutputDevice.h"
 #include "SentryEvent.h"
 #include "SentryFeedback.h"
 #include "SentryModule.h"
@@ -21,7 +20,9 @@
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
 
+#include "Integrations/SentryAssertTrackingIntegration.h"
 #include "Integrations/SentryBreadcrumbsIntegration.h"
+#include "Integrations/SentryEnsureTrackingIntegration.h"
 #include "Integrations/SentryHangTrackingIntegration.h"
 #include "Integrations/SentryIntegration.h"
 #include "Integrations/SentryPerformanceMetricsIntegration.h"
@@ -162,15 +163,6 @@ void USentrySubsystem::Initialize()
 	SetupIntegrations(*Settings);
 
 	ConfigureOutputDevice();
-	ConfigureErrorOutputDevice();
-
-	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddWeakLambda(this, [this]()
-	{
-		verify(SubsystemNativeImpl);
-
-		FString EnsureMessage = GErrorHist;
-		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
-	});
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -196,24 +188,6 @@ void USentrySubsystem::Close()
 	{
 		GLog->RemoveOutputDevice(OutputDevice.Get());
 		OutputDevice = nullptr;
-	}
-
-	if (GError && OutputDeviceError)
-	{
-		if (OnAssertDelegate.IsValid())
-		{
-			OutputDeviceError->OnAssert.Remove(OnAssertDelegate);
-			OnAssertDelegate.Reset();
-		}
-
-		GError = OutputDeviceError->GetParentDevice();
-		OutputDeviceError = nullptr;
-	}
-
-	if (OnEnsureDelegate.IsValid())
-	{
-		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
-		OnEnsureDelegate.Reset();
 	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
@@ -1040,6 +1014,8 @@ void USentrySubsystem::SetupIntegrations(const USentrySettings& Settings)
 	const TSharedRef<ISentrySubsystem> NativeImpl = SubsystemNativeImpl.ToSharedRef();
 
 	// Integrations are torn down in reverse order
+	AddIntegration(MakeShared<FSentryAssertTrackingIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryEnsureTrackingIntegration>(NativeImpl), Settings);
 	AddIntegration(MakeShared<FSentryBreadcrumbsIntegration>(NativeImpl), Settings);
 	AddIntegration(MakeShared<FSentryHangTrackingIntegration>(NativeImpl), Settings);
 	AddIntegration(MakeShared<FSentryPerformanceMetricsIntegration>(NativeImpl), Settings);
@@ -1135,20 +1111,6 @@ void USentrySubsystem::ConfigureOutputDevice()
 #if UE_VERSION_OLDER_THAN(5, 7, 0)
 		GLog->SerializeBacklog(OutputDevice.Get());
 #endif
-	}
-}
-
-void USentrySubsystem::ConfigureErrorOutputDevice()
-{
-	OutputDeviceError = MakeShareable(new FSentryErrorOutputDevice(GError));
-	if (OutputDeviceError)
-	{
-		OnAssertDelegate = OutputDeviceError->OnAssert.AddWeakLambda(this, [this](const FString& Message)
-		{
-			check(SubsystemNativeImpl);
-			SubsystemNativeImpl->HandleAssert();
-		});
-		GError = OutputDeviceError.Get();
 	}
 }
 
