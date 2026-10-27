@@ -140,7 +140,11 @@ sentry_value_t FMicrosoftSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx,
 
 void FMicrosoftSentrySubsystem::AddCrashMemoryContext(sentry_value_t event)
 {
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+	const FPlatformMemoryStats MemoryStats = FPlatformMemory::GetStats();
+#else
 	const FPlatformMemoryStats MemoryStats = FPlatformMemory::GetStatsRaw();
+#endif
 
 	SetEventContextValue(event, "device", "free_memory", sentry_value_new_uint64(MemoryStats.AvailablePhysical));
 	SetEventContextValue(event, "device", "usable_memory", sentry_value_new_uint64(MemoryStats.AvailableVirtual));
