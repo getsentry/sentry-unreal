@@ -63,14 +63,14 @@ void FAppleSentryScope::SetTag(const FString& key, const FString& value)
 
 FString FAppleSentryScope::GetTag(const FString& key) const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	NSDictionary* tags = scopeDict[@"tags"];
 	return FString(tags[key.GetNSString()]);
 }
 
 bool FAppleSentryScope::TryGetTag(const FString& key, FString& value) const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	NSDictionary* tags = scopeDict[@"tags"];
 
 	NSString* tag = [tags objectForKey:key.GetNSString()];
@@ -96,7 +96,7 @@ void FAppleSentryScope::SetTags(const TMap<FString, FString>& tags)
 
 TMap<FString, FString> FAppleSentryScope::GetTags() const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	return FAppleSentryConverters::StringMapToUnreal(scopeDict[@"tags"]);
 }
 
@@ -107,7 +107,7 @@ void FAppleSentryScope::SetFingerprint(const TArray<FString>& fingerprint)
 
 TArray<FString> FAppleSentryScope::GetFingerprint() const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	NSArray* fingerprint = scopeDict[@"fingerprint"];
 	return FAppleSentryConverters::StringArrayToUnreal(fingerprint);
 }
@@ -119,7 +119,7 @@ void FAppleSentryScope::SetLevel(ESentryLevel level)
 
 ESentryLevel FAppleSentryScope::GetLevel() const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	SentryObjCLevel level = FAppleSentryConverters::StringToSentryLevel(scopeDict[@"level"]);
 	return FAppleSentryConverters::SentryLevelToUnreal(level);
 }
@@ -131,7 +131,7 @@ void FAppleSentryScope::SetContext(const FString& key, const TMap<FString, FSent
 
 TMap<FString, FSentryVariant> FAppleSentryScope::GetContext(const FString& key) const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	NSDictionary* contexts = scopeDict[@"context"];
 
 	NSDictionary* context = [contexts objectForKey:key.GetNSString()];
@@ -146,7 +146,7 @@ TMap<FString, FSentryVariant> FAppleSentryScope::GetContext(const FString& key) 
 
 bool FAppleSentryScope::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	NSDictionary* contexts = scopeDict[@"context"];
 
 	NSDictionary* context = [contexts objectForKey:key.GetNSString()];
@@ -179,7 +179,7 @@ void FAppleSentryScope::SetExtra(const FString& key, const FSentryVariant& value
 
 FSentryVariant FAppleSentryScope::GetExtra(const FString& key) const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	NSDictionary* extras = scopeDict[@"extra"];
 
 	id extra = [extras objectForKey:key.GetNSString()];
@@ -194,7 +194,7 @@ FSentryVariant FAppleSentryScope::GetExtra(const FString& key) const
 
 bool FAppleSentryScope::TryGetExtra(const FString& key, FSentryVariant& value) const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	NSDictionary* extras = scopeDict[@"extra"];
 
 	id extra = [extras objectForKey:key.GetNSString()];
@@ -220,7 +220,7 @@ void FAppleSentryScope::SetExtras(const TMap<FString, FSentryVariant>& extras)
 
 TMap<FString, FSentryVariant> FAppleSentryScope::GetExtras() const
 {
-	NSDictionary* scopeDict = [ScopeApple serialize];
+	NSDictionary* scopeDict = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:ScopeApple];
 	return FAppleSentryConverters::VariantMapToUnreal(scopeDict[@"extra"]);
 }
 
