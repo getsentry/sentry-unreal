@@ -435,6 +435,8 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 	SetEventCrashType(event, ResolveCrashType());
 
+	AddCrashMemoryContext(event);
+
 	// At this point crash events are handled the same way as non-fatal ones,
 	// so we defer to `OnBeforeSend` to invoke the custom `beforeSend` handler (if configured)
 	return OnBeforeSend(event, hint, closure, true);
@@ -564,6 +566,23 @@ void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const ch
 		sentry_value_set_by_key(event, "tags", eventTags);
 	}
 	sentry_value_set_by_key(eventTags, key, sentry_value_new_string(value));
+}
+
+void FGenericPlatformSentrySubsystem::SetEventContextValue(sentry_value_t event, const char* context, const char* key, sentry_value_t value)
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		eventContexts = sentry_value_new_object();
+		sentry_value_set_by_key(event, "contexts", eventContexts);
+	}
+	sentry_value_t eventContext = sentry_value_get_by_key(eventContexts, context);
+	if (sentry_value_is_null(eventContext))
+	{
+		eventContext = sentry_value_new_object();
+		sentry_value_set_by_key(eventContexts, context, eventContext);
+	}
+	sentry_value_set_by_key(eventContext, key, value);
 }
 
 void FGenericPlatformSentrySubsystem::AttachStackTrace(sentry_value_t target)

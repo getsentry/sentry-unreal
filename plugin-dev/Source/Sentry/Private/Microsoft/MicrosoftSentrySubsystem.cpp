@@ -13,6 +13,7 @@
 #include "GenericPlatform/GenericPlatformSentryAttachment.h"
 
 #include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "HAL/PlatformMemory.h"
 #include "Misc/CoreDelegates.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
@@ -135,6 +136,15 @@ sentry_value_t FMicrosoftSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx,
 	}
 
 	return FGenericPlatformSentrySubsystem::OnCrash(uctx, event, hint, closure);
+}
+
+void FMicrosoftSentrySubsystem::AddCrashMemoryContext(sentry_value_t event)
+{
+	const FPlatformMemoryStats MemoryStats = FPlatformMemory::GetStatsRaw();
+
+	SetEventContextValue(event, "device", "free_memory", sentry_value_new_uint64(MemoryStats.AvailablePhysical));
+	SetEventContextValue(event, "device", "usable_memory", sentry_value_new_uint64(MemoryStats.AvailableVirtual));
+	SetEventContextValue(event, "app", "app_memory", sentry_value_new_uint64(MemoryStats.UsedPhysical));
 }
 
 void FMicrosoftSentrySubsystem::Close()
