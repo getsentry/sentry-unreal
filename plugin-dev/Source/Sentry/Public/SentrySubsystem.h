@@ -30,7 +30,6 @@ class USentryTransactionContext;
 
 class ISentrySubsystem;
 class ISentryIntegration;
-class FSentryOutputDevice;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -612,16 +611,11 @@ private:
 	/** Check whether the event capturing should be enabled for promoted builds only */
 	bool IsPromotedBuildsOnlyEnabled() const;
 
-	/** Add custom Sentry output device to intercept logs */
-	void ConfigureOutputDevice();
-
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
-
-	TSharedPtr<FSentryOutputDevice> OutputDevice;
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;
