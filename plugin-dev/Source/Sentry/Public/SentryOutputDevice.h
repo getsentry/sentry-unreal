@@ -7,10 +7,15 @@
 
 #include "SentryDataTypes.h"
 
+class ISentrySubsystem;
+class USentrySettings;
+
 class FSentryOutputDevice : public FOutputDevice
 {
 public:
 	FSentryOutputDevice();
+
+	FSentryOutputDevice(const TSharedPtr<ISentrySubsystem>& InNativeImpl, const USentrySettings& Settings);
 
 	static bool IsSerializing();
 
@@ -24,11 +29,15 @@ public:
 #endif
 
 private:
+	TSharedPtr<ISentrySubsystem> NativeImpl;
+
 	TMap<ESentryLevel, bool> BreadcrumbFlags;
 	TMap<ESentryLevel, bool> StructuredLoggingFlags;
 
 	TArray<FString> StructuredLoggingCategories;
 	bool bSendBreadcrumbsWithStructuredLogging;
+
+	void CacheLoggingSettings(const USentrySettings& Settings);
 
 	bool ShouldForwardToStructuredLogging(const FString& Category, ESentryLevel Level) const;
 };

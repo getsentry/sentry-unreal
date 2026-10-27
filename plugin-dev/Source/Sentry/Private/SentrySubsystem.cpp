@@ -13,7 +13,6 @@
 #include "SentryEvent.h"
 #include "SentryFeedback.h"
 #include "SentryModule.h"
-#include "SentryOutputDevice.h"
 #include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
@@ -25,6 +24,7 @@
 #include "Integrations/SentryEnsureTrackingIntegration.h"
 #include "Integrations/SentryHangTrackingIntegration.h"
 #include "Integrations/SentryIntegration.h"
+#include "Integrations/SentryLoggingIntegration.h"
 #include "Integrations/SentryPerformanceMetricsIntegration.h"
 #include "Integrations/SentrySessionReplayIntegration.h"
 
@@ -161,8 +161,6 @@ void USentrySubsystem::Initialize()
 	PromoteTags();
 
 	SetupIntegrations(*Settings);
-
-	ConfigureOutputDevice();
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -183,12 +181,6 @@ void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsNativeDele
 void USentrySubsystem::Close()
 {
 	TeardownIntegrations();
-
-	if (GLog && OutputDevice)
-	{
-		GLog->RemoveOutputDevice(OutputDevice.Get());
-		OutputDevice = nullptr;
-	}
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
@@ -1016,6 +1008,7 @@ void USentrySubsystem::SetupIntegrations(const USentrySettings& Settings)
 	// Integrations are torn down in reverse order
 	AddIntegration(MakeShared<FSentryAssertTrackingIntegration>(NativeImpl), Settings);
 	AddIntegration(MakeShared<FSentryEnsureTrackingIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryLoggingIntegration>(NativeImpl), Settings);
 	AddIntegration(MakeShared<FSentryBreadcrumbsIntegration>(NativeImpl), Settings);
 	AddIntegration(MakeShared<FSentryHangTrackingIntegration>(NativeImpl), Settings);
 	AddIntegration(MakeShared<FSentryPerformanceMetricsIntegration>(NativeImpl), Settings);
@@ -1100,18 +1093,6 @@ bool USentrySubsystem::IsPromotedBuildsOnlyEnabled() const
 	check(Settings);
 
 	return Settings->EnableForPromotedBuildsOnly;
-}
-
-void USentrySubsystem::ConfigureOutputDevice()
-{
-	OutputDevice = MakeShareable(new FSentryOutputDevice());
-	if (OutputDevice)
-	{
-		GLog->AddOutputDevice(OutputDevice.Get());
-#if UE_VERSION_OLDER_THAN(5, 7, 0)
-		GLog->SerializeBacklog(OutputDevice.Get());
-#endif
-	}
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)

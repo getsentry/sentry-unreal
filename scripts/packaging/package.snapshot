@@ -164,6 +164,8 @@ Source/Sentry/Private/Integrations/SentryEnsureTrackingIntegration.h
 Source/Sentry/Private/Integrations/SentryHangTrackingIntegration.cpp
 Source/Sentry/Private/Integrations/SentryHangTrackingIntegration.h
 Source/Sentry/Private/Integrations/SentryIntegration.h
+Source/Sentry/Private/Integrations/SentryLoggingIntegration.cpp
+Source/Sentry/Private/Integrations/SentryLoggingIntegration.h
 Source/Sentry/Private/Integrations/SentryPerformanceMetricsIntegration.cpp
 Source/Sentry/Private/Integrations/SentryPerformanceMetricsIntegration.h
 Source/Sentry/Private/Integrations/SentrySessionReplayIntegration.cpp
