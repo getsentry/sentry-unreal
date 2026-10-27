@@ -10,6 +10,7 @@
 
 - Replace deprecated breadcrumb data setter on macOS and iOS ([#1645](https://github.com/getsentry/sentry-unreal/pull/1645))
 - Replace deprecated `Sentry.captureFeedback` calls on Android with `Sentry.feedback().capture` ([#1646](https://github.com/getsentry/sentry-unreal/pull/1646))
+- Fix crash when capturing screenshot before game viewport is attached to a window ([#1661](https://github.com/getsentry/sentry-unreal/pull/1661))
 
 ### Dependencies
 
