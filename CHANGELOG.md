@@ -8,7 +8,7 @@
 
 ### Features
 
-- Add memory usage at the time of the crash to crash events on Windows and Xbox ([#PRNUM](https://github.com/getsentry/sentry-unreal/pull/PRNUM))
+- Add memory usage at the time of the crash to crash events on Windows and Xbox ([#1664](https://github.com/getsentry/sentry-unreal/pull/1664))
 
 ### Fixes
 
