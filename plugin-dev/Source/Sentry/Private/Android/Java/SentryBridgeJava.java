@@ -200,8 +200,12 @@ public class SentryBridgeJava {
 		return eventId;
 	}
 
+	public static SentryId captureFeedback(final Feedback feedback, final Hint hint) {
+		return Sentry.feedback().capture(feedback, hint);
+	}
+
 	public static SentryId captureFeedbackWithScope(final Feedback feedback, final Hint hint, final long callback) throws InterruptedException {
-		SentryId feedbackId = Sentry.captureFeedback(feedback, hint, new ScopeCallback() {
+		SentryId feedbackId = Sentry.feedback().capture(feedback, hint, new ScopeCallback() {
 			@Override
 			public void run(@NonNull IScope scope) {
 				onConfigureScope(callback, scope);

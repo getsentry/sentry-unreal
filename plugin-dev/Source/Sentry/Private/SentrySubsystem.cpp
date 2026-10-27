@@ -10,16 +10,23 @@
 #include "SentryBeforeSendHandler.h"
 #include "SentryBreadcrumb.h"
 #include "SentryDefines.h"
-#include "SentryErrorOutputDevice.h"
 #include "SentryEvent.h"
 #include "SentryFeedback.h"
 #include "SentryModule.h"
-#include "SentryOutputDevice.h"
 #include "SentrySettings.h"
 #include "SentryTraceSampler.h"
 #include "SentryTransaction.h"
 #include "SentryTransactionContext.h"
 #include "SentryUser.h"
+
+#include "Integrations/SentryAssertTrackingIntegration.h"
+#include "Integrations/SentryBreadcrumbsIntegration.h"
+#include "Integrations/SentryEnsureTrackingIntegration.h"
+#include "Integrations/SentryHangTrackingIntegration.h"
+#include "Integrations/SentryIntegration.h"
+#include "Integrations/SentryLoggingIntegration.h"
+#include "Integrations/SentryPerformanceMetricsIntegration.h"
+#include "Integrations/SentrySessionReplayIntegration.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -28,13 +35,6 @@
 #include "HAL/PlatformSentrySubsystem.h"
 
 #include "Utils/SentryCallbackHandlers.h"
-#include "Utils/SentryHangWatcher.h"
-
-#include "Performance/SentryPerfFrameTimeMonitor.h"
-#include "Performance/SentryPerfGCMonitor.h"
-#include "Performance/SentryPerfGameStatsMonitor.h"
-#include "Performance/SentryPerfMetricAttributes.h"
-#include "Performance/SentryPerfNetworkMonitor.h"
 
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
@@ -159,25 +159,8 @@ void USentrySubsystem::Initialize()
 	AddDeviceContext();
 
 	PromoteTags();
-	ConfigureBreadcrumbs();
 
-	ConfigureOutputDevice();
-	ConfigureErrorOutputDevice();
-
-	OnEnsureDelegate = FCoreDelegates::OnHandleSystemEnsure.AddWeakLambda(this, [this]()
-	{
-		verify(SubsystemNativeImpl);
-
-		FString EnsureMessage = GErrorHist;
-		SubsystemNativeImpl->CaptureEnsure(TEXT("Ensure failed"), EnsureMessage.TrimStartAndEnd());
-	});
-
-	if (Settings->EnableHangTracking && SubsystemNativeImpl->IsHangTrackingSupported() && !SubsystemNativeImpl->IsNativeHangTrackingEnabled())
-	{
-		ConfigureHangTracking();
-	}
-
-	ConfigurePerformanceMetrics();
+	SetupIntegrations(*Settings);
 }
 
 void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsDelegate& OnConfigureSettings)
@@ -197,72 +180,7 @@ void USentrySubsystem::InitializeWithSettings(const FConfigureSettingsNativeDele
 
 void USentrySubsystem::Close()
 {
-	DisableAutomaticBreadcrumbs();
-
-	if (GLog && OutputDevice)
-	{
-		GLog->RemoveOutputDevice(OutputDevice.Get());
-		OutputDevice = nullptr;
-	}
-
-	if (GError && OutputDeviceError)
-	{
-		if (OnAssertDelegate.IsValid())
-		{
-			OutputDeviceError->OnAssert.Remove(OnAssertDelegate);
-			OnAssertDelegate.Reset();
-		}
-
-		GError = OutputDeviceError->GetParentDevice();
-		OutputDeviceError = nullptr;
-	}
-
-	if (OnEnsureDelegate.IsValid())
-	{
-		FCoreDelegates::OnHandleSystemEnsure.Remove(OnEnsureDelegate);
-		OnEnsureDelegate.Reset();
-	}
-
-	if (HangWatcher.IsValid())
-	{
-		HangWatcher->Stop();
-		HangWatcher.Reset();
-	}
-
-	if (PerfFrameTimeMonitor.IsValid())
-	{
-		if (GEngine)
-		{
-			GEngine->RemovePerformanceDataConsumer(PerfFrameTimeMonitor);
-		}
-
-		PerfFrameTimeMonitor.Reset();
-	}
-
-	if (PerfGCMonitor.IsValid())
-	{
-		PerfGCMonitor.Reset();
-	}
-
-	if (PerfGameStatsMonitor.IsValid())
-	{
-		PerfGameStatsMonitor.Reset();
-	}
-
-#if !UE_VERSION_OLDER_THAN(5, 7, 0)
-	if (OnNetDriverCreatedHandle.IsValid())
-	{
-		FWorldDelegates::OnNetDriverCreated.Remove(OnNetDriverCreatedHandle);
-		OnNetDriverCreatedHandle.Reset();
-	}
-
-	PerfNetworkMonitor.Reset();
-#endif
-
-	if (PerfMetricAttributes.IsValid())
-	{
-		PerfMetricAttributes.Reset();
-	}
+	TeardownIntegrations();
 
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{
@@ -1083,90 +1001,46 @@ void USentrySubsystem::PromoteTags()
 	}
 }
 
-void USentrySubsystem::ConfigureBreadcrumbs()
+void USentrySubsystem::SetupIntegrations(const USentrySettings& Settings)
 {
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	check(Settings);
+	const TSharedRef<ISentrySubsystem> NativeImpl = SubsystemNativeImpl.ToSharedRef();
 
-	if (Settings->AutomaticBreadcrumbs.bOnMapLoadingStarted)
+	// Integrations are torn down in reverse order
+	AddIntegration(MakeShared<FSentryAssertTrackingIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryEnsureTrackingIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryLoggingIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryBreadcrumbsIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryHangTrackingIntegration>(NativeImpl), Settings);
+	AddIntegration(MakeShared<FSentryPerformanceMetricsIntegration>(NativeImpl), Settings);
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	AddIntegration(MakeShared<FSentrySessionReplayIntegration>(NativeImpl), Settings);
+#endif
+}
+
+void USentrySubsystem::AddIntegration(const TSharedRef<ISentryIntegration>& Integration, const USentrySettings& Settings)
+{
+	if (Integration->Setup(Settings))
 	{
-		PreLoadMapDelegate = FCoreUObjectDelegates::PreLoadMap.AddWeakLambda(this, [this](const FString& MapName)
-		{
-			AddBreadcrumbWithParams(TEXT("PreLoadMap"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), MapName } }, ESentryLevel::Info);
-		});
+		UE_LOG(LogSentrySdk, Log, TEXT("Sentry integration added: %s"), Integration->GetName());
+		Integrations.Add(Integration);
 	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnMapLoaded)
+	else
 	{
-		PostLoadMapDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddWeakLambda(this, [this](UWorld* World)
-		{
-			if (World)
-			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Map"), World->GetMapName() } }, ESentryLevel::Info);
-			}
-			else
-			{
-				AddBreadcrumbWithParams(TEXT("PostLoadMapWithWorld"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Error"), TEXT("Map load failed") } }, ESentryLevel::Error);
-			}
-		});
-	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnGameStateClassChanged)
-	{
-		GameStateChangedDelegate = FCoreDelegates::GameStateClassChanged.AddWeakLambda(this, [this](const FString& GameState)
-		{
-			AddBreadcrumbWithParams(TEXT("GameStateClassChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("GameState"), GameState } }, ESentryLevel::Info);
-		});
-	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnUserActivityStringChanged)
-	{
-		UserActivityChangedDelegate = FCoreDelegates::UserActivityStringChanged.AddWeakLambda(this, [this](const FString& Activity)
-		{
-			AddBreadcrumbWithParams(TEXT("UserActivityStringChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Activity"), Activity } }, ESentryLevel::Info);
-		});
-	}
-
-	if (Settings->AutomaticBreadcrumbs.bOnGameSessionIDChanged)
-	{
-		GameSessionIDChangedDelegate = FCoreDelegates::GameSessionIDChanged.AddWeakLambda(this, [this](const FString& SessionId)
-		{
-			AddBreadcrumbWithParams(TEXT("GameSessionIDChanged"), TEXT("Unreal"), TEXT("Default"), { { TEXT("Session ID"), SessionId } }, ESentryLevel::Info);
-		});
+		// Integration may have bound some of its hooks before opting out, so clean them up
+		// to avoid leaving dangling callbacks once it's destroyed
+		Integration->Teardown();
 	}
 }
 
-void USentrySubsystem::DisableAutomaticBreadcrumbs()
+void USentrySubsystem::TeardownIntegrations()
 {
-	if (PreLoadMapDelegate.IsValid())
+	for (int32 Index = Integrations.Num() - 1; Index >= 0; --Index)
 	{
-		FCoreUObjectDelegates::PreLoadMap.Remove(PreLoadMapDelegate);
-		PreLoadMapDelegate.Reset();
+		Integrations[Index]->Teardown();
 	}
 
-	if (PostLoadMapDelegate.IsValid())
-	{
-		FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(PostLoadMapDelegate);
-		PostLoadMapDelegate.Reset();
-	}
-
-	if (GameStateChangedDelegate.IsValid())
-	{
-		FCoreDelegates::GameStateClassChanged.Remove(GameStateChangedDelegate);
-		GameStateChangedDelegate.Reset();
-	}
-
-	if (UserActivityChangedDelegate.IsValid())
-	{
-		FCoreDelegates::UserActivityStringChanged.Remove(UserActivityChangedDelegate);
-		UserActivityChangedDelegate.Reset();
-	}
-
-	if (GameSessionIDChangedDelegate.IsValid())
-	{
-		FCoreDelegates::GameSessionIDChanged.Remove(GameSessionIDChangedDelegate);
-		GameSessionIDChangedDelegate.Reset();
-	}
+	Integrations.Empty();
 }
 
 bool USentrySubsystem::IsCurrentBuildConfigurationEnabled() const
@@ -1219,106 +1093,6 @@ bool USentrySubsystem::IsPromotedBuildsOnlyEnabled() const
 	check(Settings);
 
 	return Settings->EnableForPromotedBuildsOnly;
-}
-
-void USentrySubsystem::ConfigureOutputDevice()
-{
-	OutputDevice = MakeShareable(new FSentryOutputDevice());
-	if (OutputDevice)
-	{
-		GLog->AddOutputDevice(OutputDevice.Get());
-#if UE_VERSION_OLDER_THAN(5, 7, 0)
-		GLog->SerializeBacklog(OutputDevice.Get());
-#endif
-	}
-}
-
-void USentrySubsystem::ConfigureErrorOutputDevice()
-{
-	OutputDeviceError = MakeShareable(new FSentryErrorOutputDevice(GError));
-	if (OutputDeviceError)
-	{
-		OnAssertDelegate = OutputDeviceError->OnAssert.AddWeakLambda(this, [this](const FString& Message)
-		{
-			check(SubsystemNativeImpl);
-			SubsystemNativeImpl->HandleAssert();
-		});
-		GError = OutputDeviceError.Get();
-	}
-}
-
-void USentrySubsystem::ConfigureHangTracking()
-{
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	check(Settings);
-
-	HangWatcher = MakeShared<FSentryHangWatcher>(Settings->HangTimeoutDuration);
-	HangWatcher->OnHangDetected.BindLambda([this](uint32 HungThreadId, double HangDuration)
-	{
-		SubsystemNativeImpl->CaptureHang(HungThreadId);
-	});
-	HangWatcher->Start();
-}
-
-void USentrySubsystem::ConfigurePerformanceMetrics()
-{
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	check(Settings);
-
-	bool bTrackPerformanceMetrics = false;
-
-	bTrackPerformanceMetrics |= Settings->EnableAutoFrameTimeMetrics;
-	bTrackPerformanceMetrics |= Settings->EnableAutoGameStatsMetrics;
-#if !UE_VERSION_OLDER_THAN(5, 5, 0)
-	bTrackPerformanceMetrics |= Settings->EnableAutoGCMetrics;
-#endif
-#if !UE_VERSION_OLDER_THAN(5, 7, 0)
-	bTrackPerformanceMetrics |= Settings->EnableAutoNetworkMetrics;
-#endif
-
-	if (!bTrackPerformanceMetrics)
-	{
-		return;
-	}
-
-	PerfMetricAttributes = MakeShared<FSentryPerfMetricAttributes>();
-
-	if (Settings->EnableAutoFrameTimeMetrics)
-	{
-		PerfFrameTimeMonitor = MakeShared<FSentryPerfFrameTimeMonitor>(PerfMetricAttributes);
-
-		if (GEngine)
-		{
-			GEngine->AddPerformanceDataConsumer(PerfFrameTimeMonitor);
-		}
-	}
-
-	if (Settings->EnableAutoGameStatsMetrics)
-	{
-		PerfGameStatsMonitor = MakeShared<FSentryPerfGameStatsMonitor>(PerfMetricAttributes);
-	}
-
-#if !UE_VERSION_OLDER_THAN(5, 5, 0)
-	if (Settings->EnableAutoGCMetrics)
-	{
-		PerfGCMonitor = MakeShared<FSentryPerfGCMonitor>(PerfMetricAttributes);
-	}
-#endif
-
-#if !UE_VERSION_OLDER_THAN(5, 7, 0)
-	if (Settings->EnableAutoNetworkMetrics)
-	{
-		PerfNetworkMonitor = MakeShared<FSentryPerfNetworkMonitor>(PerfMetricAttributes);
-
-		OnNetDriverCreatedHandle = FWorldDelegates::OnNetDriverCreated.AddWeakLambda(this, [this](UWorld* World, UNetDriver* NetDriver)
-		{
-			if (PerfNetworkMonitor.IsValid() && NetDriver)
-			{
-				PerfNetworkMonitor->SetNetDriver(NetDriver);
-			}
-		});
-	}
-#endif
 }
 
 void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)

@@ -27,14 +27,9 @@ FSentrySessionReplayRecorder::~FSentrySessionReplayRecorder()
 	Shutdown();
 }
 
-bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, const FString& InReplayId, const FString& ReplayPath)
+bool FSentrySessionReplayRecorder::Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& InReplayId, const FString& ReplayPath)
 {
 	check(IsInGameThread());
-
-	if (!Settings || !Settings->AttachSessionReplay)
-	{
-		return false;
-	}
 
 	ReplayId = InReplayId;
 
@@ -44,9 +39,9 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 		return false;
 	}
 
-	WindowSeconds = Settings->SessionReplayDurationMs / 1000.0f;
-	FragmentSeconds = Settings->SessionReplayOptions.FragmentSeconds;
-	RotationIntervalSeconds = Settings->SessionReplayOptions.RotationIntervalSeconds;
+	WindowSeconds = DurationMs / 1000.0f;
+	FragmentSeconds = Options.FragmentSeconds;
+	RotationIntervalSeconds = Options.RotationIntervalSeconds;
 
 	WindowTicks = static_cast<uint64>(WindowSeconds * FSentryFMP4Writer::TrackTimescale);
 
@@ -62,9 +57,9 @@ bool FSentrySessionReplayRecorder::Initialize(const USentrySettings* Settings, c
 	bSnapshotOnDisk.AtomicSet(false);
 
 	FSentryEncoderConfig EncoderConfig;
-	EncoderConfig.Framerate = static_cast<uint32>(Settings->SessionReplayOptions.Framerate);
-	EncoderConfig.BitrateKbps = Settings->SessionReplayOptions.BitrateKbps;
-	EncoderConfig.FragmentSeconds = Settings->SessionReplayOptions.FragmentSeconds;
+	EncoderConfig.Framerate = static_cast<uint32>(Options.Framerate);
+	EncoderConfig.BitrateKbps = Options.BitrateKbps;
+	EncoderConfig.FragmentSeconds = Options.FragmentSeconds;
 
 	Encoder = MakeUnique<FSentryEncoder>(*this, EncoderConfig);
 

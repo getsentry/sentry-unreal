@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Behavioral Changes
+
+- Report Wine and Proton runtime info only through the Native SDK's `wine` context; the plugin no longer sets the `runtime` context or the `compatibility`, `wine_version`, `proton_build` and `proton_experimental` tags ([#1649](https://github.com/getsentry/sentry-unreal/pull/1649))
+
+### Fixes
+
+- Replace deprecated breadcrumb data setter on macOS and iOS ([#1645](https://github.com/getsentry/sentry-unreal/pull/1645))
+- Replace deprecated `Sentry.captureFeedback` calls on Android with `Sentry.feedback().capture` ([#1646](https://github.com/getsentry/sentry-unreal/pull/1646))
+- Fix crash when capturing screenshot before game viewport is attached to a window ([#1661](https://github.com/getsentry/sentry-unreal/pull/1661))
+
+### Dependencies
+
+- Bump CLI from v3.8.0 to v3.8.2 ([#1643](https://github.com/getsentry/sentry-unreal/pull/1643), [#1647](https://github.com/getsentry/sentry-unreal/pull/1647))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#382)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.8.0...3.8.2)
+- Bump Cocoa SDK from v9.30.2 to v9.31.0 ([#1644](https://github.com/getsentry/sentry-unreal/pull/1644))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9310)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.30.2...9.31.0)
+- Bump Java SDK from v8.61.0 to v8.62.0 ([#1662](https://github.com/getsentry/sentry-unreal/pull/1662))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8620)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.61.0...8.62.0)
+
 ## 1.25.0
 
 ### Features

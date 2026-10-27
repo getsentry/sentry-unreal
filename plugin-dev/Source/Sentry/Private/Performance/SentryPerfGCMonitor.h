@@ -3,8 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
+
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
 
 class FSentryPerfMetricAttributes;
+class ISentrySubsystem;
 
 /**
  * Listens for garbage collection events and emits GC pause duration as a metric.
@@ -18,7 +22,7 @@ class FSentryPerfMetricAttributes;
 class FSentryPerfGCMonitor
 {
 public:
-	explicit FSentryPerfGCMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes);
+	FSentryPerfGCMonitor(const TSharedRef<ISentrySubsystem>& InNativeImpl, TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes);
 	~FSentryPerfGCMonitor();
 
 private:
@@ -27,8 +31,11 @@ private:
 
 	double GCStartTime;
 
+	TSharedRef<ISentrySubsystem> NativeImpl;
 	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 
 	FDelegateHandle GCStartedHandle;
 	FDelegateHandle PostGCHandle;
 };
+
+#endif // !UE_VERSION_OLDER_THAN(5, 5, 0)

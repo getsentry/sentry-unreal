@@ -24,8 +24,12 @@ public:
 	FSentryHangWatcher(float InHangTimeoutSeconds);
 	virtual ~FSentryHangWatcher();
 
-	/** Binds to heartbeat delegates and starts the watcher thread. */
-	void Start();
+	/**
+	 * Binds to heartbeat delegates and starts the watcher thread.
+	 *
+	 * @return False if the engine's heartbeat monitor isn't running and hangs can't be detected.
+	 */
+	bool Start();
 
 	/** Unbinds delegates and stops the watcher thread. */
 	void Stop();

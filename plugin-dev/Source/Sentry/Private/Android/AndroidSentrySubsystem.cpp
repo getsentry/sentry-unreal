@@ -400,25 +400,13 @@ TSharedPtr<ISentryId> FAndroidSentrySubsystem::CaptureHang(uint32 HungThreadId)
 	return nullptr;
 }
 
-bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
-{
-	// The engine FThreadHeartBeat watcher (FSentryHangWatcher) is never used on Android — CaptureHang is a
-	// no-op here. Keep this false so the top-level subsystem does not create that watcher.
-	return false;
-}
-
-bool FAndroidSentrySubsystem::IsNativeHangTrackingEnabled() const
-{
-	return bNdkAppHangTracking;
-}
-
 void FAndroidSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
 {
 	TSharedPtr<FAndroidSentryFeedback> feedbackAndroid = StaticCastSharedPtr<FAndroidSentryFeedback>(feedback);
 
 	TSharedPtr<FAndroidSentryHint> hintAndroid = feedbackAndroid->GetHint();
 
-	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::Sentry, "captureFeedback", "(Lio/sentry/protocol/Feedback;Lio/sentry/Hint;)Lio/sentry/protocol/SentryId;",
+	FSentryJavaObjectWrapper::CallStaticObjectMethod<jobject>(SentryJavaClasses::SentryBridgeJava, "captureFeedback", "(Lio/sentry/protocol/Feedback;Lio/sentry/Hint;)Lio/sentry/protocol/SentryId;",
 		feedbackAndroid->GetJObject(), hintAndroid ? hintAndroid->GetJObject() : nullptr);
 }
 
@@ -625,6 +613,24 @@ void FAndroidSentrySubsystem::HandleAssert()
 
 	GError->HandleError();
 	PLATFORM_BREAK();
+}
+
+bool FAndroidSentrySubsystem::IsHangTrackingSupported() const
+{
+	// The engine FThreadHeartBeat watcher (FSentryHangWatcher) is never used on Android — CaptureHang is a
+	// no-op here. Keep this false so the top-level subsystem does not create that watcher.
+	return false;
+}
+
+bool FAndroidSentrySubsystem::IsNativeHangTrackingEnabled() const
+{
+	return bNdkAppHangTracking;
+}
+
+FString FAndroidSentrySubsystem::GetSessionReplayDirectory() const
+{
+	// Session replay on Android is recorded by sentry-java itself
+	return FString();
 }
 
 FString FAndroidSentrySubsystem::TryCaptureScreenshot() const

@@ -10,77 +10,22 @@
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include "Windows/HideWindowsPlatformTypes.h"
 #include <winternl.h>
+#elif PLATFORM_LINUX
+#include <sys/utsname.h>
 #endif
 
-FWineProtonInfo FSentryPlatformDetectionUtils::DetectWineProton()
+bool FSentryPlatformDetectionUtils::IsRunningUnderWine()
 {
-	FWineProtonInfo Info;
-
 #if PLATFORM_WINDOWS
-	// Check for Wine DLL on Windows builds running under Wine/Proton
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
-	if (hNtDll != nullptr)
+	if (hNtDll != nullptr && GetProcAddress(hNtDll, "wine_get_version") != nullptr)
 	{
-		// wine_get_version is exported by Wine's ntdll
-		typedef const char*(CDECL * wine_get_version_t)(void);
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4191) // unsafe conversion from FARPROC
-#endif
-		wine_get_version_t wine_get_version =
-			reinterpret_cast<wine_get_version_t>(GetProcAddress(hNtDll, "wine_get_version"));
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-		if (wine_get_version != nullptr)
-		{
-			const char* version = wine_get_version();
-			Info.bIsRunningUnderWine = true;
-			Info.Version = FString(version);
-			ParseWineVersion(Info.Version, Info);
-
-			UE_LOG(LogSentrySdk, Log, TEXT("Detected Wine version: %s"), *Info.Version);
-		}
-	}
-
-	// Check environment variables (common in Proton)
-	if (!Info.bIsRunningUnderWine)
-	{
-		FString WineVersion = FPlatformMisc::GetEnvironmentVariable(TEXT("WINE_VERSION"));
-		if (!WineVersion.IsEmpty())
-		{
-			Info.bIsRunningUnderWine = true;
-			Info.Version = WineVersion;
-			ParseWineVersion(Info.Version, Info);
-
-			UE_LOG(LogSentrySdk, Log, TEXT("Detected Wine/Proton via WINE_VERSION environment variable: %s"), *Info.Version);
-		}
-	}
-
-	// Check for Proton-specific environment variables
-	if (Info.bIsRunningUnderWine)
-	{
-		FString SteamCompatPath = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_COMPAT_DATA_PATH"));
-		FString SteamCompatTool = FPlatformMisc::GetEnvironmentVariable(TEXT("STEAM_COMPAT_CLIENT_INSTALL_PATH"));
-
-		if (!SteamCompatPath.IsEmpty() || !SteamCompatTool.IsEmpty())
-		{
-			Info.bIsProton = true;
-			UE_LOG(LogSentrySdk, Log, TEXT("Detected Proton environment"));
-		}
-
-		// Try to get Proton build name from PROTON_VERSION environment variable
-		FString ProtonVersion = FPlatformMisc::GetEnvironmentVariable(TEXT("PROTON_VERSION"));
-		if (!ProtonVersion.IsEmpty())
-		{
-			Info.ProtonBuildName = ProtonVersion;
-			Info.bIsExperimental = ProtonVersion.Contains(TEXT("Experimental"), ESearchCase::IgnoreCase);
-		}
+		UE_LOG(LogSentrySdk, Log, TEXT("Detected Wine/Proton compatibility environment"));
+		return true;
 	}
 #endif
 
-	return Info;
+	return false;
 }
 
 bool FSentryPlatformDetectionUtils::IsSteamDeck()
@@ -158,19 +103,93 @@ bool FSentryPlatformDetectionUtils::IsRunningSteam()
 	return !SteamAppId.IsEmpty() || !SteamGameId.IsEmpty() || !SteamOverlayGameId.IsEmpty();
 }
 
-FString FSentryPlatformDetectionUtils::GetRuntimeName(const FWineProtonInfo& WineProtonInfo)
+TMap<FString, FSentryVariant> FSentryPlatformDetectionUtils::MakeOsContext(const FString& Name, bool bPreferDistroVersion)
 {
-	return WineProtonInfo.bIsProton ? TEXT("Proton") : TEXT("Wine");
+	const TMap<FString, FString> OsRelease = ParseOsRelease();
+	const FString DistroName = OsRelease.FindRef(TEXT("NAME"));
+	const FString DistroVersion = OsRelease.FindRef(TEXT("VERSION_ID"));
+	const FString DistroBuild = OsRelease.FindRef(TEXT("BUILD_ID"));
+	const FString DistroPrettyName = OsRelease.FindRef(TEXT("PRETTY_NAME"));
+	const FString KernelVersion = GetKernelVersion();
+
+	TMap<FString, FSentryVariant> OSContext;
+	OSContext.Add(TEXT("type"), TEXT("os"));
+	OSContext.Add(TEXT("name"), Name);
+
+	FString Version = bPreferDistroVersion ? DistroVersion : KernelVersion;
+	if (Version.IsEmpty())
+	{
+		Version = bPreferDistroVersion ? KernelVersion : DistroVersion;
+	}
+	if (!Version.IsEmpty())
+	{
+		OSContext.Add(TEXT("version"), Version);
+	}
+	if (!DistroBuild.IsEmpty())
+	{
+		OSContext.Add(TEXT("build"), DistroBuild);
+	}
+	if (!KernelVersion.IsEmpty())
+	{
+		OSContext.Add(TEXT("kernel_version"), KernelVersion);
+	}
+
+	if (!DistroName.IsEmpty() && !DistroName.Equals(Name, ESearchCase::IgnoreCase))
+	{
+		OSContext.Add(TEXT("distribution_name"), DistroName);
+		if (!DistroVersion.IsEmpty())
+		{
+			OSContext.Add(TEXT("distribution_version"), DistroVersion);
+		}
+		if (!DistroPrettyName.IsEmpty())
+		{
+			OSContext.Add(TEXT("distribution_pretty_name"), DistroPrettyName);
+		}
+	}
+
+	return OSContext;
 }
 
-FString FSentryPlatformDetectionUtils::GetRuntimeVersion(const FWineProtonInfo& WineProtonInfo)
+FString FSentryPlatformDetectionUtils::GetKernelVersion()
 {
-	// For Proton, use build name if available, otherwise fall back to Wine version
-	if (WineProtonInfo.bIsProton && !WineProtonInfo.ProtonBuildName.IsEmpty())
+#if PLATFORM_WINDOWS
+	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
+	if (hNtDll == nullptr)
 	{
-		return WineProtonInfo.ProtonBuildName;
+		return FString();
 	}
-	return WineProtonInfo.Version;
+
+	// wine_get_host_version is exported by Wine's ntdll and reports the host's uname data
+	typedef void(CDECL * wine_get_host_version_t)(const char** sysname, const char** release);
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4191) // unsafe conversion from FARPROC
+#endif
+	wine_get_host_version_t wine_get_host_version =
+		reinterpret_cast<wine_get_host_version_t>(GetProcAddress(hNtDll, "wine_get_host_version"));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+	if (wine_get_host_version != nullptr)
+	{
+		const char* SysName = nullptr;
+		const char* Release = nullptr;
+		wine_get_host_version(&SysName, &Release);
+		if (Release != nullptr)
+		{
+			return FString(UTF8_TO_TCHAR(Release));
+		}
+	}
+#elif PLATFORM_LINUX
+	struct utsname UtsName;
+	if (uname(&UtsName) == 0)
+	{
+		return FString(UTF8_TO_TCHAR(UtsName.release));
+	}
+#endif
+
+	return FString();
 }
 
 TMap<FString, FString> FSentryPlatformDetectionUtils::ParseOsRelease()
@@ -235,42 +254,4 @@ TMap<FString, FString> FSentryPlatformDetectionUtils::ParseOsRelease()
 	}
 
 	return Fields;
-}
-
-void FSentryPlatformDetectionUtils::ParseWineVersion(const FString& VersionString, FWineProtonInfo& OutInfo)
-{
-	// Wine versions typically look like:
-	// - "9.0" (standard Wine)
-	// - "8.0-3" (Proton)
-	// - "7.0-rc1" (Wine release candidate)
-
-	// Check if this looks like a Proton version (contains dash with number after it)
-	if (VersionString.Contains(TEXT("-")))
-	{
-		TArray<FString> Parts;
-		VersionString.ParseIntoArray(Parts, TEXT("-"));
-
-		if (Parts.Num() >= 2)
-		{
-			// Check if the part after dash is numeric (Proton style) or GE build
-			if (Parts[1].IsNumeric() || Parts[1].Equals(TEXT("GE"), ESearchCase::IgnoreCase))
-			{
-				OutInfo.bIsProton = true;
-
-				// Construct Proton build name if not already set
-				if (OutInfo.ProtonBuildName.IsEmpty())
-				{
-					// Generate a default Proton name
-					if (Parts[1].Equals(TEXT("GE"), ESearchCase::IgnoreCase))
-					{
-						OutInfo.ProtonBuildName = FString::Printf(TEXT("Proton-GE %s"), *VersionString);
-					}
-					else
-					{
-						OutInfo.ProtonBuildName = FString::Printf(TEXT("Proton %s"), *Parts[0]);
-					}
-				}
-			}
-		}
-	}
 }

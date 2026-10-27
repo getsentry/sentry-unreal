@@ -32,8 +32,6 @@ public:
 	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
 	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override;
-	virtual bool IsHangTrackingSupported() const override;
-	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;
 	virtual void CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope) override;
 	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
@@ -61,7 +59,10 @@ public:
 	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
 
 	virtual void HandleAssert() override;
+	virtual bool IsHangTrackingSupported() const override;
+	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual FString GetDeviceType() const override { return TEXT("Handheld"); }
+	virtual FString GetSessionReplayDirectory() const override;
 
 	FString TryCaptureScreenshot() const;
 

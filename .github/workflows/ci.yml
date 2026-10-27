@@ -133,11 +133,15 @@ jobs:
   # Resolves the engine-version matrix once for all test platforms. PRs run the legacy 4.27
   # (where supported) plus the 3 latest versions; pushes to main/release run the full set.
   generate-test-matrix:
+    name: Generate test matrix
+    needs: [package]
     runs-on: ubuntu-latest
     outputs:
       linux: ${{ steps.set-matrix.outputs.linux }}
       windows: ${{ steps.set-matrix.outputs.windows }}
       android: ${{ steps.set-matrix.outputs.android }}
+      macos: ${{ steps.set-matrix.outputs.macos }}
+      ios: ${{ steps.set-matrix.outputs.ios }}
     steps:
       - id: set-matrix
         env:
@@ -154,9 +158,12 @@ jobs:
             echo 'windows=["4.27","5.5","5.6","5.7","5.8"]'                 >> "$GITHUB_OUTPUT"
             echo 'android=["5.4","5.5","5.6","5.7","5.8"]'                  >> "$GITHUB_OUTPUT"
           fi
+          # macOS/iOS: must match engine versions published to the registry by the ue-oci-macos workflow
+          echo 'macos=["5.8"]' >> "$GITHUB_OUTPUT"
+          echo 'ios=["5.8"]'   >> "$GITHUB_OUTPUT"
 
   build-linux:
-    needs: [package, generate-test-matrix]
+    needs: [generate-test-matrix]
     name: Linux UE ${{ matrix.unreal }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -171,7 +178,7 @@ jobs:
       unreal-version: ${{ matrix.unreal }}
 
   build-windows:
-    needs: [package, generate-test-matrix]
+    needs: [generate-test-matrix]
     name: Windows UE ${{ matrix.unreal }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -186,7 +193,7 @@ jobs:
       unreal-version: ${{ matrix.unreal }}
 
   build-macos:
-    needs: [package]
+    needs: [generate-test-matrix]
     name: macOS UE ${{ matrix.unreal }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -195,15 +202,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Must match an engine version published to the registry by the ue-oci-macos workflow
-        unreal: ['5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.macos) }}
     uses: ./.github/workflows/build-macos.yml
     with:
       unreal-version: ${{ matrix.unreal }}
     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
   build-ios:
-    needs: [package]
+    needs: [generate-test-matrix]
     name: iOS UE ${{ matrix.unreal }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -215,15 +221,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Must match an engine version published to the registry by the ue-oci-macos workflow
-        unreal: ['5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.ios) }}
     uses: ./.github/workflows/build-ios.yml
     with:
       unreal-version: ${{ matrix.unreal }}
     if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
 
   build-android:
-    needs: [package, generate-test-matrix]
+    needs: [generate-test-matrix]
     name: Android UE ${{ matrix.unreal }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -238,7 +243,7 @@ jobs:
       unreal-version: ${{ matrix.unreal }}
 
   build-consoles:
-    needs: [package]
+    needs: [generate-test-matrix]
     name: ${{ matrix.name }}
     if: github.event_name == 'push'
     secrets:
@@ -307,7 +312,7 @@ jobs:
       backend: ${{ matrix.backend }}
 
   test-macos:
-    needs: [build-macos]
+    needs: [build-macos, generate-test-matrix]
     name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
     secrets:
       SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
@@ -315,7 +320,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unreal: ['5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.macos) }}
         backend: [cocoa, native]
     uses: ./.github/workflows/test-macos.yml
     with:
@@ -323,7 +328,7 @@ jobs:
       backend: ${{ matrix.backend }}
 
   test-ios:
-    needs: [build-ios]
+    needs: [build-ios, generate-test-matrix]
     name: iOS UE ${{ matrix.unreal }}
     secrets:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -334,7 +339,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        unreal: ['5.8']
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.ios) }}
     uses: ./.github/workflows/test-ios.yml
     with:
       unreal-version: ${{ matrix.unreal }}

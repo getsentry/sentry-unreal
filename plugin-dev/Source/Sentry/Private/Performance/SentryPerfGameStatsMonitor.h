@@ -7,6 +7,7 @@
 #include "Misc/EngineVersionComparison.h"
 
 class FSentryPerfMetricAttributes;
+class ISentrySubsystem;
 
 /**
  * Periodically samples game stats and emits them as metrics.
@@ -20,12 +21,13 @@ class FSentryPerfMetricAttributes;
 class FSentryPerfGameStatsMonitor
 {
 public:
-	explicit FSentryPerfGameStatsMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes);
+	FSentryPerfGameStatsMonitor(const TSharedRef<ISentrySubsystem>& InNativeImpl, TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes, int32 InSampleIntervalSeconds);
 	~FSentryPerfGameStatsMonitor();
 
 private:
 	bool OnTick(float DeltaTime);
 
+	TSharedRef<ISentrySubsystem> NativeImpl;
 	TSharedPtr<FSentryPerfMetricAttributes> MetricAttributes;
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)

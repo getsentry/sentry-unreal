@@ -9,13 +9,12 @@
 #include "Performance/SentryPerfMetricAttributes.h"
 
 #include "SentryDefines.h"
-#include "SentryModule.h"
-#include "SentrySettings.h"
-#include "SentrySubsystem.h"
 #include "SentryUnit.h"
 
-#include "Engine/Engine.h"
+#include "Interface/SentrySubsystemInterface.h"
+
 #include "Engine/NetDriver.h"
+#include "Engine/World.h"
 #include "Net/NetworkMetricsDatabase.h"
 #include "Net/NetworkMetricsDefs.h"
 
@@ -36,13 +35,13 @@ const TArray<FSentryNetworkMetricMapping> FSentryPerfNetworkMonitor::MetricMappi
 	{ UE::Net::Metric::SatConnections, TEXT("game.perf.net.sat_connections"), ESentryUnit::None, false },
 };
 
-FSentryPerfNetworkMonitor::FSentryPerfNetworkMonitor(TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes)
-	: MetricAttributes(InMetricAttributes)
+FSentryPerfNetworkMonitor::FSentryPerfNetworkMonitor(const TSharedRef<ISentrySubsystem>& InNativeImpl, TSharedPtr<FSentryPerfMetricAttributes> InMetricAttributes, int32 InSampleIntervalSeconds)
+	: NativeImpl(InNativeImpl)
+	, MetricAttributes(InMetricAttributes)
 {
-	const USentrySettings* Settings = FSentryModule::Get().GetSettings();
-	check(Settings);
+	const float IntervalSeconds = static_cast<float>(FMath::Max(InSampleIntervalSeconds, 1));
 
-	const float IntervalSeconds = static_cast<float>(FMath::Max(Settings->NetworkMetricsSampleInterval, 1));
+	NetDriverCreatedHandle = FWorldDelegates::OnNetDriverCreated.AddRaw(this, &FSentryPerfNetworkMonitor::OnNetDriverCreated);
 
 	TickerHandle = FTSTicker::GetCoreTicker().AddTicker(TEXT("SentryPerfNetworkMonitor"), IntervalSeconds, [this](float DeltaTime)
 	{
@@ -54,17 +53,20 @@ FSentryPerfNetworkMonitor::FSentryPerfNetworkMonitor(TSharedPtr<FSentryPerfMetri
 
 FSentryPerfNetworkMonitor::~FSentryPerfNetworkMonitor()
 {
+	FWorldDelegates::OnNetDriverCreated.Remove(NetDriverCreatedHandle);
 	FTSTicker::RemoveTicker(TickerHandle);
 }
 
-void FSentryPerfNetworkMonitor::SetNetDriver(UNetDriver* InNetDriver)
+void FSentryPerfNetworkMonitor::OnNetDriverCreated(UWorld* World, UNetDriver* NetDriver)
 {
-	WeakNetDriver = InNetDriver;
-
-	if (InNetDriver)
+	if (!NetDriver)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("Network metrics monitor attached to NetDriver '%s'."), *InNetDriver->GetName());
+		return;
 	}
+
+	WeakNetDriver = NetDriver;
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Network metrics monitor attached to NetDriver '%s'."), *NetDriver->GetName());
 }
 
 bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
@@ -77,12 +79,6 @@ bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
 
 	UNetworkMetricsDatabase* MetricsDb = NetDriver->GetMetrics();
 	if (!MetricsDb)
-	{
-		return true;
-	}
-
-	USentrySubsystem* Sentry = GEngine ? GEngine->GetEngineSubsystem<USentrySubsystem>() : nullptr;
-	if (!Sentry || !Sentry->IsEnabled())
 	{
 		return true;
 	}
@@ -100,7 +96,7 @@ bool FSentryPerfNetworkMonitor::OnTick(float DeltaTime)
 								? MetricsDb->GetFloat(Mapping.UEName)
 								: static_cast<float>(MetricsDb->GetInt(Mapping.UEName));
 
-		Sentry->AddGaugeWithAttributes(Mapping.SentryKey, Value, FSentryUnit(Mapping.Unit), Attributes);
+		NativeImpl->AddGauge(Mapping.SentryKey, Value, FSentryUnit(Mapping.Unit).ToString(), Attributes);
 	}
 
 	return true;

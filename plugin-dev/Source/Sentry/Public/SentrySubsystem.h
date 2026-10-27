@@ -29,17 +29,7 @@ class USentryTraceSampler;
 class USentryTransactionContext;
 
 class ISentrySubsystem;
-class FSentryOutputDevice;
-class FSentryErrorOutputDevice;
-class FSentryHangWatcher;
-class FSentryPerfFrameTimeMonitor;
-class FSentryPerfMetricAttributes;
-class FSentryPerfGCMonitor;
-class FSentryPerfGameStatsMonitor;
-
-#if !UE_VERSION_OLDER_THAN(5, 7, 0)
-class FSentryPerfNetworkMonitor;
-#endif
+class ISentryIntegration;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -603,11 +593,14 @@ private:
 	/** Promote specified values to tags for all events captured by Sentry SDK. */
 	void PromoteTags();
 
-	/** Subscribe to specified game events in order to add corresponding breadcrumbs automatically. */
-	void ConfigureBreadcrumbs();
+	/** Set up all SDK integrations. */
+	void SetupIntegrations(const USentrySettings& Settings);
 
-	/** Unsubscribe from game events that are used for automatic breadcrumbs. */
-	void DisableAutomaticBreadcrumbs();
+	/** Set up the given integration and keep it if it's needed for the current configuration. */
+	void AddIntegration(const TSharedRef<ISentryIntegration>& Integration, const USentrySettings& Settings);
+
+	/** Tear down all integrations in reverse order of their setup. */
+	void TeardownIntegrations();
 
 	/** Check whether the event capturing should be enabled for the current build configuration */
 	bool IsCurrentBuildConfigurationEnabled() const;
@@ -618,26 +611,11 @@ private:
 	/** Check whether the event capturing should be enabled for promoted builds only */
 	bool IsPromotedBuildsOnlyEnabled() const;
 
-	/** Add custom Sentry output device to intercept logs */
-	void ConfigureOutputDevice();
-
-	/** Add custom Sentry output device to intercept errors */
-	void ConfigureErrorOutputDevice();
-
-	/** Set up hang watcher for detecting unresponsive threads */
-	void ConfigureHangTracking();
-
-	/** Set up automatic performance metrics (frame time, GC pause time, etc.) */
-	void ConfigurePerformanceMetrics();
-
 	/** Add a structured log message with formatting */
 	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;
-
-	TSharedPtr<FSentryOutputDevice> OutputDevice;
-	TSharedPtr<FSentryErrorOutputDevice> OutputDeviceError;
 
 	UPROPERTY()
 	USentryBeforeSendHandler* BeforeSendHandler;
@@ -657,24 +635,5 @@ private:
 	UPROPERTY()
 	USentryTraceSampler* TraceSampler;
 
-	FDelegateHandle PreLoadMapDelegate;
-	FDelegateHandle PostLoadMapDelegate;
-	FDelegateHandle GameStateChangedDelegate;
-	FDelegateHandle UserActivityChangedDelegate;
-	FDelegateHandle GameSessionIDChangedDelegate;
-
-	FDelegateHandle OnAssertDelegate;
-	FDelegateHandle OnEnsureDelegate;
-
-	TSharedPtr<FSentryHangWatcher> HangWatcher;
-
-	TSharedPtr<FSentryPerfMetricAttributes> PerfMetricAttributes;
-	TSharedPtr<FSentryPerfFrameTimeMonitor> PerfFrameTimeMonitor;
-	TSharedPtr<FSentryPerfGameStatsMonitor> PerfGameStatsMonitor;
-	TSharedPtr<FSentryPerfGCMonitor> PerfGCMonitor;
-
-#if !UE_VERSION_OLDER_THAN(5, 7, 0)
-	TSharedPtr<FSentryPerfNetworkMonitor> PerfNetworkMonitor;
-	FDelegateHandle OnNetDriverCreatedHandle;
-#endif
+	TArray<TSharedRef<ISentryIntegration>> Integrations;
 };
