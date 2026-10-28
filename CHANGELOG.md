@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add experimental setting for the native backend to send GPU crash dumps as a separate event on Windows ([#XXXX](https://github.com/getsentry/sentry-unreal/pull/XXXX))
+- Add experimental setting for the native backend to send GPU crash dumps as a separate event on Windows ([#1667](https://github.com/getsentry/sentry-unreal/pull/1667))
 
 ### Behavioral Changes
 
