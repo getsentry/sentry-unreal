@@ -29,6 +29,16 @@ sentry_uuid_t FGenericPlatformSentryAttachment::GetUuid()
 	return Uuid;
 }
 
+void FGenericPlatformSentryAttachment::SetAttachmentType(const FString& attachmentType)
+{
+	AttachmentType = attachmentType;
+}
+
+FString FGenericPlatformSentryAttachment::GetAttachmentType() const
+{
+	return AttachmentType;
+}
+
 TArray<uint8> FGenericPlatformSentryAttachment::GetData() const
 {
 	return Data;

@@ -84,6 +84,9 @@ void FMicrosoftSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> 
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
+	if (!platformAttachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetAttachmentType()));
+
 	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 
 	attachments.Add(platformAttachment);
@@ -100,6 +103,9 @@ void FMicrosoftSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> 
 
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
+
+	if (!platformAttachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetAttachmentType()));
 
 	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 

@@ -18,6 +18,9 @@ public:
 	void SetUuid(sentry_uuid_t uuid);
 	sentry_uuid_t GetUuid();
 
+	void SetAttachmentType(const FString& attachmentType);
+	FString GetAttachmentType() const;
+
 	virtual TArray<uint8> GetData() const override;
 	virtual FString GetPath() const override;
 	virtual FString GetFilename() const override;
@@ -30,6 +33,7 @@ private:
 	FString Path;
 	FString Filename;
 	FString ContentType;
+	FString AttachmentType;
 
 	sentry_uuid_t Uuid;
 };
