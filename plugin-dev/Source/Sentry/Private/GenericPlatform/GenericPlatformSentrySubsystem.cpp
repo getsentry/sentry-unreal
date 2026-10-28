@@ -424,11 +424,17 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		const FString& GpuDumpPath = TryCaptureGpuDump();
 		if (!GpuDumpPath.IsEmpty())
 		{
-			CrashHint.AddAttachment(MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream"))));
+			TSharedPtr<FGenericPlatformSentryAttachment> GpuDumpAttachment =
+				MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
+			GpuDumpAttachment->SetAttachmentType(TEXT("event.nv_gpudmp"));
+			CrashHint.AddAttachment(GpuDumpAttachment);
 
 			for (const FString& ShaderDebugInfoPath : GetSessionGpuShaderDebugInfoPaths())
 			{
-				CrashHint.AddAttachment(MakeShareable(new FGenericPlatformSentryAttachment(ShaderDebugInfoPath, FPaths::GetCleanFilename(ShaderDebugInfoPath), TEXT("application/octet-stream"))));
+				TSharedPtr<FGenericPlatformSentryAttachment> ShaderDebugInfoAttachment =
+					MakeShareable(new FGenericPlatformSentryAttachment(ShaderDebugInfoPath, FPaths::GetCleanFilename(ShaderDebugInfoPath), TEXT("application/octet-stream")));
+				ShaderDebugInfoAttachment->SetAttachmentType(TEXT("event.nv_shader_debug"));
+				CrashHint.AddAttachment(ShaderDebugInfoAttachment);
 			}
 		}
 	}
@@ -528,6 +534,9 @@ void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttach
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
 
+	if (!platformAttachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetAttachmentType()));
+
 	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 
 	attachments.Add(platformAttachment);
@@ -544,6 +553,9 @@ void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttach
 
 	if (!platformAttachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
+
+	if (!platformAttachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetAttachmentType()));
 
 	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
 

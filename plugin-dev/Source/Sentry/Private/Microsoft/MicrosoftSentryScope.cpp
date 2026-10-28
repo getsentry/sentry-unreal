@@ -17,6 +17,9 @@ void FMicrosoftSentryScope::AddFileAttachment(TSharedPtr<FGenericPlatformSentryA
 	if (!attachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
 
+	if (!attachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetAttachmentType()));
+
 	attachment->SetUuid(sentry_scope_add_attachment(scope, nativeAttachment));
 }
 
@@ -29,6 +32,9 @@ void FMicrosoftSentryScope::AddByteAttachment(TSharedPtr<FGenericPlatformSentryA
 
 	if (!attachment->GetContentType().IsEmpty())
 		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetContentType()));
+
+	if (!attachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*attachment->GetAttachmentType()));
 
 	attachment->SetUuid(sentry_scope_add_attachment(scope, nativeAttachment));
 }
