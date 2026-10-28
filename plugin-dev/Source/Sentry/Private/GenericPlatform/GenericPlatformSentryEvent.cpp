@@ -6,6 +6,8 @@
 
 #include "SentryDefines.h"
 
+#include "GenericPlatform/GenericPlatformCrashContext.h"
+
 #include "Infrastructure/GenericPlatformSentryConverters.h"
 
 #if USE_SENTRY_NATIVE
@@ -340,6 +342,12 @@ bool FGenericPlatformSentryEvent::IsAnr(sentry_value_t event)
 	bool isAppHangMechanism = mechanismType && FCStringAnsi::Strcmp(mechanismType, "AppHang") == 0;
 
 	return isAppHangException && isAppHangMechanism;
+}
+
+bool FGenericPlatformSentryEvent::IsGpuCrash(sentry_value_t event)
+{
+	const char* crashType = sentry_value_as_string(sentry_value_get_by_key(sentry_value_get_by_key(event, "tags"), "CrashType"));
+	return FCStringAnsi::Strcmp(crashType, TCHAR_TO_UTF8(FGenericCrashContext::GetCrashTypeString(ECrashContextType::GPUCrash))) == 0;
 }
 
 #endif
