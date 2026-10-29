@@ -126,6 +126,8 @@ protected:
 
 	virtual ECrashContextType ResolveCrashType() const;
 
+	virtual void AddCrashMemoryContext(sentry_value_t event) {}
+
 	void InitCrashReporter(const FString& release, const FString& environment);
 
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment);
@@ -133,6 +135,7 @@ protected:
 
 	void SetEventCrashType(sentry_value_t event, ECrashContextType crashType);
 	void SetEventTag(sentry_value_t event, const char* key, const char* value);
+	void SetEventContextValue(sentry_value_t event, const char* context, const char* key, sentry_value_t value);
 
 	virtual void AttachStackTrace(sentry_value_t target);
 
