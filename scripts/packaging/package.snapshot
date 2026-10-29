@@ -624,7 +624,6 @@ Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.IO.Pipe
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.IO.Pipes.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Linq.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Linq.Expressions.dll
-Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Linq.Queryable.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Memory.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Net.Http.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Net.NameResolution.dll
@@ -648,6 +647,7 @@ Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.Numerics.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.Serialization.Primitives.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Security.Cryptography.dll
+Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Text.Encoding.CodePages.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Text.Encodings.Web.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Text.Json.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Text.RegularExpressions.dll
