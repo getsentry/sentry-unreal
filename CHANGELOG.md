@@ -9,6 +9,7 @@
 ### Features
 
 - Add memory usage at the time of the crash to crash events on Windows and Xbox ([#1664](https://github.com/getsentry/sentry-unreal/pull/1664))
+- Attach compiled shader objects (.cso) to GPU crash events alongside the NVIDIA Aftermath dump ([#PR](https://github.com/getsentry/sentry-unreal/pull/PR))
 
 ### Fixes
 

@@ -72,23 +72,33 @@ FString SentryFileUtils::GetGpuDumpPath()
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*GpuDumpFiles[0]);
 }
 
-TArray<FString> SentryFileUtils::GetGpuShaderDebugInfoPaths()
+static TArray<FString> FindLogDirFilesWithExtension(const TCHAR* Extension)
 {
-	TArray<FString> NvdbgFiles;
-	IFileManager::Get().FindFiles(NvdbgFiles, *FString::Printf(TEXT("%s*.nvdbg"), *FPaths::ProjectLogDir()), true, false);
+	TArray<FString> Files;
+	IFileManager::Get().FindFiles(Files, *FString::Printf(TEXT("%s*%s"), *FPaths::ProjectLogDir(), Extension), true, false);
 
-	if (NvdbgFiles.Num() == 0)
+	if (Files.Num() == 0)
 	{
-		UE_LOG(LogSentrySdk, Log, TEXT("There are no .nvdbg files available."));
+		UE_LOG(LogSentrySdk, Log, TEXT("There are no %s files available."), Extension);
 		return TArray<FString>();
 	}
 
-	for (int i = 0; i < NvdbgFiles.Num(); ++i)
+	for (int i = 0; i < Files.Num(); ++i)
 	{
-		NvdbgFiles[i] = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectLogDir() / NvdbgFiles[i]));
+		Files[i] = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*(FPaths::ProjectLogDir() / Files[i]));
 	}
 
-	return NvdbgFiles;
+	return Files;
+}
+
+TArray<FString> SentryFileUtils::GetGpuShaderDebugInfoPaths()
+{
+	return FindLogDirFilesWithExtension(TEXT(".nvdbg"));
+}
+
+TArray<FString> SentryFileUtils::GetGpuCompiledShaderPaths()
+{
+	return FindLogDirFilesWithExtension(TEXT(".cso"));
 }
 
 FString SentryFileUtils::GetScreenshotPath()

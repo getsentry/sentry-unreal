@@ -86,7 +86,7 @@ public:
 	FString TryCaptureScreenshot() const;
 	FString TryCaptureGpuDump() const;
 
-	TArray<FString> GetSessionGpuShaderDebugInfoPaths() const;
+	TArray<FString> FilterSessionFiles(const TArray<FString>& FilePaths) const;
 
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) {}
