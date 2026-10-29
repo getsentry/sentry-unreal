@@ -23,6 +23,9 @@
 - Bump Java SDK from v8.61.0 to v8.62.0 ([#1662](https://github.com/getsentry/sentry-unreal/pull/1662))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8620)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.61.0...8.62.0)
+- Bump Native SDK from v0.17.4 to v0.17.5 ([#1668](https://github.com/getsentry/sentry-unreal/pull/1668))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0175)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.4...0.17.5)
 
 ## 1.25.0
 
