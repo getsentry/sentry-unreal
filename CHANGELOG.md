@@ -30,6 +30,9 @@
 - Bump Native SDK from v0.17.4 to v0.17.5 ([#1668](https://github.com/getsentry/sentry-unreal/pull/1668))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0175)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.17.4...0.17.5)
+- Bump Crash Reporter from v0.3.3 to v0.3.4 ([#1672](https://github.com/getsentry/sentry-unreal/pull/1672))
+  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#034)
+  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.3.3...0.3.4)
 
 ## 1.25.0
 
