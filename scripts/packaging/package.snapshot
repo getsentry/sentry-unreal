@@ -442,7 +442,9 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMechanism.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMechanismContext.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMessage.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetric.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricKitDiagnosticReport.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricKitOptions.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricsApi.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricValue.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCNSError.h
