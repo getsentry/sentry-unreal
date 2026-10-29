@@ -51,12 +51,12 @@ void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings
 
 	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default && Settings->EnableCrashReporterContextPropagation)
 	{
-		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+		InitCrashReporter(Settings);
 	}
 #else
 	if (Settings->EnableCrashReporterContextPropagation)
 	{
-		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+		InitCrashReporter(Settings);
 	}
 #endif
 }

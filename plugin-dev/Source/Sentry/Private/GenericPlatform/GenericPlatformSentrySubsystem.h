@@ -128,7 +128,7 @@ protected:
 
 	virtual void AddCrashMemoryContext(sentry_value_t event) {}
 
-	void InitCrashReporter(const FString& release, const FString& environment);
+	void InitCrashReporter(const USentrySettings* Settings);
 
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment);
 	virtual void AddByteAttachment(TSharedPtr<ISentryAttachment> attachment);

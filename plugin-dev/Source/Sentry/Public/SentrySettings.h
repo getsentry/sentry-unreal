@@ -721,6 +721,11 @@ class SENTRY_API USentrySettings : public UObject
 			SentryPlatforms = "Win64,Linux,Mac:Native"))
 	bool EnableCrashReporterContextPropagation;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
+		Meta = (DisplayName = "Include debug images", ToolTip = "Flag indicating whether to propagate the list of loaded modules to Unreal Crash Reporter. Skipped when the crash reporter runs out-of-process (e.g., in the editor).",
+			EditCondition = "EnableCrashReporterContextPropagation", SentryPlatforms = "Win64,Linux,Mac:Native", SentryExperimental))
+	bool EnableCrashReporterDebugImages;
+
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif

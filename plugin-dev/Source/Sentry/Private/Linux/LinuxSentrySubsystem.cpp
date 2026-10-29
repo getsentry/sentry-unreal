@@ -24,7 +24,7 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, co
 
 	if (Settings->EnableCrashReporterContextPropagation)
 	{
-		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+		InitCrashReporter(Settings);
 	}
 
 	// Add platform context if detected

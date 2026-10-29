@@ -515,12 +515,17 @@ ECrashContextType FGenericPlatformSentrySubsystem::ResolveCrashType() const
 	return ECrashContextType::Crash;
 }
 
-void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
+void FGenericPlatformSentrySubsystem::InitCrashReporter(const USentrySettings* Settings)
 {
 	crashReporter = MakeShareable(new FGenericPlatformSentryCrashReporter);
 
-	crashReporter->SetRelease(release);
-	crashReporter->SetEnvironment(environment);
+	crashReporter->SetRelease(Settings->GetEffectiveRelease());
+	crashReporter->SetEnvironment(Settings->GetEffectiveEnvironment());
+
+	if (Settings->EnableCrashReporterDebugImages && !FGenericCrashContext::IsOutOfProcessCrashReporter())
+	{
+		crashReporter->SetDebugImages();
+	}
 }
 
 void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> attachment)
