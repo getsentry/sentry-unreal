@@ -662,7 +662,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
 
 #if PLATFORM_WINDOWS
-	isGpuCrashSplitEnabled = isGpuDumpAttachmentEnabled && bUseNativeBackend && settings->SplitGpuCrashEvents;
+	isGpuCrashSplitEnabled = isGpuDumpAttachmentEnabled && bUseNativeBackend && settings->SplitGpuCrashEvents && !settings->EnableExternalCrashReporter;
 #endif
 
 	if (settings->UseProxy)
