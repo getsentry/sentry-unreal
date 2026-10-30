@@ -11,7 +11,10 @@
 
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
+#include "HAL/PlatformMemory.h"
 #include "HAL/PlatformProcess.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "UObject/UObjectGlobals.h"
 
 #if PLATFORM_MICROSOFT
@@ -53,6 +56,21 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 			Terminate(Type);
 			break;
 		case ESentryAppTerminationType::OutOfMemory:
+			if (FParse::Param(FCommandLine::Get(), TEXT("oom-exhaust")))
+			{
+				// Fill memory up to the last few blocks so that the crash handler runs with almost nothing left
+				const SIZE_T MinBlockSize = 64 * 1024;
+				SIZE_T BlockSize = 64 * 1024 * 1024;
+				while (true)
+				{
+					while (BlockSize > MinBlockSize && FPlatformMemory::GetStats().AvailablePhysical < 2 * BlockSize)
+					{
+						BlockSize /= 2;
+					}
+					void* _ = FMemory::Malloc(BlockSize);
+				}
+			}
+			else
 			{
 				const size_t BlockSize = 1024 * 1024 * 1024;
 				while (true)
