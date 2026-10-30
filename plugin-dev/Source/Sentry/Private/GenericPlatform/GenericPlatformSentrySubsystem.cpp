@@ -429,13 +429,19 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 			GpuDumpAttachment->SetAttachmentType(TEXT("event.nv_gpudmp"));
 			CrashHint.AddAttachment(GpuDumpAttachment);
 
-			for (const FString& ShaderDebugInfoPath : GetSessionGpuShaderDebugInfoPaths())
+			auto AddGpuCrashAttachments = [&CrashHint](const TArray<FString>& Paths, const TCHAR* AttachmentType)
 			{
-				TSharedPtr<FGenericPlatformSentryAttachment> ShaderDebugInfoAttachment =
-					MakeShareable(new FGenericPlatformSentryAttachment(ShaderDebugInfoPath, FPaths::GetCleanFilename(ShaderDebugInfoPath), TEXT("application/octet-stream")));
-				ShaderDebugInfoAttachment->SetAttachmentType(TEXT("event.nv_shader_debug"));
-				CrashHint.AddAttachment(ShaderDebugInfoAttachment);
-			}
+				for (const FString& Path : Paths)
+				{
+					TSharedPtr<FGenericPlatformSentryAttachment> Attachment =
+						MakeShareable(new FGenericPlatformSentryAttachment(Path, FPaths::GetCleanFilename(Path), TEXT("application/octet-stream")));
+					Attachment->SetAttachmentType(AttachmentType);
+					CrashHint.AddAttachment(Attachment);
+				}
+			};
+
+			AddGpuCrashAttachments(FilterSessionFiles(SentryFileUtils::GetGpuShaderDebugInfoPaths()), TEXT("event.nv_shader_debug"));
+			AddGpuCrashAttachments(FilterSessionFiles(SentryFileUtils::GetGpuCompiledShaderPaths()), TEXT("event.compiled_shader"));
 		}
 	}
 
@@ -1388,12 +1394,12 @@ FString FGenericPlatformSentrySubsystem::TryCaptureGpuDump() const
 	return GpuDumpPath;
 }
 
-TArray<FString> FGenericPlatformSentrySubsystem::GetSessionGpuShaderDebugInfoPaths() const
+TArray<FString> FGenericPlatformSentrySubsystem::FilterSessionFiles(const TArray<FString>& FilePaths) const
 {
-	// NVIDIA Aftermath .nvdbg files written before this SDK session are assumed to belong to previous crashes
-	return SentryFileUtils::GetGpuShaderDebugInfoPaths().FilterByPredicate([this](const FString& NvdbgPath)
+	// GPU crash companion files (.nvdbg, .cso) written before this SDK session are assumed to belong to previous crashes
+	return FilePaths.FilterByPredicate([this](const FString& FilePath)
 	{
-		return IFileManager::Get().GetTimeStamp(*NvdbgPath) >= initTimestamp;
+		return IFileManager::Get().GetTimeStamp(*FilePath) >= initTimestamp;
 	});
 }
 
