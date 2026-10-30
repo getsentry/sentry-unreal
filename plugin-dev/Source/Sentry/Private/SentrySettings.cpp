@@ -99,6 +99,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, CrashReporterAppearance()
 	, CrashReporterUrl()
 	, EnableCrashReporterContextPropagation(true)
+	, EnableCrashReporterDebugImages(false)
 	, bIsDirty(false)
 {
 	if (GIsEditor)
@@ -134,7 +135,8 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseLegacyGradlePlugin) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, DiagnosticLevel) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl) ||
-		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterContextPropagation))
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterContextPropagation) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterDebugImages))
 	{
 		return;
 	}

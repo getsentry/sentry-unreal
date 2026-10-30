@@ -168,6 +168,42 @@ void FGenericPlatformSentryCrashReporter::RemoveTag(const FString& key)
 	UpdateCrashReporterConfig();
 }
 
+void FGenericPlatformSentryCrashReporter::SetDebugImages()
+{
+	sentry_value_t modules = sentry_get_modules_list();
+	if (sentry_value_is_null(modules))
+	{
+		return;
+	}
+
+	char* modulesJson = sentry_value_to_json(modules);
+	sentry_value_decref(modules);
+
+	if (!modulesJson)
+	{
+		return;
+	}
+
+	TArray<TSharedPtr<FJsonValue>> images;
+	const TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(UTF8_TO_TCHAR(modulesJson));
+	const bool isDeserialized = FJsonSerializer::Deserialize(jsonReader, images);
+	sentry_free(modulesJson);
+
+	if (!isDeserialized)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Failed to deserialize debug images list for crash context"));
+		return;
+	}
+
+	TSharedPtr<FJsonObject> debugMetaConfig = MakeShareable(new FJsonObject);
+	debugMetaConfig->SetArrayField(TEXT("images"), images);
+
+	crashReporterConfig->SetObjectField(TEXT("debug_meta"), debugMetaConfig);
+	crashReporterConfig->SetStringField(TEXT("platform"), TEXT("native"));
+
+	UpdateCrashReporterConfig();
+}
+
 void FGenericPlatformSentryCrashReporter::UpdateCrashReporterConfig()
 {
 	FString config;

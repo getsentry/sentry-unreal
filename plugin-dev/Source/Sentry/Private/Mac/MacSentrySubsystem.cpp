@@ -22,7 +22,7 @@ void FMacSentrySubsystem::InitWithSettings(const USentrySettings* Settings, cons
 
 	if (Settings->EnableCrashReporterContextPropagation)
 	{
-		InitCrashReporter(Settings->GetEffectiveRelease(), Settings->GetEffectiveEnvironment());
+		InitCrashReporter(Settings);
 	}
 }
 

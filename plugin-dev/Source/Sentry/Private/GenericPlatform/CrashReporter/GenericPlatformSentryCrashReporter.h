@@ -25,6 +25,7 @@ public:
 	void SetTag(const FString& key, const FString& value);
 	void SetTags(const TMap<FString, FString>& tags);
 	void RemoveTag(const FString& key);
+	void SetDebugImages();
 
 protected:
 	void UpdateCrashReporterConfig();
