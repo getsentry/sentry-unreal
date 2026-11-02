@@ -5,12 +5,14 @@
 #include "Integrations/SentryIntegration.h"
 
 #include "SentrySettings.h"
+#include "SentryVariant.h"
 
 #include "Async/Future.h"
 #include "Containers/Ticker.h"
 #include "Misc/EngineVersionComparison.h"
 #include "UObject/WeakObjectPtrTemplates.h"
 
+class AActor;
 class ISentrySubsystem;
 class FSentryGameStateRecorder;
 class FSentryGameStateSampler;
@@ -35,6 +37,12 @@ public:
 
 	virtual bool Setup(const USentrySettings& Settings) override;
 	virtual void Teardown() override;
+
+	void AddTrackedActor(AActor* Actor, const FString& Id, const FString& Tag);
+	void RemoveTrackedActor(AActor* Actor);
+
+	void SetAttribute(const FString& Key, const FSentryVariant& Value);
+	void RemoveAttribute(const FString& Key);
 
 private:
 	static constexpr double FlushIntervalSeconds = 1.0;

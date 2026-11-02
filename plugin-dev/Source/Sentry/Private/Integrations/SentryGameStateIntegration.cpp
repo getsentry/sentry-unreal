@@ -17,6 +17,7 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "GameDelegates.h"
+#include "GameFramework/Actor.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformTime.h"
 #include "Misc/App.h"
@@ -97,6 +98,42 @@ void FSentryGameStateIntegration::Teardown()
 	Recorder.Reset();
 }
 
+void FSentryGameStateIntegration::AddTrackedActor(AActor* Actor, const FString& Id, const FString& Tag)
+{
+	if (!IsValid(Actor))
+	{
+		return;
+	}
+
+	const FString ActorId = Id.IsEmpty() ? Actor->GetName() : Id;
+	const FString ActorTag = Tag.IsEmpty() ? Actor->GetClass()->GetName() : Tag;
+
+	if (Sampler->AddTrackedActor(Actor, ActorId, ActorTag) && bCapturing)
+	{
+		Sampler->WriteTrackEvent(Actor, GetCaptureTime(), *Recorder);
+	}
+}
+
+void FSentryGameStateIntegration::RemoveTrackedActor(AActor* Actor)
+{
+	if (bCapturing)
+	{
+		Sampler->WriteUntrackEvent(Actor, GetCaptureTime(), *Recorder);
+	}
+
+	Sampler->RemoveTrackedActor(Actor);
+}
+
+void FSentryGameStateIntegration::SetAttribute(const FString& Key, const FSentryVariant& Value)
+{
+	Sampler->SetAttribute(Key, Value);
+}
+
+void FSentryGameStateIntegration::RemoveAttribute(const FString& Key)
+{
+	Sampler->RemoveAttribute(Key);
+}
+
 bool FSentryGameStateIntegration::OnTick(float DeltaTime)
 {
 	UWorld* World = FindGameWorld();
@@ -153,6 +190,8 @@ void FSentryGameStateIntegration::BeginCapture(UWorld* World)
 	Recorder->Reset();
 
 	UpdateHeader(World);
+
+	Sampler->WriteInitialTrackEvents(GetCaptureTime(), *Recorder);
 
 	UE_LOG(LogSentrySdk, Log, TEXT("Game state capture started (%.2f s interval, %d s window)."), Options.SampleInterval, Options.WindowSeconds);
 }
