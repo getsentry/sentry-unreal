@@ -660,6 +660,67 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         }
     }
 
+    Context "Game State Capture Tests" {
+        BeforeAll {
+            $script:GameStateResult = $null
+            $script:GameStateEvent = $null
+            $script:GameStateAttachments = @()
+
+            Write-Host "Running game state capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachGameState=True"
+
+            # -game-state-capture records tracked actors and attributes for a few seconds and crashes
+            $script:GameStateResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-game-state-capture') + $appArgs) -join ' ')
+
+            # On macOS with Cocoa backend, the crash is sent on the next launch together with
+            # the previous run's game state, which requires AttachGameState to remain enabled.
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
+            }
+
+            Write-Host "Game state capture test executed. Exit code: $($script:GameStateResult.ExitCode)" -ForegroundColor Cyan
+
+            $eventIds = Get-EventIds -AppOutput $script:GameStateResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                try {
+                    $script:GameStateEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$($eventIds[0])"
+                    Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:GameStateEvent) {
+                    try {
+                        $script:GameStateAttachments = Get-SentryTestEventAttachments -EventId $script:GameStateEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch crash event attachments from Sentry: $_" -ForegroundColor Red
+                    }
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should have non-zero exit code" {
+            $script:GameStateResult.ExitCode | Should -Not -Be 0
+        }
+
+        It "Should have game state attached to the crash event" {
+            $script:GameStateAttachments | Where-Object { $_.name -eq 'game_state.jsonl' } | Should -Not -BeNullOrEmpty
+        }
+    }
+
     Context "Message Capture Tests" {
         BeforeAll {
             $script:MessageResult = $null
