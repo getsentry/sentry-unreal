@@ -75,6 +75,7 @@ public:
 	virtual bool IsNativeHangTrackingEnabled() const override { return bNativeHangTracking; }
 	virtual FString GetDeviceType() const override { return TEXT("Desktop"); }
 	virtual FString GetSessionReplayDirectory() const override;
+	virtual FString GetGameStateFilePath() const override;
 
 	USentryBeforeSendHandler* GetBeforeSendHandler() const;
 	USentryBeforeSendFeedbackHandler* GetBeforeSendFeedbackHandler() const;

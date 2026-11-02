@@ -22,6 +22,7 @@
 #include "Integrations/SentryAssertTrackingIntegration.h"
 #include "Integrations/SentryBreadcrumbsIntegration.h"
 #include "Integrations/SentryEnsureTrackingIntegration.h"
+#include "Integrations/SentryGameStateIntegration.h"
 #include "Integrations/SentryHangTrackingIntegration.h"
 #include "Integrations/SentryIntegration.h"
 #include "Integrations/SentryLoggingIntegration.h"
@@ -1016,6 +1017,8 @@ void USentrySubsystem::SetupIntegrations(const USentrySettings& Settings)
 #ifdef USE_SENTRY_SESSION_REPLAY
 	AddIntegration(MakeShared<FSentrySessionReplayIntegration>(NativeImpl), Settings);
 #endif
+
+	AddIntegration(MakeShared<FSentryGameStateIntegration>(NativeImpl), Settings);
 }
 
 void USentrySubsystem::AddIntegration(const TSharedRef<ISentryIntegration>& Integration, const USentrySettings& Settings)

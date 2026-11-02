@@ -800,6 +800,11 @@ FString FAppleSentrySubsystem::GetSessionReplayDirectory() const
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
 }
 
+FString FAppleSentrySubsystem::GetGameStateFilePath() const
+{
+	return FPaths::ConvertRelativePathToFull(SentryFileUtils::GetGameStatePath());
+}
+
 void FAppleSentrySubsystem::SetEventCrashType(SentryObjCEvent* event, ECrashContextType crashType) const
 {
 	FAppleSentryEvent(event).SetTag(TEXT("CrashType"), FGenericCrashContext::GetCrashTypeString(crashType));

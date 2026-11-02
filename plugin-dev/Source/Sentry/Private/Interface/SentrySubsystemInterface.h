@@ -83,4 +83,5 @@ public:
 	virtual bool IsNativeHangTrackingEnabled() const = 0;
 	virtual FString GetDeviceType() const = 0;
 	virtual FString GetSessionReplayDirectory() const = 0;
+	virtual FString GetGameStateFilePath() const = 0;
 };

@@ -63,6 +63,7 @@ public:
 	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual FString GetDeviceType() const override { return TEXT("Handheld"); }
 	virtual FString GetSessionReplayDirectory() const override;
+	virtual FString GetGameStateFilePath() const override;
 
 	FString TryCaptureScreenshot() const;
 

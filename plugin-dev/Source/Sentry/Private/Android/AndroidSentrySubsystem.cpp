@@ -633,6 +633,11 @@ FString FAndroidSentrySubsystem::GetSessionReplayDirectory() const
 	return FString();
 }
 
+FString FAndroidSentrySubsystem::GetGameStateFilePath() const
+{
+	return SentryFileUtils::GetGameStatePath();
+}
+
 FString FAndroidSentrySubsystem::TryCaptureScreenshot() const
 {
 	FString ScreenshotPath = SentryFileUtils::GetScreenshotPath();

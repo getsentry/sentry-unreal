@@ -14,4 +14,9 @@ public:
 	static TArray<FString> GetGpuShaderDebugInfoPaths();
 	static FString GetScreenshotPath();
 	static FString GetLatestScreenshot();
+	static FString GetGameStatePath();
+	static FString GetGameStateBackupPath();
+
+	/** Moves the previous run's game state file to the backup location so it can be attached to that run's crash. */
+	static void BackupGameState();
 };

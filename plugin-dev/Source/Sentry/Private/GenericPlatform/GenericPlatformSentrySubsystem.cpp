@@ -1333,6 +1333,11 @@ FString FGenericPlatformSentrySubsystem::GetSessionReplayDirectory() const
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(GetDatabasePath(), TEXT("replays")));
 }
 
+FString FGenericPlatformSentrySubsystem::GetGameStateFilePath() const
+{
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(GetDatabasePath(), TEXT("game_state.jsonl")));
+}
+
 USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler() const
 {
 	return beforeSend;

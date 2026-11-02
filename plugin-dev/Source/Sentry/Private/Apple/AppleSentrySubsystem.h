@@ -67,6 +67,7 @@ public:
 	virtual bool IsHangTrackingSupported() const override;
 	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual FString GetSessionReplayDirectory() const override;
+	virtual FString GetGameStateFilePath() const override;
 
 	virtual FString TryCaptureScreenshot() const { return FString(); };
 
