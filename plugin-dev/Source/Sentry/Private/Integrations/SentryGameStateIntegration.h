@@ -7,13 +7,13 @@
 #include "SentrySettings.h"
 #include "SentryVariant.h"
 
-#include "Async/Future.h"
 #include "Containers/Ticker.h"
 #include "Misc/EngineVersionComparison.h"
 #include "UObject/WeakObjectPtrTemplates.h"
 
 class AActor;
 class ISentrySubsystem;
+class FSentryGameStateFileWriter;
 class FSentryGameStateInputProcessor;
 class FSentryGameStateRecorder;
 class FSentryGameStateSampler;
@@ -64,8 +64,6 @@ private:
 	void UpdateHeader(UWorld* World);
 
 	void FlushToFile();
-	void WaitForPendingWrite();
-	void DeleteCaptureFiles();
 
 	double GetCaptureTime() const;
 
@@ -81,6 +79,7 @@ private:
 
 	TUniquePtr<FSentryGameStateRecorder> Recorder;
 	TUniquePtr<FSentryGameStateSampler> Sampler;
+	TUniquePtr<FSentryGameStateFileWriter> FileWriter;
 
 	TWeakObjectPtr<UWorld> CapturedWorld;
 
@@ -88,8 +87,6 @@ private:
 	double CaptureStartSeconds = 0.0;
 	double LastFlushSeconds = 0.0;
 	int64 CaptureStartUnixTime = 0;
-
-	TFuture<void> PendingWrite;
 
 	TSharedPtr<FSentryGameStateInputProcessor> InputProcessor;
 

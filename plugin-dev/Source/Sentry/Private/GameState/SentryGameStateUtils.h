@@ -16,9 +16,6 @@ public:
 
 	static const TCHAR* NetModeToString(ENetMode NetMode);
 
-	/** Writes the data to a temporary file and moves it over the given path. */
-	static void WriteSnapshotFile(const FString& Path, const TArray<uint8>& Data);
-
 	static bool IsWidgetVisible(const UWidget* Widget);
 	static bool HasArea(const UWidget* Widget);
 

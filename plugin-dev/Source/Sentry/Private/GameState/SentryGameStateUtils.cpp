@@ -2,14 +2,11 @@
 
 #include "GameState/SentryGameStateUtils.h"
 
-#include "SentryDefines.h"
-
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Widget.h"
 #include "Containers/StringConv.h"
 #include "Engine/World.h"
-#include "HAL/FileManager.h"
 
 TArray<uint8> SentryGameStateUtils::ToUtf8Line(const FString& Line)
 {
@@ -34,31 +31,6 @@ const TCHAR* SentryGameStateUtils::NetModeToString(ENetMode NetMode)
 		return TEXT("client");
 	default:
 		return TEXT("standalone");
-	}
-}
-
-void SentryGameStateUtils::WriteSnapshotFile(const FString& Path, const TArray<uint8>& Data)
-{
-	const FString TempPath = Path + TEXT(".tmp");
-
-	TUniquePtr<FArchive> Writer(IFileManager::Get().CreateFileWriter(*TempPath, FILEWRITE_EvenIfReadOnly));
-	if (!Writer)
-	{
-		UE_LOG(LogSentrySdk, Verbose, TEXT("Game state capture: failed to open %s for write"), *TempPath);
-		return;
-	}
-
-	Writer->Serialize(const_cast<uint8*>(Data.GetData()), Data.Num());
-
-	if (!Writer->Close())
-	{
-		UE_LOG(LogSentrySdk, Verbose, TEXT("Game state capture: failed to write %s"), *TempPath);
-		return;
-	}
-
-	if (!IFileManager::Get().Move(*Path, *TempPath, true, true, false, true))
-	{
-		UE_LOG(LogSentrySdk, Verbose, TEXT("Game state capture: failed to replace %s"), *Path);
 	}
 }
 

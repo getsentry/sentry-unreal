@@ -5,6 +5,7 @@
 #include "SentryDefines.h"
 #include "SentryModule.h"
 
+#include "GameState/SentryGameStateFileWriter.h"
 #include "GameState/SentryGameStateInputProcessor.h"
 #include "GameState/SentryGameStateJsonWriter.h"
 #include "GameState/SentryGameStateRecorder.h"
@@ -13,14 +14,12 @@
 
 #include "Interface/SentrySubsystemInterface.h"
 
-#include "Async/Async.h"
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameDelegates.h"
 #include "GameFramework/Actor.h"
-#include "HAL/FileManager.h"
 #include "HAL/PlatformTime.h"
 #include "Misc/App.h"
 #include "Misc/DateTime.h"
@@ -52,8 +51,7 @@ bool FSentryGameStateIntegration::Setup(const USentrySettings& Settings)
 	Options.SampleInterval = FMath::Clamp(Options.SampleInterval, 0.05f, 1.0f);
 	Options.MaxSizeKb = FMath::Clamp(Options.MaxSizeKb, 64, 10240);
 
-	// Crashed runs' game state is already queued with the crash, so leftovers can be safely removed
-	DeleteCaptureFiles();
+	FileWriter = MakeUnique<FSentryGameStateFileWriter>(FilePath);
 
 	Recorder = MakeUnique<FSentryGameStateRecorder>(Options.WindowSeconds, Options.MaxSizeKb * 1024);
 
@@ -101,6 +99,7 @@ void FSentryGameStateIntegration::Teardown()
 
 	Sampler.Reset();
 	Recorder.Reset();
+	FileWriter.Reset();
 }
 
 void FSentryGameStateIntegration::AddTrackedActor(AActor* Actor, const FString& Id, const FString& Tag)
@@ -259,8 +258,7 @@ void FSentryGameStateIntegration::EndCapture()
 	Recorder->Reset();
 	Sampler->Reset();
 
-	WaitForPendingWrite();
-	DeleteCaptureFiles();
+	FileWriter->DiscardAndDeleteFile();
 }
 
 void FSentryGameStateIntegration::UpdateHeader(UWorld* World)
@@ -300,30 +298,7 @@ void FSentryGameStateIntegration::UpdateHeader(UWorld* World)
 
 void FSentryGameStateIntegration::FlushToFile()
 {
-	if (PendingWrite.IsValid() && !PendingWrite.IsReady())
-	{
-		return;
-	}
-
-	PendingWrite = Async(EAsyncExecution::ThreadPool, [Path = FilePath, Data = Recorder->BuildSnapshot()]()
-	{
-		SentryGameStateUtils::WriteSnapshotFile(Path, Data);
-	});
-}
-
-void FSentryGameStateIntegration::WaitForPendingWrite()
-{
-	if (PendingWrite.IsValid())
-	{
-		PendingWrite.Wait();
-		PendingWrite.Reset();
-	}
-}
-
-void FSentryGameStateIntegration::DeleteCaptureFiles()
-{
-	IFileManager::Get().Delete(*FilePath, false, true, true);
-	IFileManager::Get().Delete(*(FilePath + TEXT(".tmp")), false, true, true);
+	FileWriter->Submit(Recorder->BuildSnapshot());
 }
 
 double FSentryGameStateIntegration::GetCaptureTime() const
