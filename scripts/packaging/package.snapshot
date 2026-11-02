@@ -101,6 +101,17 @@ Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.cpp
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryConverters.h
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryProxy.cpp
 Source/Sentry/Private/Apple/Infrastructure/AppleSentryProxy.h
+Source/Sentry/Private/GameState/SentryGameStateFileWriter.cpp
+Source/Sentry/Private/GameState/SentryGameStateFileWriter.h
+Source/Sentry/Private/GameState/SentryGameStateInputProcessor.h
+Source/Sentry/Private/GameState/SentryGameStateJsonWriter.cpp
+Source/Sentry/Private/GameState/SentryGameStateJsonWriter.h
+Source/Sentry/Private/GameState/SentryGameStateRecorder.cpp
+Source/Sentry/Private/GameState/SentryGameStateRecorder.h
+Source/Sentry/Private/GameState/SentryGameStateSampler.cpp
+Source/Sentry/Private/GameState/SentryGameStateSampler.h
+Source/Sentry/Private/GameState/SentryGameStateUtils.cpp
+Source/Sentry/Private/GameState/SentryGameStateUtils.h
 Source/Sentry/Private/GenericPlatform/Convenience/GenericPlatformSentryInclude.h
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.cpp
 Source/Sentry/Private/GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h
@@ -161,6 +172,8 @@ Source/Sentry/Private/Integrations/SentryBreadcrumbsIntegration.cpp
 Source/Sentry/Private/Integrations/SentryBreadcrumbsIntegration.h
 Source/Sentry/Private/Integrations/SentryEnsureTrackingIntegration.cpp
 Source/Sentry/Private/Integrations/SentryEnsureTrackingIntegration.h
+Source/Sentry/Private/Integrations/SentryGameStateIntegration.cpp
+Source/Sentry/Private/Integrations/SentryGameStateIntegration.h
 Source/Sentry/Private/Integrations/SentryHangTrackingIntegration.cpp
 Source/Sentry/Private/Integrations/SentryHangTrackingIntegration.h
 Source/Sentry/Private/Integrations/SentryIntegration.h
@@ -273,6 +286,7 @@ Source/Sentry/Private/Tests/SentryAttachment.spec.cpp
 Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentryFeedback.spec.cpp
+Source/Sentry/Private/Tests/SentryGameState.spec.cpp
 Source/Sentry/Private/Tests/SentryLog.spec.cpp
 Source/Sentry/Private/Tests/SentryMetric.spec.cpp
 Source/Sentry/Private/Tests/SentryScope.spec.cpp
