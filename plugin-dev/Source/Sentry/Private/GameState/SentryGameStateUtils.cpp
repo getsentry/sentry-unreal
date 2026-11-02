@@ -4,7 +4,11 @@
 
 #include "SentryDefines.h"
 
+#include "Blueprint/SlateBlueprintLibrary.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/Widget.h"
 #include "Containers/StringConv.h"
+#include "Engine/World.h"
 #include "HAL/FileManager.h"
 
 TArray<uint8> SentryGameStateUtils::ToUtf8Line(const FString& Line)
@@ -56,4 +60,30 @@ void SentryGameStateUtils::WriteSnapshotFile(const FString& Path, const TArray<u
 	{
 		UE_LOG(LogSentrySdk, Verbose, TEXT("Game state capture: failed to replace %s"), *Path);
 	}
+}
+
+bool SentryGameStateUtils::IsWidgetVisible(const UWidget* Widget)
+{
+	const ESlateVisibility Visibility = Widget->GetVisibility();
+	return Visibility != ESlateVisibility::Collapsed && Visibility != ESlateVisibility::Hidden;
+}
+
+bool SentryGameStateUtils::HasArea(const UWidget* Widget)
+{
+	const FVector2D Size = Widget->GetCachedGeometry().GetLocalSize();
+	return Size.X >= 1.0f && Size.Y >= 1.0f;
+}
+
+FVector2D SentryGameStateUtils::GetViewportSize(UWorld* World)
+{
+	const FVector2D Size = UWidgetLayoutLibrary::GetViewportSize(World);
+	return FVector2D(FMath::Max(1.0f, static_cast<float>(Size.X)), FMath::Max(1.0f, static_cast<float>(Size.Y)));
+}
+
+FVector2D SentryGameStateUtils::ToNormalizedViewport(UWorld* World, const FVector2D& AbsolutePosition, const FVector2D& ViewportSize)
+{
+	FVector2D PixelPosition;
+	FVector2D ViewportPosition;
+	USlateBlueprintLibrary::AbsoluteToViewport(World, AbsolutePosition, PixelPosition, ViewportPosition);
+	return PixelPosition / ViewportSize;
 }

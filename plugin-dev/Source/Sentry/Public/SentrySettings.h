@@ -347,6 +347,20 @@ struct FSentryGameStateCaptureOptions
 		Meta = (DisplayName = "Max size (KiB)", ToolTip = "Maximum size of the captured game state. The oldest samples are dropped first when the limit is reached.",
 			ClampMin = 64, ClampMax = 10240))
 	int32 MaxSizeKb = 1024;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Capture UI", ToolTip = "Records the layout of UMG widgets in the viewport (position, type, hover and enabled state, progress bar values) and widget open/close events. Increases the capture size noticeably."))
+	bool CaptureUI = false;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Capture UI text", ToolTip = "Records the text of text blocks. Editable text is never recorded. Requires `Send default PII` to be enabled since UI text may contain personal data.",
+			EditCondition = "CaptureUI"))
+	bool CaptureUIText = false;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Capture UI clicks", ToolTip = "Records mouse clicks and the widget under the cursor.",
+			EditCondition = "CaptureUI"))
+	bool CaptureUIClicks = true;
 };
 
 /**

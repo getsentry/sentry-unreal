@@ -14,9 +14,11 @@
 
 class AActor;
 class ISentrySubsystem;
+class FSentryGameStateInputProcessor;
 class FSentryGameStateRecorder;
 class FSentryGameStateSampler;
 class UWorld;
+struct FKey;
 
 /**
  * Records a rolling window of game state that the platform SDK attaches to crash events.
@@ -51,6 +53,10 @@ private:
 
 	void OnWorldChanged(UWorld* World);
 	void OnEndPlayMap();
+	void OnClick(const FVector2D& ScreenPosition, const FKey& Button);
+
+	void RegisterInputProcessor();
+	void UnregisterInputProcessor();
 
 	void BeginCapture(UWorld* World);
 	void EndCapture();
@@ -84,6 +90,8 @@ private:
 	int64 CaptureStartUnixTime = 0;
 
 	TFuture<void> PendingWrite;
+
+	TSharedPtr<FSentryGameStateInputProcessor> InputProcessor;
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	FDelegateHandle TickerHandle;

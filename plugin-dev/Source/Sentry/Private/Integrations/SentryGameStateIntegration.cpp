@@ -5,6 +5,7 @@
 #include "SentryDefines.h"
 #include "SentryModule.h"
 
+#include "GameState/SentryGameStateInputProcessor.h"
 #include "GameState/SentryGameStateJsonWriter.h"
 #include "GameState/SentryGameStateRecorder.h"
 #include "GameState/SentryGameStateSampler.h"
@@ -16,6 +17,7 @@
 #include "CoreGlobals.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "Framework/Application/SlateApplication.h"
 #include "GameDelegates.h"
 #include "GameFramework/Actor.h"
 #include "HAL/FileManager.h"
@@ -56,6 +58,7 @@ bool FSentryGameStateIntegration::Setup(const USentrySettings& Settings)
 	Recorder = MakeUnique<FSentryGameStateRecorder>(Options.WindowSeconds, Options.MaxSizeKb * 1024);
 
 	Sampler = MakeUnique<FSentryGameStateSampler>();
+	Sampler->SetUIOptions(Options.CaptureUI, Options.CaptureUIText && Settings.SendDefaultPii);
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 	TickerHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSentryGameStateIntegration::OnTick), Options.SampleInterval);
@@ -88,6 +91,8 @@ void FSentryGameStateIntegration::Teardown()
 		FGameDelegates::Get().GetEndPlayMapDelegate().Remove(EndPlayMapHandle);
 		EndPlayMapHandle.Reset();
 	}
+
+	UnregisterInputProcessor();
 
 	if (Recorder)
 	{
@@ -151,6 +156,11 @@ bool FSentryGameStateIntegration::OnTick(float DeltaTime)
 		OnWorldChanged(World);
 	}
 
+	if (Options.CaptureUI && Options.CaptureUIClicks && !InputProcessor)
+	{
+		RegisterInputProcessor();
+	}
+
 	Sampler->SampleFrame(World, GetCaptureTime(), *Recorder);
 
 	const double Now = FPlatformTime::Seconds();
@@ -175,6 +185,46 @@ void FSentryGameStateIntegration::OnEndPlayMap()
 {
 	// PIE session ended - drop its game state so that later editor crashes don't report it
 	EndCapture();
+}
+
+void FSentryGameStateIntegration::OnClick(const FVector2D& ScreenPosition, const FKey& Button)
+{
+	UWorld* World = CapturedWorld.Get();
+	if (!bCapturing || !World)
+	{
+		return;
+	}
+
+	Sampler->WriteClickEvent(World, GetCaptureTime(), ScreenPosition, Button, *Recorder);
+}
+
+void FSentryGameStateIntegration::RegisterInputProcessor()
+{
+	// Slate may not be initialized yet if Sentry is initialized before the engine loop
+	if (!FSlateApplication::IsInitialized())
+	{
+		return;
+	}
+
+	InputProcessor = MakeShared<FSentryGameStateInputProcessor>();
+	InputProcessor->OnClick.BindRaw(this, &FSentryGameStateIntegration::OnClick);
+
+	FSlateApplication::Get().RegisterInputPreProcessor(InputProcessor);
+}
+
+void FSentryGameStateIntegration::UnregisterInputProcessor()
+{
+	if (!InputProcessor)
+	{
+		return;
+	}
+
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().UnregisterInputPreProcessor(InputProcessor);
+	}
+
+	InputProcessor.Reset();
 }
 
 void FSentryGameStateIntegration::BeginCapture(UWorld* World)
