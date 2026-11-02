@@ -46,6 +46,15 @@ bool SentryScreenshotUtils::CaptureScreenshot(const FString& ScreenshotSavePath)
 		return false;
 	}
 
+#if !UE_VERSION_OLDER_THAN(5, 4, 0)
+	// Taking a screenshot redraws the game window, which corrupts Slate state if it is already ticking (e.g. event raised during widget paint)
+	if (FSlateApplication::Get().IsTicking())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Skipping screenshot because Slate is ticking"));
+		return false;
+	}
+#endif
+
 	TSharedPtr<SWindow> WindowPtr = GameViewportClient->GetWindow();
 	if (!WindowPtr.IsValid())
 	{
