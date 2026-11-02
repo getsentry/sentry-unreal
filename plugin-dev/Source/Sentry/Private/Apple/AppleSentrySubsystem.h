@@ -88,6 +88,8 @@ protected:
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
+	bool isGameStateAttachmentEnabled = false;
+	bool isGameStateBackedUp = false;
 
 private:
 	TMap<FString, FString> ParseSentryBaggage(const TArray<FString>& baggageHeaders) const;

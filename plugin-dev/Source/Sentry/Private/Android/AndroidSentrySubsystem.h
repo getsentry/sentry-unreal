@@ -79,6 +79,7 @@ private:
 	FThreadSafeBool bAppIsForeground;
 
 	bool isScreenshotAttachmentEnabled = false;
+	bool isGameStateBackedUp = false;
 
 	FDelegateHandle OnHandleSystemErrorDelegateHandle;
 	FDelegateHandle OnEndFrameDelegateHandle;

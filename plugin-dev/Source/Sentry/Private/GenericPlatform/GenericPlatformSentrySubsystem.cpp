@@ -439,6 +439,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		}
 	}
 
+	if (gameStateAttachment)
+	{
+		CrashHint.AddAttachment(gameStateAttachment);
+	}
+
 	SetEventCrashType(event, ResolveCrashType());
 
 	AddCrashMemoryContext(event);
@@ -675,6 +680,16 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	}
 
 	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
+
+	if (settings->AttachGameState)
+	{
+		// Created upfront to keep the crash handler work minimal
+		gameStateAttachment = MakeShareable(new FGenericPlatformSentryAttachment(GetGameStateFilePath(), TEXT("game_state.jsonl"), TEXT("text/plain")));
+	}
+	else
+	{
+		gameStateAttachment.Reset();
+	}
 
 	if (settings->UseProxy)
 	{

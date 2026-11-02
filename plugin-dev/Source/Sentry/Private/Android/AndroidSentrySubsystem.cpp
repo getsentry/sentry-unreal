@@ -59,6 +59,14 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 
+	if (settings->AttachGameState && !isGameStateBackedUp)
+	{
+		// Crashes are sent on the next launch, so keep the previous run's game state before it gets overwritten.
+		// Re-initializing the SDK in the same process must not replace it.
+		SentryFileUtils::BackupGameState();
+		isGameStateBackedUp = true;
+	}
+
 	bNdkAppHangTracking = settings->EnableHangTracking && settings->UseNativeHangTracking;
 
 	TSharedPtr<FJsonObject> SettingsJson = MakeShareable(new FJsonObject);
@@ -76,6 +84,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetNumberField(TEXT("shutdownTimeout"), settings->ShutdownTimeout);
 	SettingsJson->SetBoolField(TEXT("attachScreenshot"), settings->AttachScreenshot);
 	SettingsJson->SetBoolField(TEXT("attachSessionReplay"), settings->AttachSessionReplay);
+	SettingsJson->SetBoolField(TEXT("attachGameState"), settings->AttachGameState);
 	SettingsJson->SetArrayField(TEXT("inAppInclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppInclude));
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppExclude));
 	SettingsJson->SetBoolField(TEXT("sendDefaultPii"), settings->SendDefaultPii);

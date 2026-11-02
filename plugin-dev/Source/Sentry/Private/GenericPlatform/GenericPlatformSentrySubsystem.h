@@ -165,6 +165,8 @@ private:
 
 	TSharedPtr<FGenericPlatformSentryCrashReporter> crashReporter;
 
+	TSharedPtr<FGenericPlatformSentryAttachment> gameStateAttachment;
+
 	bool isEnabled;
 
 	bool isStackTraceEnabled;
