@@ -701,6 +701,11 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "UploadSymbolsAutomatically", SentryPlatforms = "Android"))
 	bool UseLegacyGradlePlugin;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
+		Meta = (DisplayName = "Upload shader symbols after cook", ToolTip = "Flag indicating whether to upload the shader binaries exported by the cook (requires r.Shaders.Symbols=1) so that GPU crashes show the faulting shader's name and material.",
+			SentryPlatforms = "Win64", SentryMinEngine = "5.5", SentryExperimental))
+	bool UploadShaderSymbols;
+
 	UPROPERTY(Config, EditAnywhere, Category = "Sentry Crash Reporter",
 		Meta = (DisplayName = "Enable Sentry Crash Reporter",
 			ToolTip = "When enabled, the Sentry Crash Reporter dialog is shown to the user after a crash, allowing them to review crash details and provide feedback before the report is submitted.",
