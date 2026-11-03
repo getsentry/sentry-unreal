@@ -8,7 +8,7 @@
 
 ### Features
 
-- Upload shader binaries after cook for GPU crash symbolication on Windows
+- Upload shader binaries for GPU crash symbolication after cook ([#1678](https://github.com/getsentry/sentry-unreal/pull/1678))
 - Add memory usage at the time of the crash to crash events on Windows and Xbox ([#1664](https://github.com/getsentry/sentry-unreal/pull/1664))
 
 ### Fixes
