@@ -15,7 +15,8 @@
 #include "UObject/ICookInfo.h"
 #endif
 
-#define SENTRY_CAN_HASH_SHADERS (PLATFORM_WINDOWS && NV_AFTERMATH)
+// Engines before 5.2 ship an Aftermath SDK without GFSDK_Aftermath_ShaderBinaryHash
+#define SENTRY_CAN_HASH_SHADERS (PLATFORM_WINDOWS && NV_AFTERMATH && !UE_VERSION_OLDER_THAN(5, 2, 0))
 
 #if SENTRY_CAN_HASH_SHADERS
 #include "Windows/AllowWindowsPlatformTypes.h"
@@ -60,7 +61,7 @@ void FSentryShaderSymbols::RegisterCookHook()
 int32 FSentryShaderSymbols::Run(const FString& ProjectSavedDir, bool bUpload)
 {
 #if !SENTRY_CAN_HASH_SHADERS
-	UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader hashing needs the NVIDIA Aftermath library, which is only available on Windows editors"));
+	UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader hashing needs the NVIDIA Aftermath library, which is only available on Windows editors (UE 5.2+)"));
 	return 1;
 #endif
 
