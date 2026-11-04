@@ -24,6 +24,8 @@ protected:
 
 	virtual sentry_value_t OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure) override;
 
+	virtual void AddCrashMemoryContext(sentry_value_t event) override;
+
 	virtual void ConfigureAppHangTracking() override;
 	virtual void ResetAppHangTracking() override;
 	virtual bool IsAppHangTrackingActive() const override;

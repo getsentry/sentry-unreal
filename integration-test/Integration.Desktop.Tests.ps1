@@ -293,6 +293,12 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $Type
         }
 
+        It "Should have memory usage at the time of the crash" -Skip:(-not $IsWindows) {
+            $script:CrashEvent.contexts.device.free_memory | Should -BeGreaterThan 0
+            $script:CrashEvent.contexts.app.app_memory | Should -BeGreaterThan 0
+            $script:CrashEvent.contexts.device.usable_memory | Should -BeGreaterThan 0
+        }
+
         It "Should have breadcrumbs" {
             $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty

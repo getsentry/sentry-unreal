@@ -1,5 +1,8 @@
-minVersion: 0.24.0
-changelogPolicy: auto
+minVersion: 3.9.0
+changelog:
+  policy: auto
+versioning:
+  policy: manual
 preReleaseCommand: pwsh scripts/bump-version.ps1
 targets:
   - name: github
