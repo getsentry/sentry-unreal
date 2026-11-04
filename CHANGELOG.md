@@ -4,7 +4,7 @@
 
 ### Behavioral Changes
 
-- Debug symbols are now uploaded with the new [Sentry CLI](https://cli.sentry.dev/) instead of the legacy `sentry-cli` ([#TBD](https://github.com/getsentry/sentry-unreal/pull/TBD))
+- Debug symbols are now uploaded with the new [Sentry CLI](https://cli.sentry.dev/) instead of the legacy `sentry-cli` ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
   - Credentials from `sentry.properties` are passed to the CLI as environment variables; already set `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` and `SENTRY_URL` still take priority
   - Logins stored with `sentry auth login` are not used for the upload
   - The CLI keeps its local state in the project's `Intermediate/SentryCli` directory
@@ -30,7 +30,7 @@
 
 ### Dependencies
 
-- Replace legacy CLI v3.8.2 with new Sentry CLI v0.47.0 ([#TBD](https://github.com/getsentry/sentry-unreal/pull/TBD))
+- Replace legacy CLI v3.8.2 with new Sentry CLI v0.47.0 ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
   - [changelog](https://github.com/getsentry/toolkit/blob/main/packages/cli/CHANGELOG.md)
 - Bump CLI from v3.8.0 to v3.8.2 ([#1643](https://github.com/getsentry/sentry-unreal/pull/1643), [#1647](https://github.com/getsentry/sentry-unreal/pull/1647))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#382)
