@@ -10,6 +10,7 @@
 #include "Runtime/Launch/Resources/Version.h"
 
 #include "GenericPlatform/GenericPlatformFile.h"
+#include "HAL/FileManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -25,12 +26,14 @@
 #endif
 
 #if PLATFORM_WINDOWS
-const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Windows-x86_64.exe");
+const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-windows-x64.exe");
 #elif PLATFORM_MAC
-const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Darwin-universal");
+const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-darwin-arm64");
 #elif PLATFORM_LINUX
-const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-cli-Linux-x86_64");
+const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-linux-x64");
 #endif
+
+static constexpr float SentryCliDownloadTimeoutSec = 600.0f;
 
 const FString FSentrySymToolsDownloader::SentrySymUploadScriptName = TEXT("upload_debug_symbols.py");
 
@@ -40,7 +43,11 @@ void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnComplete
 	SentryScriptDownloadRequest = FHttpModule::Get().CreateRequest();
 
 	const FString SentryCliExecPath = GetSentryCliPath();
-	const FString CliDownloadUrl = FString::Printf(TEXT("https://github.com/getsentry/sentry-cli/releases/download/%s/%s"), *GetSentryCliVersion(), *SentryCliExecName);
+	const FString CliDownloadUrl = FString::Printf(TEXT("%s/releases/download/cli@%s/%s"), *GetSentryCliProperty(TEXT("repo")), *GetSentryCliProperty(TEXT("version")), *SentryCliExecName);
+
+	SentryCliDownloadRequest->SetTimeout(SentryCliDownloadTimeoutSec);
+
+	DeleteLegacySentryCli();
 
 	const FString PluginVersion = FSentryModule::Get().GetPluginVersion();
 	const FString SymUploadScriptPath = GetSymUploadScriptPath();
@@ -70,7 +77,7 @@ void FSentrySymToolsDownloader::Download(TSharedPtr<IHttpRequest, ESPMode::Threa
 {
 	Request->OnProcessRequestComplete().BindLambda([this, SavePath, OnCompleted](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 	{
-		if (!bSuccess || !Response.IsValid())
+		if (!bSuccess || !Response.IsValid() || !EHttpResponseCodes::IsOk(Response->GetResponseCode()))
 		{
 			OnCompleted(false);
 			return;
@@ -90,24 +97,37 @@ void FSentrySymToolsDownloader::Download(TSharedPtr<IHttpRequest, ESPMode::Threa
 			}
 		}
 
-		if (PlatformFile.FileExists(*SavePath))
+		const FString TempPath = SavePath + TEXT(".download");
+
+		if (!FFileHelper::SaveArrayToFile(Response->GetContent(), *TempPath))
 		{
-			if (!PlatformFile.DeleteFile(*SavePath))
-			{
-				OnCompleted(false);
-				return;
-			}
+			PlatformFile.DeleteFile(*TempPath);
+			OnCompleted(false);
+			return;
 		}
 
-		FFileHelper::SaveArrayToFile(Response->GetContent(), *SavePath);
-
 #if PLATFORM_LINUX || PLATFORM_MAC
-		if (!SetExecutePermission(SavePath))
+		if (!SetExecutePermission(TempPath))
 		{
+			PlatformFile.DeleteFile(*TempPath);
 			OnCompleted(false);
 			return;
 		}
 #endif
+
+		if (PlatformFile.FileExists(*SavePath) && !PlatformFile.DeleteFile(*SavePath))
+		{
+			PlatformFile.DeleteFile(*TempPath);
+			OnCompleted(false);
+			return;
+		}
+
+		if (!PlatformFile.MoveFile(*SavePath, *TempPath))
+		{
+			PlatformFile.DeleteFile(*TempPath);
+			OnCompleted(false);
+			return;
+		}
 
 		if (GetStatus() == ESentrySymToolsStatus::Configured)
 		{
@@ -127,7 +147,20 @@ FString FSentrySymToolsDownloader::GetSentryCliPath() const
 	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), TEXT("CLI"), SentryCliExecName);
 }
 
-FString FSentrySymToolsDownloader::GetSentryCliVersion() const
+void FSentrySymToolsDownloader::DeleteLegacySentryCli() const
+{
+	const FString CliDir = FPaths::GetPath(GetSentryCliPath());
+
+	TArray<FString> LegacyFiles;
+	IFileManager::Get().FindFiles(LegacyFiles, *FPaths::Combine(CliDir, TEXT("sentry-cli-*")), true, false);
+
+	for (const FString& LegacyFile : LegacyFiles)
+	{
+		IFileManager::Get().Delete(*FPaths::Combine(CliDir, LegacyFile));
+	}
+}
+
+FString FSentrySymToolsDownloader::GetSentryCliProperty(const FString& Key) const
 {
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 	const FString SentryCliPropertiesPath = FPaths::Combine(PluginDir, TEXT("sentry-cli.properties"));
@@ -135,10 +168,17 @@ FString FSentrySymToolsDownloader::GetSentryCliVersion() const
 	TArray<FString> CliPropertiesContents;
 	FFileHelper::LoadFileToStringArray(CliPropertiesContents, *SentryCliPropertiesPath);
 
-	FString SentryCliVersion;
-	FParse::Value(*CliPropertiesContents[0], TEXT("version="), SentryCliVersion);
+	const FString Prefix = Key + TEXT("=");
+	for (const FString& Line : CliPropertiesContents)
+	{
+		const FString TrimmedLine = Line.TrimStartAndEnd();
+		if (TrimmedLine.StartsWith(Prefix))
+		{
+			return TrimmedLine.RightChop(Prefix.Len()).TrimStartAndEnd();
+		}
+	}
 
-	return SentryCliVersion;
+	return FString();
 }
 
 FString FSentrySymToolsDownloader::GetSymUploadScriptPath() const

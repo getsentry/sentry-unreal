@@ -12,6 +12,11 @@ def log(message):
     print(f"Sentry: {message}", flush=True)
 
 
+def print_cli_output(text):
+    encoding = sys.stdout.encoding or 'utf-8'
+    print(text.encode(encoding, errors='replace').decode(encoding), end='', flush=True)
+
+
 def get_file_encoding(file_path):
     with open(file_path, 'rb') as f:
         bom = f.read(2)
@@ -93,11 +98,11 @@ def get_cli_executable(plugin_dir):
     host_system = platform.system()
 
     if host_system == 'Windows':
-        cli_name = 'sentry-cli-Windows-x86_64.exe'
+        cli_name = 'sentry-windows-x64.exe'
     elif host_system == 'Darwin':
-        cli_name = 'sentry-cli-Darwin-universal'
+        cli_name = 'sentry-darwin-arm64'
     elif host_system == 'Linux':
-        cli_name = 'sentry-cli-Linux-x86_64'
+        cli_name = 'sentry-linux-x64'
     else:
         return None
 
@@ -109,11 +114,15 @@ def get_cli_executable(plugin_dir):
     return None
 
 
-def run_cmd_with_retry(cmd, max_retries=3, retry_delay_sec=2):
-    for attempt in range(max_retries):
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+def is_file_locked_error(output):
+    return any(marker in output for marker in ("os error 32", "EBUSY", "resource busy or locked"))
 
-        if result.returncode != 0 and "os error 32" in result.stderr:
+
+def run_cmd_with_retry(cmd, env, cwd, max_retries=3, retry_delay_sec=2):
+    for attempt in range(max_retries):
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding='utf-8', errors='replace', env=env, cwd=cwd, stdin=subprocess.DEVNULL)
+
+        if result.returncode != 0 and is_file_locked_error(result.stdout + result.stderr):
             if attempt < max_retries - 1:
                 log(f"Debug file is locked, retrying in {retry_delay_sec} seconds... (attempt {attempt + 1}/{max_retries})")
                 time.sleep(retry_delay_sec)
@@ -245,7 +254,10 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
         try:
             os.chmod(cli_exec, 0o755)
         except Exception as e:
-            log(f"Warning: Failed to set execute permission on sentry-cli: {e}")
+            log(f"Warning: Failed to set execute permission on Sentry CLI: {e}")
+
+    cli_env = os.environ.copy()
+    cli_env.pop('SENTRY_PROPERTIES', None)
 
     # Check for sentry.properties file
     properties_file = os.path.join(project_dir, 'sentry.properties')
@@ -271,8 +283,14 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
             log("Error: Auth token is not set. Skipping...")
             return 0
 
-        # Set environment variable for sentry-cli
-        os.environ['SENTRY_PROPERTIES'] = properties_file
+        # Environment variables that are already set take priority over the properties file
+        cli_env.setdefault('SENTRY_ORG', org_name)
+        cli_env.setdefault('SENTRY_PROJECT', project_name)
+        cli_env.setdefault('SENTRY_AUTH_TOKEN', auth_token)
+
+        url = parse_config_value(properties_file, 'defaults.url')
+        if url:
+            cli_env.setdefault('SENTRY_URL', url)
     else:
         log("Properties file not found. Falling back to environment variables.")
 
@@ -303,6 +321,14 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
         log(f"No symbol files found in build receipt for target '{target_name}'. Skipping...")
         return 0
 
+    cli_config_dir = os.path.join(project_dir, 'Intermediate', 'SentryCli')
+    os.makedirs(cli_config_dir, exist_ok=True)
+
+    cli_env['SENTRY_CONFIG_DIR'] = cli_config_dir
+    cli_env['SENTRY_FORCE_ENV_TOKEN'] = '1'
+    cli_env['SENTRY_CLI_NO_TELEMETRY'] = '1'
+    cli_env['SENTRY_CLI_NO_UPDATE_CHECK'] = '1'
+
     upload_cmd = [
         cli_exec,
         'debug-files',
@@ -315,19 +341,23 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
     try:
         # Execute the upload command with retry logic to avoid linker file locking issues
         # See https://github.com/getsentry/sentry-unreal/issues/542
-        result = run_cmd_with_retry(upload_cmd)
+        result = run_cmd_with_retry(upload_cmd, cli_env, project_dir)
 
         # Output stdout/stderr
         if result.stdout:
-            print(result.stdout, end='')
+            print_cli_output(result.stdout)
         if result.stderr:
-            print(result.stderr, end='')
+            print_cli_output(result.stderr)
 
         log("Upload finished")
         return result.returncode
 
+    except OSError as e:
+        log(f"Error: Failed to start Sentry CLI ({e}). Skipping...")
+        return 0
+
     except Exception as e:
-        log(f"Error executing sentry-cli: {e}")
+        log(f"Error executing Sentry CLI: {e}")
         return 1
 
 
