@@ -25,7 +25,6 @@ private:
 
 	FString GetSentryCliPath() const;
 	FString GetSentryCliProperty(const FString& Key) const;
-	void DeleteLegacySentryCli() const;
 	FString GetSymUploadScriptPath() const;
 
 	bool HasExecutePermission(const FString& FilePath) const;
