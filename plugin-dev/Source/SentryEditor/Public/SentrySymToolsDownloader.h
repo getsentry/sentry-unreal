@@ -24,7 +24,8 @@ private:
 	void Download(TSharedPtr<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& Url, const FString& SavePath, const TFunction<void(bool)>& OnCompleted);
 
 	FString GetSentryCliPath() const;
-	FString GetSentryCliVersion() const;
+	FString GetSentryCliProperty(const FString& Key) const;
+	void DeleteLegacySentryCli() const;
 	FString GetSymUploadScriptPath() const;
 
 	bool HasExecutePermission(const FString& FilePath) const;

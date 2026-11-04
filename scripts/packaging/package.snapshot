@@ -358,9 +358,9 @@ Source/ThirdParty/Android/sentry-android-ndk-release.aar
 Source/ThirdParty/Android/sentry-android-replay-release.aar
 Source/ThirdParty/Android/sentry-native-ndk-release.aar
 Source/ThirdParty/Android/sentry.jar
-Source/ThirdParty/CLI/sentry-cli-Darwin-universal
-Source/ThirdParty/CLI/sentry-cli-Linux-x86_64
-Source/ThirdParty/CLI/sentry-cli-Windows-x86_64.exe
+Source/ThirdParty/CLI/sentry-darwin-arm64
+Source/ThirdParty/CLI/sentry-linux-x64
+Source/ThirdParty/CLI/sentry-windows-x64.exe
 Source/ThirdParty/IOS/SentryObjC.embeddedframework.zip
 Source/ThirdParty/IOS/SentryObjC.xcframework.zip
 Source/ThirdParty/Linux/Crashpad/bin/crashpad_handler

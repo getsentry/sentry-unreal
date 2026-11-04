@@ -42,10 +42,10 @@ To keep this notice accurate without manual upkeep on every dependency bump, exa
 - **Modified:** No — unmodified upstream release build
 - **Purpose / when it runs:** Windows Error Reporting helper module loaded when the **native** backend is used — the native-backend counterpart to `crashpad_wer.dll` — to capture certain Windows crash types. Runtime, on the player's machine.
 
-### `sentry-cli-Windows-x86_64.exe`, `sentry-cli-Linux-x86_64`, `sentry-cli-Darwin-universal`
+### `sentry-windows-x64.exe`, `sentry-linux-x64`, `sentry-darwin-arm64`
 
 - **Location:** `Source/ThirdParty/CLI/`
-- **Source:** [getsentry/sentry-cli](https://github.com/getsentry/sentry-cli)
+- **Source:** [getsentry/toolkit](https://github.com/getsentry/toolkit) (`packages/cli`)
 - **Version:** see the "CLI" entry under `### Dependencies` in `CHANGELOG.md`
 - **Modified:** No — unmodified upstream release build
 - **Purpose / when it runs:** Uploads debug information files (symbols) to Sentry so crash reports can be symbolicated. **Build-time only, on the developer's / CI machine** — invoked by the post-build scripts during packaging. It does not ship in, and never executes in, the packaged game.
@@ -65,4 +65,4 @@ To keep this notice accurate without manual upkeep on every dependency bump, exa
 - **Location:** `Scripts/`
 - **Source:** Authored by Sentry (first-party); version matches the plugin (`Sentry.uplugin` `VersionName`)
 - **Modified:** N/A — first-party
-- **Purpose / when it runs:** `post_build_steps.py` is registered as `PostBuildSteps` in `Sentry.uplugin`, so Unreal Build Tool runs it automatically after the plugin is built — **on the developer's or CI machine, never inside a shipped title**. It is executed with the Python interpreter bundled with the engine (`Engine/Binaries/ThirdParty/Python3/`). It (1) copies the crash-handler / crash-reporter binaries into `Binaries/<Platform>/` (Epic's Fab pre-build step strips "extra" binaries out of `Source/ThirdParty`, so they are restored to the location the packaged plugin expects); (2) `chmod +x` the bundled binaries, because some distribution channels do not preserve the executable bit; (3) calls into `upload_debug_symbols.py` to upload debug symbols to Sentry via `sentry-cli`.
+- **Purpose / when it runs:** `post_build_steps.py` is registered as `PostBuildSteps` in `Sentry.uplugin`, so Unreal Build Tool runs it automatically after the plugin is built — **on the developer's or CI machine, never inside a shipped title**. It is executed with the Python interpreter bundled with the engine (`Engine/Binaries/ThirdParty/Python3/`). It (1) copies the crash-handler / crash-reporter binaries into `Binaries/<Platform>/` (Epic's Fab pre-build step strips "extra" binaries out of `Source/ThirdParty`, so they are restored to the location the packaged plugin expects); (2) `chmod +x` the bundled binaries, because some distribution channels do not preserve the executable bit; (3) calls into `upload_debug_symbols.py` to upload debug symbols to Sentry via the Sentry CLI.
