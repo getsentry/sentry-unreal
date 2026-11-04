@@ -4,17 +4,11 @@
 
 ### Behavioral Changes
 
-- Debug symbols are now uploaded with the new [Sentry CLI](https://cli.sentry.dev/) instead of the legacy `sentry-cli` ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
-  - Credentials from `sentry.properties` are passed to the CLI as environment variables; already set `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` and `SENTRY_URL` still take priority
-  - Logins stored with `sentry auth login` are not used for the upload
-  - The CLI keeps its local state in the project's `Intermediate/SentryCli` directory
-  - `SENTRY_ALLOW_FAILURE`, `SENTRY_API_KEY` and `SENTRY_VCS_REMOTE` are no longer supported
-  - Automatic symbol upload is no longer supported on Intel Macs
-
 - Report Wine and Proton runtime info only through the Native SDK's `wine` context; the plugin no longer sets the `runtime` context or the `compatibility`, `wine_version`, `proton_build` and `proton_experimental` tags ([#1649](https://github.com/getsentry/sentry-unreal/pull/1649))
 
 ### Features
 
+- Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
 - Add memory usage at the time of the crash to crash events on Windows and Xbox ([#1664](https://github.com/getsentry/sentry-unreal/pull/1664))
 - Add experimental game state capture that attaches a rolling window of game state to crash events ([#1683](https://github.com/getsentry/sentry-unreal/pull/1683))
 - Add option to include debug images in Unreal Crash Reporter context ([#1673](https://github.com/getsentry/sentry-unreal/pull/1673))
@@ -30,8 +24,6 @@
 
 ### Dependencies
 
-- Replace legacy CLI v3.8.2 with new Sentry CLI v0.47.0 ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
-  - [changelog](https://github.com/getsentry/toolkit/blob/main/packages/cli/CHANGELOG.md)
 - Bump CLI from v3.8.0 to v3.8.2 ([#1643](https://github.com/getsentry/sentry-unreal/pull/1643), [#1647](https://github.com/getsentry/sentry-unreal/pull/1647))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#382)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.8.0...3.8.2)

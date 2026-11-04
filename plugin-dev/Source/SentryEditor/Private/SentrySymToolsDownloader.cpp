@@ -10,7 +10,6 @@
 #include "Runtime/Launch/Resources/Version.h"
 
 #include "GenericPlatform/GenericPlatformFile.h"
-#include "HAL/FileManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -46,8 +45,6 @@ void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnComplete
 	const FString CliDownloadUrl = FString::Printf(TEXT("%s/releases/download/cli@%s/%s"), *GetSentryCliProperty(TEXT("repo")), *GetSentryCliProperty(TEXT("version")), *SentryCliExecName);
 
 	SentryCliDownloadRequest->SetTimeout(SentryCliDownloadTimeoutSec);
-
-	DeleteLegacySentryCli();
 
 	const FString PluginVersion = FSentryModule::Get().GetPluginVersion();
 	const FString SymUploadScriptPath = GetSymUploadScriptPath();
@@ -145,19 +142,6 @@ FString FSentrySymToolsDownloader::GetSentryCliPath() const
 {
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 	return FPaths::Combine(PluginDir, TEXT("Source"), TEXT("ThirdParty"), TEXT("CLI"), SentryCliExecName);
-}
-
-void FSentrySymToolsDownloader::DeleteLegacySentryCli() const
-{
-	const FString CliDir = FPaths::GetPath(GetSentryCliPath());
-
-	TArray<FString> LegacyFiles;
-	IFileManager::Get().FindFiles(LegacyFiles, *FPaths::Combine(CliDir, TEXT("sentry-cli-*")), true, false);
-
-	for (const FString& LegacyFile : LegacyFiles)
-	{
-		IFileManager::Get().Delete(*FPaths::Combine(CliDir, LegacyFile));
-	}
 }
 
 FString FSentrySymToolsDownloader::GetSentryCliProperty(const FString& Key) const
