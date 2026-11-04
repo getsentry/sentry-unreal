@@ -21,12 +21,12 @@ FAppleSentryMetric::FAppleSentryMetric()
 
 FAppleSentryMetric::FAppleSentryMetric(SentryObjCMetric* metric)
 {
-	MetricApple = metric;
+	MetricApple = [metric retain];
 }
 
 FAppleSentryMetric::~FAppleSentryMetric()
 {
-	// Put custom destructor logic here if needed
+	[MetricApple release];
 }
 
 SentryObjCMetric* FAppleSentryMetric::GetNativeObject()

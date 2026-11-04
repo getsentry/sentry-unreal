@@ -19,12 +19,12 @@ FAppleSentryId::FAppleSentryId(const FString& id)
 
 FAppleSentryId::FAppleSentryId(SentryObjCId* id)
 {
-	IdApple = id;
+	IdApple = [id retain];
 }
 
 FAppleSentryId::~FAppleSentryId()
 {
-	// Put custom destructor logic here if needed
+	[IdApple release];
 }
 
 SentryObjCId* FAppleSentryId::GetNativeObject()

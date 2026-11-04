@@ -16,7 +16,7 @@ FAppleSentryLog::FAppleSentryLog()
 
 FAppleSentryLog::FAppleSentryLog(SentryObjCLog* log)
 {
-	LogApple = log;
+	LogApple = [log retain];
 }
 
 FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLevel level)
@@ -27,7 +27,7 @@ FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLevel level)
 
 FAppleSentryLog::~FAppleSentryLog()
 {
-	// Put custom destructor logic here if needed
+	[LogApple release];
 }
 
 SentryObjCLog* FAppleSentryLog::GetNativeObject()

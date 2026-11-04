@@ -18,12 +18,12 @@ FAppleSentryEvent::FAppleSentryEvent()
 
 FAppleSentryEvent::FAppleSentryEvent(SentryObjCEvent* event)
 {
-	EventApple = event;
+	EventApple = [event retain];
 }
 
 FAppleSentryEvent::~FAppleSentryEvent()
 {
-	// Put custom destructor logic here if needed
+	[EventApple release];
 }
 
 SentryObjCEvent* FAppleSentryEvent::GetNativeObject()

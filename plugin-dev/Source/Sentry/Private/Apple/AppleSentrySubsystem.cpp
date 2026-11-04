@@ -532,8 +532,7 @@ void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback
 	SentryObjCId* associatedEventId = nil;
 	if (!feedbackApple->GetAssociatedEvent().IsEmpty())
 	{
-		TSharedPtr<FAppleSentryId> idApple = MakeShareable(new FAppleSentryId(feedbackApple->GetAssociatedEvent()));
-		associatedEventId = idApple->GetNativeObject();
+		associatedEventId = [[[SENTRY_APPLE_CLASS(SentryObjCId) alloc] initWithUUIDString:feedbackApple->GetAssociatedEvent().GetNSString()] autorelease];
 	}
 
 	NSMutableArray<SentryObjCAttachment*>* attachments = nil;
