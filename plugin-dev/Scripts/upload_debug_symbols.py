@@ -3,6 +3,7 @@
 import sys
 import os
 import platform
+import shutil
 import subprocess
 import time
 import json
@@ -185,6 +186,40 @@ def collect_symbol_files_from_receipt(receipt_path, project_dir, engine_dir):
     return files
 
 
+# TODO: remove once the new Sentry CLI splits fat Mach-O files (https://github.com/getsentry/toolkit/pull/1849)
+def thin_fat_macho_files(files, out_dir):
+    shutil.rmtree(out_dir, ignore_errors=True)
+    result = []
+
+    for index, path in enumerate(files):
+        archs = None
+        try:
+            with open(path, 'rb') as f:
+                if f.read(4) in (b'\xca\xfe\xba\xbe', b'\xca\xfe\xba\xbf'):
+                    archs = subprocess.run(['lipo', '-archs', path], capture_output=True, text=True, check=True).stdout.split()
+        except (OSError, subprocess.CalledProcessError):
+            pass
+
+        if not archs:
+            result.append(path)
+            continue
+
+        try:
+            thin_paths = []
+            for arch in archs:
+                thin_path = os.path.join(out_dir, str(index), arch, os.path.basename(path))
+                os.makedirs(os.path.dirname(thin_path), exist_ok=True)
+                subprocess.run(['lipo', path, '-thin', arch, '-output', thin_path], capture_output=True, check=True)
+                thin_paths.append(thin_path)
+            log(f"Split fat Mach-O file {os.path.basename(path)} into {', '.join(archs)}")
+            result.extend(thin_paths)
+        except (OSError, subprocess.CalledProcessError) as e:
+            log(f"Failed to split fat Mach-O file {path}: {e}")
+            result.append(path)
+
+    return result
+
+
 def run(target_platform, target_name, target_type, target_config, project_file, plugin_dir, engine_dir):
     log("Start debug symbols upload")
 
@@ -323,6 +358,9 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
 
     cli_config_dir = os.path.join(project_dir, 'Intermediate', 'SentryCli')
     os.makedirs(cli_config_dir, exist_ok=True)
+
+    if target_platform == "Mac":
+        symbol_files = thin_fat_macho_files(symbol_files, os.path.join(cli_config_dir, 'thin'))
 
     cli_env['SENTRY_CONFIG_DIR'] = cli_config_dir
     cli_env['SENTRY_FORCE_ENV_TOKEN'] = '1'
