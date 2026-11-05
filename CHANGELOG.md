@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
+
 ## 1.26.0
 
 ### Behavioral Changes
@@ -8,7 +14,6 @@
 
 ### Features
 
-- Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
 - Add memory usage at the time of the crash to crash events on Windows and Xbox ([#1664](https://github.com/getsentry/sentry-unreal/pull/1664))
 - Add experimental game state capture that attaches a rolling window of game state to crash events ([#1683](https://github.com/getsentry/sentry-unreal/pull/1683))
 - Add option to include debug images in Unreal Crash Reporter context ([#1673](https://github.com/getsentry/sentry-unreal/pull/1673))
