@@ -42,6 +42,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, AttachScreenshot(false)
 	, EnableOutOfProcessScreenshots(false)
 	, AttachGpuDump(true)
+	, SplitGpuCrashEvents(false)
 	, MaxAttachmentSize(20 * 1024 * 1024)
 	, EnableLargeAttachments(false)
 	, InAppInclude()
@@ -100,6 +101,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, CrashReporterAppearance()
 	, CrashReporterUrl()
 	, EnableCrashReporterContextPropagation(true)
+	, EnableCrashReporterDebugImages(false)
 	, bIsDirty(false)
 {
 	if (GIsEditor)
@@ -136,7 +138,8 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadShaderSymbols) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, DiagnosticLevel) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl) ||
-		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterContextPropagation))
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterContextPropagation) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterDebugImages))
 	{
 		return;
 	}

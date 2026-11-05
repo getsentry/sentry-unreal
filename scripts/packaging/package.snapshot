@@ -395,6 +395,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttachment.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttachmentType.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttribute.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCAttributeContent.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCBaggage.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCBreadcrumb.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCClient.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDataCollectionHttpBodyType.h
@@ -407,6 +408,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCDefines.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCEnvelope.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCEnvelopeHeader.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCEnvelopeItem.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCError.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCEvent.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCException.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCExperimentalOptions.h
@@ -447,6 +449,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMechanismContext.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMessage.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetric.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricKitDiagnosticReport.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricKitMetricReport.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricKitOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricOptions.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCMetricsApi.h
@@ -482,6 +485,7 @@ Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCUserFeedbackConfigurati
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCUserFeedbackFormConfiguration.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCUserFeedbackFormElementOutlineStyle.h
 Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCUserFeedbackThemeConfiguration.h
+Source/ThirdParty/Mac/Cocoa/include/SentryObjC/SentryObjCWebViewTracing.h
 Source/ThirdParty/Mac/Native/bin/sentry-crash
 Source/ThirdParty/Mac/Native/include/sentry.h
 Source/ThirdParty/Mac/Native/lib/libsentry.a

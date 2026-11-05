@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add experimental setting for the native backend to send GPU crash dumps as a separate event on Windows ([#1667](https://github.com/getsentry/sentry-unreal/pull/1667))
+
 ### Behavioral Changes
 
 - Report Wine and Proton runtime info only through the Native SDK's `wine` context; the plugin no longer sets the `runtime` context or the `compatibility`, `wine_version`, `proton_build` and `proton_experimental` tags ([#1649](https://github.com/getsentry/sentry-unreal/pull/1649))
@@ -10,6 +14,7 @@
 
 - Upload shader binaries for GPU crash symbolication after cook ([#1678](https://github.com/getsentry/sentry-unreal/pull/1678))
 - Add memory usage at the time of the crash to crash events on Windows and Xbox ([#1664](https://github.com/getsentry/sentry-unreal/pull/1664))
+- Add option to include debug images in Unreal Crash Reporter context ([#1673](https://github.com/getsentry/sentry-unreal/pull/1673))
 
 ### Fixes
 
@@ -23,15 +28,15 @@
 - Bump CLI from v3.8.0 to v3.8.2 ([#1643](https://github.com/getsentry/sentry-unreal/pull/1643), [#1647](https://github.com/getsentry/sentry-unreal/pull/1647))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#382)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.8.0...3.8.2)
-- Bump Cocoa SDK from v9.30.2 to v9.32.0 ([#1644](https://github.com/getsentry/sentry-unreal/pull/1644), [#1669](https://github.com/getsentry/sentry-unreal/pull/1669))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9320)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.30.2...9.32.0)
+- Bump Cocoa SDK from v9.30.2 to v9.33.0 ([#1644](https://github.com/getsentry/sentry-unreal/pull/1644), [#1669](https://github.com/getsentry/sentry-unreal/pull/1669), [#1682](https://github.com/getsentry/sentry-unreal/pull/1682))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9330)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.30.2...9.33.0)
 - Bump Java SDK from v8.61.0 to v8.62.0 ([#1662](https://github.com/getsentry/sentry-unreal/pull/1662))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8620)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.61.0...8.62.0)
-- Bump Native SDK from v0.17.4 to v0.17.5 ([#1668](https://github.com/getsentry/sentry-unreal/pull/1668))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0175)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.4...0.17.5)
+- Bump Native SDK from v0.17.4 to v0.17.6 ([#1668](https://github.com/getsentry/sentry-unreal/pull/1668), [#1681](https://github.com/getsentry/sentry-unreal/pull/1681))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0176)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.4...0.17.6)
 - Bump Crash Reporter from v0.3.3 to v0.3.4 ([#1672](https://github.com/getsentry/sentry-unreal/pull/1672))
   - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#034)
   - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.3.3...0.3.4)

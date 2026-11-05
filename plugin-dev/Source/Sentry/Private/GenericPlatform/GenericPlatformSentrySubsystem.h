@@ -12,6 +12,7 @@
 class FGenericPlatformSentryAttachment;
 class FGenericPlatformSentryScope;
 class FGenericPlatformSentryCrashReporter;
+class ISentryHint;
 class USentryEvent;
 class USentryHint;
 class USentryBeforeSendFeedbackHandler;
@@ -88,6 +89,10 @@ public:
 
 	TArray<FString> GetSessionGpuShaderDebugInfoPaths() const;
 
+	void AddGpuDumpAttachments(ISentryHint& Hint) const;
+
+	void CaptureGpuCrashEvent();
+
 protected:
 	virtual void ConfigureHandlerPath(sentry_options_t* Options) {}
 	virtual void ConfigureDatabasePath(sentry_options_t* Options) {}
@@ -128,7 +133,7 @@ protected:
 
 	virtual void AddCrashMemoryContext(sentry_value_t event) {}
 
-	void InitCrashReporter(const FString& release, const FString& environment);
+	void InitCrashReporter(const USentrySettings* Settings);
 
 	virtual void AddFileAttachment(TSharedPtr<ISentryAttachment> attachment);
 	virtual void AddByteAttachment(TSharedPtr<ISentryAttachment> attachment);
@@ -171,6 +176,7 @@ private:
 	bool isScreenshotAttachmentEnabled;
 	bool isSessionReplayAttachmentEnabled;
 	bool isGpuDumpAttachmentEnabled;
+	bool isGpuCrashSplitEnabled;
 
 	bool bNativeHangTracking;
 

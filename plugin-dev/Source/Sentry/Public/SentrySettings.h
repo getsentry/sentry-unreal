@@ -469,6 +469,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only.", SentryPlatforms = "Win64"))
 	bool AttachGpuDump;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
+		Meta = (DisplayName = "Send GPU dump as separate event", ToolTip = "Flag indicating whether to send GPU crash dump with a separate event linked to the crash event. Applies to the native backend only.",
+			EditCondition = "AttachGpuDump", SentryPlatforms = "Win64", SentryExperimental))
+	bool SplitGpuCrashEvents;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Enriching Events|Attachments",
 		Meta = (DisplayName = "Max attachment size (bytes)", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/",
 			SentryPlatforms = "Mac:Cocoa,IOS"))
@@ -725,6 +730,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Allow Unreal Crash Reporter context propagation", ToolTip = "Flag indicating whether to automatically propagate additional data (e.g., tags, context) set via Sentry SDK interface to Unreal Crash Reporter.",
 			SentryPlatforms = "Win64,Linux,Mac:Native"))
 	bool EnableCrashReporterContextPropagation;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
+		Meta = (DisplayName = "Include debug images", ToolTip = "Flag indicating whether to propagate the list of loaded modules to Unreal Crash Reporter. Skipped when the crash reporter runs out-of-process (e.g., in the editor).",
+			EditCondition = "EnableCrashReporterContextPropagation", SentryPlatforms = "Win64,Linux,Mac:Native", SentryExperimental))
+	bool EnableCrashReporterDebugImages;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
