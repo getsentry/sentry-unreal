@@ -19,7 +19,6 @@
 - Replace deprecated `Sentry.captureFeedback` calls on Android with `Sentry.feedback().capture` ([#1646](https://github.com/getsentry/sentry-unreal/pull/1646))
 - Fix crash when capturing screenshot before game viewport is attached to a window ([#1661](https://github.com/getsentry/sentry-unreal/pull/1661))
 - Fix crash when capturing screenshot while Slate is ticking on UE 5.4+ ([#1677](https://github.com/getsentry/sentry-unreal/pull/1677))
-- Attach the current session's game log instead of the previous one to uncaught Java exception events on Android ([#1683](https://github.com/getsentry/sentry-unreal/pull/1683))
 
 ### Dependencies
 
