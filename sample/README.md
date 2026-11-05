@@ -116,6 +116,7 @@ The following test switches are supported:
 - `-ensure-capture` - trigger a non-fatal `ensure()`
 - `-hang-capture` - simulate an application hang
 - `-replay-capture` - capture session replay clip
+- `-game-state-capture` - capture game state and crash
 - `-init-only` - initialize the SDK and exit without running a test action
 
 The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.

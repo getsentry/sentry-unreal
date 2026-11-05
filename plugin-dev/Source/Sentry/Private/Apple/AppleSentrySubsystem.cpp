@@ -68,6 +68,15 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
+	isGameStateAttachmentEnabled = settings->AttachGameState;
+
+	if (isGameStateAttachmentEnabled && !isGameStateBackedUp)
+	{
+		// Crashes are sent on the next launch, so keep the previous run's game state before it gets overwritten.
+		// Re-initializing the SDK in the same process must not replace it.
+		SentryFileUtils::BackupGameState();
+		isGameStateBackedUp = true;
+	}
 
 	FString prevSessionReplayPath;
 	FString prevSessionReplaySidecarPath;
@@ -800,6 +809,11 @@ FString FAppleSentrySubsystem::GetSessionReplayDirectory() const
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
 }
 
+FString FAppleSentrySubsystem::GetGameStateFilePath() const
+{
+	return FPaths::ConvertRelativePathToFull(SentryFileUtils::GetGameStatePath());
+}
+
 void FAppleSentrySubsystem::SetEventCrashType(SentryObjCEvent* event, ECrashContextType crashType) const
 {
 	FAppleSentryEvent(event).SetTag(TEXT("CrashType"), FGenericCrashContext::GetCrashTypeString(crashType));
@@ -830,6 +844,18 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 		}
 	}
 #endif
+
+	if (isGameStateAttachmentEnabled)
+	{
+		const FString& gameStatePath = SentryFileUtils::GetGameStateBackupPath();
+		if (fileManager.FileExists(*gameStatePath))
+		{
+			FAppleSentryAttachment gameStateAttachment(fileManager.ConvertToAbsolutePathForExternalAppForRead(*gameStatePath),
+				TEXT("game_state.jsonl"), TEXT("text/plain"));
+
+			hint.attachments = [hint.attachments arrayByAddingObject:gameStateAttachment.GetNativeObject()];
+		}
+	}
 
 	if (isScreenshotAttachmentEnabled)
 	{

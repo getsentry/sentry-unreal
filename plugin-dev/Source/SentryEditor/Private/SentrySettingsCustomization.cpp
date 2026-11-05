@@ -91,6 +91,7 @@ void FSentrySettingsCustomization::SetCategoryOrder(IDetailLayoutBuilder& Detail
 		TEXT("Transport"),
 		TEXT("Offline Caching"),
 		TEXT("Session Replay"),
+		TEXT("Game State Capture"),
 		TEXT("Debug Symbols"),
 		TEXT("Sentry Crash Reporter"),
 		TEXT("Unreal Crash Reporter")

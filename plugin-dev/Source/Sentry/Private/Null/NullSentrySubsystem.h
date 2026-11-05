@@ -61,6 +61,7 @@ public:
 	virtual bool IsNativeHangTrackingEnabled() const override { return false; }
 	virtual FString GetDeviceType() const override { return TEXT("Unknown"); }
 	virtual FString GetSessionReplayDirectory() const override { return FString(); }
+	virtual FString GetGameStateFilePath() const override { return FString(); }
 };
 
 typedef FNullSentrySubsystem FPlatformSentrySubsystem;

@@ -36,6 +36,8 @@ public class Sentry : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"UMG",
+				"InputCore",
 				"Projects",
 				"Json",
 				"JsonUtilities",

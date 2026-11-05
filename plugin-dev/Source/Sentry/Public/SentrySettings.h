@@ -328,6 +328,41 @@ struct FSentrySessionReplayOptions
 	int32 BitrateKbps = 2000;
 };
 
+USTRUCT(BlueprintType)
+struct FSentryGameStateCaptureOptions
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Capture window (seconds)", ToolTip = "Length of the rolling window of game state kept for the crash attachment.",
+			ClampMin = 5, ClampMax = 120))
+	int32 WindowSeconds = 30;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Sample interval (seconds)", ToolTip = "How often to record a game state sample.",
+			ClampMin = 0.05f, ClampMax = 1.0f))
+	float SampleInterval = 0.2f;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Max size (KiB)", ToolTip = "Maximum size of the captured game state. The oldest samples are dropped first when the limit is reached.",
+			ClampMin = 64, ClampMax = 10240))
+	int32 MaxSizeKb = 1024;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Capture UI", ToolTip = "Records the layout of UMG widgets in the viewport (position, type, hover and enabled state, progress bar values) and widget open/close events. Increases the capture size noticeably."))
+	bool CaptureUI = false;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Capture UI text", ToolTip = "Records the text of text blocks. Editable text is never recorded. Requires `Send default PII` to be enabled since UI text may contain personal data.",
+			EditCondition = "CaptureUI"))
+	bool CaptureUIText = false;
+
+	UPROPERTY(Config, EditAnywhere, Category = "General",
+		Meta = (DisplayName = "Capture UI clicks", ToolTip = "Records mouse clicks and the widget under the cursor.",
+			EditCondition = "CaptureUI"))
+	bool CaptureUIClicks = true;
+};
+
 /**
  * Sentry settings used for plugin configuration.
  */
@@ -676,6 +711,15 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Advanced recording options", ToolTip = "Low-level encoder/muxer tuning for the desktop (Windows/Mac/Linux) session-replay recorder. Defaults are sensible for most projects.",
 			EditCondition = "AttachSessionReplay", AdvancedDisplay))
 	FSentrySessionReplayOptions SessionReplayOptions;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Game State Capture",
+		Meta = (DisplayName = "Attach game state", ToolTip = "Records a rolling window of game state (player and camera transforms, tracked actors, game state attributes, frame rate) and attaches it to crash events as a JSONL file.",
+			SentryExperimental))
+	bool AttachGameState;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Game State Capture",
+		Meta = (DisplayName = "Capture options", EditCondition = "AttachGameState"))
+	FSentryGameStateCaptureOptions GameStateOptions;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
 		Meta = (DisplayName = "Upload debug symbols automatically", ToolTip = "Flag indicating whether to automatically upload debug symbols to Sentry when packaging the app."))
