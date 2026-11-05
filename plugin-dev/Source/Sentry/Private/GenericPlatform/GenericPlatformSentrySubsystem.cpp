@@ -700,7 +700,6 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		gameStateAttachment.Reset();
 	}
 
-  
 #if PLATFORM_WINDOWS
 	isGpuCrashSplitEnabled = isGpuDumpAttachmentEnabled && bUseNativeBackend && settings->SplitGpuCrashEvents && !settings->EnableExternalCrashReporter;
 #endif
