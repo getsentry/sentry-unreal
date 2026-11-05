@@ -469,6 +469,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Attach GPU dump", ToolTip = "Flag indicating whether to attach GPU crash dump when an error occurs. Currently this feature is supported for Nvidia graphics only.", SentryPlatforms = "Win64"))
 	bool AttachGpuDump;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
+		Meta = (DisplayName = "Send GPU dump as separate event", ToolTip = "Flag indicating whether to send GPU crash dump with a separate event linked to the crash event. Applies to the native backend only.",
+			EditCondition = "AttachGpuDump", SentryPlatforms = "Win64", SentryExperimental))
+	bool SplitGpuCrashEvents;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Enriching Events|Attachments",
 		Meta = (DisplayName = "Max attachment size (bytes)", Tooltip = "Max attachment size for each attachment in bytes. Default is 20 MiB compressed. Please also check the maximum attachment size of Relay to make sure your attachments don't get discarded there: https://docs.sentry.io/product/relay/options/",
 			SentryPlatforms = "Mac:Cocoa,IOS"))
