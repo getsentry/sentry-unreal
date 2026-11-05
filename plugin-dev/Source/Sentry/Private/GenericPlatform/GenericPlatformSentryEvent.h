@@ -45,6 +45,7 @@ public:
 	virtual TSharedPtr<ISentryFeedback> GetFeedback() const override;
 
 	static bool IsAnr(sentry_value_t event);
+	static bool IsGpuCrash(sentry_value_t event);
 
 private:
 	sentry_value_t Event;

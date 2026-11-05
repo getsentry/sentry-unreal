@@ -178,6 +178,17 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t even
 		return event;
 	}
 
+	if (!isCrash && isGpuCrashSplitEnabled && FGenericPlatformSentryEvent::IsGpuCrash(event))
+	{
+		// GPU crash events are captured from `OnCrash` and carry only the GPU dump attachments
+		FPlatformSentryHint GpuCrashHint(hint);
+		GpuCrashHint.ClearAttachments();
+
+		AddGpuDumpAttachments(GpuCrashHint);
+
+		isCrash = true;
+	}
+
 	if (!isCrash && FGenericPlatformSentryEvent::IsAnr(event))
 	{
 		SetEventCrashType(event, ECrashContextType::Hang);
@@ -421,21 +432,13 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 
 	if (GIsGPUCrashed && isGpuDumpAttachmentEnabled)
 	{
-		const FString& GpuDumpPath = TryCaptureGpuDump();
-		if (!GpuDumpPath.IsEmpty())
+		if (isGpuCrashSplitEnabled)
 		{
-			TSharedPtr<FGenericPlatformSentryAttachment> GpuDumpAttachment =
-				MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
-			GpuDumpAttachment->SetAttachmentType(TEXT("event.nv_gpudmp"));
-			CrashHint.AddAttachment(GpuDumpAttachment);
-
-			for (const FString& ShaderDebugInfoPath : GetSessionGpuShaderDebugInfoPaths())
-			{
-				TSharedPtr<FGenericPlatformSentryAttachment> ShaderDebugInfoAttachment =
-					MakeShareable(new FGenericPlatformSentryAttachment(ShaderDebugInfoPath, FPaths::GetCleanFilename(ShaderDebugInfoPath), TEXT("application/octet-stream")));
-				ShaderDebugInfoAttachment->SetAttachmentType(TEXT("event.nv_shader_debug"));
-				CrashHint.AddAttachment(ShaderDebugInfoAttachment);
-			}
+			CaptureGpuCrashEvent();
+		}
+		else
+		{
+			AddGpuDumpAttachments(CrashHint);
 		}
 	}
 
@@ -520,12 +523,17 @@ ECrashContextType FGenericPlatformSentrySubsystem::ResolveCrashType() const
 	return ECrashContextType::Crash;
 }
 
-void FGenericPlatformSentrySubsystem::InitCrashReporter(const FString& release, const FString& environment)
+void FGenericPlatformSentrySubsystem::InitCrashReporter(const USentrySettings* Settings)
 {
 	crashReporter = MakeShareable(new FGenericPlatformSentryCrashReporter);
 
-	crashReporter->SetRelease(release);
-	crashReporter->SetEnvironment(environment);
+	crashReporter->SetRelease(Settings->GetEffectiveRelease());
+	crashReporter->SetEnvironment(Settings->GetEffectiveEnvironment());
+
+	if (Settings->EnableCrashReporterDebugImages && !FGenericCrashContext::IsOutOfProcessCrashReporter())
+	{
+		crashReporter->SetDebugImages();
+	}
 }
 
 void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> attachment)
@@ -622,6 +630,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 	, isScreenshotAttachmentEnabled(false)
 	, isSessionReplayAttachmentEnabled(false)
 	, isGpuDumpAttachmentEnabled(false)
+	, isGpuCrashSplitEnabled(false)
 	, bNativeHangTracking(false)
 	, initTimestamp(FDateTime::UtcNow())
 {
@@ -690,6 +699,11 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	{
 		gameStateAttachment.Reset();
 	}
+
+  
+#if PLATFORM_WINDOWS
+	isGpuCrashSplitEnabled = isGpuDumpAttachmentEnabled && bUseNativeBackend && settings->SplitGpuCrashEvents && !settings->EnableExternalCrashReporter;
+#endif
 
 	if (settings->UseProxy)
 	{
@@ -1415,6 +1429,44 @@ TArray<FString> FGenericPlatformSentrySubsystem::GetSessionGpuShaderDebugInfoPat
 	{
 		return IFileManager::Get().GetTimeStamp(*NvdbgPath) >= initTimestamp;
 	});
+}
+
+void FGenericPlatformSentrySubsystem::AddGpuDumpAttachments(ISentryHint& Hint) const
+{
+	const FString& GpuDumpPath = TryCaptureGpuDump();
+	if (GpuDumpPath.IsEmpty())
+	{
+		return;
+	}
+
+	TSharedPtr<FGenericPlatformSentryAttachment> GpuDumpAttachment =
+		MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
+	GpuDumpAttachment->SetAttachmentType(TEXT("event.nv_gpudmp"));
+	Hint.AddAttachment(GpuDumpAttachment);
+
+	for (const FString& ShaderDebugInfoPath : GetSessionGpuShaderDebugInfoPaths())
+	{
+		TSharedPtr<FGenericPlatformSentryAttachment> ShaderDebugInfoAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(ShaderDebugInfoPath, FPaths::GetCleanFilename(ShaderDebugInfoPath), TEXT("application/octet-stream")));
+		ShaderDebugInfoAttachment->SetAttachmentType(TEXT("event.nv_shader_debug"));
+		Hint.AddAttachment(ShaderDebugInfoAttachment);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::CaptureGpuCrashEvent()
+{
+	if (TryCaptureGpuDump().IsEmpty())
+	{
+		return;
+	}
+
+	sentry_value_t GpuCrashEvent = sentry_value_new_event();
+
+	sentry_value_set_by_key(GpuCrashEvent, "level", sentry_value_new_string("fatal"));
+
+	SetEventCrashType(GpuCrashEvent, ECrashContextType::GPUCrash);
+
+	sentry_capture_event(GpuCrashEvent);
 }
 
 void FGenericPlatformSentrySubsystem::ConfigureAppHangTracking()
