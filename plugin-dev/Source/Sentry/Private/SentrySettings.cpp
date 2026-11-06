@@ -98,6 +98,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, IncludeSources(false)
 	, DiagnosticLevel(ESentryCliLogLevel::Info)
 	, UseLegacyGradlePlugin(false)
+	, UploadShaderSymbols(false)
 	, EnableExternalCrashReporter(false)
 	, CrashReporterAppearance()
 	, CrashReporterUrl()
@@ -136,6 +137,7 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AuthToken) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, IncludeSources) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseLegacyGradlePlugin) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadShaderSymbols) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, DiagnosticLevel) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterContextPropagation) ||
