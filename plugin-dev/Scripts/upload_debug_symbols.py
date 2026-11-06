@@ -240,8 +240,7 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
 
     # Get CLI log level
     cli_log_level = get_setting_value(config_paths, 'DiagnosticLevel')
-    if not cli_log_level:
-        cli_log_level = "info"
+    cli_log_level = cli_log_level.lower() if cli_log_level else "info"
 
     # Get sentry-cli executable (based on host OS)
     cli_exec = get_cli_executable(plugin_dir)
