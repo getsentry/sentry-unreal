@@ -12,7 +12,7 @@
 - Add experimental game state capture that attaches a rolling window of game state to crash events ([#1683](https://github.com/getsentry/sentry-unreal/pull/1683))
 - Add option to include debug images in Unreal Crash Reporter context ([#1673](https://github.com/getsentry/sentry-unreal/pull/1673))
 - Add experimental setting for the native backend to send GPU crash dumps as a separate event on Windows ([#1667](https://github.com/getsentry/sentry-unreal/pull/1667))
-- Add opt-in setting to record mouse and touch input in session replays ([#1686](https://github.com/getsentry/sentry-unreal/pull/1686))
+- Add opt-in mouse and touch input capturing in session replays ([#1686](https://github.com/getsentry/sentry-unreal/pull/1686))
 
 ### Fixes
 
