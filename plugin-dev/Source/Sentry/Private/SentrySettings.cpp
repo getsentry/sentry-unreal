@@ -122,6 +122,11 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		return;
 	}
 
+	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, Views))
+	{
+		RemoveDuplicateCrashReporterViews();
+	}
+
 	if ((PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AttachSessionReplay) && AttachSessionReplay) ||
 		(PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableExternalCrashReporter) && EnableExternalCrashReporter))
 	{
@@ -145,6 +150,45 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	}
 
 	bIsDirty = true;
+}
+
+void USentrySettings::RemoveDuplicateCrashReporterViews()
+{
+	TArray<ESentryCrashReporterView>& Views = CrashReporterAppearance.Views;
+	const UEnum* Enum = StaticEnum<ESentryCrashReporterView>();
+
+	TSet<ESentryCrashReporterView> UsedViews;
+	for (int32 Index = 0; Index < Views.Num();)
+	{
+		if (!UsedViews.Contains(Views[Index]))
+		{
+			UsedViews.Add(Views[Index]);
+			++Index;
+			continue;
+		}
+
+		bool bReplaced = false;
+		for (int32 EnumIndex = 0; EnumIndex < Enum->NumEnums() - 1; ++EnumIndex)
+		{
+			const ESentryCrashReporterView Candidate = static_cast<ESentryCrashReporterView>(Enum->GetValueByIndex(EnumIndex));
+			if (!UsedViews.Contains(Candidate))
+			{
+				Views[Index] = Candidate;
+				UsedViews.Add(Candidate);
+				bReplaced = true;
+				break;
+			}
+		}
+
+		if (bReplaced)
+		{
+			++Index;
+		}
+		else
+		{
+			Views.RemoveAt(Index);
+		}
+	}
 }
 
 #endif
