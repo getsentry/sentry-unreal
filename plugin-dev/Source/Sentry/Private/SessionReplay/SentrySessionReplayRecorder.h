@@ -17,6 +17,7 @@
 class FRunnableThread;
 class FEvent;
 class FSentryBackBufferCapture;
+class FSentryReplayInputCapture;
 struct FSentrySessionReplayOptions;
 
 /**
@@ -38,15 +39,16 @@ public:
 	FSentrySessionReplayRecorder();
 	virtual ~FSentrySessionReplayRecorder() override;
 
-	bool Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& ReplayId, const FString& ReplayPath);
+	bool Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& ReplayId, const FString& ReplayPath, bool bRecordInput);
 	void Shutdown();
 
 	bool IsEnabled() const { return bEnabled; }
 	bool HasSnapshotOnDisk() const { return bSnapshotOnDisk; }
 	const FString& GetAttachmentPath() const { return AttachmentPath; }
 
-	// Called by the encoder thread when the init segment (ftyp+moov) is ready
-	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
+	// Called by the encoder thread when the init segment (ftyp+moov) is ready, along with
+	// the FPlatformTime::Seconds() of the track's t=0 (negative if unknown)
+	void OnInitSegmentReady(TArray<uint8>&& InitSegment, double TimelineOriginSeconds);
 	// Called by the encoder thread when a fragment (moof+mdat) is complete
 	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks);
 
@@ -61,11 +63,11 @@ private:
 	bool WriteSnapshot(const TArray<uint8>& Bytes);
 
 	// Assembles the platform-agnostic replay model from the most recent on-disk snapshot
-	FSentryReplayInfo BuildReplayInfo() const;
+	FSentryReplayInfo BuildReplayInfo(double ClipStartSeconds) const;
 
 	// Writes the JSON metadata sidecar next to the mp4 (temp + atomic rename) so the
 	// SDK can build and send the replay envelope outside the crash handler
-	void WriteReplayMetadata();
+	void WriteReplayMetadata(double ClipStartSeconds);
 
 	bool bEnabled = false;
 	FThreadSafeBool bSnapshotOnDisk;
@@ -83,6 +85,7 @@ private:
 
 	TUniquePtr<ISentryEncoder> Encoder;
 	TUniquePtr<FSentryBackBufferCapture> Capture;
+	TSharedPtr<FSentryReplayInputCapture> InputCapture;
 
 	struct FFragment
 	{
@@ -94,6 +97,7 @@ private:
 	// Fragment ring + init segment, protected by RingLock
 	FCriticalSection RingLock;
 	TArray<uint8> InitSegment;
+	double TimelineOriginSeconds = -1.0;
 	TRingBuffer<FFragment> FragmentRing;
 
 	// WindowSeconds expressed in FSentryFMP4Writer::TrackTimescale ticks

@@ -39,7 +39,7 @@ void FSentryFMP4FragmentBuilder::AddAccessUnit(const uint8* AnnexB, int64 Size, 
 	if (!bInitSegmentPublished && CachedSps.Num() > 0 && CachedPps.Num() > 0)
 	{
 		TArray<uint8> Init = FSentryFMP4Writer::BuildInitSegment(Width, Height, CachedSps, CachedPps);
-		Recorder.OnInitSegmentReady(MoveTemp(Init));
+		Recorder.OnInitSegmentReady(MoveTemp(Init), TimelineOriginSeconds);
 		bInitSegmentPublished = true;
 	}
 
@@ -100,6 +100,7 @@ void FSentryFMP4FragmentBuilder::Reset()
 	SampleClock = 0;
 	CachedSps.Empty();
 	CachedPps.Empty();
+	TimelineOriginSeconds = -1.0;
 	bInitSegmentPublished = false;
 }
 

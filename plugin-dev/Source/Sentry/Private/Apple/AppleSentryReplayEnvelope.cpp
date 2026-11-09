@@ -176,6 +176,38 @@ NSArray* BuildBreadcrumbEvents(NSArray<SentryObjCBreadcrumb*>* breadcrumbs, doub
 	return events;
 }
 
+NSArray* BuildInputEvents(const FSentryReplayInfo& info, double startSec)
+{
+	NSMutableArray* events = [NSMutableArray array];
+
+	for (const FJsonObjectWrapper& input : info.InputEvents)
+	{
+		FString inputJson;
+		if (!input.JsonObjectToString(inputJson))
+		{
+			continue;
+		}
+
+		NSData* inputData = [inputJson.GetNSString() dataUsingEncoding:NSUTF8StringEncoding];
+		NSMutableDictionary* event = [NSJSONSerialization JSONObjectWithData:inputData options:NSJSONReadingMutableContainers error:nil];
+		if (![event isKindOfClass:[NSMutableDictionary class]])
+		{
+			continue;
+		}
+
+		const double offsetMs = [event[@"timestamp"] doubleValue];
+		if (offsetMs < 0.0 || offsetMs > static_cast<double>(info.DurationMs))
+		{
+			continue;
+		}
+
+		event[@"timestamp"] = @(startSec * 1000.0 + offsetMs);
+		[events addObject:event];
+	}
+
+	return events;
+}
+
 NSData* BuildReplayRecording(const FSentryReplayInfo& info, double startSec, double endSec, uint64 videoSizeBytes, NSArray<SentryObjCBreadcrumb*>* breadcrumbs)
 {
 	const double timestampMs = startSec * 1000.0;
@@ -214,6 +246,7 @@ NSData* BuildReplayRecording(const FSentryReplayInfo& info, double startSec, dou
 
 	NSMutableArray* events = [NSMutableArray arrayWithObjects:metaEvent, videoEvent, nil];
 	[events addObjectsFromArray:BuildBreadcrumbEvents(breadcrumbs, startSec, endSec)];
+	[events addObjectsFromArray:BuildInputEvents(info, startSec)];
 
 	NSError* error = nil;
 	NSData* eventsJson = [NSJSONSerialization dataWithJSONObject:events options:0 error:&error];
