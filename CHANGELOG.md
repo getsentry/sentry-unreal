@@ -12,7 +12,7 @@
 - Add experimental game state capture that attaches a rolling window of game state to crash events ([#1683](https://github.com/getsentry/sentry-unreal/pull/1683))
 - Add option to include debug images in Unreal Crash Reporter context ([#1673](https://github.com/getsentry/sentry-unreal/pull/1673))
 - Add experimental setting for the native backend to send GPU crash dumps as a separate event on Windows ([#1667](https://github.com/getsentry/sentry-unreal/pull/1667))
-- Add crash reporter setting to choose which views are shown and in which order
+- Add option to choose which views the external crash reporter shows ([#1687](https://github.com/getsentry/sentry-unreal/pull/1687))
 
 ### Fixes
 
