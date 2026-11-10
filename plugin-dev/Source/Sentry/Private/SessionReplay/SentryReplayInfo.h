@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "JsonObjectWrapper.h"
+
 #include "SentryReplayInfo.generated.h"
 
 /**
@@ -50,4 +52,7 @@ struct FSentryReplayInfo
 
 	UPROPERTY()
 	int32 FrameRate = 0;
+
+	UPROPERTY()
+	TArray<FJsonObjectWrapper> InputEvents;
 };

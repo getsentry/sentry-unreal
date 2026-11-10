@@ -274,6 +274,8 @@ Source/Sentry/Private/SessionReplay/SentryFMP4FragmentBuilder.h
 Source/Sentry/Private/SessionReplay/SentryFMP4Writer.cpp
 Source/Sentry/Private/SessionReplay/SentryFMP4Writer.h
 Source/Sentry/Private/SessionReplay/SentryReplayInfo.h
+Source/Sentry/Private/SessionReplay/SentryReplayInputCapture.cpp
+Source/Sentry/Private/SessionReplay/SentryReplayInputCapture.h
 Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.cpp
 Source/Sentry/Private/SessionReplay/SentrySessionReplayRecorder.h
 Source/Sentry/Private/SessionReplay/SentryVideoEncoder.cpp

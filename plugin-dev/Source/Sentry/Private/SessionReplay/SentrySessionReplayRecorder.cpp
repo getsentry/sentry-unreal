@@ -7,9 +7,11 @@
 #include "SentryBackBufferCapture.h"
 #include "SentryDefines.h"
 #include "SentryFMP4Writer.h"
+#include "SentryReplayInputCapture.h"
 #include "SentrySettings.h"
 #include "SentryVideoEncoderInclude.h"
 
+#include "Framework/Application/SlateApplication.h"
 #include "HAL/Event.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformProcess.h"
@@ -27,7 +29,7 @@ FSentrySessionReplayRecorder::~FSentrySessionReplayRecorder()
 	Shutdown();
 }
 
-bool FSentrySessionReplayRecorder::Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& InReplayId, const FString& ReplayPath)
+bool FSentrySessionReplayRecorder::Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& InReplayId, const FString& ReplayPath, bool bRecordInput)
 {
 	check(IsInGameThread());
 
@@ -81,6 +83,12 @@ bool FSentrySessionReplayRecorder::Initialize(const FSentrySessionReplayOptions&
 		return false;
 	}
 
+	// The rotation thread reads it, so create it first
+	if (bRecordInput)
+	{
+		InputCapture = MakeShared<FSentryReplayInputCapture>(WindowSeconds * 2.0);
+	}
+
 	bStopRequested.AtomicSet(false);
 
 	RotationWake = FPlatformProcess::GetSynchEventFromPool(false);
@@ -97,6 +105,12 @@ bool FSentrySessionReplayRecorder::Initialize(const FSentrySessionReplayOptions&
 		RotationWake = nullptr;
 
 		return false;
+	}
+
+	if (InputCapture)
+	{
+		// Capture->Start() already checked that Slate is initialized
+		FSlateApplication::Get().RegisterInputPreProcessor(InputCapture);
 	}
 
 	bEnabled = true;
@@ -116,6 +130,11 @@ void FSentrySessionReplayRecorder::Shutdown()
 	}
 	bEnabled = false;
 
+	if (InputCapture && FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().UnregisterInputPreProcessor(InputCapture);
+	}
+
 	// Stop the rotation thread first so it doesn't race against teardown
 	bStopRequested.AtomicSet(true);
 	if (RotationWake)
@@ -134,6 +153,8 @@ void FSentrySessionReplayRecorder::Shutdown()
 		RotationWake = nullptr;
 	}
 
+	InputCapture.Reset();
+
 	if (Capture)
 	{
 		Capture->Stop();
@@ -148,11 +169,12 @@ void FSentrySessionReplayRecorder::Shutdown()
 	{
 		FScopeLock Lock(&RingLock);
 		InitSegment.Empty();
+		TimelineOriginSeconds = -1.0;
 		FragmentRing.Reset();
 	}
 }
 
-FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
+FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo(double ClipStartSeconds) const
 {
 	const FDateTime NowUtc = FDateTime::UtcNow();
 
@@ -167,13 +189,20 @@ FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo() const
 	Info.EndTimestampSec = static_cast<double>(NowUtc.ToUnixTimestamp()) + NowUtc.GetMillisecond() / 1000.0;
 	Info.StartTimestampSec = Info.EndTimestampSec - static_cast<double>(Info.DurationMs) / 1000.0;
 
+	if (InputCapture && ClipStartSeconds >= 0.0)
+	{
+		const double ClipEndSeconds = ClipStartSeconds + static_cast<double>(Info.DurationMs) / 1000.0;
+		Info.InputEvents = InputCapture->GetInputEvents(ClipStartSeconds, ClipEndSeconds, Info.Width, Info.Height);
+	}
+
 	return Info;
 }
 
-void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment)
+void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment, double NewTimelineOriginSeconds)
 {
 	FScopeLock Lock(&RingLock);
 	InitSegment = MoveTemp(NewInitSegment);
+	TimelineOriginSeconds = NewTimelineOriginSeconds;
 
 	if (!FragmentRing.IsEmpty())
 	{
@@ -256,6 +285,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 	TArray<uint8> Snapshot;
 	int64 TotalFrames = 0;
 	uint64 TotalTicks = 0;
+	double ClipStartSeconds = -1.0;
 	{
 		FScopeLock Lock(&RingLock);
 		if (InitSegment.Num() == 0 || FragmentRing.Num() == 0)
@@ -289,6 +319,11 @@ void FSentrySessionReplayRecorder::DoRotation()
 			TotalFrames += Fragment.FrameCount;
 			TotalTicks += Fragment.DurationTicks;
 		}
+
+		if (TimelineOriginSeconds >= 0.0)
+		{
+			ClipStartSeconds = TimelineOriginSeconds + static_cast<double>(FirstTfdt) / FSentryFMP4Writer::TrackTimescale;
+		}
 	}
 
 	LatestFrameCount = static_cast<int32>(TotalFrames);
@@ -298,7 +333,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 	{
 		bSnapshotOnDisk.AtomicSet(true);
 
-		WriteReplayMetadata();
+		WriteReplayMetadata(ClipStartSeconds);
 	}
 }
 
@@ -331,10 +366,10 @@ bool FSentrySessionReplayRecorder::WriteSnapshot(const TArray<uint8>& Bytes)
 	return true;
 }
 
-void FSentrySessionReplayRecorder::WriteReplayMetadata()
+void FSentrySessionReplayRecorder::WriteReplayMetadata(double ClipStartSeconds)
 {
 	FString Json;
-	if (!FJsonObjectConverter::UStructToJsonObjectString(BuildReplayInfo(), Json, 0, 0, 0, nullptr, false))
+	if (!FJsonObjectConverter::UStructToJsonObjectString(BuildReplayInfo(ClipStartSeconds), Json, 0, 0, 0, nullptr, false))
 	{
 		return;
 	}

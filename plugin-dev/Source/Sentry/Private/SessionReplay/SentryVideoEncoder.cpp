@@ -228,6 +228,7 @@ void FSentryVideoEncoder::ProcessFrame(FSentryVideoFrame& Frame)
 	if (CaptureTimeBaseSeconds < 0.0)
 	{
 		CaptureTimeBaseSeconds = Frame.CaptureTimeSeconds;
+		FragmentBuilder.SetTimelineOrigin(CaptureTimeBaseSeconds);
 	}
 
 	// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)

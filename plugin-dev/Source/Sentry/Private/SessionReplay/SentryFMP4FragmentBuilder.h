@@ -30,6 +30,9 @@ public:
 	// access unit arrives
 	void SetDimensions(uint32 InWidth, uint32 InHeight);
 
+	// Caller's clock time of the track's t=0, passed on with the init segment
+	void SetTimelineOrigin(double InTimelineOriginSeconds) { TimelineOriginSeconds = InTimelineOriginSeconds; }
+
 	/**
 	 * Closes a fragment after every keyframe instead of waiting for the next one.
 	 *
@@ -66,6 +69,7 @@ private:
 
 	uint32 Width = 0;
 	uint32 Height = 0;
+	double TimelineOriginSeconds = -1.0;
 
 	TArray<FSentryH264Sample> CurrentSamples;
 	uint64 CurrentFragmentDecodeTime = 0;

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add opt-in mouse and touch input capturing in session replays ([#1686](https://github.com/getsentry/sentry-unreal/pull/1686))
+
 ## 1.26.0
 
 ### Behavioral Changes

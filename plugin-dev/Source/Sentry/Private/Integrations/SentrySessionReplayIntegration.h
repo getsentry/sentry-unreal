@@ -35,6 +35,7 @@ private:
 	FString ReplayDirectory;
 	FSentrySessionReplayOptions Options;
 	uint32 DurationMs = 0;
+	bool bRecordInput = false;
 
 	TUniquePtr<FSentrySessionReplayRecorder> Recorder;
 
