@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Features
+
+- Add opt-in mouse and touch input capturing in session replays ([#1686](https://github.com/getsentry/sentry-unreal/pull/1686))
+
+## 1.26.0
+
 ### Behavioral Changes
 
 - Report Wine and Proton runtime info only through the Native SDK's `wine` context; the plugin no longer sets the `runtime` context or the `compatibility`, `wine_version`, `proton_build` and `proton_experimental` tags ([#1649](https://github.com/getsentry/sentry-unreal/pull/1649))
@@ -12,7 +18,7 @@
 - Add experimental game state capture that attaches a rolling window of game state to crash events ([#1683](https://github.com/getsentry/sentry-unreal/pull/1683))
 - Add option to include debug images in Unreal Crash Reporter context ([#1673](https://github.com/getsentry/sentry-unreal/pull/1673))
 - Add experimental setting for the native backend to send GPU crash dumps as a separate event on Windows ([#1667](https://github.com/getsentry/sentry-unreal/pull/1667))
-- Add opt-in mouse and touch input capturing in session replays ([#1686](https://github.com/getsentry/sentry-unreal/pull/1686))
+- Add option to choose which views the external crash reporter shows ([#1687](https://github.com/getsentry/sentry-unreal/pull/1687))
 
 ### Fixes
 
@@ -35,9 +41,9 @@
 - Bump Native SDK from v0.17.4 to v0.17.6 ([#1668](https://github.com/getsentry/sentry-unreal/pull/1668), [#1681](https://github.com/getsentry/sentry-unreal/pull/1681))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0176)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.17.4...0.17.6)
-- Bump Crash Reporter from v0.3.3 to v0.3.4 ([#1672](https://github.com/getsentry/sentry-unreal/pull/1672))
-  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#034)
-  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.3.3...0.3.4)
+- Bump Crash Reporter from v0.3.3 to v0.3.5 ([#1672](https://github.com/getsentry/sentry-unreal/pull/1672), [#1688](https://github.com/getsentry/sentry-unreal/pull/1688))
+  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#035)
+  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.3.3...0.3.5)
 - Bump Android Gradle Plugin from v6.24.0 to v6.26.0 ([#1671](https://github.com/getsentry/sentry-unreal/pull/1671), [#1685](https://github.com/getsentry/sentry-unreal/pull/1685))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6260)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.24.0...6.26.0)

@@ -1539,6 +1539,23 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 		const FString CacheKeepStr = StaticEnum<ESentryCrashReporterCacheKeep>()->GetNameStringByValue(static_cast<int64>(Appearance.CacheKeep));
 		AppConfigObject->SetStringField(TEXT("CacheKeep"), CacheKeepStr);
 	}
+	if (Appearance.Views.Num() > 0)
+	{
+		TArray<TSharedPtr<FJsonValue>> ViewValues;
+		TSet<ESentryCrashReporterView> AddedViews;
+		for (const ESentryCrashReporterView View : Appearance.Views)
+		{
+			if (AddedViews.Contains(View))
+			{
+				continue;
+			}
+			AddedViews.Add(View);
+
+			const FString ViewName = StaticEnum<ESentryCrashReporterView>()->GetNameStringByValue(static_cast<int64>(View)).ToLower();
+			ViewValues.Add(MakeShareable(new FJsonValueString(ViewName)));
+		}
+		AppConfigObject->SetArrayField(TEXT("Views"), ViewValues);
+	}
 
 	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));
 

@@ -123,6 +123,20 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		return;
 	}
 
+	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, Views))
+	{
+		const int32 ChangedIndex = PropertyChangedEvent.GetArrayIndex(PropertyChangedEvent.Property->GetName());
+		if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayAdd)
+		{
+			ReplaceDuplicateCrashReporterView(ChangedIndex);
+		}
+		else if (PropertyChangedEvent.ChangeType == EPropertyChangeType::Duplicate && ChangedIndex != INDEX_NONE)
+		{
+			// The engine inserts the copy at the duplicated index and moves the original one slot down
+			ReplaceDuplicateCrashReporterView(ChangedIndex + 1);
+		}
+	}
+
 	if ((PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AttachSessionReplay) && AttachSessionReplay) ||
 		(PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableExternalCrashReporter) && EnableExternalCrashReporter))
 	{
@@ -146,6 +160,42 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	}
 
 	bIsDirty = true;
+}
+
+void USentrySettings::ReplaceDuplicateCrashReporterView(int32 Index)
+{
+	TArray<ESentryCrashReporterView>& Views = CrashReporterAppearance.Views;
+	if (!Views.IsValidIndex(Index))
+	{
+		return;
+	}
+
+	TSet<ESentryCrashReporterView> OtherViews;
+	for (int32 OtherIndex = 0; OtherIndex < Views.Num(); ++OtherIndex)
+	{
+		if (OtherIndex != Index)
+		{
+			OtherViews.Add(Views[OtherIndex]);
+		}
+	}
+
+	if (!OtherViews.Contains(Views[Index]))
+	{
+		return;
+	}
+
+	const UEnum* Enum = StaticEnum<ESentryCrashReporterView>();
+	for (int32 EnumIndex = 0; EnumIndex < Enum->NumEnums() - 1; ++EnumIndex)
+	{
+		const ESentryCrashReporterView Candidate = static_cast<ESentryCrashReporterView>(Enum->GetValueByIndex(EnumIndex));
+		if (!OtherViews.Contains(Candidate))
+		{
+			Views[Index] = Candidate;
+			return;
+		}
+	}
+
+	Views.RemoveAt(Index);
 }
 
 #endif

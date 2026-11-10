@@ -58,6 +58,20 @@ enum class ESentryCrashReporterCacheKeep : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESentryCrashReporterView : uint8
+{
+	Feedback,
+	Tags,
+	Contexts,
+	Extra,
+	Sdk UMETA(DisplayName = "SDK"),
+	User,
+	Attachments,
+	Stacktrace,
+	Envelope
+};
+
+UENUM(BlueprintType)
 enum class ESentryAndroidCrashBackend : uint8
 {
 	// Capture crashes using the sentry-native NDK signal handler only
@@ -298,6 +312,10 @@ struct FSentryCrashReporterAppearance
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Cache mode", ToolTip = "Initial cache mode shown to the user in the crash reporter when they have not selected one. The user can still override this at runtime. 'None' never keeps envelopes after submission, 'Offline' keeps them only while the host is offline, 'Always' keeps them regardless of submission outcome. Leave as 'Default' to let the crash reporter use its built-in default."))
 	ESentryCrashReporterCacheKeep CacheKeep = ESentryCrashReporterCacheKeep::Default;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "Views", ToolTip = "Views to show in the crash reporter, in tab order. The first listed view that has data is selected at startup. Leave empty to show all views in the default order."))
+	TArray<ESentryCrashReporterView> Views;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "App logo", ToolTip = "Replace the default crash reporter logo with a custom PNG image. The file is stored in Build/SentryCrashReporter/ under your project and staged alongside the plugin during packaging."))
@@ -829,6 +847,10 @@ class SENTRY_API USentrySettings : public UObject
 
 private:
 	void LoadDebugSymbolsProperties();
+
+#if WITH_EDITOR
+	void ReplaceDuplicateCrashReporterView(int32 Index);
+#endif
 
 	bool bIsDirty;
 };
