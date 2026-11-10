@@ -795,8 +795,6 @@ class SENTRY_API USentrySettings : public UObject
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
-	void RemoveDuplicateCrashReporterViews();
 #endif
 
 	/**
@@ -844,6 +842,10 @@ class SENTRY_API USentrySettings : public UObject
 
 private:
 	void LoadDebugSymbolsProperties();
+
+#if WITH_EDITOR
+	void RemoveDuplicateCrashReporterViews();
+#endif
 
 	bool bIsDirty;
 };
