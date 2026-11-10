@@ -2,6 +2,7 @@
 
 #include "SentryEditorModule.h"
 #include "SentryCrashReporterImageryCustomization.h"
+#include "SentryCrashReporterViewCustomization.h"
 #include "SentrySettings.h"
 #include "SentrySettingsCustomization.h"
 
@@ -19,6 +20,7 @@ void FSentryEditorModule::StartupModule()
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	PropertyModule.RegisterCustomClassLayout("SentrySettings", FOnGetDetailCustomizationInstance::CreateStatic(&FSentrySettingsCustomization::MakeInstance));
 	PropertyModule.RegisterCustomPropertyTypeLayout("SentryCrashReporterImagery", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FSentryCrashReporterImageryCustomization::MakeInstance));
+	PropertyModule.RegisterCustomPropertyTypeLayout("ESentryCrashReporterView", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FSentryCrashReporterViewCustomization::MakeInstance));
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
