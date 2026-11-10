@@ -844,7 +844,7 @@ private:
 	void LoadDebugSymbolsProperties();
 
 #if WITH_EDITOR
-	void RemoveDuplicateCrashReporterViews();
+	void ReplaceDuplicateCrashReporterView(int32 Index);
 #endif
 
 	bool bIsDirty;
