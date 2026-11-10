@@ -5,7 +5,7 @@ function getProperty {
     cat "$(dirname $0)/../plugin-dev/sentry-cli.properties" | grep $1 | cut -d'=' -f2 | tr -d '"'
 }
 
-baseUrl="$(getProperty 'repo')/releases/download/cli@$(getProperty 'version')/sentry-"
+baseUrl="$(getProperty 'repo')/releases/download/$(getProperty 'version')/sentry-"
 targetDir="$(dirname $0)/../plugin-dev/Source/ThirdParty/CLI"
 
 if ! [ -d "$targetDir" ]; then

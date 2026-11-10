@@ -3,7 +3,7 @@ Set-StrictMode -Version latest
 $conf = Get-Content "$PSScriptRoot/../plugin-dev/sentry-cli.properties" -Raw | ConvertFrom-StringData
 $platforms = @('darwin-arm64', 'linux-x64', 'windows-x64.exe')
 $targetDir = "$PSScriptRoot/../plugin-dev/Source/ThirdParty/CLI"
-$baseUrl = "$($conf.repo)/releases/download/cli@$($conf.version)/sentry-"
+$baseUrl = "$($conf.repo)/releases/download/$($conf.version)/sentry-"
 
 if (-not (Test-Path $targetDir))
 {

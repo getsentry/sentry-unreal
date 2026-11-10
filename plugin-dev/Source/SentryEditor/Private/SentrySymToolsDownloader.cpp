@@ -42,7 +42,7 @@ void FSentrySymToolsDownloader::Download(const TFunction<void(bool)>& OnComplete
 	SentryScriptDownloadRequest = FHttpModule::Get().CreateRequest();
 
 	const FString SentryCliExecPath = GetSentryCliPath();
-	const FString CliDownloadUrl = FString::Printf(TEXT("%s/releases/download/cli@%s/%s"), *GetSentryCliProperty(TEXT("repo")), *GetSentryCliProperty(TEXT("version")), *SentryCliExecName);
+	const FString CliDownloadUrl = FString::Printf(TEXT("%s/releases/download/%s/%s"), *GetSentryCliProperty(TEXT("repo")), *GetSentryCliProperty(TEXT("version")), *SentryCliExecName);
 
 	SentryCliDownloadRequest->SetTimeout(SentryCliDownloadTimeoutSec);
 
