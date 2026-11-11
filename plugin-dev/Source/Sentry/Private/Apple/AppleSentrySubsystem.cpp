@@ -795,7 +795,11 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	// Currently `sentry-cocoa` has no API to inject the remaining incoming DSC (release, environment, etc.)
 	// See https://github.com/getsentry/sentry-cocoa/issues/8277
 
-	return MakeShareable(new FAppleSentryTransactionContext(transactionContext));
+	TSharedPtr<ISentryTransactionContext> context = MakeShareable(new FAppleSentryTransactionContext(transactionContext));
+
+	[transactionContext release];
+
+	return context;
 }
 
 void FAppleSentrySubsystem::HandleAssert()
