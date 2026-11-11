@@ -11,12 +11,16 @@
 
 FAppleSentryMetric::FAppleSentryMetric()
 {
+	SentryObjCId* traceId = [[SENTRY_APPLE_CLASS(SentryObjCId) alloc] init];
+
 	MetricApple = [[SENTRY_APPLE_CLASS(SentryObjCMetric) alloc] initWithTimestamp:[NSDate date]
-																		  traceId:[[SENTRY_APPLE_CLASS(SentryObjCId) alloc] init]
+																		  traceId:traceId
 																			 name:@""
 																			value:[SENTRY_APPLE_CLASS(SentryObjCMetricValue) counter:0]
 																			 unit:nil
 																	   attributes:@{}];
+
+	[traceId release];
 }
 
 FAppleSentryMetric::FAppleSentryMetric(SentryObjCMetric* metric)
@@ -122,7 +126,9 @@ void FAppleSentryMetric::SetUnit(const FString& unit)
 	}
 	else
 	{
-		MetricApple.unit = [[SENTRY_APPLE_CLASS(SentryObjCUnit) alloc] initWithRawValue:unit.GetNSString()];
+		SentryObjCUnit* nativeUnit = [[SENTRY_APPLE_CLASS(SentryObjCUnit) alloc] initWithRawValue:unit.GetNSString()];
+		MetricApple.unit = nativeUnit;
+		[nativeUnit release];
 	}
 }
 

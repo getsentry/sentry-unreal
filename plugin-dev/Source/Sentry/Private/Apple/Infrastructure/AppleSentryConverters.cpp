@@ -174,6 +174,7 @@ SentryObjCStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FPr
 		SentryObjCFrame* frame = [[SENTRY_APPLE_CLASS(SentryObjCFrame) alloc] init];
 		frame.instructionAddress = FString::Printf(TEXT("0x%llx"), callstack[framesCount - i - 1].ProgramCounter).GetNSString();
 		[arr addObject:frame];
+		[frame release];
 	}
 
 	SentryObjCStacktrace* trace = [[SENTRY_APPLE_CLASS(SentryObjCStacktrace) alloc] initWithFrames:arr registers:@{}];

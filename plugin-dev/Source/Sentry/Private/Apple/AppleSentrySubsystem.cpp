@@ -422,6 +422,8 @@ void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, con
 															   value:(double)Value
 																unit:effectiveUnit
 														  attributes:attributesDict];
+
+	[effectiveUnit release];
 }
 
 void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
@@ -433,6 +435,8 @@ void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FStr
 														value:(double)Value
 														 unit:effectiveUnit
 												   attributes:attributesDict];
+
+	[effectiveUnit release];
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()
@@ -503,11 +507,11 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
 	SentryObjCException* nativeException = [[SENTRY_APPLE_CLASS(SentryObjCException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
-	NSMutableArray* nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
-	[nativeExceptionArray addObject:nativeException];
 
 	SentryObjCEvent* exceptionEvent = [[SENTRY_APPLE_CLASS(SentryObjCEvent) alloc] init];
-	exceptionEvent.exceptions = nativeExceptionArray;
+	exceptionEvent.exceptions = @[ nativeException ];
+
+	[nativeException release];
 
 	SetEventCrashType(exceptionEvent, ECrashContextType::Ensure);
 
@@ -516,7 +520,12 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 		AddScreenshotAttachmentToScope(scope);
 	}];
 
-	return MakeShareable(new FAppleSentryId(nativeId));
+	// Wrap the id before releasing the event as the id may be owned by it
+	TSharedPtr<ISentryId> eventId = MakeShareable(new FAppleSentryId(nativeId));
+
+	[exceptionEvent release];
+
+	return eventId;
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureHang(uint32 HungThreadId)
@@ -594,10 +603,12 @@ void FAppleSentrySubsystem::UpdateContext(const FString& key, const TMap<FString
 		NSDictionary* contexts = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:scope][@"context"];
 		NSDictionary* existing = [contexts objectForKey:key.GetNSString()];
 
-		NSMutableDictionary* merged = existing ? [existing mutableCopy] : [NSMutableDictionary dictionary];
+		NSMutableDictionary* merged = existing ? [existing mutableCopy] : [[NSMutableDictionary alloc] init];
 		[merged addEntriesFromDictionary:FAppleSentryConverters::VariantMapToNative(values)];
 
 		[scope setContextValue:merged forKey:key.GetNSString()];
+
+		[merged release];
 	}];
 }
 
