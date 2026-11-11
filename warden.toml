@@ -12,16 +12,32 @@ failCheck = false
 requestChanges = false
 
 # Everything that ships with the plugin (runtime code, Build.cs, UPL, editor
-# Python, post-build scripts, plugin config) plus the sample's C++ tests.
+# Python, post-build scripts, plugin config), except the unit tests.
 [[skills]]
 name = "unreal-sdk-review"
 incremental = true
-paths = [
-  "plugin-dev/**",
-  "sample/Source/**",
-]
+paths = ["plugin-dev/**"]
 ignorePaths = [
   "plugin-dev/Source/ThirdParty/**",
+  "plugin-dev/Source/*/Private/Tests/**",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
+
+# Tests: unit specs, the sample app's code, and the Pester suites, so both
+# halves of each integration test are reviewed together.
+[[skills]]
+name = "unreal-test-review"
+incremental = true
+paths = [
+  "plugin-dev/Source/*/Private/Tests/**",
+  "sample/Source/**",
+  "integration-test/**",
+]
+ignorePaths = [
+  "**/*.md",
   "sample/Source/**/*.Build.cs",
   "sample/Source/*.Target.cs",
 ]
@@ -31,7 +47,7 @@ type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
 
 # What does not ship: CI workflows, repo scripts, packaging snapshot, runner
-# images, the sample project's build rules and config, and the Pester harness.
+# images, and the sample project's build rules and config.
 [[skills]]
 name = "unreal-ci-review"
 incremental = true
@@ -39,7 +55,6 @@ paths = [
   ".github/**",
   ".craft.yml",
   "scripts/**",
-  "integration-test/**",
   "docker/**",
   "fastlane/**",
   "sample/*.uproject",
