@@ -379,6 +379,9 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 		if (attribute != nil)
 		{
 			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+
+			// Converter returns an attribute owned by the caller
+			[attribute release];
 		}
 	}
 

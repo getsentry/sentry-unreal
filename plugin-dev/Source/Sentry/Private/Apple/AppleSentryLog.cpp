@@ -65,6 +65,9 @@ void FAppleSentryLog::SetAttribute(const FString& key, const FSentryVariant& val
 	}
 
 	[LogApple setAttribute:attribute forKey:key.GetNSString()];
+
+	// Converter returns an attribute owned by the caller
+	[attribute release];
 }
 
 FSentryVariant FAppleSentryLog::GetAttribute(const FString& key) const
