@@ -1,6 +1,6 @@
 ---
 name: unreal-sdk-review
-description: Finds real correctness bugs in sentry-unreal plugin code (C++, Objective-C++, JNI/Java, editor Python) and its unit and integration tests. Focuses on SDK re-initialization state, cross-thread access, platform backend drift, and UE engine-version compatibility. Excludes CI, build rules, packaging, style, and AppSec.
+description: Finds real correctness bugs in everything under plugin-dev/ that ships to users (C++, Objective-C++, JNI/Java, editor Python, Build.cs, Android UPL, post-build scripts, plugin config), plus the C++ unit tests and the C++ side of the sample's integration tests. Focuses on SDK re-initialization state, cross-thread access, platform backend drift, console extension breakage, and UE engine-version compatibility. Excludes CI workflows, repo scripts, the Pester harness, style, and AppSec.
 allowed-tools: Read Grep Glob
 ---
 
@@ -44,6 +44,7 @@ The same public behavior is implemented up to four times: Android (JNI), Apple (
 - Are values crossing into a wrapped SDK converted correctly: signed to unsigned (`int32` to `NSUInteger`), `nil`/`null` vs empty, typed Java objects (for example `io.sentry.protocol.Feedback`) treated as maps, local vs UTC times?
 - Does a platform guard match the target? `PLATFORM_MAC` excludes iOS, `PLATFORM_APPLE` covers both, and macOS can build with sentry-native (`USE_SENTRY_NATIVE=1`) or sentry-cocoa.
 - Does a test or test helper use the path, directory, or backend that the target platform actually uses?
+- Console extensions (private repos) subclass `GenericPlatform/` and `Microsoft/` classes and override the `Sentry` ModuleRules virtuals (`IsSessionReplaySupported`, `IsEncoderAvailable`, `AddEncoderDependencies`). A changed virtual signature, a removed or renamed virtual or protected member, a change in hook call order, or a change to base behavior an override may depend on can break them. Console builds run only on pushes to main and release branches, so this review is the only check before merge. Report it as a question naming the class and member, at low or medium severity.
 
 ### 4. Engine-version compatibility
 
@@ -55,6 +56,15 @@ Supported engines are listed in `scripts/packaging/engine-versions.txt` (UE 4.27
 - A new setting that does not work on every platform or engine needs a label from `SentrySettingsLabels.h`. Report a wrong or missing label only after you confirm the limitation in the backends.
 - `UFUNCTION`/`UPROPERTY` signature changes on public headers break Blueprints and user code. Report only when the break is not called out as intended.
 - The editor Python toolset (`plugin-dev/Content/Python/`) must keep guarded settings (DSNs) out of `get_setting`/`set_setting` and must map Python property names to the C++ names that config persistence expects.
+
+### 6. Build rules that ship
+
+`Sentry.Build.cs`, `Sentry_Android_UPL.xml`, `plugin-dev/Scripts/`, `plugin-dev/Config/`, and `Sentry.uplugin` run inside users' builds.
+
+- Does every platform, architecture, and backend branch in Build.cs still set the defines and include paths its sources need? Do `RuntimeDependencies` source paths match the ThirdParty layout? Do `UE_5_x_OR_LATER` C# guards match `engine-versions.txt`?
+- Does a new Build.cs config read start from the same default as the `USentrySettings` property in `SentrySettings.h`? The comment above those reads requires it.
+- Do UPL `buildGradleAdditions`, `gradleProperties`, `proguardAdditions`, and `androidManifestUpdates` edits still produce valid output for every supported engine version?
+- Do post-build scripts and `FilterPlugin.ini` still find and stage the files the runtime expects on each platform?
 
 ## Evidence rules
 
@@ -68,6 +78,7 @@ Check wrapped SDK APIs in this order: `plugin-dev/Source/ThirdParty/<Platform>/`
 
 - Work that crash-time handlers skip on purpose. Crash, hang, and replay capture at crash time are best-effort: footage missing before the first snapshot, no retry for a failed replay upload, or a file deleted when there is no event to attach it to are by design. Do report a change that adds risk inside a crash handler (taking a lock another thread may hold, waiting on another thread, allocating where the code uses the pooled crash event, or unbounded work), at medium severity at most.
 - Options or members that look unused here. Console support (PlayStation, Xbox, WinGDK, Switch) lives in private extension repos that read them.
+- Platforms gated out on purpose, such as `LinuxArm64` where the `AVCodecs`/`NVCodecs` plugins do not support it. UBT copies `ThirdParty` into `Binaries` before post-build steps run.
 - Edge cases that need a configuration nobody would ship, such as a replay window shorter than one fragment. Report only if the PR itself makes that configuration likely.
 - Gaps that need an upstream SDK change the PR links to, or that the PR description defers to a follow-up.
 - Packaged-game behavior assumed from editor behavior, or the reverse, without evidence.
