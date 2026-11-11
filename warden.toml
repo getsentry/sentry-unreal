@@ -1,0 +1,65 @@
+version = 1
+
+# Layered on top of the org base config (getsentry/.github/warden.toml), which
+# runs security-review and sets the model, effort, runtime, and incrementalApp.
+# Repo skills inherit those execution defaults but not the base policy
+# defaults, so the policy below repeats the org values to keep these skills
+# non-blocking like the org baseline.
+[defaults]
+reportOn = "low"
+failOn = "off"
+failCheck = false
+requestChanges = false
+
+# Plugin runtime code, editor Python toolset, and the C++ unit and
+# integration tests. Build rules and UPL belong to unreal-ci-review.
+[[skills]]
+name = "unreal-sdk-review"
+incremental = true
+paths = [
+  "plugin-dev/Source/**",
+  "plugin-dev/Content/**",
+  "sample/Source/**",
+]
+ignorePaths = [
+  "plugin-dev/Source/ThirdParty/**",
+  "**/*.Build.cs",
+  "**/*.Target.cs",
+  "**/*_UPL.xml",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
+
+# CI workflows, build and dependency scripts, UBT rules, packaging, and the
+# Pester integration-test harness.
+[[skills]]
+name = "unreal-ci-review"
+incremental = true
+paths = [
+  ".github/**",
+  ".craft.yml",
+  "scripts/**",
+  "integration-test/**",
+  "docker/**",
+  "fastlane/**",
+  "plugin-dev/*.uplugin",
+  "plugin-dev/sentry-cli.properties",
+  "plugin-dev/Config/**",
+  "plugin-dev/Gradle/**",
+  "plugin-dev/Scripts/**",
+  "plugin-dev/Source/**/*.Build.cs",
+  "plugin-dev/Source/**/*_UPL.xml",
+  "sample/*.uproject",
+  "sample/Config/**",
+  "sample/Source/**/*.Build.cs",
+  "sample/Source/*.Target.cs",
+]
+ignorePaths = [
+  "**/*.md",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
