@@ -114,6 +114,27 @@ def get_cli_executable(plugin_dir):
     return None
 
 
+def resolve_cli_settings(cli_env, file_values):
+    sources = []
+    for env_name, label, file_value in file_values:
+        env_value = os.environ.get(env_name, '').strip()
+        if env_value:
+            cli_env[env_name] = env_value
+            sources.append((label, f"{env_name} env var", True))
+        elif file_value:
+            cli_env[env_name] = file_value
+            sources.append((label, "sentry.properties", False))
+        else:
+            cli_env.pop(env_name, None)
+
+    log("Using " + ", ".join(f"{label} from {source}" for label, source, _ in sources))
+
+    from_env = [from_env for _, _, from_env in sources]
+    if any(from_env) and not all(from_env):
+        log("Warning: Upload settings come from both sentry.properties and environment variables. "
+            "Make sure that they belong to the same organization and project.")
+
+
 def is_file_locked_error(output):
     return any(marker in output for marker in ("os error 32", "EBUSY", "resource busy or locked"))
 
@@ -282,14 +303,13 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
             log("Error: Auth token is not set. Skipping...")
             return 0
 
-        # Environment variables that are already set take priority over the properties file
-        cli_env.setdefault('SENTRY_ORG', org_name)
-        cli_env.setdefault('SENTRY_PROJECT', project_name)
-        cli_env.setdefault('SENTRY_AUTH_TOKEN', auth_token)
-
-        url = parse_config_value(properties_file, 'defaults.url')
-        if url:
-            cli_env.setdefault('SENTRY_URL', url)
+        # Environment variables that are set and not empty take priority over the properties file
+        resolve_cli_settings(cli_env, [
+            ('SENTRY_ORG', 'organization', org_name),
+            ('SENTRY_PROJECT', 'project', project_name),
+            ('SENTRY_AUTH_TOKEN', 'auth token', auth_token),
+            ('SENTRY_URL', 'URL', parse_config_value(properties_file, 'defaults.url')),
+        ])
     else:
         log("Properties file not found. Falling back to environment variables.")
 
