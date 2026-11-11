@@ -203,7 +203,9 @@ SentryObjCAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSen
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			SentryObjCAttribute* attribute = [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			[jsonString release];
+			return attribute;
 		}
 		else
 		{
@@ -219,7 +221,9 @@ SentryObjCAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSen
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			SentryObjCAttribute* attribute = [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			[jsonString release];
+			return attribute;
 		}
 		else
 		{
@@ -312,7 +316,9 @@ SentryObjCAttributeContent* FAppleSentryConverters::VariantToAttributeContentNat
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			SentryObjCAttributeContent* content = [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			[jsonString release];
+			return content;
 		}
 		return nil;
 	}
@@ -325,7 +331,9 @@ SentryObjCAttributeContent* FAppleSentryConverters::VariantToAttributeContentNat
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			SentryObjCAttributeContent* content = [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			[jsonString release];
+			return content;
 		}
 		return nil;
 	}
