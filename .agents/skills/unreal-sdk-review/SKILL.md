@@ -32,7 +32,7 @@ Plugin code runs on the game thread, the render thread, plugin worker threads, w
 
 - Is a container, flag, or pointer read on one thread and written on another without the same lock or an atomic? Unlocked `TArray::Num()` checks count.
 - Can a callback bound with `AddRaw`/`BindRaw` or a raw `this` still be running when its owner is destroyed? Unbinding does not wait for in-flight calls.
-- Is a pooled resource (RHI texture, buffer slot) reused while another thread still holds a reference?
+- Does every path that drops a pooled capture frame release it, and does nothing write or submit a frame it has not acquired?
 - Is a raw pointer to a Slate window, widget, actor, or `UObject` kept past the frame without a weak pointer or validity check?
 - Does a callback that creates `UObject`s skip `SentryCallbackUtils::IsCallbackSafeToRun()` or the `TSentryCallbackGuard` its sibling callbacks use? Creating `UObject`s during GC deadlocks.
 
@@ -42,6 +42,8 @@ The same public behavior is implemented up to four times: Android (JNI), Apple (
 
 - When the change fixes or adds behavior in one backend, do the other backends still match? Look for options applied on one platform only (size limits, flags, sample rates), converters that handle fewer value types in one direction than the other, and a missing `Null` stub for a new interface method.
 - Are values crossing into a wrapped SDK converted correctly: signed to unsigned (`int32` to `NSUInteger`), `nil`/`null` vs empty, typed Java objects (for example `io.sentry.protocol.Feedback`) treated as maps, local vs UTC times?
+- Apple code is built without ARC. Every `alloc`/`new`/`copy`/`mutableCopy` or `retain` the change adds needs a matching `release` (usually in the destructor), and an autoreleased object kept past the current scope needs a `retain`. Report this for code the PR adds or changes, not for existing wrappers.
+- Android JNI code must release local references (`FSentryScopedJavaObject`/`NewSentryScopedJavaObject`, or `DeleteLocalRef`, especially inside loops), pair `NewGlobalRef` with `DeleteGlobalRef`, and check for Java exceptions after calls (`FSentryJavaObjectWrapper::VerifyException` or `ExceptionCheck`).
 - Does a platform guard match the target? `PLATFORM_MAC` excludes iOS, `PLATFORM_APPLE` covers both, and macOS can build with sentry-native (`USE_SENTRY_NATIVE=1`) or sentry-cocoa.
 - Does a test or test helper use the path, directory, or backend that the target platform actually uses?
 - Console extensions (private repos) subclass `GenericPlatform/` and `Microsoft/` classes and override the `Sentry` ModuleRules virtuals (`IsSessionReplaySupported`, `IsEncoderAvailable`, `AddEncoderDependencies`). A changed virtual signature, a removed or renamed virtual or protected member, a change in hook call order, or a change to base behavior an override may depend on can break them. Console builds run only on pushes to main and release branches, so this review is the only check before merge. Report it as a question naming the class and member, at low or medium severity.
@@ -59,12 +61,13 @@ Supported engines are listed in `scripts/packaging/engine-versions.txt` (UE 4.27
 
 ### 6. Build rules that ship
 
-`Sentry.Build.cs`, `Sentry_Android_UPL.xml`, `plugin-dev/Scripts/`, `plugin-dev/Config/`, and `Sentry.uplugin` run inside users' builds.
+`Sentry.Build.cs`, `Sentry_Android_UPL.xml`, `plugin-dev/Scripts/`, and `Sentry.uplugin` run inside users' builds. `plugin-dev/Config/FilterPlugin.ini` decides which extra files the packaged plugin includes.
 
 - Does every platform, architecture, and backend branch in Build.cs still set the defines and include paths its sources need? Do `RuntimeDependencies` source paths match the ThirdParty layout? Do `UE_5_x_OR_LATER` C# guards match `engine-versions.txt`?
 - Does a new Build.cs config read start from the same default as the `USentrySettings` property in `SentrySettings.h`? The comment above those reads requires it.
 - Do UPL `buildGradleAdditions`, `gradleProperties`, `proguardAdditions`, and `androidManifestUpdates` edits still produce valid output for every supported engine version?
-- Do post-build scripts and `FilterPlugin.ini` still find and stage the files the runtime expects on each platform?
+- Do post-build scripts still find and stage the files the runtime expects on each platform?
+- Does `FilterPlugin.ini` still list every extra file the packaged plugin needs (for example `Scripts/`, `Gradle/`, `sentry-cli.properties`)?
 
 ## Evidence rules
 
@@ -72,7 +75,7 @@ Check wrapped SDK APIs in this order: `plugin-dev/Source/ThirdParty/<Platform>/`
 
 - Do not claim how a UE engine API, UBT, a wrapped SDK, the JDK, or an OS framework behaves unless the repository shows it: an existing call site, a comment, a vendored header, or a test. Several past false positives came from wrong guesses: `IFileManager::GetTimeStamp` returning local time, `FFileHelper::SaveArrayToFile` and `CreateFileWriter` not creating directories, `AActor` being abstract, `SentryHint.attachments` being nullable.
 - Before saying code runs on the `Null` implementation, check the `HAL/Platform*.h` selector and the `USE_SENTRY_NATIVE` definitions in `Sentry.Build.cs`.
-- If you cannot verify the API behavior your finding depends on, do not report it.
+- If you cannot verify the API behavior your finding depends on, do not report it. Exception: possible breaks in console extensions (see Platform backend drift), reported as questions.
 
 ## What not to report
 
