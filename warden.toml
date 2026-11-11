@@ -31,7 +31,6 @@ ignorePaths = [
 [[skills.triggers]]
 type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
-draft = false
 
 # CI workflows, build and dependency scripts, UBT rules, packaging, and the
 # Pester integration-test harness.
@@ -64,4 +63,3 @@ ignorePaths = [
 [[skills.triggers]]
 type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
-draft = false
