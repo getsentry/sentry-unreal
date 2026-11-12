@@ -27,6 +27,19 @@ jobs:
         with:
           path: modules/sentry-native
           name: Native SDK
+          pattern: '^0\.[0-9.]+$'
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
+
+  native-1x:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+        with:
+          path: modules/sentry-native
+          name: Native SDK
+          pattern: '^1\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?$'
+          target-branch: v2
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
           pr-strategy: create
 

@@ -55,11 +55,24 @@ jobs:
           REPO: ${{ inputs.extension-repo }}
           ARTIFACT: ${{ inputs.extension-artifact }}
         run: |
-          $runId = gh api "repos/$env:REPO/actions/artifacts?name=$env:ARTIFACT&per_page=100" `
-            --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | last | .workflow_run.id'
-          if (-not $runId) {
-            throw "No unexpired '$env:ARTIFACT' artifact found on main in $env:REPO"
+          $pinFile = "checkout/modules/sentry-consoles.properties"
+          $version = if (Test-Path $pinFile) { (ConvertFrom-StringData (Get-Content $pinFile -Raw)).version }
+          if ($version) {
+            $branch = "release/$version"
+            $runIds = gh api "repos/$env:REPO/actions/runs?branch=$([uri]::EscapeDataString($branch))&event=push&status=success&per_page=20" `
+              --jq '.workflow_runs[].id'
+            $runId = $runIds | Where-Object {
+              gh api "repos/$env:REPO/actions/runs/$_/artifacts?name=$env:ARTIFACT" --jq '[.artifacts[] | select(.expired == false)] | length' | Where-Object { [int]$_ -gt 0 }
+            } | Select-Object -First 1
+          } else {
+            $branch = "main"
+            $runId = gh api "repos/$env:REPO/actions/artifacts?name=$env:ARTIFACT&per_page=100" `
+              --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | last | .workflow_run.id'
           }
+          if (-not $runId) {
+            throw "No unexpired '$env:ARTIFACT' artifact found on $branch in $env:REPO"
+          }
+          Write-Host "Using '$env:ARTIFACT' from run $runId on $branch in $env:REPO"
           gh run download $runId --repo "$env:REPO" --name "$env:ARTIFACT" `
             --dir "checkout/sample/Platforms/$env:PLATFORM/Plugins/Sentry"
 
