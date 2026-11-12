@@ -16,12 +16,12 @@ FAppleSentryBreadcrumb::FAppleSentryBreadcrumb()
 
 FAppleSentryBreadcrumb::FAppleSentryBreadcrumb(SentryObjCBreadcrumb* breadcrumb)
 {
-	BreadcrumbApple = breadcrumb;
+	BreadcrumbApple = [breadcrumb retain];
 }
 
 FAppleSentryBreadcrumb::~FAppleSentryBreadcrumb()
 {
-	// Put custom destructor logic here if needed
+	[BreadcrumbApple release];
 }
 
 SentryObjCBreadcrumb* FAppleSentryBreadcrumb::GetNativeObject()

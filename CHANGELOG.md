@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix memory leaks and potential use-after-free in native object wrappers on macOS and iOS ([#1691](https://github.com/getsentry/sentry-unreal/pull/1691))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.33.0 to v9.34.0 ([#1693](https://github.com/getsentry/sentry-unreal/pull/1693))
