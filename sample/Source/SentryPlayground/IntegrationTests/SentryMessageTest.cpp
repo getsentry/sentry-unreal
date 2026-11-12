@@ -6,7 +6,6 @@
 
 #include "SentryAttachment.h"
 #include "SentryBreadcrumb.h"
-#include "SentryEvent.h"
 #include "SentryScope.h"
 #include "SentrySubsystem.h"
 #include "SentryVariant.h"
@@ -67,21 +66,6 @@ void FSentryMessageTest::Run()
 	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *FormatEventIdWithHyphens(EventId));
 #endif
 
-	USentryEvent* ScopedEvent = NewObject<USentryEvent>();
-	ScopedEvent->Initialize();
-	ScopedEvent->SetMessage(TEXT("Integration test event with scope"));
-
-	FString ScopedEventId = Subsystem->CaptureEventWithScope(ScopedEvent, FConfigureScopeNativeDelegate::CreateLambda([](USentryScope* Scope)
-		{
-			Scope->SetTag(TEXT("scope.locality"), TEXT("local"));
-		}));
-
-#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
-	UE_LOG(LogSentrySample, Log, TEXT("SCOPED_EVENT_ID: %s\n"), *FormatEventIdWithHyphens(ScopedEventId));
-#else
-	UE_LOG(LogSentrySample, Display, TEXT("SCOPED_EVENT_ID: %s\n"), *FormatEventIdWithHyphens(ScopedEventId));
-#endif
-
 #if PLATFORM_ANDROID
 	FPlatformProcess::Sleep(1.0f);
 #endif
@@ -89,5 +73,5 @@ void FSentryMessageTest::Run()
 	// Ensure events were flushed
 	Subsystem->Close();
 
-	CompleteWithResult(!EventId.IsEmpty() && !ScopedEventId.IsEmpty());
+	CompleteWithResult(!EventId.IsEmpty());
 }

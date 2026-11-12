@@ -726,7 +726,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $script:MessageResult = $null
             $script:MessageEvent = $null
             $script:MessageAttachments = @()
-            $script:ScopedEvent = $null
 
             Write-Host "Running message capture test..." -ForegroundColor Yellow
 
@@ -769,19 +768,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             else {
                 Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
             }
-
-            $scopedEventLine = $script:MessageResult.Output | Where-Object { $_ -match 'SCOPED_EVENT_ID:\s*(\S+)' } | Select-Object -First 1
-            if ($scopedEventLine -match 'SCOPED_EVENT_ID:\s*(\S+)') {
-                try {
-                    $script:ScopedEvent = Get-SentryTestEvent -EventId $Matches[1]
-                }
-                catch {
-                    Write-Host "Failed to fetch scoped event from Sentry: $_" -ForegroundColor Red
-                }
-            }
-            else {
-                Write-Host "Warning: No scoped event ID found in output" -ForegroundColor Yellow
-            }
         }
 
         It "Should exit cleanly" {
@@ -811,11 +797,6 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             else {
                 $script:MessageEvent.platform | Should -Be 'native'
             }
-        }
-
-        It "Should have default error level for event captured with scope without level" {
-            $script:ScopedEvent | Should -Not -BeNullOrEmpty
-            ($script:ScopedEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'error'
         }
 
         It "Should have message content" {
@@ -922,6 +903,66 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
             $modified | Should -Not -BeNullOrEmpty
             $modified.data.handler_key | Should -Be 'handler_value'
+        }
+    }
+
+    Context "Scoped Event Capture Tests" {
+        BeforeAll {
+            $script:ScopedEventResult = $null
+            $script:ScopedEvent = $null
+
+            Write-Host "Running scoped event capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+
+            # -scoped-event-capture triggers scoped event test scenario in the sample app
+            $script:ScopedEventResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-scoped-event-capture') + $appArgs) -join ' ')
+
+            Write-Host "Scoped event test executed. Exit code: $($script:ScopedEventResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse event ID from output
+            $eventIds = Get-EventIds -AppOutput $script:ScopedEventResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                try {
+                    $script:ScopedEvent = Get-SentryTestEvent -EventId $eventIds[0]
+                    Write-Host "Scoped event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch scoped event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:ScopedEventResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:ScopedEventResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture scoped event in Sentry" {
+            $script:ScopedEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have local scope tag" {
+            ($script:ScopedEvent.tags | Where-Object { $_.key -eq 'scope.locality' }).value | Should -Be 'local'
+        }
+
+        # Sentry exposes the event level as the 'level' tag
+        It "Should have default error level when local scope doesn't set a level" {
+            ($script:ScopedEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'error'
         }
     }
 
