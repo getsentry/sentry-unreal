@@ -23,7 +23,7 @@ jobs:
   native:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@973b0f25291a7222ee43694b41e78ea450dae94a # main, until the next release
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-native
           name: Native SDK
@@ -33,7 +33,7 @@ jobs:
   java:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@973b0f25291a7222ee43694b41e78ea450dae94a # main, until the next release
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-java
           name: Java SDK
@@ -43,7 +43,7 @@ jobs:
   cocoa:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@973b0f25291a7222ee43694b41e78ea450dae94a # main, until the next release
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-cocoa.properties
           name: Cocoa SDK
@@ -53,7 +53,7 @@ jobs:
   crash-reporter:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@973b0f25291a7222ee43694b41e78ea450dae94a # main, until the next release
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-crash-reporter.properties
           name: Crash Reporter
@@ -63,7 +63,7 @@ jobs:
   cli:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@973b0f25291a7222ee43694b41e78ea450dae94a # main, until the next release
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: plugin-dev/sentry-cli.properties
           name: CLI
@@ -75,7 +75,7 @@ jobs:
   android-gradle-plugin:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@973b0f25291a7222ee43694b41e78ea450dae94a # main, until the next release
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: scripts/update-android-gradle-plugin.sh
           name: Android Gradle Plugin
