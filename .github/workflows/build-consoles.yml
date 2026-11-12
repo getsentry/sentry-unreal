@@ -59,7 +59,7 @@ jobs:
           $version = if (Test-Path $pinFile) { (ConvertFrom-StringData (Get-Content $pinFile -Raw)).version }
           if ($version) {
             $branch = "release/$version"
-            $runIds = gh api "repos/$env:REPO/actions/runs?branch=$([uri]::EscapeDataString($branch))&event=push&status=success&per_page=20" `
+            $runIds = gh api "repos/$env:REPO/actions/runs?branch=$([uri]::EscapeDataString($branch))&event=push&per_page=20" `
               --jq '.workflow_runs[].id'
             $runId = $runIds | Where-Object {
               gh api "repos/$env:REPO/actions/runs/$_/artifacts?name=$env:ARTIFACT" --jq '[.artifacts[] | select(.expired == false)] | length' | Where-Object { [int]$_ -gt 0 }
