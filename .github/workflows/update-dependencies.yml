@@ -40,6 +40,7 @@ jobs:
           name: Native SDK
           pattern: '^1\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?$'
           target-branch: v2
+          changelog-entry: false
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
           pr-strategy: create
 
