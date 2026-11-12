@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Java SDK from v8.63.0 to v8.64.0 ([#1692](https://github.com/getsentry/sentry-unreal/pull/1692))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8640)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.63.0...8.64.0)
+
 ## 1.26.0
 
 ### Behavioral Changes
