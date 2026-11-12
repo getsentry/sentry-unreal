@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (v2)
+
+### Dependencies
+
+- Bump Native SDK from v0.17.6 to v1.0.0-beta.1 ([#1696](https://github.com/getsentry/sentry-unreal/pull/1696))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/v1/CHANGELOG.md#100-beta1)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.6...1.0.0-beta.1)
+
 ## Unreleased
 
 ### Fixes
@@ -14,9 +22,6 @@
 - Bump Cocoa SDK from v9.33.0 to v9.34.0 ([#1693](https://github.com/getsentry/sentry-unreal/pull/1693))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9340)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.33.0...9.34.0)
-- Bump Native SDK from v0.17.6 to v1.0.0-beta.1 ([#1696](https://github.com/getsentry/sentry-unreal/pull/1696))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/v1/CHANGELOG.md#100-beta1)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.6...1.0.0-beta.1)
 
 ## 1.26.0
 
