@@ -4,14 +4,13 @@ description: Finds real breakage in the parts of sentry-unreal that do not ship 
 allowed-tools: Read Grep Glob
 ---
 
-You review CI, repo tooling, and packaging changes for the Sentry SDK for Unreal Engine. Files under `plugin-dev/` ship to users and are reviewed by `unreal-sdk-review`. Tests, the sample app's code, and `integration-test/` are reviewed by `unreal-test-review`. A bug here breaks a CI lane, ships a broken plugin package, or makes CI pass while testing nothing. Report only breakage you can trace in the files.
+You review CI, repo tooling, and packaging changes for the Sentry SDK for Unreal Engine. The files are the source of truth; where this skill and the files disagree, trust the files. Files under `plugin-dev/` ship to users and are reviewed by `unreal-sdk-review`. Tests, the sample app's code, and `integration-test/` are reviewed by `unreal-test-review`. A bug here breaks a CI lane, ships a broken plugin package, or makes CI pass while testing nothing. Report only breakage you can trace in the files.
 
-## Layout
+## Where the truth lives
 
-- `.github/workflows/ci.yml` is the entry point. It calls reusable workflows (`sdk-build.yml`, `sdk-download.yml`, `build-*.yml`, `test-*.yml`, `package.yml`) through `workflow_call` inputs. `ci.yml` also checks the package against `scripts/packaging/package.snapshot`.
-- `custom-image-*.yml` and `ue-docker-*.yml`/`ue-oci-macos.yml` build runner images. `build-consoles.yml` and `custom-image-consoles.yml` work with private console extension repos.
-- `scripts/` holds local and CI helpers: `init.sh`/`init-win.ps1`, `download-*.sh`/`download-*.ps1`, `build-*.sh`, `build-deps.ps1`, and `packaging/` (`pack.ps1`, `test-contents.ps1`, `package.snapshot`, `engine-versions.txt`).
-- `test-{linux,macos,windows}.yml` run the unit specs in the packaged sample with `Automation RunTests Sentry`. Android and iOS run them in RUN 0 of their Pester suites. The `test-*.yml` jobs run the Pester suites in `integration-test/` with `Invoke-Pester`.
+- `.github/workflows/ci.yml` is the entry point and calls reusable workflows through `workflow_call`. Read the callee for the inputs and outputs it expects. Console workflows depend on private extension repos.
+- `scripts/` holds local and CI helpers. `scripts/packaging/` holds the package snapshot that CI compares the package against, and `engine-versions.txt`, the list of supported engines.
+- Test jobs launch the unit specs and the Pester suites in `integration-test/`. Read the workflow and the suite before claiming a test does not run.
 
 ## What to check
 
@@ -32,9 +31,9 @@ You review CI, repo tooling, and packaging changes for the Sentry SDK for Unreal
 ### Packaging and sample project
 
 - `package.snapshot` must list only real plugin files. Flag OS metadata (`._*`, `.DS_Store`), build logs, or local artifacts. CI compares the package against the snapshot, so a junk entry makes CI expect junk in the package.
-- Do the download scripts still create the ThirdParty layout that `plugin-dev/Source/Sentry/Sentry.Build.cs` reads? Read Build.cs for the expected paths when a script changes where it writes.
+- Do the download scripts still create the ThirdParty layout that `plugin-dev/Source/Sentry/Sentry.Build.cs` reads? Read Build.cs for the expected paths.
 - Sample `Build.cs`/`Target.cs` and `sample/Config/` changes: does every platform the CI matrix builds still configure and package?
-- Does a test job still run its tests? The `RunTests` filter must still match the `Sentry` specs, the `Invoke-Pester` suite file must exist, and a test failure must still fail the job.
+- Does a test job still run its tests? Its test filter must still match the specs, the suite file it invokes must exist, and a test failure must still fail the job.
 
 ## What not to report
 

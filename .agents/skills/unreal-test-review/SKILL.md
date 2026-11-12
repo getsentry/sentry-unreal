@@ -6,49 +6,51 @@ allowed-tools: Read Grep Glob
 
 You review test changes in the Sentry SDK for Unreal Engine. A bug here is a test that passes while the SDK is broken, fails or hangs while the SDK works, or checks a different platform path than the one it claims to cover. Report only problems you can trace in the files.
 
-## Layout
+The code is the source of truth. This skill says what to check, where the truth lives, and the facts you cannot see in the code. Where this skill and the code disagree, trust the code.
 
-- **Unit specs**: `plugin-dev/Source/{Sentry,SentryEditor}/Private/Tests/*.spec.cpp`. UE automation specs (`BEGIN_DEFINE_SPEC`) inside `#if WITH_AUTOMATION_TESTS`, with flags from `SentryTests.h`. CI runs them inside the packaged sample, not the editor, with `Automation RunTests Sentry` on all five platforms: Linux, macOS, and Windows in `test-*.yml`, and Android and iOS in RUN 0 of their Pester suites. Only specs whose name starts with `Sentry` run, and each spec must pass in a packaged game build on every one of those platforms.
-- **Sample app**: `USentryPlaygroundGameInstance::CheckForPendingIntegrationTest` maps each command-line switch (for example `-crash-capture`) to an `FSentryBaseIntegrationTest` subclass in `sample/Source/SentryPlayground/IntegrationTests/`. `ConfigureTestContext` sets the user, tags, and contexts on every run, and `Hooks/` holds the before-send style handlers that edit or drop data. Tests print markers (`EVENT_CAPTURED:`, `TEST_RESULT:`, `TRACE_CAPTURED:` and similar), and `CompleteWithResult` prints `TEST_RESULT` and exits the app.
-- **Pester**: `integration-test/Integration.{Desktop,Android,iOS}.Tests.ps1` launch the packaged sample with switches, parse the markers from its output, and fetch the captured data from Sentry (`Get-SentryTestEvent`, `Get-SentryTestLog`, and so on). `It ... -Skip:(...)` conditions turn off assertions per platform or backend.
+## Where the truth lives
+
+- **Unit specs** live in `plugin-dev/Source/*/Private/Tests/`. Before claiming where or whether a spec runs, read the `RunTests` launches in `.github/workflows/test-*.yml` and in the Pester suites instead of assuming the editor.
+- **Sample app** lives in `sample/Source/SentryPlayground/`. Its game instance maps each command-line switch to a test class in `IntegrationTests/`. The app sets up a shared test context, and its hooks change or drop event data before it is sent. Tests print markers that the Pester suites parse.
+- **Pester suites** are `integration-test/Integration.*.Tests.ps1`, one per platform family. They launch the packaged sample, parse its output, and fetch the captured data from Sentry.
 
 ## What to check
 
 ### 1. Assertions that cannot fail
 
-- Does an assertion check a path, log line, tag, or field that the code never produces, so it passes vacuously or checks `$null` against `$null`?
+- Does an assertion check a path, log line, tag, or field that the code never produces, so it passes vacuously or compares empty with empty?
 - Does a test compare a value with itself, or with a value the test wrote, instead of the SDK's output?
-- Is a skipped or early-returned step reported as success? Does an `It` block lack a `Should`, or does a spec `It` lack a `TestEqual`/`TestTrue` style check?
-- Is a spec outside `WITH_AUTOMATION_TESTS` or named so `Automation RunTests Sentry` never runs it?
-- Is a `-Skip:` condition broader than the platform or backend that lacks the feature, hiding a lane that should run it?
+- Is a skipped or early-returned step reported as success? Does a test case contain no assertion?
+- Does the CI filter never run a new or renamed spec, or does a compile guard exclude it?
+- Is a skip condition broader than the platform or backend that lacks the feature, hiding a lane that should run the check?
 
 ### 2. C++ and Pester in sync
 
-- Does every switch the Pester suite passes match a key in `CheckForPendingIntegrationTest`, and is every new test class registered there?
-- Before judging a Pester assertion, read the matching class in `IntegrationTests/`, plus `ConfigureTestContext` and `Hooks/` for tags, contexts, and removals. Every asserted tag, message, attachment, marker, or exit code must be something the app actually produces on that platform.
-- When a marker, tag, or test name changes on one side, do the other side and all three platform suites (Desktop, Android, iOS) still match? Event IDs are formatted with `FormatEventIdWithHyphens` before printing.
+- Does every switch a suite passes map to a test class registered in the game instance?
+- Before judging a Pester assertion, read the matching test class, the shared test context, and the hooks. Every asserted tag, message, attachment, marker, or exit code must be something the app actually produces on that platform.
+- When a marker, tag, or test name changes on one side, do the other side and every platform suite still match?
 
 ### 3. Platform and timing assumptions
 
-- Does a test or test helper use the path, directory, or backend that the target platform actually uses? Past real bug: an iOS replay test staging clips in the macOS directory. Check `PLATFORM_MAC` (macOS only) vs `PLATFORM_APPLE` (macOS and iOS), and that macOS runs both the native and the Cocoa backend (`test.native_backend` tag).
-- Crash tests must get their marker out before the process dies: `GLog->Flush()`, the `LowLevelOutputDebugStringf` path for the native backend on UE 4.27 Linux, and the sleep on Android and iOS. Does a change drop one of these or move work after the crash trigger?
-- Does a change break the UE 4.27 Linux workaround for duplicated log lines (`Log` instead of `Display` verbosity for markers)?
+- Does a test or test helper use the path, directory, or backend that the target platform actually uses? Past real bug: an iOS replay test staging clips in the macOS directory. `PLATFORM_MAC` excludes iOS, `PLATFORM_APPLE` covers both, and macOS runs both the native and the Cocoa backend.
+- A crash test must get its marker out before the process dies. Does a change drop the flush or print path that sibling crash tests use on that platform, or move work after the crash trigger?
+- Does a change break a platform- or engine-specific workaround that sibling tests keep (look for `#if PLATFORM_*` and `UE_VERSION_OLDER_THAN` blocks around the markers)?
 - Does an assertion depend on timing the code does not guarantee, such as event order, or a fixed wait shorter than the work it waits for?
 
 ### 4. Launch flags and cleanup
 
-- Do all launches of the same app pass the same required flags, including relaunches that flush a crash or replay? The shared desktop arguments include `-nullrhi`, `-unattended`, and `-nosound`. A launch without `-nosound` hangs on audio-less macOS runners.
-- Does every path through a test class, including failures, end in exactly one `CompleteWithResult` or the intended crash? Otherwise the app never exits and the suite times out. Async tests must keep themselves alive with `AsShared()`.
-- Does a test leave files, settings, or app state behind that a later test or relaunch reads, and do `AfterAll` blocks still disconnect devices and the Sentry API?
+- Does every launch of the same app pass the suite's shared required arguments, including relaunches that flush a crash or replay? Past real bug: a launch without `-nosound` hangs on audio-less macOS runners.
+- Does every path through a test class, including failures, end in the base class's completion call or the intended crash? Otherwise the app never exits and the suite times out. An async test must keep itself alive until it completes.
+- Does a test leave files, settings, or app state behind that a later test or relaunch reads, and does suite teardown still disconnect what setup connected?
 
 ### 5. Leftover debugging
 
-- Temporarily disabled or narrowed tests (`xIt`, a hard-coded `-Skip`, a commented-out assertion, a narrowed test filter), local paths, real DSNs or tokens, or debug output added only to investigate a failure.
+- Temporarily disabled or narrowed tests (`xIt`, a hard-coded skip, a commented-out assertion, a narrowed test filter), local paths, real DSNs or tokens, or debug output added only to investigate a failure.
 
 ## Evidence rules
 
 - Do not claim how a UE engine API, Pester, PowerShell, or a wrapped SDK behaves unless the repository shows it: an existing call site, a comment, or a test. Past false positives: `AActor` being abstract, `CreateFileWriter` not creating directories.
-- Before saying a test runs on the `Null` implementation, check the `HAL/Platform*.h` selector and the `USE_SENTRY_NATIVE` definitions in `Sentry.Build.cs`.
+- Before saying a test runs on the `Null` implementation, read the `Private/HAL/` selector and the defines in `Sentry.Build.cs` for that platform.
 - If you cannot verify the behavior your finding depends on, do not report it.
 
 ## What not to report
