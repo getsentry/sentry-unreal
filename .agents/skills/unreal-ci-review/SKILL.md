@@ -11,7 +11,7 @@ You review CI, repo tooling, and packaging changes for the Sentry SDK for Unreal
 - `.github/workflows/ci.yml` is the entry point. It calls reusable workflows (`sdk-build.yml`, `sdk-download.yml`, `build-*.yml`, `test-*.yml`, `package.yml`) through `workflow_call` inputs. `ci.yml` also checks the package against `scripts/packaging/package.snapshot`.
 - `custom-image-*.yml` and `ue-docker-*.yml`/`ue-oci-macos.yml` build runner images. `build-consoles.yml` and `custom-image-consoles.yml` work with private console extension repos.
 - `scripts/` holds local and CI helpers: `init.sh`/`init-win.ps1`, `download-*.sh`/`download-*.ps1`, `build-*.sh`, `build-deps.ps1`, and `packaging/` (`pack.ps1`, `test-contents.ps1`, `package.snapshot`, `engine-versions.txt`).
-- `test-{linux,macos,windows}.yml` run the unit specs with `Automation RunTests Sentry`. The `test-*.yml` jobs run the Pester suites in `integration-test/` with `Invoke-Pester`.
+- `test-{linux,macos,windows}.yml` run the unit specs in the packaged sample with `Automation RunTests Sentry`. Android and iOS run them in RUN 0 of their Pester suites. The `test-*.yml` jobs run the Pester suites in `integration-test/` with `Invoke-Pester`.
 
 ## What to check
 

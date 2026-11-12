@@ -13,7 +13,7 @@ Read the changed hunk, then the code it relies on. Load a reference only when th
 | Reference | Read when |
 |-----------|-----------|
 | `references/platforms.md` | The hunk touches `Private/{Android,Apple,IOS,Mac,GenericPlatform,Microsoft,Linux,Windows,Null,HAL,Interface}/`, a converter, or a public API that every backend implements |
-| `references/threads-and-lifetime.md` | The hunk touches `SessionReplay/`, `HangTracking/`, `GameState/`, `Integrations/`, a callback handler, a crash hook, a lock, an `FRunnable`, or a delegate binding |
+| `references/threads-and-lifetime.md` | The hunk touches `SessionReplay/`, `HangTracking/`, `GameState/`, `Integrations/`, a callback handler, an output device, a crash hook, a lock, an `FRunnable`, or a delegate binding |
 
 ## What to check
 
@@ -28,12 +28,14 @@ Read the changed hunk, then the code it relies on. Load a reference only when th
 
 ### 2. Threads and lifetime
 
-Plugin code runs on the game thread, the render thread, plugin worker threads, wrapped-SDK callback threads, and crash handlers. The reference maps each to its code and locks.
+Plugin code runs on the game thread, the render thread, plugin worker threads, wrapped-SDK callback threads, output devices, and crash handlers. The reference maps each to its code and locks.
 
-- Is a container, flag, or pointer read on one thread and written on another without the same lock or an atomic? Unlocked `TArray::Num()` checks count.
-- Can a callback bound with `AddRaw`/`BindRaw` or a raw `this` still be running when its owner is destroyed? Unbinding does not wait for in-flight calls.
-- Does every path that drops a pooled capture frame release it, and does nothing write or submit a frame it has not acquired?
+- Is a container, flag, or pointer read on one thread and written on another without the same lock or an atomic? Find the lock the writer holds and check that every reader holds it too. An unlocked `TArray::Num()` or emptiness check before a wait counts.
+- Does an `FEvent` wait hold a lock that the thread that triggers the event needs?
+- Can a callback bound with `AddRaw`/`BindRaw` or a raw `this` to an event fired from another thread (ensure, assert, hang heartbeat) still be running when its owner is destroyed? Unbinding does not wait for in-flight calls. Raw bindings to game-thread-only delegates (map load, game-state class change) that are removed on the game thread are fine.
+- Does every path that drops a pooled resource (early return, stop, disabled feature, queue drain) return it to the pool? Otherwise the pool runs dry and capture silently stops.
 - Is a raw pointer to a Slate window, widget, actor, or `UObject` kept past the frame without a weak pointer or validity check?
+- Is a `UObject` that must survive GC held as a raw `UObject*` in a non-`UObject` class, without `UPROPERTY()` or another reference that keeps it alive? GC collects it.
 - Does a callback that creates `UObject`s skip `SentryCallbackUtils::IsCallbackSafeToRun()` or the `TSentryCallbackGuard` its sibling callbacks use? Creating `UObject`s during GC deadlocks.
 
 ### 3. Platform backend drift
