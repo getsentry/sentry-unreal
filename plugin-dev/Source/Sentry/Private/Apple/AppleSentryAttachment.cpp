@@ -25,7 +25,7 @@ FAppleSentryAttachment::FAppleSentryAttachment(const FString& path, const FStrin
 
 FAppleSentryAttachment::~FAppleSentryAttachment()
 {
-	// Put custom destructor logic here if needed
+	[AttachmentApple release];
 }
 
 SentryObjCAttachment* FAppleSentryAttachment::GetNativeObject()

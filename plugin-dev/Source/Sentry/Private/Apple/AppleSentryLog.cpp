@@ -16,7 +16,7 @@ FAppleSentryLog::FAppleSentryLog()
 
 FAppleSentryLog::FAppleSentryLog(SentryObjCLog* log)
 {
-	LogApple = log;
+	LogApple = [log retain];
 }
 
 FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLevel level)
@@ -27,7 +27,7 @@ FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLevel level)
 
 FAppleSentryLog::~FAppleSentryLog()
 {
-	// Put custom destructor logic here if needed
+	[LogApple release];
 }
 
 SentryObjCLog* FAppleSentryLog::GetNativeObject()
@@ -65,6 +65,9 @@ void FAppleSentryLog::SetAttribute(const FString& key, const FSentryVariant& val
 	}
 
 	[LogApple setAttribute:attribute forKey:key.GetNSString()];
+
+	// Converter returns an attribute owned by the caller
+	[attribute release];
 }
 
 FSentryVariant FAppleSentryLog::GetAttribute(const FString& key) const

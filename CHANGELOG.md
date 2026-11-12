@@ -6,6 +6,16 @@
 
 - Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
 
+### Fixes
+
+- Fix memory leaks and potential use-after-free in native object wrappers on macOS and iOS ([#1691](https://github.com/getsentry/sentry-unreal/pull/1691))
+
+### Dependencies
+
+- Bump Cocoa SDK from v9.33.0 to v9.34.0 ([#1693](https://github.com/getsentry/sentry-unreal/pull/1693))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9340)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.33.0...9.34.0)
+
 ## 1.26.0
 
 ### Behavioral Changes

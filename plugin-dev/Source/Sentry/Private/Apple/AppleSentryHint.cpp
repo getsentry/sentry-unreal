@@ -16,12 +16,12 @@ FAppleSentryHint::FAppleSentryHint()
 
 FAppleSentryHint::FAppleSentryHint(SentryObjCHint* hint)
 {
-	HintApple = hint;
+	HintApple = [hint retain];
 }
 
 FAppleSentryHint::~FAppleSentryHint()
 {
-	// Put custom destructor logic here if needed
+	[HintApple release];
 }
 
 SentryObjCHint* FAppleSentryHint::GetNativeObject()
