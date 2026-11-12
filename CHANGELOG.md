@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix memory leaks and potential use-after-free in native object wrappers on macOS and iOS ([#1691](https://github.com/getsentry/sentry-unreal/pull/1691))
+- Fix events captured with a local scope getting the `debug` level when no scope level is set on platforms using sentry-native
 
 ### Dependencies
 

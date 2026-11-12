@@ -4,6 +4,7 @@
 
 #include "Containers/RingBuffer.h"
 #include "Convenience/GenericPlatformSentryInclude.h"
+#include "Misc/Optional.h"
 
 #include "Interface/SentryScopeInterface.h"
 
@@ -66,7 +67,7 @@ private:
 
 	TArray<TSharedPtr<FGenericPlatformSentryAttachment>> Attachments;
 
-	ESentryLevel Level;
+	TOptional<ESentryLevel> Level;
 };
 
 #if !PLATFORM_MICROSOFT

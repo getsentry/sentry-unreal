@@ -726,6 +726,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             $script:MessageResult = $null
             $script:MessageEvent = $null
             $script:MessageAttachments = @()
+            $script:ScopedEvent = $null
 
             Write-Host "Running message capture test..." -ForegroundColor Yellow
 
@@ -768,6 +769,19 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             else {
                 Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
             }
+
+            $scopedEventLine = $script:MessageResult.Output | Where-Object { $_ -match 'SCOPED_EVENT_ID:\s*(\S+)' } | Select-Object -First 1
+            if ($scopedEventLine -match 'SCOPED_EVENT_ID:\s*(\S+)') {
+                try {
+                    $script:ScopedEvent = Get-SentryTestEvent -EventId $Matches[1]
+                }
+                catch {
+                    Write-Host "Failed to fetch scoped event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No scoped event ID found in output" -ForegroundColor Yellow
+            }
         }
 
         It "Should exit cleanly" {
@@ -797,6 +811,11 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             else {
                 $script:MessageEvent.platform | Should -Be 'native'
             }
+        }
+
+        It "Should have default error level for event captured with scope without level" {
+            $script:ScopedEvent | Should -Not -BeNullOrEmpty
+            ($script:ScopedEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'error'
         }
 
         It "Should have message content" {
