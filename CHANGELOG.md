@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (v2)
+
+### Dependencies
+
+- Bump Native SDK from v0.17.6 to v1.0.0-beta.1 ([#1696](https://github.com/getsentry/sentry-unreal/pull/1696))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/v1/CHANGELOG.md#100-beta1)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.6...1.0.0-beta.1)
+
 ## Unreleased
 
 ### Fixes
