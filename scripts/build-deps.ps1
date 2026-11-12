@@ -251,7 +251,7 @@ function buildSentryJava()
     }
 
     $tomlContent = Get-Content $configFile -Raw
-    if ($tomlContent -notmatch 'sentry-native-ndk[^\n]*version\s*=\s*"([^"]+)"')
+    if ($tomlContent -notmatch '(?m)^sentry-native-ndk\s*=[^\n]*version\s*=\s*"([^"]+)"')
     {
         throw "Failed to extract Native SDK NDK version from $configFile"
     }
