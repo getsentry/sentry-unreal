@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
+
 ### Fixes
 
 - Fix memory leaks and potential use-after-free in native object wrappers on macOS and iOS ([#1691](https://github.com/getsentry/sentry-unreal/pull/1691))

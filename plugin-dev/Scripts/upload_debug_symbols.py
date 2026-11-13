@@ -12,6 +12,11 @@ def log(message):
     print(f"Sentry: {message}", flush=True)
 
 
+def print_cli_output(text):
+    encoding = sys.stdout.encoding or 'utf-8'
+    print(text.encode(encoding, errors='replace').decode(encoding), end='', flush=True)
+
+
 def get_file_encoding(file_path):
     with open(file_path, 'rb') as f:
         bom = f.read(2)
@@ -93,11 +98,11 @@ def get_cli_executable(plugin_dir):
     host_system = platform.system()
 
     if host_system == 'Windows':
-        cli_name = 'sentry-cli-Windows-x86_64.exe'
+        cli_name = 'sentry-windows-x64.exe'
     elif host_system == 'Darwin':
-        cli_name = 'sentry-cli-Darwin-universal'
+        cli_name = 'sentry-darwin-arm64'
     elif host_system == 'Linux':
-        cli_name = 'sentry-cli-Linux-x86_64'
+        cli_name = 'sentry-linux-x64'
     else:
         return None
 
@@ -109,11 +114,36 @@ def get_cli_executable(plugin_dir):
     return None
 
 
-def run_cmd_with_retry(cmd, max_retries=3, retry_delay_sec=2):
-    for attempt in range(max_retries):
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+def resolve_cli_settings(cli_env, file_values):
+    sources = []
+    for env_name, label, file_value in file_values:
+        env_value = os.environ.get(env_name, '').strip()
+        if env_value:
+            cli_env[env_name] = env_value
+            sources.append((label, f"{env_name} env var", True))
+        elif file_value:
+            cli_env[env_name] = file_value
+            sources.append((label, "sentry.properties", False))
+        else:
+            cli_env.pop(env_name, None)
 
-        if result.returncode != 0 and "os error 32" in result.stderr:
+    log("Using " + ", ".join(f"{label} from {source}" for label, source, _ in sources))
+
+    from_env = [from_env for _, _, from_env in sources]
+    if any(from_env) and not all(from_env):
+        log("Warning: Upload settings come from both sentry.properties and environment variables. "
+            "Make sure that they belong to the same organization and project.")
+
+
+def is_file_locked_error(output):
+    return any(marker in output for marker in ("os error 32", "EBUSY", "resource busy or locked"))
+
+
+def run_cmd_with_retry(cmd, env, cwd, max_retries=3, retry_delay_sec=2):
+    for attempt in range(max_retries):
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding='utf-8', errors='replace', env=env, cwd=cwd, stdin=subprocess.DEVNULL)
+
+        if result.returncode != 0 and is_file_locked_error(result.stdout + result.stderr):
             if attempt < max_retries - 1:
                 log(f"Debug file is locked, retrying in {retry_delay_sec} seconds... (attempt {attempt + 1}/{max_retries})")
                 time.sleep(retry_delay_sec)
@@ -231,8 +261,7 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
 
     # Get CLI log level
     cli_log_level = get_setting_value(config_paths, 'DiagnosticLevel')
-    if not cli_log_level:
-        cli_log_level = "info"
+    cli_log_level = cli_log_level.lower() if cli_log_level else "info"
 
     # Get sentry-cli executable (based on host OS)
     cli_exec = get_cli_executable(plugin_dir)
@@ -245,7 +274,10 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
         try:
             os.chmod(cli_exec, 0o755)
         except Exception as e:
-            log(f"Warning: Failed to set execute permission on sentry-cli: {e}")
+            log(f"Warning: Failed to set execute permission on Sentry CLI: {e}")
+
+    cli_env = os.environ.copy()
+    cli_env.pop('SENTRY_PROPERTIES', None)
 
     # Check for sentry.properties file
     properties_file = os.path.join(project_dir, 'sentry.properties')
@@ -271,8 +303,13 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
             log("Error: Auth token is not set. Skipping...")
             return 0
 
-        # Set environment variable for sentry-cli
-        os.environ['SENTRY_PROPERTIES'] = properties_file
+        # Environment variables that are set and not empty take priority over the properties file
+        resolve_cli_settings(cli_env, [
+            ('SENTRY_ORG', 'organization', org_name),
+            ('SENTRY_PROJECT', 'project', project_name),
+            ('SENTRY_AUTH_TOKEN', 'auth token', auth_token),
+            ('SENTRY_URL', 'URL', parse_config_value(properties_file, 'defaults.url')),
+        ])
     else:
         log("Properties file not found. Falling back to environment variables.")
 
@@ -303,6 +340,14 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
         log(f"No symbol files found in build receipt for target '{target_name}'. Skipping...")
         return 0
 
+    cli_config_dir = os.path.join(project_dir, 'Intermediate', 'SentryCli')
+    os.makedirs(cli_config_dir, exist_ok=True)
+
+    cli_env['SENTRY_CONFIG_DIR'] = cli_config_dir
+    cli_env['SENTRY_FORCE_ENV_TOKEN'] = '1'
+    cli_env['SENTRY_CLI_NO_TELEMETRY'] = '1'
+    cli_env['SENTRY_CLI_NO_UPDATE_CHECK'] = '1'
+
     upload_cmd = [
         cli_exec,
         'debug-files',
@@ -315,19 +360,23 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
     try:
         # Execute the upload command with retry logic to avoid linker file locking issues
         # See https://github.com/getsentry/sentry-unreal/issues/542
-        result = run_cmd_with_retry(upload_cmd)
+        result = run_cmd_with_retry(upload_cmd, cli_env, project_dir)
 
         # Output stdout/stderr
         if result.stdout:
-            print(result.stdout, end='')
+            print_cli_output(result.stdout)
         if result.stderr:
-            print(result.stderr, end='')
+            print_cli_output(result.stderr)
 
         log("Upload finished")
         return result.returncode
 
+    except OSError as e:
+        log(f"Error: Failed to start Sentry CLI ({e}). Skipping...")
+        return 0
+
     except Exception as e:
-        log(f"Error executing sentry-cli: {e}")
+        log(f"Error executing Sentry CLI: {e}")
         return 1
 
 

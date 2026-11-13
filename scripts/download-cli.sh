@@ -5,7 +5,7 @@ function getProperty {
     cat "$(dirname $0)/../plugin-dev/sentry-cli.properties" | grep $1 | cut -d'=' -f2 | tr -d '"'
 }
 
-baseUrl="$(getProperty 'repo')/releases/download/$(getProperty 'version')/sentry-cli-"
+baseUrl="$(getProperty 'repo')/releases/download/$(getProperty 'version')/sentry-"
 targetDir="$(dirname $0)/../plugin-dev/Source/ThirdParty/CLI"
 
 if ! [ -d "$targetDir" ]; then
@@ -17,9 +17,9 @@ cd $targetDir
 # Remove previous contents of the directory (remove all ignored files).
 git clean -fXd .
 
-declare -a platforms=("Darwin-universal" "Linux-x86_64" "Windows-x86_64.exe")
+declare -a platforms=("darwin-arm64" "linux-x64" "windows-x64.exe")
 for platform in "${platforms[@]}"; do
     echo "Downloading Sentry CLI for $platform to $PWD ..."
-    curl -LJO $baseUrl$platform
-    chmod +x "sentry-cli-$platform"
+    curl -fLJO $baseUrl$platform
+    chmod +x "sentry-$platform"
 done

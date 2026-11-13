@@ -81,6 +81,8 @@ jobs:
         with:
           path: plugin-dev/sentry-cli.properties
           name: CLI
+          pattern: '^cli@(?<version>[0-9.]+)$'
+          changelog-path: packages/cli/CHANGELOG.md
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
           pr-strategy: create
 
