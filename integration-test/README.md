@@ -213,6 +213,16 @@ Desktop-only; skipped on macOS (sentry-cocoa provides its own AppHang detection 
 
 **Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
 
+### Scoped Event Capture Tests
+
+Desktop-only.
+
+- Application exits cleanly
+- TEST_RESULT indicates success
+- Event captured with a local scope appears in Sentry
+- Local scope tag is present
+- Event has the default `error` level when the local scope doesn't set a level
+
 ### Structured Logging Tests
 
 - Application exits cleanly

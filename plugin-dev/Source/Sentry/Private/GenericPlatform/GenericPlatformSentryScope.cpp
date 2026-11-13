@@ -15,7 +15,6 @@
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryScope::FGenericPlatformSentryScope()
-	: Level(ESentryLevel::Debug)
 {
 }
 
@@ -102,7 +101,7 @@ void FGenericPlatformSentryScope::SetLevel(ESentryLevel level)
 
 ESentryLevel FGenericPlatformSentryScope::GetLevel() const
 {
-	return Level;
+	return Level.Get(ESentryLevel::Debug);
 }
 
 void FGenericPlatformSentryScope::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
@@ -184,7 +183,7 @@ void FGenericPlatformSentryScope::Clear()
 	Extra.Empty();
 	Contexts.Empty();
 	Breadcrumbs.Empty();
-	Level = ESentryLevel::Debug;
+	Level.Reset();
 }
 
 void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
@@ -228,7 +227,10 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 		sentry_scope_set_context(scope, TCHAR_TO_UTF8(*ContextsItem.Key), FGenericPlatformSentryConverters::VariantMapToNative(ContextsItem.Value));
 	}
 
-	sentry_scope_set_level(scope, FGenericPlatformSentryConverters::SentryLevelToNative(Level));
+	if (Level.IsSet())
+	{
+		sentry_scope_set_level(scope, FGenericPlatformSentryConverters::SentryLevelToNative(Level.GetValue()));
+	}
 }
 
 void FGenericPlatformSentryScope::AddFileAttachment(TSharedPtr<FGenericPlatformSentryAttachment> attachment, sentry_scope_t* scope)
