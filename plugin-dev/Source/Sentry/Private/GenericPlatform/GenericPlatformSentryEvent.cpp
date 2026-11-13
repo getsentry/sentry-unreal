@@ -19,13 +19,13 @@ FGenericPlatformSentryEvent::FGenericPlatformSentryEvent()
 
 FGenericPlatformSentryEvent::FGenericPlatformSentryEvent(sentry_value_t event, bool isCrash)
 {
-	Event = event;
+	Event = sentry_value_incref(event);
 	IsCrashEvent = isCrash;
 }
 
 FGenericPlatformSentryEvent::~FGenericPlatformSentryEvent()
 {
-	// Put custom destructor logic here if needed
+	sentry_value_decref(Event);
 }
 
 sentry_value_t FGenericPlatformSentryEvent::GetNativeObject()

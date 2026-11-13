@@ -873,7 +873,7 @@ ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject());
+	sentry_add_breadcrumb(sentry_value_incref(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject()));
 }
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
@@ -885,7 +885,7 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	Breadcrumb->SetData(Data);
 	Breadcrumb->SetLevel(Level);
 
-	sentry_add_breadcrumb(Breadcrumb->GetNativeObject());
+	sentry_add_breadcrumb(sentry_value_incref(Breadcrumb->GetNativeObject()));
 }
 
 void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
@@ -997,7 +997,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEvent(TSharedPtr<I
 		AttachStackTrace(nativeEvent);
 	}
 
-	sentry_uuid_t id = sentry_capture_event(nativeEvent);
+	sentry_uuid_t id = sentry_capture_event(sentry_value_incref(nativeEvent));
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
@@ -1018,7 +1018,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent, nullptr);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, sentry_value_incref(nativeEvent), nullptr);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -1125,7 +1125,7 @@ void FGenericPlatformSentrySubsystem::CaptureFeedbackWithScope(TSharedPtr<ISentr
 	sentry_scope_t* scope = sentry_local_scope_new();
 	LocalScope->Apply(scope);
 
-	sentry_scope_capture_feedback(scope, Feedback->GetNativeObject(), nullptr);
+	sentry_scope_capture_feedback(scope, sentry_value_incref(Feedback->GetNativeObject()), nullptr);
 }
 
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
@@ -1139,7 +1139,7 @@ void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
 		user->SetIpAddress(TEXT("{{auto}}"));
 	}
 
-	sentry_set_user(user->GetNativeObject());
+	sentry_set_user(sentry_value_incref(user->GetNativeObject()));
 
 	if (crashReporter)
 	{

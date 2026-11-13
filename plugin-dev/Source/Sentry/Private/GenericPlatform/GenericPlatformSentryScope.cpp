@@ -191,8 +191,7 @@ void FGenericPlatformSentryScope::Apply(sentry_scope_t* scope)
 
 	for (const auto& Breadcrumb : Breadcrumbs)
 	{
-		sentry_value_t nativeBreadcrumb = Breadcrumb->GetNativeObject();
-		sentry_scope_add_breadcrumb(scope, nativeBreadcrumb);
+		sentry_scope_add_breadcrumb(scope, sentry_value_incref(Breadcrumb->GetNativeObject()));
 	}
 
 	for (auto& Attachment : Attachments)

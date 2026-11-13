@@ -14,7 +14,7 @@ public:
 	FGenericPlatformSentryLog();
 	FGenericPlatformSentryLog(sentry_value_t log);
 	FGenericPlatformSentryLog(const FString& body, ESentryLevel level);
-	virtual ~FGenericPlatformSentryLog() override = default;
+	virtual ~FGenericPlatformSentryLog() override;
 
 	sentry_value_t GetNativeObject();
 

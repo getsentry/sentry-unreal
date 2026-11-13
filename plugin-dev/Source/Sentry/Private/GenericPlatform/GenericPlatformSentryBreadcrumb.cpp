@@ -13,7 +13,12 @@ FGenericPlatformSentryBreadcrumb::FGenericPlatformSentryBreadcrumb()
 
 FGenericPlatformSentryBreadcrumb::FGenericPlatformSentryBreadcrumb(sentry_value_t breadcrumb)
 {
-	Breadcrumb = breadcrumb;
+	Breadcrumb = sentry_value_incref(breadcrumb);
+}
+
+FGenericPlatformSentryBreadcrumb::~FGenericPlatformSentryBreadcrumb()
+{
+	sentry_value_decref(Breadcrumb);
 }
 
 sentry_value_t FGenericPlatformSentryBreadcrumb::GetNativeObject()
