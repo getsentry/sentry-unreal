@@ -1,35 +1,48 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "GenericPlatformSentryTransactionContext.h"
-#include "GenericPlatformSentryTransaction.h"
 
 #include "SentryDefines.h"
 
 #if USE_SENTRY_NATIVE
 
 FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionContext(const FString& name, const FString& operation)
-	: TransactionContext(sentry_transaction_context_new(TCHAR_TO_UTF8(*name), TCHAR_TO_UTF8(*operation)))
+	: Name(name)
+	, Operation(operation)
 {
 }
 
-FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionContext(sentry_transaction_context_t* context)
-	: TransactionContext(context)
+FGenericPlatformSentryTransactionContext::FGenericPlatformSentryTransactionContext(const sentry_transaction_context_t* context)
+	: Name(UTF8_TO_TCHAR(sentry_transaction_context_get_name(context)))
+	, Operation(UTF8_TO_TCHAR(sentry_transaction_context_get_operation(context)))
 {
 }
 
 FString FGenericPlatformSentryTransactionContext::GetName() const
 {
-	return FString(UTF8_TO_TCHAR(sentry_transaction_context_get_name(TransactionContext)));
+	return Name;
 }
 
 FString FGenericPlatformSentryTransactionContext::GetOperation() const
 {
-	return FString(UTF8_TO_TCHAR(sentry_transaction_context_get_operation(TransactionContext)));
+	return Operation;
 }
 
-sentry_transaction_context_t* FGenericPlatformSentryTransactionContext::GetNativeObject()
+void FGenericPlatformSentryTransactionContext::UpdateFromHeader(const FString& key, const FString& value)
 {
-	return TransactionContext;
+	Headers.Emplace(key, value);
+}
+
+sentry_transaction_context_t* FGenericPlatformSentryTransactionContext::CreateNativeObject() const
+{
+	sentry_transaction_context_t* context = sentry_transaction_context_new(TCHAR_TO_UTF8(*Name), TCHAR_TO_UTF8(*Operation));
+
+	for (const TPair<FString, FString>& Header : Headers)
+	{
+		sentry_transaction_context_update_from_header(context, TCHAR_TO_UTF8(*Header.Key), TCHAR_TO_UTF8(*Header.Value));
+	}
+
+	return context;
 }
 
 #endif

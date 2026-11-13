@@ -19,12 +19,12 @@ FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback(const FString& me
 
 FGenericPlatformSentryFeedback::FGenericPlatformSentryFeedback(sentry_value_t feedback)
 {
-	Feedback = feedback;
+	Feedback = sentry_value_incref(feedback);
 }
 
 FGenericPlatformSentryFeedback::~FGenericPlatformSentryFeedback()
 {
-	// Put custom destructor logic here if needed
+	sentry_value_decref(Feedback);
 }
 
 sentry_value_t FGenericPlatformSentryFeedback::GetNativeObject()

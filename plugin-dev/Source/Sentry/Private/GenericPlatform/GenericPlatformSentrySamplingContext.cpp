@@ -9,20 +9,20 @@
 
 #if USE_SENTRY_NATIVE
 
-FGenericPlatformSentrySamplingContext::FGenericPlatformSentrySamplingContext(sentry_transaction_context_t* transactionContext, sentry_value_t customSamplingContext)
+FGenericPlatformSentrySamplingContext::FGenericPlatformSentrySamplingContext(const sentry_transaction_context_t* transactionContext, sentry_value_t customSamplingContext)
 {
-	TransactionContext = transactionContext;
-	CustomSamplingContext = customSamplingContext;
+	TransactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(transactionContext));
+	CustomSamplingContext = sentry_value_incref(customSamplingContext);
 }
 
 FGenericPlatformSentrySamplingContext::~FGenericPlatformSentrySamplingContext()
 {
-	// Put custom destructor logic here if needed
+	sentry_value_decref(CustomSamplingContext);
 }
 
 TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySamplingContext::GetTransactionContext() const
 {
-	return MakeShareable(new FGenericPlatformSentryTransactionContext(TransactionContext));
+	return TransactionContext;
 }
 
 TMap<FString, FSentryVariant> FGenericPlatformSentrySamplingContext::GetCustomSamplingContext() const
