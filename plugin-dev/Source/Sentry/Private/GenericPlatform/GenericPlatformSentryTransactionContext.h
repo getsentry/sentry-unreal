@@ -14,16 +14,21 @@ class FGenericPlatformSentryTransactionContext : public ISentryTransactionContex
 {
 public:
 	FGenericPlatformSentryTransactionContext(const FString& name, const FString& operation);
-	FGenericPlatformSentryTransactionContext(sentry_transaction_context_t* context);
+	explicit FGenericPlatformSentryTransactionContext(const sentry_transaction_context_t* context);
 	virtual ~FGenericPlatformSentryTransactionContext() override = default;
 
 	virtual FString GetName() const override;
 	virtual FString GetOperation() const override;
 
-	sentry_transaction_context_t* GetNativeObject();
+	void UpdateFromHeader(const FString& key, const FString& value);
+
+	sentry_transaction_context_t* CreateNativeObject() const;
 
 private:
-	sentry_transaction_context_t* TransactionContext;
+	FString Name;
+	FString Operation;
+
+	TArray<TPair<FString, FString>> Headers;
 };
 
 typedef FGenericPlatformSentryTransactionContext FPlatformSentryTransactionContext;
