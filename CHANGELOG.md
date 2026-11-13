@@ -24,6 +24,7 @@
 
 ### Features
 
+- Upload shader binaries for GPU crash symbolication after cook ([#1678](https://github.com/getsentry/sentry-unreal/pull/1678))
 - Add memory usage at the time of the crash to crash events on Windows and Xbox ([#1664](https://github.com/getsentry/sentry-unreal/pull/1664))
 - Add experimental game state capture that attaches a rolling window of game state to crash events ([#1683](https://github.com/getsentry/sentry-unreal/pull/1683))
 - Add option to include debug images in Unreal Crash Reporter context ([#1673](https://github.com/getsentry/sentry-unreal/pull/1673))

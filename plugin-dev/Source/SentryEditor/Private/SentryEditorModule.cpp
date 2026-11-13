@@ -5,6 +5,7 @@
 #include "SentryCrashReporterViewCustomization.h"
 #include "SentrySettings.h"
 #include "SentrySettingsCustomization.h"
+#include "SentryShaderSymbols.h"
 
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
@@ -22,6 +23,8 @@ void FSentryEditorModule::StartupModule()
 	PropertyModule.RegisterCustomPropertyTypeLayout("SentryCrashReporterImagery", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FSentryCrashReporterImageryCustomization::MakeInstance));
 	PropertyModule.RegisterCustomPropertyTypeLayout("ESentryCrashReporterView", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FSentryCrashReporterViewCustomization::MakeInstance));
 	PropertyModule.NotifyCustomizationModuleChanged();
+
+	FSentryShaderSymbols::RegisterCookHook();
 }
 
 void FSentryEditorModule::ShutdownModule()
