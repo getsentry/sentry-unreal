@@ -21,8 +21,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on:
-      - bitrise_pool_name:gdx
+    runs-on: macos-26-xlarge
 
     permissions:
       contents: read
@@ -31,6 +30,7 @@ jobs:
     env:
       DISALLOW_RAW_POINTERS: 'true'
       SENTRY_UNITY_BUILD: ${{ github.event_name == 'pull_request' }}
+      XCODE_APP: /Applications/Xcode_26.6.app
 
     steps:
       - name: Set Unreal Engine path
@@ -44,6 +44,22 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: checkout
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_APP"
+
+      - name: Free disk space
+        run: ./checkout/scripts/clean-storage-mac.sh
+
+      - name: Install oras
+        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
+
+      - name: Install Unreal Engine
+        timeout-minutes: 60
+        env:
+          UNREAL_VERSION: ${{ inputs.unreal-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./checkout/scripts/install-ue-mac.sh
 
       - name: Extract package to sample/Plugins
         env:
@@ -59,13 +75,6 @@ jobs:
           KEY="ue-${UNREAL_VERSION}-ios-ddc-${HASH}"
           echo "key=${KEY}" >> "$GITHUB_OUTPUT"
           echo "DDC cache key: ${KEY}"
-
-      - name: Install PowerShell
-        run: |
-          mkdir -p "$HOME/.pwsh"
-          curl -fsSL "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-osx-arm64.tar.gz" | tar -xz -C "$HOME/.pwsh"
-          chmod +x "$HOME/.pwsh/pwsh"
-          echo "$HOME/.pwsh" >> "$GITHUB_PATH"
 
       - name: Configure project-local DDC
         shell: pwsh
