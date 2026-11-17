@@ -8,6 +8,7 @@
 - Fix events captured with a local scope getting the `debug` level when no scope level is set on platforms using sentry-native ([#1698](https://github.com/getsentry/sentry-unreal/pull/1698))
 - Fix memory leaks and potential use-after-free in native object wrappers on desktop and consoles ([#1701](https://github.com/getsentry/sentry-unreal/pull/1701))
 - Fix JNI local reference leaks in object wrappers on Android ([#1705](https://github.com/getsentry/sentry-unreal/pull/1705))
+- Fix crashes on Android when reading an unset level or message, or setting an empty variant as an extra or data value ([#1707](https://github.com/getsentry/sentry-unreal/pull/1707))
 
 ### Dependencies
 
