@@ -52,6 +52,33 @@ void SentryBreadcrumbSpec::Define()
 			TestEqual("Data 4", ReceivedData[TEXT("Key4")], TestData[TEXT("Key4")]);
 		});
 	});
+
+	Describe("Breadcrumb defaults", [this]()
+	{
+		It("should not crash when getting level that isn't set", [this]()
+		{
+			SentryBreadcrumb->GetLevel();
+		});
+	});
+
+	Describe("Breadcrumb data with empty value", [this]()
+	{
+		It("should not affect other data entries", [this]()
+		{
+			TMap<FString, FSentryVariant> TestData;
+			TestData.Add(TEXT("EmptyKey"), FSentryVariant());
+			TestData.Add(TEXT("ValidKey"), TEXT("ValidVal"));
+
+			SentryBreadcrumb->SetData(TestData);
+
+			TMap<FString, FSentryVariant> ReceivedData = SentryBreadcrumb->GetData();
+			TestTrue("Valid data entry is present", ReceivedData.Contains(TEXT("ValidKey")));
+			if (ReceivedData.Contains(TEXT("ValidKey")))
+			{
+				TestEqual("Valid data entry retains its value", ReceivedData[TEXT("ValidKey")].GetValue<FString>(), TEXT("ValidVal"));
+			}
+		});
+	});
 }
 
 #endif

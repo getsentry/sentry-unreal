@@ -65,7 +65,13 @@ void FAndroidSentryBreadcrumb::SetData(const TMap<FString, FSentryVariant>& data
 {
 	for (const auto& dataItem : data)
 	{
-		CallMethod<void>(SetDataMethod, *GetJString(dataItem.Key), FAndroidSentryConverters::VariantToNative(dataItem.Value)->GetJObject());
+		TSharedPtr<FSentryJavaObjectWrapper> nativeValue = FAndroidSentryConverters::VariantToNative(dataItem.Value);
+		if (!nativeValue.IsValid())
+		{
+			continue;
+		}
+
+		CallMethod<void>(SetDataMethod, *GetJString(dataItem.Key), nativeValue->GetJObject());
 	}
 }
 
@@ -83,5 +89,10 @@ void FAndroidSentryBreadcrumb::SetLevel(ESentryLevel level)
 ESentryLevel FAndroidSentryBreadcrumb::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
+	if (!level)
+	{
+		return ESentryLevel::Debug;
+	}
+
 	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
 }

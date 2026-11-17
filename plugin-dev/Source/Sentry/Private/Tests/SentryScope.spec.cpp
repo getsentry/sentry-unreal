@@ -144,6 +144,25 @@ void SentryScopeSpec::Define()
 			TestTrue("Scope extras", SentryScope->GetExtras().Num() == 0);
 		});
 	});
+
+	Describe("Scope defaults", [this]()
+	{
+		It("should not crash when getting level that isn't set", [this]()
+		{
+			SentryScope->GetLevel();
+		});
+	});
+
+	Describe("Scope extras with empty value", [this]()
+	{
+		It("should not affect other extras", [this]()
+		{
+			SentryScope->SetExtra(TEXT("EmptyKey"), FSentryVariant());
+			SentryScope->SetExtra(TEXT("ValidKey"), TEXT("ValidVal"));
+
+			TestEqual("Valid extra retains its value", SentryScope->GetExtra(TEXT("ValidKey")).GetValue<FString>(), TEXT("ValidVal"));
+		});
+	});
 }
 
 #endif
