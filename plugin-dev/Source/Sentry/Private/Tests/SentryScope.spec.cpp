@@ -149,7 +149,12 @@ void SentryScopeSpec::Define()
 	{
 		It("should not crash when getting level that isn't set", [this]()
 		{
+#if PLATFORM_ANDROID
+			// Unset level defaults differ across backends, only the Android fallback is checked here
+			TestEqual("Unset level - default Debug", SentryScope->GetLevel(), ESentryLevel::Debug);
+#else
 			SentryScope->GetLevel();
+#endif
 		});
 	});
 
