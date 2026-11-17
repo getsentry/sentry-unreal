@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "AndroidSentryJavaClasses.h"
+#include "AndroidSentryScopedJavaObject.h"
 
 #include "Android/AndroidJavaEnv.h"
 
@@ -50,6 +51,8 @@ const FSentryJavaClass SentryJavaClasses::String				= FSentryJavaClass { "java/l
 // clang-format on
 
 TMap<FName, jclass> SentryJavaClasses::JavaClassRefsCache;
+TMap<ESentryLevel, jobject> SentryJavaClasses::SentryLevelRefsCache;
+TMap<ESentryLevel, jobject> SentryJavaClasses::SentryLogLevelRefsCache;
 
 void SentryJavaClasses::InitJavaClassRefsCache()
 {
@@ -93,11 +96,40 @@ void SentryJavaClasses::InitJavaClassRefsCache()
 	JavaClassRefsCache.Add(Float.Name, FindJavaClassRef(Float));
 	JavaClassRefsCache.Add(Boolean.Name, FindJavaClassRef(Boolean));
 	JavaClassRefsCache.Add(String.Name, FindJavaClassRef(String));
+
+	// Java enum constants definitions
+	SentryLevelRefsCache.Add(ESentryLevel::Debug, FindStaticObjectFieldRef(SentryLevel, "DEBUG", "Lio/sentry/SentryLevel;"));
+	SentryLevelRefsCache.Add(ESentryLevel::Info, FindStaticObjectFieldRef(SentryLevel, "INFO", "Lio/sentry/SentryLevel;"));
+	SentryLevelRefsCache.Add(ESentryLevel::Warning, FindStaticObjectFieldRef(SentryLevel, "WARNING", "Lio/sentry/SentryLevel;"));
+	SentryLevelRefsCache.Add(ESentryLevel::Error, FindStaticObjectFieldRef(SentryLevel, "ERROR", "Lio/sentry/SentryLevel;"));
+	SentryLevelRefsCache.Add(ESentryLevel::Fatal, FindStaticObjectFieldRef(SentryLevel, "FATAL", "Lio/sentry/SentryLevel;"));
+
+	SentryLogLevelRefsCache.Add(ESentryLevel::Debug, FindStaticObjectFieldRef(SentryLogLevel, "DEBUG", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLevel::Info, FindStaticObjectFieldRef(SentryLogLevel, "INFO", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLevel::Warning, FindStaticObjectFieldRef(SentryLogLevel, "WARN", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLevel::Error, FindStaticObjectFieldRef(SentryLogLevel, "ERROR", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLevel::Fatal, FindStaticObjectFieldRef(SentryLogLevel, "FATAL", "Lio/sentry/SentryLogLevel;"));
 }
 
 void SentryJavaClasses::ClearJavaClassRefsCache()
 {
 	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
+
+	for (auto& CachedItem : SentryLevelRefsCache)
+	{
+		if (CachedItem.Value)
+		{
+			JEnv->DeleteGlobalRef(CachedItem.Value);
+		}
+	}
+
+	for (auto& CachedItem : SentryLogLevelRefsCache)
+	{
+		if (CachedItem.Value)
+		{
+			JEnv->DeleteGlobalRef(CachedItem.Value);
+		}
+	}
 
 	for (auto& CachedItem : JavaClassRefsCache)
 	{
@@ -107,6 +139,8 @@ void SentryJavaClasses::ClearJavaClassRefsCache()
 		}
 	}
 
+	SentryLevelRefsCache.Empty();
+	SentryLogLevelRefsCache.Empty();
 	JavaClassRefsCache.Empty();
 }
 
@@ -133,4 +167,32 @@ jclass SentryJavaClasses::FindJavaClassRef(const FSentryJavaClass& ClassData)
 
 	checkf(Class, TEXT("Failed to obtain Java class reference for %s"), *ClassData.Name.ToString());
 	return Class;
+}
+
+jobject SentryJavaClasses::GetCachedSentryLevelRef(ESentryLevel Level)
+{
+	jobject* LevelRef = SentryLevelRefsCache.Find(Level);
+	return LevelRef ? *LevelRef : nullptr;
+}
+
+jobject SentryJavaClasses::GetCachedSentryLogLevelRef(ESentryLevel Level)
+{
+	jobject* LevelRef = SentryLogLevelRefsCache.Find(Level);
+	return LevelRef ? *LevelRef : nullptr;
+}
+
+jobject SentryJavaClasses::FindStaticObjectFieldRef(const FSentryJavaClass& ClassData, const char* FieldName, const char* FieldSignature)
+{
+	JNIEnv* JEnv = AndroidJavaEnv::GetJavaEnv();
+
+	jclass Class = GetCachedJavaClassRef(ClassData);
+
+	jfieldID Field = JEnv->GetStaticFieldID(Class, FieldName, FieldSignature);
+	checkf(Field, TEXT("Failed to find static field %s in Java class %s"), UTF8_TO_TCHAR(FieldName), *ClassData.Name.ToString());
+
+	auto LocalRef = NewSentryScopedJavaObject(JEnv, JEnv->GetStaticObjectField(Class, Field));
+
+	jobject GlobalRef = JEnv->NewGlobalRef(*LocalRef);
+	checkf(GlobalRef, TEXT("Failed to obtain static field reference for %s in Java class %s"), UTF8_TO_TCHAR(FieldName), *ClassData.Name.ToString());
+	return GlobalRef;
 }

@@ -5,6 +5,8 @@
 #include "SentryDataTypes.h"
 #include "SentryVariant.h"
 
+#include "AndroidSentryScopedJavaObject.h"
+
 #include "Android/AndroidJNI.h"
 
 class FSentryJavaObjectWrapper;
@@ -22,7 +24,7 @@ public:
 	static TSharedPtr<FSentryJavaObjectWrapper> VariantArrayToNative(const TArray<FSentryVariant>& variantArray);
 	static TSharedPtr<FSentryJavaObjectWrapper> VariantMapToNative(const TMap<FString, FSentryVariant>& variantMap);
 	static TSharedPtr<FSentryJavaObjectWrapper> TimestampToNative(int64 timestamp);
-	static jbyteArray ByteArrayToNative(const TArray<uint8>& byteArray);
+	static FSentryScopedJavaObject<jbyteArray> ByteArrayToNative(const TArray<uint8>& byteArray);
 
 	/** Conversions from native Java types */
 	static ESentryLevel SentryLevelToUnreal(jobject level);
