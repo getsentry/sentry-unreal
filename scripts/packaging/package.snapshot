@@ -361,6 +361,7 @@ Source/ThirdParty/Android/sentry-android-replay-release.aar
 Source/ThirdParty/Android/sentry-native-ndk-release.aar
 Source/ThirdParty/Android/sentry.jar
 Source/ThirdParty/CLI/sentry-darwin-arm64
+Source/ThirdParty/CLI/sentry-darwin-x64
 Source/ThirdParty/CLI/sentry-linux-x64
 Source/ThirdParty/CLI/sentry-windows-x64.exe
 Source/ThirdParty/IOS/SentryObjC.embeddedframework.zip

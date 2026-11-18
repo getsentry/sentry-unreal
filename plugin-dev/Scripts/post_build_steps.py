@@ -52,6 +52,7 @@ def run_mac_host_steps(target_platform, plugin_dir):
         stage_binary(os.path.join(third_party_dir, 'Mac', 'Cocoa', 'bin', 'SentryObjC.dylib'), os.path.join(binaries_dir, 'SentryObjC.dylib'))
 
     make_executable(os.path.join(third_party_dir, 'CLI', 'sentry-darwin-arm64'))
+    make_executable(os.path.join(third_party_dir, 'CLI', 'sentry-darwin-x64'))
     make_executable(os.path.join(binaries_dir, 'sentry-crash'))
     make_executable(os.path.join(binaries_dir, 'Sentry.CrashReporter.app', 'Contents', 'MacOS', 'Sentry.CrashReporter'))
 

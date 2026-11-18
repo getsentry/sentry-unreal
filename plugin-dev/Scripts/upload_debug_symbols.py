@@ -98,18 +98,22 @@ def get_cli_executable(plugin_dir):
     host_system = platform.system()
 
     if host_system == 'Windows':
-        cli_name = 'sentry-windows-x64.exe'
+        cli_names = ['sentry-windows-x64.exe']
     elif host_system == 'Darwin':
-        cli_name = 'sentry-darwin-arm64'
+        # Apple silicon can also run the x64 binary through Rosetta
+        if platform.machine() == 'arm64':
+            cli_names = ['sentry-darwin-arm64', 'sentry-darwin-x64']
+        else:
+            cli_names = ['sentry-darwin-x64']
     elif host_system == 'Linux':
-        cli_name = 'sentry-linux-x64'
+        cli_names = ['sentry-linux-x64']
     else:
         return None
 
-    cli_path = os.path.join(plugin_dir, 'Source', 'ThirdParty', 'CLI', cli_name)
-
-    if os.path.exists(cli_path):
-        return cli_path
+    for cli_name in cli_names:
+        cli_path = os.path.join(plugin_dir, 'Source', 'ThirdParty', 'CLI', cli_name)
+        if os.path.exists(cli_path):
+            return cli_path
 
     return None
 

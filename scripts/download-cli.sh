@@ -17,7 +17,7 @@ cd $targetDir
 # Remove previous contents of the directory (remove all ignored files).
 git clean -fXd .
 
-declare -a platforms=("darwin-arm64" "linux-x64" "windows-x64.exe")
+declare -a platforms=("darwin-arm64" "darwin-x64" "linux-x64" "windows-x64.exe")
 for platform in "${platforms[@]}"; do
     echo "Downloading Sentry CLI for $platform to $PWD ..."
     curl -fLJO $baseUrl$platform

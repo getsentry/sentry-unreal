@@ -26,8 +26,10 @@
 
 #if PLATFORM_WINDOWS
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-windows-x64.exe");
-#elif PLATFORM_MAC
+#elif PLATFORM_MAC && PLATFORM_MAC_ARM64
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-darwin-arm64");
+#elif PLATFORM_MAC
+const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-darwin-x64");
 #elif PLATFORM_LINUX
 const FString FSentrySymToolsDownloader::SentryCliExecName = TEXT("sentry-linux-x64");
 #endif
