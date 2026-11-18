@@ -11,9 +11,9 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.63.0 to v8.64.0 ([#1692](https://github.com/getsentry/sentry-unreal/pull/1692))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8640)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.63.0...8.64.0)
+- Bump Java SDK from v8.63.0 to v8.65.0 ([#1692](https://github.com/getsentry/sentry-unreal/pull/1692), [#1708](https://github.com/getsentry/sentry-unreal/pull/1708))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8650)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.63.0...8.65.0)
 - Bump Cocoa SDK from v9.33.0 to v9.35.0 ([#1693](https://github.com/getsentry/sentry-unreal/pull/1693), [#1704](https://github.com/getsentry/sentry-unreal/pull/1704))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9350)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.33.0...9.35.0)
