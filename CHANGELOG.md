@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Attach all threads to native hang events ([#1714](https://github.com/getsentry/sentry-unreal/pull/1714))
+
 ### Fixes
 
 - Fix memory leaks and potential use-after-free in native object wrappers on macOS and iOS ([#1691](https://github.com/getsentry/sentry-unreal/pull/1691))
