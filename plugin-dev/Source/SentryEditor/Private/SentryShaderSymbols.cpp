@@ -281,8 +281,8 @@ int32 FSentryShaderSymbols::Upload(const FString& FormatDir)
 		return 1;
 	}
 
-	const FString LogLevel = StaticEnum<ESentryCliLogLevel>()->GetNameStringByValue(static_cast<int64>(GetDefault<USentrySettings>()->DiagnosticLevel)).ToLower();
-	const FString Args = FString::Printf(TEXT("debug-files upload --type dxil --log-level %s \"%s\""), *LogLevel, *FPaths::ConvertRelativePathToFull(FormatDir));
+	const FString CliLogLevel = StaticEnum<ESentryCliLogLevel>()->GetNameStringByValue(static_cast<int64>(GetDefault<USentrySettings>()->DiagnosticLevel)).ToLower();
+	const FString Args = FString::Printf(TEXT("debug-files upload --type dxil --log-level %s \"%s\""), *CliLogLevel, *FPaths::ConvertRelativePathToFull(FormatDir));
 	UE_LOG(LogSentryShaderSymbols, Log, TEXT("Uploading shader symbols from %s"), *FormatDir);
 
 	int32 ReturnCode = -1;
