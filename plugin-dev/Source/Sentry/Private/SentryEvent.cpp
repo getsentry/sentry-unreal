@@ -63,7 +63,7 @@ void USentryEvent::SetLevel(ESentryLevel Level)
 ESentryLevel USentryEvent::GetLevel() const
 {
 	if (!NativeImpl)
-		return ESentryLevel::Debug;
+		return ESentryLevel::Error;
 
 	return NativeImpl->GetLevel();
 }

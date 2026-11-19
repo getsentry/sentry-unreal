@@ -91,7 +91,7 @@ ESentryLevel FAndroidSentryBreadcrumb::GetLevel() const
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
 	if (!level)
 	{
-		return ESentryLevel::Debug;
+		return ESentryLevel::Info;
 	}
 
 	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
