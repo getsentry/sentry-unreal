@@ -4,7 +4,7 @@
 
 ### Behavioral Changes
 
-- Use the Native SDK's OS context under Wine/Proton and on SteamOS/Bazzite instead of the plugin's own ([#TBD](https://github.com/getsentry/sentry-unreal/pull/TBD))
+- Use the Native SDK's OS context under Wine/Proton and on SteamOS/Bazzite instead of the plugin's own ([#1711](https://github.com/getsentry/sentry-unreal/pull/1711))
 
 ### Dependencies
 
