@@ -62,6 +62,11 @@ void FGenericPlatformSentryEvent::SetLevel(ESentryLevel level)
 ESentryLevel FGenericPlatformSentryEvent::GetLevel() const
 {
 	sentry_value_t level = sentry_value_get_by_key(Event, "level");
+	if (sentry_value_is_null(level))
+	{
+		return ESentryLevel::Error;
+	}
+
 	return FGenericPlatformSentryConverters::SentryLevelToUnreal(level);
 }
 

@@ -55,14 +55,9 @@ void SentryBreadcrumbSpec::Define()
 
 	Describe("Breadcrumb defaults", [this]()
 	{
-		It("should not crash when getting level that isn't set", [this]()
+		It("should report Info level when no level is set", [this]()
 		{
-#if PLATFORM_ANDROID
-			// Unset level defaults differ across backends, only the Android fallback is checked here
-			TestEqual("Unset level - default Debug", SentryBreadcrumb->GetLevel(), ESentryLevel::Debug);
-#else
-			SentryBreadcrumb->GetLevel();
-#endif
+			TestEqual("Unset level - default Info", SentryBreadcrumb->GetLevel(), ESentryLevel::Info);
 		});
 	});
 

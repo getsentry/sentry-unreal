@@ -194,14 +194,9 @@ void SentryEventSpec::Define()
 
 	Describe("Event defaults", [this]()
 	{
-		It("should not crash when getting level that isn't set", [this]()
+		It("should report Error level when no level is set", [this]()
 		{
-#if PLATFORM_ANDROID
-			// Unset level defaults differ across backends, only the Android fallback is checked here
-			TestEqual("Unset level - default Debug", SentryEvent->GetLevel(), ESentryLevel::Debug);
-#else
-			SentryEvent->GetLevel();
-#endif
+			TestEqual("Unset level - default Error", SentryEvent->GetLevel(), ESentryLevel::Error);
 		});
 
 		It("should report empty message when no message is set", [this]()
