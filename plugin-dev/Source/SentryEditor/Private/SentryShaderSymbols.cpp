@@ -71,6 +71,12 @@ int32 FSentryShaderSymbols::Run(const FString& ProjectSavedDir, bool bUpload)
 
 	int32 Processed = 0;
 	int32 Failures = 0;
+	if (bUpload && !ConfigureCliEnvironment())
+	{
+		bUpload = false;
+		Failures++;
+	}
+
 	for (const FString& FormatName : FormatDirs)
 	{
 		const FString FormatDir = SymbolsRoot / FormatName;
@@ -184,22 +190,99 @@ TMap<FString, FString> FSentryShaderSymbols::ReadSymbolsInfo(const FString& Form
 	return Groups;
 }
 
+FString FSentryShaderSymbols::ReadProperty(const TArray<FString>& PropertyLines, const FString& Key)
+{
+	for (const FString& Line : PropertyLines)
+	{
+		const FString Trimmed = Line.TrimStartAndEnd();
+		if (Trimmed.IsEmpty() || Trimmed.StartsWith(TEXT("#")) || Trimmed.StartsWith(TEXT(";")))
+		{
+			continue;
+		}
+
+		FString LineKey, LineValue;
+		if (Trimmed.Split(TEXT("="), &LineKey, &LineValue) && LineKey.TrimEnd() == Key)
+		{
+			return LineValue.TrimStart();
+		}
+	}
+	return FString();
+}
+
+bool FSentryShaderSymbols::ConfigureCliEnvironment()
+{
+	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_PROPERTIES"), TEXT(""));
+
+	const FString PropertiesFile = FPaths::ProjectDir() / TEXT("sentry.properties");
+	TArray<FString> PropertyLines;
+	const bool bHasPropertiesFile = FFileHelper::LoadFileToStringArray(PropertyLines, *PropertiesFile);
+	if (!bHasPropertiesFile)
+	{
+		UE_LOG(LogSentryShaderSymbols, Log, TEXT("Properties file not found at %s, falling back to environment variables"), *PropertiesFile);
+	}
+
+	struct FCliSetting
+	{
+		const TCHAR* EnvName;
+		const TCHAR* PropertyKey;
+		bool bRequired;
+	};
+	const FCliSetting Settings[] = {
+		{ TEXT("SENTRY_ORG"), TEXT("defaults.org"), true },
+		{ TEXT("SENTRY_PROJECT"), TEXT("defaults.project"), true },
+		{ TEXT("SENTRY_AUTH_TOKEN"), TEXT("auth.token"), true },
+		{ TEXT("SENTRY_URL"), TEXT("defaults.url"), false },
+	};
+
+	bool bAnyFromEnv = false;
+	bool bAnyFromFile = false;
+	for (const FCliSetting& Setting : Settings)
+	{
+		const FString EnvValue = FPlatformMisc::GetEnvironmentVariable(Setting.EnvName).TrimStartAndEnd();
+		if (!EnvValue.IsEmpty())
+		{
+			bAnyFromEnv = true;
+			continue;
+		}
+
+		const FString FileValue = ReadProperty(PropertyLines, Setting.PropertyKey);
+		if (!FileValue.IsEmpty())
+		{
+			FPlatformMisc::SetEnvironmentVar(Setting.EnvName, *FileValue);
+			bAnyFromFile = true;
+		}
+		else if (Setting.bRequired)
+		{
+			UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader symbols upload skipped: set %s in sentry.properties or the %s env var"), Setting.PropertyKey, Setting.EnvName);
+			return false;
+		}
+	}
+
+	if (bAnyFromEnv && bAnyFromFile)
+	{
+		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("Upload settings come from both sentry.properties and environment variables. Make sure that they belong to the same organization and project."));
+	}
+
+	const FString ConfigDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectIntermediateDir() / TEXT("SentryCli"));
+	IFileManager::Get().MakeDirectory(*ConfigDir, true);
+	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_CONFIG_DIR"), *ConfigDir);
+	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_FORCE_ENV_TOKEN"), TEXT("1"));
+	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_CLI_NO_TELEMETRY"), TEXT("1"));
+	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_CLI_NO_UPDATE_CHECK"), TEXT("1"));
+	return true;
+}
+
 int32 FSentryShaderSymbols::Upload(const FString& FormatDir)
 {
 	const FString CliPath = FSentrySymToolsDownloader().GetSentryCliPath();
 	if (!FPaths::FileExists(CliPath))
 	{
-		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader symbols upload skipped: sentry-cli not found at %s (download it from the plugin settings)"), *CliPath);
+		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader symbols upload skipped: Sentry CLI not found at %s (download it from the plugin settings)"), *CliPath);
 		return 1;
 	}
 
-	const FString PropertiesFile = FPaths::ProjectDir() / TEXT("sentry.properties");
-	if (FPaths::FileExists(PropertiesFile))
-	{
-		FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_PROPERTIES"), *FPaths::ConvertRelativePathToFull(PropertiesFile));
-	}
-
-	const FString Args = FString::Printf(TEXT("debug-files upload --type dxil \"%s\""), *FPaths::ConvertRelativePathToFull(FormatDir));
+	const FString LogLevel = StaticEnum<ESentryCliLogLevel>()->GetNameStringByValue(static_cast<int64>(GetDefault<USentrySettings>()->DiagnosticLevel)).ToLower();
+	const FString Args = FString::Printf(TEXT("debug-files upload --type dxil --log-level %s \"%s\""), *LogLevel, *FPaths::ConvertRelativePathToFull(FormatDir));
 	UE_LOG(LogSentryShaderSymbols, Log, TEXT("Uploading shader symbols from %s"), *FormatDir);
 
 	int32 ReturnCode = -1;

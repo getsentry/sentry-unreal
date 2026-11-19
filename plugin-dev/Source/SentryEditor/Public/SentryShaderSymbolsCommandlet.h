@@ -12,7 +12,7 @@
  *
  * For every shader format under `Saved/ShaderSymbols` it computes the NVIDIA Aftermath hash of each `.dxil` binary,
  * joins the shader names from `ShaderSymbols.info` and writes `sentry-shader-manifest.tsv` next to the files. With
- * `-Upload` it then uploads the binaries with sentry-cli. The same work runs automatically at the end of a cook on
+ * `-Upload` it then uploads the binaries with the Sentry CLI. The same work runs automatically at the end of a cook on
  * UE 5.5+ when the `Upload shader symbols after cook` setting is enabled; the commandlet is the explicit alternative
  * for CI pipelines and older engine versions.
  *

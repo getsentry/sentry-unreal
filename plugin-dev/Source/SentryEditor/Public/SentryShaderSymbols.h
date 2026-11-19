@@ -21,6 +21,8 @@ private:
 	static bool WriteManifest(const FString& FormatDir, const TArray<FString>& DxilFiles, int32& OutShaderCount);
 	static bool HashShader(const TArray<uint8>& Shader, uint64& OutHash);
 	static TMap<FString, FString> ReadSymbolsInfo(const FString& FormatDir);
+	static FString ReadProperty(const TArray<FString>& PropertyLines, const FString& Key);
+	static bool ConfigureCliEnvironment();
 	static int32 Upload(const FString& FormatDir);
 
 	static const TCHAR* const ManifestFileName;
