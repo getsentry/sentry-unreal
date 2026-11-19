@@ -26,16 +26,16 @@ target - packaging included. It never runs for Editor targets, so working in the
 uploads nothing; a game, client or server target has to be built. Android is the exception: its
 symbols go through Sentry's Gradle plugin instead, governed by the same enable flag.
 
-The step hands the build's symbol files to the sentry-cli bundled with the plugin. Its two
+The step hands the build's symbol files to the Sentry CLI bundled with the plugin. Its two
 failure modes pull in opposite directions:
 
 - Disabled, or configuration absent or incomplete: it skips WITHOUT failing the build, so a
   green build proves nothing.
-- Credentials present but wrong (a bad token, a wrong slug): sentry-cli fails and takes the
+- Credentials present but wrong (a bad token, a wrong slug): the CLI fails and takes the
   build with it - at the very end, after the long part is already done.
 
 Either way the build log tells the truth: lines prefixed `Sentry:` state the exact skip reason,
-the sentry-cli error, or `Upload finished`.
+the CLI error, or `Upload finished`.
 
 ## Step 1 - Configure
 
@@ -62,7 +62,8 @@ values from whichever source it is - a partial set is a skip, not an error:
   for CI, where they belong in the secret store. `SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY=True` also
   overrides the enable flag there, so CI can upload without changing the project config.
 
-The properties file wins when both exist. Org and project slugs can come from the Sentry MCP if
+When the properties file exists it must be complete, and any of the three environment variables
+that is also set overrides the file's value. Org and project slugs can come from the Sentry MCP if
 its tools are in front of you (`find_organizations`, `find_projects`). The auth token cannot: the
 user creates an organization auth token in their Sentry settings and puts it where it is needed
 themselves - offer to tell them where, not to handle the value.
@@ -70,14 +71,18 @@ themselves - offer to tell them where, not to handle the value.
 ## Step 2 - Verify the credentials
 
 Never trigger a build to verify - on a real project that can take hours. Instead prove the
-credentials with the sentry-cli the plugin ships (under its ThirdParty sources, one executable
-per host platform) - the same binary and the same configuration the post-build step will use:
+credentials with the Sentry CLI the plugin ships (`sentry-<os>-<arch>` under its ThirdParty
+sources, one executable per host platform) - the same binary and the same configuration the
+post-build step will use:
 
-- With a properties file, point the `SENTRY_PROPERTIES` environment variable at it for the CLI
-  invocations; environment-variable credentials are picked up as is. Either way the CLI reads
-  the token itself - never pass or paste its value.
-- `sentry-cli info` verifies the token authenticates against Sentry.
-- `sentry-cli projects list` confirms the org resolves and the configured project slug is in it.
+- The CLI does not read `sentry.properties`. Start it as a subprocess whose environment gets
+  `SENTRY_ORG`, `SENTRY_PROJECT` and `SENTRY_AUTH_TOKEN` from the file, only where they are not
+  already set - load the values in code and never print, pass on the command line or paste them.
+  Also set `SENTRY_FORCE_ENV_TOKEN=1` so a personal `sentry auth login` cannot take over, and
+  `SENTRY_CONFIG_DIR` to the project's `Intermediate/SentryCli` directory, as the post-build step
+  does.
+- `sentry auth status` verifies the token authenticates against Sentry.
+- `sentry project view <org>/<project>` confirms the org resolves and the project slug is in it.
 
 Report the outcome as facts - valid, or what exactly failed - rather than echoing CLI output,
 which can include account details.
@@ -94,7 +99,7 @@ upload on request.
 
 Upload is enabled for the build targets and configurations that ship, credentials are in place on
 the machine that builds (and gitignored if they live in the properties file), the bundled
-sentry-cli has confirmed that the token, org and project resolve, and the user knows to look for
+Sentry CLI has confirmed that the token, org and project resolve, and the user knows to look for
 the `Sentry:` lines - and `Upload finished` - in their next build log.
 """
 

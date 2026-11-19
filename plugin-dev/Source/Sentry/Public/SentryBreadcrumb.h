@@ -59,7 +59,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetLevel(ESentryLevel Level);
 
-	/** Gets the level of the breadcrumb. */
+	/** Gets the level of the breadcrumb. Defaults to Info if no level is set. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	ESentryLevel GetLevel() const;
 };

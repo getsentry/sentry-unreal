@@ -58,6 +58,11 @@ void FAppleSentryEvent::SetLevel(ESentryLevel level)
 
 ESentryLevel FAppleSentryEvent::GetLevel() const
 {
+	if (EventApple.level == SentryObjCLevelNone)
+	{
+		return ESentryLevel::Error;
+	}
+
 	return FAppleSentryConverters::SentryLevelToUnreal(EventApple.level);
 }
 

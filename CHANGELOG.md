@@ -5,6 +5,11 @@
 ### Features
 
 - Attach all threads to native hang events ([#1714](https://github.com/getsentry/sentry-unreal/pull/1714))
+- Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
+
+### Behavioral Changes
+
+- `GetLevel()` on events and breadcrumbs without a level now returns `Error` and `Info` respectively on all platforms, matching the protocol defaults ([#1713](https://github.com/getsentry/sentry-unreal/pull/1713))
 
 ### Fixes
 
