@@ -17,6 +17,7 @@ class FGenericPlatformSentryConverters
 public:
 	/** Conversions to native types */
 	static sentry_level_e SentryLevelToNative(ESentryLevel level);
+	static sentry_level_e SentryLogLevelToNative(ESentryLogLevel level);
 	static sentry_value_t StringMapToNative(const TMap<FString, FString>& map);
 	static sentry_value_t StringArrayToNative(const TArray<FString>& array);
 	static sentry_value_t VariantToNative(const FSentryVariant& variant);

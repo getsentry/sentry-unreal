@@ -369,7 +369,7 @@ void FAppleSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, cons
 	[SENTRY_APPLE_CLASS(SentryObjCSDK) addBreadcrumb:breadcrumbIOS->GetNativeObject()];
 }
 
-void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
+void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLogLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
 	NSMutableDictionary* attributesDict = [NSMutableDictionary dictionaryWithCapacity:Attributes.Num()];
 
@@ -388,19 +388,22 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 	// Use level-specific Apple Sentry SDK logging functions with attributes
 	switch (Level)
 	{
-	case ESentryLevel::Fatal:
+	case ESentryLogLevel::Fatal:
 		[[SENTRY_APPLE_CLASS(SentryObjCSDK) logger] fatal:Message.GetNSString() attributes:attributesDict];
 		break;
-	case ESentryLevel::Error:
+	case ESentryLogLevel::Error:
 		[[SENTRY_APPLE_CLASS(SentryObjCSDK) logger] error:Message.GetNSString() attributes:attributesDict];
 		break;
-	case ESentryLevel::Warning:
+	case ESentryLogLevel::Warning:
 		[[SENTRY_APPLE_CLASS(SentryObjCSDK) logger] warn:Message.GetNSString() attributes:attributesDict];
 		break;
-	case ESentryLevel::Info:
+	case ESentryLogLevel::Info:
 		[[SENTRY_APPLE_CLASS(SentryObjCSDK) logger] info:Message.GetNSString() attributes:attributesDict];
 		break;
-	case ESentryLevel::Debug:
+	case ESentryLogLevel::Trace:
+		[[SENTRY_APPLE_CLASS(SentryObjCSDK) logger] trace:Message.GetNSString() attributes:attributesDict];
+		break;
+	case ESentryLogLevel::Debug:
 	default:
 		[[SENTRY_APPLE_CLASS(SentryObjCSDK) logger] debug:Message.GetNSString() attributes:attributesDict];
 		break;

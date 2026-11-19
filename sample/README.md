@@ -110,7 +110,7 @@ The following test switches are supported:
 - `-message-capture` - capture a message event
 - `-scoped-event-capture` - capture an event with a local scope that doesn't set a level
 - `-feedback-capture` - capture user feedback associated with an event
-- `-log-capture` - capture a structured log
+- `-log-capture` - capture structured logs, including a trace log and logs whose level is changed by `BeforeLogHandler`
 - `-metric-capture` - emit a metric
 - `-tracing-capture` - capture a transaction/span
 - `-tracing-timestamp` - capture a transaction/span with explicit start and end timestamps

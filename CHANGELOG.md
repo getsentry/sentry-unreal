@@ -2,6 +2,15 @@
 
 ## Unreleased (v2)
 
+### Breaking Changes
+
+- Structured log APIs (`USentryLog::SetLevel`/`GetLevel`) now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1625](https://github.com/getsentry/sentry-unreal/issues/1625))
+
+### Features
+
+- Add `trace` level for structured logs: `LogTrace` and `LogTraceWithAttributes` APIs, and forwarding of `VeryVerbose` UE log messages as trace logs via the new `VeryVerbose` structured logging setting ([#1625](https://github.com/getsentry/sentry-unreal/issues/1625))
+  - Projects that already forward `Verbose` messages keep forwarding `VeryVerbose` ones until the new setting is changed
+
 ### Behavioral Changes
 
 - Use the Native SDK's OS context under Wine/Proton and on SteamOS/Bazzite instead of the plugin's own ([#1711](https://github.com/getsentry/sentry-unreal/pull/1711))

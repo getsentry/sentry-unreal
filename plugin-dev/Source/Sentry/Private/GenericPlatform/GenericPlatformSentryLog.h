@@ -13,15 +13,15 @@ class FGenericPlatformSentryLog : public ISentryLog
 public:
 	FGenericPlatformSentryLog();
 	FGenericPlatformSentryLog(sentry_value_t log);
-	FGenericPlatformSentryLog(const FString& body, ESentryLevel level);
+	FGenericPlatformSentryLog(const FString& body, ESentryLogLevel level);
 	virtual ~FGenericPlatformSentryLog() override;
 
 	sentry_value_t GetNativeObject();
 
 	virtual void SetBody(const FString& body) override;
 	virtual FString GetBody() const override;
-	virtual void SetLevel(ESentryLevel level) override;
-	virtual ESentryLevel GetLevel() const override;
+	virtual void SetLevel(ESentryLogLevel level) override;
+	virtual ESentryLogLevel GetLevel() const override;
 
 	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;
 	virtual FSentryVariant GetAttribute(const FString& key) const override;

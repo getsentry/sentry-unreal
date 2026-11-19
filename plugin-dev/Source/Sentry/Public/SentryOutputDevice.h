@@ -32,12 +32,12 @@ private:
 	TSharedPtr<ISentrySubsystem> NativeImpl;
 
 	TMap<ESentryLevel, bool> BreadcrumbFlags;
-	TMap<ESentryLevel, bool> StructuredLoggingFlags;
+	TMap<ESentryLogLevel, bool> StructuredLoggingFlags;
 
 	TArray<FString> StructuredLoggingCategories;
 	bool bSendBreadcrumbsWithStructuredLogging;
 
 	void CacheLoggingSettings(const USentrySettings& Settings);
 
-	bool ShouldForwardToStructuredLogging(const FString& Category, ESentryLevel Level) const;
+	bool ShouldForwardToStructuredLogging(const FString& Category, ESentryLogLevel Level) const;
 };

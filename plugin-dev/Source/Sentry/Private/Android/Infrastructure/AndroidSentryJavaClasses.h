@@ -58,12 +58,12 @@ struct SentryJavaClasses
 
 	// Java enum constants cache (populated alongside the class references cache)
 	static jobject GetCachedSentryLevelRef(ESentryLevel Level);
-	static jobject GetCachedSentryLogLevelRef(ESentryLevel Level);
+	static jobject GetCachedSentryLogLevelRef(ESentryLogLevel Level);
 
 private:
 	static jobject FindStaticObjectFieldRef(const FSentryJavaClass& ClassData, const char* FieldName, const char* FieldSignature);
 
 	static TMap<FName, jclass> JavaClassRefsCache;
 	static TMap<ESentryLevel, jobject> SentryLevelRefsCache;
-	static TMap<ESentryLevel, jobject> SentryLogLevelRefsCache;
+	static TMap<ESentryLogLevel, jobject> SentryLogLevelRefsCache;
 };

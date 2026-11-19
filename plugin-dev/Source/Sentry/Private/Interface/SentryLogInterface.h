@@ -15,8 +15,8 @@ public:
 
 	virtual void SetBody(const FString& body) = 0;
 	virtual FString GetBody() const = 0;
-	virtual void SetLevel(ESentryLevel level) = 0;
-	virtual ESentryLevel GetLevel() const = 0;
+	virtual void SetLevel(ESentryLogLevel level) = 0;
+	virtual ESentryLogLevel GetLevel() const = 0;
 
 	virtual void SetAttribute(const FString& key, const FSentryVariant& value) = 0;
 	virtual FSentryVariant GetAttribute(const FString& key) const = 0;

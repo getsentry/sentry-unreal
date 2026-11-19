@@ -17,7 +17,7 @@ FGenericPlatformSentryLog::FGenericPlatformSentryLog(sentry_value_t log)
 	Log = sentry_value_incref(log);
 }
 
-FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& body, ESentryLevel level)
+FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& body, ESentryLogLevel level)
 {
 	Log = sentry_value_new_object();
 	SetBody(body);
@@ -45,25 +45,28 @@ FString FGenericPlatformSentryLog::GetBody() const
 	return FString(UTF8_TO_TCHAR(sentry_value_as_string(body)));
 }
 
-void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
+void FGenericPlatformSentryLog::SetLevel(ESentryLogLevel level)
 {
 	const char* levelStr = "debug"; // Default to "debug" to avoid nullptr
 	switch (level)
 	{
-	case ESentryLevel::Fatal:
+	case ESentryLogLevel::Fatal:
 		levelStr = "fatal";
 		break;
-	case ESentryLevel::Error:
+	case ESentryLogLevel::Error:
 		levelStr = "error";
 		break;
-	case ESentryLevel::Warning:
+	case ESentryLogLevel::Warning:
 		levelStr = "warn";
 		break;
-	case ESentryLevel::Info:
+	case ESentryLogLevel::Info:
 		levelStr = "info";
 		break;
-	case ESentryLevel::Debug:
+	case ESentryLogLevel::Debug:
 		levelStr = "debug";
+		break;
+	case ESentryLogLevel::Trace:
+		levelStr = "trace";
 		break;
 	default:
 		// Use default "debug" level for unhandled cases
@@ -72,25 +75,25 @@ void FGenericPlatformSentryLog::SetLevel(ESentryLevel level)
 	sentry_value_set_by_key(Log, "level", sentry_value_new_string(levelStr));
 }
 
-ESentryLevel FGenericPlatformSentryLog::GetLevel() const
+ESentryLogLevel FGenericPlatformSentryLog::GetLevel() const
 {
 	sentry_value_t levelValue = sentry_value_get_by_key(Log, "level");
 	const char* levelStr = sentry_value_as_string(levelValue);
 
 	if (FCStringAnsi::Strcmp(levelStr, "fatal") == 0)
-		return ESentryLevel::Fatal;
+		return ESentryLogLevel::Fatal;
 	else if (FCStringAnsi::Strcmp(levelStr, "error") == 0)
-		return ESentryLevel::Error;
+		return ESentryLogLevel::Error;
 	else if (FCStringAnsi::Strcmp(levelStr, "warn") == 0)
-		return ESentryLevel::Warning;
+		return ESentryLogLevel::Warning;
 	else if (FCStringAnsi::Strcmp(levelStr, "info") == 0)
-		return ESentryLevel::Info;
+		return ESentryLogLevel::Info;
 	else if (FCStringAnsi::Strcmp(levelStr, "debug") == 0)
-		return ESentryLevel::Debug;
-	else if (FCStringAnsi::Strcmp(levelStr, "trace") == 0) // map trace to debug
-		return ESentryLevel::Debug;
+		return ESentryLogLevel::Debug;
+	else if (FCStringAnsi::Strcmp(levelStr, "trace") == 0)
+		return ESentryLogLevel::Trace;
 	else
-		return ESentryLevel::Debug; // default
+		return ESentryLogLevel::Debug; // default
 }
 
 void FGenericPlatformSentryLog::SetAttribute(const FString& key, const FSentryVariant& value)

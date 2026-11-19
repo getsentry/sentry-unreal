@@ -37,25 +37,28 @@ SentryObjCLevel FAppleSentryConverters::SentryLevelToNative(ESentryLevel level)
 	return nativeLevel;
 }
 
-SentryObjCLogLevel FAppleSentryConverters::SentryLogLevelToNative(ESentryLevel level)
+SentryObjCLogLevel FAppleSentryConverters::SentryLogLevelToNative(ESentryLogLevel level)
 {
 	SentryObjCLogLevel nativeLevel = SentryObjCLogLevelDebug;
 
 	switch (level)
 	{
-	case ESentryLevel::Debug:
+	case ESentryLogLevel::Trace:
+		nativeLevel = SentryObjCLogLevelTrace;
+		break;
+	case ESentryLogLevel::Debug:
 		nativeLevel = SentryObjCLogLevelDebug;
 		break;
-	case ESentryLevel::Info:
+	case ESentryLogLevel::Info:
 		nativeLevel = SentryObjCLogLevelInfo;
 		break;
-	case ESentryLevel::Warning:
+	case ESentryLogLevel::Warning:
 		nativeLevel = SentryObjCLogLevelWarn;
 		break;
-	case ESentryLevel::Error:
+	case ESentryLogLevel::Error:
 		nativeLevel = SentryObjCLogLevelError;
 		break;
-	case ESentryLevel::Fatal:
+	case ESentryLogLevel::Fatal:
 		nativeLevel = SentryObjCLogLevelFatal;
 		break;
 	default:
@@ -386,27 +389,29 @@ ESentryLevel FAppleSentryConverters::SentryLevelToUnreal(SentryObjCLevel level)
 	return unrealLevel;
 }
 
-ESentryLevel FAppleSentryConverters::SentryLogLevelToUnreal(SentryObjCLogLevel level)
+ESentryLogLevel FAppleSentryConverters::SentryLogLevelToUnreal(SentryObjCLogLevel level)
 {
-	ESentryLevel unrealLevel = ESentryLevel::Debug;
+	ESentryLogLevel unrealLevel = ESentryLogLevel::Debug;
 
 	switch (level)
 	{
 	case SentryObjCLogLevelTrace:
+		unrealLevel = ESentryLogLevel::Trace;
+		break;
 	case SentryObjCLogLevelDebug:
-		unrealLevel = ESentryLevel::Debug;
+		unrealLevel = ESentryLogLevel::Debug;
 		break;
 	case SentryObjCLogLevelInfo:
-		unrealLevel = ESentryLevel::Info;
+		unrealLevel = ESentryLogLevel::Info;
 		break;
 	case SentryObjCLogLevelWarn:
-		unrealLevel = ESentryLevel::Warning;
+		unrealLevel = ESentryLogLevel::Warning;
 		break;
 	case SentryObjCLogLevelError:
-		unrealLevel = ESentryLevel::Error;
+		unrealLevel = ESentryLogLevel::Error;
 		break;
 	case SentryObjCLogLevelFatal:
-		unrealLevel = ESentryLevel::Fatal;
+		unrealLevel = ESentryLogLevel::Fatal;
 		break;
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry structured log level value used. Debug will be returned."));

@@ -888,13 +888,13 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	sentry_add_breadcrumb(sentry_value_incref(Breadcrumb->GetNativeObject()));
 }
 
-void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLogLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
 	FTCHARToUTF8 MessageUtf8(*Message);
 
 	sentry_value_t attributes = FGenericPlatformSentryConverters::VariantMapToAttributesNative(Attributes);
 
-	sentry_log(FGenericPlatformSentryConverters::SentryLevelToNative(Level), MessageUtf8.Get(), attributes);
+	sentry_log(FGenericPlatformSentryConverters::SentryLogLevelToNative(Level), MessageUtf8.Get(), attributes);
 }
 
 void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)

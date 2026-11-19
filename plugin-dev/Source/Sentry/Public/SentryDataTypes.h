@@ -17,6 +17,17 @@ enum class ESentryLevel : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESentryLogLevel : uint8
+{
+	Trace,
+	Debug,
+	Info,
+	Warning,
+	Error,
+	Fatal
+};
+
+UENUM(BlueprintType)
 enum class ESentryCrashedLastRun : uint8
 {
 	NotEvaluated,

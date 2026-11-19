@@ -256,29 +256,33 @@ void FAndroidSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, co
 		breadcrumbAndroid->GetJObject());
 }
 
-void FAndroidSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
+void FAndroidSentrySubsystem::AddLog(const FString& Message, ESentryLogLevel Level, const TMap<FString, FSentryVariant>& Attributes)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> attributesMap = FAndroidSentryConverters::VariantMapToNative(Attributes);
 
 	switch (Level)
 	{
-	case ESentryLevel::Fatal:
+	case ESentryLogLevel::Fatal:
 		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogFatal", "(Ljava/lang/String;Ljava/util/HashMap;)V",
 			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
-	case ESentryLevel::Error:
+	case ESentryLogLevel::Error:
 		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogError", "(Ljava/lang/String;Ljava/util/HashMap;)V",
 			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
-	case ESentryLevel::Warning:
+	case ESentryLogLevel::Warning:
 		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogWarn", "(Ljava/lang/String;Ljava/util/HashMap;)V",
 			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
-	case ESentryLevel::Info:
+	case ESentryLogLevel::Info:
 		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogInfo", "(Ljava/lang/String;Ljava/util/HashMap;)V",
 			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
 		break;
-	case ESentryLevel::Debug:
+	case ESentryLogLevel::Trace:
+		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogTrace", "(Ljava/lang/String;Ljava/util/HashMap;)V",
+			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());
+		break;
+	case ESentryLogLevel::Debug:
 	default:
 		FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "addLogDebug", "(Ljava/lang/String;Ljava/util/HashMap;)V",
 			*FSentryJavaObjectWrapper::GetJString(Message), attributesMap->GetJObject());

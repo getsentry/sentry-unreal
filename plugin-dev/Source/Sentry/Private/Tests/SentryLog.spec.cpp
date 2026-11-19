@@ -26,7 +26,7 @@ void SentryLogSpec::Define()
 		It("should persist their values", [this]()
 		{
 			const FString TestBody = FString(TEXT("Test log body"));
-			const ESentryLevel TestLevel = ESentryLevel::Warning;
+			const ESentryLogLevel TestLevel = ESentryLogLevel::Warning;
 
 			SentryLog->SetBody(TestBody);
 			SentryLog->SetLevel(TestLevel);
@@ -39,33 +39,59 @@ void SentryLogSpec::Define()
 		{
 			const FString TestBody = FString(TEXT("Test message"));
 
-			// Test Debug level
 			SentryLog->SetBody(TestBody);
-			SentryLog->SetLevel(ESentryLevel::Debug);
-			TestEqual("Debug level", SentryLog->GetLevel(), ESentryLevel::Debug);
+
+			// Test Trace level
+			SentryLog->SetLevel(ESentryLogLevel::Trace);
+			TestEqual("Trace level", SentryLog->GetLevel(), ESentryLogLevel::Trace);
+
+			// Test Debug level
+			SentryLog->SetLevel(ESentryLogLevel::Debug);
+			TestEqual("Debug level", SentryLog->GetLevel(), ESentryLogLevel::Debug);
 
 			// Test Info level
-			SentryLog->SetLevel(ESentryLevel::Info);
-			TestEqual("Info level", SentryLog->GetLevel(), ESentryLevel::Info);
+			SentryLog->SetLevel(ESentryLogLevel::Info);
+			TestEqual("Info level", SentryLog->GetLevel(), ESentryLogLevel::Info);
 
 			// Test Warning level
-			SentryLog->SetLevel(ESentryLevel::Warning);
-			TestEqual("Warning level", SentryLog->GetLevel(), ESentryLevel::Warning);
+			SentryLog->SetLevel(ESentryLogLevel::Warning);
+			TestEqual("Warning level", SentryLog->GetLevel(), ESentryLogLevel::Warning);
 
 			// Test Error level
-			SentryLog->SetLevel(ESentryLevel::Error);
-			TestEqual("Error level", SentryLog->GetLevel(), ESentryLevel::Error);
+			SentryLog->SetLevel(ESentryLogLevel::Error);
+			TestEqual("Error level", SentryLog->GetLevel(), ESentryLogLevel::Error);
 
 			// Test Fatal level
-			SentryLog->SetLevel(ESentryLevel::Fatal);
-			TestEqual("Fatal level", SentryLog->GetLevel(), ESentryLevel::Fatal);
+			SentryLog->SetLevel(ESentryLogLevel::Fatal);
+			TestEqual("Fatal level", SentryLog->GetLevel(), ESentryLogLevel::Fatal);
 
 			// Test invalid level falls back to Debug
 #if PLATFORM_APPLE && !USE_SENTRY_NATIVE
 			AddExpectedError(TEXT("Unknown Sentry level value used"), EAutomationExpectedErrorFlags::Contains, 0);
 #endif
-			SentryLog->SetLevel(static_cast<ESentryLevel>(18));
-			TestEqual("Invalid level - default Debug", SentryLog->GetLevel(), ESentryLevel::Debug);
+			SentryLog->SetLevel(static_cast<ESentryLogLevel>(18));
+			TestEqual("Invalid level - default Debug", SentryLog->GetLevel(), ESentryLogLevel::Debug);
+		});
+
+		It("should change between any two log levels", [this]()
+		{
+			const UEnum* LevelEnum = StaticEnum<ESentryLogLevel>();
+			const int32 LevelCount = LevelEnum->NumEnums() - 1;
+
+			for (int32 FromIndex = 0; FromIndex < LevelCount; ++FromIndex)
+			{
+				for (int32 ToIndex = 0; ToIndex < LevelCount; ++ToIndex)
+				{
+					const ESentryLogLevel FromLevel = static_cast<ESentryLogLevel>(LevelEnum->GetValueByIndex(FromIndex));
+					const ESentryLogLevel ToLevel = static_cast<ESentryLogLevel>(LevelEnum->GetValueByIndex(ToIndex));
+
+					SentryLog->SetLevel(FromLevel);
+					SentryLog->SetLevel(ToLevel);
+
+					TestEqual(*FString::Printf(TEXT("%s to %s"), *LevelEnum->GetNameStringByIndex(FromIndex), *LevelEnum->GetNameStringByIndex(ToIndex)),
+						SentryLog->GetLevel(), ToLevel);
+				}
+			}
 		});
 
 		It("should handle empty body", [this]()
@@ -73,10 +99,10 @@ void SentryLogSpec::Define()
 			const FString EmptyBody = FString(TEXT(""));
 
 			SentryLog->SetBody(EmptyBody);
-			SentryLog->SetLevel(ESentryLevel::Info);
+			SentryLog->SetLevel(ESentryLogLevel::Info);
 
 			TestEqual("Empty body", SentryLog->GetBody(), EmptyBody);
-			TestEqual("Level with empty body", SentryLog->GetLevel(), ESentryLevel::Info);
+			TestEqual("Level with empty body", SentryLog->GetLevel(), ESentryLogLevel::Info);
 		});
 	});
 
