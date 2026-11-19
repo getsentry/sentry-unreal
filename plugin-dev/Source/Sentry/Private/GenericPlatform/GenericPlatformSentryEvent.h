@@ -50,7 +50,7 @@ public:
 private:
 	sentry_value_t Event;
 
-	bool IsCrashEvent;
+	bool IsCrashEvent = false;
 };
 
 typedef FGenericPlatformSentryEvent FPlatformSentryEvent;

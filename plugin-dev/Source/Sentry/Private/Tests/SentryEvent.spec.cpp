@@ -191,6 +191,35 @@ void SentryEventSpec::Define()
 			TestEqual("There are no extras after setting an empty map", SentryEvent->GetExtras().Num(), 0);
 		});
 	});
+
+	Describe("Event defaults", [this]()
+	{
+		It("should not crash when getting level that isn't set", [this]()
+		{
+#if PLATFORM_ANDROID
+			// Unset level defaults differ across backends, only the Android fallback is checked here
+			TestEqual("Unset level - default Debug", SentryEvent->GetLevel(), ESentryLevel::Debug);
+#else
+			SentryEvent->GetLevel();
+#endif
+		});
+
+		It("should report empty message when no message is set", [this]()
+		{
+			TestEqual("Event message", SentryEvent->GetMessage(), FString());
+		});
+	});
+
+	Describe("Event extras with empty value", [this]()
+	{
+		It("should not affect other extras", [this]()
+		{
+			SentryEvent->SetExtra(TEXT("EmptyKey"), FSentryVariant());
+			SentryEvent->SetExtra(TEXT("ValidKey"), TEXT("ValidVal"));
+
+			TestEqual("Valid extra retains its value", SentryEvent->GetExtra(TEXT("ValidKey")).GetValue<FString>(), TEXT("ValidVal"));
+		});
+	});
 }
 
 #endif

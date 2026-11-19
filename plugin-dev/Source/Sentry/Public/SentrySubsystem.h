@@ -28,8 +28,11 @@ class USentryTransaction;
 class USentryTraceSampler;
 class USentryTransactionContext;
 
+class AActor;
+
 class ISentrySubsystem;
 class ISentryIntegration;
+class FSentryGameStateIntegration;
 
 DECLARE_DELEGATE_OneParam(FConfigureSettingsNativeDelegate, USentrySettings*);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfigureSettingsDelegate, USentrySettings*, Settings);
@@ -439,6 +442,50 @@ public:
 	void RemoveAttribute(const FString& Key);
 
 	/**
+	 * Starts recording the actor's transform in the game state attached to crash events.
+	 * The actor stops being recorded when it's destroyed.
+	 *
+	 * @param Actor Actor to record.
+	 * @param Id Stable identifier of the actor. Defaults to the actor name.
+	 * @param Tag Group the actor belongs to (e.g. "enemy"). Defaults to the actor class name.
+	 *
+	 * @note Has no effect unless game state capture is enabled. Must be called on the game thread.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AdvancedDisplay = "Id,Tag"))
+	void AddGameStateTrackedActor(AActor* Actor, const FString& Id = TEXT(""), const FString& Tag = TEXT(""));
+
+	/**
+	 * Stops recording the actor's transform in the game state attached to crash events.
+	 *
+	 * @param Actor Actor to stop recording.
+	 *
+	 * @note Must be called on the game thread.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveGameStateTrackedActor(AActor* Actor);
+
+	/**
+	 * Sets an attribute that is recorded in every frame of the game state attached to crash events (e.g. score, wave, quest step).
+	 *
+	 * @param Key Attribute key.
+	 * @param Value Attribute value.
+	 *
+	 * @note Has no effect unless game state capture is enabled. Must be called on the game thread.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void SetGameStateAttribute(const FString& Key, const FSentryVariant& Value);
+
+	/**
+	 * Removes a game state attribute.
+	 *
+	 * @param Key Attribute key to remove.
+	 *
+	 * @note Must be called on the game thread.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void RemoveGameStateAttribute(const FString& Key);
+
+	/**
 	 * Sets the level of all events sent.
 	 *
 	 * @param Level Event level.
@@ -602,6 +649,9 @@ private:
 	/** Tear down all integrations in reverse order of their setup. */
 	void TeardownIntegrations();
 
+	/** Get the game state integration if it's active and the caller is on the game thread. */
+	FSentryGameStateIntegration* GetGameStateIntegration();
+
 	/** Check whether the event capturing should be enabled for the current build configuration */
 	bool IsCurrentBuildConfigurationEnabled() const;
 
@@ -636,4 +686,6 @@ private:
 	USentryTraceSampler* TraceSampler;
 
 	TArray<TSharedRef<ISentryIntegration>> Integrations;
+
+	TWeakPtr<FSentryGameStateIntegration> GameStateIntegration;
 };

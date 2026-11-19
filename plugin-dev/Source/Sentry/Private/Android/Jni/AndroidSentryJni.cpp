@@ -222,3 +222,17 @@ JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getScreenshotFilePath(
 
 	return env->NewStringUTF(TCHAR_TO_UTF8(*ScreenshotFilePath));
 }
+
+JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getGameStateFilePath(JNIEnv* env, jclass clazz, jboolean isPreviousSession)
+{
+	const FString Path = isPreviousSession ? SentryFileUtils::GetGameStateBackupPath() : SentryFileUtils::GetGameStatePath();
+	const FString GameStateFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Path);
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*GameStateFilePath))
+	{
+		return env->NewStringUTF("");
+	}
+
+	return env->NewStringUTF(TCHAR_TO_UTF8(*GameStateFilePath));
+}

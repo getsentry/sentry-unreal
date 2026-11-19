@@ -144,6 +144,30 @@ void SentryScopeSpec::Define()
 			TestTrue("Scope extras", SentryScope->GetExtras().Num() == 0);
 		});
 	});
+
+	Describe("Scope defaults", [this]()
+	{
+		It("should not crash when getting level that isn't set", [this]()
+		{
+#if PLATFORM_ANDROID
+			// Unset level defaults differ across backends, only the Android fallback is checked here
+			TestEqual("Unset level - default Debug", SentryScope->GetLevel(), ESentryLevel::Debug);
+#else
+			SentryScope->GetLevel();
+#endif
+		});
+	});
+
+	Describe("Scope extras with empty value", [this]()
+	{
+		It("should not affect other extras", [this]()
+		{
+			SentryScope->SetExtra(TEXT("EmptyKey"), FSentryVariant());
+			SentryScope->SetExtra(TEXT("ValidKey"), TEXT("ValidVal"));
+
+			TestEqual("Valid extra retains its value", SentryScope->GetExtra(TEXT("ValidKey")).GetValue<FString>(), TEXT("ValidVal"));
+		});
+	});
 }
 
 #endif

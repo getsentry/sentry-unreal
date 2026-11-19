@@ -131,6 +131,11 @@ void FAndroidSentryScope::SetLevel(ESentryLevel level)
 ESentryLevel FAndroidSentryScope::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
+	if (!level)
+	{
+		return ESentryLevel::Debug;
+	}
+
 	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
 }
 
@@ -177,8 +182,14 @@ void FAndroidSentryScope::SetExtra(const FString& key, const FSentryVariant& val
 	// Sentry's Android SDK currently supports only string type for extras (see https://github.com/getsentry/sentry-java/issues/2032)
 	// Variants with array/map values will be set as strings
 	// When retrieving such values using `GetExtra`, `TryGetExtra` or `GetExtras` they have to be interpreted as strings
+	TSharedPtr<FSentryJavaObjectWrapper> nativeValue = FAndroidSentryConverters::VariantToNative(value);
+	if (!nativeValue.IsValid())
+	{
+		return;
+	}
+
 	FSentryJavaObjectWrapper::CallStaticMethod<void>(SentryJavaClasses::SentryBridgeJava, "setScopeExtra", "(Lio/sentry/IScope;Ljava/lang/String;Ljava/lang/Object;)V",
-		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
+		GetJObject(), *FSentryJavaObjectWrapper::GetJString(key), nativeValue->GetJObject());
 }
 
 FSentryVariant FAndroidSentryScope::GetExtra(const FString& key) const

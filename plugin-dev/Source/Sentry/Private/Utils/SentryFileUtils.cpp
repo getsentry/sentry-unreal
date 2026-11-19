@@ -118,3 +118,30 @@ FString SentryFileUtils::GetLatestScreenshot()
 
 	return Screenshots[0];
 }
+
+FString SentryFileUtils::GetGameStatePath()
+{
+	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryGameState"), TEXT("game_state.jsonl"));
+}
+
+FString SentryFileUtils::GetGameStateBackupPath()
+{
+	return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryGameState"), TEXT("game_state-backup.jsonl"));
+}
+
+void SentryFileUtils::BackupGameState()
+{
+	IFileManager& FileManager = IFileManager::Get();
+
+	const FString GameStatePath = GetGameStatePath();
+	const FString BackupPath = GetGameStateBackupPath();
+
+	if (FileManager.FileExists(*GameStatePath))
+	{
+		FileManager.Move(*BackupPath, *GameStatePath, true, true, false, true);
+	}
+	else
+	{
+		FileManager.Delete(*BackupPath, false, true, true);
+	}
+}

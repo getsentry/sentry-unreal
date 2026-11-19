@@ -310,6 +310,11 @@ bool FAppleSentryReplayEnvelope::CaptureForCrashEvent(SentryObjCEvent* event, co
 	SentryObjCEnvelopeHeader* envelopeHeader = [[SENTRY_APPLE_CLASS(SentryObjCEnvelopeHeader) alloc] initWithId:replayId traceContext:nil];
 
 	SentryObjCEnvelope* envelope = [[SENTRY_APPLE_CLASS(SentryObjCEnvelope) alloc] initWithHeader:envelopeHeader singleItem:envelopeItem];
+
+	[envelopeItem release];
+	[replayId release];
+	[envelopeHeader release];
+
 	if (envelope == nil)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to create replay envelope"));
@@ -317,6 +322,7 @@ bool FAppleSentryReplayEnvelope::CaptureForCrashEvent(SentryObjCEvent* event, co
 	}
 
 	[[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] envelope] capture:envelope];
+	[envelope release];
 	return true;
 }
 

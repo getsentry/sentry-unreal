@@ -22,6 +22,7 @@
 #include "Integrations/SentryAssertTrackingIntegration.h"
 #include "Integrations/SentryBreadcrumbsIntegration.h"
 #include "Integrations/SentryEnsureTrackingIntegration.h"
+#include "Integrations/SentryGameStateIntegration.h"
 #include "Integrations/SentryHangTrackingIntegration.h"
 #include "Integrations/SentryIntegration.h"
 #include "Integrations/SentryLoggingIntegration.h"
@@ -648,6 +649,38 @@ void USentrySubsystem::RemoveAttribute(const FString& Key)
 	SubsystemNativeImpl->RemoveAttribute(Key);
 }
 
+void USentrySubsystem::AddGameStateTrackedActor(AActor* Actor, const FString& Id, const FString& Tag)
+{
+	if (FSentryGameStateIntegration* GameState = GetGameStateIntegration())
+	{
+		GameState->AddTrackedActor(Actor, Id, Tag);
+	}
+}
+
+void USentrySubsystem::RemoveGameStateTrackedActor(AActor* Actor)
+{
+	if (FSentryGameStateIntegration* GameState = GetGameStateIntegration())
+	{
+		GameState->RemoveTrackedActor(Actor);
+	}
+}
+
+void USentrySubsystem::SetGameStateAttribute(const FString& Key, const FSentryVariant& Value)
+{
+	if (FSentryGameStateIntegration* GameState = GetGameStateIntegration())
+	{
+		GameState->SetAttribute(Key, Value);
+	}
+}
+
+void USentrySubsystem::RemoveGameStateAttribute(const FString& Key)
+{
+	if (FSentryGameStateIntegration* GameState = GetGameStateIntegration())
+	{
+		GameState->RemoveAttribute(Key);
+	}
+}
+
 void USentrySubsystem::SetLevel(ESentryLevel Level)
 {
 	check(SubsystemNativeImpl);
@@ -1016,6 +1049,8 @@ void USentrySubsystem::SetupIntegrations(const USentrySettings& Settings)
 #ifdef USE_SENTRY_SESSION_REPLAY
 	AddIntegration(MakeShared<FSentrySessionReplayIntegration>(NativeImpl), Settings);
 #endif
+
+	AddIntegration(MakeShared<FSentryGameStateIntegration>(NativeImpl), Settings);
 }
 
 void USentrySubsystem::AddIntegration(const TSharedRef<ISentryIntegration>& Integration, const USentrySettings& Settings)
@@ -1041,6 +1076,32 @@ void USentrySubsystem::TeardownIntegrations()
 	}
 
 	Integrations.Empty();
+}
+
+FSentryGameStateIntegration* USentrySubsystem::GetGameStateIntegration()
+{
+	if (!IsInGameThread())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Game state capture can only be updated from the game thread."));
+		return nullptr;
+	}
+
+	if (const TSharedPtr<FSentryGameStateIntegration> Cached = GameStateIntegration.Pin())
+	{
+		return Cached.Get();
+	}
+
+	for (const TSharedRef<ISentryIntegration>& Integration : Integrations)
+	{
+		if (FCString::Strcmp(Integration->GetName(), FSentryGameStateIntegration::StaticName()) == 0)
+		{
+			const TSharedRef<FSentryGameStateIntegration> GameState = StaticCastSharedRef<FSentryGameStateIntegration>(Integration);
+			GameStateIntegration = GameState;
+			return &GameState.Get();
+		}
+	}
+
+	return nullptr;
 }
 
 bool USentrySubsystem::IsCurrentBuildConfigurationEnabled() const

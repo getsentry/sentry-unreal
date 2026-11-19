@@ -30,6 +30,7 @@ import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
 import io.sentry.SentryReplayOptions;
+import io.sentry.UncaughtExceptionHandlerIntegration;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
 import io.sentry.protocol.Feedback;
@@ -45,6 +46,7 @@ import io.sentry.SentryLogLevel;
 import io.sentry.SentryMetricsEvent;
 import io.sentry.JsonUnknown;
 import io.sentry.metrics.SentryMetricsParameters;
+import io.sentry.util.HintUtils;
 import io.sentry.util.TracingUtils;
 
 public class SentryBridgeJava {
@@ -57,6 +59,7 @@ public class SentryBridgeJava {
 	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
 	public static native String getLogFilePath(boolean isCrash);
 	public static native String getScreenshotFilePath();
+	public static native String getGameStateFilePath(boolean isPreviousSession);
 
 	public static void init(Activity activity, final String settingsJsonStr) {
 		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
@@ -138,11 +141,11 @@ public class SentryBridgeJava {
 					String deviceType = settingJson.optString("deviceType", "");
 					if (settingJson.has("beforeSendHandler")) {
 						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
-								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), settingJson.getLong("beforeSendHandler"), deviceType));
+								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), settingJson.getBoolean("attachGameState"), settingJson.getLong("beforeSendHandler"), deviceType));
 					}
 					else {
 						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
-								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), deviceType));
+								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), settingJson.getBoolean("attachGameState"), deviceType));
 					}
 
 					if (settingJson.has("beforeSendFeedbackHandler")) {
@@ -573,19 +576,22 @@ public class SentryBridgeJava {
 	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
 		private final boolean attachLog;
 		private final boolean attachScreenshot;
+		private final boolean attachGameState;
 		private final long beforeSendAddr;
 		private final String deviceType;
 
-		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot, String deviceType) {
+		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot, boolean attachGameState, String deviceType) {
 			this.attachLog = attachLog;
 			this.attachScreenshot = attachScreenshot;
+			this.attachGameState = attachGameState;
 			this.beforeSendAddr = 0;
 			this.deviceType = deviceType;
 		}
 
-		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot, long beforeSendAddr, String deviceType) {
+		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot, boolean attachGameState, long beforeSendAddr, String deviceType) {
 			this.attachLog = attachLog;
 			this.attachScreenshot = attachScreenshot;
+			this.attachGameState = attachGameState;
 			this.beforeSendAddr = beforeSendAddr;
 			this.deviceType = deviceType;
 		}
@@ -607,10 +613,21 @@ public class SentryBridgeJava {
 				}
 			}
 
+			// Uncaught Java exceptions are captured in the crashing process, other crashes are reported on the next launch
+			final boolean isPreviousSessionCrash = event.isCrashed() &&
+				!(HintUtils.getSentrySdkHint(hint) instanceof UncaughtExceptionHandlerIntegration.UncaughtExceptionHint);
+
 			if (attachLog) {
-				String logFilePath = getLogFilePath(event.isCrashed());
+				String logFilePath = getLogFilePath(isPreviousSessionCrash);
 				if (!logFilePath.isEmpty()) {
 					hint.addAttachment(new Attachment(logFilePath, new File(logFilePath).getName(), "text/plain"));
+				}
+			}
+
+			if (attachGameState && event.isCrashed()) {
+				String gameStateFilePath = getGameStateFilePath(isPreviousSessionCrash);
+				if (!gameStateFilePath.isEmpty()) {
+					hint.addAttachment(new Attachment(gameStateFilePath, "game_state.jsonl", "text/plain"));
 				}
 			}
 

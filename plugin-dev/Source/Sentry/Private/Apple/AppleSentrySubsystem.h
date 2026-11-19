@@ -67,6 +67,7 @@ public:
 	virtual bool IsHangTrackingSupported() const override;
 	virtual bool IsNativeHangTrackingEnabled() const override;
 	virtual FString GetSessionReplayDirectory() const override;
+	virtual FString GetGameStateFilePath() const override;
 
 	virtual FString TryCaptureScreenshot() const { return FString(); };
 
@@ -87,6 +88,8 @@ protected:
 protected:
 	bool isScreenshotAttachmentEnabled = false;
 	bool isGameLogAttachmentEnabled = false;
+	bool isGameStateAttachmentEnabled = false;
+	bool isGameStateBackedUp = false;
 
 private:
 	TMap<FString, FString> ParseSentryBaggage(const TArray<FString>& baggageHeaders) const;

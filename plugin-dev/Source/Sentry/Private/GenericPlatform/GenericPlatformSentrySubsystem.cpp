@@ -442,6 +442,11 @@ sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t*
 		}
 	}
 
+	if (gameStateAttachment)
+	{
+		CrashHint.AddAttachment(gameStateAttachment);
+	}
+
 	SetEventCrashType(event, ResolveCrashType());
 
 	AddCrashMemoryContext(event);
@@ -477,7 +482,7 @@ double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction
 	}
 
 	USentrySamplingContext* Context = USentrySamplingContext::Create(
-		MakeShareable(new FGenericPlatformSentrySamplingContext(const_cast<sentry_transaction_context_t*>(transaction_ctx), custom_sampling_ctx)));
+		MakeShareable(new FGenericPlatformSentrySamplingContext(transaction_ctx, custom_sampling_ctx)));
 
 	float samplingValue;
 	if (Sampler->Sample(Context, samplingValue))
@@ -685,6 +690,16 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
 
+	if (settings->AttachGameState)
+	{
+		// Created upfront to keep the crash handler work minimal
+		gameStateAttachment = MakeShareable(new FGenericPlatformSentryAttachment(GetGameStateFilePath(), TEXT("game_state.jsonl"), TEXT("text/plain")));
+	}
+	else
+	{
+		gameStateAttachment.Reset();
+	}
+
 #if PLATFORM_WINDOWS
 	isGpuCrashSplitEnabled = isGpuDumpAttachmentEnabled && bUseNativeBackend && settings->SplitGpuCrashEvents && !settings->EnableExternalCrashReporter;
 #endif
@@ -858,7 +873,7 @@ ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
 {
-	sentry_add_breadcrumb(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject());
+	sentry_add_breadcrumb(sentry_value_incref(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject()));
 }
 
 void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
@@ -870,7 +885,7 @@ void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Mes
 	Breadcrumb->SetData(Data);
 	Breadcrumb->SetLevel(Level);
 
-	sentry_add_breadcrumb(Breadcrumb->GetNativeObject());
+	sentry_add_breadcrumb(sentry_value_incref(Breadcrumb->GetNativeObject()));
 }
 
 void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes)
@@ -982,7 +997,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEvent(TSharedPtr<I
 		AttachStackTrace(nativeEvent);
 	}
 
-	sentry_uuid_t id = sentry_capture_event(nativeEvent);
+	sentry_uuid_t id = sentry_capture_event(sentry_value_incref(nativeEvent));
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
 
@@ -1003,7 +1018,7 @@ TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSh
 	onScopeConfigure.ExecuteIfBound(NewLocalScope);
 	NewLocalScope->Apply(scope);
 
-	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent, nullptr);
+	sentry_uuid_t id = sentry_scope_capture_event(scope, sentry_value_incref(nativeEvent), nullptr);
 
 	return MakeShareable(new FGenericPlatformSentryId(id));
 }
@@ -1110,7 +1125,7 @@ void FGenericPlatformSentrySubsystem::CaptureFeedbackWithScope(TSharedPtr<ISentr
 	sentry_scope_t* scope = sentry_local_scope_new();
 	LocalScope->Apply(scope);
 
-	sentry_scope_capture_feedback(scope, Feedback->GetNativeObject(), nullptr);
+	sentry_scope_capture_feedback(scope, sentry_value_incref(Feedback->GetNativeObject()), nullptr);
 }
 
 void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
@@ -1124,7 +1139,7 @@ void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
 		user->SetIpAddress(TEXT("{{auto}}"));
 	}
 
-	sentry_set_user(user->GetNativeObject());
+	sentry_set_user(sentry_value_incref(user->GetNativeObject()));
 
 	if (crashReporter)
 	{
@@ -1277,7 +1292,7 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 {
 	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
 	{
-		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->GetNativeObject(), sentry_value_new_null()))
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->CreateNativeObject(), sentry_value_new_null()))
 		{
 			if (bindToScope)
 			{
@@ -1295,7 +1310,7 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 {
 	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
 	{
-		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(platformTransactionContext->GetNativeObject(), sentry_value_new_null(), timestamp))
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(platformTransactionContext->CreateNativeObject(), sentry_value_new_null(), timestamp))
 		{
 			if (bindToScope)
 			{
@@ -1313,7 +1328,7 @@ TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction
 {
 	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
 	{
-		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->GetNativeObject(), FGenericPlatformSentryConverters::VariantMapToNative(options.CustomSamplingContext)))
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->CreateNativeObject(), FGenericPlatformSentryConverters::VariantMapToNative(options.CustomSamplingContext)))
 		{
 			if (options.BindToScope)
 			{
@@ -1331,11 +1346,11 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 {
 	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("<unlabeled transaction>"), TEXT("default")));
 
-	sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "sentry-trace", TCHAR_TO_UTF8(*sentryTrace));
+	transactionContext->UpdateFromHeader(TEXT("sentry-trace"), sentryTrace);
 
 	for (const FString& baggage : baggageHeaders)
 	{
-		sentry_transaction_context_update_from_header(transactionContext->GetNativeObject(), "baggage", TCHAR_TO_UTF8(*baggage));
+		transactionContext->UpdateFromHeader(TEXT("baggage"), baggage);
 	}
 
 	return transactionContext;
@@ -1344,6 +1359,11 @@ TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueT
 FString FGenericPlatformSentrySubsystem::GetSessionReplayDirectory() const
 {
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(GetDatabasePath(), TEXT("replays")));
+}
+
+FString FGenericPlatformSentrySubsystem::GetGameStateFilePath() const
+{
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(GetDatabasePath(), TEXT("game_state.jsonl")));
 }
 
 USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler() const
@@ -1518,6 +1538,23 @@ void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USe
 	{
 		const FString CacheKeepStr = StaticEnum<ESentryCrashReporterCacheKeep>()->GetNameStringByValue(static_cast<int64>(Appearance.CacheKeep));
 		AppConfigObject->SetStringField(TEXT("CacheKeep"), CacheKeepStr);
+	}
+	if (Appearance.Views.Num() > 0)
+	{
+		TArray<TSharedPtr<FJsonValue>> ViewValues;
+		TSet<ESentryCrashReporterView> AddedViews;
+		for (const ESentryCrashReporterView View : Appearance.Views)
+		{
+			if (AddedViews.Contains(View))
+			{
+				continue;
+			}
+			AddedViews.Add(View);
+
+			const FString ViewName = StaticEnum<ESentryCrashReporterView>()->GetNameStringByValue(static_cast<int64>(View)).ToLower();
+			ViewValues.Add(MakeShareable(new FJsonValueString(ViewName)));
+		}
+		AppConfigObject->SetArrayField(TEXT("Views"), ViewValues);
 	}
 
 	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));

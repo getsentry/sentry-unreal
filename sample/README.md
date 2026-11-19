@@ -108,6 +108,7 @@ The following test switches are supported:
 - `-crash-alloc-corruption` - latent allocator corruption
 - `-crash-gpu-hang` - GPU hang triggered ~10 seconds after startup (requires a real RHI, i.e. no `-nullrhi`)
 - `-message-capture` - capture a message event
+- `-scoped-event-capture` - capture an event with a local scope that doesn't set a level
 - `-feedback-capture` - capture user feedback associated with an event
 - `-log-capture` - capture a structured log
 - `-metric-capture` - emit a metric
@@ -116,6 +117,7 @@ The following test switches are supported:
 - `-ensure-capture` - trigger a non-fatal `ensure()`
 - `-hang-capture` - simulate an application hang
 - `-replay-capture` - capture session replay clip
+- `-game-state-capture` - capture game state and crash
 - `-init-only` - initialize the SDK and exit without running a test action
 
 The game will close after the test is completed. Otherwise, the game will launch as usual and present the sample UI.

@@ -157,6 +157,7 @@ FString FMacSentrySubsystem::TryCaptureScreenshot() const
 	ImageBytes.AddUninitialized(SavedSize);
 	FPlatformMemory::Memcpy(ImageBytes.GetData(), [ImageData bytes], SavedSize);
 
+	[BitmapRep release];
 	CGImageRelease(ScreenshotRef);
 
 	FString ScreenshotPath = GetScreenshotPath();

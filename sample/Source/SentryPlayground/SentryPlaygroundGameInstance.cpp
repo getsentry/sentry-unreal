@@ -7,6 +7,7 @@
 #include "SentryPlayground/IntegrationTests/SentryCrashTest.h"
 #include "SentryPlayground/IntegrationTests/SentryEnsureTest.h"
 #include "SentryPlayground/IntegrationTests/SentryFeedbackTest.h"
+#include "SentryPlayground/IntegrationTests/SentryGameStateTest.h"
 #include "SentryPlayground/IntegrationTests/SentryHangTest.h"
 #include "SentryPlayground/IntegrationTests/SentryInitOnlyTest.h"
 #include "SentryPlayground/IntegrationTests/SentryBaseIntegrationTest.h"
@@ -14,6 +15,7 @@
 #include "SentryPlayground/IntegrationTests/SentryMessageTest.h"
 #include "SentryPlayground/IntegrationTests/SentryMetricTest.h"
 #include "SentryPlayground/IntegrationTests/SentryReplayTest.h"
+#include "SentryPlayground/IntegrationTests/SentryScopedEventTest.h"
 #include "SentryPlayground/IntegrationTests/SentryTracingTest.h"
 #include "SentryPlayground/IntegrationTests/SentryTracingTimestampsTest.h"
 #include "SentryPlayground/Utils/SentryPlaygroundCrashUtils.h"
@@ -53,6 +55,7 @@ TSharedPtr<FSentryBaseIntegrationTest> USentryPlaygroundGameInstance::CheckForPe
 		{ TEXT("crash-alloc-corruption"),  []{ return MakeShared<FSentryCrashTest>(TEXT("crash-alloc-corruption"),  ESentryAppTerminationType::AllocatorCorruption); } },
 		{ TEXT("crash-gpu-hang"),          []{ return MakeShared<FSentryCrashTest>(TEXT("crash-gpu-hang"),          ESentryAppTerminationType::GpuHang); } },
 		{ TEXT("message-capture"),         []{ return MakeShared<FSentryMessageTest>(); } },
+		{ TEXT("scoped-event-capture"),    []{ return MakeShared<FSentryScopedEventTest>(); } },
 		{ TEXT("feedback-capture"),        []{ return MakeShared<FSentryFeedbackTest>(); } },
 		{ TEXT("log-capture"),             []{ return MakeShared<FSentryLogTest>(); } },
 		{ TEXT("metric-capture"),          []{ return MakeShared<FSentryMetricTest>(); } },
@@ -61,6 +64,7 @@ TSharedPtr<FSentryBaseIntegrationTest> USentryPlaygroundGameInstance::CheckForPe
 		{ TEXT("ensure-capture"),          []{ return MakeShared<FSentryEnsureTest>(); } },
 		{ TEXT("hang-capture"),            []{ return MakeShared<FSentryHangTest>(); } },
 		{ TEXT("replay-capture"),          []{ return MakeShared<FSentryReplayTest>(); } },
+		{ TEXT("game-state-capture"),      []{ return MakeShared<FSentryGameStateTest>(); } },
 		{ TEXT("init-only"),               []{ return MakeShared<FSentryInitOnlyTest>(); } },
 	};
 

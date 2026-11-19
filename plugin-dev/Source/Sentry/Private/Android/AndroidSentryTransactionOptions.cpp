@@ -25,7 +25,13 @@ void FAndroidSentryTransactionOptions::SetCustomSamplingContext(const TMap<FStri
 
 	for (const auto& dataItem : data)
 	{
-		NativeCustomSamplingContext.CallMethod<void>(SetMethod, *GetJString(dataItem.Key), FAndroidSentryConverters::VariantToNative(dataItem.Value)->GetJObject());
+		TSharedPtr<FSentryJavaObjectWrapper> nativeValue = FAndroidSentryConverters::VariantToNative(dataItem.Value);
+		if (!nativeValue.IsValid())
+		{
+			continue;
+		}
+
+		NativeCustomSamplingContext.CallMethod<void>(SetMethod, *GetJString(dataItem.Key), nativeValue->GetJObject());
 	}
 
 	CallMethod<void>(SetCustomSamplingContextMethod, NativeCustomSamplingContext.GetJObject());

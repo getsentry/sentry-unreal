@@ -68,6 +68,15 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
 	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
+	isGameStateAttachmentEnabled = settings->AttachGameState;
+
+	if (isGameStateAttachmentEnabled && !isGameStateBackedUp)
+	{
+		// Crashes are sent on the next launch, so keep the previous run's game state before it gets overwritten.
+		// Re-initializing the SDK in the same process must not replace it.
+		SentryFileUtils::BackupGameState();
+		isGameStateBackedUp = true;
+	}
 
 	FString prevSessionReplayPath;
 	FString prevSessionReplaySidecarPath;
@@ -370,6 +379,9 @@ void FAppleSentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, c
 		if (attribute != nil)
 		{
 			[attributesDict setObject:attribute.value forKey:pair.Key.GetNSString()];
+
+			// Converter returns an attribute owned by the caller
+			[attribute release];
 		}
 	}
 
@@ -413,6 +425,8 @@ void FAppleSentrySubsystem::AddDistribution(const FString& Key, float Value, con
 															   value:(double)Value
 																unit:effectiveUnit
 														  attributes:attributesDict];
+
+	[effectiveUnit release];
 }
 
 void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
@@ -424,6 +438,8 @@ void FAppleSentrySubsystem::AddGauge(const FString& Key, float Value, const FStr
 														value:(double)Value
 														 unit:effectiveUnit
 												   attributes:attributesDict];
+
+	[effectiveUnit release];
 }
 
 void FAppleSentrySubsystem::ClearBreadcrumbs()
@@ -494,11 +510,11 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEventWithScope(TSharedPtr<IS
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
 {
 	SentryObjCException* nativeException = [[SENTRY_APPLE_CLASS(SentryObjCException) alloc] initWithValue:message.GetNSString() type:type.GetNSString()];
-	NSMutableArray* nativeExceptionArray = [NSMutableArray arrayWithCapacity:1];
-	[nativeExceptionArray addObject:nativeException];
 
 	SentryObjCEvent* exceptionEvent = [[SENTRY_APPLE_CLASS(SentryObjCEvent) alloc] init];
-	exceptionEvent.exceptions = nativeExceptionArray;
+	exceptionEvent.exceptions = @[ nativeException ];
+
+	[nativeException release];
 
 	SetEventCrashType(exceptionEvent, ECrashContextType::Ensure);
 
@@ -507,7 +523,12 @@ TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureEnsure(const FString& type, 
 		AddScreenshotAttachmentToScope(scope);
 	}];
 
-	return MakeShareable(new FAppleSentryId(nativeId));
+	// Wrap the id before releasing the event as the id may be owned by it
+	TSharedPtr<ISentryId> eventId = MakeShareable(new FAppleSentryId(nativeId));
+
+	[exceptionEvent release];
+
+	return eventId;
 }
 
 TSharedPtr<ISentryId> FAppleSentrySubsystem::CaptureHang(uint32 HungThreadId)
@@ -520,11 +541,10 @@ void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback
 {
 	TSharedPtr<FAppleSentryFeedback> feedbackApple = StaticCastSharedPtr<FAppleSentryFeedback>(feedback);
 
-	SentryObjCId* associatedEventId = nil;
+	TSharedPtr<FAppleSentryId> idApple;
 	if (!feedbackApple->GetAssociatedEvent().IsEmpty())
 	{
-		TSharedPtr<FAppleSentryId> idApple = MakeShareable(new FAppleSentryId(feedbackApple->GetAssociatedEvent()));
-		associatedEventId = idApple->GetNativeObject();
+		idApple = MakeShareable(new FAppleSentryId(feedbackApple->GetAssociatedEvent()));
 	}
 
 	NSMutableArray<SentryObjCAttachment*>* attachments = nil;
@@ -550,7 +570,7 @@ void FAppleSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback
 															 name:feedbackApple->GetName().IsEmpty() ? nil : feedbackApple->GetName().GetNSString()
 															email:feedbackApple->GetContactEmail().IsEmpty() ? nil : feedbackApple->GetContactEmail().GetNSString()
 														   source:SentryObjCFeedbackSourceCustom
-												associatedEventId:associatedEventId
+												associatedEventId:idApple ? idApple->GetNativeObject() : nil
 													  attachments:attachments];
 }
 
@@ -586,10 +606,12 @@ void FAppleSentrySubsystem::UpdateContext(const FString& key, const TMap<FString
 		NSDictionary* contexts = [[[SENTRY_APPLE_CLASS(SentryObjCSDK) internal] serializer] serializeScope:scope][@"context"];
 		NSDictionary* existing = [contexts objectForKey:key.GetNSString()];
 
-		NSMutableDictionary* merged = existing ? [existing mutableCopy] : [NSMutableDictionary dictionary];
+		NSMutableDictionary* merged = existing ? [existing mutableCopy] : [[NSMutableDictionary alloc] init];
 		[merged addEntriesFromDictionary:FAppleSentryConverters::VariantMapToNative(values)];
 
 		[scope setContextValue:merged forKey:key.GetNSString()];
+
+		[merged release];
 	}];
 }
 
@@ -776,7 +798,11 @@ TSharedPtr<ISentryTransactionContext> FAppleSentrySubsystem::ContinueTrace(const
 	// Currently `sentry-cocoa` has no API to inject the remaining incoming DSC (release, environment, etc.)
 	// See https://github.com/getsentry/sentry-cocoa/issues/8277
 
-	return MakeShareable(new FAppleSentryTransactionContext(transactionContext));
+	TSharedPtr<ISentryTransactionContext> context = MakeShareable(new FAppleSentryTransactionContext(transactionContext));
+
+	[transactionContext release];
+
+	return context;
 }
 
 void FAppleSentrySubsystem::HandleAssert()
@@ -798,6 +824,11 @@ bool FAppleSentrySubsystem::IsNativeHangTrackingEnabled() const
 FString FAppleSentrySubsystem::GetSessionReplayDirectory() const
 {
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
+}
+
+FString FAppleSentrySubsystem::GetGameStateFilePath() const
+{
+	return FPaths::ConvertRelativePathToFull(SentryFileUtils::GetGameStatePath());
 }
 
 void FAppleSentrySubsystem::SetEventCrashType(SentryObjCEvent* event, ECrashContextType crashType) const
@@ -830,6 +861,18 @@ void FAppleSentrySubsystem::AddCrashAttachmentsToHint(SentryObjCHint* hint) cons
 		}
 	}
 #endif
+
+	if (isGameStateAttachmentEnabled)
+	{
+		const FString& gameStatePath = SentryFileUtils::GetGameStateBackupPath();
+		if (fileManager.FileExists(*gameStatePath))
+		{
+			FAppleSentryAttachment gameStateAttachment(fileManager.ConvertToAbsolutePathForExternalAppForRead(*gameStatePath),
+				TEXT("game_state.jsonl"), TEXT("text/plain"));
+
+			hint.attachments = [hint.attachments arrayByAddingObject:gameStateAttachment.GetNativeObject()];
+		}
+	}
 
 	if (isScreenshotAttachmentEnabled)
 	{

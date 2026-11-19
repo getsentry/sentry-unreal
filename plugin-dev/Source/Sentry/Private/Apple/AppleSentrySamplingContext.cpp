@@ -12,12 +12,12 @@
 
 FAppleSentrySamplingContext::FAppleSentrySamplingContext(SentryObjCSamplingContext* context)
 {
-	SamplingContext = context;
+	SamplingContext = [context retain];
 }
 
 FAppleSentrySamplingContext::~FAppleSentrySamplingContext()
 {
-	// Put custom destructor logic here if needed
+	[SamplingContext release];
 }
 
 TSharedPtr<ISentryTransactionContext> FAppleSentrySamplingContext::GetTransactionContext() const
