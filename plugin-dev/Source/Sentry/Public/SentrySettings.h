@@ -559,6 +559,11 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableHangTracking", SentryPlatforms = "Win64,Linux,Mac:Native,Android,Xbox"))
 	bool UseNativeHangTracking;
 
+	UPROPERTY(Config, EditAnywhere, Category = "App Hangs",
+		Meta = (DisplayName = "Attach all threads to hang events", ToolTip = "Attach the stack traces of all threads to hang events captured by the native hang watchdog. Shows what the game thread waits on, for example the render thread or a worker that holds a lock. Each thread is paused briefly while its stack is captured, so a capture takes longer in processes with many threads.",
+			EditCondition = "EnableHangTracking && UseNativeHangTracking", SentryPlatforms = "Win64,Linux,Mac:Native", SentryExperimental))
+	bool AttachAllThreadsToHangEvents;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "App Hangs",
 		Meta = (DisplayName = "Enable main thread hang tracking", ToolTip = "Flag indicating whether to enable tracking of main thread hangs (App Hangs on Apple platforms, ANRs on Android).", SentryPlatforms = "Mac:Cocoa,IOS,Android"))
 	bool EnableAppNotRespondingTracking;
