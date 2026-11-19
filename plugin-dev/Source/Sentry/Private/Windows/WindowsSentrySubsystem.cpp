@@ -27,23 +27,13 @@ void FWindowsSentrySubsystem::InitWithSettings(const USentrySettings* Settings, 
 
 	if (bIsRunningUnderWine && IsEnabled())
 	{
-		// Override OS context when running under Wine/Proton (always show Linux host, not Windows)
 		if (FSentryPlatformDetectionUtils::IsSteamOS())
 		{
-			SetContext(TEXT("os"), FSentryPlatformDetectionUtils::MakeOsContext(TEXT("SteamOS"), true));
 			SetTag(TEXT("steamos"), TEXT("true"));
-			UE_LOG(LogSentrySdk, Log, TEXT("Overriding OS context: SteamOS (detected via Wine/Proton)"));
 		}
 		else if (FSentryPlatformDetectionUtils::IsBazzite())
 		{
-			SetContext(TEXT("os"), FSentryPlatformDetectionUtils::MakeOsContext(TEXT("Bazzite"), true));
 			SetTag(TEXT("bazzite"), TEXT("true"));
-			UE_LOG(LogSentrySdk, Log, TEXT("Overriding OS context: Bazzite (detected via Wine/Proton)"));
-		}
-		else
-		{
-			SetContext(TEXT("os"), FSentryPlatformDetectionUtils::MakeOsContext(TEXT("Linux"), false));
-			UE_LOG(LogSentrySdk, Log, TEXT("Overriding OS context: Linux (detected via Wine/Proton)"));
 		}
 
 		if (FSentryPlatformDetectionUtils::IsRunningSteam())
