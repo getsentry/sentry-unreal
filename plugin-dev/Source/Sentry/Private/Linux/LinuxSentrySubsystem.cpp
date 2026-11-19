@@ -30,15 +30,12 @@ void FLinuxSentrySubsystem::InitWithSettings(const USentrySettings* Settings, co
 	// Add platform context if detected
 	if (IsEnabled())
 	{
-		// Set OS context for SteamOS or Bazzite
 		if (FSentryPlatformDetectionUtils::IsSteamOS())
 		{
-			SetContext(TEXT("os"), FSentryPlatformDetectionUtils::MakeOsContext(TEXT("SteamOS"), true));
 			SetTag(TEXT("steamos"), TEXT("true"));
 		}
 		else if (FSentryPlatformDetectionUtils::IsBazzite())
 		{
-			SetContext(TEXT("os"), FSentryPlatformDetectionUtils::MakeOsContext(TEXT("Bazzite"), true));
 			SetTag(TEXT("bazzite"), TEXT("true"));
 		}
 

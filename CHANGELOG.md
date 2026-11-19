@@ -2,6 +2,10 @@
 
 ## Unreleased (v2)
 
+### Behavioral Changes
+
+- Use the Native SDK's OS context under Wine/Proton and on SteamOS/Bazzite instead of the plugin's own ([#1711](https://github.com/getsentry/sentry-unreal/pull/1711))
+
 ### Dependencies
 
 - Bump Native SDK from v0.17.6 to v1.0.0-beta.1 ([#1696](https://github.com/getsentry/sentry-unreal/pull/1696))
