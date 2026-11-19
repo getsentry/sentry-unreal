@@ -13,12 +13,12 @@ FGenericPlatformSentryUser::FGenericPlatformSentryUser()
 
 FGenericPlatformSentryUser::FGenericPlatformSentryUser(sentry_value_t user)
 {
-	User = user;
+	User = sentry_value_incref(user);
 }
 
 FGenericPlatformSentryUser::~FGenericPlatformSentryUser()
 {
-	// Put custom destructor logic here if needed
+	sentry_value_decref(User);
 }
 
 sentry_value_t FGenericPlatformSentryUser::GetNativeObject()

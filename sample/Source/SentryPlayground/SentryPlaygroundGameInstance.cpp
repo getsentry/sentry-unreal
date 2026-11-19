@@ -15,6 +15,7 @@
 #include "SentryPlayground/IntegrationTests/SentryMessageTest.h"
 #include "SentryPlayground/IntegrationTests/SentryMetricTest.h"
 #include "SentryPlayground/IntegrationTests/SentryReplayTest.h"
+#include "SentryPlayground/IntegrationTests/SentryScopedEventTest.h"
 #include "SentryPlayground/IntegrationTests/SentryTracingTest.h"
 #include "SentryPlayground/IntegrationTests/SentryTracingTimestampsTest.h"
 #include "SentryPlayground/Utils/SentryPlaygroundCrashUtils.h"
@@ -54,6 +55,7 @@ TSharedPtr<FSentryBaseIntegrationTest> USentryPlaygroundGameInstance::CheckForPe
 		{ TEXT("crash-alloc-corruption"),  []{ return MakeShared<FSentryCrashTest>(TEXT("crash-alloc-corruption"),  ESentryAppTerminationType::AllocatorCorruption); } },
 		{ TEXT("crash-gpu-hang"),          []{ return MakeShared<FSentryCrashTest>(TEXT("crash-gpu-hang"),          ESentryAppTerminationType::GpuHang); } },
 		{ TEXT("message-capture"),         []{ return MakeShared<FSentryMessageTest>(); } },
+		{ TEXT("scoped-event-capture"),    []{ return MakeShared<FSentryScopedEventTest>(); } },
 		{ TEXT("feedback-capture"),        []{ return MakeShared<FSentryFeedbackTest>(); } },
 		{ TEXT("log-capture"),             []{ return MakeShared<FSentryLogTest>(); } },
 		{ TEXT("metric-capture"),          []{ return MakeShared<FSentryMetricTest>(); } },

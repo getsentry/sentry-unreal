@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
 	void SetLevel(ESentryLevel Level);
 
-	/** Gets the level of the event. */
+	/** Gets the level of the event. Defaults to Error if no level is set. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
 	ESentryLevel GetLevel() const;
 

@@ -13,7 +13,7 @@ class FGenericPlatformSentryBreadcrumb : public ISentryBreadcrumb
 public:
 	FGenericPlatformSentryBreadcrumb();
 	FGenericPlatformSentryBreadcrumb(sentry_value_t breadcrumb);
-	virtual ~FGenericPlatformSentryBreadcrumb() override = default;
+	virtual ~FGenericPlatformSentryBreadcrumb() override;
 
 	sentry_value_t GetNativeObject();
 

@@ -13,7 +13,7 @@ class FGenericPlatformSentryMetric : public ISentryMetric
 public:
 	FGenericPlatformSentryMetric();
 	FGenericPlatformSentryMetric(sentry_value_t metric);
-	virtual ~FGenericPlatformSentryMetric() override = default;
+	virtual ~FGenericPlatformSentryMetric() override;
 
 	sentry_value_t GetNativeObject();
 

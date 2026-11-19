@@ -13,40 +13,15 @@
 
 TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLevelToNative(ESentryLevel level)
 {
-	TSharedPtr<FSentryJavaObjectWrapper> nativeLevel = nullptr;
+	jobject nativeLevel = SentryJavaClasses::GetCachedSentryLevelRef(level);
 
-	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
-
-	jclass levelEnumClass = SentryJavaClasses::GetCachedJavaClassRef(SentryJavaClasses::SentryLevel);
-
-	jfieldID debugEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "DEBUG", "Lio/sentry/SentryLevel;");
-	jfieldID infoEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "INFO", "Lio/sentry/SentryLevel;");
-	jfieldID warningEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "WARNING", "Lio/sentry/SentryLevel;");
-	jfieldID errorEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "ERROR", "Lio/sentry/SentryLevel;");
-	jfieldID fatalEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "FATAL", "Lio/sentry/SentryLevel;");
-
-	switch (level)
+	if (!nativeLevel)
 	{
-	case ESentryLevel::Debug:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLevel, Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField)));
-		break;
-	case ESentryLevel::Info:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLevel, Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField)));
-		break;
-	case ESentryLevel::Warning:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLevel, Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField)));
-		break;
-	case ESentryLevel::Error:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLevel, Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField)));
-		break;
-	case ESentryLevel::Fatal:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLevel, Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField)));
-		break;
-	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Null will be returned."));
+		return nullptr;
 	}
 
-	return nativeLevel;
+	return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLevel, nativeLevel));
 }
 
 TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::StringArrayToNative(const TArray<FString>& stringArray)
@@ -135,24 +110,15 @@ TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::TimestampToNative
 	return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLongDate, "(J)V", (jlong)(timestamp * 1000)));
 }
 
-jbyteArray FAndroidSentryConverters::ByteArrayToNative(const TArray<uint8>& byteArray)
+FSentryScopedJavaObject<jbyteArray> FAndroidSentryConverters::ByteArrayToNative(const TArray<uint8>& byteArray)
 {
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
-	jbyteArray javaByteArray = (jbyteArray)Env->NewByteArray(byteArray.Num());
+	jbyteArray javaByteArray = Env->NewByteArray(byteArray.Num());
 
-	jbyte* javaByteArrayPtr = (jbyte*)malloc(byteArray.Num() * sizeof(jbyte));
+	Env->SetByteArrayRegion(javaByteArray, 0, byteArray.Num(), reinterpret_cast<const jbyte*>(byteArray.GetData()));
 
-	for (int i = 0; i < byteArray.Num(); i++)
-	{
-		javaByteArrayPtr[i] = byteArray[i];
-	}
-
-	Env->SetByteArrayRegion(javaByteArray, 0, byteArray.Num(), javaByteArrayPtr);
-
-	free(javaByteArrayPtr);
-
-	return javaByteArray;
+	return NewSentryScopedJavaObject(Env, javaByteArray);
 }
 
 ESentryLevel FAndroidSentryConverters::SentryLevelToUnreal(jobject level)
@@ -190,41 +156,15 @@ ESentryLevel FAndroidSentryConverters::SentryLevelToUnreal(jobject level)
 
 TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLogLevelToNative(ESentryLevel level)
 {
-	TSharedPtr<FSentryJavaObjectWrapper> nativeLevel = nullptr;
+	jobject nativeLevel = SentryJavaClasses::GetCachedSentryLogLevelRef(level);
 
-	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
-
-	jclass levelEnumClass = SentryJavaClasses::GetCachedJavaClassRef(SentryJavaClasses::SentryLogLevel);
-
-	jfieldID debugEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "DEBUG", "Lio/sentry/SentryLogLevel;");
-	jfieldID infoEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "INFO", "Lio/sentry/SentryLogLevel;");
-	jfieldID warningEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "WARN", "Lio/sentry/SentryLogLevel;");
-	jfieldID errorEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "ERROR", "Lio/sentry/SentryLogLevel;");
-	jfieldID fatalEnumFieldField = Env->GetStaticFieldID(levelEnumClass, "FATAL", "Lio/sentry/SentryLogLevel;");
-
-	switch (level)
+	if (!nativeLevel)
 	{
-	case ESentryLevel::Debug:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField)));
-		break;
-	case ESentryLevel::Info:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, infoEnumFieldField)));
-		break;
-	case ESentryLevel::Warning:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, warningEnumFieldField)));
-		break;
-	case ESentryLevel::Error:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, errorEnumFieldField)));
-		break;
-	case ESentryLevel::Fatal:
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, fatalEnumFieldField)));
-		break;
-	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
-		nativeLevel = MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, Env->GetStaticObjectField(levelEnumClass, debugEnumFieldField)));
+		nativeLevel = SentryJavaClasses::GetCachedSentryLogLevelRef(ESentryLevel::Debug);
 	}
 
-	return nativeLevel;
+	return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, nativeLevel));
 }
 
 ESentryLevel FAndroidSentryConverters::SentryLogLevelToUnreal(jobject level)
@@ -334,14 +274,11 @@ TArray<uint8> FAndroidSentryConverters::ByteArrayToUnreal(jbyteArray byteArray)
 
 	JNIEnv* Env = AndroidJavaEnv::GetJavaEnv();
 
-	jbyte* javaByte = Env->GetByteArrayElements(byteArray, 0);
-
 	int length = Env->GetArrayLength(byteArray);
 
-	for (int i = 0; i < length; i++)
-	{
-		result.Add(javaByte[i]);
-	}
+	result.SetNumUninitialized(length);
+
+	Env->GetByteArrayRegion(byteArray, 0, length, reinterpret_cast<jbyte*>(result.GetData()));
 
 	return result;
 }
@@ -410,7 +347,8 @@ TArray<FSentryVariant> FAndroidSentryConverters::VariantArrayToUnreal(jobject va
 
 	for (int i = 0; i < length; i++)
 	{
-		result.Add(FSentryVariant(VariantToUnreal(Env->GetObjectArrayElement(*objectArray, i))));
+		auto element = NewSentryScopedJavaObject(Env, Env->GetObjectArrayElement(*objectArray, i));
+		result.Add(FSentryVariant(VariantToUnreal(*element)));
 	}
 
 	return result;

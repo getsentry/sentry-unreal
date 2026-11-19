@@ -56,6 +56,11 @@ void FAndroidSentryEvent::SetMessage(const FString& message)
 FString FAndroidSentryEvent::GetMessage() const
 {
 	auto message = CallObjectMethod<jobject>(GetMessageMethod);
+	if (!message)
+	{
+		return FString();
+	}
+
 	return FAndroidSentryMessage(*message).ToString();
 }
 
@@ -67,6 +72,11 @@ void FAndroidSentryEvent::SetLevel(ESentryLevel level)
 ESentryLevel FAndroidSentryEvent::GetLevel() const
 {
 	auto level = CallObjectMethod<jobject>(GetLevelMethod);
+	if (!level)
+	{
+		return ESentryLevel::Error;
+	}
+
 	return FAndroidSentryConverters::SentryLevelToUnreal(*level);
 }
 
@@ -166,7 +176,13 @@ void FAndroidSentryEvent::RemoveContext(const FString& key)
 
 void FAndroidSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
 {
-	CallMethod<void>(SetExtraMethod, *GetJString(key), FAndroidSentryConverters::VariantToNative(value)->GetJObject());
+	TSharedPtr<FSentryJavaObjectWrapper> nativeValue = FAndroidSentryConverters::VariantToNative(value);
+	if (!nativeValue.IsValid())
+	{
+		return;
+	}
+
+	CallMethod<void>(SetExtraMethod, *GetJString(key), nativeValue->GetJObject());
 }
 
 FSentryVariant FAndroidSentryEvent::GetExtra(const FString& key) const

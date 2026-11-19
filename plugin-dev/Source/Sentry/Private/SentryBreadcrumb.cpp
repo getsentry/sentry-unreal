@@ -84,7 +84,7 @@ void USentryBreadcrumb::SetLevel(ESentryLevel Level)
 ESentryLevel USentryBreadcrumb::GetLevel() const
 {
 	if (!NativeImpl)
-		return ESentryLevel::Debug;
+		return ESentryLevel::Info;
 
 	return NativeImpl->GetLevel();
 }

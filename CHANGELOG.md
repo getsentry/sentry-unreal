@@ -10,18 +10,33 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- `GetLevel()` on events and breadcrumbs without a level now returns `Error` and `Info` respectively on all platforms, matching the protocol defaults ([#1713](https://github.com/getsentry/sentry-unreal/pull/1713))
+
+### Features
+
+- Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
+
 ### Fixes
 
 - Fix memory leaks and potential use-after-free in native object wrappers on macOS and iOS ([#1691](https://github.com/getsentry/sentry-unreal/pull/1691))
+- Fix events captured with a local scope getting the `debug` level when no scope level is set on platforms using sentry-native ([#1698](https://github.com/getsentry/sentry-unreal/pull/1698))
+- Fix memory leaks and potential use-after-free in native object wrappers on desktop and consoles ([#1701](https://github.com/getsentry/sentry-unreal/pull/1701))
+- Fix JNI local reference leaks in object wrappers on Android ([#1705](https://github.com/getsentry/sentry-unreal/pull/1705))
+- Fix crashes on Android when reading an unset level or message, or setting an empty variant as an extra or data value ([#1707](https://github.com/getsentry/sentry-unreal/pull/1707))
 
 ### Dependencies
 
-- Bump Java SDK from v8.63.0 to v8.64.0 ([#1692](https://github.com/getsentry/sentry-unreal/pull/1692))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8640)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.63.0...8.64.0)
-- Bump Cocoa SDK from v9.33.0 to v9.34.0 ([#1693](https://github.com/getsentry/sentry-unreal/pull/1693))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9340)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.33.0...9.34.0)
+- Bump Java SDK from v8.63.0 to v8.65.0 ([#1692](https://github.com/getsentry/sentry-unreal/pull/1692), [#1708](https://github.com/getsentry/sentry-unreal/pull/1708))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8650)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.63.0...8.65.0)
+- Bump Cocoa SDK from v9.33.0 to v9.35.0 ([#1693](https://github.com/getsentry/sentry-unreal/pull/1693), [#1704](https://github.com/getsentry/sentry-unreal/pull/1704))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9350)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.33.0...9.35.0)
+- Bump Android Gradle Plugin from v6.26.0 to v6.27.0 ([#1702](https://github.com/getsentry/sentry-unreal/pull/1702))
+  - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6270)
+  - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.26.0...6.27.0)
 
 ## 1.26.0
 

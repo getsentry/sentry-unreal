@@ -85,6 +85,11 @@ void FAppleSentryBreadcrumb::SetLevel(ESentryLevel level)
 
 ESentryLevel FAppleSentryBreadcrumb::GetLevel() const
 {
+	if (BreadcrumbApple.level == SentryObjCLevelNone)
+	{
+		return ESentryLevel::Info;
+	}
+
 	return FAppleSentryConverters::SentryLevelToUnreal(BreadcrumbApple.level);
 }
 

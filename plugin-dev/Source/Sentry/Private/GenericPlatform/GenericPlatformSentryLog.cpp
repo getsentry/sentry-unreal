@@ -14,7 +14,7 @@ FGenericPlatformSentryLog::FGenericPlatformSentryLog()
 
 FGenericPlatformSentryLog::FGenericPlatformSentryLog(sentry_value_t log)
 {
-	Log = log;
+	Log = sentry_value_incref(log);
 }
 
 FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& body, ESentryLevel level)
@@ -22,6 +22,11 @@ FGenericPlatformSentryLog::FGenericPlatformSentryLog(const FString& body, ESentr
 	Log = sentry_value_new_object();
 	SetBody(body);
 	SetLevel(level);
+}
+
+FGenericPlatformSentryLog::~FGenericPlatformSentryLog()
+{
+	sentry_value_decref(Log);
 }
 
 sentry_value_t FGenericPlatformSentryLog::GetNativeObject()

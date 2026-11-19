@@ -13,7 +13,12 @@ FGenericPlatformSentryBreadcrumb::FGenericPlatformSentryBreadcrumb()
 
 FGenericPlatformSentryBreadcrumb::FGenericPlatformSentryBreadcrumb(sentry_value_t breadcrumb)
 {
-	Breadcrumb = breadcrumb;
+	Breadcrumb = sentry_value_incref(breadcrumb);
+}
+
+FGenericPlatformSentryBreadcrumb::~FGenericPlatformSentryBreadcrumb()
+{
+	sentry_value_decref(Breadcrumb);
 }
 
 sentry_value_t FGenericPlatformSentryBreadcrumb::GetNativeObject()
@@ -75,6 +80,11 @@ void FGenericPlatformSentryBreadcrumb::SetLevel(ESentryLevel level)
 ESentryLevel FGenericPlatformSentryBreadcrumb::GetLevel() const
 {
 	sentry_value_t level = sentry_value_get_by_key(Breadcrumb, "level");
+	if (sentry_value_is_null(level))
+	{
+		return ESentryLevel::Info;
+	}
+
 	return FGenericPlatformSentryConverters::SentryLevelToUnreal(level);
 }
 

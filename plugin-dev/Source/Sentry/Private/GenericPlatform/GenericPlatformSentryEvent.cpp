@@ -19,13 +19,13 @@ FGenericPlatformSentryEvent::FGenericPlatformSentryEvent()
 
 FGenericPlatformSentryEvent::FGenericPlatformSentryEvent(sentry_value_t event, bool isCrash)
 {
-	Event = event;
+	Event = sentry_value_incref(event);
 	IsCrashEvent = isCrash;
 }
 
 FGenericPlatformSentryEvent::~FGenericPlatformSentryEvent()
 {
-	// Put custom destructor logic here if needed
+	sentry_value_decref(Event);
 }
 
 sentry_value_t FGenericPlatformSentryEvent::GetNativeObject()
@@ -62,6 +62,11 @@ void FGenericPlatformSentryEvent::SetLevel(ESentryLevel level)
 ESentryLevel FGenericPlatformSentryEvent::GetLevel() const
 {
 	sentry_value_t level = sentry_value_get_by_key(Event, "level");
+	if (sentry_value_is_null(level))
+	{
+		return ESentryLevel::Error;
+	}
+
 	return FGenericPlatformSentryConverters::SentryLevelToUnreal(level);
 }
 
