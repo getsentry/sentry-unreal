@@ -4,7 +4,7 @@
 
 ### Breaking Changes
 
-- Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel`, which adds the `Trace` level along with `LogTrace`/`LogTraceWithAttributes` APIs. `VeryVerbose` UE_LOG messages are forwarded as trace logs via the new `VeryVerbose` structured logging setting, which is disabled by default ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
+- Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
 
 ### Behavioral Changes
 
