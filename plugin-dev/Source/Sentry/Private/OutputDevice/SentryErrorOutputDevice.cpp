@@ -7,15 +7,19 @@
 
 FSentryErrorOutputDevice::FSentryErrorOutputDevice(FOutputDeviceError* Parent)
 	: ParentDevice(Parent)
-	, AssertCount(0)
 {
 }
 
 void FSentryErrorOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
-	if (HasAsserted() && FPlatformAtomics::InterlockedIncrement(&AssertCount) == 1)
+	if (FDebug::HasAsserted())
 	{
-		OnAssert.Broadcast(V);
+		static int32 CallCount = 0;
+		int32 NewCallCount = FPlatformAtomics::InterlockedIncrement(&CallCount);
+		if (NewCallCount == 1)
+		{
+			OnAssert.Broadcast(V);
+		}
 	}
 
 	if (!ParentDevice)
@@ -35,9 +39,4 @@ void FSentryErrorOutputDevice::HandleError()
 FOutputDeviceError* FSentryErrorOutputDevice::GetParentDevice()
 {
 	return ParentDevice;
-}
-
-bool FSentryErrorOutputDevice::HasAsserted() const
-{
-	return FDebug::HasAsserted();
 }

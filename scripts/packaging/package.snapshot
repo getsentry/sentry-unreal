@@ -287,7 +287,6 @@ Source/Sentry/Private/SessionReplay/SentryVideoFrame.cpp
 Source/Sentry/Private/SessionReplay/SentryVideoFrame.h
 Source/Sentry/Private/Tests/SentryAttachment.spec.cpp
 Source/Sentry/Private/Tests/SentryBreadcrumb.spec.cpp
-Source/Sentry/Private/Tests/SentryErrorOutputDevice.spec.cpp
 Source/Sentry/Private/Tests/SentryEvent.spec.cpp
 Source/Sentry/Private/Tests/SentryFeedback.spec.cpp
 Source/Sentry/Private/Tests/SentryGameState.spec.cpp
