@@ -17,7 +17,7 @@ FAndroidSentryLog::FAndroidSentryLog(jobject logEvent)
 	SetupClassMethods();
 }
 
-FAndroidSentryLog::FAndroidSentryLog(const FString& body, ESentryLevel level)
+FAndroidSentryLog::FAndroidSentryLog(const FString& body, ESentryLogLevel level)
 	: FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogEvent, "()V")
 {
 	SetupClassMethods();
@@ -44,13 +44,13 @@ FString FAndroidSentryLog::GetBody() const
 	return CallMethod<FString>(GetBodyMethod);
 }
 
-void FAndroidSentryLog::SetLevel(ESentryLevel level)
+void FAndroidSentryLog::SetLevel(ESentryLogLevel level)
 {
 	TSharedPtr<FSentryJavaObjectWrapper> AndroidLevel = FAndroidSentryConverters::SentryLogLevelToNative(level);
 	CallMethod<void>(SetLevelMethod, AndroidLevel->GetJObject());
 }
 
-ESentryLevel FAndroidSentryLog::GetLevel() const
+ESentryLogLevel FAndroidSentryLog::GetLevel() const
 {
 	auto LevelObject = CallObjectMethod<jobject>(GetLevelMethod);
 	return FAndroidSentryConverters::SentryLogLevelToUnreal(*LevelObject);

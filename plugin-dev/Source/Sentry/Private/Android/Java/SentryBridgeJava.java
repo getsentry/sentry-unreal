@@ -433,6 +433,10 @@ public class SentryBridgeJava {
 		addLog(SentryLogLevel.DEBUG, message, attributesMap);
 	}
 
+	public static void addLogTrace(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.TRACE, message, attributesMap);
+	}
+
 	private static void addLog(final SentryLogLevel level, final String message, final HashMap<String, Object> attributesMap) {
 		if (attributesMap != null && !attributesMap.isEmpty()) {
 			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);

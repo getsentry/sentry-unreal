@@ -13,5 +13,6 @@ class SentryLogUtils
 public:
 	static void LogStackTrace(const TCHAR* Heading, const ELogVerbosity::Type LogVerbosity, int FramesToSkip);
 	static ESentryLevel ConvertLogVerbosityToSentryLevel(const ELogVerbosity::Type LogVerbosity);
+	static ESentryLogLevel ConvertLogVerbosityToSentryLogLevel(const ELogVerbosity::Type LogVerbosity);
 	static bool IsCallstackLine(const FString& Line);
 };

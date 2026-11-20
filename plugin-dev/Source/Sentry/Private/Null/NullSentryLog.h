@@ -11,8 +11,8 @@ public:
 
 	virtual void SetBody(const FString& body) override {}
 	virtual FString GetBody() const override { return TEXT(""); }
-	virtual void SetLevel(ESentryLevel level) override {}
-	virtual ESentryLevel GetLevel() const override { return ESentryLevel::Info; }
+	virtual void SetLevel(ESentryLogLevel level) override {}
+	virtual ESentryLogLevel GetLevel() const override { return ESentryLogLevel::Info; }
 
 	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override {}
 	virtual FSentryVariant GetAttribute(const FString& key) const override { return FSentryVariant(); }

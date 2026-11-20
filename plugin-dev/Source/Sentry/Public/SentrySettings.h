@@ -156,8 +156,12 @@ struct FStructuredLoggingLevels
 	bool bOnInfoLog = false;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
-		Meta = (DisplayName = "Verbose/VeryVerbose", ToolTip = "Flag indicating whether to forward Verbose/VeryVerbose messages to Sentry structured logging."))
+		Meta = (DisplayName = "Verbose", ToolTip = "Flag indicating whether to forward Verbose messages to Sentry structured logging."))
 	bool bOnDebugLog = false;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
+		Meta = (DisplayName = "VeryVerbose", ToolTip = "Flag indicating whether to forward VeryVerbose messages to Sentry structured logging."))
+	bool bOnTraceLog = false;
 };
 
 USTRUCT(BlueprintType)

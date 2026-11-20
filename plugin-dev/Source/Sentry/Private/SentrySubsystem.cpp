@@ -236,54 +236,64 @@ void USentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FSt
 	SubsystemNativeImpl->AddBreadcrumbWithParams(Message, Category, Type, Data, Level);
 }
 
+void USentrySubsystem::LogTrace(const FString& Message, const FString& Category)
+{
+	AddLog(Message, ESentryLogLevel::Trace, TMap<FString, FSentryVariant>(), Category);
+}
+
+void USentrySubsystem::LogTraceWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+{
+	AddLog(Message, ESentryLogLevel::Trace, Attributes, Category);
+}
+
 void USentrySubsystem::LogDebug(const FString& Message, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Debug, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLogLevel::Debug, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogDebugWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Debug, Attributes, Category);
+	AddLog(Message, ESentryLogLevel::Debug, Attributes, Category);
 }
 
 void USentrySubsystem::LogInfo(const FString& Message, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Info, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLogLevel::Info, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogInfoWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Info, Attributes, Category);
+	AddLog(Message, ESentryLogLevel::Info, Attributes, Category);
 }
 
 void USentrySubsystem::LogWarning(const FString& Message, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Warning, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLogLevel::Warning, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogWarningWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Warning, Attributes, Category);
+	AddLog(Message, ESentryLogLevel::Warning, Attributes, Category);
 }
 
 void USentrySubsystem::LogError(const FString& Message, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Error, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLogLevel::Error, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogErrorWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Error, Attributes, Category);
+	AddLog(Message, ESentryLogLevel::Error, Attributes, Category);
 }
 
 void USentrySubsystem::LogFatal(const FString& Message, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Fatal, TMap<FString, FSentryVariant>(), Category);
+	AddLog(Message, ESentryLogLevel::Fatal, TMap<FString, FSentryVariant>(), Category);
 }
 
 void USentrySubsystem::LogFatalWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
-	AddLog(Message, ESentryLevel::Fatal, Attributes, Category);
+	AddLog(Message, ESentryLogLevel::Fatal, Attributes, Category);
 }
 
 void USentrySubsystem::AddCount(const FString& Key, int32 Value)
@@ -1156,7 +1166,7 @@ bool USentrySubsystem::IsPromotedBuildsOnlyEnabled() const
 	return Settings->EnableForPromotedBuildsOnly;
 }
 
-void USentrySubsystem::AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
+void USentrySubsystem::AddLog(const FString& Message, ESentryLogLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category)
 {
 	if (!SubsystemNativeImpl || !SubsystemNativeImpl->IsEnabled())
 	{

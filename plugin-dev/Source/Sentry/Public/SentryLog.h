@@ -33,11 +33,11 @@ public:
 
 	/** Sets the log level. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
-	void SetLevel(ESentryLevel Level);
+	void SetLevel(ESentryLogLevel Level);
 
 	/** Gets the log level. */
 	UFUNCTION(BlueprintPure, Category = "Sentry")
-	ESentryLevel GetLevel() const;
+	ESentryLogLevel GetLevel() const;
 
 	/** Sets an attribute of the log. */
 	UFUNCTION(BlueprintCallable, Category = "Sentry")
@@ -64,5 +64,5 @@ private:
 	FString Body;
 
 	UPROPERTY()
-	ESentryLevel Level;
+	ESentryLogLevel Level;
 };

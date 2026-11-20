@@ -154,22 +154,22 @@ ESentryLevel FAndroidSentryConverters::SentryLevelToUnreal(jobject level)
 	return unrealLevel;
 }
 
-TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLogLevelToNative(ESentryLevel level)
+TSharedPtr<FSentryJavaObjectWrapper> FAndroidSentryConverters::SentryLogLevelToNative(ESentryLogLevel level)
 {
 	jobject nativeLevel = SentryJavaClasses::GetCachedSentryLogLevelRef(level);
 
 	if (!nativeLevel)
 	{
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry level value used. Debug will be returned."));
-		nativeLevel = SentryJavaClasses::GetCachedSentryLogLevelRef(ESentryLevel::Debug);
+		nativeLevel = SentryJavaClasses::GetCachedSentryLogLevelRef(ESentryLogLevel::Debug);
 	}
 
 	return MakeShareable(new FSentryJavaObjectWrapper(SentryJavaClasses::SentryLogLevel, nativeLevel));
 }
 
-ESentryLevel FAndroidSentryConverters::SentryLogLevelToUnreal(jobject level)
+ESentryLogLevel FAndroidSentryConverters::SentryLogLevelToUnreal(jobject level)
 {
-	ESentryLevel unrealLevel = ESentryLevel::Debug;
+	ESentryLogLevel unrealLevel = ESentryLogLevel::Debug;
 
 	FSentryJavaObjectWrapper NativeLevel(SentryJavaClasses::SentryLogLevel, level);
 	FSentryJavaMethod OrdinalMethod = NativeLevel.GetMethod("ordinal", "()I");
@@ -180,20 +180,22 @@ ESentryLevel FAndroidSentryConverters::SentryLogLevelToUnreal(jobject level)
 	switch (levelValue)
 	{
 	case 0:
+		unrealLevel = ESentryLogLevel::Trace;
+		break;
 	case 1:
-		unrealLevel = ESentryLevel::Debug;
+		unrealLevel = ESentryLogLevel::Debug;
 		break;
 	case 2:
-		unrealLevel = ESentryLevel::Info;
+		unrealLevel = ESentryLogLevel::Info;
 		break;
 	case 3:
-		unrealLevel = ESentryLevel::Warning;
+		unrealLevel = ESentryLogLevel::Warning;
 		break;
 	case 4:
-		unrealLevel = ESentryLevel::Error;
+		unrealLevel = ESentryLogLevel::Error;
 		break;
 	case 5:
-		unrealLevel = ESentryLevel::Fatal;
+		unrealLevel = ESentryLogLevel::Fatal;
 		break;
 	default:
 		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry log level value used. Debug will be returned."));

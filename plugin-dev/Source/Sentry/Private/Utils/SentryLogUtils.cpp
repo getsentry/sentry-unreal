@@ -49,6 +49,28 @@ ESentryLevel SentryLogUtils::ConvertLogVerbosityToSentryLevel(const ELogVerbosit
 	}
 }
 
+ESentryLogLevel SentryLogUtils::ConvertLogVerbosityToSentryLogLevel(const ELogVerbosity::Type LogVerbosity)
+{
+	switch (LogVerbosity)
+	{
+	case ELogVerbosity::Fatal:
+		return ESentryLogLevel::Fatal;
+	case ELogVerbosity::Error:
+		return ESentryLogLevel::Error;
+	case ELogVerbosity::Warning:
+		return ESentryLogLevel::Warning;
+	case ELogVerbosity::Display:
+	case ELogVerbosity::Log:
+		return ESentryLogLevel::Info;
+	case ELogVerbosity::Verbose:
+		return ESentryLogLevel::Debug;
+	case ELogVerbosity::VeryVerbose:
+		return ESentryLogLevel::Trace;
+	default:
+		return ESentryLogLevel::Debug;
+	}
+}
+
 bool SentryLogUtils::IsCallstackLine(const FString& Line)
 {
 	// Frame lines produced by FDebug::LogFormattedMessageWithCallstack

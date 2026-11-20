@@ -105,6 +105,27 @@ public:
 		ESentryLevel Level = ESentryLevel::Info);
 
 	/**
+	 * Add a trace level structured log message to Sentry.
+	 *
+	 * @param Message Log message to add.
+	 * @param Category Optional category to prepend to the message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry")
+	void LogTrace(const FString& Message, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
+	 * Add a trace level structured log message to Sentry with attributes.
+	 *
+	 * @param Message Log message to add.
+	 * @param Attributes Structured attributes to attach to the log entry.
+	 * @param Category Optional category to prepend to the message.
+	 *
+	 * @note Attributes that have Array or Map variant types will be captured as Json string
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Sentry", meta = (AutoCreateRefTerm = "Attributes"))
+	void LogTraceWithAttributes(const FString& Message, const TMap<FString, FSentryVariant>& Attributes, const FString& Category = TEXT("LogSentrySdk"));
+
+	/**
 	 * Add a debug level structured log message to Sentry.
 	 *
 	 * @param Message Log message to add.
@@ -662,7 +683,7 @@ private:
 	bool IsPromotedBuildsOnlyEnabled() const;
 
 	/** Add a structured log message with formatting */
-	void AddLog(const FString& Message, ESentryLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
+	void AddLog(const FString& Message, ESentryLogLevel Level, const TMap<FString, FSentryVariant>& Attributes, const FString& Category);
 
 private:
 	TSharedPtr<ISentrySubsystem> SubsystemNativeImpl;

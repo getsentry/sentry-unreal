@@ -52,7 +52,7 @@ const FSentryJavaClass SentryJavaClasses::String				= FSentryJavaClass { "java/l
 
 TMap<FName, jclass> SentryJavaClasses::JavaClassRefsCache;
 TMap<ESentryLevel, jobject> SentryJavaClasses::SentryLevelRefsCache;
-TMap<ESentryLevel, jobject> SentryJavaClasses::SentryLogLevelRefsCache;
+TMap<ESentryLogLevel, jobject> SentryJavaClasses::SentryLogLevelRefsCache;
 
 void SentryJavaClasses::InitJavaClassRefsCache()
 {
@@ -104,11 +104,12 @@ void SentryJavaClasses::InitJavaClassRefsCache()
 	SentryLevelRefsCache.Add(ESentryLevel::Error, FindStaticObjectFieldRef(SentryLevel, "ERROR", "Lio/sentry/SentryLevel;"));
 	SentryLevelRefsCache.Add(ESentryLevel::Fatal, FindStaticObjectFieldRef(SentryLevel, "FATAL", "Lio/sentry/SentryLevel;"));
 
-	SentryLogLevelRefsCache.Add(ESentryLevel::Debug, FindStaticObjectFieldRef(SentryLogLevel, "DEBUG", "Lio/sentry/SentryLogLevel;"));
-	SentryLogLevelRefsCache.Add(ESentryLevel::Info, FindStaticObjectFieldRef(SentryLogLevel, "INFO", "Lio/sentry/SentryLogLevel;"));
-	SentryLogLevelRefsCache.Add(ESentryLevel::Warning, FindStaticObjectFieldRef(SentryLogLevel, "WARN", "Lio/sentry/SentryLogLevel;"));
-	SentryLogLevelRefsCache.Add(ESentryLevel::Error, FindStaticObjectFieldRef(SentryLogLevel, "ERROR", "Lio/sentry/SentryLogLevel;"));
-	SentryLogLevelRefsCache.Add(ESentryLevel::Fatal, FindStaticObjectFieldRef(SentryLogLevel, "FATAL", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLogLevel::Trace, FindStaticObjectFieldRef(SentryLogLevel, "TRACE", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLogLevel::Debug, FindStaticObjectFieldRef(SentryLogLevel, "DEBUG", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLogLevel::Info, FindStaticObjectFieldRef(SentryLogLevel, "INFO", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLogLevel::Warning, FindStaticObjectFieldRef(SentryLogLevel, "WARN", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLogLevel::Error, FindStaticObjectFieldRef(SentryLogLevel, "ERROR", "Lio/sentry/SentryLogLevel;"));
+	SentryLogLevelRefsCache.Add(ESentryLogLevel::Fatal, FindStaticObjectFieldRef(SentryLogLevel, "FATAL", "Lio/sentry/SentryLogLevel;"));
 }
 
 void SentryJavaClasses::ClearJavaClassRefsCache()
@@ -175,7 +176,7 @@ jobject SentryJavaClasses::GetCachedSentryLevelRef(ESentryLevel Level)
 	return LevelRef ? *LevelRef : nullptr;
 }
 
-jobject SentryJavaClasses::GetCachedSentryLogLevelRef(ESentryLevel Level)
+jobject SentryJavaClasses::GetCachedSentryLogLevelRef(ESentryLogLevel Level)
 {
 	jobject* LevelRef = SentryLogLevelRefsCache.Find(Level);
 	return LevelRef ? *LevelRef : nullptr;

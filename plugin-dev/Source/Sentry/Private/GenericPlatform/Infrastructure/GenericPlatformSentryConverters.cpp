@@ -41,6 +41,37 @@ sentry_level_e FGenericPlatformSentryConverters::SentryLevelToNative(ESentryLeve
 	return Level;
 }
 
+sentry_level_e FGenericPlatformSentryConverters::SentryLogLevelToNative(ESentryLogLevel level)
+{
+	sentry_level_e Level = SENTRY_LEVEL_DEBUG;
+
+	switch (level)
+	{
+	case ESentryLogLevel::Trace:
+		Level = SENTRY_LEVEL_TRACE;
+		break;
+	case ESentryLogLevel::Debug:
+		Level = SENTRY_LEVEL_DEBUG;
+		break;
+	case ESentryLogLevel::Info:
+		Level = SENTRY_LEVEL_INFO;
+		break;
+	case ESentryLogLevel::Warning:
+		Level = SENTRY_LEVEL_WARNING;
+		break;
+	case ESentryLogLevel::Error:
+		Level = SENTRY_LEVEL_ERROR;
+		break;
+	case ESentryLogLevel::Fatal:
+		Level = SENTRY_LEVEL_FATAL;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown sentry log level value used. Debug will be returned."));
+	}
+
+	return Level;
+}
+
 sentry_value_t FGenericPlatformSentryConverters::StringMapToNative(const TMap<FString, FString>& map)
 {
 	sentry_value_t nativeValue = sentry_value_new_object();

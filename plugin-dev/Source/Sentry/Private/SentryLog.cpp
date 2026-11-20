@@ -25,7 +25,7 @@ FString USentryLog::GetBody() const
 	return NativeImpl->GetBody();
 }
 
-void USentryLog::SetLevel(ESentryLevel InLevel)
+void USentryLog::SetLevel(ESentryLogLevel InLevel)
 {
 	if (!NativeImpl)
 		return;
@@ -33,10 +33,10 @@ void USentryLog::SetLevel(ESentryLevel InLevel)
 	NativeImpl->SetLevel(InLevel);
 }
 
-ESentryLevel USentryLog::GetLevel() const
+ESentryLogLevel USentryLog::GetLevel() const
 {
 	if (!NativeImpl)
-		return ESentryLevel::Info;
+		return ESentryLogLevel::Info;
 
 	return NativeImpl->GetLevel();
 }

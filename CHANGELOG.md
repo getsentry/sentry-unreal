@@ -2,6 +2,10 @@
 
 ## Unreleased (v2)
 
+### Breaking Changes
+
+- Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
+
 ### Behavioral Changes
 
 - Use the Native SDK's OS context under Wine/Proton and on SteamOS/Bazzite instead of the plugin's own ([#1711](https://github.com/getsentry/sentry-unreal/pull/1711))

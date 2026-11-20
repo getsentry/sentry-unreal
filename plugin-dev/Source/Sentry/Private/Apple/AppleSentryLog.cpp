@@ -10,7 +10,7 @@
 #include "Convenience/AppleSentryMacro.h"
 
 FAppleSentryLog::FAppleSentryLog()
-	: FAppleSentryLog(FString(), ESentryLevel::Debug)
+	: FAppleSentryLog(FString(), ESentryLogLevel::Debug)
 {
 }
 
@@ -19,7 +19,7 @@ FAppleSentryLog::FAppleSentryLog(SentryObjCLog* log)
 	LogApple = [log retain];
 }
 
-FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLevel level)
+FAppleSentryLog::FAppleSentryLog(const FString& body, ESentryLogLevel level)
 {
 	LogApple = [[SENTRY_APPLE_CLASS(SentryObjCLog) alloc] initWithLevel:FAppleSentryConverters::SentryLogLevelToNative(level)
 																   body:body.GetNSString()];
@@ -45,12 +45,12 @@ FString FAppleSentryLog::GetBody() const
 	return FString(LogApple.body);
 }
 
-void FAppleSentryLog::SetLevel(ESentryLevel level)
+void FAppleSentryLog::SetLevel(ESentryLogLevel level)
 {
 	LogApple.level = FAppleSentryConverters::SentryLogLevelToNative(level);
 }
 
-ESentryLevel FAppleSentryLog::GetLevel() const
+ESentryLogLevel FAppleSentryLog::GetLevel() const
 {
 	return FAppleSentryConverters::SentryLogLevelToUnreal(LogApple.level);
 }
