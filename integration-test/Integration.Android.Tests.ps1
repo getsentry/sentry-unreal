@@ -736,7 +736,6 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
         BeforeAll {
             $script:LogResult = $global:AndroidLogResult
             $script:CapturedLogs = @()
-            $script:AttributesLog = $null
             $script:TestId = $null
 
             # Parse test ID from output (format: LOG_TRIGGERED: <test-id>)
@@ -747,8 +746,7 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
 
                 # Fetch logs from Sentry with automatic polling
                 try {
-                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -ExpectedCount 8 -Fields @('log_kind', 'handler_added', 'to_be_removed', 'global_attr', 'global_removed', 'level_override', 'level_read')
-                    $script:AttributesLog = $script:CapturedLogs | Where-Object { $_.log_kind -eq 'attributes' } | Select-Object -First 1
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
                 }
                 catch {
                     Write-Host "Warning: $_" -ForegroundColor Red
@@ -769,65 +767,44 @@ Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTa
             $testResultLine | Should -Match '"success"\s*:\s*true'
         }
 
-        It "Should capture structured logs in Sentry" {
+        It "Should capture structured log in Sentry" {
             $script:CapturedLogs | Should -Not -BeNullOrEmpty
-            $script:CapturedLogs.Count | Should -Be 8
+            $script:CapturedLogs.Count | Should -BeGreaterThan 0
         }
 
         It "Should have correct log message with format specifiers delivered verbatim" {
-            $log = $script:AttributesLog
+            $log = $script:CapturedLogs[0]
             $log.message | Should -Be '[LogSentryTest] Integration test structured log metadata="%s" (%d fields)'
         }
 
         It "Should have correct severity level" {
-            $log = $script:AttributesLog
+            $log = $script:CapturedLogs[0]
             $log.severity | Should -Be 'warn'
         }
 
         It "Should have test_id attribute matching captured ID" {
-            $log = $script:AttributesLog
+            $log = $script:CapturedLogs[0]
             $log.'test_id' | Should -Be $script:TestId
         }
 
         It "Should have attribute added by BeforeLogHandler" {
-            $log = $script:AttributesLog
+            $log = $script:CapturedLogs[0]
             $log.'handler_added' | Should -Be 'added_value'
         }
 
         It "Should not have attribute removed by BeforeLogHandler" {
-            $log = $script:AttributesLog
+            $log = $script:CapturedLogs[0]
             $log.'to_be_removed' | Should -BeNullOrEmpty
         }
 
         It "Should have global attribute set on subsystem" {
-            $log = $script:AttributesLog
+            $log = $script:CapturedLogs[0]
             $log.global_attr | Should -Be 'global_value'
         }
 
         It "Should not have global attribute that was removed from subsystem" {
-            $log = $script:AttributesLog
+            $log = $script:CapturedLogs[0]
             $log.global_removed | Should -BeNullOrEmpty
-        }
-
-        It "Should capture trace log with trace severity" {
-            $log = $script:CapturedLogs | Where-Object { $_.log_kind -eq 'trace' } | Select-Object -First 1
-            $log | Should -Not -BeNullOrEmpty
-            $log.message | Should -Be '[LogSentryTest] Integration test trace log'
-            $log.severity | Should -Be 'trace'
-        }
-
-        It "Should let BeforeLogHandler read <Level> level and change it to <Override>" -ForEach @(
-            @{ Level = 'Trace'; Override = 'Fatal'; Severity = 'fatal' }
-            @{ Level = 'Debug'; Override = 'Trace'; Severity = 'trace' }
-            @{ Level = 'Info'; Override = 'Debug'; Severity = 'debug' }
-            @{ Level = 'Warning'; Override = 'Info'; Severity = 'info' }
-            @{ Level = 'Error'; Override = 'Warning'; Severity = 'warn' }
-            @{ Level = 'Fatal'; Override = 'Error'; Severity = 'error' }
-        ) {
-            $log = $script:CapturedLogs | Where-Object { $_.log_kind -eq 'level_override' -and $_.level_override -eq $Override } | Select-Object -First 1
-            $log | Should -Not -BeNullOrEmpty
-            $log.level_read | Should -Be $Level
-            $log.severity | Should -Be $Severity
         }
     }
 

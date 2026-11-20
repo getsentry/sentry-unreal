@@ -5,8 +5,6 @@
 #include "SentryDefines.h"
 #include "SentryTraceSampler.h"
 
-#include "Utils/SentryLogUtils.h"
-
 #include "Misc/App.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/Paths.h"
@@ -110,17 +108,6 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	if (GIsEditor)
 	{
 		LoadDebugSymbolsProperties();
-	}
-}
-
-void USentrySettings::PostInitProperties()
-{
-	Super::PostInitProperties();
-
-	FString StructuredLoggingLevelsConfig;
-	if (GConfig && GConfig->GetString(TEXT("/Script/Sentry.SentrySettings"), TEXT("StructuredLoggingLevels"), StructuredLoggingLevelsConfig, GEngineIni))
-	{
-		SentryLogUtils::MigrateStructuredLoggingLevels(StructuredLoggingLevels, StructuredLoggingLevelsConfig);
 	}
 }
 

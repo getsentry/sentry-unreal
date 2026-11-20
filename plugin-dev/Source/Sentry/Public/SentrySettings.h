@@ -797,8 +797,6 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableCrashReporterContextPropagation", SentryPlatforms = "Win64,Linux,Mac:Native", SentryExperimental))
 	bool EnableCrashReporterDebugImages;
 
-	virtual void PostInitProperties() override;
-
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif

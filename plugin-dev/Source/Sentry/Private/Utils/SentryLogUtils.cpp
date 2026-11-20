@@ -2,8 +2,6 @@
 
 #include "SentryLogUtils.h"
 
-#include "SentrySettings.h"
-
 #include "CoreGlobals.h"
 #include "GenericPlatform/GenericPlatformStackWalk.h"
 #include "HAL/UnrealMemory.h"
@@ -98,12 +96,4 @@ bool SentryLogUtils::IsCallstackLine(const FString& Line)
 #else
 	return false;
 #endif
-}
-
-void SentryLogUtils::MigrateStructuredLoggingLevels(FStructuredLoggingLevels& Levels, const FString& ConfigValue)
-{
-	if (!ConfigValue.Contains(TEXT("bOnTraceLog")))
-	{
-		Levels.bOnTraceLog = Levels.bOnDebugLog;
-	}
 }
