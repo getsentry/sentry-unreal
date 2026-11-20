@@ -2,7 +2,9 @@
 
 #include "Integrations/SentryAssertTrackingIntegration.h"
 
-#include "SentryErrorOutputDevice.h"
+#include "SentryDelegates.h"
+
+#include "OutputDevice/SentryErrorOutputDevice.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 
@@ -28,6 +30,9 @@ bool FSentryAssertTrackingIntegration::Setup(const USentrySettings& Settings)
 	// Capture the native implementation by value so the handler doesn't depend on this integration's lifetime.
 	AssertHandle = ErrorOutputDevice->OnAssert.AddLambda([NativeImpl = NativeImpl](const FString& Message)
 	{
+		// User handlers run first since HandleAssert may not return on some platforms
+		FSentryDelegates::OnAssert.Broadcast(Message);
+
 		NativeImpl->HandleAssert();
 	});
 

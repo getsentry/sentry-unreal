@@ -6,7 +6,7 @@
 
 #include "SentryGCCallback.h"
 
-#include "SentryErrorOutputDevice.h"
+#include "SentryDelegates.h"
 #include "SentryEvent.h"
 
 #include "CoreGlobals.h"
@@ -98,17 +98,13 @@ void USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType Type)
 			break;
 		case ESentryAppTerminationType::AssertReentrant:
 			{
-				FSentryErrorOutputDevice* SentryErrorDevice = static_cast<FSentryErrorOutputDevice*>(GError);
-				if (SentryErrorDevice)
+				FSentryDelegates::OnAssert.AddLambda([](const FString& Message)
 				{
-					SentryErrorDevice->OnAssert.AddLambda([](const FString& Message)
-					{
-						UE_LOG(LogTemp, Warning, TEXT("OnAssert handler called, triggering reentrant assert..."));
+					UE_LOG(LogTemp, Warning, TEXT("OnAssert handler called, triggering reentrant assert..."));
 
-						char* reentrantPtr = nullptr;
-						check(reentrantPtr != nullptr);
-					});
-				}
+					char* reentrantPtr = nullptr;
+					check(reentrantPtr != nullptr);
+				});
 
 				char* initialPtr = nullptr;
 				check(initialPtr != nullptr);

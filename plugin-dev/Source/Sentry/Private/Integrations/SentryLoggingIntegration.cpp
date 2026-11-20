@@ -2,7 +2,7 @@
 
 #include "Integrations/SentryLoggingIntegration.h"
 
-#include "SentryOutputDevice.h"
+#include "OutputDevice/SentryOutputDevice.h"
 
 #include "Interface/SentrySubsystemInterface.h"
 

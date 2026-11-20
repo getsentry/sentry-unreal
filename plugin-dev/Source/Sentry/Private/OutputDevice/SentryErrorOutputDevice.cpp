@@ -1,6 +1,6 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryErrorOutputDevice.h"
+#include "OutputDevice/SentryErrorOutputDevice.h"
 
 #include "HAL/PlatformAtomics.h"
 #include "Misc/AssertionMacros.h"
