@@ -1,6 +1,6 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
-#include "SentryOutputDevice.h"
+#include "OutputDevice/SentryOutputDevice.h"
 
 #include "SentryModule.h"
 #include "SentrySettings.h"

@@ -26,11 +26,12 @@
 #include "SentryLog.h"
 #include "SentryMetric.h"
 #include "SentryModule.h"
-#include "SentryOutputDevice.h"
 #include "SentrySamplingContext.h"
 #include "SentrySettings.h"
 #include "SentrySubsystem.h"
 #include "SentryTraceSampler.h"
+
+#include "OutputDevice/SentryOutputDevice.h"
 
 #include "Utils/SentryCallbackUtils.h"
 #include "Utils/SentryFileUtils.h"

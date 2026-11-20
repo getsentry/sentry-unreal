@@ -30,6 +30,7 @@ plugin-dev/Source/
 │       ├── Mac/             # macOS overrides for Apple/GenericPlatform
 │       ├── Microsoft/       # Windows/Xbox/WinGDK base, overrides GenericPlatform
 │       ├── Null/            # Stubs for unsupported platforms
+│       ├── OutputDevice/    # UE log and error output device wrappers
 │       ├── Performance/     # Performance monitors (frame time, GC, network, game stats)
 │       ├── SessionReplay/   # Session replay recording (backbuffer capture, MP4 encoder)
 │       ├── Tests/           # Unit test specs
@@ -95,7 +96,6 @@ Each platform's ThirdParty directory contains subdirectories per backend (e.g. `
 
 **Utilities:**
 - `SentryVariant` - Universal value type for passing data to Sentry APIs (tags, context, etc.)
-- `SentryOutputDevice` / `SentryErrorOutputDevice` - UE log output integration
 
 ### Platform Implementation Pattern
 

@@ -5,6 +5,7 @@
 ### Breaking Changes
 
 - Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
+- `FSentryErrorOutputDevice` and `FSentryOutputDevice` are now private; use `FSentryDelegates::OnAssert` instead
 
 ### Behavioral Changes
 

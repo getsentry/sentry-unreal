@@ -229,6 +229,10 @@ Source/Sentry/Private/Null/NullSentrySubsystem.h
 Source/Sentry/Private/Null/NullSentryTransaction.h
 Source/Sentry/Private/Null/NullSentryTransactionContext.h
 Source/Sentry/Private/Null/NullSentryUser.h
+Source/Sentry/Private/OutputDevice/SentryErrorOutputDevice.cpp
+Source/Sentry/Private/OutputDevice/SentryErrorOutputDevice.h
+Source/Sentry/Private/OutputDevice/SentryOutputDevice.cpp
+Source/Sentry/Private/OutputDevice/SentryOutputDevice.h
 Source/Sentry/Private/Performance/SentryPerfFrameTimeMonitor.cpp
 Source/Sentry/Private/Performance/SentryPerfFrameTimeMonitor.h
 Source/Sentry/Private/Performance/SentryPerfGameStatsMonitor.cpp
@@ -247,7 +251,7 @@ Source/Sentry/Private/SentryBeforeSendFeedbackHandler.cpp
 Source/Sentry/Private/SentryBeforeSendHandler.cpp
 Source/Sentry/Private/SentryBreadcrumb.cpp
 Source/Sentry/Private/SentryDefines.h
-Source/Sentry/Private/SentryErrorOutputDevice.cpp
+Source/Sentry/Private/SentryDelegates.cpp
 Source/Sentry/Private/SentryEvent.cpp
 Source/Sentry/Private/SentryFeedback.cpp
 Source/Sentry/Private/SentryHint.cpp
@@ -255,7 +259,6 @@ Source/Sentry/Private/SentryLibrary.cpp
 Source/Sentry/Private/SentryLog.cpp
 Source/Sentry/Private/SentryMetric.cpp
 Source/Sentry/Private/SentryModule.cpp
-Source/Sentry/Private/SentryOutputDevice.cpp
 Source/Sentry/Private/SentrySamplingContext.cpp
 Source/Sentry/Private/SentryScope.cpp
 Source/Sentry/Private/SentrySettings.cpp
@@ -315,7 +318,7 @@ Source/Sentry/Public/SentryBeforeSendFeedbackHandler.h
 Source/Sentry/Public/SentryBeforeSendHandler.h
 Source/Sentry/Public/SentryBreadcrumb.h
 Source/Sentry/Public/SentryDataTypes.h
-Source/Sentry/Public/SentryErrorOutputDevice.h
+Source/Sentry/Public/SentryDelegates.h
 Source/Sentry/Public/SentryEvent.h
 Source/Sentry/Public/SentryFeedback.h
 Source/Sentry/Public/SentryHint.h
@@ -324,7 +327,6 @@ Source/Sentry/Public/SentryLibrary.h
 Source/Sentry/Public/SentryLog.h
 Source/Sentry/Public/SentryMetric.h
 Source/Sentry/Public/SentryModule.h
-Source/Sentry/Public/SentryOutputDevice.h
 Source/Sentry/Public/SentrySamplingContext.h
 Source/Sentry/Public/SentryScope.h
 Source/Sentry/Public/SentrySettings.h
