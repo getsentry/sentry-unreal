@@ -89,13 +89,14 @@ BeforeDiscovery {
 
     # Define hang detection mechanisms to test
     $TestHangMechanisms = @(
-        @{ Name = 'Engine'; ExceptionType = 'App Hanging'; ExceptionValuePattern = '^Application not responding$' }
-        @{ Name = 'Native'; ExceptionType = 'AppHang';     ExceptionValuePattern = 'App hung for at least \d+ ms' }
+        @{ Name = 'Engine';           ExceptionType = 'App Hanging'; ExceptionValuePattern = '^Application not responding$'; AllThreads = $false }
+        @{ Name = 'Native';           ExceptionType = 'AppHang';     ExceptionValuePattern = 'App hung for at least \d+ ms'; AllThreads = $false }
+        @{ Name = 'NativeAllThreads'; ExceptionType = 'AppHang';     ExceptionValuePattern = 'App hung for at least \d+ ms'; AllThreads = $true }
     )
 
     if ($IsMacOS) {
         if ($script:IsNativeBackend) {
-            $TestHangMechanisms = @($TestHangMechanisms | Where-Object { $_.Name -eq 'Native' })
+            $TestHangMechanisms = @($TestHangMechanisms | Where-Object { $_.Name -like 'Native*' })
         }
         else {
             $TestHangMechanisms = @()
@@ -434,8 +435,11 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableHangTracking=True"
-            if ($_.Name -eq 'Native') {
+            if ($_.Name -like 'Native*') {
                 $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:UseNativeHangTracking=True"
+            }
+            if ($_.AllThreads) {
+                $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachAllThreadsToHangEvents=True"
             }
 
             # -hang-capture triggers hang test scenario in the sample app
@@ -518,6 +522,30 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
         It "Should have CrashType tag" {
             $tags = $script:HangEvent.tags
             ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Hang'
+        }
+
+        It "Should not attach threads by default" -Skip:($AllThreads -or $Name -eq 'Engine') {
+            $script:HangEvent.threads | Should -BeNullOrEmpty
+        }
+
+        It "Should mark the hung thread as crashed and link it to the exception" -Skip:(-not $AllThreads) {
+            $threads = @($script:HangEvent.threads.values)
+            $crashed = @($threads | Where-Object { $_.crashed })
+            $crashed.Count | Should -Be 1
+            $exception = $script:HangEvent.exception.values[0]
+            "$($exception.threadId)" | Should -Be "$($crashed[0].id)"
+            $crashed[0].stacktrace | Should -BeNullOrEmpty
+        }
+
+        It "Should attach stack traces of other threads" -Skip:(-not $AllThreads) {
+            $threads = @($script:HangEvent.threads.values)
+            $others = @($threads | Where-Object { -not $_.crashed -and $_.stacktrace.frames })
+            $others.Count | Should -BeGreaterThan 1
+        }
+
+        It "Should attach thread names" -Skip:(-not $AllThreads) {
+            $threads = @($script:HangEvent.threads.values)
+            @($threads | Where-Object { $_.name }).Count | Should -BeGreaterThan 0
         }
     }
 
