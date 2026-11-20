@@ -86,7 +86,7 @@ jobs:
           New-Item -ItemType Directory -Path $dir -Force | Out-Null
           @(
             '[/Script/Sentry.SentrySettings]'
-            'UseNativeBackend=True'
+            'CrashBackend=Native'
           ) | Add-Content -Path "$dir/$($env:PLATFORM)Engine.ini"
 
       - name: Update engine's build configuration

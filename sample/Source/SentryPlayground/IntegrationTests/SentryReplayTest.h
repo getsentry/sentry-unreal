@@ -16,7 +16,7 @@
  * video content, and Sentry stores it as an opaque blob, so the clip is filler bytes
  * generated at runtime rather than a real recording.
  *
- * Only meaningful with the native crash backend (`UseNativeBackend=True`) - other
+ * Only meaningful with the native crash backend (`CrashBackend=Native`) - other
  * backends don't run the daemon that flushes staged replays.
  */
 class FSentryReplayTest : public FSentryBaseIntegrationTest

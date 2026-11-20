@@ -72,6 +72,14 @@ enum class ESentryCrashReporterView : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESentryCrashBackend : uint8
+{
+	Auto UMETA(DisplayName = "Auto (recommended)", ToolTip = "Native on Windows, Linux and Xbox. Cocoa on macOS."),
+	Native UMETA(ToolTip = "sentry-native crash daemon on all supported platforms."),
+	Platform UMETA(DisplayName = "Platform-specific", ToolTip = "Crashpad on Windows and Linux. Breakpad on Xbox. Cocoa on macOS."),
+};
+
+UENUM(BlueprintType)
 enum class ESentryAndroidCrashBackend : uint8
 {
 	// Capture crashes using the sentry-native NDK signal handler only
@@ -451,28 +459,28 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableAutoCrashCapturing;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
-		Meta = (DisplayName = "Use native crash backend", ToolTip = "Use the experimental native backend for crash reporting on Windows, Linux, macOS, and Xbox instead of the default backend (Crashpad on Windows/Linux, sentry-cocoa on macOS, Breakpad on Xbox). Requires rebuild after changing.",
-			SentryPlatforms = "Win64,Linux,Mac,Xbox", SentryRequiresRebuild, SentryExperimental))
-	bool UseNativeBackend;
+		Meta = (DisplayName = "Crash backend", ToolTip = "Backend used to capture and send crashes.",
+			SentryPlatforms = "Win64,Linux,Mac,Xbox", SentryRequiresRebuild))
+	ESentryCrashBackend CrashBackend;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Crash reporting mode", ToolTip = "Controls how crash data is collected and sent to Sentry. Minidump mode sends raw dumps for server-side symbolication. Native stackwalking performs client-side unwinding for faster, smaller payloads.",
-			EditCondition = "UseNativeBackend"))
+			EditCondition = "CrashBackend != ESentryCrashBackend::Platform"))
 	ESentryCrashReportingMode CrashReportingMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Minidump capture mode", ToolTip = "Controls how much memory is captured in crash minidumps. Larger captures provide more debugging information but take longer to generate and upload.",
-			EditCondition = "UseNativeBackend && CrashReportingMode != ESentryCrashReportingMode::NativeStackwalking"))
+			EditCondition = "CrashBackend != ESentryCrashBackend::Platform && CrashReportingMode != ESentryCrashReportingMode::NativeStackwalking"))
 	ESentryMinidumpMode MinidumpMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Thread stackwalk mode", ToolTip = "Controls which threads have their stack walked client-side. Walking every thread gives the most context but can noticeably delay crash processing in applications with a high thread count, such as editor builds. Requires native stackwalking to be enabled in the crash reporting mode.",
-			EditCondition = "UseNativeBackend"))
+			EditCondition = "CrashBackend != ESentryCrashBackend::Platform"))
 	ESentryThreadStackwalkMode ThreadStackwalkMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Crash upload mode", ToolTip = "Controls what happens after crash data is captured. Sync keeps the crashed application blocked until the crash daemon finishes uploading. Async lets it terminate immediately while the daemon continues uploading in the background, which avoids long freezes when sending large crash payloads.",
-			EditCondition = "UseNativeBackend"))
+			EditCondition = "CrashBackend != ESentryCrashBackend::Platform"))
 	ESentryCrashUploadMode CrashUploadMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
@@ -481,7 +489,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Crash Handling",
 		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
-			EditCondition = "!UseNativeBackend", SentryPlatforms = "Win64,Linux"))
+			EditCondition = "CrashBackend == ESentryCrashBackend::Platform", SentryPlatforms = "Win64,Linux"))
 	bool CrashpadWaitForUpload;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Crash Handling",

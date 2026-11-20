@@ -617,7 +617,7 @@ void FGenericPlatformSentrySubsystem::AttachStackTrace(sentry_value_t target)
 }
 
 FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
-	: bUseNativeBackend(false)
+	: bUseNativeBackend(USE_SENTRY_NATIVE_BACKEND == 1)
 	, beforeSend(nullptr)
 	, beforeSendFeedback(nullptr)
 	, beforeBreadcrumb(nullptr)
@@ -639,8 +639,6 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 
 void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
-	bUseNativeBackend = settings->UseNativeBackend;
-
 	beforeSend = callbackHandlers.BeforeSendHandler;
 	beforeSendFeedback = callbackHandlers.BeforeSendFeedbackHandler;
 	beforeBreadcrumb = callbackHandlers.BeforeBreadcrumbHandler;

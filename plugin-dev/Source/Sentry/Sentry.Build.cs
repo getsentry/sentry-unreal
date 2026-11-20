@@ -17,6 +17,8 @@ using Tools.DotNETCommon;
 
 public class Sentry : ModuleRules
 {
+	protected bool bUseNativeBackend = false;
+
 	public Sentry(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
@@ -52,16 +54,26 @@ public class Sentry : ModuleRules
 		// Initial values must match the UPROPERTY defaults in SentrySettings to handle the case
 		// when the user hasn't explicitly configured them and no entry exists in the .ini file
 		bool bEnableExternalCrashReporter = false;
-		bool bUseNativeBackend = false;
+		string CrashBackend = "Auto";
 		bool bAttachSessionReplay = false;
 
 		if (Target.ProjectFile != null)
 		{
 			ConfigHierarchy EngineConfig = ConfigCache.ReadHierarchy(ConfigHierarchyType.Engine, DirectoryReference.FromFile(Target.ProjectFile), Target.Platform);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
-			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "UseNativeBackend", out bUseNativeBackend);
+			EngineConfig.TryGetValue("/Script/Sentry.SentrySettings", "CrashBackend", out CrashBackend);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "AttachSessionReplay", out bAttachSessionReplay);
+
+			string LegacyUseNativeBackend;
+			if (EngineConfig.TryGetValue("/Script/Sentry.SentrySettings", "UseNativeBackend", out LegacyUseNativeBackend))
+			{
+				Console.WriteLine("Warning: Sentry setting 'UseNativeBackend' is no longer supported and is ignored. Use 'CrashBackend' instead.");
+			}
 		}
+
+		bUseNativeBackend = IsNativeBackendSupported(Target) && (CrashBackend == "Native" || (CrashBackend != "Platform" && IsNativeBackendDefault(Target)));
+
+		PublicDefinitions.Add("USE_SENTRY_NATIVE_BACKEND=" + (bUseNativeBackend ? "1" : "0"));
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
@@ -259,6 +271,20 @@ public class Sentry : ModuleRules
 		{
 			AddEncoderDependencies(Target);
 		}
+	}
+
+	protected virtual bool IsNativeBackendSupported(ReadOnlyTargetRules Target)
+	{
+#if UE_5_0_OR_LATER
+		return Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64;
+#else
+		return Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64;
+#endif
+	}
+
+	protected virtual bool IsNativeBackendDefault(ReadOnlyTargetRules Target)
+	{
+		return Target.Platform != UnrealTargetPlatform.Mac;
 	}
 
 	protected virtual bool IsSessionReplaySupported(ReadOnlyTargetRules Target)

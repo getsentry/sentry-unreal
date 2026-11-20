@@ -139,7 +139,7 @@ jobs:
       - name: Enable native backend
         if: ${{ success() && steps.build.outcome == 'success' }}
         run: |
-          (Get-Content "checkout/sample/Config/DefaultEngine.ini") -replace 'UseNativeBackend=False','UseNativeBackend=True' | Set-Content "checkout/sample/Config/DefaultEngine.ini"
+          (Get-Content "checkout/sample/Config/DefaultEngine.ini") -replace 'CrashBackend=Platform','CrashBackend=Native' | Set-Content "checkout/sample/Config/DefaultEngine.ini"
 
       - name: Build (Native)
         id: build-native
