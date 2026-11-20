@@ -22,6 +22,11 @@ public:
 	TMulticastDelegate<void(const FString&), FDefaultTSDelegateUserPolicy> OnAssert;
 #endif
 
+protected:
+	virtual bool HasAsserted() const;
+
 private:
 	FOutputDeviceError* ParentDevice;
+
+	volatile int32 AssertCount;
 };
