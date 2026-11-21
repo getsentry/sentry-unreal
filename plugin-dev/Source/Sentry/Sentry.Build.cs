@@ -65,7 +65,11 @@ public class Sentry : ModuleRules
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "AttachSessionReplay", out bAttachSessionReplay);
 		}
 
-		bUseNativeBackend = IsNativeBackendSupported(Target) && (CrashBackend == "Native" || (CrashBackend != "Platform" && IsNativeBackendDefault(Target)));
+		// Enum values in the config are matched case-insensitively to align with how the engine parses them at runtime
+		bool bIsNativeSelected = string.Equals(CrashBackend, "Native", StringComparison.OrdinalIgnoreCase);
+		bool bIsPlatformSelected = string.Equals(CrashBackend, "Platform", StringComparison.OrdinalIgnoreCase);
+
+		bUseNativeBackend = IsNativeBackendSupported(Target) && (bIsNativeSelected || (!bIsPlatformSelected && IsNativeBackendDefault(Target)));
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
