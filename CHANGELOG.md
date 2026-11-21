@@ -10,7 +10,7 @@
 
 ### Behavioral Changes
 
-- Use the native backend by default on Windows and Linux ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
+- Use the native backend by default on Windows, Linux and Xbox ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
 - Use the Native SDK's OS context under Wine/Proton and on SteamOS/Bazzite instead of the plugin's own ([#1711](https://github.com/getsentry/sentry-unreal/pull/1711))
 
 ### Dependencies
