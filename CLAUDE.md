@@ -67,14 +67,16 @@ Null/                         # Stubs for unsupported platforms
 
 ### Crash Handler Backends
 
-For `sentry-native` platforms SDK supports multiple crash handler backends. The backend is selected in `Sentry.Build.cs` at build time via the `UseNativeBackend` setting configured in `SentrySettings`.
+For `sentry-native` platforms SDK supports multiple crash handler backends. The backend is selected in `Sentry.Build.cs` at build time via the `CrashBackend` setting configured in `SentrySettings` (`Auto`, `Native` or `Platform`) and exposed to C++ as `USE_SENTRY_NATIVE_BACKEND`.
 
-| Platform             | Default backend | Alternative backend |
-|----------------------|-----------------|---------------------|
-| Windows (x64, ARM64) | Crashpad        | Native              |
-| Linux (x64, ARM64)   | Crashpad        | Native              |
-| macOS                | Cocoa           | Native              |
-| Xbox/WinGDK          | Breakpad        | Native              |
+| Platform             | `Auto` (default) | `Platform`  |
+|----------------------|------------------|-------------|
+| Windows (x64, ARM64) | Native           | Crashpad    |
+| Linux (x64, ARM64)   | Native           | Crashpad    |
+| macOS                | Cocoa            | Cocoa       |
+| Xbox/WinGDK          | Native           | Breakpad    |
+
+`Native` selects the native backend on all platforms above.
 
 Each platform's ThirdParty directory contains subdirectories per backend (e.g. `Crashpad/` + `Native/`, `Cocoa/` + `Native/`, or `Breakpad/` + `Native/`).
 

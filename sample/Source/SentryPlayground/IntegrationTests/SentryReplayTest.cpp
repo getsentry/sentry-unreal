@@ -32,18 +32,16 @@ FString GetReplaysDir(const USentrySettings* Settings)
 {
 #if PLATFORM_IOS
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
-#elif PLATFORM_MAC
-	if (!Settings->UseNativeBackend)
-	{
-		return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
-	}
-#endif
+#elif PLATFORM_MAC && !USE_SENTRY_NATIVE_BACKEND
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
+#else
 
 	const FString DatabaseParentPath = Settings->DatabaseLocation == ESentryDatabaseLocation::ProjectDirectory
 										   ? FPaths::ProjectDir()
 										   : FPaths::ProjectUserDir();
 
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(DatabaseParentPath, TEXT(".sentry-native"), TEXT("replays")));
+#endif
 }
 
 } // namespace
