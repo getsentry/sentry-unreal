@@ -51,23 +51,21 @@ public class Sentry : ModuleRules
 
 		// Initial values must match the UPROPERTY defaults in SentrySettings to handle the case
 		// when the user hasn't explicitly configured them and no entry exists in the .ini file
-		bool bEnableExternalCrashReporter = false;
 		string CrashBackend = "Auto";
+		bool bEnableExternalCrashReporter = false;
 		bool bAttachSessionReplay = false;
 
 		if (Target.ProjectFile != null)
 		{
 			ConfigHierarchy EngineConfig = ConfigCache.ReadHierarchy(ConfigHierarchyType.Engine, DirectoryReference.FromFile(Target.ProjectFile), Target.Platform);
+			EngineConfig.GetString("/Script/Sentry.SentrySettings", "CrashBackend", out CrashBackend);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
-			EngineConfig.TryGetValue("/Script/Sentry.SentrySettings", "CrashBackend", out CrashBackend);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "AttachSessionReplay", out bAttachSessionReplay);
 		}
 
-		// Enum values in the config are matched case-insensitively to align with how the engine parses them at runtime
 		bool bIsNativeSelected = string.Equals(CrashBackend, "Native", StringComparison.OrdinalIgnoreCase);
 		bool bIsPlatformSelected = string.Equals(CrashBackend, "Platform", StringComparison.OrdinalIgnoreCase);
 
-		// Auto resolves to the native backend everywhere except macOS where Cocoa is used
 		bool bUseNativeBackend = bIsNativeSelected || (!bIsPlatformSelected && Target.Platform != UnrealTargetPlatform.Mac);
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
