@@ -139,7 +139,7 @@ jobs:
       - name: Enable native backend
         if: ${{ success() && steps.build.outcome == 'success' }}
         run: |
-          sed -i '' 's/CrashBackend=Platform/CrashBackend=Native/' checkout/sample/Config/DefaultEngine.ini
+          sed -i '' 's/CrashBackend=Auto/CrashBackend=Native/' checkout/sample/Config/DefaultEngine.ini
 
       - name: Build (Native)
         id: build-native

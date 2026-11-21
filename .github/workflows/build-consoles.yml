@@ -77,16 +77,17 @@ jobs:
             --dir "checkout/sample/Platforms/$env:PLATFORM/Plugins/Sentry"
 
       - name: Select crash handler backend
-        if: ${{ inputs.backend == 'native' }}
+        if: ${{ inputs.backend != '' }}
         shell: pwsh
         env:
           PLATFORM: ${{ inputs.platform }}
+          BACKEND: ${{ inputs.backend == 'native' && 'Native' || 'Platform' }}
         run: |
           $dir = "checkout/sample/Platforms/$env:PLATFORM/Config"
           New-Item -ItemType Directory -Path $dir -Force | Out-Null
           @(
             '[/Script/Sentry.SentrySettings]'
-            'CrashBackend=Native'
+            "CrashBackend=$env:BACKEND"
           ) | Add-Content -Path "$dir/$($env:PLATFORM)Engine.ini"
 
       - name: Update engine's build configuration
