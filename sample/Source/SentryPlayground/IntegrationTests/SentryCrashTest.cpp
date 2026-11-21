@@ -26,7 +26,7 @@ void FSentryCrashTest::Run()
 
 	// Workaround for duplicated log messages in UE 4.27 on Linux
 #if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
-	if (USE_SENTRY_NATIVE_BACKEND)
+	if (FSentryModule::Get().GetSettings()->IsNativeBackendEnabled())
 	{
 		// When using native backend, crashing process can terminate before engine's GLog is flushed
 		// To ensure the event ID is not lost it is printed directly to stdout so the test script can reliably capture it

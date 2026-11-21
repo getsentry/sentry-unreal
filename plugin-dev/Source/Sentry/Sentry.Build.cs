@@ -67,8 +67,6 @@ public class Sentry : ModuleRules
 
 		bUseNativeBackend = IsNativeBackendSupported(Target) && (CrashBackend == "Native" || (CrashBackend != "Platform" && IsNativeBackendDefault(Target)));
 
-		PublicDefinitions.Add("USE_SENTRY_NATIVE_BACKEND=" + (bUseNativeBackend ? "1" : "0"));
-
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "Apple"));

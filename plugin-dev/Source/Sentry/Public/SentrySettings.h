@@ -849,6 +849,13 @@ class SENTRY_API USentrySettings : public UObject
 	 */
 	FString GetReleaseFromProjectSettings() const;
 
+	/**
+	 * Checks whether the native crash backend is used on the current platform.
+	 *
+	 * @return True if `CrashBackend` resolves to the native backend on the current platform (`Auto` uses Cocoa on macOS), false otherwise.
+	 */
+	bool IsNativeBackendEnabled() const;
+
 	bool IsDirty() const;
 	void ClearDirtyFlag();
 

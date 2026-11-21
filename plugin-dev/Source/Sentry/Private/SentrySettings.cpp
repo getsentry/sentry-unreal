@@ -290,6 +290,15 @@ FString USentrySettings::GetReleaseFromProjectSettings() const
 	return FormattedReleaseName;
 }
 
+bool USentrySettings::IsNativeBackendEnabled() const
+{
+#if USE_SENTRY_NATIVE && (PLATFORM_MICROSOFT || PLATFORM_LINUX || PLATFORM_MAC)
+	return CrashBackend != ESentryCrashBackend::Platform;
+#else
+	return false;
+#endif
+}
+
 bool USentrySettings::IsDirty() const
 {
 	return bIsDirty;
