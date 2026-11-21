@@ -63,12 +63,6 @@ public class Sentry : ModuleRules
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
 			EngineConfig.TryGetValue("/Script/Sentry.SentrySettings", "CrashBackend", out CrashBackend);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "AttachSessionReplay", out bAttachSessionReplay);
-
-			string LegacyUseNativeBackend;
-			if (EngineConfig.TryGetValue("/Script/Sentry.SentrySettings", "UseNativeBackend", out LegacyUseNativeBackend))
-			{
-				Console.WriteLine("Warning: Sentry setting 'UseNativeBackend' is no longer supported and is ignored. Use 'CrashBackend' instead.");
-			}
 		}
 
 		bUseNativeBackend = IsNativeBackendSupported(Target) && (CrashBackend == "Native" || (CrashBackend != "Platform" && IsNativeBackendDefault(Target)));
