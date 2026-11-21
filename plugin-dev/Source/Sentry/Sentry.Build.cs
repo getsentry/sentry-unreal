@@ -17,8 +17,6 @@ using Tools.DotNETCommon;
 
 public class Sentry : ModuleRules
 {
-	protected bool bUseNativeBackend = false;
-
 	public Sentry(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
@@ -69,7 +67,8 @@ public class Sentry : ModuleRules
 		bool bIsNativeSelected = string.Equals(CrashBackend, "Native", StringComparison.OrdinalIgnoreCase);
 		bool bIsPlatformSelected = string.Equals(CrashBackend, "Platform", StringComparison.OrdinalIgnoreCase);
 
-		bUseNativeBackend = IsNativeBackendSupported(Target) && (bIsNativeSelected || (!bIsPlatformSelected && IsNativeBackendDefault(Target)));
+		// Auto resolves to the native backend everywhere except macOS where Cocoa is used
+		bool bUseNativeBackend = bIsNativeSelected || (!bIsPlatformSelected && Target.Platform != UnrealTargetPlatform.Mac);
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
@@ -267,20 +266,6 @@ public class Sentry : ModuleRules
 		{
 			AddEncoderDependencies(Target);
 		}
-	}
-
-	protected virtual bool IsNativeBackendSupported(ReadOnlyTargetRules Target)
-	{
-#if UE_5_0_OR_LATER
-		return Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxArm64;
-#else
-		return Target.Platform == UnrealTargetPlatform.Win64 || Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.LinuxAArch64;
-#endif
-	}
-
-	protected virtual bool IsNativeBackendDefault(ReadOnlyTargetRules Target)
-	{
-		return Target.Platform != UnrealTargetPlatform.Mac;
 	}
 
 	protected virtual bool IsSessionReplaySupported(ReadOnlyTargetRules Target)
