@@ -4,11 +4,11 @@
 
 #include "HAL/FileManager.h"
 #include "HAL/PlatformProcess.h"
+#include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "SentrySettings.h"
-#include "SentrySymToolsDownloader.h"
 
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
 #include "Interfaces/ITargetPlatform.h"
@@ -69,14 +69,8 @@ int32 FSentryShaderSymbols::Run(const FString& ProjectSavedDir, bool bUpload)
 	TArray<FString> FormatDirs;
 	IFileManager::Get().FindFiles(FormatDirs, *(SymbolsRoot / TEXT("*")), false, true);
 
-	int32 Processed = 0;
+	TArray<FString> ProcessedDirs;
 	int32 Failures = 0;
-	if (bUpload && !ConfigureCliEnvironment())
-	{
-		bUpload = false;
-		Failures++;
-	}
-
 	for (const FString& FormatName : FormatDirs)
 	{
 		const FString FormatDir = SymbolsRoot / FormatName;
@@ -98,17 +92,16 @@ int32 FSentryShaderSymbols::Run(const FString& ProjectSavedDir, bool bUpload)
 			continue;
 		}
 		UE_LOG(LogSentryShaderSymbols, Log, TEXT("%s: manifest with %d shaders written in %.1f s"), *FormatName, ShaderCount, FPlatformTime::Seconds() - StartSeconds);
-		Processed++;
-
-		if (bUpload && Upload(FormatDir) != 0)
-		{
-			Failures++;
-		}
+		ProcessedDirs.Add(FormatDir);
 	}
 
-	if (Processed == 0)
+	if (ProcessedDirs.Num() == 0)
 	{
 		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("No shader symbols found under %s. Set r.Shaders.Symbols=1 in the [ShaderCompiler] section of the target platform's Engine.ini and cook again."), *SymbolsRoot);
+	}
+	else if (bUpload && Upload(ProcessedDirs) != 0)
+	{
+		Failures++;
 	}
 	return Failures == 0 ? 0 : 1;
 }
@@ -190,114 +183,42 @@ TMap<FString, FString> FSentryShaderSymbols::ReadSymbolsInfo(const FString& Form
 	return Groups;
 }
 
-FString FSentryShaderSymbols::ReadProperty(const TArray<FString>& PropertyLines, const FString& Key)
+int32 FSentryShaderSymbols::Upload(const TArray<FString>& FormatDirs)
 {
-	for (const FString& Line : PropertyLines)
+	const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("Sentry"));
+	if (!Plugin.IsValid())
 	{
-		const FString Trimmed = Line.TrimStartAndEnd();
-		if (Trimmed.IsEmpty() || Trimmed.StartsWith(TEXT("#")) || Trimmed.StartsWith(TEXT(";")))
-		{
-			continue;
-		}
-
-		FString LineKey, LineValue;
-		if (Trimmed.Split(TEXT("="), &LineKey, &LineValue) && LineKey.TrimEnd() == Key)
-		{
-			return LineValue.TrimStart();
-		}
-	}
-	return FString();
-}
-
-bool FSentryShaderSymbols::ConfigureCliEnvironment()
-{
-	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_PROPERTIES"), TEXT(""));
-
-	const FString PropertiesFile = FPaths::ProjectDir() / TEXT("sentry.properties");
-	TArray<FString> PropertyLines;
-	const bool bHasPropertiesFile = FFileHelper::LoadFileToStringArray(PropertyLines, *PropertiesFile);
-	if (!bHasPropertiesFile)
-	{
-		UE_LOG(LogSentryShaderSymbols, Log, TEXT("Properties file not found at %s, falling back to environment variables"), *PropertiesFile);
-	}
-
-	struct FCliSetting
-	{
-		const TCHAR* EnvName;
-		const TCHAR* PropertyKey;
-		bool bRequired;
-	};
-	const FCliSetting Settings[] = {
-		{ TEXT("SENTRY_ORG"), TEXT("defaults.org"), true },
-		{ TEXT("SENTRY_PROJECT"), TEXT("defaults.project"), true },
-		{ TEXT("SENTRY_AUTH_TOKEN"), TEXT("auth.token"), true },
-		{ TEXT("SENTRY_URL"), TEXT("defaults.url"), false },
-	};
-
-	bool bAnyFromEnv = false;
-	bool bAnyFromFile = false;
-	for (const FCliSetting& Setting : Settings)
-	{
-		const FString EnvValue = FPlatformMisc::GetEnvironmentVariable(Setting.EnvName).TrimStartAndEnd();
-		if (!EnvValue.IsEmpty())
-		{
-			bAnyFromEnv = true;
-			continue;
-		}
-
-		const FString FileValue = ReadProperty(PropertyLines, Setting.PropertyKey);
-		if (!FileValue.IsEmpty())
-		{
-			FPlatformMisc::SetEnvironmentVar(Setting.EnvName, *FileValue);
-			bAnyFromFile = true;
-		}
-		else if (Setting.bRequired)
-		{
-			UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader symbols upload skipped: set %s in sentry.properties or the %s env var"), Setting.PropertyKey, Setting.EnvName);
-			return false;
-		}
-	}
-
-	if (bAnyFromEnv && bAnyFromFile)
-	{
-		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("Upload settings come from both sentry.properties and environment variables. Make sure that they belong to the same organization and project."));
-	}
-
-	const FString ConfigDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectIntermediateDir() / TEXT("SentryCli"));
-	IFileManager::Get().MakeDirectory(*ConfigDir, true);
-	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_CONFIG_DIR"), *ConfigDir);
-	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_FORCE_ENV_TOKEN"), TEXT("1"));
-	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_CLI_NO_TELEMETRY"), TEXT("1"));
-	FPlatformMisc::SetEnvironmentVar(TEXT("SENTRY_CLI_NO_UPDATE_CHECK"), TEXT("1"));
-	return true;
-}
-
-int32 FSentryShaderSymbols::Upload(const FString& FormatDir)
-{
-	const FString CliPath = FSentrySymToolsDownloader().GetSentryCliPath();
-	if (!FPaths::FileExists(CliPath))
-	{
-		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader symbols upload skipped: Sentry CLI not found at %s (download it from the plugin settings)"), *CliPath);
+		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader symbols upload skipped: Sentry plugin not found"));
 		return 1;
 	}
 
-	const FString CliLogLevel = StaticEnum<ESentryCliLogLevel>()->GetNameStringByValue(static_cast<int64>(GetDefault<USentrySettings>()->DiagnosticLevel)).ToLower();
-	const FString Args = FString::Printf(TEXT("debug-files upload --type dxil --log-level %s \"%s\""), *CliLogLevel, *FPaths::ConvertRelativePathToFull(FormatDir));
-	UE_LOG(LogSentryShaderSymbols, Log, TEXT("Uploading shader symbols from %s"), *FormatDir);
+	const FString PluginDir = FPaths::ConvertRelativePathToFull(Plugin->GetBaseDir());
+	const FString PythonPath = FPaths::ConvertRelativePathToFull(FPaths::EngineDir() / TEXT("Binaries/ThirdParty/Python3/Win64/python.exe"));
+	const FString ScriptPath = PluginDir / TEXT("Scripts/upload_debug_symbols.py");
+
+	FString Args = FString::Printf(TEXT("-B -X utf8 \"%s\" dxil \"%s\" \"%s\""), *ScriptPath, *FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath()), *PluginDir);
+	for (const FString& FormatDir : FormatDirs)
+	{
+		Args += FString::Printf(TEXT(" \"%s\""), *FPaths::ConvertRelativePathToFull(FormatDir));
+	}
 
 	int32 ReturnCode = -1;
 	FString StdOut, StdErr;
-	if (!FPlatformProcess::ExecProcess(*CliPath, *Args, &ReturnCode, &StdOut, &StdErr))
+	if (!FPlatformProcess::ExecProcess(*PythonPath, *Args, &ReturnCode, &StdOut, &StdErr))
 	{
-		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Failed to start %s"), *CliPath);
+		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Failed to start %s"), *PythonPath);
 		return 1;
 	}
 
 	TArray<FString> OutLines;
 	StdOut.ParseIntoArrayLines(OutLines);
-	for (int32 Index = FMath::Max(0, OutLines.Num() - 8); Index < OutLines.Num(); ++Index)
+	const int32 TailStart = FMath::Max(0, OutLines.Num() - 8);
+	for (int32 Index = 0; Index < OutLines.Num(); ++Index)
 	{
-		UE_LOG(LogSentryShaderSymbols, Log, TEXT("  %s"), *OutLines[Index]);
+		if (Index >= TailStart || OutLines[Index].StartsWith(TEXT("Sentry: ")))
+		{
+			UE_LOG(LogSentryShaderSymbols, Log, TEXT("  %s"), *OutLines[Index]);
+		}
 	}
 	if (!StdErr.IsEmpty())
 	{

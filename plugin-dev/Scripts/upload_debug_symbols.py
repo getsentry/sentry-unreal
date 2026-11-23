@@ -210,6 +210,120 @@ def collect_symbol_files_from_receipt(receipt_path, project_dir, engine_dir):
     return files
 
 
+
+
+def get_cli_log_level(config_paths):
+    cli_log_level = get_setting_value(config_paths, 'DiagnosticLevel')
+    return cli_log_level.lower() if cli_log_level else "info"
+
+
+def prepare_cli(project_dir, plugin_dir):
+    # Get Sentry CLI executable (based on host OS)
+    cli_exec = get_cli_executable(plugin_dir)
+    if not cli_exec:
+        log("Sentry CLI is missing. Skipping...")
+        return None
+
+    # Make CLI executable on Unix systems
+    if os.name != 'nt':
+        try:
+            os.chmod(cli_exec, 0o755)
+        except Exception as e:
+            log(f"Warning: Failed to set execute permission on Sentry CLI: {e}")
+
+    cli_env = os.environ.copy()
+    cli_env.pop('SENTRY_PROPERTIES', None)
+
+    # Check for sentry.properties file
+    properties_file = os.path.join(project_dir, 'sentry.properties')
+
+    log(f"Looking for properties file '{properties_file}'")
+
+    if os.path.exists(properties_file):
+        log("Properties file found. Starting upload...")
+
+        # Validate required properties
+        project_name = parse_config_value(properties_file, 'defaults.project')
+        if not project_name:
+            log("Error: Project name is not set. Skipping...")
+            return None
+
+        org_name = parse_config_value(properties_file, 'defaults.org')
+        if not org_name:
+            log("Error: Project organization is not set. Skipping...")
+            return None
+
+        auth_token = parse_config_value(properties_file, 'auth.token')
+        if not auth_token:
+            log("Error: Auth token is not set. Skipping...")
+            return None
+
+        # Environment variables that are set and not empty take priority over the properties file
+        resolve_cli_settings(cli_env, [
+            ('SENTRY_ORG', 'organization', org_name),
+            ('SENTRY_PROJECT', 'project', project_name),
+            ('SENTRY_AUTH_TOKEN', 'auth token', auth_token),
+            ('SENTRY_URL', 'URL', parse_config_value(properties_file, 'defaults.url')),
+        ])
+    else:
+        log("Properties file not found. Falling back to environment variables.")
+
+        # Validate required environment variables
+        if not os.environ.get('SENTRY_PROJECT'):
+            log("Error: SENTRY_PROJECT env var is not set. Skipping...")
+            return None
+
+        if not os.environ.get('SENTRY_ORG'):
+            log("Error: SENTRY_ORG env var is not set. Skipping...")
+            return None
+
+        if not os.environ.get('SENTRY_AUTH_TOKEN'):
+            log("Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...")
+            return None
+
+    cli_config_dir = os.path.join(project_dir, 'Intermediate', 'SentryCli')
+    os.makedirs(cli_config_dir, exist_ok=True)
+
+    cli_env['SENTRY_CONFIG_DIR'] = cli_config_dir
+    cli_env['SENTRY_FORCE_ENV_TOKEN'] = '1'
+    cli_env['SENTRY_CLI_NO_TELEMETRY'] = '1'
+    cli_env['SENTRY_CLI_NO_UPDATE_CHECK'] = '1'
+
+    return cli_exec, cli_env
+
+
+def upload(cli_exec, cli_env, cli_args, paths, project_dir):
+    upload_cmd = [
+        cli_exec,
+        'debug-files',
+        'upload',
+        *cli_args,
+        *paths
+    ]
+
+    try:
+        # Execute the upload command with retry logic to avoid linker file locking issues
+        # See https://github.com/getsentry/sentry-unreal/issues/542
+        result = run_cmd_with_retry(upload_cmd, cli_env, project_dir)
+
+        # Output stdout/stderr
+        if result.stdout:
+            print_cli_output(result.stdout)
+        if result.stderr:
+            print_cli_output(result.stderr)
+
+        log("Upload finished")
+        return result.returncode
+
+    except OSError as e:
+        log(f"Error: Failed to start Sentry CLI ({e}). Skipping...")
+        return 0
+
+    except Exception as e:
+        log(f"Error executing Sentry CLI: {e}")
+        return 1
+
+
 def run(target_platform, target_name, target_type, target_config, project_file, plugin_dir, engine_dir):
     log("Start debug symbols upload")
 
@@ -263,72 +377,11 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
     if include_sources == "True":
         cli_args.append('--include-sources')
 
-    # Get CLI log level
-    cli_log_level = get_setting_value(config_paths, 'DiagnosticLevel')
-    cli_log_level = cli_log_level.lower() if cli_log_level else "info"
+    cli_args += ['--log-level', get_cli_log_level(config_paths)]
 
-    # Get sentry-cli executable (based on host OS)
-    cli_exec = get_cli_executable(plugin_dir)
-    if not cli_exec:
-        log("Sentry CLI is missing. Skipping...")
+    cli = prepare_cli(project_dir, plugin_dir)
+    if not cli:
         return 0
-
-    # Make CLI executable on Unix systems
-    if os.name != 'nt':
-        try:
-            os.chmod(cli_exec, 0o755)
-        except Exception as e:
-            log(f"Warning: Failed to set execute permission on Sentry CLI: {e}")
-
-    cli_env = os.environ.copy()
-    cli_env.pop('SENTRY_PROPERTIES', None)
-
-    # Check for sentry.properties file
-    properties_file = os.path.join(project_dir, 'sentry.properties')
-
-    log(f"Looking for properties file '{properties_file}'")
-
-    if os.path.exists(properties_file):
-        log("Properties file found. Starting upload...")
-
-        # Validate required properties
-        project_name = parse_config_value(properties_file, 'defaults.project')
-        if not project_name:
-            log("Error: Project name is not set. Skipping...")
-            return 0
-
-        org_name = parse_config_value(properties_file, 'defaults.org')
-        if not org_name:
-            log("Error: Project organization is not set. Skipping...")
-            return 0
-
-        auth_token = parse_config_value(properties_file, 'auth.token')
-        if not auth_token:
-            log("Error: Auth token is not set. Skipping...")
-            return 0
-
-        # Environment variables that are set and not empty take priority over the properties file
-        resolve_cli_settings(cli_env, [
-            ('SENTRY_ORG', 'organization', org_name),
-            ('SENTRY_PROJECT', 'project', project_name),
-            ('SENTRY_AUTH_TOKEN', 'auth token', auth_token),
-            ('SENTRY_URL', 'URL', parse_config_value(properties_file, 'defaults.url')),
-        ])
-    else:
-        log("Properties file not found. Falling back to environment variables.")
-
-        # Validate required environment variables
-        if not os.environ.get('SENTRY_PROJECT'):
-            log("Error: SENTRY_PROJECT env var is not set. Skipping...")
-            return 0
-
-        if not os.environ.get('SENTRY_ORG'):
-            log("Error: SENTRY_ORG env var is not set. Skipping...")
-            return 0
-
-        if not os.environ.get('SENTRY_AUTH_TOKEN'):
-            log("Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...")
-            return 0
 
     # Find target's build receipt
     receipt_path = get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config)
@@ -344,45 +397,24 @@ def run(target_platform, target_name, target_type, target_config, project_file, 
         log(f"No symbol files found in build receipt for target '{target_name}'. Skipping...")
         return 0
 
-    cli_config_dir = os.path.join(project_dir, 'Intermediate', 'SentryCli')
-    os.makedirs(cli_config_dir, exist_ok=True)
+    return upload(*cli, cli_args, symbol_files, project_dir)
 
-    cli_env['SENTRY_CONFIG_DIR'] = cli_config_dir
-    cli_env['SENTRY_FORCE_ENV_TOKEN'] = '1'
-    cli_env['SENTRY_CLI_NO_TELEMETRY'] = '1'
-    cli_env['SENTRY_CLI_NO_UPDATE_CHECK'] = '1'
 
-    upload_cmd = [
-        cli_exec,
-        'debug-files',
-        'upload',
-        *cli_args,
-        '--log-level', cli_log_level,
-        *symbol_files
-    ]
+def run_dxil(project_file, plugin_dir, *symbol_dirs):
+    log("Start shader symbols upload")
 
-    try:
-        # Execute the upload command with retry logic to avoid linker file locking issues
-        # See https://github.com/getsentry/sentry-unreal/issues/542
-        result = run_cmd_with_retry(upload_cmd, cli_env, project_dir)
+    project_dir = os.path.dirname(os.path.abspath(project_file))
+    config_paths = get_config_paths(project_dir, 'Win64')
 
-        # Output stdout/stderr
-        if result.stdout:
-            print_cli_output(result.stdout)
-        if result.stderr:
-            print_cli_output(result.stderr)
-
-        log("Upload finished")
-        return result.returncode
-
-    except OSError as e:
-        log(f"Error: Failed to start Sentry CLI ({e}). Skipping...")
-        return 0
-
-    except Exception as e:
-        log(f"Error executing Sentry CLI: {e}")
+    cli = prepare_cli(project_dir, plugin_dir)
+    if not cli:
         return 1
+
+    cli_args = ['--type', 'dxil', '--log-level', get_cli_log_level(config_paths)]
+    return upload(*cli, cli_args, list(symbol_dirs), project_dir)
 
 
 if __name__ == '__main__':
+    if sys.argv[1:2] == ['dxil']:
+        sys.exit(run_dxil(*sys.argv[2:]))
     sys.exit(run(*sys.argv[1:8]))
