@@ -16,6 +16,10 @@
 #include "UObject/ICookInfo.h"
 #endif
 
+#ifndef NV_AFTERMATH
+#define NV_AFTERMATH 0
+#endif
+
 // Engines before 5.2 ship an Aftermath SDK without GFSDK_Aftermath_ShaderBinaryHash
 #define SENTRY_CAN_HASH_SHADERS (PLATFORM_WINDOWS && NV_AFTERMATH && !UE_VERSION_OLDER_THAN(5, 2, 0))
 
