@@ -8,6 +8,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "SentryModule.h"
 #include "SentrySettings.h"
 
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
@@ -38,7 +39,7 @@ void FSentryShaderSymbols::RegisterCookHook()
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
 	UE::Cook::FDelegates::CookFinished.AddLambda([](UE::Cook::ICookInfo& CookInfo)
 	{
-		if (!GetDefault<USentrySettings>()->UploadShaderSymbols || CookInfo.GetProcessType() == UE::Cook::EProcessType::Worker)
+		if (!FSentryModule::Get().GetSettings()->UploadShaderSymbols || CookInfo.GetProcessType() == UE::Cook::EProcessType::Worker)
 		{
 			return;
 		}
