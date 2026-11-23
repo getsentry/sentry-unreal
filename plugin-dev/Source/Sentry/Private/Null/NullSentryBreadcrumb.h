@@ -20,7 +20,7 @@ public:
 	virtual void SetData(const TMap<FString, FSentryVariant>& data) override {}
 	virtual TMap<FString, FSentryVariant> GetData() const override { return {}; }
 	virtual void SetLevel(ESentryLevel level) override {}
-	virtual ESentryLevel GetLevel() const override { return ESentryLevel::Debug; }
+	virtual ESentryLevel GetLevel() const override { return ESentryLevel::Info; }
 };
 
 typedef FNullSentryBreadcrumb FPlatformSentryBreadcrumb;

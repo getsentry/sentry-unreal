@@ -4,6 +4,8 @@
 
 #include "AndroidSentryDataTypes.h"
 
+#include "SentryDataTypes.h"
+
 struct SentryJavaClasses
 {
 	// External Java classes
@@ -54,6 +56,14 @@ struct SentryJavaClasses
 	static jclass GetCachedJavaClassRef(const FSentryJavaClass& ClassData);
 	static jclass FindJavaClassRef(const FSentryJavaClass& ClassData);
 
+	// Java enum constants cache (populated alongside the class references cache)
+	static jobject GetCachedSentryLevelRef(ESentryLevel Level);
+	static jobject GetCachedSentryLogLevelRef(ESentryLevel Level);
+
 private:
+	static jobject FindStaticObjectFieldRef(const FSentryJavaClass& ClassData, const char* FieldName, const char* FieldSignature);
+
 	static TMap<FName, jclass> JavaClassRefsCache;
+	static TMap<ESentryLevel, jobject> SentryLevelRefsCache;
+	static TMap<ESentryLevel, jobject> SentryLogLevelRefsCache;
 };

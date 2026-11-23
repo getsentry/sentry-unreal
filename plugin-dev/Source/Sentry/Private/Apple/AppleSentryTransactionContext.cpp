@@ -14,12 +14,12 @@ FAppleSentryTransactionContext::FAppleSentryTransactionContext(const FString& na
 
 FAppleSentryTransactionContext::FAppleSentryTransactionContext(SentryObjCTransactionContext* context)
 {
-	TransactionContext = context;
+	TransactionContext = [context retain];
 }
 
 FAppleSentryTransactionContext::~FAppleSentryTransactionContext()
 {
-	// Put custom destructor logic here if needed
+	[TransactionContext release];
 }
 
 FString FAppleSentryTransactionContext::GetName() const

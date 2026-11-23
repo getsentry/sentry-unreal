@@ -13,7 +13,12 @@ FGenericPlatformSentryMetric::FGenericPlatformSentryMetric()
 
 FGenericPlatformSentryMetric::FGenericPlatformSentryMetric(sentry_value_t metric)
 {
-	Metric = metric;
+	Metric = sentry_value_incref(metric);
+}
+
+FGenericPlatformSentryMetric::~FGenericPlatformSentryMetric()
+{
+	sentry_value_decref(Metric);
 }
 
 sentry_value_t FGenericPlatformSentryMetric::GetNativeObject()

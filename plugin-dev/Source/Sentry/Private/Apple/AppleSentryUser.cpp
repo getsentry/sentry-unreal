@@ -16,12 +16,12 @@ FAppleSentryUser::FAppleSentryUser()
 
 FAppleSentryUser::FAppleSentryUser(SentryObjCUser* user)
 {
-	UserApple = user;
+	UserApple = [user retain];
 }
 
 FAppleSentryUser::~FAppleSentryUser()
 {
-	// Put custom destructor logic here if needed
+	[UserApple release];
 }
 
 SentryObjCUser* FAppleSentryUser::GetNativeObject()

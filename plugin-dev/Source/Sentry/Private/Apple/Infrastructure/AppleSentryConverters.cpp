@@ -174,6 +174,7 @@ SentryObjCStacktrace* FAppleSentryConverters::CallstackToNative(const TArray<FPr
 		SentryObjCFrame* frame = [[SENTRY_APPLE_CLASS(SentryObjCFrame) alloc] init];
 		frame.instructionAddress = FString::Printf(TEXT("0x%llx"), callstack[framesCount - i - 1].ProgramCounter).GetNSString();
 		[arr addObject:frame];
+		[frame release];
 	}
 
 	SentryObjCStacktrace* trace = [[SENTRY_APPLE_CLASS(SentryObjCStacktrace) alloc] initWithFrames:arr registers:@{}];
@@ -202,7 +203,9 @@ SentryObjCAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSen
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			SentryObjCAttribute* attribute = [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			[jsonString release];
+			return attribute;
 		}
 		else
 		{
@@ -218,7 +221,9 @@ SentryObjCAttribute* FAppleSentryConverters::VariantToAttributeNative(const FSen
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			SentryObjCAttribute* attribute = [[SENTRY_APPLE_CLASS(SentryObjCAttribute) alloc] initWithString:jsonString];
+			[jsonString release];
+			return attribute;
 		}
 		else
 		{
@@ -311,7 +316,9 @@ SentryObjCAttributeContent* FAppleSentryConverters::VariantToAttributeContentNat
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			SentryObjCAttributeContent* content = [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			[jsonString release];
+			return content;
 		}
 		return nil;
 	}
@@ -324,7 +331,9 @@ SentryObjCAttributeContent* FAppleSentryConverters::VariantToAttributeContentNat
 		if (jsonData && !error)
 		{
 			NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-			return [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			SentryObjCAttributeContent* content = [SENTRY_APPLE_CLASS(SentryObjCAttributeContent) string:jsonString];
+			[jsonString release];
+			return content;
 		}
 		return nil;
 	}

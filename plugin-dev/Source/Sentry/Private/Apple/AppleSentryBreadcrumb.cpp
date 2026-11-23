@@ -16,12 +16,12 @@ FAppleSentryBreadcrumb::FAppleSentryBreadcrumb()
 
 FAppleSentryBreadcrumb::FAppleSentryBreadcrumb(SentryObjCBreadcrumb* breadcrumb)
 {
-	BreadcrumbApple = breadcrumb;
+	BreadcrumbApple = [breadcrumb retain];
 }
 
 FAppleSentryBreadcrumb::~FAppleSentryBreadcrumb()
 {
-	// Put custom destructor logic here if needed
+	[BreadcrumbApple release];
 }
 
 SentryObjCBreadcrumb* FAppleSentryBreadcrumb::GetNativeObject()
@@ -85,6 +85,11 @@ void FAppleSentryBreadcrumb::SetLevel(ESentryLevel level)
 
 ESentryLevel FAppleSentryBreadcrumb::GetLevel() const
 {
+	if (BreadcrumbApple.level == SentryObjCLevelNone)
+	{
+		return ESentryLevel::Info;
+	}
+
 	return FAppleSentryConverters::SentryLevelToUnreal(BreadcrumbApple.level);
 }
 

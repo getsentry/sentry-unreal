@@ -19,12 +19,12 @@ FAppleSentryScope::FAppleSentryScope()
 
 FAppleSentryScope::FAppleSentryScope(SentryObjCScope* scope)
 {
-	ScopeApple = scope;
+	ScopeApple = [scope retain];
 }
 
 FAppleSentryScope::~FAppleSentryScope()
 {
-	// Put custom destructor logic here if needed
+	[ScopeApple release];
 }
 
 SentryObjCScope* FAppleSentryScope::GetNativeObject()

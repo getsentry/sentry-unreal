@@ -23,17 +23,31 @@ jobs:
   native:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-native
           name: Native SDK
+          pattern: '^0\.[0-9.]+$'
+          ssh-key: ${{ env.CI_DEPLOY_KEY }}
+          pr-strategy: create
+
+  native-1x:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
+        with:
+          path: modules/sentry-native
+          name: Native SDK
+          pattern: '^1\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?$'
+          target-branch: v2
+          changelog-entry: false
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
           pr-strategy: create
 
   java:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-java
           name: Java SDK
@@ -43,7 +57,7 @@ jobs:
   cocoa:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-cocoa.properties
           name: Cocoa SDK
@@ -53,7 +67,7 @@ jobs:
   crash-reporter:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: modules/sentry-crash-reporter.properties
           name: Crash Reporter
@@ -63,17 +77,19 @@ jobs:
   cli:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: plugin-dev/sentry-cli.properties
           name: CLI
+          pattern: '^cli@(?<version>[0-9.]+)$'
+          changelog-path: packages/cli/CHANGELOG.md
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
           pr-strategy: create
 
   android-gradle-plugin:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@607fed74f812e69201531a5185b6c3c57caa4e89 # v3
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
           path: scripts/update-android-gradle-plugin.sh
           name: Android Gradle Plugin
