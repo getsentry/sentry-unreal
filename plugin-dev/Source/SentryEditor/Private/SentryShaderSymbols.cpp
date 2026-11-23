@@ -96,7 +96,7 @@ int32 FSentryShaderSymbols::Run(const FString& ProjectSavedDir, bool bUpload)
 			Failures++;
 			continue;
 		}
-		UE_LOG(LogSentryShaderSymbols, Log, TEXT("%s: manifest with %d shaders written in %.1f s"), *FormatName, ShaderCount, FPlatformTime::Seconds() - StartSeconds);
+		UE_LOG(LogSentryShaderSymbols, Display, TEXT("%s: manifest with %d shaders written in %.1f s"), *FormatName, ShaderCount, FPlatformTime::Seconds() - StartSeconds);
 		ProcessedDirs.Add(FormatDir);
 	}
 
@@ -193,7 +193,7 @@ int32 FSentryShaderSymbols::Upload(const TArray<FString>& FormatDirs)
 	const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("Sentry"));
 	if (!Plugin.IsValid())
 	{
-		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader symbols upload skipped: Sentry plugin not found"));
+		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("Shader symbols upload skipped: Sentry plugin not found"));
 		return 1;
 	}
 
@@ -211,7 +211,7 @@ int32 FSentryShaderSymbols::Upload(const TArray<FString>& FormatDirs)
 	FString StdOut, StdErr;
 	if (!FPlatformProcess::ExecProcess(*PythonPath, *Args, &ReturnCode, &StdOut, &StdErr))
 	{
-		UE_LOG(LogSentryShaderSymbols, Error, TEXT("Failed to start %s"), *PythonPath);
+		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("Failed to start %s"), *PythonPath);
 		return 1;
 	}
 
@@ -222,13 +222,13 @@ int32 FSentryShaderSymbols::Upload(const TArray<FString>& FormatDirs)
 	{
 		if (Index >= TailStart || OutLines[Index].StartsWith(TEXT("Sentry: ")))
 		{
-			UE_LOG(LogSentryShaderSymbols, Log, TEXT("  %s"), *OutLines[Index]);
+			UE_LOG(LogSentryShaderSymbols, Display, TEXT("  %s"), *OutLines[Index]);
 		}
 	}
 	if (!StdErr.IsEmpty())
 	{
 		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("%s"), *StdErr);
 	}
-	UE_LOG(LogSentryShaderSymbols, Log, TEXT("Shader symbols upload finished with code %d"), ReturnCode);
+	UE_LOG(LogSentryShaderSymbols, Display, TEXT("Shader symbols upload finished with code %d"), ReturnCode);
 	return ReturnCode;
 }
