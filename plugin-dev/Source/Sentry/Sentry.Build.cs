@@ -64,9 +64,9 @@ public class Sentry : ModuleRules
 		}
 
 		bool bIsNativeSelected = string.Equals(CrashBackend, "Native", StringComparison.OrdinalIgnoreCase);
-		bool bIsPlatformSelected = string.Equals(CrashBackend, "Platform", StringComparison.OrdinalIgnoreCase);
+		bool bIsLegacySelected = string.Equals(CrashBackend, "Legacy", StringComparison.OrdinalIgnoreCase);
 
-		bool bUseNativeBackend = bIsNativeSelected || (!bIsPlatformSelected && Target.Platform != UnrealTargetPlatform.Mac);
+		bool bUseNativeBackend = bIsNativeSelected || (!bIsLegacySelected && Target.Platform != UnrealTargetPlatform.Mac);
 
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{

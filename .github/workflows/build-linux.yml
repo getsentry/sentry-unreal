@@ -179,10 +179,10 @@ jobs:
           path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'LinuxNoEditor' || 'Linux' }}/
           retention-days: 1
 
-      - name: Enable legacy platform backend (Crashpad)
+      - name: Enable legacy backend (Crashpad)
         if: ${{ success() && steps.build.outcome == 'success' }}
         run: |
-          sed -i 's/CrashBackend=Auto/CrashBackend=Platform/' checkout/sample/Config/DefaultEngine.ini
+          sed -i 's/CrashBackend=Auto/CrashBackend=Legacy/' checkout/sample/Config/DefaultEngine.ini
 
       - name: Build (Crashpad)
         id: build-crashpad

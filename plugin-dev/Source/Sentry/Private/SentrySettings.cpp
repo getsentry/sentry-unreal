@@ -293,7 +293,7 @@ FString USentrySettings::GetReleaseFromProjectSettings() const
 bool USentrySettings::IsNativeBackendEnabled() const
 {
 #if USE_SENTRY_NATIVE && (PLATFORM_MICROSOFT || PLATFORM_LINUX || PLATFORM_MAC)
-	return CrashBackend != ESentryCrashBackend::Platform;
+	return CrashBackend != ESentryCrashBackend::Legacy;
 #else
 	return false;
 #endif

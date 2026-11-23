@@ -136,10 +136,10 @@ jobs:
           path: checkout/sample/Builds/${{ inputs.unreal-version == '4.27' && 'WindowsNoEditor' || 'Windows' }}/
           retention-days: 1
 
-      - name: Enable legacy platform backend (Crashpad)
+      - name: Enable legacy backend (Crashpad)
         if: ${{ success() && steps.build.outcome == 'success' }}
         run: |
-          (Get-Content "checkout/sample/Config/DefaultEngine.ini") -replace 'CrashBackend=Auto','CrashBackend=Platform' | Set-Content "checkout/sample/Config/DefaultEngine.ini"
+          (Get-Content "checkout/sample/Config/DefaultEngine.ini") -replace 'CrashBackend=Auto','CrashBackend=Legacy' | Set-Content "checkout/sample/Config/DefaultEngine.ini"
 
       - name: Build (Crashpad)
         id: build-crashpad

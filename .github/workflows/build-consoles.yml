@@ -81,7 +81,7 @@ jobs:
         shell: pwsh
         env:
           PLATFORM: ${{ inputs.platform }}
-          BACKEND: ${{ inputs.backend == 'native' && 'Native' || 'Platform' }}
+          BACKEND: ${{ inputs.backend == 'native' && 'Native' || 'Legacy' }}
         run: |
           $dir = "checkout/sample/Platforms/$env:PLATFORM/Config"
           New-Item -ItemType Directory -Path $dir -Force | Out-Null
