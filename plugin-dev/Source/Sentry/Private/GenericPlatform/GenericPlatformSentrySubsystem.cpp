@@ -639,7 +639,7 @@ FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
 
 void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
 {
-	bUseNativeBackend = settings->UseNativeBackend;
+	bUseNativeBackend = settings->IsNativeBackendEnabled();
 
 	beforeSend = callbackHandlers.BeforeSendHandler;
 	beforeSendFeedback = callbackHandlers.BeforeSendFeedbackHandler;

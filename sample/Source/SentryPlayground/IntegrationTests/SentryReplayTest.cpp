@@ -33,7 +33,7 @@ FString GetReplaysDir(const USentrySettings* Settings)
 #if PLATFORM_IOS
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
 #elif PLATFORM_MAC
-	if (!Settings->UseNativeBackend)
+	if (!Settings->IsNativeBackendEnabled())
 	{
 		return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("SentryReplays")));
 	}

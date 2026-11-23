@@ -6,9 +6,11 @@
 
 - Output device wrappers are now private, use `FSentryDelegates::OnAssert` instead ([#1716](https://github.com/getsentry/sentry-unreal/pull/1716))
 - Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
+- Replace `UseNativeBackend` with the `CrashBackend` option ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
 
 ### Behavioral Changes
 
+- Use the native backend by default on Windows, Linux and Xbox ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
 - Use the Native SDK's OS context under Wine/Proton and on SteamOS/Bazzite instead of the plugin's own ([#1711](https://github.com/getsentry/sentry-unreal/pull/1711))
 
 ### Dependencies

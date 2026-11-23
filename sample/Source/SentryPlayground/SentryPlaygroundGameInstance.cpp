@@ -119,7 +119,7 @@ void USentryPlaygroundGameInstance::ConfigureTestContext(USentrySubsystem* Subsy
 
 	Subsystem->SetTag(TEXT("test.suite"), TEXT("integration"));
 
-	const bool bIsNativeBackend = FSentryModule::Get().GetSettings()->UseNativeBackend;
+	const bool bIsNativeBackend = FSentryModule::Get().GetSettings()->IsNativeBackendEnabled();
 	Subsystem->SetTag(TEXT("test.native_backend"), bIsNativeBackend ? TEXT("true") : TEXT("false"));
 
 	// Tag to be removed by beforeSend handler

@@ -25,7 +25,7 @@ USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
 	, EnableBuildTargets()
 	, EnableForPromotedBuildsOnly(false)
 	, EnableAutoCrashCapturing(true)
-	, UseNativeBackend(false)
+	, CrashBackend(ESentryCrashBackend::Auto)
 	, CrashReportingMode(ESentryCrashReportingMode::NativeStackwalkingWithMinidump)
 	, MinidumpMode(ESentryMinidumpMode::Smart)
 	, ThreadStackwalkMode(ESentryThreadStackwalkMode::AllThreads)
@@ -143,7 +143,7 @@ void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	}
 
 	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, InitAutomatically) ||
-		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseNativeBackend) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashBackend) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadSymbolsAutomatically) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, ProjectName) ||
 		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, OrgName) ||
@@ -288,6 +288,15 @@ FString USentrySettings::GetReleaseFromProjectSettings() const
 	}
 
 	return FormattedReleaseName;
+}
+
+bool USentrySettings::IsNativeBackendEnabled() const
+{
+#if USE_SENTRY_NATIVE && (PLATFORM_MICROSOFT || PLATFORM_LINUX || PLATFORM_MAC)
+	return CrashBackend != ESentryCrashBackend::Legacy;
+#else
+	return false;
+#endif
 }
 
 bool USentrySettings::IsDirty() const
