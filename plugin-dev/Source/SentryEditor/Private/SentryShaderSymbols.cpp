@@ -58,18 +58,18 @@ void FSentryShaderSymbols::RegisterCookHook()
 			return;
 		}
 
+#if SENTRY_CAN_HASH_SHADERS
 		Run(FPaths::ProjectSavedDir(), true);
+#else
+		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("Shader symbols upload skipped: shader hashing needs the NVIDIA Aftermath library, which is only available on Windows editors"));
+#endif
 	});
 #endif
 }
 
 int32 FSentryShaderSymbols::Run(const FString& ProjectSavedDir, bool bUpload)
 {
-#if !SENTRY_CAN_HASH_SHADERS
-	UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader hashing needs the NVIDIA Aftermath library, which is only available on Windows editors (UE 5.2+)"));
-	return 1;
-#endif
-
+#if SENTRY_CAN_HASH_SHADERS
 	const FString SymbolsRoot = ProjectSavedDir / TEXT("ShaderSymbols");
 	TArray<FString> FormatDirs;
 	IFileManager::Get().FindFiles(FormatDirs, *(SymbolsRoot / TEXT("*")), false, true);
@@ -109,6 +109,10 @@ int32 FSentryShaderSymbols::Run(const FString& ProjectSavedDir, bool bUpload)
 		Failures++;
 	}
 	return Failures == 0 ? 0 : 1;
+#else
+	UE_LOG(LogSentryShaderSymbols, Error, TEXT("Shader hashing needs the NVIDIA Aftermath library, which is only available on Windows editors (UE 5.2+)"));
+	return 1;
+#endif
 }
 
 bool FSentryShaderSymbols::WriteManifest(const FString& FormatDir, const TArray<FString>& DxilFiles, int32& OutShaderCount)
@@ -144,6 +148,11 @@ bool FSentryShaderSymbols::WriteManifest(const FString& FormatDir, const TArray<
 	if (HashFailures > 0)
 	{
 		UE_LOG(LogSentryShaderSymbols, Warning, TEXT("%d shader binaries could not be hashed"), HashFailures);
+	}
+
+	if (OutShaderCount == 0)
+	{
+		return false;
 	}
 
 	return FFileHelper::SaveStringToFile(Manifest, *(FormatDir / ManifestFileName), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
