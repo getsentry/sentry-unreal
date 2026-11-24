@@ -1,0 +1,12 @@
+minVersion: 3.9.0
+changelog:
+  policy: auto
+versioning:
+  policy: manual
+preReleaseCommand: pwsh scripts/bump-version.ps1
+targets:
+  - name: github
+    includeNames: /^sentry-unreal-.*.zip$/i
+  - name: registry
+    sdks:
+      github:getsentry/sentry-unreal:

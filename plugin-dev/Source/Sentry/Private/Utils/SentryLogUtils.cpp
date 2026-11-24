@@ -1,0 +1,99 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "SentryLogUtils.h"
+
+#include "CoreGlobals.h"
+#include "GenericPlatform/GenericPlatformStackWalk.h"
+#include "HAL/UnrealMemory.h"
+#include "Misc/Char.h"
+#include "Misc/OutputDeviceRedirector.h"
+#include "Misc/Parse.h"
+
+void SentryLogUtils::LogStackTrace(const TCHAR* Heading, const ELogVerbosity::Type LogVerbosity, int FramesToSkip)
+{
+#if !NO_LOGGING
+	const SIZE_T StackTraceSize = 65535;
+	ANSICHAR* StackTrace = (ANSICHAR*)FMemory::SystemMalloc(StackTraceSize);
+
+	{
+		StackTrace[0] = 0;
+		FGenericPlatformStackWalk::StackWalkAndDumpEx(StackTrace, StackTraceSize, FramesToSkip + 1, FGenericPlatformStackWalk::EStackWalkFlags::AccurateStackWalk);
+	}
+
+	FDebug::LogFormattedMessageWithCallstack(LogOutputDevice.GetCategoryName(), __FILE__, __LINE__, Heading, ANSI_TO_TCHAR(StackTrace), LogVerbosity);
+
+	GLog->Flush();
+
+	FMemory::SystemFree(StackTrace);
+#endif
+}
+
+ESentryLevel SentryLogUtils::ConvertLogVerbosityToSentryLevel(const ELogVerbosity::Type LogVerbosity)
+{
+	switch (LogVerbosity)
+	{
+	case ELogVerbosity::Fatal:
+		return ESentryLevel::Fatal;
+	case ELogVerbosity::Error:
+		return ESentryLevel::Error;
+	case ELogVerbosity::Warning:
+		return ESentryLevel::Warning;
+	case ELogVerbosity::Display:
+	case ELogVerbosity::Log:
+		return ESentryLevel::Info;
+	case ELogVerbosity::Verbose:
+	case ELogVerbosity::VeryVerbose:
+		return ESentryLevel::Debug;
+	default:
+		return ESentryLevel::Debug;
+	}
+}
+
+ESentryLogLevel SentryLogUtils::ConvertLogVerbosityToSentryLogLevel(const ELogVerbosity::Type LogVerbosity)
+{
+	switch (LogVerbosity)
+	{
+	case ELogVerbosity::Fatal:
+		return ESentryLogLevel::Fatal;
+	case ELogVerbosity::Error:
+		return ESentryLogLevel::Error;
+	case ELogVerbosity::Warning:
+		return ESentryLogLevel::Warning;
+	case ELogVerbosity::Display:
+	case ELogVerbosity::Log:
+		return ESentryLogLevel::Info;
+	case ELogVerbosity::Verbose:
+		return ESentryLogLevel::Debug;
+	case ELogVerbosity::VeryVerbose:
+		return ESentryLogLevel::Trace;
+	default:
+		return ESentryLogLevel::Debug;
+	}
+}
+
+bool SentryLogUtils::IsCallstackLine(const FString& Line)
+{
+	// Frame lines produced by FDebug::LogFormattedMessageWithCallstack
+	if (Line.Contains(TEXT("[Callstack]")))
+	{
+		return true;
+	}
+
+#if PLATFORM_IOS
+	// Apple backtrace frame lines (e.g. "5   MyGame   0x00000001052042b8 Func + 248") don't get the [Callstack] prefix
+	if (Line.IsEmpty() || !FChar::IsDigit(Line[0]))
+	{
+		return false;
+	}
+
+	const TCHAR* Cursor = *Line;
+	FString FrameIndex, Module, Address;
+	FParse::Token(Cursor, FrameIndex, false);
+	FParse::Token(Cursor, Module, false);
+	FParse::Token(Cursor, Address, false);
+
+	return FrameIndex.IsNumeric() && Address.StartsWith(TEXT("0x"));
+#else
+	return false;
+#endif
+}

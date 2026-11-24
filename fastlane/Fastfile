@@ -1,0 +1,32 @@
+# Fastfile
+
+default_platform(:ios)
+
+platform :ios do
+
+  desc "Import signing certificates and provisioning profiles to keychain"
+  lane :prepare_signing do
+    setup_ci if is_ci
+
+    sync_code_signing(
+      type: "development",
+      readonly: true
+    )
+  end
+
+  desc "Generate all provisioning profiles for development"
+  lane :setup_code_signing do
+    app_identifiers = [CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)]
+    sync_code_signing(
+      type: "development",
+      app_identifier: app_identifiers,
+      readonly: false
+    )
+    sync_code_signing(
+      type: "appstore",
+      app_identifier: app_identifiers,
+      readonly: false
+    )
+  end
+
+end

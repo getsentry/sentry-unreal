@@ -1,0 +1,20 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#include "HAL/Platform.h"
+
+#if PLATFORM_ANDROID
+#include "Android/AndroidSentryBreadcrumb.h"
+#elif PLATFORM_APPLE && !USE_SENTRY_NATIVE
+#include "Apple/AppleSentryBreadcrumb.h"
+#elif USE_SENTRY_NATIVE
+#include "GenericPlatform/GenericPlatformSentryBreadcrumb.h"
+#else
+#include "Null/NullSentryBreadcrumb.h"
+#endif
+
+static TSharedPtr<ISentryBreadcrumb> CreateSharedSentryBreadcrumb()
+{
+	return MakeShareable(new FPlatformSentryBreadcrumb);
+}

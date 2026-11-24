@@ -1,0 +1,336 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "SentrySettings.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryDefines.h"
+#include "SentryTraceSampler.h"
+
+#include "Misc/App.h"
+#include "Misc/ConfigCacheIni.h"
+#include "Misc/Paths.h"
+
+USentrySettings::USentrySettings(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+	, InitAutomatically(true)
+	, Dsn()
+	, Environment()
+	, Dist()
+	, OverrideReleaseName(false)
+	, Release()
+	, SampleRate(1.0f)
+	, EditorDsn()
+	, Debug(true)
+	, DebugLevel(ESentryLevel::Debug)
+	, EnableBuildConfigurations()
+	, EnableBuildTargets()
+	, EnableForPromotedBuildsOnly(false)
+	, EnableAutoCrashCapturing(true)
+	, CrashBackend(ESentryCrashBackend::Auto)
+	, CrashReportingMode(ESentryCrashReportingMode::NativeStackwalkingWithMinidump)
+	, MinidumpMode(ESentryMinidumpMode::Smart)
+	, ThreadStackwalkMode(ESentryThreadStackwalkMode::AllThreads)
+	, CrashUploadMode(ESentryCrashUploadMode::Sync)
+	, AndroidCrashBackend(ESentryAndroidCrashBackend::TombstoneMergedWithNdk)
+	, CrashpadWaitForUpload(false)
+	, EnableOnCrashLogging(false)
+	, AttachStacktrace(true)
+	, TagsPromotion()
+	, MaxBreadcrumbs(100)
+	, AutomaticBreadcrumbs()
+	, AutomaticBreadcrumbsForLogs()
+	, EnableAutoLogAttachment(false)
+	, AttachScreenshot(false)
+	, EnableOutOfProcessScreenshots(false)
+	, AttachGpuDump(true)
+	, SplitGpuCrashEvents(false)
+	, MaxAttachmentSize(20 * 1024 * 1024)
+	, EnableLargeAttachments(false)
+	, InAppInclude()
+	, InAppExclude()
+	, EnableHangTracking(false)
+	, HangTimeoutDuration(5.0f)
+	, UseNativeHangTracking(false)
+	, EnableAppNotRespondingTracking(true)
+	, AppNotRespondingTimeout(5.0f)
+	, EnableAutoSessionTracking(true)
+	, SessionTimeout(30000)
+	, EnableTracing(false)
+	, SamplingType(ESentryTracesSamplingType::UniformSampleRate)
+	, TracesSampleRate(0.0f)
+	, TracesSampler(nullptr)
+	, EnableStructuredLogging(true)
+	, StructuredLoggingCategories()
+	, StructuredLoggingLevels()
+	, bSendBreadcrumbsWithStructuredLogging(false)
+	, EnableMetrics(true)
+	, EnableAutoFrameTimeMetrics(false)
+	, FrameTimeSampleInterval(1.0f)
+	, EnableAutoGameStatsMetrics(false)
+	, GameStatsSampleInterval(60)
+	, EnableAutoGCMetrics(false)
+	, EnableAutoNetworkMetrics(false)
+	, NetworkMetricsSampleInterval(10)
+	, BeforeSendHandler(nullptr)
+	, BeforeSendFeedbackHandler(nullptr)
+	, BeforeBreadcrumbHandler(nullptr)
+	, BeforeLogHandler(nullptr)
+	, BeforeMetricHandler(nullptr)
+	, SendDefaultPii(false)
+	, bRequireUserConsent(false)
+	, bDefaultUserConsentGiven(true)
+	, UseProxy(false)
+	, ProxyUrl()
+	, ShutdownTimeout(5000)
+	, EnableOfflineCaching(false)
+	, CacheMaxItems(30)
+	, CacheMaxSize(0)
+	, CacheMaxAge(0)
+	, DatabaseLocation(ESentryDatabaseLocation::ProjectUserDirectory)
+	, AttachSessionReplay(false)
+	, SessionReplayDurationMs(5000)
+	, SessionReplayOptions()
+	, AttachGameState(false)
+	, GameStateOptions()
+	, UploadSymbolsAutomatically(false)
+	, ProjectName()
+	, OrgName()
+	, AuthToken()
+	, IncludeSources(false)
+	, DiagnosticLevel(ESentryCliLogLevel::Info)
+	, UseLegacyGradlePlugin(false)
+	, UploadShaderSymbols(false)
+	, EnableExternalCrashReporter(false)
+	, CrashReporterAppearance()
+	, CrashReporterUrl()
+	, EnableCrashReporterContextPropagation(true)
+	, EnableCrashReporterDebugImages(false)
+	, bIsDirty(false)
+{
+	if (GIsEditor)
+	{
+		LoadDebugSymbolsProperties();
+	}
+}
+
+#if WITH_EDITOR
+
+void USentrySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (!PropertyChangedEvent.Property)
+	{
+		return;
+	}
+
+	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(FSentryCrashReporterAppearance, Views))
+	{
+		const int32 ChangedIndex = PropertyChangedEvent.GetArrayIndex(PropertyChangedEvent.Property->GetName());
+		if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayAdd)
+		{
+			ReplaceDuplicateCrashReporterView(ChangedIndex);
+		}
+		else if (PropertyChangedEvent.ChangeType == EPropertyChangeType::Duplicate && ChangedIndex != INDEX_NONE)
+		{
+			// The engine inserts the copy at the duplicated index and moves the original one slot down
+			ReplaceDuplicateCrashReporterView(ChangedIndex + 1);
+		}
+	}
+
+	if ((PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AttachSessionReplay) && AttachSessionReplay) ||
+		(PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableExternalCrashReporter) && EnableExternalCrashReporter))
+	{
+		return;
+	}
+
+	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, InitAutomatically) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashBackend) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadSymbolsAutomatically) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, ProjectName) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, OrgName) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, AuthToken) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, IncludeSources) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UseLegacyGradlePlugin) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, UploadShaderSymbols) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, DiagnosticLevel) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, CrashReporterUrl) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterContextPropagation) ||
+		PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USentrySettings, EnableCrashReporterDebugImages))
+	{
+		return;
+	}
+
+	bIsDirty = true;
+}
+
+void USentrySettings::ReplaceDuplicateCrashReporterView(int32 Index)
+{
+	TArray<ESentryCrashReporterView>& Views = CrashReporterAppearance.Views;
+	if (!Views.IsValidIndex(Index))
+	{
+		return;
+	}
+
+	TSet<ESentryCrashReporterView> OtherViews;
+	for (int32 OtherIndex = 0; OtherIndex < Views.Num(); ++OtherIndex)
+	{
+		if (OtherIndex != Index)
+		{
+			OtherViews.Add(Views[OtherIndex]);
+		}
+	}
+
+	if (!OtherViews.Contains(Views[Index]))
+	{
+		return;
+	}
+
+	const UEnum* Enum = StaticEnum<ESentryCrashReporterView>();
+	for (int32 EnumIndex = 0; EnumIndex < Enum->NumEnums() - 1; ++EnumIndex)
+	{
+		const ESentryCrashReporterView Candidate = static_cast<ESentryCrashReporterView>(Enum->GetValueByIndex(EnumIndex));
+		if (!OtherViews.Contains(Candidate))
+		{
+			Views[Index] = Candidate;
+			return;
+		}
+	}
+
+	Views.RemoveAt(Index);
+}
+
+#endif
+
+FString USentrySettings::GetEffectiveDsn() const
+{
+	if (GIsEditor && !EditorDsn.IsEmpty())
+	{
+		return EditorDsn;
+	}
+
+	if (!Dsn.IsEmpty())
+	{
+		return Dsn;
+	}
+
+	const FString& EnvVarDsn = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_DSN"));
+	if (!EnvVarDsn.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("DSN is not set in plugin settings - using SENTRY_DSN environment variable instead."));
+		return EnvVarDsn;
+	}
+
+	UE_LOG(LogSentrySdk, Log, TEXT("DSN is not configured."));
+	return FString();
+}
+
+FString USentrySettings::GetEffectiveEnvironment() const
+{
+	if (!Environment.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Verbose, TEXT("Using the value from plugin settings as Sentry environment."));
+		return Environment;
+	}
+
+	const FString& EnvVarEnvironment = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_ENVIRONMENT"));
+	if (!EnvVarEnvironment.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Using SENTRY_ENVIRONMENT variable as Sentry environment."));
+		return EnvVarEnvironment;
+	}
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Using current build configuration as Sentry environment."));
+	return GetEnvironmentFromBuildConfig();
+}
+
+FString USentrySettings::GetEnvironmentFromBuildConfig() const
+{
+	if (GIsEditor)
+	{
+		return TEXT("Editor");
+	}
+
+	// Check Shipping configuration separately for backward compatibility
+	if (FApp::GetBuildConfiguration() == EBuildConfiguration::Shipping)
+	{
+		return TEXT("Release");
+	}
+
+	return LexToString(FApp::GetBuildConfiguration());
+}
+
+FString USentrySettings::GetEffectiveRelease() const
+{
+	if (OverrideReleaseName)
+	{
+		UE_LOG(LogSentrySdk, Verbose, TEXT("Using the value from plugin settings as Sentry release."));
+		return Release;
+	}
+
+	const FString& EnvVarRelease = FPlatformMisc::GetEnvironmentVariable(TEXT("SENTRY_RELEASE"));
+	if (!EnvVarRelease.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Using SENTRY_RELEASE variable as Sentry release."));
+		return EnvVarRelease;
+	}
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Using current project name and version as Sentry release."));
+	return GetReleaseFromProjectSettings();
+}
+
+FString USentrySettings::GetReleaseFromProjectSettings() const
+{
+	FString FormattedReleaseName = FApp::GetProjectName();
+
+	FString Version = TEXT("");
+	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni);
+	if (!Version.IsEmpty())
+	{
+		FormattedReleaseName = FString::Printf(TEXT("%s@%s"), *FormattedReleaseName, *Version);
+	}
+
+	return FormattedReleaseName;
+}
+
+bool USentrySettings::IsNativeBackendEnabled() const
+{
+#if USE_SENTRY_NATIVE && (PLATFORM_MICROSOFT || PLATFORM_LINUX || PLATFORM_MAC)
+	return CrashBackend != ESentryCrashBackend::Legacy;
+#else
+	return false;
+#endif
+}
+
+bool USentrySettings::IsDirty() const
+{
+	return bIsDirty;
+}
+
+void USentrySettings::ClearDirtyFlag()
+{
+	bIsDirty = false;
+}
+
+void USentrySettings::LoadDebugSymbolsProperties()
+{
+	const FString PropertiesFilePath = FPaths::Combine(FPaths::ProjectDir(), TEXT("sentry.properties"));
+
+	if (FPaths::FileExists(PropertiesFilePath))
+	{
+		FConfigFile PropertiesFile;
+		PropertiesFile.Read(PropertiesFilePath);
+
+		PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.project"), ProjectName);
+		PropertiesFile.GetString(TEXT("Sentry"), TEXT("defaults.org"), OrgName);
+		PropertiesFile.GetString(TEXT("Sentry"), TEXT("auth.token"), AuthToken);
+	}
+	else
+	{
+		bool UploadSymbols = false;
+		GConfig->GetBool(TEXT("/Script/Sentry.SentrySettings"), TEXT("UploadSymbolsAutomatically"), UploadSymbols, *GetDefaultConfigFilename());
+		if (UploadSymbols)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Sentry plugin can't find sentry.properties file"));
+		}
+	}
+}

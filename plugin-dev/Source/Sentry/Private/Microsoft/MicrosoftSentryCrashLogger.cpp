@@ -1,0 +1,280 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "MicrosoftSentryCrashLogger.h"
+
+#if USE_SENTRY_NATIVE
+
+#include "SentryDefines.h"
+
+#include "Infrastructure/MicrosoftSentryConverters.h"
+
+#include "CoreGlobals.h"
+#include "HAL/PlatformStackWalk.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Misc/OutputDeviceRedirector.h"
+
+#include "Microsoft/AllowMicrosoftPlatformTypes.h"
+
+FMicrosoftSentryCrashLogger::FMicrosoftSentryCrashLogger()
+	: CrashLoggingThread(nullptr)
+	, CrashLoggingThreadId(0)
+	, CrashEvent(nullptr)
+	, CrashCompletedEvent(nullptr)
+	, StopThreadEvent(nullptr)
+	, SharedCrashContext(nullptr)
+	, SharedCrashedThreadHandle(nullptr)
+{
+	// Create synchronization events
+	CrashEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);		   // Auto-reset event
+	CrashCompletedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr); // Auto-reset event
+	StopThreadEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);	   // Manual-reset event
+
+	if (!CrashEvent || !CrashCompletedEvent || !StopThreadEvent)
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to create crash logger synchronization events"));
+		return;
+	}
+
+	// Create the crash logging thread
+	CrashLoggingThread = CreateThread(
+		nullptr,				// Default security attributes
+		0,						// Default stack size
+		CrashLoggingThreadProc, // Thread procedure
+		this,					// Parameter to thread procedure
+		0,						// Run immediately
+		&CrashLoggingThreadId	// Thread ID output
+	);
+
+	if (CrashLoggingThread)
+	{
+		// Lower priority to avoid interfering with crash handling
+		SetThreadPriority(CrashLoggingThread, THREAD_PRIORITY_BELOW_NORMAL);
+		UE_LOG(LogSentrySdk, Log, TEXT("Crash logging thread created successfully (ID: %u)"), CrashLoggingThreadId);
+	}
+	else
+	{
+		UE_LOG(LogSentrySdk, Error, TEXT("Failed to create crash logging thread"));
+	}
+}
+
+FMicrosoftSentryCrashLogger::~FMicrosoftSentryCrashLogger()
+{
+	if (StopThreadEvent)
+	{
+		// Signal thread to stop
+		SetEvent(StopThreadEvent);
+	}
+
+	if (CrashLoggingThread)
+	{
+		// Wait for thread to exit (with timeout)
+		WaitForSingleObject(CrashLoggingThread, 1000);
+		CloseHandle(CrashLoggingThread);
+		CrashLoggingThread = nullptr;
+	}
+
+	// Clean up events
+	if (CrashEvent)
+	{
+		CloseHandle(CrashEvent);
+		CrashEvent = nullptr;
+	}
+	if (CrashCompletedEvent)
+	{
+		CloseHandle(CrashCompletedEvent);
+		CrashCompletedEvent = nullptr;
+	}
+	if (StopThreadEvent)
+	{
+		CloseHandle(StopThreadEvent);
+		StopThreadEvent = nullptr;
+	}
+}
+
+bool FMicrosoftSentryCrashLogger::LogCrash(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle, DWORD TimeoutMs)
+{
+	if (!CrashLoggingThread || !CrashEvent || !CrashCompletedEvent)
+	{
+		// Thread not initialized properly
+		return false;
+	}
+
+	if (!CrashContext)
+	{
+		// Crash context is invalid
+		return false;
+	}
+
+	// Set shared data for the logging thread to access
+	SharedCrashContext = CrashContext;
+	SharedCrashedThreadHandle = CrashedThreadHandle;
+
+	// Signal the logging thread that a crash occurred
+	SetEvent(CrashEvent);
+
+	// Wait for logging to complete (with timeout)
+	DWORD WaitResult = WaitForSingleObject(CrashCompletedEvent, TimeoutMs);
+
+	return (WaitResult == WAIT_OBJECT_0);
+}
+
+DWORD WINAPI FMicrosoftSentryCrashLogger::CrashLoggingThreadProc(LPVOID Parameter)
+{
+	FMicrosoftSentryCrashLogger* Logger = static_cast<FMicrosoftSentryCrashLogger*>(Parameter);
+	if (!Logger)
+	{
+		return 1;
+	}
+
+	HANDLE Events[2] = { Logger->CrashEvent, Logger->StopThreadEvent };
+
+	while (true)
+	{
+		// Wait for either a crash event or stop event
+		DWORD WaitResult = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
+
+		if (WaitResult == WAIT_OBJECT_0)
+		{
+			// Crash event signaled - perform logging
+			Logger->PerformCrashLogging();
+
+			// Signal completion
+			SetEvent(Logger->CrashCompletedEvent);
+		}
+		else if (WaitResult == WAIT_OBJECT_0 + 1)
+		{
+			// Stop event signaled - exit thread
+			break;
+		}
+		else
+		{
+			// Error occurred
+			break;
+		}
+	}
+
+	return 0;
+}
+
+void FMicrosoftSentryCrashLogger::PerformCrashLogging()
+{
+	// Perform stack walking and fill GErrorHist
+	// This happens in a separate thread to avoid stack overflow issues
+	WriteToErrorBuffers(SharedCrashContext, SharedCrashedThreadHandle);
+
+	// NOTE: We call FDebug::LogFormattedMessageWithCallstack() and GLog->Flush() here
+	// because it's unsafe to call them from the crashing thread when handling memory-related errors (e.g. stack overflow, memory corruption, etc.)
+
+#if !NO_LOGGING
+	FDebug::LogFormattedMessageWithCallstack(LogSentrySdk.GetCategoryName(), __FILE__, __LINE__, TEXT("Sentry Crash Callstack"), GErrorHist, ELogVerbosity::Error);
+#endif
+
+	if (GLog)
+	{
+		GLog->Flush();
+	}
+
+	// Close the crashed thread handle now that we're done with stack walking
+	if (SharedCrashedThreadHandle)
+	{
+		CloseHandle(SharedCrashedThreadHandle);
+	}
+
+	// Clear shared data
+	SharedCrashContext = nullptr;
+	SharedCrashedThreadHandle = nullptr;
+}
+
+void* FMicrosoftSentryCrashLogger::GetExceptionAddress(const sentry_ucontext_t* CrashContext)
+{
+	if (CrashContext && CrashContext->exception_ptrs.ExceptionRecord)
+	{
+		return CrashContext->exception_ptrs.ExceptionRecord->ExceptionAddress;
+	}
+
+	return nullptr;
+}
+
+void FMicrosoftSentryCrashLogger::WriteToErrorBuffers(const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
+{
+	// Step 1: Write exception description to GErrorExceptionDescription
+	FMicrosoftSentryConverters::SentryCrashContextToString(
+		CrashContext,
+		GErrorExceptionDescription,
+		UE_ARRAY_COUNT(GErrorExceptionDescription));
+
+	// Step 2: Append exception description to GErrorHist
+#if !UE_VERSION_OLDER_THAN(5, 6, 0)
+	FCString::StrncatTruncateDest(GErrorHist, UE_ARRAY_COUNT(GErrorHist), GErrorExceptionDescription);
+	FCString::StrncatTruncateDest(GErrorHist, UE_ARRAY_COUNT(GErrorHist), TEXT("\r\n\r\n"));
+#else
+	FCString::Strncat(GErrorHist, GErrorExceptionDescription, UE_ARRAY_COUNT(GErrorHist));
+	FCString::Strncat(GErrorHist, TEXT("\r\n\r\n"), UE_ARRAY_COUNT(GErrorHist));
+#endif
+
+	// Step 3: Perform stack walking and append to GErrorHist
+	const SIZE_T StackTraceSize = 65535;
+
+	// Allocate stack trace buffer on this thread's stack (not heap!)
+	ANSICHAR* StackTrace = (ANSICHAR*)alloca(StackTraceSize);
+	StackTrace[0] = 0;
+
+	if (CrashedThreadHandle && CrashContext->exception_ptrs.ContextRecord)
+	{
+		// Create platform-specific context wrapper for cross-thread stack walking
+		FPlatformStackWalk StackWalker;
+		void* ContextWrapper = StackWalker.MakeThreadContextWrapper(
+			CrashContext->exception_ptrs.ContextRecord,
+			CrashedThreadHandle);
+
+		if (ContextWrapper)
+		{
+			// Platform-specific stack walking (Xbox overrides this)
+			PerformStackWalk(StackTrace, StackTraceSize, ContextWrapper, CrashContext, CrashedThreadHandle);
+
+			// Release the platform-specific context wrapper
+			StackWalker.ReleaseThreadContextWrapper(ContextWrapper);
+		}
+	}
+
+	// Step 4: Append stack trace to GErrorHist
+#if !UE_VERSION_OLDER_THAN(5, 6, 0)
+	FCString::StrncatTruncateDest(GErrorHist, UE_ARRAY_COUNT(GErrorHist), ANSI_TO_TCHAR(StackTrace));
+#else
+	FCString::Strncat(GErrorHist, ANSI_TO_TCHAR(StackTrace), UE_ARRAY_COUNT(GErrorHist));
+#endif
+}
+
+void FMicrosoftSentryCrashLogger::PerformStackWalk(ANSICHAR* StackTrace, SIZE_T StackTraceSize, void* ContextWrapper, const sentry_ucontext_t* CrashContext, HANDLE CrashedThreadHandle)
+{
+	// Unified implementation for all Microsoft platforms (Windows, Xbox)
+	// Use CaptureThreadStackBackTrace which properly handles context wrappers on all platforms
+
+	const uint32 MaxDepth = 64;
+	uint64 BackTrace[MaxDepth];
+
+	// Get the thread ID from the thread handle
+	DWORD CrashedThreadId = GetThreadId(CrashedThreadHandle);
+
+	// CaptureThreadStackBackTrace properly determines for which thread stack walking should be performed
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(CrashedThreadId, BackTrace, MaxDepth, ContextWrapper);
+#else
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(CrashedThreadId, BackTrace, MaxDepth);
+#endif
+
+	// Format the captured addresses into human-readable strings
+	for (uint32 i = 0; i < Depth; i++)
+	{
+		FPlatformStackWalk::ProgramCounterToHumanReadableString(i, BackTrace[i], StackTrace, StackTraceSize, nullptr);
+#if !UE_VERSION_OLDER_THAN(5, 6, 0)
+		FCStringAnsi::StrncatTruncateDest(StackTrace, (int32)StackTraceSize, LINE_TERMINATOR_ANSI);
+#else
+		FCStringAnsi::Strncat(StackTrace, LINE_TERMINATOR_ANSI, (int32)StackTraceSize);
+#endif
+	}
+}
+
+#include "Microsoft/HideMicrosoftPlatformTypes.h"
+
+#endif // USE_SENTRY_NATIVE

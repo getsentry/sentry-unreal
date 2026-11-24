@@ -1,0 +1,342 @@
+// Copyright (c) 2026 Sentry. All Rights Reserved.
+
+#include "SentryBackBufferCapture.h"
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+
+#include "SentryDefines.h"
+#include "SentryVideoEncoderInterface.h"
+#include "SentryVideoFrame.h"
+
+#include "DynamicRHI.h"
+#include "Framework/Application/SlateApplication.h"
+#include "GlobalShader.h"
+#include "HAL/PlatformTime.h"
+#include "RHICommandList.h"
+#include "RHIResources.h"
+#include "RenderGraphBuilder.h"
+#include "RenderGraphUtils.h"
+#include "RenderingThread.h"
+#include "Widgets/SWindow.h"
+
+#if !UE_VERSION_OLDER_THAN(5, 8, 0)
+#include "Slate/SlateViewportProvider.h"
+#endif
+
+FSentryBackBufferCapture::FSentryBackBufferCapture(ISentryEncoder& InEncoder)
+	: Encoder(InEncoder)
+{
+	EncoderPool.SetNum(FramePoolSize);
+	CapturePeriodSeconds = 1.0 / static_cast<double>(FMath::Max(1u, Encoder.GetFramerate()));
+}
+
+FSentryBackBufferCapture::~FSentryBackBufferCapture()
+{
+	Stop();
+}
+
+bool FSentryBackBufferCapture::Start()
+{
+	check(IsInGameThread());
+
+	if (!FSlateApplication::IsInitialized())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: Slate not initialised, cannot hook backbuffer"));
+		return false;
+	}
+	FSlateRenderer* Renderer = FSlateApplication::Get().GetRenderer();
+	if (!Renderer)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: no Slate renderer"));
+		return false;
+	}
+
+	BackBufferReadyHandle = Renderer->OnBackBufferReadyToPresent().AddRaw(
+		this, &FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread);
+
+	return true;
+}
+
+void FSentryBackBufferCapture::Stop()
+{
+	if (BackBufferReadyHandle.IsValid() && FSlateApplication::IsInitialized())
+	{
+		if (FSlateRenderer* Renderer = FSlateApplication::Get().GetRenderer())
+		{
+			Renderer->OnBackBufferReadyToPresent().Remove(BackBufferReadyHandle);
+		}
+		BackBufferReadyHandle.Reset();
+	}
+
+	// Ensure render thread is done with our textures before destruction
+	FlushRenderingCommands();
+
+	for (TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Slot : EncoderPool)
+	{
+		Slot.Reset();
+	}
+
+	Scratch.Texture.SafeRelease();
+	Converted.Texture.SafeRelease();
+}
+
+#if UE_VERSION_OLDER_THAN(5, 8, 0)
+void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, const FTextureRHIRef& BackBuffer)
+{
+	if (!AcceptWindow_RenderThread(SlateWindow))
+	{
+		return;
+	}
+	CaptureBackBuffer_RenderThread(BackBuffer);
+}
+#else
+void FSentryBackBufferCapture::OnBackBufferReadyToPresent_RenderThread(SWindow& SlateWindow, ISlateViewportProvider& ViewportProvider)
+{
+	if (!AcceptWindow_RenderThread(SlateWindow))
+	{
+		return;
+	}
+	CaptureBackBuffer_RenderThread(ViewportProvider.GetBackBufferResource());
+}
+#endif
+
+bool FSentryBackBufferCapture::AcceptWindow_RenderThread(const SWindow& SlateWindow)
+{
+	// Capture only real top-level windows. Transient overlays - tooltips, popup
+	// menus, notification toasts, cursor decorators - present through the same hook
+	// but aren't gameplay, and their differing size would otherwise be handed to the
+	// encoder. IsRegularWindow() excludes exactly that class.
+	return SlateWindow.IsRegularWindow();
+}
+
+void FSentryBackBufferCapture::CaptureBackBuffer_RenderThread(const FTextureRHIRef& BackBuffer)
+{
+	check(IsInRenderingThread());
+
+	if (!BackBuffer.IsValid() || Encoder.IsEncodingDisabled())
+	{
+		return;
+	}
+
+	// Every presented frame, not just capture ticks, so an encoder with
+	// render-thread work outstanding makes progress at the present rate rather
+	// than the far slower capture rate
+	Encoder.Poll();
+
+	const double Now = FPlatformTime::Seconds();
+	if (Now < NextCaptureTime)
+	{
+		return;
+	}
+	NextCaptureTime = Now + CapturePeriodSeconds;
+
+	const uint32 W = BackBuffer->GetSizeX();
+	const uint32 H = BackBuffer->GetSizeY();
+
+	if (W == 0 || H == 0)
+	{
+		return;
+	}
+
+	constexpr ETextureCreateFlags SrvRt = ETextureCreateFlags::ShaderResource | ETextureCreateFlags::RenderTargetable;
+
+	FTextureRHIRef ScratchTex = AcquireCachedTexture_RenderThread(Scratch, W, H, BackBuffer->GetFormat(),
+		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayScratch"));
+
+#if PLATFORM_APPLE
+	FTextureRHIRef ConvertedTex = AcquireCachedTexture_RenderThread(Converted, W, H, PF_B8G8R8A8,
+		SrvRt, ERHIAccess::SRVGraphics, TEXT("SentrySessionReplayConverted"));
+#endif
+
+#if PLATFORM_APPLE
+	// VT requires pool slot to have CPUReadback flag so it can be read via Metal's getBytes().
+	// Note: Metal forbids RT|CPUReadback on the same texture so an extra copy is needed (step 3)
+	constexpr ETextureCreateFlags PoolFlags = ETextureCreateFlags::CPUReadback;
+	constexpr ERHIAccess PoolInitialState = ERHIAccess::CPURead;
+#else
+	// SRV|RT lets the draw pass write into the slot; the encoder adds whatever its
+	// own access to the texture needs
+	const ETextureCreateFlags PoolFlags = SrvRt | Encoder.GetFrameTextureFlags();
+	constexpr ERHIAccess PoolInitialState = ERHIAccess::SRVGraphics;
+#endif
+
+	if (!ScratchTex.IsValid())
+	{
+		return;
+	}
+
+#if PLATFORM_APPLE
+	if (!ConvertedTex.IsValid())
+	{
+		return;
+	}
+#endif
+
+	// Acquire the encoder frame only after the scratch/converted textures are
+	// known good, so an early return above never strands a slot in flight. No free
+	// slot means the encoder is still consuming every frame in the pool and this
+	// capture will be dropped
+	TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> EncoderFrame = AcquireFrame_RenderThread(W, H, PF_B8G8R8A8,
+		PoolFlags, PoolInitialState, TEXT("SentrySessionReplayCapture"));
+
+	if (!EncoderFrame.IsValid())
+	{
+		return;
+	}
+
+	FTextureRHIRef EncoderTex = EncoderFrame->Texture;
+	if (!EncoderTex.IsValid())
+	{
+		EncoderFrame->Release();
+		return;
+	}
+
+#if PLATFORM_APPLE
+	FTextureRHIRef DrawTarget = ConvertedTex;
+#else
+	FTextureRHIRef DrawTarget = EncoderTex;
+#endif
+
+	FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
+
+	// Step 1: hardware-copy backbuffer -> scratch (same format). Slate
+	// backbuffers don't carry TexCreate_ShaderResource, so we can't bind
+	// them directly as an SRV in the shader path below
+	{
+		FRHITransitionInfo Transitions[] = {
+			FRHITransitionInfo(BackBuffer.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc),
+			FRHITransitionInfo(ScratchTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopyDest),
+		};
+		RHICmdList.Transition(MakeArrayView(Transitions, UE_ARRAY_COUNT(Transitions)));
+
+		FRHICopyTextureInfo CopyInfo;
+		CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
+		RHICmdList.CopyTexture(BackBuffer.GetReference(), ScratchTex.GetReference(), CopyInfo);
+
+		RHICmdList.Transition(FRHITransitionInfo(ScratchTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::SRVGraphics));
+	}
+
+	// Step 2: AddDrawTexturePass scratch -> DrawTarget (BGRA8). Same-format fast
+	// path is a hardware copy; format mismatch (HDR / 10-bit source) falls back
+	// to the engine's built-in FDrawTexturePS pixel shader
+	{
+		FRDGBuilder GraphBuilder(RHICmdList);
+
+		FRDGTextureRef RDGSource = RegisterExternalTexture(GraphBuilder, ScratchTex, TEXT("SentrySR_Scratch"));
+		FRDGTextureRef RDGDest = RegisterExternalTexture(GraphBuilder, DrawTarget, TEXT("SentrySR_Dest"));
+
+		FRDGDrawTextureInfo DrawInfo;
+		DrawInfo.Size = FIntPoint(static_cast<int32>(W), static_cast<int32>(H));
+		AddDrawTexturePass(GraphBuilder, GetGlobalShaderMap(GMaxRHIFeatureLevel), RDGSource, RDGDest, DrawInfo);
+
+		GraphBuilder.Execute();
+	}
+
+#if PLATFORM_APPLE
+	// Step 3 (Apple only): hardware-copy Converted -> EncoderPool slot. Both are BGRA8 same-format
+	{
+		FRHITransitionInfo Transitions[] = {
+			FRHITransitionInfo(DrawTarget.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopySrc),
+			FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::CopyDest),
+		};
+		RHICmdList.Transition(MakeArrayView(Transitions, UE_ARRAY_COUNT(Transitions)));
+
+		FRHICopyTextureInfo CopyInfo;
+		CopyInfo.Size = FIntVector(static_cast<int32>(W), static_cast<int32>(H), 1);
+		RHICmdList.CopyTexture(DrawTarget.GetReference(), EncoderTex.GetReference(), CopyInfo);
+	}
+#endif
+
+#if PLATFORM_APPLE
+	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::CopyDest, ERHIAccess::CPURead));
+#else
+	RHICmdList.Transition(FRHITransitionInfo(EncoderTex.GetReference(), ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
+#endif
+
+	EncoderFrame->ReadyFence->Clear();
+	RHICmdList.WriteGPUFence(EncoderFrame->ReadyFence);
+
+	EncoderFrame->CaptureTimeSeconds = Now;
+
+	Encoder.SubmitFrame(RHICmdList, EncoderFrame);
+}
+
+FTextureRHIRef FSentryBackBufferCapture::AcquireCachedTexture_RenderThread(FCachedTexture& Cache, uint32 Width, uint32 Height, EPixelFormat Format,
+	ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName)
+{
+	if (Width != Cache.Width || Height != Cache.Height || Format != Cache.Format || Flags != Cache.Flags)
+	{
+		Cache.Texture.SafeRelease();
+		Cache.Width = Width;
+		Cache.Height = Height;
+		Cache.Format = Format;
+		Cache.Flags = Flags;
+	}
+
+	if (!Cache.Texture.IsValid())
+	{
+		const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(DebugName)
+											   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
+											   .SetFormat(Format)
+											   .SetFlags(Flags)
+											   .SetInitialState(InitialState);
+		Cache.Texture = FRHICommandListImmediate::Get().CreateTexture(Desc);
+	}
+
+	return Cache.Texture;
+}
+
+TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> FSentryBackBufferCapture::AcquireFrame_RenderThread(uint32 Width, uint32 Height, EPixelFormat Format,
+	ETextureCreateFlags Flags, ERHIAccess InitialState, const TCHAR* DebugName)
+{
+	for (TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Slot : EncoderPool)
+	{
+		if (!Slot.IsValid())
+		{
+			Slot = MakeShared<FSentryVideoFrame, ESPMode::ThreadSafe>();
+		}
+
+		if (!Slot->TryAcquire())
+		{
+			continue;
+		}
+
+		FSentryVideoFrame& Frame = *Slot;
+
+		if (Frame.Width != Width || Frame.Height != Height || Frame.Format != Format || Frame.Flags != Flags)
+		{
+			Frame.Texture.SafeRelease();
+			Frame.Width = Width;
+			Frame.Height = Height;
+			Frame.Format = Format;
+			Frame.Flags = Flags;
+		}
+
+		if (!Frame.Texture.IsValid())
+		{
+			const FRHITextureCreateDesc Desc = FRHITextureCreateDesc::Create2D(DebugName)
+												   .SetExtent(static_cast<int32>(Width), static_cast<int32>(Height))
+												   .SetFormat(Format)
+												   .SetFlags(Flags)
+												   .SetInitialState(InitialState);
+			Frame.Texture = FRHICommandListImmediate::Get().CreateTexture(Desc);
+		}
+
+		if (!Frame.ReadyFence.IsValid())
+		{
+			Frame.ReadyFence = RHICreateGPUFence(TEXT("SentrySessionReplayFrameFence"));
+		}
+
+		if (!Frame.Texture.IsValid() || !Frame.ReadyFence.IsValid())
+		{
+			Frame.Release();
+			continue;
+		}
+
+		return Slot;
+	}
+
+	return nullptr;
+}
+
+#endif // USE_SENTRY_SESSION_REPLAY

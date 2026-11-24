@@ -1,0 +1,1623 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "GenericPlatformSentrySubsystem.h"
+#include "GenericPlatformSentryAttachment.h"
+#include "GenericPlatformSentryBreadcrumb.h"
+#include "GenericPlatformSentryEvent.h"
+#include "GenericPlatformSentryFeedback.h"
+#include "GenericPlatformSentryId.h"
+#include "GenericPlatformSentryLog.h"
+#include "GenericPlatformSentryMetric.h"
+#include "GenericPlatformSentrySamplingContext.h"
+#include "GenericPlatformSentryScope.h"
+#include "GenericPlatformSentryTransaction.h"
+#include "GenericPlatformSentryTransactionContext.h"
+#include "GenericPlatformSentryUser.h"
+
+#include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeLogHandler.h"
+#include "SentryBeforeMetricHandler.h"
+#include "SentryBeforeSendFeedbackHandler.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryBreadcrumb.h"
+#include "SentryDefines.h"
+#include "SentryEvent.h"
+#include "SentryHint.h"
+#include "SentryLog.h"
+#include "SentryMetric.h"
+#include "SentryModule.h"
+#include "SentrySamplingContext.h"
+#include "SentrySettings.h"
+#include "SentrySubsystem.h"
+#include "SentryTraceSampler.h"
+
+#include "OutputDevice/SentryOutputDevice.h"
+
+#include "Utils/SentryCallbackUtils.h"
+#include "Utils/SentryFileUtils.h"
+#include "Utils/SentryScreenshotUtils.h"
+
+#include "HAL/PlatformSentryHint.h"
+#include "HAL/PlatformSentryScope.h"
+
+#include "Infrastructure/GenericPlatformSentryConverters.h"
+
+#include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
+#include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashReporter.h"
+
+#include "CoreGlobals.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+
+#include "Engine/Engine.h"
+#include "GenericPlatform/GenericPlatformOutputDevices.h"
+#include "HAL/ExceptionHandling.h"
+#include "HAL/FileManager.h"
+#include "HAL/PlatformMemory.h"
+#include "HAL/PlatformStackWalk.h"
+#include "Misc/AssertionMacros.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Guid.h"
+#include "Misc/Paths.h"
+#include "UObject/UObjectThreadContext.h"
+
+extern CORE_API bool GIsGPUCrashed;
+
+#if USE_SENTRY_NATIVE
+
+static void PrintVerboseLog(sentry_level_t level, const char* message, va_list args, void* closure)
+{
+	char buffer[512];
+	vsnprintf(buffer, 512, message, args);
+
+	auto ConvertedMessage = StringCast<TCHAR>(buffer);
+
+	// When emitted within a GLog call chain, write sentry-native debug messages directly to the log file
+	// to avoid GLog's FOutputDeviceRedirector re-entrancy deadlock
+	FOutputDevice* OutputTarget = FSentryOutputDevice::IsSerializing()
+									  ? FGenericPlatformOutputDevices::GetLog()
+									  : GLog;
+
+	if (OutputTarget)
+	{
+		OutputTarget->Serialize(ConvertedMessage.Get(), FGenericPlatformSentryConverters::SentryLevelToLogVerbosity(level), TEXT("LogSentryInternal"));
+	}
+}
+
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSend(sentry_value_t event, sentry_hint_t* hint, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSend(event, hint, closure, false);
+	}
+	else
+	{
+		return event;
+	}
+}
+
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeSendFeedback(event, hint, closure);
+	}
+	else
+	{
+		return event;
+	}
+}
+
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeBreadcrumb(breadcrumb, closure);
+	}
+	else
+	{
+		return breadcrumb;
+	}
+}
+
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleOnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure)
+{
+	if (closure)
+	{
+		FGenericPlatformSentrySubsystem* platformSubsystem = StaticCast<FGenericPlatformSentrySubsystem*>(closure);
+
+		// Set as early as possible so platform-specific crash handlers can also
+		// benefit from short-circuiting user callbacks.
+		platformSubsystem->bIsCrashing = true;
+
+		return platformSubsystem->OnCrash(uctx, event, hint, closure);
+	}
+	else
+	{
+		return event;
+	}
+}
+
+/* static */ double FGenericPlatformSentrySubsystem::HandleTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnTraceSampling(transaction_ctx, custom_sampling_ctx, parent_sampled);
+	}
+	else
+	{
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+}
+
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeLog(sentry_value_t log, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeLog(log, closure);
+	}
+
+	return log;
+}
+
+/* static */ sentry_value_t FGenericPlatformSentrySubsystem::HandleBeforeMetric(sentry_value_t metric, void* closure)
+{
+	if (closure)
+	{
+		return StaticCast<FGenericPlatformSentrySubsystem*>(closure)->OnBeforeMetric(metric, closure);
+	}
+
+	return metric;
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSend(sentry_value_t event, sentry_hint_t* hint, void* closure, bool isCrash)
+{
+	if (!closure || this != closure)
+	{
+		return event;
+	}
+
+	if (!isCrash && isGpuCrashSplitEnabled && FGenericPlatformSentryEvent::IsGpuCrash(event))
+	{
+		// GPU crash events are captured from `OnCrash` and carry only the GPU dump attachments
+		FPlatformSentryHint GpuCrashHint(hint);
+		GpuCrashHint.ClearAttachments();
+
+		AddGpuDumpAttachments(GpuCrashHint);
+
+		isCrash = true;
+	}
+
+	if (!isCrash && FGenericPlatformSentryEvent::IsAnr(event))
+	{
+		SetEventCrashType(event, ECrashContextType::Hang);
+	}
+
+	USentryBeforeSendHandler* Handler = GetBeforeSendHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return event;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return event;
+	}
+
+	TSentryCallbackGuard<USentryBeforeSendHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return event;
+	}
+
+	USentryEvent* EventToProcess;
+	USentryHint* HintToProcess;
+
+	if (isCrash && PooledCrashEvent.IsValid() && PooledCrashHint.IsValid())
+	{
+		PooledCrashEvent->SetNativeImpl(MakeShareable(new FGenericPlatformSentryEvent(event, true)));
+		EventToProcess = PooledCrashEvent.Get();
+
+		PooledCrashHint->SetNativeImpl(MakeShareable(new FPlatformSentryHint(hint)));
+		HintToProcess = PooledCrashHint.Get();
+	}
+	else
+	{
+		EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, isCrash)));
+		HintToProcess = USentryHint::Create(MakeShareable(new FPlatformSentryHint(hint)));
+	}
+
+	USentryEvent* ProcessedEvent = Handler->HandleBeforeSend(EventToProcess, HintToProcess);
+
+	if (!ProcessedEvent)
+	{
+		sentry_value_decref(event);
+		return sentry_value_new_null();
+	}
+
+	return event;
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeSendFeedback(sentry_value_t event, sentry_hint_t* hint, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return event;
+	}
+
+	USentryBeforeSendFeedbackHandler* Handler = GetBeforeSendFeedbackHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return event;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return event;
+	}
+
+	TSentryCallbackGuard<USentryBeforeSendFeedbackHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return event;
+	}
+
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FGenericPlatformSentryEvent(event, false)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FPlatformSentryHint(hint)));
+
+	USentryEvent* ProcessedEvent = Handler->HandleBeforeSendFeedback(EventToProcess, HintToProcess);
+
+	if (!ProcessedEvent)
+	{
+		sentry_value_decref(event);
+		return sentry_value_new_null();
+	}
+
+	return event;
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeBreadcrumb(sentry_value_t breadcrumb, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return breadcrumb;
+	}
+
+	USentryBeforeBreadcrumbHandler* Handler = GetBeforeBreadcrumbHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return breadcrumb;
+	}
+
+	if (bIsCrashing)
+	{
+		return breadcrumb;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return breadcrumb;
+	}
+
+	TSentryCallbackGuard<USentryBeforeBreadcrumbHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return breadcrumb;
+	}
+
+	USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new FGenericPlatformSentryBreadcrumb(breadcrumb)));
+
+	USentryBreadcrumb* ProcessedBreadcrumb = Handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, nullptr);
+
+	if (!ProcessedBreadcrumb)
+	{
+		sentry_value_decref(breadcrumb);
+		return sentry_value_new_null();
+	}
+
+	return breadcrumb;
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeLog(sentry_value_t log, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return log;
+	}
+
+	USentryBeforeLogHandler* Handler = GetBeforeLogHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return log;
+	}
+
+	if (bIsCrashing)
+	{
+		return log;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return log;
+	}
+
+	TSentryCallbackGuard<USentryBeforeLogHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return log;
+	}
+
+	// Create USentryLog object using the log wrapper
+	USentryLog* LogData = USentryLog::Create(MakeShareable(new FGenericPlatformSentryLog(log)));
+
+	USentryLog* ProcessedLogData = Handler->HandleBeforeLog(LogData);
+
+	if (!ProcessedLogData)
+	{
+		sentry_value_decref(log);
+		return sentry_value_new_null();
+	}
+
+	return log;
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnBeforeMetric(sentry_value_t metric, void* closure)
+{
+	if (!closure || this != closure)
+	{
+		return metric;
+	}
+
+	USentryBeforeMetricHandler* Handler = GetBeforeMetricHandler();
+	if (!Handler)
+	{
+		// If custom handler isn't set skip further processing
+		return metric;
+	}
+
+	if (bIsCrashing)
+	{
+		return metric;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return metric;
+	}
+
+	TSentryCallbackGuard<USentryBeforeMetricHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return metric;
+	}
+
+	// Create USentryMetric object using the metric wrapper
+	USentryMetric* MetricData = USentryMetric::Create(MakeShareable(new FGenericPlatformSentryMetric(metric)));
+
+	USentryMetric* ProcessedMetricData = Handler->HandleBeforeMetric(MetricData);
+
+	if (!ProcessedMetricData)
+	{
+		sentry_value_decref(metric);
+		return sentry_value_new_null();
+	}
+
+	return metric;
+}
+
+sentry_value_t FGenericPlatformSentrySubsystem::OnCrash(const sentry_ucontext_t* uctx, sentry_value_t event, sentry_hint_t* hint, void* closure)
+{
+	FPlatformSentryHint CrashHint(hint);
+
+	if (isScreenshotAttachmentEnabled && !IsOutOfProcessScreenshotEnabled() && !IsRunningCommandlet())
+	{
+		if (IsScreenshotSupported())
+		{
+			const FString& ScreenshotPath = TryCaptureScreenshot();
+			if (!ScreenshotPath.IsEmpty())
+			{
+				CrashHint.AddAttachment(MakeShareable(new FGenericPlatformSentryAttachment(ScreenshotPath, TEXT("screenshot.png"), TEXT("image/png"))));
+			}
+		}
+		else
+		{
+			UE_LOG(LogSentrySdk, Verbose, TEXT("Screenshot capturing is not supported on the current platform"));
+		}
+	}
+
+	if (GIsGPUCrashed && isGpuDumpAttachmentEnabled)
+	{
+		if (isGpuCrashSplitEnabled)
+		{
+			CaptureGpuCrashEvent();
+		}
+		else
+		{
+			AddGpuDumpAttachments(CrashHint);
+		}
+	}
+
+	if (gameStateAttachment)
+	{
+		CrashHint.AddAttachment(gameStateAttachment);
+	}
+
+	SetEventCrashType(event, ResolveCrashType());
+
+	AddCrashMemoryContext(event);
+
+	// At this point crash events are handled the same way as non-fatal ones,
+	// so we defer to `OnBeforeSend` to invoke the custom `beforeSend` handler (if configured)
+	return OnBeforeSend(event, hint, closure, true);
+}
+
+double FGenericPlatformSentrySubsystem::OnTraceSampling(const sentry_transaction_context_t* transaction_ctx, sentry_value_t custom_sampling_ctx, const int* parent_sampled)
+{
+	USentryTraceSampler* Sampler = GetTraceSampler();
+	if (!Sampler)
+	{
+		// If custom sampler isn't set skip further processing
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	if (bIsCrashing)
+	{
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	TSentryCallbackGuard<USentryTraceSampler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return parent_sampled != nullptr ? *parent_sampled : 0.0;
+	}
+
+	USentrySamplingContext* Context = USentrySamplingContext::Create(
+		MakeShareable(new FGenericPlatformSentrySamplingContext(transaction_ctx, custom_sampling_ctx)));
+
+	float samplingValue;
+	if (Sampler->Sample(Context, samplingValue))
+	{
+		return samplingValue;
+	}
+
+	return parent_sampled != nullptr ? *parent_sampled : 0.0;
+}
+
+bool FGenericPlatformSentrySubsystem::IsScreenshotSupported() const
+{
+	return false;
+}
+
+// Best-effort heuristic: determines crash type by polling global flags that are set before
+// the exception/signal is raised. These flags are process-wide (not per-thread), so in theory
+// a race is possible if two different crash types occur simultaneously. In practice, once any
+// of these conditions triggers, the process is on its way down already and a second, different crash
+// is unlikely to race into on_crash first.
+ECrashContextType FGenericPlatformSentrySubsystem::ResolveCrashType() const
+{
+	if (FGenericPlatformMemory::bIsOOM)
+	{
+		return ECrashContextType::OutOfMemory;
+	}
+
+	if (GIsGPUCrashed)
+	{
+		return ECrashContextType::GPUCrash;
+	}
+
+	if (FDebug::HasAsserted())
+	{
+		return ECrashContextType::Assert;
+	}
+
+	return ECrashContextType::Crash;
+}
+
+void FGenericPlatformSentrySubsystem::InitCrashReporter(const USentrySettings* Settings)
+{
+	crashReporter = MakeShareable(new FGenericPlatformSentryCrashReporter);
+
+	crashReporter->SetRelease(Settings->GetEffectiveRelease());
+	crashReporter->SetEnvironment(Settings->GetEffectiveEnvironment());
+
+	if (Settings->EnableCrashReporterDebugImages && !FGenericCrashContext::IsOutOfProcessCrashReporter())
+	{
+		crashReporter->SetDebugImages();
+	}
+}
+
+void FGenericPlatformSentrySubsystem::AddFileAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
+
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_file(TCHAR_TO_UTF8(*platformAttachment->GetPath()));
+
+	if (!platformAttachment->GetFilename().IsEmpty())
+		sentry_attachment_set_filename(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
+
+	if (!platformAttachment->GetContentType().IsEmpty())
+		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
+
+	if (!platformAttachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetAttachmentType()));
+
+	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
+
+	attachments.Add(platformAttachment);
+}
+
+void FGenericPlatformSentrySubsystem::AddByteAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
+
+	const TArray<uint8>& byteBuf = platformAttachment->GetDataByRef();
+
+	sentry_value_t nativeAttachment =
+		sentry_attachment_from_bytes(reinterpret_cast<const char*>(byteBuf.GetData()), byteBuf.Num(), TCHAR_TO_UTF8(*platformAttachment->GetFilename()));
+
+	if (!platformAttachment->GetContentType().IsEmpty())
+		sentry_attachment_set_content_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetContentType()));
+
+	if (!platformAttachment->GetAttachmentType().IsEmpty())
+		sentry_attachment_set_type(nativeAttachment, TCHAR_TO_UTF8(*platformAttachment->GetAttachmentType()));
+
+	platformAttachment->SetUuid(sentry_add_attachment(nativeAttachment));
+
+	attachments.Add(platformAttachment);
+}
+
+void FGenericPlatformSentrySubsystem::SetEventCrashType(sentry_value_t event, ECrashContextType crashType)
+{
+	SetEventTag(event, "CrashType", TCHAR_TO_UTF8(FGenericCrashContext::GetCrashTypeString(crashType)));
+}
+
+void FGenericPlatformSentrySubsystem::SetEventTag(sentry_value_t event, const char* key, const char* value)
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		eventTags = sentry_value_new_object();
+		sentry_value_set_by_key(event, "tags", eventTags);
+	}
+	sentry_value_set_by_key(eventTags, key, sentry_value_new_string(value));
+}
+
+void FGenericPlatformSentrySubsystem::SetEventContextValue(sentry_value_t event, const char* context, const char* key, sentry_value_t value)
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		eventContexts = sentry_value_new_object();
+		sentry_value_set_by_key(event, "contexts", eventContexts);
+	}
+	sentry_value_t eventContext = sentry_value_get_by_key(eventContexts, context);
+	if (sentry_value_is_null(eventContext))
+	{
+		eventContext = sentry_value_new_object();
+		sentry_value_set_by_key(eventContexts, context, eventContext);
+	}
+	sentry_value_set_by_key(eventContext, key, value);
+}
+
+void FGenericPlatformSentrySubsystem::AttachStackTrace(sentry_value_t target)
+{
+	sentry_value_set_stacktrace(target, nullptr, 0);
+}
+
+FGenericPlatformSentrySubsystem::FGenericPlatformSentrySubsystem()
+	: bUseNativeBackend(false)
+	, beforeSend(nullptr)
+	, beforeSendFeedback(nullptr)
+	, beforeBreadcrumb(nullptr)
+	, beforeLog(nullptr)
+	, beforeMetric(nullptr)
+	, sampler(nullptr)
+	, crashReporter(nullptr)
+	, isEnabled(false)
+	, isStackTraceEnabled(true)
+	, isPiiAttachmentEnabled(false)
+	, isScreenshotAttachmentEnabled(false)
+	, isSessionReplayAttachmentEnabled(false)
+	, isGpuDumpAttachmentEnabled(false)
+	, isGpuCrashSplitEnabled(false)
+	, bNativeHangTracking(false)
+	, initTimestamp(FDateTime::UtcNow())
+{
+}
+
+void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers)
+{
+	bUseNativeBackend = settings->IsNativeBackendEnabled();
+
+	beforeSend = callbackHandlers.BeforeSendHandler;
+	beforeSendFeedback = callbackHandlers.BeforeSendFeedbackHandler;
+	beforeBreadcrumb = callbackHandlers.BeforeBreadcrumbHandler;
+	beforeLog = callbackHandlers.BeforeLogHandler;
+	beforeMetric = callbackHandlers.BeforeMetricHandler;
+	sampler = callbackHandlers.TraceSampler;
+
+	sentry_options_t* options = sentry_options_new();
+
+	if (settings->EnableAutoLogAttachment)
+	{
+		ConfigureLogFileAttachment(options);
+	}
+
+	switch (settings->DatabaseLocation)
+	{
+	case ESentryDatabaseLocation::ProjectDirectory:
+		databaseParentPath = FPaths::ProjectDir();
+		break;
+	case ESentryDatabaseLocation::ProjectUserDirectory:
+		databaseParentPath = FPaths::ProjectUserDir();
+		break;
+	}
+
+	if (databaseParentPath.IsEmpty())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown Sentry database location. Falling back to FPaths::ProjectUserDir()."));
+		databaseParentPath = FPaths::ProjectUserDir();
+	}
+
+	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
+	if (isScreenshotAttachmentEnabled)
+	{
+		// Clear screenshot captured during previous session if any
+		IFileManager::Get().DeleteDirectory(*FPaths::Combine(GetDatabasePath(), TEXT("screenshots")), false, true);
+
+		if (settings->EnableOutOfProcessScreenshots)
+		{
+			ConfigureScreenshotCapturing(options);
+		}
+	}
+
+	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
+	if (isSessionReplayAttachmentEnabled)
+	{
+		ConfigureSessionReplayCapturing(options);
+	}
+
+	isGpuDumpAttachmentEnabled = settings->AttachGpuDump;
+
+	if (settings->AttachGameState)
+	{
+		// Created upfront to keep the crash handler work minimal
+		gameStateAttachment = MakeShareable(new FGenericPlatformSentryAttachment(GetGameStateFilePath(), TEXT("game_state.jsonl"), TEXT("text/plain")));
+	}
+	else
+	{
+		gameStateAttachment.Reset();
+	}
+
+#if PLATFORM_WINDOWS
+	isGpuCrashSplitEnabled = isGpuDumpAttachmentEnabled && bUseNativeBackend && settings->SplitGpuCrashEvents && !settings->EnableExternalCrashReporter;
+#endif
+
+	if (settings->UseProxy)
+	{
+		sentry_options_set_proxy(options, TCHAR_TO_UTF8(*settings->ProxyUrl));
+	}
+
+	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::UniformSampleRate)
+	{
+		sentry_options_set_traces_sample_rate(options, settings->TracesSampleRate);
+	}
+	if (settings->EnableTracing && settings->SamplingType == ESentryTracesSamplingType::TracesSampler)
+	{
+		sentry_options_set_traces_sampler(options, HandleTraceSampling, this);
+	}
+
+	ConfigureHandlerPath(options);
+	ConfigureDatabasePath(options);
+	ConfigureCertsPath(options);
+	ConfigureNetworkConnectFunc(options);
+	ConfigureStackCaptureStrategy(options);
+
+#if PLATFORM_MICROSOFT || PLATFORM_MAC || PLATFORM_LINUX
+	bNativeHangTracking = settings->EnableHangTracking && settings->UseNativeHangTracking;
+	if (bNativeHangTracking)
+	{
+		sentry_options_set_enable_app_hang_tracking(options, 1);
+		sentry_options_set_app_hang_timeout(options, static_cast<uint64_t>(settings->HangTimeoutDuration * 1000.0));
+	}
+#endif
+
+	if (settings->EnableExternalCrashReporter)
+	{
+		ConfigureCrashReporterPath(options);
+	}
+
+	sentry_options_set_dsn(options, TCHAR_TO_UTF8(*settings->GetEffectiveDsn()));
+	sentry_options_set_release(options, TCHAR_TO_UTF8(*settings->GetEffectiveRelease()));
+	sentry_options_set_environment(options, TCHAR_TO_UTF8(*settings->GetEffectiveEnvironment()));
+	sentry_options_set_dist(options, TCHAR_TO_UTF8(*settings->Dist));
+	sentry_options_set_logger(options, PrintVerboseLog, nullptr);
+	sentry_options_set_debug(options, settings->Debug);
+	sentry_options_set_logger_level(options, FGenericPlatformSentryConverters::SentryLevelToNative(settings->DebugLevel));
+	sentry_options_set_auto_session_tracking(options, settings->EnableAutoSessionTracking);
+	sentry_options_set_sample_rate(options, settings->SampleRate);
+	sentry_options_set_max_breadcrumbs(options, settings->MaxBreadcrumbs);
+	sentry_options_set_before_send(options, HandleBeforeSend, this);
+	sentry_options_set_before_send_feedback(options, HandleBeforeSendFeedback, this);
+	sentry_options_set_before_send_log(options, HandleBeforeLog, this);
+	sentry_options_set_on_crash(options, HandleOnCrash, this);
+	sentry_options_set_shutdown_timeout(options, settings->ShutdownTimeout);
+	sentry_options_set_crashpad_wait_for_upload(options, settings->CrashpadWaitForUpload);
+	sentry_options_set_logger_enabled_when_crashed(options, settings->EnableOnCrashLogging);
+	sentry_options_set_before_send_metric(options, HandleBeforeMetric, this);
+	sentry_options_set_http_retry(options, 1);
+	sentry_options_set_enable_large_attachments(options, settings->EnableLargeAttachments);
+
+	if (bUseNativeBackend)
+	{
+		sentry_options_set_minidump_mode(options, FGenericPlatformSentryConverters::MinidumpModeToNative(settings->MinidumpMode));
+		sentry_options_set_crash_reporting_mode(options, FGenericPlatformSentryConverters::CrashReportingModeToNative(settings->CrashReportingMode));
+		sentry_options_set_thread_stackwalk_mode(options, FGenericPlatformSentryConverters::ThreadStackwalkModeToNative(settings->ThreadStackwalkMode));
+		sentry_options_set_crash_upload_mode(options, FGenericPlatformSentryConverters::CrashUploadModeToNative(settings->CrashUploadMode));
+	}
+
+	if (beforeBreadcrumb)
+	{
+		sentry_options_set_before_breadcrumb(options, HandleBeforeBreadcrumb, this);
+	}
+
+	if (settings->bRequireUserConsent)
+	{
+		sentry_options_set_require_user_consent(options, 1);
+	}
+
+	if (settings->EnableOfflineCaching)
+	{
+		sentry_options_set_cache_keep(options, 1);
+		sentry_options_set_cache_max_items(options, settings->CacheMaxItems);
+		sentry_options_set_cache_max_size(options, settings->CacheMaxSize);
+		sentry_options_set_cache_max_age(options, settings->CacheMaxAge);
+	}
+
+	int initResult = sentry_init(options);
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Sentry initialization completed with result %d (0 on success)."), initResult);
+
+	isEnabled = initResult == 0 ? true : false;
+	isStackTraceEnabled = settings->AttachStacktrace;
+	isPiiAttachmentEnabled = settings->SendDefaultPii;
+
+	if (bNativeHangTracking && isEnabled)
+	{
+		ConfigureAppHangTracking();
+	}
+
+#ifdef USE_SENTRY_SESSION_REPLAY
+	if (isEnabled && settings->AttachSessionReplay)
+	{
+		// Crashed runs' replays are already queued with the crash, so any leftovers can be safely cleaned up
+		IFileManager::Get().DeleteDirectory(*GetSessionReplayDirectory(), false, true);
+	}
+#endif
+
+	// Best-effort at writing user consent to disk so that user consent can change at runtime and persist
+	// We should never have a valid user consent state return "Unknown", so assume that no consent value is written if we see this
+	if (settings->bRequireUserConsent && GetUserConsent() == EUserConsent::Unknown)
+	{
+		if (settings->bDefaultUserConsentGiven)
+		{
+			GiveUserConsent();
+		}
+		else
+		{
+			RevokeUserConsent();
+		}
+	}
+
+	// Pre-allocate a USentryEvent and USentryHint to be reused on the crash path. This avoids `NewObject` (and the
+	// associated GC lock acquisition) inside the `before_send` callback when handling fatal errors,
+	// which can re-trigger memory-related crashes (e.g. stack overflow).
+	PooledCrashEvent = TStrongObjectPtr<USentryEvent>(NewObject<USentryEvent>());
+	PooledCrashHint = TStrongObjectPtr<USentryHint>(NewObject<USentryHint>());
+}
+
+void FGenericPlatformSentrySubsystem::Close()
+{
+	ResetAppHangTracking();
+
+	isEnabled = false;
+
+	PooledCrashEvent.Reset();
+	PooledCrashHint.Reset();
+
+	sentry_close();
+}
+
+bool FGenericPlatformSentrySubsystem::IsEnabled()
+{
+	return isEnabled;
+}
+
+bool FGenericPlatformSentrySubsystem::IsCrashing() const
+{
+	return bIsCrashing;
+}
+
+ESentryCrashedLastRun FGenericPlatformSentrySubsystem::IsCrashedLastRun()
+{
+	ESentryCrashedLastRun unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
+
+	switch (sentry_get_crashed_last_run())
+	{
+	case -1:
+		unrealIsCrashed = ESentryCrashedLastRun::NotEvaluated;
+		break;
+	case 0:
+		unrealIsCrashed = ESentryCrashedLastRun::NotCrashed;
+		break;
+	case 1:
+		unrealIsCrashed = ESentryCrashedLastRun::Crashed;
+		break;
+	default:
+		UE_LOG(LogSentrySdk, Warning, TEXT("Unknown IsCrashedLastRun result. NotEvaluated will be returned."));
+	}
+
+	return unrealIsCrashed;
+}
+
+void FGenericPlatformSentrySubsystem::AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb)
+{
+	sentry_add_breadcrumb(sentry_value_incref(StaticCastSharedPtr<FGenericPlatformSentryBreadcrumb>(breadcrumb)->GetNativeObject()));
+}
+
+void FGenericPlatformSentrySubsystem::AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level)
+{
+	TSharedPtr<FGenericPlatformSentryBreadcrumb> Breadcrumb = MakeShareable(new FGenericPlatformSentryBreadcrumb());
+	Breadcrumb->SetMessage(Message);
+	Breadcrumb->SetCategory(Category);
+	Breadcrumb->SetType(Type);
+	Breadcrumb->SetData(Data);
+	Breadcrumb->SetLevel(Level);
+
+	sentry_add_breadcrumb(sentry_value_incref(Breadcrumb->GetNativeObject()));
+}
+
+void FGenericPlatformSentrySubsystem::AddLog(const FString& Message, ESentryLogLevel Level, const TMap<FString, FSentryVariant>& Attributes)
+{
+	FTCHARToUTF8 MessageUtf8(*Message);
+
+	sentry_value_t attributes = FGenericPlatformSentryConverters::VariantMapToAttributesNative(Attributes);
+
+	sentry_log(FGenericPlatformSentryConverters::SentryLogLevelToNative(Level), MessageUtf8.Get(), attributes);
+}
+
+void FGenericPlatformSentrySubsystem::AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes)
+{
+	sentry_metrics_count(TCHAR_TO_UTF8(*Key), Value, FGenericPlatformSentryConverters::VariantMapToAttributesNative(Attributes));
+}
+
+void FGenericPlatformSentrySubsystem::AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	sentry_metrics_distribution(TCHAR_TO_UTF8(*Key), Value, TCHAR_TO_UTF8(*Unit), FGenericPlatformSentryConverters::VariantMapToAttributesNative(Attributes));
+}
+
+void FGenericPlatformSentrySubsystem::AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes)
+{
+	sentry_metrics_gauge(TCHAR_TO_UTF8(*Key), Value, TCHAR_TO_UTF8(*Unit), FGenericPlatformSentryConverters::VariantMapToAttributesNative(Attributes));
+}
+
+void FGenericPlatformSentrySubsystem::ClearBreadcrumbs()
+{
+	// Not implemented in sentry-native
+}
+
+void FGenericPlatformSentrySubsystem::AddAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	if (!attachment->GetPath().IsEmpty())
+	{
+		AddFileAttachment(attachment);
+	}
+	else
+	{
+		AddByteAttachment(attachment);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::RemoveAttachment(TSharedPtr<ISentryAttachment> attachment)
+{
+	TSharedPtr<FGenericPlatformSentryAttachment> platformAttachment = StaticCastSharedPtr<FGenericPlatformSentryAttachment>(attachment);
+
+	sentry_uuid_t uuid = platformAttachment->GetUuid();
+
+	if (sentry_uuid_is_nil(&uuid))
+		return;
+
+	sentry_remove_attachment(uuid);
+
+	platformAttachment->SetUuid(sentry_uuid_nil());
+}
+
+void FGenericPlatformSentrySubsystem::ClearAttachments()
+{
+	for (auto& attachment : attachments)
+	{
+		RemoveAttachment(attachment);
+	}
+
+	attachments.Empty();
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessage(const FString& message, ESentryLevel level)
+{
+	sentry_value_t nativeEvent = sentry_value_new_message_event(FGenericPlatformSentryConverters::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
+
+	if (isStackTraceEnabled)
+	{
+		AttachStackTrace(nativeEvent);
+	}
+
+	sentry_uuid_t id = sentry_capture_event(nativeEvent);
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope)
+{
+	sentry_value_t nativeEvent = sentry_value_new_message_event(FGenericPlatformSentryConverters::SentryLevelToNative(level), nullptr, TCHAR_TO_UTF8(*message));
+
+	if (isStackTraceEnabled)
+	{
+		AttachStackTrace(nativeEvent);
+	}
+
+	sentry_scope_t* scope = sentry_local_scope_new();
+
+	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope());
+	onConfigureScope.ExecuteIfBound(NewLocalScope);
+	NewLocalScope->Apply(scope);
+
+	sentry_uuid_t id = sentry_scope_capture_event(scope, nativeEvent, nullptr);
+
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEvent(TSharedPtr<ISentryEvent> event)
+{
+	TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(event);
+
+	sentry_value_t nativeEvent = Event->GetNativeObject();
+
+	if (isStackTraceEnabled)
+	{
+		AttachStackTrace(nativeEvent);
+	}
+
+	sentry_uuid_t id = sentry_capture_event(sentry_value_incref(nativeEvent));
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onScopeConfigure)
+{
+	TSharedPtr<FGenericPlatformSentryEvent> Event = StaticCastSharedPtr<FGenericPlatformSentryEvent>(event);
+
+	sentry_value_t nativeEvent = Event->GetNativeObject();
+
+	if (isStackTraceEnabled)
+	{
+		AttachStackTrace(nativeEvent);
+	}
+
+	sentry_scope_t* scope = sentry_local_scope_new();
+
+	TSharedPtr<FGenericPlatformSentryScope> NewLocalScope = MakeShareable(new FGenericPlatformSentryScope());
+	onScopeConfigure.ExecuteIfBound(NewLocalScope);
+	NewLocalScope->Apply(scope);
+
+	sentry_uuid_t id = sentry_scope_capture_event(scope, sentry_value_incref(nativeEvent), nullptr);
+
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureEnsure(const FString& type, const FString& message)
+{
+	sentry_value_t exceptionEvent = sentry_value_new_event();
+
+	SetEventCrashType(exceptionEvent, ECrashContextType::Ensure);
+
+	sentry_value_t nativeException = sentry_value_new_exception(TCHAR_TO_UTF8(*type), TCHAR_TO_UTF8(*message));
+	sentry_event_add_exception(exceptionEvent, nativeException);
+
+	AttachStackTrace(exceptionEvent);
+
+	FString ScreenshotPath;
+
+	if (isScreenshotAttachmentEnabled && !IsRunningCommandlet() && IsScreenshotSupported())
+	{
+		ScreenshotPath = GetScreenshotPath();
+		if (!SentryScreenshotUtils::CaptureScreenshot(ScreenshotPath))
+		{
+			ScreenshotPath.Empty();
+		}
+	}
+
+	if (ScreenshotPath.IsEmpty())
+	{
+		sentry_uuid_t id = sentry_capture_event(exceptionEvent);
+		return MakeShareable(new FGenericPlatformSentryId(id));
+	}
+
+	sentry_scope_t* scope = sentry_local_scope_new();
+
+	sentry_value_t screenshotAttachment =
+		sentry_attachment_from_file(TCHAR_TO_UTF8(*ScreenshotPath));
+	sentry_attachment_set_filename(screenshotAttachment, "screenshot.png");
+	sentry_attachment_set_content_type(screenshotAttachment, "image/png");
+	sentry_scope_add_attachment(scope, screenshotAttachment);
+
+	sentry_uuid_t id = sentry_scope_capture_event(scope, exceptionEvent, nullptr);
+
+	IFileManager::Get().Delete(*ScreenshotPath);
+
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentrySubsystem::CaptureHang(uint32 HungThreadId)
+{
+	sentry_value_t exceptionEvent = sentry_value_new_event();
+
+	SetEventCrashType(exceptionEvent, ECrashContextType::Hang);
+
+	sentry_value_t nativeException = sentry_value_new_exception("App Hanging", "Application not responding");
+
+	sentry_value_t mechanism = sentry_value_new_object();
+	sentry_value_set_by_key(mechanism, "type", sentry_value_new_string("AppHang"));
+
+	sentry_value_set_by_key(nativeException, "mechanism", mechanism);
+
+	const uint32 MaxDepth = 128;
+	uint64 BackTrace[MaxDepth];
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(HungThreadId, BackTrace, MaxDepth, nullptr);
+#else
+	uint32 Depth = FPlatformStackWalk::CaptureThreadStackBackTrace(HungThreadId, BackTrace, MaxDepth);
+#endif
+
+	TArray<void*> Frames;
+	Frames.SetNum(Depth);
+	for (uint32 i = 0; i < Depth; i++)
+	{
+		Frames[i] = reinterpret_cast<void*>(BackTrace[i]);
+	}
+
+	if (Frames.Num() > 0)
+	{
+		sentry_value_set_stacktrace(nativeException, Frames.GetData(), Frames.Num());
+	}
+
+	sentry_event_add_exception(exceptionEvent, nativeException);
+
+	sentry_uuid_t id = sentry_capture_event(exceptionEvent);
+	return MakeShareable(new FGenericPlatformSentryId(id));
+}
+
+void FGenericPlatformSentrySubsystem::CaptureFeedback(TSharedPtr<ISentryFeedback> feedback)
+{
+	CaptureFeedbackWithScope(feedback, FSentryScopeDelegate());
+}
+
+void FGenericPlatformSentrySubsystem::CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope)
+{
+	TSharedPtr<FGenericPlatformSentryFeedback> Feedback = StaticCastSharedPtr<FGenericPlatformSentryFeedback>(feedback);
+
+	TSharedPtr<FPlatformSentryScope> LocalScope = MakeShareable(new FPlatformSentryScope());
+	onConfigureScope.ExecuteIfBound(LocalScope);
+
+	for (const TSharedPtr<ISentryAttachment>& Attachment : Feedback->GetAttachments())
+	{
+		LocalScope->AddAttachment(Attachment);
+	}
+
+	sentry_scope_t* scope = sentry_local_scope_new();
+	LocalScope->Apply(scope);
+
+	sentry_scope_capture_feedback(scope, sentry_value_incref(Feedback->GetNativeObject()), nullptr);
+}
+
+void FGenericPlatformSentrySubsystem::SetUser(TSharedPtr<ISentryUser> InUser)
+{
+	TSharedPtr<FGenericPlatformSentryUser> user = StaticCastSharedPtr<FGenericPlatformSentryUser>(InUser);
+
+	// sentry-native doesn't provide `send_default_pii` option, so we need to check if user's `ip_address`
+	// allowed to be determined automatically
+	if (isPiiAttachmentEnabled && user->GetIpAddress().IsEmpty())
+	{
+		user->SetIpAddress(TEXT("{{auto}}"));
+	}
+
+	sentry_set_user(sentry_value_incref(user->GetNativeObject()));
+
+	if (crashReporter)
+	{
+		crashReporter->SetUser(user);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::RemoveUser()
+{
+	sentry_remove_user();
+
+	if (crashReporter)
+	{
+		crashReporter->RemoveUser();
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	sentry_set_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+
+	if (crashReporter)
+	{
+		crashReporter->SetContext(key, values);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	sentry_update_context(TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+
+	if (crashReporter)
+	{
+		crashReporter->UpdateContext(key, values);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetTag(const FString& key, const FString& value)
+{
+	sentry_set_tag(TCHAR_TO_UTF8(*key), TCHAR_TO_UTF8(*value));
+
+	if (crashReporter)
+	{
+		crashReporter->SetTag(key, value);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetTags(const TMap<FString, FString>& tags)
+{
+	sentry_set_tags(FGenericPlatformSentryConverters::StringMapToNative(tags));
+
+	if (crashReporter)
+	{
+		crashReporter->SetTags(tags);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::RemoveTag(const FString& key)
+{
+	sentry_remove_tag(TCHAR_TO_UTF8(*key));
+
+	if (crashReporter)
+	{
+		crashReporter->RemoveTag(key);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetAttribute(const FString& key, const FSentryVariant& value)
+{
+	sentry_value_t attribute = FGenericPlatformSentryConverters::VariantToAttributeNative(value);
+	sentry_set_attribute(TCHAR_TO_UTF8(*key), attribute);
+}
+
+void FGenericPlatformSentrySubsystem::RemoveAttribute(const FString& key)
+{
+	sentry_remove_attribute(TCHAR_TO_UTF8(*key));
+}
+
+void FGenericPlatformSentrySubsystem::SetLevel(ESentryLevel level)
+{
+	sentry_set_level(FGenericPlatformSentryConverters::SentryLevelToNative(level));
+}
+
+void FGenericPlatformSentrySubsystem::SetRelease(const FString& release)
+{
+	sentry_set_release(TCHAR_TO_UTF8(*release));
+
+	if (crashReporter)
+	{
+		crashReporter->SetRelease(release);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::SetEnvironment(const FString& environment)
+{
+	sentry_set_environment(TCHAR_TO_UTF8(*environment));
+
+	if (crashReporter)
+	{
+		crashReporter->SetEnvironment(environment);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::StartSession()
+{
+	sentry_start_session();
+}
+
+void FGenericPlatformSentrySubsystem::EndSession()
+{
+	sentry_end_session();
+}
+
+void FGenericPlatformSentrySubsystem::GiveUserConsent()
+{
+	sentry_user_consent_give();
+}
+
+void FGenericPlatformSentrySubsystem::RevokeUserConsent()
+{
+	sentry_user_consent_revoke();
+}
+
+EUserConsent FGenericPlatformSentrySubsystem::GetUserConsent() const
+{
+	switch (sentry_user_consent_get())
+	{
+	case 0:
+		return EUserConsent::Revoked;
+	case 1:
+		return EUserConsent::Given;
+	default:
+		return EUserConsent::Unknown;
+	}
+}
+
+bool FGenericPlatformSentrySubsystem::IsUserConsentRequired() const
+{
+	return sentry_user_consent_is_required() == 1;
+}
+
+TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransaction(const FString& name, const FString& operation, bool bindToScope)
+{
+	TSharedPtr<ISentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(name, operation));
+
+	return StartTransactionWithContext(transactionContext, bindToScope);
+}
+
+TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context, bool bindToScope)
+{
+	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
+	{
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->CreateNativeObject(), sentry_value_new_null()))
+		{
+			if (bindToScope)
+			{
+				sentry_set_transaction_object(nativeTransaction);
+			}
+
+			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		}
+	}
+
+	return nullptr;
+}
+
+TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope)
+{
+	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
+	{
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start_ts(platformTransactionContext->CreateNativeObject(), sentry_value_new_null(), timestamp))
+		{
+			if (bindToScope)
+			{
+				sentry_set_transaction_object(nativeTransaction);
+			}
+
+			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		}
+	}
+
+	return nullptr;
+}
+
+TSharedPtr<ISentryTransaction> FGenericPlatformSentrySubsystem::StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options)
+{
+	if (TSharedPtr<FGenericPlatformSentryTransactionContext> platformTransactionContext = StaticCastSharedPtr<FGenericPlatformSentryTransactionContext>(context))
+	{
+		if (sentry_transaction_t* nativeTransaction = sentry_transaction_start(platformTransactionContext->CreateNativeObject(), FGenericPlatformSentryConverters::VariantMapToNative(options.CustomSamplingContext)))
+		{
+			if (options.BindToScope)
+			{
+				sentry_set_transaction_object(nativeTransaction);
+			}
+
+			return MakeShareable(new FGenericPlatformSentryTransaction(nativeTransaction));
+		}
+	}
+
+	return nullptr;
+}
+
+TSharedPtr<ISentryTransactionContext> FGenericPlatformSentrySubsystem::ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders)
+{
+	TSharedPtr<FGenericPlatformSentryTransactionContext> transactionContext = MakeShareable(new FGenericPlatformSentryTransactionContext(TEXT("<unlabeled transaction>"), TEXT("default")));
+
+	transactionContext->UpdateFromHeader(TEXT("sentry-trace"), sentryTrace);
+
+	for (const FString& baggage : baggageHeaders)
+	{
+		transactionContext->UpdateFromHeader(TEXT("baggage"), baggage);
+	}
+
+	return transactionContext;
+}
+
+FString FGenericPlatformSentrySubsystem::GetSessionReplayDirectory() const
+{
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(GetDatabasePath(), TEXT("replays")));
+}
+
+FString FGenericPlatformSentrySubsystem::GetGameStateFilePath() const
+{
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(GetDatabasePath(), TEXT("game_state.jsonl")));
+}
+
+USentryBeforeSendHandler* FGenericPlatformSentrySubsystem::GetBeforeSendHandler() const
+{
+	return beforeSend;
+}
+
+USentryBeforeSendFeedbackHandler* FGenericPlatformSentrySubsystem::GetBeforeSendFeedbackHandler() const
+{
+	return beforeSendFeedback;
+}
+
+USentryBeforeBreadcrumbHandler* FGenericPlatformSentrySubsystem::GetBeforeBreadcrumbHandler() const
+{
+	return beforeBreadcrumb;
+}
+
+USentryBeforeLogHandler* FGenericPlatformSentrySubsystem::GetBeforeLogHandler() const
+{
+	return beforeLog;
+}
+
+USentryBeforeMetricHandler* FGenericPlatformSentrySubsystem::GetBeforeMetricHandler() const
+{
+	return beforeMetric;
+}
+
+USentryTraceSampler* FGenericPlatformSentrySubsystem::GetTraceSampler() const
+{
+	return sampler;
+}
+
+FString FGenericPlatformSentrySubsystem::TryCaptureScreenshot() const
+{
+	const FString& ScreenshotPath = GetScreenshotPath();
+
+	if (!SentryScreenshotUtils::CaptureScreenshot(ScreenshotPath))
+	{
+		// Screenshot capturing is a best-effort solution so if one wasn't captured skip the attachment
+		return FString();
+	}
+
+	return ScreenshotPath;
+}
+
+FString FGenericPlatformSentrySubsystem::TryCaptureGpuDump() const
+{
+	const FString& GpuDumpPath = SentryFileUtils::GetGpuDumpPath();
+
+	if (!IFileManager::Get().FileExists(*GpuDumpPath))
+	{
+		return FString();
+	}
+
+	return GpuDumpPath;
+}
+
+TArray<FString> FGenericPlatformSentrySubsystem::GetSessionGpuShaderDebugInfoPaths() const
+{
+	// NVIDIA Aftermath .nvdbg files written before this SDK session are assumed to belong to previous crashes
+	return SentryFileUtils::GetGpuShaderDebugInfoPaths().FilterByPredicate([this](const FString& NvdbgPath)
+	{
+		return IFileManager::Get().GetTimeStamp(*NvdbgPath) >= initTimestamp;
+	});
+}
+
+void FGenericPlatformSentrySubsystem::AddGpuDumpAttachments(ISentryHint& Hint) const
+{
+	const FString& GpuDumpPath = TryCaptureGpuDump();
+	if (GpuDumpPath.IsEmpty())
+	{
+		return;
+	}
+
+	TSharedPtr<FGenericPlatformSentryAttachment> GpuDumpAttachment =
+		MakeShareable(new FGenericPlatformSentryAttachment(GpuDumpPath, FPaths::GetCleanFilename(GpuDumpPath), TEXT("application/octet-stream")));
+	GpuDumpAttachment->SetAttachmentType(TEXT("event.nv_gpudmp"));
+	Hint.AddAttachment(GpuDumpAttachment);
+
+	for (const FString& ShaderDebugInfoPath : GetSessionGpuShaderDebugInfoPaths())
+	{
+		TSharedPtr<FGenericPlatformSentryAttachment> ShaderDebugInfoAttachment =
+			MakeShareable(new FGenericPlatformSentryAttachment(ShaderDebugInfoPath, FPaths::GetCleanFilename(ShaderDebugInfoPath), TEXT("application/octet-stream")));
+		ShaderDebugInfoAttachment->SetAttachmentType(TEXT("event.nv_shader_debug"));
+		Hint.AddAttachment(ShaderDebugInfoAttachment);
+	}
+}
+
+void FGenericPlatformSentrySubsystem::CaptureGpuCrashEvent()
+{
+	if (TryCaptureGpuDump().IsEmpty())
+	{
+		return;
+	}
+
+	sentry_value_t GpuCrashEvent = sentry_value_new_event();
+
+	sentry_value_set_by_key(GpuCrashEvent, "level", sentry_value_new_string("fatal"));
+
+	SetEventCrashType(GpuCrashEvent, ECrashContextType::GPUCrash);
+
+	sentry_capture_event(GpuCrashEvent);
+}
+
+void FGenericPlatformSentrySubsystem::ConfigureAppHangTracking()
+{
+	// OnEndFrame is broadcast on the game thread, so the first invocation latches it as the monitored
+	// thread and every subsequent frame refreshes the heartbeat the daemon watches for staleness
+	AppHangHeartbeatHandle = FCoreDelegates::OnEndFrame.AddLambda([this]()
+	{
+		if (IsAppHangTrackingActive())
+		{
+			sentry_app_hang_heartbeat();
+		}
+	});
+}
+
+void FGenericPlatformSentrySubsystem::ResetAppHangTracking()
+{
+	if (AppHangHeartbeatHandle.IsValid())
+	{
+		FCoreDelegates::OnEndFrame.Remove(AppHangHeartbeatHandle);
+		AppHangHeartbeatHandle.Reset();
+	}
+}
+
+void FGenericPlatformSentrySubsystem::ConfigureCrashReporterAppearance(const USentrySettings* Settings)
+{
+	const FSentryCrashReporterAppearance& Appearance = Settings->CrashReporterAppearance;
+
+	TSharedPtr<FJsonObject> AppConfigObject = MakeShareable(new FJsonObject);
+
+	if (Appearance.bOverrideWindowTitle)
+	{
+		AppConfigObject->SetStringField(TEXT("WindowTitle"), Appearance.WindowTitle);
+	}
+	if (Appearance.bOverrideHeaderText)
+	{
+		AppConfigObject->SetStringField(TEXT("HeaderText"), Appearance.HeaderText);
+	}
+	if (Appearance.bOverrideHeaderDescription)
+	{
+		AppConfigObject->SetStringField(TEXT("HeaderDescription"), Appearance.HeaderDescription);
+	}
+	if (Appearance.bOverrideSubmitButtonLabel)
+	{
+		AppConfigObject->SetStringField(TEXT("SubmitButton"), Appearance.SubmitButtonLabel);
+	}
+	if (Appearance.bOverrideCancelButtonLabel)
+	{
+		AppConfigObject->SetStringField(TEXT("CancelButton"), Appearance.CancelButtonLabel);
+	}
+	if (Appearance.bOverrideAccentColor)
+	{
+		const FString ColorHex = FString::Printf(TEXT("#%02X%02X%02X"), Appearance.AccentColor.R, Appearance.AccentColor.G, Appearance.AccentColor.B);
+		AppConfigObject->SetStringField(TEXT("SystemAccentColor"), ColorHex);
+	}
+	if (Appearance.Imagery.bOverrideAppLogo)
+	{
+		const FString LogoPath = GetCrashReporterLogoPath();
+		if (FPaths::FileExists(LogoPath))
+		{
+			AppConfigObject->SetStringField(TEXT("LogoLight"), LogoPath);
+			AppConfigObject->SetStringField(TEXT("LogoDark"), LogoPath);
+		}
+	}
+	if (!Appearance.bWindowClosable)
+	{
+		AppConfigObject->SetBoolField(TEXT("WindowClosable"), false);
+	}
+	if (Appearance.CacheKeep != ESentryCrashReporterCacheKeep::Default)
+	{
+		const FString CacheKeepStr = StaticEnum<ESentryCrashReporterCacheKeep>()->GetNameStringByValue(static_cast<int64>(Appearance.CacheKeep));
+		AppConfigObject->SetStringField(TEXT("CacheKeep"), CacheKeepStr);
+	}
+	if (Appearance.Views.Num() > 0)
+	{
+		TArray<TSharedPtr<FJsonValue>> ViewValues;
+		TSet<ESentryCrashReporterView> AddedViews;
+		for (const ESentryCrashReporterView View : Appearance.Views)
+		{
+			if (AddedViews.Contains(View))
+			{
+				continue;
+			}
+			AddedViews.Add(View);
+
+			const FString ViewName = StaticEnum<ESentryCrashReporterView>()->GetNameStringByValue(static_cast<int64>(View)).ToLower();
+			ViewValues.Add(MakeShareable(new FJsonValueString(ViewName)));
+		}
+		AppConfigObject->SetArrayField(TEXT("Views"), ViewValues);
+	}
+
+	const FString FilePath = FPaths::Combine(GetDatabasePath(), TEXT("appsettings.json"));
+
+	if (AppConfigObject->Values.Num() == 0)
+	{
+		IFileManager::Get().Delete(*FilePath);
+		return;
+	}
+
+	TSharedPtr<FJsonObject> RootObject = MakeShareable(new FJsonObject);
+	RootObject->SetObjectField(TEXT("AppConfig"), AppConfigObject);
+
+	FString JsonString;
+	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonString);
+	FJsonSerializer::Serialize(RootObject.ToSharedRef(), JsonWriter);
+
+	if (!FFileHelper::SaveStringToFile(JsonString, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Failed to write crash reporter appearance config to: %s"), *FilePath);
+	}
+}
+
+FString FGenericPlatformSentrySubsystem::GetHandlerPath() const
+{
+	const FString HandlerPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), GetHandlerExecutableName());
+	const FString HandlerFullPath = FPaths::ConvertRelativePathToFull(HandlerPath);
+
+	return HandlerFullPath;
+}
+
+FString FGenericPlatformSentrySubsystem::GetCrashReporterPath() const
+{
+	const FString CrashReporterPath = FPaths::Combine(FSentryModule::Get().GetBinariesPath(), GetCrashReporterExecutableName());
+	return FPaths::ConvertRelativePathToFull(CrashReporterPath);
+}
+
+FString FGenericPlatformSentrySubsystem::GetCrashReporterLogoPath() const
+{
+#if WITH_EDITOR
+	const FString LogoDir = FPaths::Combine(FPaths::ProjectDir(), TEXT("Build"), TEXT("SentryCrashReporter"));
+#else
+	const FString LogoDir = FPaths::Combine(FSentryModule::Get().GetPluginPath(), TEXT("Resources"), TEXT("SentryCrashReporter"));
+#endif
+
+	return FPaths::ConvertRelativePathToFull(FPaths::Combine(LogoDir, TEXT("Logo.png")));
+}
+
+FString FGenericPlatformSentrySubsystem::GetDatabasePath() const
+{
+	const FString DatabasePath = FPaths::Combine(databaseParentPath, TEXT(".sentry-native"));
+	const FString DatabaseFullPath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForWrite(*DatabasePath);
+
+	return DatabaseFullPath;
+}
+
+FString FGenericPlatformSentrySubsystem::GetScreenshotPath() const
+{
+	const FString ScreenshotPath = FPaths::Combine(GetDatabasePath(), TEXT("screenshots"), FString::Printf(TEXT("screenshot-%s.png"), *FDateTime::Now().ToString()));
+	const FString ScreenshotFullPath = FPaths::ConvertRelativePathToFull(ScreenshotPath);
+
+	return ScreenshotFullPath;
+}
+
+#endif

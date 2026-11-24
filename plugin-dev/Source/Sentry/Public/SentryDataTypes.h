@@ -1,0 +1,93 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+
+#include "SentryDataTypes.generated.h"
+
+UENUM(BlueprintType)
+enum class ESentryLevel : uint8
+{
+	Debug,
+	Info,
+	Warning,
+	Error,
+	Fatal
+};
+
+UENUM(BlueprintType)
+enum class ESentryLogLevel : uint8
+{
+	Trace,
+	Debug,
+	Info,
+	Warning,
+	Error,
+	Fatal
+};
+
+UENUM(BlueprintType)
+enum class ESentryCrashedLastRun : uint8
+{
+	NotEvaluated,
+	NotCrashed,
+	Crashed
+};
+
+UENUM(BlueprintType)
+enum class EUserConsent : uint8
+{
+	Revoked,
+	Given,
+	Unknown
+};
+
+UENUM(BlueprintType)
+enum class ESentryMetricType : uint8
+{
+	Unknown,
+	Counter,
+	Gauge,
+	Distribution
+};
+
+UENUM(BlueprintType)
+enum class ESentryMinidumpMode : uint8
+{
+	// Capture only stack memory. Fastest and smallest, suitable for production.
+	StackOnly,
+	// Capture stack and heap around crash site. Balanced mode, recommended for most applications.
+	Smart,
+	// Capture full process memory. Most comprehensive but slowest. Best for development/staging.
+	Full,
+};
+
+UENUM(BlueprintType)
+enum class ESentryCrashReportingMode : uint8
+{
+	// Write and send minidump for server-side symbolication. No client-side stack unwinding.
+	Minidump,
+	// Walk stack client-side in crash daemon, send JSON event with stacktraces. No minidump generated.
+	NativeStackwalking,
+	// Client-side stack unwinding with minidump attached for deep debugging. Best of both worlds.
+	NativeStackwalkingWithMinidump,
+};
+
+UENUM(BlueprintType)
+enum class ESentryThreadStackwalkMode : uint8
+{
+	// Walk the crashed thread only. Other threads are reported with their id and name, but without a stacktrace.
+	CrashedThreadOnly,
+	// Walk every thread of the crashed process. Most context, but slower for apps with a high thread count.
+	AllThreads,
+};
+
+UENUM(BlueprintType)
+enum class ESentryCrashUploadMode : uint8
+{
+	// Keep the crashed app alive until the crash daemon finishes uploading. Most reliable delivery.
+	Sync,
+	// Let the crashed app terminate once crash data is captured. The daemon uploads in the background.
+	Async,
+};

@@ -1,0 +1,216 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "GenericPlatformSentryCrashReporter.h"
+
+#include "GenericPlatform/CrashReporter/GenericPlatformSentryCrashContext.h"
+#include "GenericPlatform/GenericPlatformSentryUser.h"
+#include "GenericPlatform/Infrastructure/GenericPlatformSentryConverters.h"
+
+#include "SentryDefines.h"
+
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+
+#if USE_SENTRY_NATIVE
+
+FGenericPlatformSentryCrashReporter::FGenericPlatformSentryCrashReporter()
+{
+	crashReporterConfig = MakeShareable(new FJsonObject);
+
+	const FString sentryData = FGenericPlatformSentryCrashContext::Get()->GetGameData(TEXT("__sentry"));
+	if (!sentryData.IsEmpty())
+	{
+		const TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(*sentryData);
+		if (!FJsonSerializer::Deserialize(jsonReader, crashReporterConfig) && crashReporterConfig.IsValid())
+		{
+			UE_LOG(LogSentrySdk, Log, TEXT("Faield to deserialize `__sentry` data stored in crash context object: %s"), *FString(sentryData));
+		}
+	}
+}
+
+void FGenericPlatformSentryCrashReporter::SetRelease(const FString& release)
+{
+	if (!release.IsEmpty())
+		crashReporterConfig->SetStringField(TEXT("release"), release);
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::SetEnvironment(const FString& environment)
+{
+	if (!environment.IsEmpty())
+		crashReporterConfig->SetStringField(TEXT("environment"), environment);
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::SetUser(TSharedPtr<FGenericPlatformSentryUser> user)
+{
+	TSharedPtr<FJsonObject> userConfig = MakeShareable(new FJsonObject);
+	userConfig->SetStringField(TEXT("email"), user->GetEmail());
+	userConfig->SetStringField(TEXT("username"), user->GetUsername());
+	userConfig->SetStringField(TEXT("id"), user->GetId());
+	userConfig->SetStringField(TEXT("ip_address"), user->GetIpAddress());
+
+	const TMap<FString, FString>& userData = user->GetData();
+
+	for (auto it = userData.CreateConstIterator(); it; ++it)
+	{
+		userConfig->SetStringField(it.Key(), it.Value());
+	}
+
+	crashReporterConfig->SetObjectField(TEXT("user"), userConfig);
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::RemoveUser()
+{
+	crashReporterConfig->RemoveField(TEXT("user"));
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	TSharedPtr<FJsonObject> valuesConfig = MakeShareable(new FJsonObject);
+
+	for (auto it = values.CreateConstIterator(); it; ++it)
+	{
+		valuesConfig->SetField(it.Key(), FGenericPlatformSentryConverters::VariantToJsonValue(it.Value()));
+	}
+
+	TSharedPtr<FJsonObject> contextConfig;
+
+	if (crashReporterConfig->HasField(TEXT("contexts")))
+	{
+		contextConfig = crashReporterConfig->GetObjectField(TEXT("contexts"));
+		contextConfig->SetObjectField(key, valuesConfig);
+	}
+	else
+	{
+		contextConfig = MakeShareable(new FJsonObject);
+		contextConfig->SetObjectField(key, valuesConfig);
+		crashReporterConfig->SetObjectField(TEXT("contexts"), contextConfig);
+	}
+
+	crashReporterConfig->SetObjectField(TEXT("contexts"), contextConfig);
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	TSharedPtr<FJsonObject> contextConfig = crashReporterConfig->HasField(TEXT("contexts"))
+												? crashReporterConfig->GetObjectField(TEXT("contexts"))
+												: MakeShareable(new FJsonObject);
+
+	TSharedPtr<FJsonObject> valuesConfig = contextConfig->HasField(key)
+											   ? contextConfig->GetObjectField(key)
+											   : MakeShareable(new FJsonObject);
+
+	for (auto it = values.CreateConstIterator(); it; ++it)
+	{
+		valuesConfig->SetField(it.Key(), FGenericPlatformSentryConverters::VariantToJsonValue(it.Value()));
+	}
+
+	contextConfig->SetObjectField(key, valuesConfig);
+	crashReporterConfig->SetObjectField(TEXT("contexts"), contextConfig);
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::SetTag(const FString& key, const FString& value)
+{
+	TSharedPtr<FJsonObject> tagsConfig;
+
+	if (crashReporterConfig->HasField(TEXT("tags")))
+	{
+		tagsConfig = crashReporterConfig->GetObjectField(TEXT("tags"));
+		tagsConfig->SetStringField(key, value);
+	}
+	else
+	{
+		tagsConfig = MakeShareable(new FJsonObject);
+		tagsConfig->SetStringField(key, value);
+		crashReporterConfig->SetObjectField(TEXT("tags"), tagsConfig);
+	}
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::SetTags(const TMap<FString, FString>& tags)
+{
+	TSharedPtr<FJsonObject> tagsConfig = crashReporterConfig->HasField(TEXT("tags"))
+											 ? crashReporterConfig->GetObjectField(TEXT("tags"))
+											 : MakeShareable(new FJsonObject);
+
+	for (auto it = tags.CreateConstIterator(); it; ++it)
+	{
+		tagsConfig->SetStringField(it.Key(), it.Value());
+	}
+
+	crashReporterConfig->SetObjectField(TEXT("tags"), tagsConfig);
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::RemoveTag(const FString& key)
+{
+	TSharedPtr<FJsonObject> tagsConfig;
+
+	if (crashReporterConfig->HasField(TEXT("tags")))
+	{
+		tagsConfig = crashReporterConfig->GetObjectField(TEXT("tags"));
+		tagsConfig->RemoveField(key);
+	}
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::SetDebugImages()
+{
+	sentry_value_t modules = sentry_get_modules_list();
+	if (sentry_value_is_null(modules))
+	{
+		return;
+	}
+
+	char* modulesJson = sentry_value_to_json(modules);
+	sentry_value_decref(modules);
+
+	if (!modulesJson)
+	{
+		return;
+	}
+
+	TArray<TSharedPtr<FJsonValue>> images;
+	const TSharedRef<TJsonReader<>> jsonReader = TJsonReaderFactory<>::Create(UTF8_TO_TCHAR(modulesJson));
+	const bool isDeserialized = FJsonSerializer::Deserialize(jsonReader, images);
+	sentry_free(modulesJson);
+
+	if (!isDeserialized)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Failed to deserialize debug images list for crash context"));
+		return;
+	}
+
+	TSharedPtr<FJsonObject> debugMetaConfig = MakeShareable(new FJsonObject);
+	debugMetaConfig->SetArrayField(TEXT("images"), images);
+
+	crashReporterConfig->SetObjectField(TEXT("debug_meta"), debugMetaConfig);
+	crashReporterConfig->SetStringField(TEXT("platform"), TEXT("native"));
+
+	UpdateCrashReporterConfig();
+}
+
+void FGenericPlatformSentryCrashReporter::UpdateCrashReporterConfig()
+{
+	FString config;
+	TSharedRef<TJsonWriter<>> jsonWriter = TJsonWriterFactory<>::Create(&config);
+	FJsonSerializer::Serialize(crashReporterConfig.ToSharedRef(), jsonWriter);
+
+	FGenericCrashContext::SetGameData(TEXT("__sentry"), config);
+}
+
+#endif

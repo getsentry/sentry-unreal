@@ -1,0 +1,495 @@
+// Copyright (c) 2026 Sentry. All Rights Reserved.
+
+#include "SentryVideoEncoder.h"
+
+#if defined(USE_SENTRY_SESSION_REPLAY) && defined(SENTRY_REPLAY_ENCODER_AVCODECS)
+
+#include "SentryDefines.h"
+#include "SentryVideoFrame.h"
+
+#include "DynamicRHI.h"
+#include "HAL/Event.h"
+#include "HAL/PlatformMisc.h"
+#include "HAL/RunnableThread.h"
+#include "Misc/ScopeLock.h"
+#include "RHI.h"
+
+#include "AVConfig.h"
+#include "AVContext.h"
+#include "AVDevice.h"
+#include "AVResult.h"
+#include "Video/Encoders/Configs/VideoEncoderConfigH264.h"
+#include "Video/Resources/VideoResourceRHI.h"
+#include "Video/VideoEncoder.h"
+#include "Video/VideoPacket.h"
+
+FSentryVideoEncoder::FSentryVideoEncoder(FSentrySessionReplayRecorder& InRecorder, const FSentryEncoderConfig& InConfig)
+	: FragmentBuilder(InRecorder)
+	, Framerate(InConfig.Framerate)
+	, BitrateBps(InConfig.BitrateKbps * 1000)
+	, FragmentSeconds(InConfig.FragmentSeconds)
+{
+#if PLATFORM_IOS
+	ExpectedOrientation = FPlatformMisc::GetDeviceOrientation();
+#endif
+}
+
+FSentryVideoEncoder::~FSentryVideoEncoder()
+{
+	StopEncoder();
+}
+
+bool FSentryVideoEncoder::StartEncoder()
+{
+	if (Thread != nullptr)
+	{
+		return true;
+	}
+
+	WakeEvent = FPlatformProcess::GetSynchEventFromPool(false);
+
+	bStopRequested.AtomicSet(false);
+
+	Thread = FRunnableThread::Create(this, TEXT("SentrySessionReplayEncoder"), 0, TPri_BelowNormal);
+	if (!Thread)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to start encoder thread"));
+
+		FPlatformProcess::ReturnSynchEventToPool(WakeEvent);
+		WakeEvent = nullptr;
+
+		return false;
+	}
+
+	return true;
+}
+
+void FSentryVideoEncoder::StopEncoder()
+{
+	if (Thread != nullptr)
+	{
+		bStopRequested.AtomicSet(true);
+
+		if (WakeEvent)
+		{
+			WakeEvent->Trigger();
+		}
+
+		Thread->WaitForCompletion();
+		delete Thread;
+		Thread = nullptr;
+	}
+	if (WakeEvent)
+	{
+		FPlatformProcess::ReturnSynchEventToPool(WakeEvent);
+		WakeEvent = nullptr;
+	}
+}
+
+ETextureCreateFlags FSentryVideoEncoder::GetFrameTextureFlags() const
+{
+	// NVENC reads from the pool slot directly. The external-memory flag exposes the
+	// texture's GPU allocation to the encoder. The flag is RHI-specific: D3D (Windows)
+	// uses Shared, while Vulkan (Linux, or Windows -vulkan) needs External so AVCodecs
+	// can import it through CUDA. This must match how the engine's FVideoResourceRHI::Create
+	// chooses the flag per RHI, otherwise the resource has no shareable handle and the
+	// encoder rejects every frame.
+	return (RHIGetInterfaceType() == ERHIInterfaceType::Vulkan)
+			   ? ETextureCreateFlags::External
+			   : ETextureCreateFlags::Shared;
+}
+
+void FSentryVideoEncoder::SubmitFrame(FRHICommandListImmediate& RHICmdList, const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& Frame)
+{
+	if (!Frame.IsValid() || !Frame->Texture.IsValid() || bStopRequested || bEncodingDisabled)
+	{
+		if (Frame.IsValid())
+		{
+			Frame->Release();
+		}
+		return;
+	}
+
+	{
+		FScopeLock Lock(&QueueLock);
+		PendingQueue.Add(Frame);
+	}
+	if (WakeEvent)
+	{
+		WakeEvent->Trigger();
+	}
+}
+
+bool FSentryVideoEncoder::Init()
+{
+	return true;
+}
+
+void FSentryVideoEncoder::Stop()
+{
+	bStopRequested.AtomicSet(true);
+	if (WakeEvent)
+	{
+		WakeEvent->Trigger();
+	}
+}
+
+void FSentryVideoEncoder::Exit()
+{
+	Encoder.Reset();
+	ResourceCache.Empty();
+	bEncoderOpen = false;
+}
+
+uint32 FSentryVideoEncoder::Run()
+{
+	while (!bStopRequested)
+	{
+		if (bEncodingDisabled)
+		{
+			DrainAndReleaseQueue();
+			if (WakeEvent)
+			{
+				WakeEvent->Wait(IdlePollIntervalMs);
+			}
+			continue;
+		}
+
+		TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe> Frame;
+		{
+			FScopeLock Lock(&QueueLock);
+			if (PendingQueue.Num() > 0)
+			{
+				Frame = PendingQueue[0];
+			}
+		}
+
+		if (!Frame.IsValid())
+		{
+			if (WakeEvent)
+			{
+				WakeEvent->Wait(IdlePollIntervalMs);
+			}
+			continue;
+		}
+
+		if (!Frame->IsGpuWriteComplete())
+		{
+			// The GPU hasn't finished writing this frame's texture yet and handing it to the
+			// encoder now is the race that can hang the device - instead, wait briefly and recheck.
+			// Polling must not be spun on to block (see FRHIGPUFence::Poll), so we yield between checks
+			if (WakeEvent)
+			{
+				WakeEvent->Wait(FencePollIntervalMs);
+			}
+			continue;
+		}
+
+		{
+			FScopeLock Lock(&QueueLock);
+			if (PendingQueue.Num() > 0)
+			{
+				PendingQueue.RemoveAt(0, 1, EAllowShrinking::No);
+			}
+		}
+
+		ProcessFrame(*Frame);
+
+		Frame->Release();
+	}
+
+	DrainAndReleaseQueue();
+
+	return 0;
+}
+
+void FSentryVideoEncoder::ProcessFrame(FSentryVideoFrame& Frame)
+{
+	const FTextureRHIRef& FrameTexture = Frame.Texture;
+	if (!FrameTexture.IsValid())
+	{
+		return;
+	}
+
+	const uint32 ResW = FrameTexture->GetSizeX();
+	const uint32 ResH = FrameTexture->GetSizeY();
+	if (!EnsureEncoderOpen(ResW, ResH))
+	{
+		return;
+	}
+
+	bool bForceKeyframe = false;
+	if (LastForcedKeyframeTime <= 0.0 || (Frame.CaptureTimeSeconds - LastForcedKeyframeTime) >= FragmentSeconds)
+	{
+		bForceKeyframe = true;
+		LastForcedKeyframeTime = Frame.CaptureTimeSeconds;
+	}
+
+	if (CaptureTimeBaseSeconds < 0.0)
+	{
+		CaptureTimeBaseSeconds = Frame.CaptureTimeSeconds;
+	}
+
+	// VT interprets SendFrame's timestamp as microseconds (see Engine's VideoEncoderVT.hpp)
+#if PLATFORM_APPLE
+	static constexpr double SendTimestampScale = 1'000'000.0;
+#else
+	static constexpr double SendTimestampScale = 1'000.0;
+#endif
+
+	const double TimestampSeconds = FMath::Max(0.0, Frame.CaptureTimeSeconds - CaptureTimeBaseSeconds);
+	const double ScaledTimestamp = TimestampSeconds * SendTimestampScale;
+
+#if PLATFORM_APPLE
+	// Restart the encoder every hour of recording. On Apple platforms this stays well clear of the
+	// uint32-microseconds wrap at ~71 min which would otherwise feed VT a backward PTS
+	// and corrupt all subsequent fragments. On Windows the natural wrap is at ~49 days
+	// so realistically periodic refresh of encoder state won't be needed there
+	constexpr double RestartThreshold = 3600.0 * SendTimestampScale;
+	if (ScaledTimestamp > RestartThreshold)
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder has been running for %.0f s; restarting to refresh state."), TimestampSeconds);
+		Restart();
+		return;
+	}
+#endif
+
+	const uint32 SendTimestamp = static_cast<uint32>(ScaledTimestamp);
+
+	const TSharedPtr<FVideoResourceRHI> Resource = AcquireVideoResource(FrameTexture);
+	if (!Resource.IsValid())
+	{
+		return;
+	}
+
+	const FAVResult Result = Encoder->SendFrame(Resource, SendTimestamp, bForceKeyframe);
+	if (Result.IsSuccess())
+	{
+		bFirstFrameValidated = true;
+		ConsecutiveSendFrameFailures = 0;
+	}
+	else if (!bFirstFrameValidated)
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder rejected the first frame. Recording disabled for this session."));
+		bEncodingDisabled.AtomicSet(true);
+		return;
+	}
+	else
+	{
+		if (++ConsecutiveSendFrameFailures >= MaxConsecutiveSendFrameFailures)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: encoder failed %d consecutive frames. Recording disabled for this session."), ConsecutiveSendFrameFailures);
+			bEncodingDisabled.AtomicSet(true);
+			return;
+		}
+
+		UE_LOG(LogSentrySdk, Verbose, TEXT("Session replay: SendFrame returned non-success (%d in a row)"), ConsecutiveSendFrameFailures);
+	}
+
+	DrainPackets();
+}
+
+TSharedPtr<FVideoResourceRHI> FSentryVideoEncoder::AcquireVideoResource(const FTextureRHIRef& Texture)
+{
+	if (ResourceCache.Num() > 0)
+	{
+		const FTextureRHIRef& CachedTexture = ResourceCache.CreateConstIterator().Value().Texture;
+		if (CachedTexture->GetSizeX() != Texture->GetSizeX() || CachedTexture->GetSizeY() != Texture->GetSizeY())
+		{
+			ResourceCache.Empty();
+		}
+	}
+
+	if (const FCachedVideoResource* Cached = ResourceCache.Find(Texture.GetReference()))
+	{
+		return Cached->Resource;
+	}
+
+	TSharedPtr<FVideoResourceRHI> Resource = MakeShared<FVideoResourceRHI>(Encoder->GetDevice().ToSharedRef(),
+		FVideoResourceRHI::FRawData{ Texture, nullptr, 0 });
+
+	ResourceCache.Add(Texture.GetReference(), FCachedVideoResource{ Texture, Resource });
+
+	return Resource;
+}
+
+void FSentryVideoEncoder::DrainAndReleaseQueue()
+{
+	FScopeLock Lock(&QueueLock);
+	for (const TSharedPtr<FSentryVideoFrame, ESPMode::ThreadSafe>& FramePtr : PendingQueue)
+	{
+		if (FramePtr.IsValid())
+		{
+			FramePtr->Release();
+		}
+	}
+	PendingQueue.Reset();
+}
+
+bool FSentryVideoEncoder::ShouldSwapDimensions(uint32 ResourceWidth, uint32 ResourceHeight) const
+{
+	switch (ExpectedOrientation)
+	{
+	case EDeviceScreenOrientation::Portrait:
+	case EDeviceScreenOrientation::PortraitUpsideDown:
+		return ResourceWidth > ResourceHeight;
+	case EDeviceScreenOrientation::LandscapeLeft:
+	case EDeviceScreenOrientation::LandscapeRight:
+		return ResourceHeight > ResourceWidth;
+	default:
+		return false;
+	}
+}
+
+bool FSentryVideoEncoder::EnsureEncoderOpen(uint32 ResourceWidth, uint32 ResourceHeight)
+{
+	if (bEncoderOpen)
+	{
+		const bool bSameSize = ResourceWidth == Width && ResourceHeight == Height;
+
+		// Transposed frames are expected only when orientation tracking is active (iOS);
+		// elsewhere a transposed size is a genuine resolution change
+		const bool bSameTransposedSize = ExpectedOrientation != EDeviceScreenOrientation::Unknown &&
+										 ResourceWidth == Height && ResourceHeight == Width;
+
+		if (!bSameSize && !bSameTransposedSize && !bResolutionChanged)
+		{
+			UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: capture resolution changed from %ux%u to %ux%u; recording stays locked to the original size and may be cropped or black."),
+				Width, Height, ResourceWidth, ResourceHeight);
+			bResolutionChanged = true;
+		}
+		return true;
+	}
+
+	if (ResourceWidth == 0 || ResourceHeight == 0)
+	{
+		return false;
+	}
+
+	// If the first frame arrives in the device's native (transposed) dimensions
+	// swap them so the video is written with the correct resolution from the start
+	if (ShouldSwapDimensions(ResourceWidth, ResourceHeight))
+	{
+		UE_LOG(LogSentrySdk, Log, TEXT("Session replay: first frame is %ux%u but the app runs in %s orientation; opening the encoder with swapped dimensions."),
+			ResourceWidth, ResourceHeight, ResourceHeight > ResourceWidth ? TEXT("landscape") : TEXT("portrait"));
+		Swap(ResourceWidth, ResourceHeight);
+	}
+
+	FVideoEncoderConfigH264 Config;
+	Config.Width = ResourceWidth;
+	Config.Height = ResourceHeight;
+	Config.TargetFramerate = Framerate;
+	Config.TargetBitrate = BitrateBps;
+	Config.MaxBitrate = BitrateBps;
+	Config.MinBitrate = BitrateBps / 2;
+	Config.RateControlMode = ERateControlMode::CBR;
+	Config.LatencyMode = EAVLatencyMode::UltraLowLatency;
+	Config.KeyframeInterval = 0;
+	Config.Profile = EH264Profile::Main;
+	Config.RepeatSPSPPS = true;
+	Config.bFillData = 0;
+	Config.MultipassMode = EMultipassMode::Disabled;
+
+#if PLATFORM_APPLE
+	// Work around a VT bug where H.264 Auto maps to a null EntropyCodingMode
+	// causing a crash in CFStringGetLength. Use CABAC instead (supported by Main/High profiles)
+	Config.EntropyCodingMode = EH264EntropyCodingMode::CABAC;
+#endif
+
+	TSharedRef<FAVDevice>& Device = FAVDevice::GetHardwareDevice();
+	if (!Device->HasContext<FVideoContextRHI>())
+	{
+		return false;
+	}
+
+	Encoder = FVideoEncoder::Create<FVideoResourceRHI>(Device, Config);
+	if (!Encoder.IsValid())
+	{
+		UE_LOG(LogSentrySdk, Warning, TEXT("Session replay: failed to create H.264 encoder - check that a codec plugin matching the GPU vendor is enabled. Recording disabled for this session."));
+		bEncodingDisabled.AtomicSet(true);
+		return false;
+	}
+
+	Width = ResourceWidth;
+	Height = ResourceHeight;
+
+	bEncoderOpen = true;
+
+	UE_LOG(LogSentrySdk, Log, TEXT("Session replay: encoder opened %ux%u @ %u fps, %d kbps, forced keyframe every %.2fs"),
+		Width, Height, Framerate, BitrateBps / 1000, FragmentSeconds);
+
+	return true;
+}
+
+void FSentryVideoEncoder::Restart()
+{
+	DrainPackets();
+
+	FragmentBuilder.Flush();
+	FragmentBuilder.Reset();
+
+	Encoder.Reset();
+	ResourceCache.Empty();
+
+	bEncoderOpen = false;
+
+	CaptureTimeBaseSeconds = -1.0;
+	LastPacketTimestampMs = 0;
+	bHavePrevPacketTimestamp = false;
+	LastForcedKeyframeTime = 0.0;
+	bFirstFrameValidated = false;
+	ConsecutiveSendFrameFailures = 0;
+}
+
+void FSentryVideoEncoder::DrainPackets()
+{
+	if (!Encoder.IsValid())
+	{
+		return;
+	}
+
+	FVideoPacket Packet;
+	while (Encoder->ReceivePacket(Packet).IsSuccess())
+	{
+		if (Packet.DataSize == 0 || !Packet.DataPtr.IsValid())
+		{
+			continue;
+		}
+
+		// The encoder echoes back the capture timestamp we passed to SendFrame
+		// (relative to the first frame). Sample duration is the gap to the
+		// previously emitted sample, so playback follows the real capture cadence
+		// rather than the bursty encoder output cadence (and stays real-time even
+		// when the source renders below the configured target rate). A skipped
+		// packet never updates the marker, so its interval folds into the next
+		// sample. The first sample falls back to a nominal 1/Framerate
+#if PLATFORM_APPLE
+		const uint32 PacketTimestampMs = static_cast<uint32>(FPlatformTime::ToMilliseconds64(Packet.Timestamp));
+#else
+		const uint32 PacketTimestampMs = static_cast<uint32>(Packet.Timestamp);
+#endif
+		double DurationSeconds;
+		if (!bHavePrevPacketTimestamp)
+		{
+			DurationSeconds = 1.0 / FMath::Max(1u, Framerate);
+		}
+		else
+		{
+			const uint32 DeltaMs = PacketTimestampMs - LastPacketTimestampMs;
+			DurationSeconds = DeltaMs / 1000.0;
+		}
+
+		// Guard against runaway durations if the encoder stalled (e.g. window minimised)
+		DurationSeconds = FMath::Min(DurationSeconds, 2.0);
+
+		LastPacketTimestampMs = PacketTimestampMs;
+		bHavePrevPacketTimestamp = true;
+
+		const uint32 DurationTicks = FMath::Max<uint32>(1, static_cast<uint32>(DurationSeconds * FSentryFMP4Writer::TrackTimescale));
+
+		FragmentBuilder.SetDimensions(Width, Height);
+		FragmentBuilder.AddAccessUnit(Packet.DataPtr.Get(), Packet.DataSize, Packet.bIsKeyframe, DurationTicks);
+	}
+}
+
+#endif // USE_SENTRY_SESSION_REPLAY && SENTRY_REPLAY_ENCODER_AVCODECS

@@ -1,0 +1,88 @@
+// Copyright (c) 2026 Sentry. All Rights Reserved.
+
+#include "SentryCrashTest.h"
+
+#include "SentryPlayground/SentryPlayground.h"
+#include "SentryPlayground/Utils/SentryPlaygroundCrashUtils.h"
+#include "SentryPlayground/Utils/SentryPlaygroundTestUtils.h"
+
+#include "SentryModule.h"
+#include "SentrySettings.h"
+#include "SentrySubsystem.h"
+
+#include "HAL/PlatformMisc.h"
+#include "HAL/PlatformProcess.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/EngineVersionComparison.h"
+
+void FSentryCrashTest::Run()
+{
+	USentrySubsystem* Subsystem = GetSubsystem();
+
+	// Because we don't get the real crash event ID, create a fake one and set it as a tag
+	// This tag is then used by integration test script in CI to fetch the event
+
+	FString EventId = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+
+	// Workaround for duplicated log messages in UE 4.27 on Linux
+#if PLATFORM_LINUX && UE_VERSION_OLDER_THAN(5, 0, 0)
+	if (FSentryModule::Get().GetSettings()->IsNativeBackendEnabled())
+	{
+		// When using native backend, crashing process can terminate before engine's GLog is flushed
+		// To ensure the event ID is not lost it is printed directly to stdout so the test script can reliably capture it
+		FPlatformMisc::LowLevelOutputDebugStringf(TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+	}
+	else
+	{
+		UE_LOG(LogSentrySample, Log, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+	}
+#else
+	UE_LOG(LogSentrySample, Display, TEXT("EVENT_CAPTURED: %s\n"), *EventId);
+#endif
+
+	// Flush logs to ensure output is captured before crash
+	GLog->Flush();
+
+	Subsystem->SetTag(TEXT("test.crash_id"), EventId);
+
+#if PLATFORM_ANDROID || PLATFORM_IOS
+	FPlatformProcess::Sleep(5.0f);
+#endif
+
+	if (CrashType == ESentryAppTerminationType::OutOfMemory)
+	{
+		// Cap process memory so exhausting it doesn't starve the whole machine
+		// (and the out-of-process crash handler with it) on CI runners
+		USentryPlaygroundTestUtils::SetMemoryLimit(4096);
+	}
+
+	if (CrashType == ESentryAppTerminationType::GpuHang)
+	{
+		// The GPU hang must be triggered only after the game has rendered a number of frames.
+		// Capture AsShared() so this test stays alive past RunIntegrationTest returning.
+		TSharedRef<FSentryBaseIntegrationTest> Self = AsShared();
+		TSharedRef<int32> FrameCounter = MakeShared<int32>(0);
+		TSharedRef<bool> bHangTriggered = MakeShared<bool>(false);
+
+		FCoreDelegates::OnEndFrame.AddLambda([Self, FrameCounter, bHangTriggered]()
+		{
+			if (*bHangTriggered)
+			{
+				return;
+			}
+
+			constexpr int32 FramesBeforeHang = 30;
+			if (++(*FrameCounter) < FramesBeforeHang)
+			{
+				return;
+			}
+
+			*bHangTriggered = true;
+
+			USentryPlaygroundCrashUtils::Terminate(ESentryAppTerminationType::GpuHang);
+		});
+		return;
+	}
+
+	USentryPlaygroundCrashUtils::Terminate(CrashType);
+}

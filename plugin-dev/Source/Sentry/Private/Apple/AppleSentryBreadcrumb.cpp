@@ -1,0 +1,96 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "AppleSentryBreadcrumb.h"
+
+#if !USE_SENTRY_NATIVE
+
+#include "Infrastructure/AppleSentryConverters.h"
+
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
+
+FAppleSentryBreadcrumb::FAppleSentryBreadcrumb()
+{
+	BreadcrumbApple = [[SENTRY_APPLE_CLASS(SentryObjCBreadcrumb) alloc] init];
+}
+
+FAppleSentryBreadcrumb::FAppleSentryBreadcrumb(SentryObjCBreadcrumb* breadcrumb)
+{
+	BreadcrumbApple = [breadcrumb retain];
+}
+
+FAppleSentryBreadcrumb::~FAppleSentryBreadcrumb()
+{
+	[BreadcrumbApple release];
+}
+
+SentryObjCBreadcrumb* FAppleSentryBreadcrumb::GetNativeObject()
+{
+	return BreadcrumbApple;
+}
+
+void FAppleSentryBreadcrumb::SetMessage(const FString& message)
+{
+	BreadcrumbApple.message = message.GetNSString();
+}
+
+FString FAppleSentryBreadcrumb::GetMessage() const
+{
+	return FString(BreadcrumbApple.message);
+}
+
+void FAppleSentryBreadcrumb::SetType(const FString& type)
+{
+	BreadcrumbApple.type = type.GetNSString();
+}
+
+FString FAppleSentryBreadcrumb::GetType() const
+{
+	return FString(BreadcrumbApple.type);
+}
+
+void FAppleSentryBreadcrumb::SetCategory(const FString& category)
+{
+	BreadcrumbApple.category = category.GetNSString();
+}
+
+FString FAppleSentryBreadcrumb::GetCategory() const
+{
+	return FString(BreadcrumbApple.category);
+}
+
+void FAppleSentryBreadcrumb::SetData(const TMap<FString, FSentryVariant>& data)
+{
+	for (NSString* key in [BreadcrumbApple.data allKeys])
+	{
+		[BreadcrumbApple setDataValue:nil forKey:key];
+	}
+
+	NSDictionary* dataNative = FAppleSentryConverters::VariantMapToNative(data);
+	for (NSString* key in dataNative)
+	{
+		[BreadcrumbApple setDataValue:dataNative[key] forKey:key];
+	}
+}
+
+TMap<FString, FSentryVariant> FAppleSentryBreadcrumb::GetData() const
+{
+	return FAppleSentryConverters::VariantMapToUnreal(BreadcrumbApple.data);
+}
+
+void FAppleSentryBreadcrumb::SetLevel(ESentryLevel level)
+{
+	BreadcrumbApple.level = FAppleSentryConverters::SentryLevelToNative(level);
+}
+
+ESentryLevel FAppleSentryBreadcrumb::GetLevel() const
+{
+	if (BreadcrumbApple.level == SentryObjCLevelNone)
+	{
+		return ESentryLevel::Info;
+	}
+
+	return FAppleSentryConverters::SentryLevelToUnreal(BreadcrumbApple.level);
+}
+
+#endif // !USE_SENTRY_NATIVE

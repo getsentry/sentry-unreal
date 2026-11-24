@@ -1,0 +1,40 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "AppleSentryTransactionContext.h"
+
+#if !USE_SENTRY_NATIVE
+
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
+
+FAppleSentryTransactionContext::FAppleSentryTransactionContext(const FString& name, const FString& operation)
+{
+	TransactionContext = [[SENTRY_APPLE_CLASS(SentryObjCTransactionContext) alloc] initWithName:name.GetNSString() operation:operation.GetNSString()];
+}
+
+FAppleSentryTransactionContext::FAppleSentryTransactionContext(SentryObjCTransactionContext* context)
+{
+	TransactionContext = [context retain];
+}
+
+FAppleSentryTransactionContext::~FAppleSentryTransactionContext()
+{
+	[TransactionContext release];
+}
+
+FString FAppleSentryTransactionContext::GetName() const
+{
+	return FString(TransactionContext.name);
+}
+
+FString FAppleSentryTransactionContext::GetOperation() const
+{
+	return FString(TransactionContext.operation);
+}
+
+SentryObjCTransactionContext* FAppleSentryTransactionContext::GetNativeObject()
+{
+	return TransactionContext;
+}
+
+#endif // !USE_SENTRY_NATIVE

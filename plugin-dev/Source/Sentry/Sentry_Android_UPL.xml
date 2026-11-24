@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+    <init>
+        <log text="Sentry SDK Android UPL initialization"/>
+
+        <setBoolFromProperty result="bUploadSymbolsAutomatically" ini="Engine" section="/Script/Sentry.SentrySettings" property="UploadSymbolsAutomatically" default="false" />
+        <setBoolFromProperty result="bIncludeSources" ini="Engine" section="/Script/Sentry.SentrySettings" property="IncludeSources" default="false" />
+        <setBoolFromProperty result="bUseLegacyGradlePlugin" ini="Engine" section="/Script/Sentry.SentrySettings" property="UseLegacyGradlePlugin" default="false" />
+
+        <setStringFromProperty result="enabledBuildConfigurations" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildConfigurations" default=""/>
+        <setStringFromProperty result="enabledBuildTargetTypes" ini="Engine" section="/Script/Sentry.SentrySettings" property="EnableBuildTargets" default=""/>
+
+        <setBoolContains result="bCurrentConfigurationDisabled" source="$S(enabledBuildConfigurations)" find="bEnable$S(Configuration)=False"/>
+
+        <setBool result="bSkipUpload" value="$B(bCurrentConfigurationDisabled)"/>
+
+        <if condition="bSkipUpload">
+            <true>
+                <setBool result="bUploadSymbols" value="false"/>
+            </true>
+            <false>
+                <setBool result="bUploadSymbols" value="$B(bUploadSymbolsAutomatically)"/>
+            </false>
+        </if>
+    </init>
+
+    <prebuildCopies>
+        <copyDir src="$S(PluginDir)/Private/Android/Java" dst="$S(BuildDir)/src/io/sentry/unreal" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry.jar" dst="$S(BuildDir)/gradle/app/libs/sentry.jar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-core-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-core-release.aar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-ndk-release.aar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-android-replay-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-android-replay-release.aar" />
+        <copyFile src="$S(PluginDir)/../ThirdParty/Android/sentry-native-ndk-release.aar" dst="$S(BuildDir)/gradle/app/libs/sentry-native-ndk-release.aar" />
+        <if condition="bUploadSymbols">
+            <true>
+                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/sentry.properties" />
+                <copyFile src="$S(ProjectDir)/sentry.properties" dst="$S(BuildDir)/gradle/AFSProject/app/sentry.properties" />
+                <if condition="bUseLegacyGradlePlugin">
+                    <false>
+                        <log text="Modifying engine's Gradle version used by replacing gradle-wrapper.properties"/>
+                        <copyFile src="$S(PluginDir)/../../Gradle/gradle-wrapper.properties" dst="$S(BuildDir)/gradle/gradle/wrapper/gradle-wrapper.properties" />
+                    </false>
+                </if>
+            </true>
+        </if>
+    </prebuildCopies>
+
+    <androidManifestUpdates>
+        <addElements tag="application">
+            <meta-data android:name="io.sentry.auto-init" android:value="false"/>
+            <meta-data android:name="io.sentry.sdk.name" android:value="sentry.java.android.unreal"/>
+            <meta-data android:name="io.sentry.ndk.scope-sync.enable" android:value="true"/>
+        </addElements>
+    </androidManifestUpdates>
+
+    <gradleProperties>
+        <insert>
+            android.useAndroidX=true
+            android.enableJetifier=true
+        </insert>
+    </gradleProperties>
+
+    <proguardAdditions>
+        <insert>
+            -dontwarn android.app.ApplicationStartInfo
+            -dontwarn android.os.ProfilingManager
+            -dontwarn android.os.ProfilingResult
+            -dontwarn io.sentry.unreal.**
+            -keep class io.sentry.** { *; }
+            -keep interface io.sentry.** { *; }
+        </insert>
+    </proguardAdditions>
+
+    <buildGradleAdditions>
+        <if condition="bUploadSymbols">
+            <true>
+                <insert>
+                    apply plugin: 'io.sentry.android.gradle'
+
+                    sentry {
+                        uploadNativeSymbols = true
+                    }
+                </insert>
+                <if condition="bUseLegacyGradlePlugin">
+                    <false>
+                        <insert>
+                            sentry {
+                                autoInstallation {
+                                    enabled = false
+                                }
+                            }
+                        </insert>
+                    </false>
+                </if>
+                <if condition="bIncludeSources">
+                    <true>
+                        <insert>
+                            sentry {
+                                includeNativeSources = true
+                            }
+                        </insert>
+                    </true>
+                </if>
+            </true>
+        </if>
+    </buildGradleAdditions>
+
+    <buildGradleAdditions>
+        <insert>
+            android {
+                compileOptions {
+                    targetCompatibility JavaVersion.VERSION_1_8
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                }
+            }
+
+            dependencies {
+                implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
+                implementation "com.abovevacant:epitaph:0.1.1"
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24"
+            }
+
+            repositories {
+                mavenCentral()
+            }
+        </insert>
+    </buildGradleAdditions>
+
+    <baseBuildGradleAdditions>
+        <insert>
+            allprojects {
+                def mappings = [
+                    'android.arch.lifecycle.Lifecycle': 'androidx.lifecycle.Lifecycle',
+                    'android.arch.lifecycle.LifecycleObserver': 'androidx.lifecycle.LifecycleObserver',
+                    'android.arch.lifecycle.OnLifecycleEvent': 'androidx.lifecycle.OnLifecycleEvent',
+                    'android.arch.lifecycle.ProcessLifecycleOwner': 'androidx.lifecycle.ProcessLifecycleOwner',
+                    'android.arch.lifecycle': 'androidx.lifecycle',
+                    'android.support.annotation': 'androidx.annotation',
+                    'android.support.v13.app.FragmentCompat': 'androidx.legacy.app.FragmentCompat',
+                    'android.support.v4.app.ActivityCompat': 'androidx.core.app.ActivityCompat',
+                    'android.support.v4.app.NotificationCompat': 'androidx.core.app.NotificationCompat',
+                    'android.support.v4.app.NotificationManagerCompat': 'androidx.core.app.NotificationManagerCompat',
+                    'android.support.v4.content.ContextCompat': 'androidx.core.content.ContextCompat',
+                    'android.support.v4.content.FileProvider': 'androidx.core.content.FileProvider',
+                ]
+
+                beforeEvaluate { project ->
+                    project.rootProject.projectDir.traverse(type: groovy.io.FileType.FILES, nameFilter: ~/.*\.java$/) { f ->
+                        mappings.each { entry ->
+                            if (f.getText('UTF-8').contains(entry.key)) {
+                                println "Updating ${entry.key} to ${entry.value} in file ${f}"
+                                ant.replace(file: f, token: entry.key, value: entry.value)
+                            }
+                        }
+                    }
+                }
+            }
+        </insert>
+    </baseBuildGradleAdditions>
+
+    <buildscriptGradleAdditions>
+        <if condition="bUploadSymbols">
+            <true>
+                <if condition="bUseLegacyGradlePlugin">
+                    <true>
+                        <log text="Using legacy Sentry Gradle plugin for Android debug symbol upload."/>
+                        <insert>
+                            dependencies {
+                                classpath 'com.android.tools.build:gradle:3.5.4'
+                                classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5' // legacy
+                            }
+                        </insert>
+                    </true>
+                    <false>
+                        <log text="Using Sentry Gradle plugin for Android debug symbol upload."/>
+                        <log text="Enable legacy Sentry Gradle plugin in project settings in case current version conflicts with other plugins (for UE 5.4 and older)."/>
+                        <insert>
+                            dependencies {
+                                classpath 'com.android.tools.build:gradle:7.4.2'
+                                classpath 'io.sentry:sentry-android-gradle-plugin:6.27.0' // current
+                            }
+                        </insert>
+                    </false>
+                </if>
+            </true>
+        </if>
+    </buildscriptGradleAdditions>
+</root>

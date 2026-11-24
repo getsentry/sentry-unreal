@@ -1,0 +1,37 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "SentryVariant.h"
+
+#if USE_SENTRY_NATIVE
+
+class FGenericPlatformSentryUser;
+
+class FJsonObject;
+
+class FGenericPlatformSentryCrashReporter
+{
+public:
+	FGenericPlatformSentryCrashReporter();
+
+	void SetRelease(const FString& release);
+	void SetEnvironment(const FString& environment);
+	void SetUser(TSharedPtr<FGenericPlatformSentryUser> user);
+	void RemoveUser();
+	void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values);
+	void UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values);
+	void SetTag(const FString& key, const FString& value);
+	void SetTags(const TMap<FString, FString>& tags);
+	void RemoveTag(const FString& key);
+	void SetDebugImages();
+
+protected:
+	void UpdateCrashReporterConfig();
+
+private:
+	TSharedPtr<FJsonObject> crashReporterConfig;
+};
+
+#endif

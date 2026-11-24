@@ -1,0 +1,38 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#if !USE_SENTRY_NATIVE
+
+#include "Interface/SentryLogInterface.h"
+
+@class SentryObjCLog;
+
+class FAppleSentryLog : public ISentryLog
+{
+public:
+	FAppleSentryLog();
+	FAppleSentryLog(SentryObjCLog* log);
+	FAppleSentryLog(const FString& body, ESentryLogLevel level);
+	virtual ~FAppleSentryLog() override;
+
+	SentryObjCLog* GetNativeObject();
+
+	virtual void SetBody(const FString& body) override;
+	virtual FString GetBody() const override;
+	virtual void SetLevel(ESentryLogLevel level) override;
+	virtual ESentryLogLevel GetLevel() const override;
+
+	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;
+	virtual FSentryVariant GetAttribute(const FString& key) const override;
+	virtual bool TryGetAttribute(const FString& key, FSentryVariant& value) const override;
+	virtual void RemoveAttribute(const FString& key) override;
+	virtual void AddAttributes(const TMap<FString, FSentryVariant>& attributes) override;
+
+private:
+	SentryObjCLog* LogApple;
+};
+
+typedef FAppleSentryLog FPlatformSentryLog;
+
+#endif // !USE_SENTRY_NATIVE

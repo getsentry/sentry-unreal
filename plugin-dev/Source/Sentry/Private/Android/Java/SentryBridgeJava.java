@@ -1,0 +1,763 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+package io.sentry.unreal;
+
+import android.app.Activity;
+
+import androidx.annotation.NonNull;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import io.sentry.Attachment;
+import io.sentry.Breadcrumb;
+import io.sentry.Hint;
+import io.sentry.IScopes;
+import io.sentry.SamplingContext;
+import io.sentry.IScope;
+import io.sentry.ScopeCallback;
+import io.sentry.Sentry;
+import io.sentry.SentryEvent;
+import io.sentry.SentryLevel;
+import io.sentry.SentryOptions;
+import io.sentry.SentryReplayOptions;
+import io.sentry.UncaughtExceptionHandlerIntegration;
+import io.sentry.android.core.SentryAndroid;
+import io.sentry.android.core.SentryAndroidOptions;
+import io.sentry.protocol.Feedback;
+import io.sentry.protocol.Mechanism;
+import io.sentry.protocol.SentryException;
+import io.sentry.protocol.SentryId;
+import io.sentry.SentryAttributeType;
+import io.sentry.SentryAttributes;
+import io.sentry.SentryLogEvent;
+import io.sentry.SentryLogEventAttributeValue;
+import io.sentry.logger.SentryLogParameters;
+import io.sentry.SentryLogLevel;
+import io.sentry.SentryMetricsEvent;
+import io.sentry.JsonUnknown;
+import io.sentry.metrics.SentryMetricsParameters;
+import io.sentry.util.HintUtils;
+import io.sentry.util.TracingUtils;
+
+public class SentryBridgeJava {
+	public static native void onConfigureScope(long callbackAddr, IScope scope);
+	public static native SentryEvent onBeforeSend(long handlerAddr, SentryEvent event, Hint hint);
+	public static native SentryEvent onBeforeSendFeedback(long handlerAddr, SentryEvent event, Hint hint);
+	public static native Breadcrumb onBeforeBreadcrumb(long handlerAddr, Breadcrumb breadcrumb, Hint hint);
+	public static native SentryLogEvent onBeforeLog(long handlerAddr, SentryLogEvent logEvent);
+	public static native SentryMetricsEvent onBeforeMetric(long handlerAddr, SentryMetricsEvent metricEvent);
+	public static native float onTracesSampler(long samplerAddr, SamplingContext samplingContext);
+	public static native String getLogFilePath(boolean isCrash);
+	public static native String getScreenshotFilePath();
+	public static native String getGameStateFilePath(boolean isPreviousSession);
+
+	public static void init(Activity activity, final String settingsJsonStr) {
+		SentryAndroid.init(activity, new Sentry.OptionsConfiguration<SentryAndroidOptions>() {
+			@Override
+			public void configure(SentryAndroidOptions options) {
+				try {
+					JSONObject settingJson = new JSONObject(settingsJsonStr);
+					options.setDsn(settingJson.getString("dsn"));
+					options.setRelease(settingJson.getString("release"));
+					options.setEnvironment(settingJson.getString("environment"));
+					options.setDist(settingJson.getString("dist"));
+					options.setEnableAutoSessionTracking(settingJson.getBoolean("autoSessionTracking"));
+					options.setSessionTrackingIntervalMillis(settingJson.getLong("sessionTimeout"));
+					options.setAttachStacktrace(settingJson.getBoolean("enableStackTrace"));
+					options.setDebug(settingJson.getBoolean("debug"));
+					options.setDiagnosticLevel(SentryLevel.valueOf(settingJson.getString("debugLevel")));
+					options.setSampleRate(settingJson.getDouble("sampleRate"));
+					options.setMaxBreadcrumbs(settingJson.getInt("maxBreadcrumbs"));
+					options.setShutdownTimeoutMillis(settingJson.getLong("shutdownTimeout"));
+					options.setSendDefaultPii(settingJson.getBoolean("sendDefaultPii"));
+					if(settingJson.getBoolean("attachSessionReplay")) {
+						options.getSessionReplay().setSessionSampleRate(1.0);
+						options.getSessionReplay().setCaptureSurfaceViews(true);
+					}
+					JSONArray Includes = settingJson.getJSONArray("inAppInclude");
+					for (int i = 0; i < Includes.length(); i++) {
+						options.addInAppInclude(Includes.getString(i));
+					}
+					JSONArray Excludes = settingJson.getJSONArray("inAppExclude");
+					for (int i = 0; i < Excludes.length(); i++) {
+						options.addInAppExclude(Excludes.getString(i));
+					}
+					options.setAnrEnabled(settingJson.getBoolean("enableAnrTracking"));
+					options.setAnrTimeoutIntervalMillis(settingJson.getLong("anrTimeoutMillis"));
+					options.setEnableNdkAppHangTracking(settingJson.getBoolean("enableNdkAppHangTracking"));
+					options.setNdkAppHangTimeoutIntervalMillis(settingJson.getLong("ndkAppHangTimeoutMillis"));
+                    options.setEnableNdk(settingJson.getBoolean("enableNdk"));
+                    options.setTombstoneEnabled(settingJson.getBoolean("enableTombstone"));
+					options.getLogs().setEnabled(settingJson.getBoolean("enableStructuredLogging"));
+					options.getMetrics().setEnabled(settingJson.getBoolean("enableMetrics"));
+					if(settingJson.has("maxCacheItems")) {
+						options.setMaxCacheItems(settingJson.getInt("maxCacheItems"));
+					}
+					if(settingJson.has("proxy")) {
+						String proxyUrl = settingJson.getString("proxy");
+						SentryOptions.Proxy proxy = parseProxy(proxyUrl);
+						if (proxy != null) {
+							options.setProxy(proxy);
+						} else {
+							options.getLogger().log(SentryLevel.WARNING, "Invalid or unsupported proxy URL (expected http://[user:pass@]host:port). Proxy is ignored");
+						}
+					}
+					if(settingJson.has("tracesSampleRate")) {
+						options.setTracesSampleRate(settingJson.getDouble("tracesSampleRate"));
+					}
+					if(settingJson.has("tracesSampler")) {
+						final long samplerAddr = settingJson.getLong("tracesSampler");
+						options.setTracesSampler(new SentryOptions.TracesSamplerCallback() {
+							@Override
+							public Double sample(SamplingContext samplingContext) {
+								float sampleRate = onTracesSampler(samplerAddr, samplingContext);
+								if(sampleRate >= 0.0f) {
+									return (double) sampleRate;
+								} else {
+									return null;
+								}
+							}
+						});
+					}
+					if(settingJson.has("beforeBreadcrumb")) {
+						final long beforeBreadcrumbAddr = settingJson.getLong("beforeBreadcrumb");
+						options.setBeforeBreadcrumb(new SentryOptions.BeforeBreadcrumbCallback() {
+							@Override
+							public Breadcrumb execute(Breadcrumb breadcrumb, Hint hint) {
+								return onBeforeBreadcrumb(beforeBreadcrumbAddr, breadcrumb, hint);
+							}
+						});
+					}
+					String deviceType = settingJson.optString("deviceType", "");
+					if (settingJson.has("beforeSendHandler")) {
+						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
+								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), settingJson.getBoolean("attachGameState"), settingJson.getLong("beforeSendHandler"), deviceType));
+					}
+					else {
+						options.setBeforeSend(new SentryUnrealBeforeSendCallback(
+								settingJson.getBoolean("enableAutoLogAttachment"), settingJson.getBoolean("attachScreenshot"), settingJson.getBoolean("attachGameState"), deviceType));
+					}
+
+					if (settingJson.has("beforeSendFeedbackHandler")) {
+						options.setBeforeSendFeedback(new SentryUnrealBeforeSendFeedbackCallback(settingJson.getLong("beforeSendFeedbackHandler")));
+					}
+
+					if (settingJson.has("beforeLogHandler")) {
+						options.getLogs().setBeforeSend(new SentryUnrealBeforeLogCallback(settingJson.getLong("beforeLogHandler")));
+					}
+					if (settingJson.has("beforeMetricHandler")) {
+						options.getMetrics().setBeforeSend(new SentryUnrealBeforeMetricCallback(settingJson.getLong("beforeMetricHandler")));
+					}
+				} catch (JSONException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+
+		// Force a new trace so the Java and NDK layers share the same trace_id. Otherwise each layer
+		// keeps its own randomly generated one, and native crashes can't be correlated with logs/metrics.
+		TracingUtils.startNewTrace(Sentry.getCurrentScopes());
+	}
+
+	public static void addBreadcrumb(final String message, final String category, final String type, final HashMap<String, String> data, final SentryLevel level) {
+		Breadcrumb breadcrumb = new Breadcrumb();
+		breadcrumb.setMessage(message);
+		breadcrumb.setCategory(category);
+		breadcrumb.setType(type);
+		breadcrumb.setLevel(level);
+		for (Map.Entry<String,String> entry : data.entrySet()) {
+			breadcrumb.setData(entry.getKey(), entry.getValue());
+		}
+
+		Sentry.addBreadcrumb(breadcrumb);
+	}
+
+	public static SentryId captureMessageWithScope(final String message, final SentryLevel level, final long callback) throws InterruptedException {
+		SentryId messageId = Sentry.captureMessage(message, new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				scope.setLevel(level);
+				onConfigureScope(callback, scope);
+			}
+		});
+		return messageId;
+	}
+
+	public static SentryId captureEventWithScope(final SentryEvent event, final long callback) throws InterruptedException {
+		SentryId eventId = Sentry.captureEvent(event, new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+			onConfigureScope(callback, scope);
+			}
+		});
+		return eventId;
+	}
+
+	public static SentryId captureFeedback(final Feedback feedback, final Hint hint) {
+		return Sentry.feedback().capture(feedback, hint);
+	}
+
+	public static SentryId captureFeedbackWithScope(final Feedback feedback, final Hint hint, final long callback) throws InterruptedException {
+		SentryId feedbackId = Sentry.feedback().capture(feedback, hint, new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				onConfigureScope(callback, scope);
+			}
+		});
+		return feedbackId;
+	}
+
+	public static SentryId captureEnsure(final String type, final String value, final Attachment screenshotAttachment) {
+		SentryException exception = new SentryException();
+		exception.setType(type);
+		exception.setValue(value);
+		SentryEvent event = new SentryEvent();
+		event.setExceptions(Collections.singletonList(exception));
+		event.setTag("CrashType", "Ensure");
+
+		Hint hint = new Hint();
+		if (screenshotAttachment != null) {
+			hint.addAttachment(screenshotAttachment);
+		}
+
+		SentryId eventId = Sentry.captureEvent(event, hint);
+		return eventId;
+	}
+
+	public static void setContext(final String key, final HashMap<String, String> values) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				scope.setContexts(key, values);
+			}
+		});
+	}
+	public static void updateContext(final String key, final HashMap<String, Object> values) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				Object existing = scope.getContexts().get(key);
+				if (existing instanceof Map<?, ?>) {
+					Map<String, Object> merged = new HashMap<>();
+					for (Map.Entry<?, ?> entry : ((Map<?, ?>) existing).entrySet()) {
+						if (entry.getKey() instanceof String) {
+							merged.put((String) entry.getKey(), entry.getValue());
+						}
+					}
+					merged.putAll(values);
+					scope.setContexts(key, merged);
+				} else {
+					scope.setContexts(key, values);
+				}
+			}
+		});
+	}
+
+	public static void setTag(final String key, final String value) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				scope.setTag(key, value);
+			}
+		});
+	}
+
+	public static void setTags(final HashMap<String, String> tags) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				for (Map.Entry<String, String> tag : tags.entrySet()) {
+					scope.setTag(tag.getKey(), tag.getValue());
+				}
+			}
+		});
+	}
+
+	public static void removeTag(final String key) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				scope.removeTag(key);
+			}
+		});
+	}
+
+	public static void setAttribute(final String key, final Object value) {
+		Sentry.setAttribute(key, value);
+	}
+
+	public static void removeAttribute(final String key) {
+		Sentry.removeAttribute(key);
+	}
+
+	public static void setLevel(final SentryLevel level) {
+		Sentry.configureScope(new ScopeCallback() {
+			@Override
+			public void run(@NonNull IScope scope) {
+				scope.setLevel(level);
+			}
+		});
+	}
+
+	public static void setRelease(final String release) {
+		SentryOptions options = getOptions();
+		options.setRelease(release);
+	}
+
+	public static void setEnvironment(final String environment) {
+		SentryOptions options = getOptions();
+		options.setEnvironment(environment);
+	}
+
+	public static SentryOptions getOptions() {
+		IScopes scopes = Sentry.getCurrentScopes();
+		return scopes.getOptions();
+	}
+
+	public static int isCrashedLastRun() {
+		Boolean isCrashed = Sentry.isCrashedLastRun();
+		if(isCrashed == null) {
+			return -1;
+		}
+		return isCrashed ? 1 : 0;
+	}
+
+	public static boolean isAnrEvent(final SentryEvent event) {
+		if (event.getExceptions() == null) {
+			return false;
+		}
+
+		for (SentryException exception : event.getExceptions()) {
+			final Mechanism mechanism = exception.getMechanism();
+			if ("ApplicationNotResponding".equals(exception.getType()) || (mechanism != null && "AppHang".equals(mechanism.getType()))) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isEmptyId(final SentryId id) {
+		return id == null || SentryId.EMPTY_ID.equals(id);
+	}
+
+	public static void setContext(final SentryEvent event, final String key, final Object values) {
+		event.getContexts().put(key, values);
+	}
+
+	public static Object getContext(final SentryEvent event, final String key) {
+		return event.getContexts().get(key);
+	}
+
+	public static Feedback getFeedback(final SentryEvent event) {
+		return event.getContexts().getFeedback();
+	}
+
+	public static void removeContext(final SentryEvent event, final String key) {
+		event.getContexts().remove(key);
+	}
+
+	public static void mergeContext(final SentryEvent event, final String contextName, final Map<String, Object> values) {
+		Object existing = event.getContexts().get(contextName);
+		if (existing instanceof JsonUnknown) {
+			JsonUnknown jsonUnknown = (JsonUnknown) existing;
+			Map<String, Object> unknown = jsonUnknown.getUnknown();
+			if (unknown == null) {
+				unknown = new HashMap<>();
+			} else {
+				unknown = new HashMap<>(unknown);
+			}
+			unknown.putAll(values);
+			jsonUnknown.setUnknown(unknown);
+		} else if (existing instanceof Map<?, ?>) {
+			Map<String, Object> merged = new HashMap<>();
+			for (Map.Entry<?, ?> entry : ((Map<?, ?>) existing).entrySet()) {
+				if (entry.getKey() instanceof String) {
+					merged.put((String) entry.getKey(), entry.getValue());
+				}
+			}
+			merged.putAll(values);
+			event.getContexts().put(contextName, merged);
+		} else {
+			event.getContexts().put(contextName, new HashMap<>(values));
+		}
+	}
+
+	public static Object getScopeContext(final IScope scope, final String key) {
+		return scope.getContexts().get(key);
+	}
+
+	public static void setScopeExtra(final IScope scope, final String key, final Object values) {
+		scope.setExtra(key, values.toString());
+	}
+
+	public static void addAttachment(final Attachment attachment) {
+		Sentry.getGlobalScope().addAttachment(attachment);
+	}
+
+	public static void removeAttachment(final Attachment attachment) {
+		// Currently, Android SDK doesn't have API allowing to remove individual attachments
+	}
+
+	public static void clearAttachments() {
+		Sentry.getGlobalScope().clearAttachments();
+	}
+
+	public static void addLogFatal(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.FATAL, message, attributesMap);
+	}
+
+	public static void addLogError(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.ERROR, message, attributesMap);
+	}
+
+	public static void addLogWarn(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.WARN, message, attributesMap);
+	}
+
+	public static void addLogInfo(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.INFO, message, attributesMap);
+	}
+
+	public static void addLogDebug(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.DEBUG, message, attributesMap);
+	}
+
+	public static void addLogTrace(final String message, final HashMap<String, Object> attributesMap) {
+		addLog(SentryLogLevel.TRACE, message, attributesMap);
+	}
+
+	private static void addLog(final SentryLogLevel level, final String message, final HashMap<String, Object> attributesMap) {
+		if (attributesMap != null && !attributesMap.isEmpty()) {
+			SentryAttributes attributes = SentryAttributes.fromMap(attributesMap);
+			SentryLogParameters params = SentryLogParameters.create(attributes);
+			Sentry.logger().log(level, params, message);
+		} else {
+			Sentry.logger().log(level, message);
+		}
+	}
+
+	public static void setLogAttribute(final SentryLogEvent logEvent, final String key, final Object value) {
+		if (logEvent == null) {
+			return;
+		}
+		setAttributeInternal(key, value, logEvent::setAttribute);
+	}
+
+	public static Object getLogAttribute(final SentryLogEvent logEvent, final String key) {
+		if (logEvent == null) {
+			return null;
+		}
+		return getAttributeInternal(key, logEvent.getAttributes());
+	}
+
+    public static void removeLogAttribute(final SentryLogEvent logEvent, final String key) {
+        if (logEvent == null) {
+            return;
+        }
+        removeAttributeInternal(key, logEvent.getAttributes());
+    }
+
+	public static void metricCount(final String key, final double value, final HashMap<String, Object> attributesMap) {
+		SentryMetricsParameters params = createMetricsParams(attributesMap);
+        // Currently counters do not support unit param so pass null
+		Sentry.metrics().count(key, value, null, params);
+	}
+
+	public static void metricDistribution(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {
+		String effectiveUnit = (unit != null && !unit.isEmpty()) ? unit : null;
+		SentryMetricsParameters params = createMetricsParams(attributesMap);
+		Sentry.metrics().distribution(key, value, effectiveUnit, params);
+	}
+
+	public static void metricGauge(final String key, final double value, final String unit, final HashMap<String, Object> attributesMap) {
+		String effectiveUnit = (unit != null && !unit.isEmpty()) ? unit : null;
+		SentryMetricsParameters params = createMetricsParams(attributesMap);
+		Sentry.metrics().gauge(key, value, effectiveUnit, params);
+	}
+
+	private static SentryMetricsParameters createMetricsParams(final HashMap<String, Object> attributesMap) {
+		if (attributesMap == null || attributesMap.isEmpty()) {
+			return SentryMetricsParameters.create((Map<String, Object>) null);
+		}
+		return SentryMetricsParameters.create(attributesMap);
+	}
+
+	public static void setMetricAttribute(final SentryMetricsEvent metricEvent, final String key, final Object value) {
+		if (metricEvent == null) {
+			return;
+		}
+		setAttributeInternal(key, value, metricEvent::setAttribute);
+	}
+
+	public static Object getMetricAttribute(final SentryMetricsEvent metricEvent, final String key) {
+		if (metricEvent == null) {
+			return null;
+		}
+		return getAttributeInternal(key, metricEvent.getAttributes());
+	}
+
+	public static void removeMetricAttribute(final SentryMetricsEvent metricEvent, final String key) {
+		if (metricEvent == null) {
+			return;
+		}
+		removeAttributeInternal(key, metricEvent.getAttributes());
+	}
+
+	private interface AttributeSetter {
+		void setAttribute(String key, SentryLogEventAttributeValue value);
+	}
+
+	private static void setAttributeInternal(final String key, final Object value, AttributeSetter setter) {
+		if (key == null || value == null) {
+			return;
+		}
+
+		SentryLogEventAttributeValue attributeValue;
+
+		if (value instanceof String) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, value);
+		} else if (value instanceof Integer) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.INTEGER, value);
+		} else if (value instanceof Boolean) {
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.BOOLEAN, value);
+		} else if (value instanceof Float) {
+			// Unreal's variant doesn't support Double so manual conversion is required
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.DOUBLE, ((Float) value).doubleValue());
+		} else {
+			// Unsupported type (e.g. ArrayList, HashMap) - convert to JSON string for consistency with other platforms
+			String jsonString;
+			if (value instanceof java.util.List) {
+				jsonString = new JSONArray((java.util.List<?>) value).toString();
+			} else if (value instanceof java.util.Map) {
+				jsonString = new JSONObject((java.util.Map<?, ?>) value).toString();
+			} else {
+				jsonString = value.toString();
+			}
+			attributeValue = new SentryLogEventAttributeValue(SentryAttributeType.STRING, jsonString);
+		}
+
+		setter.setAttribute(key, attributeValue);
+	}
+
+	private static Object getAttributeInternal(final String key, final Map<String, SentryLogEventAttributeValue> attributes) {
+		if (key == null || attributes == null) {
+			return null;
+		}
+
+		SentryLogEventAttributeValue attributeValue = attributes.get(key);
+		if (attributeValue == null) {
+			return null;
+		}
+
+		Object value = attributeValue.getValue();
+
+		if (value instanceof Double) {
+			// Unreal's variant doesn't support Double so manual conversion is required
+			return ((Double) value).floatValue();
+		}
+
+		return value;
+	}
+
+	private static void removeAttributeInternal(final String key, final Map<String, SentryLogEventAttributeValue> attributes) {
+		if (key == null || attributes == null) {
+			return;
+		}
+		attributes.remove(key);
+	}
+
+	private static class SentryUnrealBeforeSendCallback implements SentryOptions.BeforeSendCallback {
+		private final boolean attachLog;
+		private final boolean attachScreenshot;
+		private final boolean attachGameState;
+		private final long beforeSendAddr;
+		private final String deviceType;
+
+		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot, boolean attachGameState, String deviceType) {
+			this.attachLog = attachLog;
+			this.attachScreenshot = attachScreenshot;
+			this.attachGameState = attachGameState;
+			this.beforeSendAddr = 0;
+			this.deviceType = deviceType;
+		}
+
+		public SentryUnrealBeforeSendCallback(boolean attachLog, boolean attachScreenshot, boolean attachGameState, long beforeSendAddr, String deviceType) {
+			this.attachLog = attachLog;
+			this.attachScreenshot = attachScreenshot;
+			this.attachGameState = attachGameState;
+			this.beforeSendAddr = beforeSendAddr;
+			this.deviceType = deviceType;
+		}
+
+		@Override
+		public SentryEvent execute(SentryEvent event, Hint hint) {
+			SentryOptions options = getOptions();
+
+			if (deviceType != null && !deviceType.isEmpty()) {
+				mergeContext(event, "device", Collections.singletonMap("device_type", deviceType));
+			}
+
+			if (event.getTag("CrashType") == null) {
+				// Fatal hangs are unhandled too, so check them first
+				if (isAnrEvent(event)) {
+					event.setTag("CrashType", "Hang");
+				} else if (event.isCrashed()) {
+					event.setTag("CrashType", "Crash");
+				}
+			}
+
+			// Uncaught Java exceptions are captured in the crashing process, other crashes are reported on the next launch
+			final boolean isPreviousSessionCrash = event.isCrashed() &&
+				!(HintUtils.getSentrySdkHint(hint) instanceof UncaughtExceptionHandlerIntegration.UncaughtExceptionHint);
+
+			if (attachLog) {
+				String logFilePath = getLogFilePath(isPreviousSessionCrash);
+				if (!logFilePath.isEmpty()) {
+					hint.addAttachment(new Attachment(logFilePath, new File(logFilePath).getName(), "text/plain"));
+				}
+			}
+
+			if (attachGameState && event.isCrashed()) {
+				String gameStateFilePath = getGameStateFilePath(isPreviousSessionCrash);
+				if (!gameStateFilePath.isEmpty()) {
+					hint.addAttachment(new Attachment(gameStateFilePath, "game_state.jsonl", "text/plain"));
+				}
+			}
+
+			if (attachScreenshot && event.isCrashed()) {
+				String screenshotFilePath = getScreenshotFilePath();
+				if (!screenshotFilePath.isEmpty()) {
+					try {
+						File screenshotFile = new File(screenshotFilePath);
+						if (screenshotFile.exists()) {
+							byte[] screenshotBytes = readFileToBytes(screenshotFile);
+							hint.addAttachment(new Attachment(screenshotBytes, "screenshot.png", "image/png"));
+							if (!screenshotFile.delete()) {
+								options.getLogger().log(SentryLevel.WARNING, "Failed to delete screenshot: %s", screenshotFilePath);
+							}
+						}
+					} catch (Exception e) {
+						options.getLogger().log(SentryLevel.ERROR, "Failed to process screenshot", e);
+					}
+				}
+			}
+
+			if (beforeSendAddr != 0) {
+				return onBeforeSend(beforeSendAddr, event, hint);
+			}
+			return event;
+		}
+	}
+
+	private static class SentryUnrealBeforeSendFeedbackCallback implements SentryOptions.BeforeSendCallback {
+		private final long beforeSendFeedbackAddr;
+
+		public SentryUnrealBeforeSendFeedbackCallback(long beforeSendFeedbackAddr) {
+			this.beforeSendFeedbackAddr = beforeSendFeedbackAddr;
+		}
+
+		@Override
+		public SentryEvent execute(SentryEvent event, Hint hint) {
+			if (beforeSendFeedbackAddr != 0) {
+				return onBeforeSendFeedback(beforeSendFeedbackAddr, event, hint);
+			}
+			return event;
+		}
+	}
+
+	private static class SentryUnrealBeforeLogCallback implements SentryOptions.Logs.BeforeSendLogCallback {
+		private final long beforeLogAddr;
+
+		public SentryUnrealBeforeLogCallback(long beforeLogAddr) {
+			this.beforeLogAddr = beforeLogAddr;
+		}
+
+		@Override
+		public SentryLogEvent execute(SentryLogEvent logEvent) {
+			if (beforeLogAddr != 0) {
+				return onBeforeLog(beforeLogAddr, logEvent);
+			}
+			return logEvent;
+		}
+	}
+
+	private static class SentryUnrealBeforeMetricCallback implements SentryOptions.Metrics.BeforeSendMetricCallback {
+		private final long beforeMetricAddr;
+
+		public SentryUnrealBeforeMetricCallback(long beforeMetricAddr) {
+			this.beforeMetricAddr = beforeMetricAddr;
+		}
+
+		@Override
+		public SentryMetricsEvent execute(SentryMetricsEvent metricEvent, Hint hint) {
+			if (beforeMetricAddr != 0) {
+				return onBeforeMetric(beforeMetricAddr, metricEvent);
+			}
+			return metricEvent;
+		}
+	}
+
+	private static SentryOptions.Proxy parseProxy(final String proxyUrl) {
+		URI uri;
+		try {
+			uri = new URI(proxyUrl);
+		} catch (URISyntaxException e) {
+			return null;
+		}
+		if (uri.getScheme() == null || uri.getHost() == null || uri.getPort() < 0 || uri.getPort() > 65535) {
+			return null;
+		}
+
+		String scheme = uri.getScheme().toLowerCase();
+		java.net.Proxy.Type type;
+		if (scheme.equals("http")) {
+			type = java.net.Proxy.Type.HTTP;
+		} else if (scheme.startsWith("socks")) {
+			type = java.net.Proxy.Type.SOCKS;
+		} else {
+			return null;
+		}
+
+		String user = null;
+		String pass = null;
+		String userInfo = uri.getUserInfo();
+		if (userInfo != null) {
+			int separator = userInfo.indexOf(':');
+			user = separator >= 0 ? userInfo.substring(0, separator) : userInfo;
+			pass = separator >= 0 ? userInfo.substring(separator + 1) : null;
+		}
+
+		return new SentryOptions.Proxy(uri.getHost(), String.valueOf(uri.getPort()), type, user, pass);
+	}
+
+	private static byte[] readFileToBytes(File file) throws Exception {
+		FileInputStream fis = new FileInputStream(file);
+		try {
+			byte[] buffer = new byte[(int) file.length()];
+			int offset = 0;
+			int remaining = buffer.length;
+			while (remaining > 0) {
+				int bytesRead = fis.read(buffer, offset, remaining);
+				if (bytesRead < 0) {
+					throw new Exception("Unexpected end of file while reading: " + file.getAbsolutePath());
+				}
+				offset += bytesRead;
+				remaining -= bytesRead;
+			}
+			return buffer;
+		} finally {
+			fis.close();
+		}
+	}
+}

@@ -1,0 +1,117 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "AppleSentryTransaction.h"
+
+#if !USE_SENTRY_NATIVE
+
+#include "AppleSentrySpan.h"
+
+#include "Infrastructure/AppleSentryConverters.h"
+
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
+
+#include "SentryDefines.h"
+
+FAppleSentryTransaction::FAppleSentryTransaction(SentryObjCSpan* transaction)
+{
+	TransactionApple = transaction;
+	[TransactionApple retain];
+}
+
+FAppleSentryTransaction::~FAppleSentryTransaction()
+{
+	[TransactionApple release];
+}
+
+SentryObjCSpan* FAppleSentryTransaction::GetNativeObject()
+{
+	return TransactionApple;
+}
+
+TSharedPtr<ISentrySpan> FAppleSentryTransaction::StartChildSpan(const FString& operation, const FString& desctiption, bool bindToScope)
+{
+	SentryObjCSpan* span = [TransactionApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
+
+	if (bindToScope)
+	{
+		[SENTRY_APPLE_CLASS(SentryObjCSDK) configureScope:^(SentryObjCScope* scope) {
+			scope.span = span;
+		}];
+	}
+
+	return MakeShareable(new FAppleSentrySpan(span));
+}
+
+TSharedPtr<ISentrySpan> FAppleSentryTransaction::StartChildSpanWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope)
+{
+	TSharedPtr<ISentrySpan> span = StartChildSpan(operation, desctiption, bindToScope);
+	StaticCastSharedPtr<FAppleSentrySpan>(span)->GetNativeObject().startTimestamp = FAppleSentryConverters::TimestampToNative(timestamp);
+	return span;
+}
+
+void FAppleSentryTransaction::Finish()
+{
+	[TransactionApple finish];
+}
+
+void FAppleSentryTransaction::FinishWithTimestamp(int64 timestamp)
+{
+	TransactionApple.timestamp = FAppleSentryConverters::TimestampToNative(timestamp);
+	[TransactionApple finish];
+}
+
+bool FAppleSentryTransaction::IsFinished() const
+{
+	return TransactionApple.isFinished;
+}
+
+void FAppleSentryTransaction::SetName(const FString& name)
+{
+	// no corresponding implementation in sentry-cocoa
+	UE_LOG(LogSentrySdk, Warning, TEXT("The Cocoa SDK doesn't currently support SetName function"));
+}
+
+void FAppleSentryTransaction::SetTag(const FString& key, const FString& value)
+{
+	[TransactionApple setTagValue:value.GetNSString() forKey:key.GetNSString()];
+}
+
+void FAppleSentryTransaction::RemoveTag(const FString& key)
+{
+	[TransactionApple removeTagForKey:key.GetNSString()];
+}
+
+void FAppleSentryTransaction::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	[TransactionApple setDataValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
+}
+
+void FAppleSentryTransaction::RemoveData(const FString& key)
+{
+	[TransactionApple removeDataForKey:key.GetNSString()];
+}
+
+void FAppleSentryTransaction::GetTrace(FString& name, FString& value)
+{
+	SentryObjCTraceHeader* traceHeader = [TransactionApple toTraceHeader];
+
+	name = TEXT("sentry-trace");
+	value = FString([traceHeader value]);
+}
+
+TMap<FString, FString> FAppleSentryTransaction::GetTraceHeaders()
+{
+	TMap<FString, FString> headers;
+
+	headers.Add(TEXT("sentry-trace"), FString([[TransactionApple toTraceHeader] value]));
+
+	if (NSString* baggage = [TransactionApple baggageHttpHeader])
+	{
+		headers.Add(TEXT("baggage"), FString(baggage));
+	}
+
+	return headers;
+}
+
+#endif // !USE_SENTRY_NATIVE

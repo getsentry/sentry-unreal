@@ -1,0 +1,15 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#include "HAL/Platform.h"
+
+#if PLATFORM_ANDROID
+#include "Android/AndroidSentrySpan.h"
+#elif PLATFORM_APPLE && !USE_SENTRY_NATIVE
+#include "Apple/AppleSentrySpan.h"
+#elif USE_SENTRY_NATIVE
+#include "GenericPlatform/GenericPlatformSentrySpan.h"
+#else
+#include "Null/NullSentrySpan.h"
+#endif
