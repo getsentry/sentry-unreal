@@ -30,9 +30,6 @@ public:
 	// access unit arrives
 	void SetDimensions(uint32 InWidth, uint32 InHeight);
 
-	// Caller's clock time of the track's t=0, passed on with the init segment
-	void SetTimelineOrigin(double InTimelineOriginSeconds) { TimelineOriginSeconds = InTimelineOriginSeconds; }
-
 	/**
 	 * Closes a fragment after every keyframe instead of waiting for the next one.
 	 *
@@ -52,8 +49,9 @@ public:
 	 * @param bKeyframe    true when this access unit starts with an IDR; each
 	 *                     fMP4 fragment must begin on one
 	 * @param DurationTicks sample duration in FSentryFMP4Writer::TrackTimescale ticks
+	 * @param CaptureTimeSeconds FPlatformTime::Seconds() when the frame was captured, negative if unknown
 	 */
-	void AddAccessUnit(const uint8* AnnexB, int64 Size, bool bKeyframe, uint32 DurationTicks);
+	void AddAccessUnit(const uint8* AnnexB, int64 Size, bool bKeyframe, uint32 DurationTicks, double CaptureTimeSeconds = -1.0);
 
 	// Emits whatever samples have accumulated as a fragment
 	void Flush();
@@ -69,10 +67,10 @@ private:
 
 	uint32 Width = 0;
 	uint32 Height = 0;
-	double TimelineOriginSeconds = -1.0;
 
 	TArray<FSentryH264Sample> CurrentSamples;
 	uint64 CurrentFragmentDecodeTime = 0;
+	double CurrentFragmentCaptureTime = -1.0;
 	uint32 NextFragmentSequence = 1;
 	uint64 SampleClock = 0;
 

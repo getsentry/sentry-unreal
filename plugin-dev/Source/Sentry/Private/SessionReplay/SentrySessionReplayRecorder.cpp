@@ -169,7 +169,6 @@ void FSentrySessionReplayRecorder::Shutdown()
 	{
 		FScopeLock Lock(&RingLock);
 		InitSegment.Empty();
-		TimelineOriginSeconds = -1.0;
 		FragmentRing.Reset();
 	}
 }
@@ -198,11 +197,10 @@ FSentryReplayInfo FSentrySessionReplayRecorder::BuildReplayInfo(double ClipStart
 	return Info;
 }
 
-void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment, double NewTimelineOriginSeconds)
+void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSegment)
 {
 	FScopeLock Lock(&RingLock);
 	InitSegment = MoveTemp(NewInitSegment);
-	TimelineOriginSeconds = NewTimelineOriginSeconds;
 
 	if (!FragmentRing.IsEmpty())
 	{
@@ -210,7 +208,7 @@ void FSentrySessionReplayRecorder::OnInitSegmentReady(TArray<uint8>&& NewInitSeg
 	}
 }
 
-void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks)
+void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks, double CaptureTimeSeconds)
 {
 	FScopeLock Lock(&RingLock);
 
@@ -218,6 +216,7 @@ void FSentrySessionReplayRecorder::OnFragmentReady(TArray<uint8>&& Fragment, uin
 	Entry.Bytes = MoveTemp(Fragment);
 	Entry.FrameCount = FrameCount;
 	Entry.DurationTicks = DurationTicks;
+	Entry.CaptureTimeSeconds = CaptureTimeSeconds;
 
 	FragmentRing.Add(MoveTemp(Entry));
 
@@ -320,10 +319,7 @@ void FSentrySessionReplayRecorder::DoRotation()
 			TotalTicks += Fragment.DurationTicks;
 		}
 
-		if (TimelineOriginSeconds >= 0.0)
-		{
-			ClipStartSeconds = TimelineOriginSeconds + static_cast<double>(FirstTfdt) / FSentryFMP4Writer::TrackTimescale;
-		}
+		ClipStartSeconds = FragmentRing[0].CaptureTimeSeconds;
 	}
 
 	LatestFrameCount = static_cast<int32>(TotalFrames);

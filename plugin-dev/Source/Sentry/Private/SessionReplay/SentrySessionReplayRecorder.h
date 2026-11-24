@@ -46,11 +46,11 @@ public:
 	bool HasSnapshotOnDisk() const { return bSnapshotOnDisk; }
 	const FString& GetAttachmentPath() const { return AttachmentPath; }
 
-	// Called by the encoder thread when the init segment (ftyp+moov) is ready, along with
-	// the FPlatformTime::Seconds() of the track's t=0 (negative if unknown)
-	void OnInitSegmentReady(TArray<uint8>&& InitSegment, double TimelineOriginSeconds);
-	// Called by the encoder thread when a fragment (moof+mdat) is complete
-	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks);
+	// Called by the encoder thread when the init segment (ftyp+moov) is ready
+	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
+	// Called by the encoder thread when a fragment (moof+mdat) is complete, along with
+	// the FPlatformTime::Seconds() its first frame was captured at (negative if unknown)
+	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks, double CaptureTimeSeconds);
 
 	// FRunnable (rotation thread)
 	virtual bool Init() override;
@@ -92,12 +92,12 @@ private:
 		TArray<uint8> Bytes;
 		uint32 FrameCount = 0;
 		uint64 DurationTicks = 0;
+		double CaptureTimeSeconds = -1.0;
 	};
 
 	// Fragment ring + init segment, protected by RingLock
 	FCriticalSection RingLock;
 	TArray<uint8> InitSegment;
-	double TimelineOriginSeconds = -1.0;
 	TRingBuffer<FFragment> FragmentRing;
 
 	// WindowSeconds expressed in FSentryFMP4Writer::TrackTimescale ticks
