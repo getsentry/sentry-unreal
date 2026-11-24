@@ -10,6 +10,7 @@
 
 - Add opt-in mouse and touch input capturing in session replays ([#1686](https://github.com/getsentry/sentry-unreal/pull/1686))
 - Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
+- Upload shader binaries for GPU crash symbolication after cook ([#1678](https://github.com/getsentry/sentry-unreal/pull/1678))
 
 ### Fixes
 
@@ -21,15 +22,18 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.63.0 to v8.65.0 ([#1692](https://github.com/getsentry/sentry-unreal/pull/1692), [#1708](https://github.com/getsentry/sentry-unreal/pull/1708))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8650)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.63.0...8.65.0)
+- Bump Java SDK from v8.63.0 to v8.65.1 ([#1692](https://github.com/getsentry/sentry-unreal/pull/1692), [#1708](https://github.com/getsentry/sentry-unreal/pull/1708), [#1719](https://github.com/getsentry/sentry-unreal/pull/1719))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8651)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.63.0...8.65.1)
 - Bump Cocoa SDK from v9.33.0 to v9.35.0 ([#1693](https://github.com/getsentry/sentry-unreal/pull/1693), [#1704](https://github.com/getsentry/sentry-unreal/pull/1704))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9350)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.33.0...9.35.0)
 - Bump Android Gradle Plugin from v6.26.0 to v6.27.0 ([#1702](https://github.com/getsentry/sentry-unreal/pull/1702))
   - [changelog](https://github.com/getsentry/sentry-android-gradle-plugin/blob/main/CHANGELOG.md#6270)
   - [diff](https://github.com/getsentry/sentry-android-gradle-plugin/compare/6.26.0...6.27.0)
+- Bump Native SDK from v0.17.6 to v0.17.7 ([#1721](https://github.com/getsentry/sentry-unreal/pull/1721))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0177)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.6...0.17.7)
 
 ## 1.26.0
 
