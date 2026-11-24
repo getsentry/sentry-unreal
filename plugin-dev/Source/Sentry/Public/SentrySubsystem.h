@@ -645,9 +645,6 @@ public:
 	/** Retrieves the underlying native implementation. */
 	TSharedPtr<ISentrySubsystem> GetNativeObject() const;
 
-	/** Gets the before log handler instance. */
-	USentryBeforeLogHandler* GetBeforeLogHandler() const;
-
 private:
 	/** Adds default context data for all events captured by Sentry SDK. */
 	void AddDefaultContext();
