@@ -80,7 +80,7 @@ enum class ESentryCrashBackend : uint8
 };
 
 UENUM(BlueprintType)
-enum class ESentryAndroidCrashBackend : uint8
+enum class ESentryAndroidNativeCrashSource : uint8
 {
 	// Capture crashes using the sentry-native NDK signal handler only
 	NdkSignalHandler,
@@ -484,8 +484,8 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryCrashUploadMode CrashUploadMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
-		Meta = (DisplayName = "Android crash capture mode", ToolTip = "Mechanism used to capture Android crashes and enrich them with additional context.", SentryPlatforms = "Android"))
-	ESentryAndroidCrashBackend AndroidCrashBackend;
+		Meta = (DisplayName = "Android native crash source", ToolTip = "Mechanism used to capture Android crashes and enrich them with additional context.", SentryPlatforms = "Android"))
+	ESentryAndroidNativeCrashSource AndroidNativeCrashSource;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Crash Handling",
 		Meta = (DisplayName = "Delay app shutdown until crash report is uploaded", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",

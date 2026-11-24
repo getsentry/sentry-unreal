@@ -92,9 +92,9 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetNumberField(TEXT("anrTimeoutMillis"), settings->AppNotRespondingTimeout * 1000.0f);
 	SettingsJson->SetBoolField(TEXT("enableNdkAppHangTracking"), bNdkAppHangTracking);
 	SettingsJson->SetNumberField(TEXT("ndkAppHangTimeoutMillis"), settings->HangTimeoutDuration * 1000.0f);
-	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidCrashBackend != ESentryAndroidCrashBackend::TombstoneOnly);
+	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidNativeCrashSource != ESentryAndroidNativeCrashSource::TombstoneOnly);
 	SettingsJson->SetBoolField(TEXT("enableTombstone"),
-		settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneOnly || settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneMergedWithNdk);
+		settings->AndroidNativeCrashSource == ESentryAndroidNativeCrashSource::TombstoneOnly || settings->AndroidNativeCrashSource == ESentryAndroidNativeCrashSource::TombstoneMergedWithNdk);
 	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->AttachGameLog);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), true);
 	SettingsJson->SetBoolField(TEXT("enableMetrics"), true);
