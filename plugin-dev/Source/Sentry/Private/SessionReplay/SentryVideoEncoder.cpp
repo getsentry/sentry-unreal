@@ -487,8 +487,10 @@ void FSentryVideoEncoder::DrainPackets()
 
 		const uint32 DurationTicks = FMath::Max<uint32>(1, static_cast<uint32>(DurationSeconds * FSentryFMP4Writer::TrackTimescale));
 
+		const double CaptureTimeSeconds = CaptureTimeBaseSeconds + PacketTimestampMs / 1000.0;
+
 		FragmentBuilder.SetDimensions(Width, Height);
-		FragmentBuilder.AddAccessUnit(Packet.DataPtr.Get(), Packet.DataSize, Packet.bIsKeyframe, DurationTicks);
+		FragmentBuilder.AddAccessUnit(Packet.DataPtr.Get(), Packet.DataSize, Packet.bIsKeyframe, DurationTicks, CaptureTimeSeconds);
 	}
 }
 
