@@ -246,7 +246,8 @@ jobs:
   build-consoles:
     needs: [generate-test-matrix]
     name: ${{ matrix.name }}
-    if: github.event_name == 'push'
+    # Temporarily disabled: console extension releases and this repo block each other
+    if: false # github.event_name == 'push'
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     strategy:
