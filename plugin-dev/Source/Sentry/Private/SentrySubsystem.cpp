@@ -1195,8 +1195,3 @@ void USentrySubsystem::AddLog(const FString& Message, ESentryLogLevel Level, con
 		SubsystemNativeImpl->AddLog(Message, Level, Attributes);
 	}
 }
-
-USentryBeforeLogHandler* USentrySubsystem::GetBeforeLogHandler() const
-{
-	return BeforeLogHandler;
-}

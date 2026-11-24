@@ -7,6 +7,7 @@
 - Output device wrappers are now private, use `FSentryDelegates::OnAssert` instead ([#1716](https://github.com/getsentry/sentry-unreal/pull/1716))
 - Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
 - Replace `UseNativeBackend` with the `CrashBackend` option ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
+- Remove `USentrySubsystem::GetBeforeLogHandler` ([#1720](https://github.com/getsentry/sentry-unreal/pull/1720))
 
 ### Behavioral Changes
 
