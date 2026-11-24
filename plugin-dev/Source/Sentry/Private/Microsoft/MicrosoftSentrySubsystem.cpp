@@ -46,7 +46,7 @@ void FMicrosoftSentrySubsystem::InitWithSettings(const USentrySettings* Settings
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)
 	if (IsEnabled())
 	{
-		FPlatformMisc::SetCrashHandlingType(Settings->EnableAutoCrashCapturing ? ECrashHandlingType::Disabled : ECrashHandlingType::Default);
+		FPlatformMisc::SetCrashHandlingType(Settings->OverrideEngineCrashHandling ? ECrashHandlingType::Disabled : ECrashHandlingType::Default);
 	}
 
 	if (FPlatformMisc::GetCrashHandlingType() == ECrashHandlingType::Default && Settings->EnableCrashReporterContextPropagation)

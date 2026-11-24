@@ -45,7 +45,7 @@ change only what the request actually needs.
    path.
 2. Code - manual transactions and spans, breadcrumbs, user feedback, the before-send family of
    handlers. Regular source changes in the project, C++ or Blueprint.
-3. Build-time settings - `CrashBackend` and `AttachSessionReplay` (session replay also needs
+3. Build-time settings - `CrashBackend` and `EnableSessionReplay` (session replay also needs
    the AVCodecsCore engine plugin enabled). The plugin's build script reads these from the
    project config when the project is COMPILED: flipping them does nothing until the next C++
    rebuild, which means closing the editor. Make every other change first, then tell the user

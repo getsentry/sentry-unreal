@@ -97,7 +97,7 @@ BeforeAll {
 
     # Project setting overrides shared by every scenario
     $script:BaseAppArgs = @(
-        "$script:SentrySettings`:EnableAutoLogAttachment=True"  # Enables log attachment
+        "$script:SentrySettings`:AttachGameLog=True"  # Enables log attachment
     )
 
     # Launch the app on the connected device and return its captured output

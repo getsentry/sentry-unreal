@@ -650,7 +650,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	sentry_options_t* options = sentry_options_new();
 
-	if (settings->EnableAutoLogAttachment)
+	if (settings->AttachGameLog)
 	{
 		ConfigureLogFileAttachment(options);
 	}
@@ -683,7 +683,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		}
 	}
 
-	isSessionReplayAttachmentEnabled = settings->AttachSessionReplay;
+	isSessionReplayAttachmentEnabled = settings->EnableSessionReplay;
 	if (isSessionReplayAttachmentEnabled)
 	{
 		ConfigureSessionReplayCapturing(options);
@@ -801,7 +801,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	}
 
 #ifdef USE_SENTRY_SESSION_REPLAY
-	if (isEnabled && settings->AttachSessionReplay)
+	if (isEnabled && settings->EnableSessionReplay)
 	{
 		// Crashed runs' replays are already queued with the crash, so any leftovers can be safely cleaned up
 		IFileManager::Get().DeleteDirectory(*GetSessionReplayDirectory(), false, true);

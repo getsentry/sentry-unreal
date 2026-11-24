@@ -195,7 +195,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"               # Prevents double initialization
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableOnCrashLogging=True"     # Enables crash logging
-            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableAutoLogAttachment=True"  # Enables log attachment
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachGameLog=True"  # Enables log attachment
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
 
             # $crashTypeArg triggers specific crash type scenario in the sample app
@@ -562,7 +562,7 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
 
             # Override default project settings
             $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
-            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=True"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableSessionReplay=True"
 
             # -replay-capture stages a replay clip on disk and crashes; the SDK is
             # expected to send it as a replay_video envelope alongside the crash event
@@ -572,11 +572,11 @@ Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTa
             # to the crashed run's directory and delivered on the next launch, so relaunch
             # the app to flush it. The native backend daemon sends it same-session.
             # On macOS the cocoa backend builds and sends the replay envelope during the
-            # relaunch, which requires AttachSessionReplay to remain enabled.
+            # relaunch, which requires EnableSessionReplay to remain enabled.
             if (-not $script:IsNativeBackend) {
                 $flushArgs = @('-init-only') + $script:BaseAppArgs
                 $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
-                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=True"
+                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableSessionReplay=True"
                 Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($flushArgs -join ' ')
             }
 

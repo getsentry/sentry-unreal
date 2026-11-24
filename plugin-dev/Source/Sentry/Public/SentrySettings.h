@@ -454,9 +454,9 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableForPromotedBuildsOnly;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
-		Meta = (DisplayName = "Override Windows default crash capturing mechanism", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter.",
+		Meta = (DisplayName = "Override engine crash handling", ToolTip = "Disables Unreal Engine's built-in crash handling so that Sentry captures crashes. When disabled, crashes are handled by the engine and reported through Unreal Crash Reporter.",
 			SentryPlatforms = "Win64,Xbox", SentryMinEngine = "5.2"))
-	bool EnableAutoCrashCapturing;
+	bool OverrideEngineCrashHandling;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Crash backend", ToolTip = "Backend used to capture and send crashes.",
@@ -519,7 +519,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
 		Meta = (DisplayName = "Attach game log", ToolTip = "Flag indicating whether to attach game log automatically to captured events. Not available in shipping builds."))
-	bool EnableAutoLogAttachment;
+	bool AttachGameLog;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
 		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach a screenshot of the application to crash and ensure events."))
@@ -586,7 +586,7 @@ class SENTRY_API USentrySettings : public UObject
 	float AppNotRespondingTimeout;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Release Health",
-		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
+		Meta = (DisplayName = "Enable automatic session tracking", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
 	bool EnableAutoSessionTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Release Health",
@@ -612,9 +612,6 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
 	TSubclassOf<USentryTraceSampler> TracesSampler;
 
-	UPROPERTY(Config, Meta = (DeprecatedProperty, DeprecationMessage = "Structured logging is now always enabled. This setting no longer has any effect and will be removed in the future."))
-	bool EnableStructuredLogging;
-
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Logs",
 		Meta = (DisplayName = "Structured logging categories", ToolTip = "List of UE_LOG categories to forward to Sentry structured logging. Leave empty to forward all."))
 	TArray<FString> StructuredLoggingCategories;
@@ -624,11 +621,8 @@ class SENTRY_API USentrySettings : public UObject
 	FStructuredLoggingLevels StructuredLoggingLevels;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Logs",
-		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether to also send breadcrumbs when structured logging is enabled."))
+		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether log messages forwarded to structured logging also produce breadcrumbs. Other log messages follow the breadcrumb verbosity settings."))
 	bool bSendBreadcrumbsWithStructuredLogging;
-
-	UPROPERTY(Config, Meta = (DeprecatedProperty, DeprecationMessage = "The Sentry metrics API is now always enabled. This setting no longer has any effect and will be removed in the future."))
-	bool EnableMetrics;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Metrics",
 		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS)."))
@@ -735,11 +729,11 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Enable session replay", ToolTip = "Captures a short gameplay video leading up to a crash and sends it to Sentry's Session Replay. On desktop platforms (Windows/Mac/Linux), requires the AVCodecsCore plugin plus a codec plugin matching the GPU vendor (NVCodecs for NVIDIA on Windows/Linux, AMFCodecs for AMD on Windows, VTCodecs on Mac) and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
 			SentryPlatforms = "!PS5,!Switch", SentryMinEngine = "5.4", SentryRequiresRebuild, SentryExperimental))
-	bool AttachSessionReplay;
+	bool EnableSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Replay duration (milliseconds)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for the crash replay; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration. Capped at 20 seconds: Sentry rejects replay videos larger than 10 MiB, and longer clips risk exceeding that limit.",
-			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "20000"))
+			EditCondition = "EnableSessionReplay", ClampMin = "1000", ClampMax = "20000"))
 	uint32 SessionReplayDurationMs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
@@ -749,7 +743,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Advanced recording options", ToolTip = "Low-level encoder/muxer tuning for the desktop (Windows/Mac/Linux) session-replay recorder. Defaults are sensible for most projects.",
-			EditCondition = "AttachSessionReplay", AdvancedDisplay))
+			EditCondition = "EnableSessionReplay", AdvancedDisplay))
 	FSentrySessionReplayOptions SessionReplayOptions;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Game State Capture",
