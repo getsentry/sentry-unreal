@@ -10,6 +10,7 @@
 
 - Migrate debug symbols upload to the new Sentry CLI ([#1680](https://github.com/getsentry/sentry-unreal/pull/1680))
 - Upload shader binaries for GPU crash symbolication after cook ([#1678](https://github.com/getsentry/sentry-unreal/pull/1678))
+- Attach all threads to native hang events ([#1714](https://github.com/getsentry/sentry-unreal/pull/1714))
 
 ### Fixes
 
