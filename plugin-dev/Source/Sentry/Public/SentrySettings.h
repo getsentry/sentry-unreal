@@ -442,11 +442,11 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryLevel DebugLevel;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
-		Meta = (DisplayName = "Enable for Build Configurations"))
+		Meta = (DisplayName = "Enable for build configurations"))
 	FEnableBuildConfigurations EnableBuildConfigurations;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
-		Meta = (DisplayName = "Enable for Build Target Types"))
+		Meta = (DisplayName = "Enable for build target types"))
 	FEnableBuildTargets EnableBuildTargets;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Core",
@@ -488,7 +488,7 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryAndroidCrashBackend AndroidCrashBackend;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Crash Handling",
-		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
+		Meta = (DisplayName = "Delay app shutdown until crash report is uploaded", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
 			EditCondition = "CrashBackend == ESentryCrashBackend::Legacy", SentryPlatforms = "Win64,Linux"))
 	bool CrashpadWaitForUpload;
 
@@ -683,11 +683,11 @@ class SENTRY_API USentrySettings : public UObject
 	bool SendDefaultPii;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
-		Meta = (DisplayName = "Require User Consent", ToolTip = "True if user's consent is required before the SDK sends any data to Sentry.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
+		Meta = (DisplayName = "Require user consent", ToolTip = "True if user's consent is required before the SDK sends any data to Sentry.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
 	bool bRequireUserConsent;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
-		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
+		Meta = (DisplayName = "Default user consent given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
 	bool bDefaultUserConsentGiven;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Transport",
@@ -760,11 +760,11 @@ class SENTRY_API USentrySettings : public UObject
 	bool UploadSymbolsAutomatically;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Project name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
 	FString ProjectName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Organization name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
 	FString OrgName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
@@ -776,7 +776,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool IncludeSources;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Diagnostic Level", ToolTip = "Logs verbosity level during symbol uploading.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Diagnostic level", ToolTip = "Logs verbosity level during symbol uploading.", EditCondition = "UploadSymbolsAutomatically"))
 	ESentryCliLogLevel DiagnosticLevel;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
@@ -801,7 +801,7 @@ class SENTRY_API USentrySettings : public UObject
 	FSentryCrashReporterAppearance CrashReporterAppearance;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
-		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Crash Reporter should use in order to upload crash data to Sentry."))
+		Meta = (DisplayName = "Unreal Crash Reporter endpoint", ToolTip = "Endpoint that Unreal Crash Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
