@@ -1,0 +1,121 @@
+name: Build UE Windows Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      ue_version:
+        description: Select Unreal Engine version
+        required: true
+        type: choice
+        options:
+        - 4.27
+        - 5.0
+        - 5.1
+        - 5.2
+        - 5.3
+        - 5.4
+        - 5.5
+        - 5.6
+        - 5.7
+        - 5.8
+      ue_repo:
+        description: Set Unreal Engine repository
+        required: true
+        type: string
+        default: 'https://github.com/getsentry/UnrealEngine.git'
+      clean_disk:
+        description: Clean up disk space before Docker build
+        required: true
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: 'Build for UE ${{ inputs.ue_version }}'
+    runs-on: windows-latest-32-cores
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      # Building docker images for newer UE versions may require extra disk space
+      - name: Clean up disk space before Docker build
+        if: ${{ inputs.clean_disk == true }}
+        shell: pwsh
+        run: |
+          .\scripts\clean-storage-win.ps1
+
+      - name: Set Visual Studio version based on UE version
+        id: set_vs_version
+        shell: bash
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+        run: |
+          if [[ "$UE_VERSION" == "4.27" || "$UE_VERSION" == "5.0" || "$UE_VERSION" == "5.1" ]]; then
+            echo "vs_version=2019" >> $GITHUB_OUTPUT
+          else
+            echo "vs_version=2022" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12.8'
+          architecture: 'x64'
+
+      - name: Install unreal-docker
+        run: |
+            Invoke-WebRequest -Uri "https://github.com/adamrehn/ue4-docker/archive/refs/tags/v0.0.116.zip" -OutFile "ue-docker.zip"
+            Expand-Archive -Path "ue-docker.zip" -DestinationPath "."
+            cd ue4-docker-0.0.116
+            # Patch install-prerequisites.ps1 to fix pre-requisites image build
+            $file = "src\ue4docker\dockerfiles\ue4-build-prerequisites\windows\install-prerequisites.ps1"
+            (Get-Content $file) -replace 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.14.38.17.8.x86.x64' | Set-Content $file
+            # Install the patched ue4-docker package
+            pip install -e .
+
+      - name: Configure unreal-docker
+        run: |
+          ue4-docker setup
+
+      - name: Build Unreal Engine Docker image
+        env:
+          UE_REPO: ${{ inputs.ue_repo }}
+          UE_VERSION: ${{ inputs.ue_version }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          VS_VERSION: ${{ steps.set_vs_version.outputs.vs_version }}
+        run: |
+          ue4-docker build custom -repo="$env:UE_REPO" -branch="$env:UE_VERSION" `
+          -basetag ltsc2022 `
+          -suffix "$env:UE_VERSION" `
+          -isolation=process `
+          -username="$env:DOCKER_USERNAME" `
+          -password="$env:DOCKER_TOKEN" `
+          --visual-studio "$env:VS_VERSION" `
+          --target minimal `
+          --exclude debug `
+          --exclude templates `
+          --exclude ddc `
+          --opt buildgraph-args="-set:WithClient=false -set:WithServer=false"
+
+      - name: Log in to GitHub package registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push Docker image with pre-built Unreal Engine
+        env:
+          UE_VERSION: ${{ inputs.ue_version }}
+        run: |
+          docker tag "adamrehn/ue4-minimal:custom-$env:UE_VERSION" "$env:REGISTRY/getsentry/unreal-docker:$env:UE_VERSION"
+          docker push "$env:REGISTRY/getsentry/unreal-docker:$env:UE_VERSION"

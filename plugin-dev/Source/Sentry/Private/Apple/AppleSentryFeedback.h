@@ -1,0 +1,37 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#if !USE_SENTRY_NATIVE
+
+#include "Interface/SentryFeedbackInterface.h"
+
+class FAppleSentryFeedback : public ISentryFeedback
+{
+public:
+	FAppleSentryFeedback(const FString& message);
+	virtual ~FAppleSentryFeedback() override;
+
+	virtual FString GetMessage() const override;
+	virtual void SetName(const FString& name) override;
+	virtual FString GetName() const override;
+	virtual void SetContactEmail(const FString& email) override;
+	virtual FString GetContactEmail() const override;
+	virtual void SetAssociatedEvent(const FString& eventId) override;
+	virtual FString GetAssociatedEvent() const override;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+
+	const TArray<TSharedPtr<ISentryAttachment>>& GetAttachments() const { return Attachments; }
+
+private:
+	FString Message;
+	FString Name;
+	FString Email;
+	FString EventId;
+
+	TArray<TSharedPtr<ISentryAttachment>> Attachments;
+};
+
+typedef FAppleSentryFeedback FPlatformSentryFeedback;
+
+#endif // !USE_SENTRY_NATIVE

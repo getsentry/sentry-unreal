@@ -1,0 +1,249 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "AppleSentryEvent.h"
+
+#if !USE_SENTRY_NATIVE
+
+#include "AppleSentryId.h"
+
+#include "Infrastructure/AppleSentryConverters.h"
+
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
+
+FAppleSentryEvent::FAppleSentryEvent()
+{
+	EventApple = [[SENTRY_APPLE_CLASS(SentryObjCEvent) alloc] init];
+}
+
+FAppleSentryEvent::FAppleSentryEvent(SentryObjCEvent* event)
+{
+	EventApple = [event retain];
+}
+
+FAppleSentryEvent::~FAppleSentryEvent()
+{
+	[EventApple release];
+}
+
+SentryObjCEvent* FAppleSentryEvent::GetNativeObject()
+{
+	return EventApple;
+}
+
+TSharedPtr<ISentryId> FAppleSentryEvent::GetId() const
+{
+	SentryObjCId* id = EventApple.eventId;
+	return MakeShareable(new FAppleSentryId(id));
+}
+
+void FAppleSentryEvent::SetMessage(const FString& message)
+{
+	SentryObjCMessage* msg = [[SENTRY_APPLE_CLASS(SentryObjCMessage) alloc] initWithFormatted:message.GetNSString()];
+	msg.message = message.GetNSString();
+	EventApple.message = msg;
+	[msg release];
+}
+
+FString FAppleSentryEvent::GetMessage() const
+{
+	SentryObjCMessage* msg = EventApple.message;
+	return FString(msg.message);
+}
+
+void FAppleSentryEvent::SetLevel(ESentryLevel level)
+{
+	EventApple.level = FAppleSentryConverters::SentryLevelToNative(level);
+}
+
+ESentryLevel FAppleSentryEvent::GetLevel() const
+{
+	if (EventApple.level == SentryObjCLevelNone)
+	{
+		return ESentryLevel::Error;
+	}
+
+	return FAppleSentryConverters::SentryLevelToUnreal(EventApple.level);
+}
+
+void FAppleSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
+{
+	EventApple.fingerprint = FAppleSentryConverters::StringArrayToNative(fingerprint);
+}
+
+TArray<FString> FAppleSentryEvent::GetFingerprint()
+{
+	return FAppleSentryConverters::StringArrayToUnreal(EventApple.fingerprint);
+}
+
+void FAppleSentryEvent::SetTag(const FString& key, const FString& value)
+{
+	NSMutableDictionary* mutableTags = [EventApple.tags mutableCopy] ?: [[NSMutableDictionary alloc] init];
+	mutableTags[key.GetNSString()] = value.GetNSString();
+	EventApple.tags = mutableTags;
+	[mutableTags release];
+}
+
+FString FAppleSentryEvent::GetTag(const FString& key) const
+{
+	return FString(EventApple.tags[key.GetNSString()]);
+}
+
+bool FAppleSentryEvent::TryGetTag(const FString& key, FString& value) const
+{
+	NSString* tag = [EventApple.tags objectForKey:key.GetNSString()];
+
+	if (!tag)
+	{
+		return false;
+	}
+
+	value = FString(tag);
+	return true;
+}
+
+void FAppleSentryEvent::RemoveTag(const FString& key)
+{
+	NSMutableDictionary* mutableTags = [EventApple.tags mutableCopy] ?: [[NSMutableDictionary alloc] init];
+	[mutableTags removeObjectForKey:key.GetNSString()];
+	EventApple.tags = mutableTags;
+	[mutableTags release];
+}
+
+void FAppleSentryEvent::SetTags(const TMap<FString, FString>& tags)
+{
+	EventApple.tags = FAppleSentryConverters::StringMapToNative(tags);
+}
+
+TMap<FString, FString> FAppleSentryEvent::GetTags() const
+{
+	return FAppleSentryConverters::StringMapToUnreal(EventApple.tags);
+}
+
+void FAppleSentryEvent::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	NSMutableDictionary* mutableContext = [EventApple.context mutableCopy] ?: [[NSMutableDictionary alloc] init];
+	mutableContext[key.GetNSString()] = FAppleSentryConverters::VariantMapToNative(values);
+	EventApple.context = mutableContext;
+	[mutableContext release];
+}
+
+TMap<FString, FSentryVariant> FAppleSentryEvent::GetContext(const FString& key) const
+{
+	return FAppleSentryConverters::VariantMapToUnreal(EventApple.context[key.GetNSString()]);
+}
+
+bool FAppleSentryEvent::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	NSDictionary* context = [EventApple.context objectForKey:key.GetNSString()];
+
+	if (!context)
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FAppleSentryConverters::VariantToUnreal(context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
+}
+
+void FAppleSentryEvent::RemoveContext(const FString& key)
+{
+	NSMutableDictionary* mutableContext = [EventApple.context mutableCopy] ?: [[NSMutableDictionary alloc] init];
+	[mutableContext removeObjectForKey:key.GetNSString()];
+	EventApple.context = mutableContext;
+	[mutableContext release];
+}
+
+void FAppleSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
+{
+	NSMutableDictionary* mutableExtra = [EventApple.extra mutableCopy] ?: [[NSMutableDictionary alloc] init];
+	mutableExtra[key.GetNSString()] = FAppleSentryConverters::VariantToNative(value);
+	EventApple.extra = mutableExtra;
+	[mutableExtra release];
+}
+
+FSentryVariant FAppleSentryEvent::GetExtra(const FString& key) const
+{
+	return FAppleSentryConverters::VariantToUnreal(EventApple.extra[key.GetNSString()]);
+}
+
+bool FAppleSentryEvent::TryGetExtra(const FString& key, FSentryVariant& value) const
+{
+	id extra = [EventApple.extra objectForKey:key.GetNSString()];
+
+	if (!extra)
+	{
+		return false;
+	}
+
+	value = FAppleSentryConverters::VariantToUnreal(extra);
+	return true;
+}
+
+void FAppleSentryEvent::RemoveExtra(const FString& key)
+{
+	NSMutableDictionary* mutableExtra = [EventApple.extra mutableCopy] ?: [[NSMutableDictionary alloc] init];
+	[mutableExtra removeObjectForKey:key.GetNSString()];
+	EventApple.extra = mutableExtra;
+	[mutableExtra release];
+}
+
+void FAppleSentryEvent::SetExtras(const TMap<FString, FSentryVariant>& extras)
+{
+	EventApple.extra = FAppleSentryConverters::VariantMapToNative(extras);
+}
+
+TMap<FString, FSentryVariant> FAppleSentryEvent::GetExtras() const
+{
+	return FAppleSentryConverters::VariantMapToUnreal(EventApple.extra);
+}
+
+bool FAppleSentryEvent::IsCrash() const
+{
+	if (EventApple.exceptions == nil)
+	{
+		return false;
+	}
+
+	for (SentryObjCException* exception in EventApple.exceptions)
+	{
+		if (exception.mechanism != nil && exception.mechanism.handled != nil && ![exception.mechanism.handled boolValue])
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+TSharedPtr<ISentryFeedback> FAppleSentryEvent::GetFeedback() const
+{
+	return nullptr;
+}
+
+bool FAppleSentryEvent::IsAnr() const
+{
+	if (EventApple.exceptions == nil)
+	{
+		return false;
+	}
+
+	for (SentryObjCException* exception in EventApple.exceptions)
+	{
+		if (exception.mechanism != nil && [exception.mechanism.type isEqualToString:@"AppHang"])
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+#endif // !USE_SENTRY_NATIVE

@@ -1,0 +1,50 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.26.0",
+	"FriendlyName": "Sentry",
+	"Description": "Sentry catches all your errors and performance issues, and shows you how to fix them before they bring down the player experience.",
+	"Category": "Code Plugins",
+	"CreatedBy": "Sentry",
+	"CreatedByURL": "https://sentry.io/",
+	"DocsURL": "https://docs.sentry.io/platforms/unreal/",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/99f5c02de5fa49ab97976a3a852e5408",
+	"SupportURL": "https://docs.sentry.io/support/",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "Sentry",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
+		},
+		{
+			"Name": "SentryEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Android", "IOS", "Linux", "LinuxArm64" ]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "AVCodecsCore",
+			"Enabled": false,
+			"Optional": true
+		}
+	],
+	"PostBuildSteps":
+	{
+		"Mac": [
+			"\"$(EngineDir)/Binaries/ThirdParty/Python3/Mac/bin/python3\" \"$(PluginDir)/Scripts/post_build_steps.py\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+		],
+		"Linux": [
+			"\"$(EngineDir)/Binaries/ThirdParty/Python3/Linux/bin/python3\" \"$(PluginDir)/Scripts/post_build_steps.py\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+		],
+		"Win64": [
+			"\"$(EngineDir)/Binaries/ThirdParty/Python3/Win64/python.exe\" \"$(PluginDir)/Scripts/post_build_steps.py\" $(TargetPlatform) $(TargetName) $(TargetType) $(TargetConfiguration) \"$(ProjectFile)\" \"$(PluginDir)\" \"$(EngineDir)\""
+		]
+	}
+}

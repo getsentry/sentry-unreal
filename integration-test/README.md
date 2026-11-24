@@ -1,0 +1,287 @@
+# Sentry Unreal Integration Tests
+
+This directory contains integration tests for the Sentry Unreal SDK using Pester (PowerShell testing framework).
+
+Supports testing on:
+- **Windows** - Desktop (x64)
+- **Linux** - Desktop (x64)
+- **macOS** - Desktop (arm64)
+- **Android** - Local device/emulator (via adb) or SauceLabs Real Device Cloud
+- **iOS** - SauceLabs Real Device Cloud
+
+The desktop test script (`Integration.Desktop.Tests.ps1`) auto-detects the host platform and adjusts test selection based on the active crash handler backend (Crashpad/Cocoa/Breakpad vs. Native). Some tests are skipped on certain backend combinations — see notes under [Test Coverage](#test-coverage).
+
+## Prerequisites
+
+### Common Requirements
+
+- **PowerShell 7+** (Core edition)
+- **CMake 3.20+**
+- **Pester 5+** - Install with: `Install-Module -Name Pester -Force -SkipPublisherCheck`
+- **Pre-built SentryPlayground application** (from local build or CI artifact)
+- **Environment variables**:
+  - `SENTRY_UNREAL_TEST_DSN` - Sentry test project DSN
+  - `SENTRY_AUTH_TOKEN` - Sentry API authentication token
+  - `SENTRY_UNREAL_TEST_APP_PATH` - Path to the SentryPlayground executable/APK
+
+### Android-Specific Requirements
+
+#### Option A: Local Testing (via adb)
+- **Android device or emulator** connected and visible via `adb devices`
+- **ADB (Android Debug Bridge)** installed and in PATH
+
+#### Option B: Cloud Testing (via SauceLabs)
+- **SauceLabs account** with Real Device Cloud access
+- **Additional environment variables**:
+  - `SAUCE_USERNAME` - SauceLabs username
+  - `SAUCE_ACCESS_KEY` - SauceLabs access key
+  - `SAUCE_REGION` - SauceLabs region (e.g., `us-west-1`, `eu-central-1`)
+  - `SAUCE_DEVICE_NAME` - Device name available in the specified region (must match region datacenter suffix)
+  - `SAUCE_SESSION_NAME` - Session name for SauceLabs dashboard (optional, defaults to "App Runner Android Test")
+
+### iOS-Specific Requirements
+
+iOS is tested on physical devices only — the plugin ships a device-only (arm64) `SentryObjC.framework`, so the simulator is not an option. Requires the same SauceLabs account and environment variables as Android, plus a signed `.ipa` (see `fastlane/` and the `test-ios` CI workflow).
+
+**Note**: The device name must match a device available in your SauceLabs region. Device names include a datacenter suffix that must align with the region:
+- `us-west-1` → devices ending in `_sjc1` (San Jose DC1)
+- `eu-central-1` → devices ending in `_fra1` (Frankfurt DC1)
+- `us-east-4` → devices ending in `_use1` (US East DC1)
+
+Example valid combinations:
+- Region: `us-west-1`, Device: `Samsung_Galaxy_S23_15_real_sjc1` ✓
+- Region: `eu-central-1`, Device: `Samsung_Galaxy_S23_15_real_sjc1` ✗ (mismatch)
+
+## Setup
+
+### 1. Configure Integration Test Environment
+
+Run CMake to download required PowerShell modules (app-runner):
+
+```bash
+cd integration-test
+cmake -B build -S .
+```
+
+This will:
+- Download `app-runner` from GitHub (contains SentryApiClient and test utilities)
+- Generate `TestConfig.local.ps1` with module paths
+
+**Note**: CMake configuration can be run without setting environment variables. The environment variables are only required at test runtime and will be validated by the test script itself.
+
+### 2. Get SentryPlayground Application
+
+#### Option A: Download from CI Artifacts
+
+1. Go to [GitHub Actions](https://github.com/getsentry/sentry-unreal/actions/workflows/ci.yml)
+2. Find a successful workflow run
+3. Download the appropriate artifact:
+   - `UE X.X sample build (Windows)` for Windows testing
+   - `UE X.X sample build (Linux)` for Linux testing
+   - `UE X.X sample build (Android)` for Android testing
+4. Extract to a known location
+
+#### Option B: Build Locally
+
+Follow the standard Unreal Engine build process for the [sample](./sample/) project.
+
+## Running Tests
+
+Before running tests, ensure you have set the required environment variables:
+
+### Windows
+
+```powershell
+# Set environment variables
+$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
+$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
+$env:SENTRY_UNREAL_TEST_APP_PATH = "path/to/SentryPlayground.exe"
+
+# Run tests
+cd integration-test
+Invoke-Pester Integration.Desktop.Tests.ps1
+```
+
+### Linux / macOS
+
+```bash
+# Set environment variables
+export SENTRY_UNREAL_TEST_DSN="https://key@org.ingest.sentry.io/project"
+export SENTRY_AUTH_TOKEN="sntrys_your_token_here"
+
+# Linux: shell-script entrypoint
+export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.sh"
+# macOS: executable inside the .app bundle
+export SENTRY_UNREAL_TEST_APP_PATH="./path/to/SentryPlayground.app/Contents/MacOS/SentryPlayground"
+
+# Run tests
+cd integration-test
+pwsh -Command "Invoke-Pester Integration.Desktop.Tests.ps1"
+```
+
+### Android
+
+```powershell
+# Set environment variables
+$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
+$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
+$env:SENTRY_UNREAL_TEST_APP_PATH = "./path/to/SentryPlayground.apk"
+
+# Ensure device/emulator is connected (for ADB)
+adb devices
+
+# Set credentials (for SauceLabs)
+$env:SAUCE_USERNAME = "your-saucelabs-username"
+$env:SAUCE_ACCESS_KEY = "your-saucelabs-access-key"
+$env:SAUCE_REGION = "us-west-1"
+$env:SAUCE_DEVICE_NAME = "Samsung_Galaxy_S23_15_real_sjc1"
+$env:SAUCE_SESSION_NAME = "My Custom Test Session"  # Optional, defaults to "App Runner Android Test"
+
+# Run tests (uses ADB by default)
+cd integration-test
+Invoke-Pester Integration.Android.Tests.ps1
+```
+
+### iOS
+
+```powershell
+# Set environment variables
+$env:SENTRY_UNREAL_TEST_DSN = "https://key@org.ingest.sentry.io/project"
+$env:SENTRY_AUTH_TOKEN = "sntrys_your_token_here"
+$env:SENTRY_UNREAL_TEST_APP_PATH = "./path/to/SentryPlayground.ipa"
+
+# Set credentials (SauceLabs is the only supported target)
+$env:SAUCE_USERNAME = "your-saucelabs-username"
+$env:SAUCE_ACCESS_KEY = "your-saucelabs-access-key"
+$env:SAUCE_REGION = "us-west-1"
+$env:SAUCE_DEVICE_NAME = "iPhone_17_*_real_sjc1"
+$env:SAUCE_SESSION_NAME = "My Custom Test Session"
+
+# Run tests
+cd integration-test
+Invoke-Pester Integration.iOS.Tests.ps1
+```
+
+**Note**: Ensure `SAUCE_DEVICE_NAME` matches a device available in your `SAUCE_REGION`. See the [SauceLabs Platform Configurator](https://app.saucelabs.com/live/web-testing) to find available devices for your region.
+
+## Test Coverage
+
+The integration tests cover:
+
+### Crash Capture Tests
+
+Runs once per crash type. The desktop suite parameterizes over: `NullPointer`, `StackOverflow`, `MemoryCorruption`, `Assert`, `OutOfMemory`. `OutOfMemory` is skipped on Linux and on macOS with the native backend (memory overcommit makes the OOM condition unreliable to trigger).
+
+- Application crashes with non-zero exit code
+- Event ID is captured from output (set via `test.crash_id` tag)
+- Crash event appears in Sentry
+- Exception information is present
+- Stack traces are captured
+- User context is included
+- Integration test tags are set
+- CrashType tag matches the crash type
+- Breadcrumbs are collected
+
+**Note**: On Android and macOS (cocoa backend), the crash event is uploaded on the next app launch (an init-only run), and the crash is captured from the Java layer (platform `java` rather than `native`).
+
+### Ensure Capture Tests
+
+- Application exits cleanly after a non-fatal `ensure()` failure
+- Event ID is captured from output and TEST_RESULT indicates success
+- Ensure event appears in Sentry with exception type "Ensure failed"
+- Stack trace, user context, integration test and CrashType tags are present
+
+### Hang Tracking Tests
+
+Desktop-only; skipped on macOS (sentry-cocoa provides its own AppHang detection that isn't exercised here).
+
+- Application exits cleanly after a tracked hang
+- Hang event appears in Sentry with the "App Hanging" exception type and `AppHang` mechanism
+- Stack trace and CrashType tag are present
+
+### Message Capture Tests
+
+- Application exits cleanly (exit code 0 on Windows/Linux/macOS, Android doesn't report exit codes)
+- Event ID is captured from output
+- TEST_RESULT indicates success
+- Message event appears in Sentry
+- Message content is correct
+- User context is included
+- Integration test tags are set
+- Breadcrumbs are collected
+- Local scope attachment is present and attachment removed by BeforeSendHandler is absent
+
+**Note**: On Android, events are captured from the Java layer, so the platform will be `java` instead of `native`.
+
+### Scoped Event Capture Tests
+
+Desktop-only.
+
+- Application exits cleanly
+- TEST_RESULT indicates success
+- Event captured with a local scope appears in Sentry
+- Local scope tag is present
+- Event has the default `error` level when the local scope doesn't set a level
+
+### Structured Logging Tests
+
+- Application exits cleanly
+- Test ID is captured from output
+- TEST_RESULT indicates success
+- Structured log appears in Sentry with correct message and severity
+- Test ID attribute matches captured ID
+- Attribute added by BeforeLogHandler is present
+- Attribute removed by BeforeLogHandler is absent
+- Global attribute set on subsystem is present
+- Global attribute removed from subsystem is absent
+
+**Note**: Global log attributes (`SetAttribute`/`RemoveAttribute`) are not supported on Android (sentry-java) and are only tested on desktop.
+
+### Metrics Capture Tests
+
+- Application exits cleanly
+- Test ID is captured from output
+- TEST_RESULT indicates success
+- Counter, distribution, and gauge metrics appear in Sentry with correct names, types, and values
+- Attribute added by BeforeMetricHandler is present
+- Attribute removed by BeforeMetricHandler is absent
+- Test ID attribute matches captured ID
+
+**Note**: Metrics are not supported on the cocoa backend, so the test is skipped on macOS when the cocoa backend is active. With the native backend on macOS, metrics are tested.
+
+### Tracing Capture Tests
+
+- Application exits cleanly
+- Trace ID is captured from output
+- Transaction appears in Sentry with correct name and operation
+- Transaction tags are present
+- Child spans exist with correct operations and descriptions
+- Span hierarchy (parent-child relationships) is correct
+
+## Output
+
+Test outputs are saved to `integration-test/output/`:
+
+### Windows/Linux/macOS
+
+- `*-crash-stdout.log` - Crash test standard output
+- `*-crash-stderr.log` - Crash test standard error
+- `*-crash-result.json` - Full crash test result
+- `*-message-stdout.log` - Message test standard output
+- `*-message-stderr.log` - Message test standard error
+- `*-message-result.json` - Full message test result
+- `event-*.json` - Events fetched from Sentry API
+
+### Android
+
+- `*-logcat.txt` - Logcat output from app execution (one file per launch)
+- `event-*.json` - Events fetched from Sentry API
+
+## CI Integration
+
+See the following workflow files for CI usage examples (each also runs the unit tests in the packaged sample build):
+- `.github/workflows/test-windows.yml` - Windows desktop testing
+- `.github/workflows/test-linux.yml` - Linux desktop testing
+- `.github/workflows/test-macos.yml` - macOS desktop testing
+- `.github/workflows/test-android.yml` - Android testing via SauceLabs Real Device Cloud
+- `.github/workflows/test-ios.yml` - iOS testing via SauceLabs Real Device Cloud

@@ -1,0 +1,358 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "GenericPlatformSentryEvent.h"
+#include "GenericPlatformSentryFeedback.h"
+#include "GenericPlatformSentryId.h"
+
+#include "SentryDefines.h"
+
+#include "GenericPlatform/GenericPlatformCrashContext.h"
+
+#include "Infrastructure/GenericPlatformSentryConverters.h"
+
+#if USE_SENTRY_NATIVE
+
+FGenericPlatformSentryEvent::FGenericPlatformSentryEvent()
+{
+	Event = sentry_value_new_event();
+}
+
+FGenericPlatformSentryEvent::FGenericPlatformSentryEvent(sentry_value_t event, bool isCrash)
+{
+	Event = sentry_value_incref(event);
+	IsCrashEvent = isCrash;
+}
+
+FGenericPlatformSentryEvent::~FGenericPlatformSentryEvent()
+{
+	sentry_value_decref(Event);
+}
+
+sentry_value_t FGenericPlatformSentryEvent::GetNativeObject()
+{
+	return Event;
+}
+
+TSharedPtr<ISentryId> FGenericPlatformSentryEvent::GetId() const
+{
+	sentry_value_t eventId = sentry_value_get_by_key(Event, "event_id");
+	sentry_uuid_t uuid = sentry_uuid_from_string(sentry_value_as_string(eventId));
+	return MakeShareable(new FGenericPlatformSentryId(uuid));
+}
+
+void FGenericPlatformSentryEvent::SetMessage(const FString& message)
+{
+	sentry_value_t messageСontainer = sentry_value_new_object();
+	sentry_value_set_by_key(messageСontainer, "formatted", sentry_value_new_string(TCHAR_TO_UTF8(*message)));
+	sentry_value_set_by_key(Event, "message", messageСontainer);
+}
+
+FString FGenericPlatformSentryEvent::GetMessage() const
+{
+	sentry_value_t messageСontainer = sentry_value_get_by_key(Event, "message");
+	sentry_value_t message = sentry_value_get_by_key(messageСontainer, "formatted");
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(message)));
+}
+
+void FGenericPlatformSentryEvent::SetLevel(ESentryLevel level)
+{
+	sentry_event_set_level(Event, FGenericPlatformSentryConverters::SentryLevelToNative(level));
+}
+
+ESentryLevel FGenericPlatformSentryEvent::GetLevel() const
+{
+	sentry_value_t level = sentry_value_get_by_key(Event, "level");
+	if (sentry_value_is_null(level))
+	{
+		return ESentryLevel::Error;
+	}
+
+	return FGenericPlatformSentryConverters::SentryLevelToUnreal(level);
+}
+
+void FGenericPlatformSentryEvent::SetFingerprint(const TArray<FString>& fingerprint)
+{
+	sentry_value_set_by_key(Event, "fingerprint", FGenericPlatformSentryConverters::StringArrayToNative(fingerprint));
+}
+
+TArray<FString> FGenericPlatformSentryEvent::GetFingerprint()
+{
+	sentry_value_t fingerprint = sentry_value_get_by_key(Event, "fingerprint");
+	return FGenericPlatformSentryConverters::StringArrayToUnreal(fingerprint);
+}
+
+void FGenericPlatformSentryEvent::SetTag(const FString& key, const FString& value)
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		sentry_value_set_by_key(Event, "tags", FGenericPlatformSentryConverters::StringMapToNative({ { key, value } }));
+	}
+	else
+	{
+		sentry_value_set_by_key(eventTags, TCHAR_TO_UTF8(*key), sentry_value_new_string(TCHAR_TO_UTF8(*value)));
+	}
+}
+
+FString FGenericPlatformSentryEvent::GetTag(const FString& key) const
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		return FString();
+	}
+
+	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_UTF8(*key));
+	return FString(UTF8_TO_TCHAR(sentry_value_as_string(tag)));
+}
+
+bool FGenericPlatformSentryEvent::TryGetTag(const FString& key, FString& value) const
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		return false;
+	}
+
+	sentry_value_t tag = sentry_value_get_by_key(eventTags, TCHAR_TO_UTF8(*key));
+	if (sentry_value_is_null(tag))
+	{
+		return false;
+	}
+
+	value = FString(UTF8_TO_TCHAR(sentry_value_as_string(tag)));
+
+	return true;
+}
+
+void FGenericPlatformSentryEvent::RemoveTag(const FString& key)
+{
+	sentry_value_t eventTags = sentry_value_get_by_key(Event, "tags");
+	if (sentry_value_is_null(eventTags))
+	{
+		return;
+	}
+
+	sentry_value_remove_by_key(eventTags, TCHAR_TO_UTF8(*key));
+}
+
+void FGenericPlatformSentryEvent::SetTags(const TMap<FString, FString>& tags)
+{
+	sentry_value_set_by_key(Event, "tags", FGenericPlatformSentryConverters::StringMapToNative(tags));
+}
+
+TMap<FString, FString> FGenericPlatformSentryEvent::GetTags() const
+{
+	return FGenericPlatformSentryConverters::StringMapToUnreal(sentry_value_get_by_key(Event, "tags"));
+}
+
+void FGenericPlatformSentryEvent::SetContext(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		eventContexts = sentry_value_new_object();
+
+		sentry_value_set_by_key(eventContexts, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+
+		sentry_value_set_by_key(Event, "contexts", eventContexts);
+	}
+	else
+	{
+		sentry_value_set_by_key(eventContexts, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantMapToNative(values));
+	}
+}
+
+TMap<FString, FSentryVariant> FGenericPlatformSentryEvent::GetContext(const FString& key) const
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_UTF8(*key));
+	if (sentry_value_is_null(context))
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	const FSentryVariant& contextVariant = FGenericPlatformSentryConverters::VariantToUnreal(context);
+
+	return contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+}
+
+bool FGenericPlatformSentryEvent::TryGetContext(const FString& key, TMap<FString, FSentryVariant>& value) const
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		return false;
+	}
+
+	sentry_value_t context = sentry_value_get_by_key(eventContexts, TCHAR_TO_UTF8(*key));
+	if (sentry_value_is_null(context))
+	{
+		return false;
+	}
+
+	const FSentryVariant& contextVariant = FGenericPlatformSentryConverters::VariantToUnreal(context);
+	if (contextVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return false;
+	}
+
+	value = contextVariant.GetValue<TMap<FString, FSentryVariant>>();
+
+	return true;
+}
+
+void FGenericPlatformSentryEvent::RemoveContext(const FString& key)
+{
+	sentry_value_t eventContexts = sentry_value_get_by_key(Event, "contexts");
+	if (sentry_value_is_null(eventContexts))
+	{
+		return;
+	}
+
+	sentry_value_remove_by_key(eventContexts, TCHAR_TO_UTF8(*key));
+}
+
+void FGenericPlatformSentryEvent::SetExtra(const FString& key, const FSentryVariant& value)
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::VariantMapToNative({ { key, value } }));
+	}
+	else
+	{
+		sentry_value_set_by_key(eventExtra, TCHAR_TO_UTF8(*key), FGenericPlatformSentryConverters::VariantToNative(value));
+	}
+}
+
+FSentryVariant FGenericPlatformSentryEvent::GetExtra(const FString& key) const
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return FSentryVariant();
+	}
+
+	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_UTF8(*key));
+	return FGenericPlatformSentryConverters::VariantToUnreal(extra);
+}
+
+bool FGenericPlatformSentryEvent::TryGetExtra(const FString& key, FSentryVariant& value) const
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return false;
+	}
+
+	sentry_value_t extra = sentry_value_get_by_key(eventExtra, TCHAR_TO_UTF8(*key));
+	if (sentry_value_is_null(extra))
+	{
+		return false;
+	}
+
+	value = FGenericPlatformSentryConverters::VariantToUnreal(extra);
+
+	return true;
+}
+
+void FGenericPlatformSentryEvent::RemoveExtra(const FString& key)
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return;
+	}
+
+	sentry_value_remove_by_key(eventExtra, TCHAR_TO_UTF8(*key));
+}
+
+void FGenericPlatformSentryEvent::SetExtras(const TMap<FString, FSentryVariant>& extras)
+{
+	sentry_value_set_by_key(Event, "extra", FGenericPlatformSentryConverters::VariantMapToNative(extras));
+}
+
+TMap<FString, FSentryVariant> FGenericPlatformSentryEvent::GetExtras() const
+{
+	sentry_value_t eventExtra = sentry_value_get_by_key(Event, "extra");
+	if (sentry_value_is_null(eventExtra))
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	const FSentryVariant& extrasVariant = FGenericPlatformSentryConverters::VariantToUnreal(eventExtra);
+	if (extrasVariant.GetType() == ESentryVariantType::Empty)
+	{
+		return TMap<FString, FSentryVariant>();
+	}
+
+	return extrasVariant.GetValue<TMap<FString, FSentryVariant>>();
+}
+
+bool FGenericPlatformSentryEvent::IsCrash() const
+{
+	return IsCrashEvent;
+}
+
+TSharedPtr<ISentryFeedback> FGenericPlatformSentryEvent::GetFeedback() const
+{
+	sentry_value_t contexts = sentry_value_get_by_key(Event, "contexts");
+	sentry_value_t feedback = sentry_value_get_by_key(contexts, "feedback");
+	if (sentry_value_is_null(feedback))
+	{
+		return nullptr;
+	}
+
+	return MakeShareable(new FGenericPlatformSentryFeedback(feedback));
+}
+
+bool FGenericPlatformSentryEvent::IsAnr() const
+{
+	return IsAnr(Event);
+}
+
+bool FGenericPlatformSentryEvent::IsAnr(sentry_value_t event)
+{
+	sentry_value_t exception = sentry_value_get_by_key(event, "exception");
+	if (sentry_value_is_null(exception))
+	{
+		return false;
+	}
+
+	sentry_value_t values = sentry_value_get_by_key(exception, "values");
+	if (sentry_value_is_null(values) || sentry_value_get_length(values) != 1)
+	{
+		return false;
+	}
+
+	sentry_value_t firstException = sentry_value_get_by_index(values, 0);
+	if (sentry_value_is_null(firstException))
+	{
+		return false;
+	}
+
+	// The engine FThreadHeartBeat watcher reports "App Hanging" (see CaptureHang) while sentry-native's
+	// app-hang watchdog reports "AppHang" - accept either so both detection mechanisms are recognized
+	const char* type = sentry_value_as_string(sentry_value_get_by_key(firstException, "type"));
+	bool isAppHangException = type && (FCStringAnsi::Strcmp(type, "App Hanging") == 0 || FCStringAnsi::Strcmp(type, "AppHang") == 0);
+
+	sentry_value_t mechanism = sentry_value_get_by_key(firstException, "mechanism");
+	const char* mechanismType = sentry_value_as_string(sentry_value_get_by_key(mechanism, "type"));
+	bool isAppHangMechanism = mechanismType && FCStringAnsi::Strcmp(mechanismType, "AppHang") == 0;
+
+	return isAppHangException && isAppHangMechanism;
+}
+
+bool FGenericPlatformSentryEvent::IsGpuCrash(sentry_value_t event)
+{
+	const char* crashType = sentry_value_as_string(sentry_value_get_by_key(sentry_value_get_by_key(event, "tags"), "CrashType"));
+	return FCStringAnsi::Strcmp(crashType, TCHAR_TO_UTF8(FGenericCrashContext::GetCrashTypeString(ECrashContextType::GPUCrash))) == 0;
+}
+
+#endif

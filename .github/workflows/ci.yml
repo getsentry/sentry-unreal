@@ -1,0 +1,363 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - v2
+      - release/*
+  pull_request:
+    paths-ignore:
+      - "**.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  android-sdk:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Android
+      runsOn: ubuntu-latest
+
+  ios-sdk:
+    uses: ./.github/workflows/sdk-download.yml
+    with:
+      target: IOS
+      runsOn: macos-latest
+
+  macos-cocoa-sdk:
+    uses: ./.github/workflows/sdk-download.yml
+    with:
+      target: Mac
+      backend: cocoa
+      runsOn: macos-latest
+
+  macos-native-sdk:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Mac
+      backend: native
+      runsOn: macos-15
+
+  linux-sdk-crashpad:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Linux
+      backend: crashpad
+      runsOn: ubuntu-latest
+      container: ubuntu:20.04
+
+  linux-sdk-native:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Linux
+      backend: native
+      runsOn: ubuntu-latest
+      container: ubuntu:20.04
+
+  linux-arm64-sdk-crashpad:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: LinuxArm64
+      backend: crashpad
+      runsOn: ubuntu-24.04-arm
+      container: arm64v8/ubuntu:20.04
+
+  linux-arm64-sdk-native:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: LinuxArm64
+      backend: native
+      runsOn: ubuntu-24.04-arm
+      container: arm64v8/ubuntu:20.04
+
+  windows-sdk-crashpad:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Win64
+      backend: crashpad
+      runsOn: windows-2022
+
+  windows-sdk-native:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: Win64
+      backend: native
+      runsOn: windows-2022
+
+  windows-arm64-sdk-crashpad:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: WinArm64
+      backend: crashpad
+      runsOn: windows-11-vs2026-arm
+
+  windows-arm64-sdk-native:
+    uses: ./.github/workflows/sdk-build.yml
+    with:
+      target: WinArm64
+      backend: native
+      runsOn: windows-11-vs2026-arm
+
+  package:
+    needs: [android-sdk, ios-sdk, macos-cocoa-sdk, macos-native-sdk, linux-sdk-crashpad, linux-sdk-native, linux-arm64-sdk-crashpad, linux-arm64-sdk-native, windows-sdk-crashpad, windows-sdk-native, windows-arm64-sdk-crashpad, windows-arm64-sdk-native]
+    name: Package
+    secrets:
+      APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+      APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+    uses: ./.github/workflows/package.yml
+
+  package-validation:
+    needs: [package]
+    name: Check snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Download packages
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: ${{ github.sha }}
+
+      # If this step fails, you can accept the new file content by
+      # running the following script locally with 'accept' as an argument
+      # and committing the new snapshot file to your branch. i.e:
+      # pwsh ./scripts/test-contents.ps1 accept
+      - name: Verify package content against snapshot
+        shell: pwsh
+        run: ./scripts/packaging/test-contents.ps1
+
+  # Resolves the engine-version matrix once for all test platforms. PRs run the legacy 4.27
+  # (where supported) plus the 3 latest versions; pushes to main/release run the full set.
+  generate-test-matrix:
+    name: Generate test matrix
+    needs: [package]
+    runs-on: ubuntu-latest
+    outputs:
+      linux: ${{ steps.set-matrix.outputs.linux }}
+      windows: ${{ steps.set-matrix.outputs.windows }}
+      android: ${{ steps.set-matrix.outputs.android }}
+      macos: ${{ steps.set-matrix.outputs.macos }}
+      ios: ${{ steps.set-matrix.outputs.ios }}
+    steps:
+      - id: set-matrix
+        env:
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [[ "$IS_PR" == "true" ]]; then
+            # PRs: legacy 4.27 (where supported) + 3 latest
+            echo 'linux=["4.27","5.6","5.7","5.8"]'   >> "$GITHUB_OUTPUT"
+            echo 'windows=["4.27","5.6","5.7","5.8"]' >> "$GITHUB_OUTPUT"
+            echo 'android=["5.6","5.7","5.8"]'        >> "$GITHUB_OUTPUT"
+          else
+            # main / release: full set
+            echo 'linux=["4.27","5.2","5.3","5.4","5.5","5.6","5.7","5.8"]' >> "$GITHUB_OUTPUT"
+            echo 'windows=["4.27","5.5","5.6","5.7","5.8"]'                 >> "$GITHUB_OUTPUT"
+            echo 'android=["5.4","5.5","5.6","5.7","5.8"]'                  >> "$GITHUB_OUTPUT"
+          fi
+          # macOS/iOS: must match engine versions published to the registry by the ue-oci-macos workflow
+          echo 'macos=["5.8"]' >> "$GITHUB_OUTPUT"
+          echo 'ios=["5.8"]'   >> "$GITHUB_OUTPUT"
+
+  build-linux:
+    needs: [generate-test-matrix]
+    name: Linux UE ${{ matrix.unreal }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
+  build-windows:
+    needs: [generate-test-matrix]
+    name: Windows UE ${{ matrix.unreal }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
+  build-macos:
+    needs: [generate-test-matrix]
+    name: macOS UE ${{ matrix.unreal }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.macos) }}
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
+
+  build-ios:
+    needs: [generate-test-matrix]
+    name: iOS UE ${{ matrix.unreal }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.ios) }}
+    uses: ./.github/workflows/build-ios.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
+
+  build-android:
+    needs: [generate-test-matrix]
+    name: Android UE ${{ matrix.unreal }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
+    uses: ./.github/workflows/build-android.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
+  build-consoles:
+    needs: [generate-test-matrix]
+    name: ${{ matrix.name }}
+    if: github.event_name == 'push'
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: XSX (breakpad)
+            platform: XSX
+            backend: breakpad
+            extension-repo: getsentry/sentry-xbox
+            extension-artifact: scarlett-unreal
+          - name: XSX (native)
+            platform: XSX
+            backend: native
+            extension-repo: getsentry/sentry-xbox
+            extension-artifact: scarlett-unreal-outproc
+          - name: PS5
+            platform: PS5
+            backend: ""
+            extension-repo: getsentry/sentry-playstation
+            extension-artifact: ps5-unreal
+          - name: Switch
+            platform: Switch
+            backend: ""
+            extension-repo: getsentry/sentry-switch
+            extension-artifact: nx64-unreal-sdk21
+    uses: ./.github/workflows/build-consoles.yml
+    with:
+      platform: ${{ matrix.platform }}
+      backend: ${{ matrix.backend }}
+      extension-repo: ${{ matrix.extension-repo }}
+      extension-artifact: ${{ matrix.extension-artifact }}
+
+  test-linux:
+    needs: [build-linux, generate-test-matrix]
+    name: Linux UE ${{ matrix.unreal }} (${{ matrix.backend }})
+    secrets:
+      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.linux) }}
+        backend: [crashpad, native]
+    uses: ./.github/workflows/test-linux.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+      backend: ${{ matrix.backend }}
+
+  test-windows:
+    needs: [build-windows, generate-test-matrix]
+    name: Windows UE ${{ matrix.unreal }} (${{ matrix.backend }})
+    secrets:
+      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.windows) }}
+        backend: [crashpad, native]
+    uses: ./.github/workflows/test-windows.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+      backend: ${{ matrix.backend }}
+
+  test-macos:
+    needs: [build-macos, generate-test-matrix]
+    name: macOS UE ${{ matrix.unreal }} (${{ matrix.backend }})
+    secrets:
+      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.macos) }}
+        backend: [cocoa, native]
+    uses: ./.github/workflows/test-macos.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+      backend: ${{ matrix.backend }}
+
+  test-ios:
+    needs: [build-ios, generate-test-matrix]
+    name: iOS UE ${{ matrix.unreal }}
+    secrets:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.ios) }}
+    uses: ./.github/workflows/test-ios.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}
+
+  test-android:
+    needs: [build-android, generate-test-matrix]
+    name: Android UE ${{ matrix.unreal }}
+    secrets:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      SENTRY_UNREAL_TEST_DSN: ${{ secrets.SENTRY_UNREAL_TEST_DSN }}
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        unreal: ${{ fromJSON(needs.generate-test-matrix.outputs.android) }}
+    uses: ./.github/workflows/test-android.yml
+    with:
+      unreal-version: ${{ matrix.unreal }}

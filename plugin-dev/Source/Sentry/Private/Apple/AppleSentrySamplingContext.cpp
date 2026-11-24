@@ -1,0 +1,38 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "AppleSentrySamplingContext.h"
+
+#if !USE_SENTRY_NATIVE
+
+#include "AppleSentryTransactionContext.h"
+
+#include "Infrastructure/AppleSentryConverters.h"
+
+#include "Convenience/AppleSentryInclude.h"
+
+FAppleSentrySamplingContext::FAppleSentrySamplingContext(SentryObjCSamplingContext* context)
+{
+	SamplingContext = [context retain];
+}
+
+FAppleSentrySamplingContext::~FAppleSentrySamplingContext()
+{
+	[SamplingContext release];
+}
+
+TSharedPtr<ISentryTransactionContext> FAppleSentrySamplingContext::GetTransactionContext() const
+{
+	return MakeShareable(new FAppleSentryTransactionContext(SamplingContext.transactionContext));
+}
+
+TMap<FString, FSentryVariant> FAppleSentrySamplingContext::GetCustomSamplingContext() const
+{
+	return FAppleSentryConverters::VariantMapToUnreal(SamplingContext.customSamplingContext);
+}
+
+SentryObjCSamplingContext* FAppleSentrySamplingContext::GetNativeObject()
+{
+	return SamplingContext;
+}
+
+#endif // !USE_SENTRY_NATIVE

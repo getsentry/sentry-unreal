@@ -1,0 +1,238 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "Android/AndroidSentryBreadcrumb.h"
+#include "Android/AndroidSentryEvent.h"
+#include "Android/AndroidSentryHint.h"
+#include "Android/AndroidSentryLog.h"
+#include "Android/AndroidSentryMetric.h"
+#include "Android/AndroidSentrySamplingContext.h"
+#include "Android/AndroidSentryScope.h"
+#include "Android/AndroidSentrySubsystem.h"
+#include "Android/Callbacks/AndroidSentryScopeCallback.h"
+#include "Android/Infrastructure/AndroidSentryConverters.h"
+#include "Android/Infrastructure/AndroidSentryJavaClasses.h"
+
+#include "Android/AndroidJNI.h"
+
+#include "SentryBeforeBreadcrumbHandler.h"
+#include "SentryBeforeLogHandler.h"
+#include "SentryBeforeMetricHandler.h"
+#include "SentryBeforeSendFeedbackHandler.h"
+#include "SentryBeforeSendHandler.h"
+#include "SentryBreadcrumb.h"
+#include "SentryDefines.h"
+#include "SentryEvent.h"
+#include "SentryHint.h"
+#include "SentryLog.h"
+#include "SentryMetric.h"
+#include "SentrySamplingContext.h"
+#include "SentryTraceSampler.h"
+
+#include "Utils/SentryCallbackUtils.h"
+#include "Utils/SentryFileUtils.h"
+
+#include "HAL/FileManager.h"
+#include "Misc/Paths.h"
+#include "UObject/GarbageCollection.h"
+#include "UObject/UObjectThreadContext.h"
+
+JNI_METHOD void Java_io_sentry_unreal_SentryBridgeJava_onConfigureScope(JNIEnv* env, jclass clazz, jlong callbackId, jobject scope)
+{
+	FSentryScopeDelegate* callback = AndroidSentryScopeCallback::GetDelegateById(callbackId);
+
+	if (callback != nullptr)
+	{
+		if (SentryCallbackUtils::IsCallbackSafeToRun())
+		{
+			callback->Execute(MakeShareable(new FAndroidSentryScope(scope)));
+		}
+
+		AndroidSentryScopeCallback::RemoveDelegate(callbackId);
+	}
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSend(JNIEnv* env, jclass clazz, jlong objAddr, jobject event, jobject hint)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Event will be sent without calling a `onBeforeSend` handler
+		return event;
+	}
+
+	TSentryCallbackGuard<USentryBeforeSendHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return event;
+	}
+
+	USentryBeforeSendHandler* handler = reinterpret_cast<USentryBeforeSendHandler*>(objAddr);
+
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAndroidSentryEvent(event)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
+
+	USentryEvent* ProcessedEvent = handler->HandleBeforeSend(EventToProcess, HintToProcess);
+
+	return ProcessedEvent ? event : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeSendFeedback(JNIEnv* env, jclass clazz, jlong objAddr, jobject event, jobject hint)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		return event;
+	}
+
+	TSentryCallbackGuard<USentryBeforeSendFeedbackHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return event;
+	}
+
+	USentryBeforeSendFeedbackHandler* handler = reinterpret_cast<USentryBeforeSendFeedbackHandler*>(objAddr);
+
+	USentryEvent* EventToProcess = USentryEvent::Create(MakeShareable(new FAndroidSentryEvent(event)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
+
+	USentryEvent* ProcessedEvent = handler->HandleBeforeSendFeedback(EventToProcess, HintToProcess);
+
+	return ProcessedEvent ? event : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeBreadcrumb(JNIEnv* env, jclass clazz, jlong objAddr, jobject breadcrumb, jobject hint)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Breadcrumb will be added without calling a `beforeBreadcrumb` handler
+		return breadcrumb;
+	}
+
+	TSentryCallbackGuard<USentryBeforeBreadcrumbHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return breadcrumb;
+	}
+
+	USentryBeforeBreadcrumbHandler* handler = reinterpret_cast<USentryBeforeBreadcrumbHandler*>(objAddr);
+
+	USentryBreadcrumb* BreadcrumbToProcess = USentryBreadcrumb::Create(MakeShareable(new FAndroidSentryBreadcrumb(breadcrumb)));
+	USentryHint* HintToProcess = USentryHint::Create(MakeShareable(new FAndroidSentryHint(hint)));
+
+	USentryBreadcrumb* ProcessedBreadcrumb = handler->HandleBeforeBreadcrumb(BreadcrumbToProcess, HintToProcess);
+
+	return ProcessedBreadcrumb ? breadcrumb : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeLog(JNIEnv* env, jclass clazz, jlong objAddr, jobject logEvent)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Log will be added without calling a `onBeforeLog` handler
+		return logEvent;
+	}
+
+	TSentryCallbackGuard<USentryBeforeLogHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return logEvent;
+	}
+
+	USentryBeforeLogHandler* handler = reinterpret_cast<USentryBeforeLogHandler*>(objAddr);
+
+	USentryLog* LogDataToProcess = USentryLog::Create(MakeShareable(new FAndroidSentryLog(logEvent)));
+
+	USentryLog* ProcessedLogData = handler->HandleBeforeLog(LogDataToProcess);
+
+	return ProcessedLogData ? logEvent : nullptr;
+}
+
+JNI_METHOD jobject Java_io_sentry_unreal_SentryBridgeJava_onBeforeMetric(JNIEnv* env, jclass clazz, jlong objAddr, jobject metricEvent)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Metric will be sent without calling a `onBeforeMetric` handler
+		return metricEvent;
+	}
+
+	TSentryCallbackGuard<USentryBeforeMetricHandler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return metricEvent;
+	}
+
+	USentryBeforeMetricHandler* handler = reinterpret_cast<USentryBeforeMetricHandler*>(objAddr);
+
+	USentryMetric* MetricDataToProcess = USentryMetric::Create(MakeShareable(new FAndroidSentryMetric(metricEvent)));
+
+	USentryMetric* ProcessedMetricData = handler->HandleBeforeMetric(MetricDataToProcess);
+
+	return ProcessedMetricData ? metricEvent : nullptr;
+}
+
+JNI_METHOD jfloat Java_io_sentry_unreal_SentryBridgeJava_onTracesSampler(JNIEnv* env, jclass clazz, jlong objAddr, jobject samplingContext)
+{
+	if (!SentryCallbackUtils::IsCallbackSafeToRun())
+	{
+		// Falling back to default sampling value without calling a custom sampling function
+		return -1.0f;
+	}
+
+	TSentryCallbackGuard<USentryTraceSampler> ReentrancyGuard;
+	if (ReentrancyGuard.IsReentrant())
+	{
+		return -1.0f;
+	}
+
+	USentryTraceSampler* sampler = reinterpret_cast<USentryTraceSampler*>(objAddr);
+
+	USentrySamplingContext* Context = USentrySamplingContext::Create(MakeShareable(new FAndroidSentrySamplingContext(samplingContext)));
+
+	float samplingValue;
+	if (sampler->Sample(Context, samplingValue))
+	{
+		return (jfloat)samplingValue;
+	}
+
+	// To avoid instantiating `java.lang.Double` object within this JNI callback a negative value is returned instead
+	// which should be interpreted as `null` in Java code to fallback to fixed sample rate value
+	return -1.0f;
+}
+
+JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getLogFilePath(JNIEnv* env, jclass clazz, jboolean isCrash)
+{
+	const FString LogFilePath = isCrash ? SentryFileUtils::GetGameLogBackupPath() : SentryFileUtils::GetGameLogPath();
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*LogFilePath))
+	{
+		return env->NewStringUTF("");
+	}
+
+	return env->NewStringUTF(TCHAR_TO_UTF8(*LogFilePath));
+}
+
+JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getScreenshotFilePath(JNIEnv* env, jclass clazz)
+{
+	const FString ScreenshotFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*SentryFileUtils::GetLatestScreenshot());
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*ScreenshotFilePath))
+	{
+		return env->NewStringUTF("");
+	}
+
+	return env->NewStringUTF(TCHAR_TO_UTF8(*ScreenshotFilePath));
+}
+
+JNI_METHOD jstring Java_io_sentry_unreal_SentryBridgeJava_getGameStateFilePath(JNIEnv* env, jclass clazz, jboolean isPreviousSession)
+{
+	const FString Path = isPreviousSession ? SentryFileUtils::GetGameStateBackupPath() : SentryFileUtils::GetGameStatePath();
+	const FString GameStateFilePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Path);
+
+	IFileManager& FileManager = IFileManager::Get();
+	if (!FileManager.FileExists(*GameStateFilePath))
+	{
+		return env->NewStringUTF("");
+	}
+
+	return env->NewStringUTF(TCHAR_TO_UTF8(*GameStateFilePath));
+}

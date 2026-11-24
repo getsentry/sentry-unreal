@@ -1,0 +1,109 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#include "AppleSentrySpan.h"
+
+#if !USE_SENTRY_NATIVE
+
+#include "SentryDefines.h"
+
+#include "Infrastructure/AppleSentryConverters.h"
+
+#include "Convenience/AppleSentryInclude.h"
+#include "Convenience/AppleSentryMacro.h"
+
+FAppleSentrySpan::FAppleSentrySpan(SentryObjCSpan* span)
+{
+	SpanApple = span;
+	[SpanApple retain];
+}
+
+FAppleSentrySpan::~FAppleSentrySpan()
+{
+	[SpanApple release];
+}
+
+SentryObjCSpan* FAppleSentrySpan::GetNativeObject()
+{
+	return SpanApple;
+}
+
+TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChild(const FString& operation, const FString& desctiption, bool bindToScope)
+{
+	SentryObjCSpan* span = [SpanApple startChildWithOperation:operation.GetNSString() description:desctiption.GetNSString()];
+
+	if (bindToScope)
+	{
+		[SENTRY_APPLE_CLASS(SentryObjCSDK) configureScope:^(SentryObjCScope* scope) {
+			scope.span = span;
+		}];
+	}
+
+	return MakeShareable(new FAppleSentrySpan(span));
+}
+
+TSharedPtr<ISentrySpan> FAppleSentrySpan::StartChildWithTimestamp(const FString& operation, const FString& desctiption, int64 timestamp, bool bindToScope)
+{
+	TSharedPtr<ISentrySpan> span = StartChild(operation, desctiption, bindToScope);
+	StaticCastSharedPtr<FAppleSentrySpan>(span)->GetNativeObject().startTimestamp = FAppleSentryConverters::TimestampToNative(timestamp);
+	return span;
+}
+
+void FAppleSentrySpan::Finish()
+{
+	[SpanApple finish];
+}
+
+void FAppleSentrySpan::FinishWithTimestamp(int64 timestamp)
+{
+	SpanApple.timestamp = FAppleSentryConverters::TimestampToNative(timestamp);
+	[SpanApple finish];
+}
+
+bool FAppleSentrySpan::IsFinished() const
+{
+	return SpanApple.isFinished;
+}
+
+void FAppleSentrySpan::SetTag(const FString& key, const FString& value)
+{
+	[SpanApple setTagValue:value.GetNSString() forKey:key.GetNSString()];
+}
+
+void FAppleSentrySpan::RemoveTag(const FString& key)
+{
+	[SpanApple removeTagForKey:key.GetNSString()];
+}
+
+void FAppleSentrySpan::SetData(const FString& key, const TMap<FString, FSentryVariant>& values)
+{
+	[SpanApple setDataValue:FAppleSentryConverters::VariantMapToNative(values) forKey:key.GetNSString()];
+}
+
+void FAppleSentrySpan::RemoveData(const FString& key)
+{
+	[SpanApple removeDataForKey:key.GetNSString()];
+}
+
+void FAppleSentrySpan::GetTrace(FString& name, FString& value)
+{
+	SentryObjCTraceHeader* traceHeader = [SpanApple toTraceHeader];
+
+	name = TEXT("sentry-trace");
+	value = FString([traceHeader value]);
+}
+
+TMap<FString, FString> FAppleSentrySpan::GetTraceHeaders()
+{
+	TMap<FString, FString> headers;
+
+	headers.Add(TEXT("sentry-trace"), FString([[SpanApple toTraceHeader] value]));
+
+	if (NSString* baggage = [SpanApple baggageHttpHeader])
+	{
+		headers.Add(TEXT("baggage"), FString(baggage));
+	}
+
+	return headers;
+}
+
+#endif // !USE_SENTRY_NATIVE

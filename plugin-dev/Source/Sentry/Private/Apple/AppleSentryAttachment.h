@@ -1,0 +1,31 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#if !USE_SENTRY_NATIVE
+
+#include "Interface/SentryAttachmentInterface.h"
+
+@class SentryObjCAttachment;
+
+class FAppleSentryAttachment : public ISentryAttachment
+{
+public:
+	FAppleSentryAttachment(const TArray<uint8>& data, const FString& filename, const FString& contentType);
+	FAppleSentryAttachment(const FString& path, const FString& filename, const FString& contentType);
+	virtual ~FAppleSentryAttachment() override;
+
+	SentryObjCAttachment* GetNativeObject();
+
+	virtual TArray<uint8> GetData() const override;
+	virtual FString GetPath() const override;
+	virtual FString GetFilename() const override;
+	virtual FString GetContentType() const override;
+
+private:
+	SentryObjCAttachment* AttachmentApple;
+};
+
+typedef FAppleSentryAttachment FPlatformSentryAttachment;
+
+#endif // !USE_SENTRY_NATIVE

@@ -1,0 +1,67 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "4.27",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "SentryPlayground",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "RuntimeTests",
+			"Enabled": true
+		},
+		{
+			"Name": "FbxAutomationTestBuilder",
+			"Enabled": true
+		},
+		{
+			"Name": "FunctionalTestingEditor",
+			"Enabled": true
+		},
+		{
+			"Name": "RHITests",
+			"Enabled": true
+		},
+		{
+			"Name": "EditorTests",
+			"Enabled": true
+		},
+		{
+			"Name": "WindowsMoviePlayer",
+			"Enabled": false
+		},
+		{
+			"Name": "AVCodecsCore",
+			"Enabled": true,
+			"PlatformAllowList": [ "Win64", "Mac", "Linux", "IOS" ]
+		},
+		{
+			"Name": "NVCodecs",
+			"Enabled": true,
+			"PlatformAllowList": [ "Win64", "Linux" ]
+		},
+		{
+			"Name": "VTCodecs",
+			"Enabled": true,
+			"PlatformAllowList": [ "Mac", "IOS" ]
+		},
+		{
+			"Name": "AMFCodecs",
+			"Enabled": true,
+			"PlatformAllowList": [ "Win64" ]
+		}
+	],
+	"TargetPlatforms": [
+		"Android",
+		"IOS",
+		"Linux",
+		"Windows",
+		"Mac",
+		"LinuxArm64"
+	]
+}

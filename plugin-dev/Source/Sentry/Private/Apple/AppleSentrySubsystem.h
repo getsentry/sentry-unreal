@@ -1,0 +1,102 @@
+// Copyright (c) 2025 Sentry. All Rights Reserved.
+
+#pragma once
+
+#if !USE_SENTRY_NATIVE
+
+#include "GenericPlatform/GenericPlatformCrashContext.h"
+
+#include "Interface/SentrySubsystemInterface.h"
+
+@class SentryObjCHint;
+@class SentryObjCEvent;
+@class SentryObjCScope;
+@class NSURLSession;
+
+class FAppleSentrySubsystem : public ISentrySubsystem
+{
+public:
+	virtual void InitWithSettings(const USentrySettings* settings, const FSentryCallbackHandlers& callbackHandlers) override;
+	virtual void Close() override;
+	virtual bool IsEnabled() override;
+	virtual bool IsCrashing() const override { return false; }
+	virtual ESentryCrashedLastRun IsCrashedLastRun() override;
+	virtual void AddBreadcrumb(TSharedPtr<ISentryBreadcrumb> breadcrumb) override;
+	virtual void AddBreadcrumbWithParams(const FString& Message, const FString& Category, const FString& Type, const TMap<FString, FSentryVariant>& Data, ESentryLevel Level) override;
+	virtual void AddLog(const FString& Message, ESentryLogLevel Level, const TMap<FString, FSentryVariant>& Attributes) override;
+	virtual void AddCount(const FString& Key, int32 Value, const TMap<FString, FSentryVariant>& Attributes) override;
+	virtual void AddDistribution(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes) override;
+	virtual void AddGauge(const FString& Key, float Value, const FString& Unit, const TMap<FString, FSentryVariant>& Attributes) override;
+	virtual void ClearBreadcrumbs() override;
+	virtual void AddAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+	virtual void RemoveAttachment(TSharedPtr<ISentryAttachment> attachment) override;
+	virtual void ClearAttachments() override;
+	virtual TSharedPtr<ISentryId> CaptureMessage(const FString& message, ESentryLevel level) override;
+	virtual TSharedPtr<ISentryId> CaptureMessageWithScope(const FString& message, ESentryLevel level, const FSentryScopeDelegate& onConfigureScope) override;
+	virtual TSharedPtr<ISentryId> CaptureEvent(TSharedPtr<ISentryEvent> event) override;
+	virtual TSharedPtr<ISentryId> CaptureEventWithScope(TSharedPtr<ISentryEvent> event, const FSentryScopeDelegate& onConfigureScope) override;
+	virtual TSharedPtr<ISentryId> CaptureEnsure(const FString& type, const FString& message) override;
+	virtual TSharedPtr<ISentryId> CaptureHang(uint32 HungThreadId) override;
+	virtual void CaptureFeedback(TSharedPtr<ISentryFeedback> feedback) override;
+	virtual void CaptureFeedbackWithScope(TSharedPtr<ISentryFeedback> feedback, const FSentryScopeDelegate& onConfigureScope) override;
+	virtual void SetUser(TSharedPtr<ISentryUser> user) override;
+	virtual void RemoveUser() override;
+	virtual void SetContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
+	virtual void UpdateContext(const FString& key, const TMap<FString, FSentryVariant>& values) override;
+	virtual void SetTag(const FString& key, const FString& value) override;
+	virtual void SetTags(const TMap<FString, FString>& tags) override;
+	virtual void RemoveTag(const FString& key) override;
+	virtual void SetAttribute(const FString& key, const FSentryVariant& value) override;
+	virtual void RemoveAttribute(const FString& key) override;
+	virtual void SetLevel(ESentryLevel level) override;
+	virtual void SetRelease(const FString& release) override;
+	virtual void SetEnvironment(const FString& environment) override;
+	virtual void StartSession() override;
+	virtual void EndSession() override;
+	virtual void GiveUserConsent() override;
+	virtual void RevokeUserConsent() override;
+	virtual EUserConsent GetUserConsent() const override;
+	virtual bool IsUserConsentRequired() const override;
+	virtual TSharedPtr<ISentryTransaction> StartTransaction(const FString& name, const FString& operation, bool bindToScope) override;
+	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContext(TSharedPtr<ISentryTransactionContext> context, bool bindToScope) override;
+	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndTimestamp(TSharedPtr<ISentryTransactionContext> context, int64 timestamp, bool bindToScope) override;
+	virtual TSharedPtr<ISentryTransaction> StartTransactionWithContextAndOptions(TSharedPtr<ISentryTransactionContext> context, const FSentryTransactionOptions& options) override;
+	virtual TSharedPtr<ISentryTransactionContext> ContinueTrace(const FString& sentryTrace, const TArray<FString>& baggageHeaders) override;
+
+	virtual void HandleAssert() override;
+	virtual bool IsHangTrackingSupported() const override;
+	virtual bool IsNativeHangTrackingEnabled() const override;
+	virtual FString GetSessionReplayDirectory() const override;
+	virtual FString GetGameStateFilePath() const override;
+
+	virtual FString TryCaptureScreenshot() const { return FString(); };
+
+protected:
+	void SetEventCrashType(SentryObjCEvent* event, ECrashContextType crashType) const;
+
+	void AddCrashAttachmentsToHint(SentryObjCHint* hint) const;
+
+	void AddGameLogAttachmentToScope(SentryObjCScope* scope) const;
+	void AddScreenshotAttachmentToScope(SentryObjCScope* scope) const;
+
+	virtual FString GetScreenshotPath() const;
+	virtual FString GetLatestScreenshot() const;
+	virtual FString GetGameLogPath() const { return FString(); };
+	virtual FString GetLatestGameLog() const { return FString(); }
+	virtual bool GetLatestSessionReplay(FString& OutReplayPath, FString& OutSidecarPath) const;
+
+protected:
+	bool isScreenshotAttachmentEnabled = false;
+	bool isGameLogAttachmentEnabled = false;
+	bool isGameStateAttachmentEnabled = false;
+	bool isGameStateBackedUp = false;
+
+private:
+	TMap<FString, FString> ParseSentryBaggage(const TArray<FString>& baggageHeaders) const;
+
+	void ReleaseProxySession();
+
+	NSURLSession* ProxySession = nullptr;
+};
+
+#endif // !USE_SENTRY_NATIVE

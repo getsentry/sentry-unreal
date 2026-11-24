@@ -1,0 +1,1507 @@
+# Integration tests for Sentry Unreal SDK on desktop platforms
+#
+# Usage:
+#   Invoke-Pester Integration.Desktop.Tests.ps1
+#
+# Requires:
+# - Pre-built SentryPlayground application
+# - Environment variables: SENTRY_UNREAL_TEST_DSN, SENTRY_AUTH_TOKEN, SENTRY_UNREAL_TEST_APP_PATH
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+BeforeDiscovery {
+    # Detect current platform and add as test target
+    function Get-CurrentDesktopPlatform {
+        if ($IsWindows) {
+            return 'Windows'
+        }
+        elseif ($IsMacOS) {
+            return 'MacOS'
+        }
+        elseif ($IsLinux) {
+            return 'Linux'
+        }
+        else {
+            return $null
+        }
+    }
+
+    # Define test targets
+    function Get-TestTarget {
+        param(
+            [string]$Platform,
+            [string]$ProviderName
+        )
+
+        return @{
+            Platform     = $Platform
+            ProviderName = $ProviderName
+        }
+    }
+
+    # Detect native backend by checking which crash handler binary exists in the packaged build
+    function Test-NativeBackend {
+        $appDir = Split-Path $env:SENTRY_UNREAL_TEST_APP_PATH
+        if ($IsMacOS) {
+            $pluginBinDir = Join-Path (Split-Path $appDir) "UE/SentryPlayground/Plugins/sentry/Binaries"
+        } else {
+            $pluginBinDir = Join-Path $appDir "SentryPlayground/Plugins/sentry/Binaries"
+        }
+        if ($IsWindows) {
+            return Test-Path (Join-Path $pluginBinDir "Win64/sentry-crash.exe")
+        } elseif ($IsLinux) {
+            return Test-Path (Join-Path $pluginBinDir "Linux/sentry-crash")
+        } elseif ($IsMacOS) {
+            return Test-Path (Join-Path $pluginBinDir "Mac/sentry-crash")
+        } else {
+            return $false
+        }
+    }
+
+    # Only test the current desktop platform
+    $TestTargets = @()
+    $currentPlatform = Get-CurrentDesktopPlatform
+    $currentPlatform | Should -Not -Be $null
+    $TestTargets += Get-TestTarget -Platform $currentPlatform -ProviderName $currentPlatform
+
+    $script:IsNativeBackend = Test-NativeBackend
+
+    # Define crash types to test
+    $TestCrashTypes = @(
+        @{ Name = 'NullPointer';       Arg = '-crash-capture';            Type = 'Crash'       }
+        @{ Name = 'StackOverflow';     Arg = '-crash-stack-overflow';     Type = 'Crash'       }
+        @{ Name = 'MemoryCorruption';  Arg = '-crash-memory-corruption';  Type = 'Assert'      }
+        @{ Name = 'Assert';            Arg = '-crash-assert';             Type = 'Assert'      }
+        @{ Name = 'OutOfMemory';       Arg = '-crash-oom';                Type = 'OutOfMemory' }
+    )
+
+    if ($IsLinux -or $IsMacOS) {
+        # Memory overcommit makes OOM conditions unreliable to trigger in tests on Linux and macOS
+        $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'OutOfMemory' }
+    }
+
+    if ($IsLinux -and $env:SENTRY_UNREAL_TEST_ENGINE_VERSION -eq '4.27') {
+        # UE 4.27's crash handler may deadlock on the corrupted
+        # allocator causing the sample app to never exit and making CI test unreliable
+        $TestCrashTypes = $TestCrashTypes | Where-Object { $_.Name -ne 'MemoryCorruption' }
+    }
+
+    # Define hang detection mechanisms to test
+    $TestHangMechanisms = @(
+        @{ Name = 'Engine'; ExceptionType = 'App Hanging'; ExceptionValuePattern = '^Application not responding$' }
+        @{ Name = 'Native'; ExceptionType = 'AppHang';     ExceptionValuePattern = 'App hung for at least \d+ ms' }
+    )
+
+    if ($IsMacOS) {
+        if ($script:IsNativeBackend) {
+            $TestHangMechanisms = @($TestHangMechanisms | Where-Object { $_.Name -eq 'Native' })
+        }
+        else {
+            $TestHangMechanisms = @()
+        }
+    }
+}
+
+BeforeAll {
+    # Check if configuration file exists
+    $configFile = "$PSScriptRoot/TestConfig.local.ps1"
+    if (-not (Test-Path $configFile)) {
+        throw "Configuration file '$configFile' not found."
+    }
+
+    # Load configuration (provides $global:AppRunnerPath)
+    . $configFile
+
+    # Import app-runner modules
+    . "$global:AppRunnerPath/import-modules.ps1"
+
+    # Validate environment variables
+    $script:DSN = $env:SENTRY_UNREAL_TEST_DSN
+    $script:AuthToken = $env:SENTRY_AUTH_TOKEN
+    $script:AppPath = $env:SENTRY_UNREAL_TEST_APP_PATH
+
+    if (-not $script:DSN) {
+        throw "Environment variable SENTRY_UNREAL_TEST_DSN must be set"
+    }
+
+    if (-not $script:AuthToken) {
+        throw "Environment variable SENTRY_AUTH_TOKEN must be set"
+    }
+
+    if (-not $script:AppPath) {
+        throw "Environment variable SENTRY_UNREAL_TEST_APP_PATH must be set"
+    }
+
+    # Validate app path
+    if (-not (Test-Path $script:AppPath)) {
+        throw "Application not found at: $script:AppPath"
+    }
+
+    # Command-line switches shared by every scenario
+    $script:BaseAppArgs = @(
+        '-nullrhi',     # Runs without graphics rendering (headless mode)
+        '-unattended',  # Disables user prompts and interactive dialogs
+        '-stdout',      # Ensures logs are written to stdout on Linux/Unix systems
+        '-nosplash',    # Prevents splash screen and dialogs
+        '-nosound'      # Prevents audio device init (hangs on audio-less CI runners)
+    )
+
+    if ($IsMacOS) {
+        $script:BaseAppArgs += '-llm'
+    }
+
+    # Connect to Sentry API
+    Write-Host "Connecting to Sentry API..." -ForegroundColor Yellow
+    Connect-SentryApi -DSN $script:DSN -ApiToken $script:AuthToken
+
+    # Create output directory
+    $script:OutputDir = "$PSScriptRoot/output"
+    if (-not (Test-Path $script:OutputDir)) {
+        New-Item -ItemType Directory -Path $script:OutputDir | Out-Null
+    }
+}
+
+Describe "Sentry Unreal Desktop Integration Tests (<Platform>)" -ForEach $TestTargets {
+
+    BeforeAll {
+        # Connect to desktop device (required to create corresponding provider)
+        Write-Host "Connecting to $Platform..." -ForegroundColor Yellow
+        Connect-Device -Platform $Platform
+    }
+
+    AfterAll {
+        # Disconnect from desktop device
+        Write-Host "Disconnecting from $Platform..." -ForegroundColor Yellow
+        Disconnect-Device
+
+        Write-Host "Integration tests complete on $Platform" -ForegroundColor Green
+    }
+
+    Context "Crash Capture Tests - <Name>" -ForEach $TestCrashTypes {
+        BeforeAll {
+            $crashTypeName = $_.Name
+            $crashTypeArg = $_.Arg
+
+            $script:CrashResult = $null
+            $script:CrashEvent = $null
+            $script:CrashAttachments = @()
+
+            Write-Host "Running $crashTypeName crash test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"               # Prevents double initialization
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableOnCrashLogging=True"     # Enables crash logging
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableAutoLogAttachment=True"  # Enables log attachment
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
+
+            # $crashTypeArg triggers specific crash type scenario in the sample app
+            $script:CrashResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@($crashTypeArg) + $appArgs) -join ' ')
+
+            # On macOS with Cocoa backend, the crash is captured but not uploaded immediately,
+            # so we need to run the test app again to send it to Sentry.
+            # -init-only allows starting the app to flush captured events and quit right after.
+            # With native backend, crashes are uploaded out-of-process so no relaunch is needed.
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
+            }
+
+            Write-Host "$crashTypeName crash test executed. Exit code: $($script:CrashResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse event ID from output
+            $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                $crashId = $eventIds[0]
+
+                # Fetch event from Sentry (with polling)
+                try {
+                    $script:CrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$crashId"
+                    Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:CrashEvent) {
+                    try {
+                        $script:CrashAttachments = Get-SentryTestEventAttachments -EventId $script:CrashEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch crash event attachments from Sentry: $_" -ForegroundColor Red
+                    }
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should have non-zero exit code" {
+            $script:CrashResult.ExitCode | Should -Not -Be 0
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $script:CrashResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should capture crash event in Sentry" {
+            $script:CrashEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct event type and platform" {
+            $script:CrashEvent.type | Should -Be 'error'
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+                $script:CrashEvent.platform | Should -Be 'cocoa'
+            }
+            else {
+                $script:CrashEvent.platform | Should -Be 'native'
+            }
+        }
+
+        It "Should have exception information" {
+            $script:CrashEvent.exception | Should -Not -BeNullOrEmpty
+            $script:CrashEvent.exception.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have stack trace" {
+            $exception = $script:CrashEvent.exception.values[0]
+            $exception.stacktrace | Should -Not -BeNullOrEmpty
+            $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have user context" {
+            $script:CrashEvent.user | Should -Not -BeNullOrEmpty
+            $script:CrashEvent.user.username | Should -Be 'TestUser'
+            $script:CrashEvent.user.email | Should -Be 'user-mail@test.abc'
+            $script:CrashEvent.user.id | Should -Be '12345'
+        }
+
+        It "Should have integration test tag" {
+            $tags = $script:CrashEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should have CrashType tag" -Skip:($Name -in @('OutOfMemory', 'MemoryCorruption')) {
+            $tags = $script:CrashEvent.tags
+            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be $Type
+        }
+
+        It "Should have memory usage at the time of the crash" -Skip:(-not $IsWindows) {
+            $script:CrashEvent.contexts.device.free_memory | Should -BeGreaterThan 0
+            $script:CrashEvent.contexts.app.app_memory | Should -BeGreaterThan 0
+            $script:CrashEvent.contexts.device.usable_memory | Should -BeGreaterThan 0
+        }
+
+        It "Should have breadcrumbs" {
+            $script:CrashEvent.breadcrumbs | Should -Not -BeNullOrEmpty
+            $script:CrashEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:CrashEvent.breadcrumbs.values
+            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
+            $modified | Should -Not -BeNullOrEmpty
+            $modified.data.handler_key | Should -Be 'handler_value'
+        }
+
+        It "Should have game log attached to the crash event" {
+            $script:CrashAttachments | Where-Object { $_.name -like '*.log' } | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context "Ensure Capture Tests" {
+        BeforeAll {
+            $script:EnsureResult = $null
+            $script:EnsureEvent = $null
+
+            Write-Host "Running ensure capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+
+            # -ensure-capture triggers ensure test scenario in the sample app
+            $script:EnsureResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-ensure-capture') + $appArgs) -join ' ')
+
+            Write-Host "Ensure test executed. Exit code: $($script:EnsureResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse event ID from output
+            $eventIds = Get-EventIds -AppOutput $script:EnsureResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                $ensureId = $eventIds[0]
+
+                # Fetch event from Sentry (with polling) using the test.ensure_id tag
+                try {
+                    $script:EnsureEvent = Get-SentryTestEvent -TagName 'test.ensure_id' -TagValue "$ensureId"
+                    Write-Host "Ensure event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch ensure event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:EnsureResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $script:EnsureResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:EnsureResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture ensure event in Sentry" {
+            $script:EnsureEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct event type and platform" {
+            $script:EnsureEvent.type | Should -Be 'error'
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+                $script:EnsureEvent.platform | Should -Be 'cocoa'
+            }
+            else {
+                $script:EnsureEvent.platform | Should -Be 'native'
+            }
+        }
+
+        It "Should have exception information" {
+            $script:EnsureEvent.exception | Should -Not -BeNullOrEmpty
+            $script:EnsureEvent.exception.values | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have Ensure failed exception type" {
+            $exception = $script:EnsureEvent.exception.values[0]
+            $exception.type | Should -Be 'Ensure failed'
+        }
+
+        It "Should have stack trace" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+            $exception = $script:EnsureEvent.exception.values[0]
+            $exception.stacktrace | Should -Not -BeNullOrEmpty
+            $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have user context" {
+            $script:EnsureEvent.user | Should -Not -BeNullOrEmpty
+            $script:EnsureEvent.user.username | Should -Be 'TestUser'
+        }
+
+        It "Should have integration test tag" {
+            $tags = $script:EnsureEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should have CrashType tag" {
+            $tags = $script:EnsureEvent.tags
+            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Ensure'
+        }
+    }
+
+    Context "Hang Tracking Tests - <Name>" -ForEach $TestHangMechanisms {
+        BeforeAll {
+            $script:HangResult = $null
+            $script:HangEvent = $null
+
+            Write-Host "Running hang tracking test ($($_.Name))..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableHangTracking=True"
+            if ($_.Name -eq 'Native') {
+                $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:UseNativeHangTracking=True"
+            }
+
+            # -hang-capture triggers hang test scenario in the sample app
+            $script:HangResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-hang-capture') + $appArgs) -join ' ')
+
+            Write-Host "Hang test executed. Exit code: $($script:HangResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse event ID from output (format: EVENT_CAPTURED: <guid>)
+            $eventIds = Get-EventIds -AppOutput $script:HangResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                $hangId = $eventIds[0]
+
+                # Fetch event from Sentry (with polling) using the test.hang_id tag
+                try {
+                    $script:HangEvent = Get-SentryTestEvent -TagName 'test.hang_id' -TagValue "$hangId"
+                    Write-Host "Hang event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch hang event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:HangResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $script:HangResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:HangResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture hang event in Sentry" {
+            $script:HangEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct event type and platform" {
+            $script:HangEvent.type | Should -Be 'error'
+            $script:HangEvent.platform | Should -Be 'native'
+        }
+
+        It "Should have exception with expected type and value" {
+            $script:HangEvent.exception | Should -Not -BeNullOrEmpty
+            $script:HangEvent.exception.values | Should -Not -BeNullOrEmpty
+            $exception = $script:HangEvent.exception.values[0]
+            $exception.type | Should -Be $ExceptionType
+            $exception.value | Should -Match $ExceptionValuePattern
+        }
+
+        It "Should have AppHang mechanism" {
+            $exception = $script:HangEvent.exception.values[0]
+            $exception.mechanism | Should -Not -BeNullOrEmpty
+            $exception.mechanism.type | Should -Be 'AppHang'
+        }
+
+        It "Should have stack trace" {
+            $exception = $script:HangEvent.exception.values[0]
+            $exception.stacktrace | Should -Not -BeNullOrEmpty
+            $exception.stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have integration test tag" {
+            $tags = $script:HangEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should have CrashType tag" {
+            $tags = $script:HangEvent.tags
+            ($tags | Where-Object { $_.key -eq 'CrashType' }).value | Should -Be 'Hang'
+        }
+    }
+
+    Context "Session Replay Tests" {
+        BeforeAll {
+            $script:ReplayResult = $null
+            $script:ReplayCrashEvent = $null
+            $script:ReplayEvent = $null
+            $script:ReplayId = $null
+
+            Write-Host "Running session replay crash test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=True"
+
+            # -replay-capture stages a replay clip on disk and crashes; the SDK is
+            # expected to send it as a replay_video envelope alongside the crash event
+            $script:ReplayResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-replay-capture') + $appArgs) -join ' ')
+
+            # With the crashpad/breakpad/inproc backends the replay envelope is persisted
+            # to the crashed run's directory and delivered on the next launch, so relaunch
+            # the app to flush it. The native backend daemon sends it same-session.
+            # On macOS the cocoa backend builds and sends the replay envelope during the
+            # relaunch, which requires AttachSessionReplay to remain enabled.
+            if (-not $script:IsNativeBackend) {
+                $flushArgs = @('-init-only') + $script:BaseAppArgs
+                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+                $flushArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachSessionReplay=True"
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ($flushArgs -join ' ')
+            }
+
+            Write-Host "Replay crash test executed. Exit code: $($script:ReplayResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse replay ID from output (format: REPLAY_CAPTURED: <replay-id>)
+            $replayLines = @($script:ReplayResult.Output | Where-Object { $_ -match 'REPLAY_CAPTURED: ' })
+            if ($replayLines.Count -gt 0) {
+                $script:ReplayId = ($replayLines[0] -split 'REPLAY_CAPTURED: ')[-1].Trim()
+                Write-Host "Replay ID captured: $($script:ReplayId)" -ForegroundColor Cyan
+            }
+            else {
+                Write-Host "Warning: No REPLAY_CAPTURED line found in output" -ForegroundColor Yellow
+            }
+
+            # Parse event ID from output and fetch the crash event from Sentry (with polling)
+            $eventIds = Get-EventIds -AppOutput $script:ReplayResult.Output -ExpectedCount 1
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                try {
+                    $script:ReplayCrashEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$($eventIds[0])"
+                    Write-Host "Crash event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch crash event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+
+            # Fetch the replay from Sentry (with polling)
+            if ($script:ReplayId) {
+                try {
+                    $script:ReplayEvent = Get-SentryTestReplay -ReplayId $script:ReplayId
+                    Write-Host "Replay fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch replay from Sentry: $_" -ForegroundColor Red
+                }
+            }
+
+            # Fetch the replay's rrweb recording to verify embedded breadcrumbs
+            $script:ReplayRecordingEvents = $null
+            if ($script:ReplayEvent) {
+                try {
+                    $segments = Get-SentryTestReplayRecordingSegments -ReplayId $script:ReplayId
+                    # Flatten the per-segment event lists into a single rrweb event list
+                    $script:ReplayRecordingEvents = @($segments | ForEach-Object { $_ })
+                    Write-Host "Replay recording fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch replay recording from Sentry: $_" -ForegroundColor Red
+                }
+            }
+        }
+
+        It "Should have non-zero exit code" {
+            $script:ReplayResult.ExitCode | Should -Not -Be 0
+        }
+
+        It "Should output replay ID" {
+            $script:ReplayId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should capture crash event in Sentry" {
+            $script:ReplayCrashEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have replay context on crash event matching staged replay" {
+            $script:ReplayCrashEvent.contexts.replay.replay_id | Should -Be $script:ReplayId
+        }
+
+        It "Should capture replay in Sentry" {
+            $script:ReplayEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have matching replay ID" {
+            $script:ReplayEvent.id | Should -Be $script:ReplayId
+        }
+
+        It "Should have single replay segment" {
+            $script:ReplayEvent.count_segments | Should -Be 1
+        }
+
+        It "Should have expected platform" {
+            $expectedPlatform = if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) { 'cocoa' } else { 'native' }
+            $script:ReplayEvent.platform | Should -Be $expectedPlatform
+        }
+
+        It "Should embed test breadcrumbs in replay recording" {
+            $script:ReplayRecordingEvents | Should -Not -BeNullOrEmpty
+
+            # Breadcrumbs are rrweb custom events (type 5) tagged `breadcrumb`
+            $crumbs = @($script:ReplayRecordingEvents | Where-Object { $_.type -eq 5 -and $_.data.tag -eq 'breadcrumb' })
+            $crumbs.Count | Should -BeGreaterOrEqual 2
+
+            $messages = @($crumbs | ForEach-Object { $_.data.payload.message })
+            $messages | Should -Contain 'Replay test breadcrumb'
+            $messages | Should -Contain 'Replay test breadcrumb with data'
+        }
+
+        It "Should have well-formed breadcrumb payloads in replay recording" {
+            $crumbs = @($script:ReplayRecordingEvents | Where-Object { $_.type -eq 5 -and $_.data.tag -eq 'breadcrumb' -and $_.data.payload.category -eq 'replay.test' })
+            $crumbs.Count | Should -BeGreaterOrEqual 2
+
+            foreach ($crumb in $crumbs) {
+                # The outer rrweb timestamp is in milliseconds, the payload timestamp in seconds
+                [math]::Abs($crumb.timestamp - $crumb.data.payload.timestamp * 1000) | Should -BeLessThan 1
+                $crumb.data.payload.type | Should -Be 'default'
+                $crumb.data.payload.level | Should -BeIn @('info', 'warning')
+            }
+        }
+    }
+
+    Context "Game State Capture Tests" {
+        BeforeAll {
+            $script:GameStateResult = $null
+            $script:GameStateEvent = $null
+            $script:GameStateAttachments = @()
+
+            Write-Host "Running game state capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:AttachGameState=True"
+
+            # -game-state-capture records tracked actors and attributes for a few seconds and crashes
+            $script:GameStateResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-game-state-capture') + $appArgs) -join ' ')
+
+            # On macOS with Cocoa backend, the crash is sent on the next launch together with
+            # the previous run's game state, which requires AttachGameState to remain enabled.
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+                Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-init-only') + $appArgs) -join ' ')
+            }
+
+            Write-Host "Game state capture test executed. Exit code: $($script:GameStateResult.ExitCode)" -ForegroundColor Cyan
+
+            $eventIds = Get-EventIds -AppOutput $script:GameStateResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                try {
+                    $script:GameStateEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$($eventIds[0])"
+                    Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:GameStateEvent) {
+                    try {
+                        $script:GameStateAttachments = Get-SentryTestEventAttachments -EventId $script:GameStateEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch crash event attachments from Sentry: $_" -ForegroundColor Red
+                    }
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should have non-zero exit code" {
+            $script:GameStateResult.ExitCode | Should -Not -Be 0
+        }
+
+        It "Should have game state attached to the crash event" {
+            $script:GameStateAttachments | Where-Object { $_.name -eq 'game_state.jsonl' } | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context "Message Capture Tests" {
+        BeforeAll {
+            $script:MessageResult = $null
+            $script:MessageEvent = $null
+            $script:MessageAttachments = @()
+
+            Write-Host "Running message capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings to avoid double initialization
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeBreadcrumbHandler=/Script/SentryPlayground.CppBeforeBreadcrumbHandler"
+
+            # -message-capture triggers integration test message scenario in the sample app
+            $script:MessageResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-message-capture') + $appArgs) -join ' ')
+
+            Write-Host "Message test executed. Exit code: $($script:MessageResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse event ID from output
+            $eventIds = Get-EventIds -AppOutput $script:MessageResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                # Fetch event from Sentry (with polling) using sanitized helper
+                try {
+                    $script:MessageEvent = Get-SentryTestEvent -EventId $eventIds[0]
+                    Write-Host "Event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch event from Sentry: $_" -ForegroundColor Red
+                }
+
+                if ($script:MessageEvent) {
+                    try {
+                        $script:MessageAttachments = Get-SentryTestEventAttachments -EventId $script:MessageEvent.id
+                    }
+                    catch {
+                        Write-Host "Failed to fetch message event attachments from Sentry: $_" -ForegroundColor Red
+                    }
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:MessageResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output event ID" {
+            $eventIds = Get-EventIds -AppOutput $script:MessageResult.Output -ExpectedCount 1
+            $eventIds | Should -Not -BeNullOrEmpty
+            $eventIds.Count | Should -Be 1
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:MessageResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture message event in Sentry" {
+            $script:MessageEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct platform" {
+            if ($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+                $script:MessageEvent.platform | Should -Be 'cocoa'
+            }
+            else {
+                $script:MessageEvent.platform | Should -Be 'native'
+            }
+        }
+
+        It "Should have message content" {
+            $script:MessageEvent.message | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.message.formatted | Should -Match 'Integration test message'
+        }
+
+        It "Should have overridden release" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+            $script:MessageEvent.release.version | Should -Be 'test-release@1.0.0'
+        }
+
+        It "Should have overridden environment" {
+            ($script:MessageEvent.tags | Where-Object { $_.key -eq 'environment' }).value | Should -Be 'test-environment'
+        }
+
+        It "Should have user context" {
+            $script:MessageEvent.user | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.user.username | Should -Be 'TestUser'
+        }
+
+        It "Should have integration test tag" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should have global breadcrumbs" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Integration test started' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+            $breadcrumbs | Where-Object { $_.message -eq 'Context configuration finished' -and $_.category -eq 'Test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeSendHandler assertions
+        It "Should have tag added by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'before_send.handled' }).value | Should -Be 'true'
+        }
+
+        It "Should not have tag removed by BeforeSendHandler" {
+            $tags = $script:MessageEvent.tags
+            $tags | Where-Object { $_.key -eq 'tag_to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have extra added by BeforeSendHandler" {
+            $script:MessageEvent.context.handler_added | Should -Be 'added_value'
+        }
+
+        It "Should not have extra removed by BeforeSendHandler" {
+            $script:MessageEvent.context.extra_to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should not have context removed by BeforeSendHandler" {
+            $script:MessageEvent.contexts.context_removed_by_handler | Should -BeNullOrEmpty
+        }
+
+        It "Should have local scope attachment" {
+            $script:MessageAttachments | Where-Object { $_.name -eq 'attachment_to_be_kept.txt' } | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should not have attachment removed by BeforeSendHandler" {
+            $script:MessageAttachments | Where-Object { $_.name -eq 'attachment_to_be_removed.txt' } | Should -BeNullOrEmpty
+        }
+
+        # Device context assertions
+        It "Should have device_type in device context" {
+            $script:MessageEvent.contexts.device | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.device.device_type | Should -Be 'Desktop'
+        }
+
+        # Global scope context assertions
+        It "Should have custom context from global scope" {
+            $script:MessageEvent.contexts.test_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.test_context.context_key | Should -Be 'context_value'
+        }
+
+        # Local scope enrichment assertions
+        It "Should have local scope tag" {
+            $tags = $script:MessageEvent.tags
+            ($tags | Where-Object { $_.key -eq 'scope.locality' }).value | Should -Be 'local'
+        }
+
+        It "Should have local scope extra" {
+            $script:MessageEvent.context.local_extra | Should -Be 'local_extra_value'
+        }
+
+        It "Should have local scope context" {
+            $script:MessageEvent.contexts.local_context | Should -Not -BeNullOrEmpty
+            $script:MessageEvent.contexts.local_context.local_key | Should -Be 'local_value'
+        }
+
+        It "Should have local scope breadcrumb" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Local scope breadcrumb' -and $_.category -eq 'test' } | Should -Not -BeNullOrEmpty
+        }
+
+        # BeforeBreadcrumbHandler assertions
+        It "Should not have breadcrumb discarded by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be discarded' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have breadcrumb modified by BeforeBreadcrumbHandler" {
+            $breadcrumbs = $script:MessageEvent.breadcrumbs.values
+            $modified = $breadcrumbs | Where-Object { $_.message -eq 'Breadcrumb to be modified' }
+            $modified | Should -Not -BeNullOrEmpty
+            $modified.data.handler_key | Should -Be 'handler_value'
+        }
+    }
+
+    Context "Scoped Event Capture Tests" {
+        BeforeAll {
+            $script:ScopedEventResult = $null
+            $script:ScopedEvent = $null
+
+            Write-Host "Running scoped event capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+
+            # -scoped-event-capture triggers scoped event test scenario in the sample app
+            $script:ScopedEventResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-scoped-event-capture') + $appArgs) -join ' ')
+
+            Write-Host "Scoped event test executed. Exit code: $($script:ScopedEventResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse event ID from output
+            $eventIds = Get-EventIds -AppOutput $script:ScopedEventResult.Output -ExpectedCount 1
+
+            if ($eventIds -and $eventIds.Count -gt 0) {
+                Write-Host "Event ID captured: $($eventIds[0])" -ForegroundColor Cyan
+
+                try {
+                    $script:ScopedEvent = Get-SentryTestEvent -EventId $eventIds[0]
+                    Write-Host "Scoped event fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch scoped event from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No event ID found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:ScopedEventResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:ScopedEventResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture scoped event in Sentry" {
+            $script:ScopedEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have local scope tag" {
+            ($script:ScopedEvent.tags | Where-Object { $_.key -eq 'scope.locality' }).value | Should -Be 'local'
+        }
+
+        # Sentry exposes the event level as the 'level' tag
+        It "Should have default error level when local scope doesn't set a level" {
+            ($script:ScopedEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'error'
+        }
+    }
+
+    Context "Feedback Capture Tests" {
+        BeforeAll {
+            $script:FeedbackResult = $null
+            $script:Feedback = $null
+            $script:FeedbackEventIds = $null
+            $script:FeedbackToken = $null
+
+            Write-Host "Running feedback capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings to avoid double initialization
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeSendFeedbackHandler=/Script/SentryPlayground.CppBeforeSendFeedbackHandler"
+
+            # -feedback-capture triggers integration test feedback scenario in the sample app
+            $script:FeedbackResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-feedback-capture') + $appArgs) -join ' ')
+
+            Write-Host "Feedback test executed. Exit code: $($script:FeedbackResult.ExitCode)" -ForegroundColor Cyan
+
+            # The anchor event ID (feedback is associated with it)
+            $script:FeedbackEventIds = Get-EventIds -AppOutput $script:FeedbackResult.Output -ExpectedCount 1
+
+            # The unique token embedded in the feedback message (format: FEEDBACK_TOKEN: <token>)
+            $tokenLine = $script:FeedbackResult.Output | Where-Object { $_ -match 'FEEDBACK_TOKEN:\s*(\S+)' } | Select-Object -First 1
+            if ($tokenLine -match 'FEEDBACK_TOKEN:\s*(\S+)') {
+                $script:FeedbackToken = $Matches[1]
+                Write-Host "Feedback token captured: $($script:FeedbackToken)" -ForegroundColor Cyan
+            }
+
+            if ($script:FeedbackToken) {
+                try {
+                    $script:Feedback = Get-SentryTestFeedback -MessageContains $script:FeedbackToken
+                    Write-Host "Feedback fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch feedback from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No feedback token found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:FeedbackResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:FeedbackResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should output feedback token" {
+            $script:FeedbackToken | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should capture feedback in Sentry" {
+            $script:Feedback | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have feedback message" {
+            $script:Feedback.metadata.message | Should -Match $script:FeedbackToken
+        }
+
+        It "Should have feedback name" {
+            $script:Feedback.metadata.name | Should -Be 'Feedback Test User'
+        }
+
+        It "Should have contact email redacted by BeforeSendFeedbackHandler" -Skip:($Platform -eq 'MacOS' -and -not $IsNativeBackend) {
+            $script:Feedback.metadata.contact_email | Should -Be 'redacted@sentry.local'
+        }
+
+        It "Should be associated with the captured event" {
+            $script:FeedbackEventIds | Should -Not -BeNullOrEmpty
+            ($script:Feedback.associatedEventId -replace '-', '') | Should -Be ($script:FeedbackEventIds[0] -replace '-', '')
+        }
+    }
+
+    Context "Structured Logging Tests" {
+        BeforeAll {
+            $script:LogResult = $null
+            $script:CapturedLogs = @()
+            $script:TestId = $null
+
+            Write-Host "Running structured logging test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings to avoid double initialization
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeLogHandler=/Script/SentryPlayground.CppBeforeLogHandler"
+
+            # -log-capture triggers integration test log scenario in the sample app
+            $script:LogResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-log-capture') + $appArgs) -join ' ')
+
+            Write-Host "Log test executed. Exit code: $($script:LogResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse test ID from output (format: LOG_TRIGGERED: <test-id>)
+            $logTriggeredLines = @($script:LogResult.Output | Where-Object { $_ -match 'LOG_TRIGGERED: ' })
+            if ($logTriggeredLines.Count -gt 0) {
+                $script:TestId = ($logTriggeredLines[0] -split 'LOG_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
+
+                # Fetch logs from Sentry with automatic polling
+                try {
+                    $script:CapturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $script:TestId -Fields @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
+                }
+                catch {
+                    Write-Host "Warning: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No LOG_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:LogResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output LOG_TRIGGERED with test ID" {
+            $script:TestId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:LogResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture structured log in Sentry" {
+            $script:CapturedLogs | Should -Not -BeNullOrEmpty
+            $script:CapturedLogs.Count | Should -BeGreaterThan 0
+        }
+
+        It "Should have correct log message with format specifiers delivered verbatim" {
+            $log = $script:CapturedLogs[0]
+            $log.message | Should -Be '[LogSentryTest] Integration test structured log metadata="%s" (%d fields)'
+        }
+
+        It "Should have correct severity level" {
+            $log = $script:CapturedLogs[0]
+            $log.severity | Should -Be 'warn'
+        }
+
+        It "Should have test_id attribute matching captured ID" {
+            $log = $script:CapturedLogs[0]
+            $log.test_id | Should -Be $script:TestId
+        }
+
+        It "Should have attribute added by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.handler_added | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeLogHandler" {
+            $log = $script:CapturedLogs[0]
+            $log.to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should have global attribute set on subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.global_attr | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $log = $script:CapturedLogs[0]
+            $log.global_removed | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Metrics Capture Tests" {
+        BeforeAll {
+            $script:MetricResult = $null
+            $script:CapturedCounterMetrics = @()
+            $script:CapturedDistributionMetrics = @()
+            $script:CapturedGaugeMetrics = @()
+            $script:TestId = $null
+
+            Write-Host "Running metrics capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeMetricHandler=/Script/SentryPlayground.CppBeforeMetricHandler"
+
+            # -metric-capture triggers integration test metric scenario in the sample app
+            $script:MetricResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-metric-capture') + $appArgs) -join ' ')
+
+            Write-Host "Metric test executed. Exit code: $($script:MetricResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse test ID from output (format: METRIC_TRIGGERED: <test-id>)
+            $metricTriggeredLines = @($script:MetricResult.Output | Where-Object { $_ -match 'METRIC_TRIGGERED: ' })
+            if ($metricTriggeredLines.Count -gt 0) {
+                $script:TestId = ($metricTriggeredLines[0] -split 'METRIC_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $($script:TestId)" -ForegroundColor Cyan
+
+                # Fetch all three metric types from Sentry with automatic polling
+                $metricFields = @('handler_added', 'to_be_removed', 'global_attr', 'global_removed')
+
+                try {
+                    $script:CapturedCounterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (counter): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedDistributionMetrics = Get-SentryTestMetric -MetricName 'test.integration.distribution' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (distribution): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $script:CapturedGaugeMetrics = Get-SentryTestMetric -MetricName 'test.integration.gauge' -AttributeName 'test_id' -AttributeValue $script:TestId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (gauge): $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No METRIC_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:MetricResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output METRIC_TRIGGERED with test ID" {
+            $script:TestId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:MetricResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        # Counter metric assertions
+        It "Should capture counter metric in Sentry" {
+            $script:CapturedCounterMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct counter metric name and type" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.counter'
+            $metric.'metric.type' | Should -Be 'counter'
+        }
+
+        It "Should have correct counter metric value" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.value | Should -Be 1.0
+        }
+
+        # Distribution metric assertions
+        It "Should capture distribution metric in Sentry" {
+            $script:CapturedDistributionMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct distribution metric name and type" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.distribution'
+            $metric.'metric.type' | Should -Be 'distribution'
+        }
+
+        It "Should have correct distribution metric value" {
+            $metric = $script:CapturedDistributionMetrics[0]
+            $metric.value | Should -Be 42.5
+        }
+
+        # Gauge metric assertions
+        It "Should capture gauge metric in Sentry" {
+            $script:CapturedGaugeMetrics | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct gauge metric name and type" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.'metric.name' | Should -Be 'test.integration.gauge'
+            $metric.'metric.type' | Should -Be 'gauge'
+        }
+
+        It "Should have correct gauge metric value" {
+            $metric = $script:CapturedGaugeMetrics[0]
+            $metric.value | Should -Be 15.0
+        }
+
+        # BeforeMetricHandler attribute assertions (verified on counter, applies to all)
+        It "Should have attribute added by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Should not have attribute removed by BeforeMetricHandler" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.'to_be_removed' | Should -BeNullOrEmpty
+        }
+
+        It "Should have test_id attribute matching captured ID" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.test_id | Should -Be $script:TestId
+        }
+
+        It "Should have global attribute set on subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_attr | Should -Be 'global_value'
+        }
+
+        It "Should not have global attribute that was removed from subsystem" {
+            $metric = $script:CapturedCounterMetrics[0]
+            $metric.global_removed | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Tracing Capture Tests" {
+        BeforeAll {
+            $script:TracingResult = $null
+            $script:TransactionEvent = $null
+            $script:TraceId = $null
+
+            Write-Host "Running tracing capture test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableTracing=True"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:SamplingType=TracesSampler"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:BeforeSendHandler=/Script/SentryPlayground.CppBeforeSendHandler"
+
+            # -tracing-capture triggers tracing test scenario in the sample app
+            $script:TracingResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-tracing-capture') + $appArgs) -join ' ')
+
+            Write-Host "Tracing test executed. Exit code: $($script:TracingResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse trace ID from output (format: TRACE_CAPTURED: <trace-id>)
+            $traceLines = @($script:TracingResult.Output | Where-Object { $_ -match 'TRACE_CAPTURED: ' })
+            if ($traceLines.Count -gt 0) {
+                $script:TraceId = ($traceLines[0] -split 'TRACE_CAPTURED: ')[-1].Trim()
+                Write-Host "Captured Trace ID: $($script:TraceId)" -ForegroundColor Cyan
+
+                # Fetch transaction from Sentry using Get-SentryTestTransaction
+                try {
+                    $script:TransactionEvent = Get-SentryTestTransaction -TraceId $script:TraceId
+                    Write-Host "Transaction fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch transaction from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No TRACE_CAPTURED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:TracingResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output TRACE_CAPTURED with trace ID" {
+            $script:TraceId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:TracingResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture transaction in Sentry" {
+            $script:TransactionEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have correct transaction name" {
+            $script:TransactionEvent.title | Should -Be 'integration.tracing.test'
+        }
+
+        It "Should have correct transaction operation" {
+            $script:TransactionEvent.contexts.trace.op | Should -Be 'e2e.test'
+        }
+
+        It "Should have test tags on transaction" {
+            $tags = $script:TransactionEvent.tags
+            ($tags | Where-Object { $_.key -eq 'test.type' }).value | Should -Be 'tracing'
+            ($tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
+        }
+
+        It "Should not pass transaction through BeforeSendHandler" {
+            $tags = $script:TransactionEvent.tags
+            $tags | Where-Object { $_.key -eq 'before_send.handled' } | Should -BeNullOrEmpty
+        }
+
+        It "Should not have tag removed from transaction" {
+            $tags = $script:TransactionEvent.tags
+            $tags | Where-Object { $_.key -eq 'tracing.to_be_removed' } | Should -BeNullOrEmpty
+        }
+
+        It "Should have transaction data" {
+            $script:TransactionEvent.contexts.trace.data.test_data | Should -Not -BeNullOrEmpty
+            $script:TransactionEvent.contexts.trace.data.test_data.data_key | Should -Be 'data_value'
+        }
+
+        It "Should not have data removed from transaction" {
+            $script:TransactionEvent.contexts.trace.data.data_to_be_removed | Should -BeNullOrEmpty
+        }
+
+        It "Should have child spans" {
+            $script:TransactionEvent.spans | Should -Not -BeNullOrEmpty
+            $script:TransactionEvent.spans.Count | Should -BeGreaterOrEqual 2
+        }
+
+        It "Should have child span with correct operation and description" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $childSpan | Should -Not -BeNullOrEmpty
+            $childSpan.description | Should -Be 'Child span description'
+        }
+
+        It "Should have data on child span" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $childSpan.data.span_data | Should -Not -BeNullOrEmpty
+            $childSpan.data.span_data.span_key | Should -Be 'span_value'
+        }
+
+        It "Should have grandchild span with correct operation and description" {
+            $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
+            $grandchildSpan | Should -Not -BeNullOrEmpty
+            $grandchildSpan.description | Should -Be 'Grandchild span description'
+        }
+
+        It "Should have correct span hierarchy" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.child' }
+            $grandchildSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.grandchild' }
+            $grandchildSpan.parent_span_id | Should -Be $childSpan.span_id
+        }
+    }
+
+    Context "Tracing Timestamps Tests" {
+        BeforeAll {
+            $script:TracingTimestampsResult = $null
+            $script:TransactionEvent = $null
+            $script:TraceId = $null
+            $script:BaseTimestamp = $null
+
+            Write-Host "Running tracing timestamps test..." -ForegroundColor Yellow
+
+            $appArgs = @($script:BaseAppArgs)
+
+            # Override default project settings
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:Dsn=$script:DSN"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:EnableTracing=True"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:SamplingType=TracesSampler"
+            $appArgs += "-ini:Engine:[/Script/Sentry.SentrySettings]:TracesSampler=/Script/SentryPlayground.CppTraceSampler"
+
+            # -tracing-timestamp triggers tracing test scenario with explicit timestamps in the sample app
+            $script:TracingTimestampsResult = Invoke-DeviceApp -ExecutablePath $script:AppPath -Arguments ((@('-tracing-timestamp') + $appArgs) -join ' ')
+
+            Write-Host "Tracing timestamps test executed. Exit code: $($script:TracingTimestampsResult.ExitCode)" -ForegroundColor Cyan
+
+            # Parse base timestamp the explicit timings are offset from (format: TRACE_BASE_TIMESTAMP: <microseconds>)
+            $timestampLines = @($script:TracingTimestampsResult.Output | Where-Object { $_ -match 'TRACE_BASE_TIMESTAMP: ' })
+            if ($timestampLines.Count -gt 0) {
+                $script:BaseTimestamp = [double]($timestampLines[0] -split 'TRACE_BASE_TIMESTAMP: ')[-1].Trim() / 1e6
+            }
+
+            # Parse trace ID from output (format: TRACE_CAPTURED: <trace-id>)
+            $traceLines = @($script:TracingTimestampsResult.Output | Where-Object { $_ -match 'TRACE_CAPTURED: ' })
+            if ($traceLines.Count -gt 0) {
+                $script:TraceId = ($traceLines[0] -split 'TRACE_CAPTURED: ')[-1].Trim()
+                Write-Host "Captured Trace ID: $($script:TraceId)" -ForegroundColor Cyan
+
+                try {
+                    $script:TransactionEvent = Get-SentryTestTransaction -TraceId $script:TraceId
+                    Write-Host "Transaction fetched from Sentry successfully" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to fetch transaction from Sentry: $_" -ForegroundColor Red
+                }
+            }
+            else {
+                Write-Host "Warning: No TRACE_CAPTURED line found in output" -ForegroundColor Yellow
+            }
+        }
+
+        It "Should exit cleanly" {
+            $script:TracingTimestampsResult.ExitCode | Should -Be 0
+        }
+
+        It "Should output TRACE_CAPTURED with trace ID" {
+            $script:TraceId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TRACE_BASE_TIMESTAMP" {
+            $script:BaseTimestamp | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should output TEST_RESULT with success" {
+            $testResultLine = $script:TracingTimestampsResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success"\s*:\s*true'
+        }
+
+        It "Should capture transaction in Sentry" {
+            $script:TransactionEvent | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should have explicit transaction start timestamp" {
+            [math]::Abs([double]$script:TransactionEvent.startTimestamp - ($script:BaseTimestamp - 10)) | Should -BeLessOrEqual 1
+        }
+
+        It "Should have explicit transaction end timestamp" {
+            [math]::Abs([double]$script:TransactionEvent.endTimestamp - ($script:BaseTimestamp - 2)) | Should -BeLessOrEqual 1
+        }
+
+        It "Should have explicit child span start timestamp" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.timestamps.child' }
+            $childSpan | Should -Not -BeNullOrEmpty
+            [math]::Abs([double]$childSpan.start_timestamp - ($script:BaseTimestamp - 8)) | Should -BeLessOrEqual 1
+        }
+
+        It "Should have explicit child span end timestamp" {
+            $childSpan = $script:TransactionEvent.spans | Where-Object { $_.op -eq 'e2e.timestamps.child' }
+            $childSpan | Should -Not -BeNullOrEmpty
+            [math]::Abs([double]$childSpan.timestamp - ($script:BaseTimestamp - 5)) | Should -BeLessOrEqual 1
+        }
+    }
+
+}
+
+AfterAll {
+    Write-Host "Disconnecting from Sentry API..." -ForegroundColor Yellow
+    Disconnect-SentryApi
+
+    Write-Host "Integration tests complete" -ForegroundColor Green
+}

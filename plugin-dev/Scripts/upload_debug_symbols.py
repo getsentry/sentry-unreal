@@ -1,0 +1,420 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import platform
+import subprocess
+import time
+import json
+
+
+def log(message):
+    print(f"Sentry: {message}", flush=True)
+
+
+def print_cli_output(text):
+    encoding = sys.stdout.encoding or 'utf-8'
+    print(text.encode(encoding, errors='replace').decode(encoding), end='', flush=True)
+
+
+def get_file_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        bom = f.read(2)
+
+    if bom in (b'\xff\xfe', b'\xfe\xff'):
+        return 'utf-16'
+
+    return 'utf-8-sig'
+
+
+def parse_config_value(file_path, key, section=None):
+    if not os.path.exists(file_path):
+        return None
+
+    try:
+        with open(file_path, 'r', encoding=get_file_encoding(file_path)) as f:
+            in_section = (section is None)
+
+            for line in f:
+                line = line.strip()
+
+                if line.startswith('#') or line.startswith(';') or not line:
+                    continue
+
+                if section and line.startswith('[') and line.endswith(']'):
+                    section_name = line[1:-1]
+                    in_section = (section_name == section)
+                    continue
+
+                if in_section and '=' in line:
+                    line_key, line_value = line.split('=', 1)
+                    if line_key.strip() == key:
+                        return line_value.strip()
+
+    except Exception as e:
+        log(f"Error parsing config file {file_path}: {e}")
+
+    return None
+
+
+def get_config_paths(project_dir, target_platform):
+    ini_platform = 'Windows' if target_platform == 'Win64' else target_platform
+
+    return [
+        os.path.join(project_dir, 'Config', 'DefaultEngine.ini'),
+        os.path.join(project_dir, 'Config', ini_platform, f'{ini_platform}Engine.ini'),
+        os.path.join(project_dir, 'Platforms', ini_platform, 'Config', f'{ini_platform}Engine.ini'),
+    ]
+
+
+def get_setting_value(config_paths, key):
+    value = None
+
+    for config_path in config_paths:
+        file_value = parse_config_value(config_path, key, '/Script/Sentry.SentrySettings')
+        if file_value is not None:
+            value = file_value
+
+    return value
+
+
+def check_target_enabled(config_paths, target_setting_key, target_name):
+    targets_list = get_setting_value(config_paths, target_setting_key)
+
+    if not targets_list:
+        return True  # If not specified, assume enabled
+
+    targets_list = targets_list.strip('()')
+
+    # Check if the disabled flag for specified target is present in list (e.g., 'bEnableGame=False' or 'bEnableDevelopment=False')
+    disabled_taget_flag = f'bEnable{target_name}=False'
+    if disabled_taget_flag in targets_list:
+        return False
+
+    return True
+
+
+def get_cli_executable(plugin_dir):
+    host_system = platform.system()
+
+    if host_system == 'Windows':
+        cli_names = ['sentry-windows-x64.exe']
+    elif host_system == 'Darwin':
+        # Apple silicon can also run the x64 binary through Rosetta
+        if platform.machine() == 'arm64':
+            cli_names = ['sentry-darwin-arm64', 'sentry-darwin-x64']
+        else:
+            cli_names = ['sentry-darwin-x64']
+    elif host_system == 'Linux':
+        cli_names = ['sentry-linux-x64']
+    else:
+        return None
+
+    for cli_name in cli_names:
+        cli_path = os.path.join(plugin_dir, 'Source', 'ThirdParty', 'CLI', cli_name)
+        if os.path.exists(cli_path):
+            return cli_path
+
+    return None
+
+
+def resolve_cli_settings(cli_env, file_values):
+    sources = []
+    for env_name, label, file_value in file_values:
+        env_value = os.environ.get(env_name, '').strip()
+        if env_value:
+            cli_env[env_name] = env_value
+            sources.append((label, f"{env_name} env var", True))
+        elif file_value:
+            cli_env[env_name] = file_value
+            sources.append((label, "sentry.properties", False))
+        else:
+            cli_env.pop(env_name, None)
+
+    log("Using " + ", ".join(f"{label} from {source}" for label, source, _ in sources))
+
+    from_env = [from_env for _, _, from_env in sources]
+    if any(from_env) and not all(from_env):
+        log("Warning: Upload settings come from both sentry.properties and environment variables. "
+            "Make sure that they belong to the same organization and project.")
+
+
+def is_file_locked_error(output):
+    return any(marker in output for marker in ("os error 32", "EBUSY", "resource busy or locked"))
+
+
+def run_cmd_with_retry(cmd, env, cwd, max_retries=3, retry_delay_sec=2):
+    for attempt in range(max_retries):
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding='utf-8', errors='replace', env=env, cwd=cwd, stdin=subprocess.DEVNULL)
+
+        if result.returncode != 0 and is_file_locked_error(result.stdout + result.stderr):
+            if attempt < max_retries - 1:
+                log(f"Debug file is locked, retrying in {retry_delay_sec} seconds... (attempt {attempt + 1}/{max_retries})")
+                time.sleep(retry_delay_sec)
+                continue
+            else:
+                log("Error: Debug files are still locked after multiple retries")
+
+        break
+
+    return result
+
+
+def get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config):
+    # For Development builds use short name: {TargetName}.target
+    if target_config == "Development":
+        short_path = os.path.join(project_binaries_path, f"{target_name}.target")
+        if os.path.exists(short_path):
+            return short_path
+
+    # For Non-Development use full name: {TargetName}-{Platform}-{Config}.target
+    full_path = os.path.join(project_binaries_path, f"{target_name}-{target_platform}-{target_config}.target")
+    if os.path.exists(full_path):
+        return full_path
+
+    # For Windows arm64 use full name that includes the arch suffix
+    # Since target architecture is not exposed to the post-build scripts we need to check for the arm64-specific receipt file manually as a fallback
+    if target_platform == "Win64":
+        arm64_path = os.path.join(project_binaries_path, f"{target_name}-{target_platform}-{target_config}arm64.target")
+        if os.path.exists(arm64_path):
+            return arm64_path
+
+    return None
+
+
+def collect_symbol_files_from_receipt(receipt_path, project_dir, engine_dir):
+    try:
+        with open(receipt_path, 'r', encoding='utf-8') as f:
+            receipt = json.load(f)
+    except Exception as e:
+        log(f"Error parsing build receipt {receipt_path}: {e}")
+        return []
+
+    symbol_types = {'SymbolFile', 'Executable', 'DynamicLibrary'}
+    files = []
+
+    for product in receipt.get('BuildProducts', []):
+        if product.get('Type') not in symbol_types:
+            continue
+
+        path = product.get('Path', '')
+        # Resolve $(ProjectDir) and $(EngineDir) placeholders
+        path = path.replace('$(ProjectDir)', project_dir)
+        path = path.replace('$(EngineDir)', engine_dir)
+        # Normalize path separators
+        path = os.path.normpath(path)
+
+        if os.path.exists(path):
+            files.append(path)
+
+    return files
+
+
+
+
+def get_cli_log_level(config_paths):
+    cli_log_level = get_setting_value(config_paths, 'DiagnosticLevel')
+    return cli_log_level.lower() if cli_log_level else "info"
+
+
+def prepare_cli(project_dir, plugin_dir):
+    # Get Sentry CLI executable (based on host OS)
+    cli_exec = get_cli_executable(plugin_dir)
+    if not cli_exec:
+        log("Sentry CLI is missing. Skipping...")
+        return None
+
+    # Make CLI executable on Unix systems
+    if os.name != 'nt':
+        try:
+            os.chmod(cli_exec, 0o755)
+        except Exception as e:
+            log(f"Warning: Failed to set execute permission on Sentry CLI: {e}")
+
+    cli_env = os.environ.copy()
+    cli_env.pop('SENTRY_PROPERTIES', None)
+
+    # Check for sentry.properties file
+    properties_file = os.path.join(project_dir, 'sentry.properties')
+
+    log(f"Looking for properties file '{properties_file}'")
+
+    if os.path.exists(properties_file):
+        log("Properties file found. Starting upload...")
+
+        # Validate required properties
+        project_name = parse_config_value(properties_file, 'defaults.project')
+        if not project_name:
+            log("Error: Project name is not set. Skipping...")
+            return None
+
+        org_name = parse_config_value(properties_file, 'defaults.org')
+        if not org_name:
+            log("Error: Project organization is not set. Skipping...")
+            return None
+
+        auth_token = parse_config_value(properties_file, 'auth.token')
+        if not auth_token:
+            log("Error: Auth token is not set. Skipping...")
+            return None
+
+        # Environment variables that are set and not empty take priority over the properties file
+        resolve_cli_settings(cli_env, [
+            ('SENTRY_ORG', 'organization', org_name),
+            ('SENTRY_PROJECT', 'project', project_name),
+            ('SENTRY_AUTH_TOKEN', 'auth token', auth_token),
+            ('SENTRY_URL', 'URL', parse_config_value(properties_file, 'defaults.url')),
+        ])
+    else:
+        log("Properties file not found. Falling back to environment variables.")
+
+        # Validate required environment variables
+        if not os.environ.get('SENTRY_PROJECT'):
+            log("Error: SENTRY_PROJECT env var is not set. Skipping...")
+            return None
+
+        if not os.environ.get('SENTRY_ORG'):
+            log("Error: SENTRY_ORG env var is not set. Skipping...")
+            return None
+
+        if not os.environ.get('SENTRY_AUTH_TOKEN'):
+            log("Error: SENTRY_AUTH_TOKEN env var is not set. Skipping...")
+            return None
+
+    cli_config_dir = os.path.join(project_dir, 'Intermediate', 'SentryCli')
+    os.makedirs(cli_config_dir, exist_ok=True)
+
+    cli_env['SENTRY_CONFIG_DIR'] = cli_config_dir
+    cli_env['SENTRY_FORCE_ENV_TOKEN'] = '1'
+    cli_env['SENTRY_CLI_NO_TELEMETRY'] = '1'
+    cli_env['SENTRY_CLI_NO_UPDATE_CHECK'] = '1'
+
+    return cli_exec, cli_env
+
+
+def upload(cli_exec, cli_env, cli_args, paths, project_dir):
+    upload_cmd = [
+        cli_exec,
+        'debug-files',
+        'upload',
+        *cli_args,
+        *paths
+    ]
+
+    try:
+        # Execute the upload command with retry logic to avoid linker file locking issues
+        # See https://github.com/getsentry/sentry-unreal/issues/542
+        result = run_cmd_with_retry(upload_cmd, cli_env, project_dir)
+
+        # Output stdout/stderr
+        if result.stdout:
+            print_cli_output(result.stdout)
+        if result.stderr:
+            print_cli_output(result.stderr)
+
+        log("Upload finished")
+        return result.returncode
+
+    except OSError as e:
+        log(f"Error: Failed to start Sentry CLI ({e}). Skipping...")
+        return 0
+
+    except Exception as e:
+        log(f"Error executing Sentry CLI: {e}")
+        return 1
+
+
+def run(target_platform, target_name, target_type, target_config, project_file, plugin_dir, engine_dir):
+    log("Start debug symbols upload")
+
+    # Skip editor builds
+    if target_type == "Editor":
+        log("Automatic symbols upload is not required for Editor target. Skipping...")
+        return 0
+
+    # Skip Android builds (handled by Gradle plugin)
+    if target_platform == "Android":
+        log("Debug symbols upload for Android is handled by Sentry's Gradle plugin (if enabled)")
+        return 0
+
+    # Determine project directory
+    project_dir = os.path.dirname(os.path.abspath(project_file))
+
+    project_binaries_path = os.path.join(project_dir, 'Binaries', target_platform)
+
+    config_paths = get_config_paths(project_dir, target_platform)
+
+    found_config_paths = [path for path in config_paths if os.path.exists(path)]
+    log(f"Reading plugin settings from: {', '.join(found_config_paths) if found_config_paths else 'no config files found'}")
+
+    # Check if upload is enabled
+    upload_symbols = get_setting_value(config_paths, 'UploadSymbolsAutomatically')
+
+    # Check environment variable override
+    env_override = os.environ.get('SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY')
+    if env_override:
+        upload_symbols = env_override
+        log(f"Automatic symbols upload settings were overridden via environment variable SENTRY_UPLOAD_SYMBOLS_AUTOMATICALLY with value '{env_override}'")
+
+    # Check if upload is enabled
+    if not upload_symbols or upload_symbols.lower() != "true":
+        log("Automatic symbols upload is disabled in plugin settings. Skipping...")
+        return 0
+
+    # Check if target type is enabled
+    if not check_target_enabled(config_paths, 'EnableBuildTargets', target_type):
+        log(f"Automatic symbols upload is disabled for target type {target_type}. Skipping...")
+        return 0
+
+    # Check if build configuration is enabled
+    if not check_target_enabled(config_paths, 'EnableBuildConfigurations', target_config):
+        log(f"Automatic symbols upload is disabled for build configuration {target_config}. Skipping...")
+        return 0
+
+    # Determine include sources flag
+    include_sources = get_setting_value(config_paths, 'IncludeSources')
+    cli_args = []
+    if include_sources == "True":
+        cli_args.append('--include-sources')
+
+    cli_args += ['--log-level', get_cli_log_level(config_paths)]
+
+    cli = prepare_cli(project_dir, plugin_dir)
+    if not cli:
+        return 0
+
+    # Find target's build receipt
+    receipt_path = get_target_receipt_path(project_binaries_path, target_name, target_platform, target_config)
+
+    if not receipt_path:
+        log(f"Error: Build receipt not found for target '{target_name}'. Skipping...")
+        return 0
+
+    # Extract symbol files from build receipt and resolve paths
+    symbol_files = collect_symbol_files_from_receipt(receipt_path, project_dir, engine_dir)
+
+    if not symbol_files:
+        log(f"No symbol files found in build receipt for target '{target_name}'. Skipping...")
+        return 0
+
+    return upload(*cli, cli_args, symbol_files, project_dir)
+
+
+def run_dxil(project_file, plugin_dir, *symbol_dirs):
+    log("Start shader symbols upload")
+
+    project_dir = os.path.dirname(os.path.abspath(project_file))
+    config_paths = get_config_paths(project_dir, 'Win64')
+
+    cli = prepare_cli(project_dir, plugin_dir)
+    if not cli:
+        return 1
+
+    cli_args = ['--type', 'dxil', '--log-level', get_cli_log_level(config_paths)]
+    return upload(*cli, cli_args, list(symbol_dirs), project_dir)
+
+
+if __name__ == '__main__':
+    if sys.argv[1:2] == ['dxil']:
+        sys.exit(run_dxil(*sys.argv[2:]))
+    sys.exit(run(*sys.argv[1:8]))
