@@ -28,8 +28,14 @@ public class SentryEditor : ModuleRules
                 "Projects",
                 "HTTP",
                 "UATHelper",
-                "SharedSettingsWidgets"
+                "SharedSettingsWidgets",
+                "TargetPlatform"
             }
         );
+
+        if (Target.Platform.IsInGroup(UnrealPlatformGroup.Windows))
+        {
+            AddEngineThirdPartyPrivateStaticDependencies(Target, "NVAftermath");
+        }
     }
 }
