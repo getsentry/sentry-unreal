@@ -34,8 +34,8 @@ private:
 	TMap<ESentryLevel, bool> BreadcrumbFlags;
 	TMap<ESentryLogLevel, bool> StructuredLoggingFlags;
 
-	TArray<FString> StructuredLoggingCategories;
-	bool bSendBreadcrumbsWithStructuredLogging;
+	TArray<FString> StructuredLogsCategories;
+	bool bAddBreadcrumbsWithStructuredLogs;
 
 	void CacheLoggingSettings(const USentrySettings& Settings);
 

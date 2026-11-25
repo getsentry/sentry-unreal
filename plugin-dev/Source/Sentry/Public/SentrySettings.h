@@ -143,7 +143,7 @@ struct FAutomaticBreadcrumbsForLogs
 };
 
 USTRUCT(BlueprintType)
-struct FStructuredLoggingLevels
+struct FStructuredLogsLevels
 {
 	GENERATED_BODY()
 
@@ -614,15 +614,15 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Logs",
 		Meta = (DisplayName = "Structured logging categories", ToolTip = "List of UE_LOG categories to forward to Sentry structured logging. Leave empty to forward all."))
-	TArray<FString> StructuredLoggingCategories;
+	TArray<FString> StructuredLogsCategories;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Logs",
 		Meta = (DisplayName = "Forward log messages with verbosity level"))
-	FStructuredLoggingLevels StructuredLoggingLevels;
+	FStructuredLogsLevels StructuredLogsLevels;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Logs",
 		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether log messages forwarded to structured logging also produce breadcrumbs. Other log messages follow the breadcrumb verbosity settings."))
-	bool bSendBreadcrumbsWithStructuredLogging;
+	bool AddBreadcrumbsWithStructuredLogs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Metrics",
 		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS)."))
