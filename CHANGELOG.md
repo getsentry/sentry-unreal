@@ -1,14 +1,17 @@
 # Changelog
 
-## Unreleased (v2)
+## 2.0.0-beta.1
+
+> [!IMPORTANT]
+> The upcoming Unreal SDK 2.0.0 release introduces breaking changes to the plugin. Before upgrading, check the [migration guide](https://docs.sentry.io/platforms/unreal/migration/#migrating-to-200).
 
 ### Breaking Changes
 
-- Output device wrappers are now private, use `FSentryDelegates::OnAssert` instead ([#1716](https://github.com/getsentry/sentry-unreal/pull/1716))
-- Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
-- Replace `UseNativeBackend` with the `CrashBackend` option ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
-- Remove `USentrySubsystem::GetBeforeLogHandler` ([#1720](https://github.com/getsentry/sentry-unreal/pull/1720))
 - Remove deprecated and rename inconsistent plugin settings ([#1731](https://github.com/getsentry/sentry-unreal/pull/1731))
+- Remove `USentrySubsystem::GetBeforeLogHandler` ([#1720](https://github.com/getsentry/sentry-unreal/pull/1720))
+- Replace `UseNativeBackend` with the `CrashBackend` option ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
+- Replace `ESentryLevel` with the new `ESentryLogLevel` enum in structured logs ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
+- Make output device wrappers private ([#1716](https://github.com/getsentry/sentry-unreal/pull/1716))
 
 ### Behavioral Changes
 
