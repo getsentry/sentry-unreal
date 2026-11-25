@@ -8,8 +8,7 @@
 - Structured logs now use the new `ESentryLogLevel` enum instead of `ESentryLevel` ([#1715](https://github.com/getsentry/sentry-unreal/pull/1715))
 - Replace `UseNativeBackend` with the `CrashBackend` option ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
 - Remove `USentrySubsystem::GetBeforeLogHandler` ([#1720](https://github.com/getsentry/sentry-unreal/pull/1720))
-- Remove the deprecated `EnableStructuredLogging` and `EnableMetrics` settings ([#1731](https://github.com/getsentry/sentry-unreal/pull/1731))
-- Rename the `EnableAutoLogAttachment` setting to `AttachGameLog`, `AttachSessionReplay` to `EnableSessionReplay`, `EnableAutoCrashCapturing` to `OverrideEngineCrashHandling`, `AndroidCrashBackend` to `AndroidNativeCrashSource` (its `ESentryAndroidCrashBackend` type is now `ESentryAndroidNativeCrashSource`), `StructuredLoggingCategories` to `StructuredLogsCategories`, `StructuredLoggingLevels` to `StructuredLogsLevels` (its `FStructuredLoggingLevels` type is now `FStructuredLogsLevels`), `bSendBreadcrumbsWithStructuredLogging` to `AddBreadcrumbsWithStructuredLogs`, `bRequireUserConsent` to `RequireUserConsent`, and `bDefaultUserConsentGiven` to `DefaultUserConsentGiven`. Update the keys in your project's `.ini` files, as the old ones are no longer read ([#1731](https://github.com/getsentry/sentry-unreal/pull/1731))
+- Remove deprecated and rename inconsistent plugin settings ([#1731](https://github.com/getsentry/sentry-unreal/pull/1731))
 
 ### Behavioral Changes
 
