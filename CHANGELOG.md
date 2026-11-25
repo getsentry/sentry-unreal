@@ -4,6 +4,7 @@
 
 > [!IMPORTANT]
 > The upcoming Unreal SDK 2.0.0 release introduces breaking changes to the plugin. Before upgrading, check the [migration guide](https://docs.sentry.io/platforms/unreal/migration/#migrating-to-200).
+> Console extensions must be `1.0.0-beta.2+20261125` or later. Earlier versions aren't compatible with this release.
 
 ### Breaking Changes
 
