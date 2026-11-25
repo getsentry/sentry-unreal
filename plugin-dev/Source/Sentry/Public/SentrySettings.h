@@ -738,7 +738,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Record user input", ToolTip = "Records mouse and touch input so that the replay player shows it on top of the video: the mouse cursor with its clicks, and touches while they are held.",
-			EditCondition = "AttachSessionReplay", SentryPlatforms = "Win64,Linux,Mac,IOS"))
+			EditCondition = "EnableSessionReplay", SentryPlatforms = "Win64,Linux,Mac,IOS"))
 	bool RecordSessionReplayInput;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
