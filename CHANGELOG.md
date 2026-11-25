@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump CLI from v0.50.0 to v0.51.0 ([#1730](https://github.com/getsentry/sentry-unreal/pull/1730))
+  - [changelog](https://github.com/getsentry/toolkit/blob/main/packages/cli/CHANGELOG.md#0510)
+  - [diff](https://github.com/getsentry/toolkit/compare/cli@0.50.0...cli@0.51.0)
+
 ## 1.27.0
 
 ### Behavioral Changes
