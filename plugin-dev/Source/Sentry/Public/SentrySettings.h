@@ -80,7 +80,7 @@ enum class ESentryCrashBackend : uint8
 };
 
 UENUM(BlueprintType)
-enum class ESentryAndroidCrashBackend : uint8
+enum class ESentryAndroidNativeCrashSource : uint8
 {
 	// Capture crashes using the sentry-native NDK signal handler only
 	NdkSignalHandler,
@@ -143,7 +143,7 @@ struct FAutomaticBreadcrumbsForLogs
 };
 
 USTRUCT(BlueprintType)
-struct FStructuredLoggingLevels
+struct FStructuredLogsLevels
 {
 	GENERATED_BODY()
 
@@ -442,11 +442,11 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryLevel DebugLevel;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
-		Meta = (DisplayName = "Enable for Build Configurations"))
+		Meta = (DisplayName = "Enable for build configurations"))
 	FEnableBuildConfigurations EnableBuildConfigurations;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Core",
-		Meta = (DisplayName = "Enable for Build Target Types"))
+		Meta = (DisplayName = "Enable for build target types"))
 	FEnableBuildTargets EnableBuildTargets;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Core",
@@ -454,9 +454,9 @@ class SENTRY_API USentrySettings : public UObject
 	bool EnableForPromotedBuildsOnly;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
-		Meta = (DisplayName = "Override Windows default crash capturing mechanism", ToolTip = "Flag indicating whether to capture crashes automatically on Windows as an alternative to Crash Reporter.",
+		Meta = (DisplayName = "Override engine crash handling", ToolTip = "Disables Unreal Engine's built-in crash handling so that Sentry captures crashes. When disabled, crashes are handled by the engine and reported through Unreal Crash Reporter.",
 			SentryPlatforms = "Win64,Xbox", SentryMinEngine = "5.2"))
-	bool EnableAutoCrashCapturing;
+	bool OverrideEngineCrashHandling;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
 		Meta = (DisplayName = "Crash backend", ToolTip = "Backend used to capture and send crashes.",
@@ -484,11 +484,11 @@ class SENTRY_API USentrySettings : public UObject
 	ESentryCrashUploadMode CrashUploadMode;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Crash Handling",
-		Meta = (DisplayName = "Android crash capture mode", ToolTip = "Mechanism used to capture Android crashes and enrich them with additional context.", SentryPlatforms = "Android"))
-	ESentryAndroidCrashBackend AndroidCrashBackend;
+		Meta = (DisplayName = "Android native crash source", ToolTip = "Mechanism used to capture Android crashes and enrich them with additional context.", SentryPlatforms = "Android"))
+	ESentryAndroidNativeCrashSource AndroidNativeCrashSource;
 
 	UPROPERTY(Config, EditAnywhere, AdvancedDisplay, Category = "Crash Handling",
-		Meta = (DisplayName = "Delay app shutdown until crash report uploaded (for Crashpad only)", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
+		Meta = (DisplayName = "Delay app shutdown until crash report is uploaded", ToolTip = "Flag indicating whether Crashpad should delay application shutdown until the upload of the crash report is completed. It is useful in Docker environment where the life cycle of all processes is bound by the root process.",
 			EditCondition = "CrashBackend == ESentryCrashBackend::Legacy", SentryPlatforms = "Win64,Linux"))
 	bool CrashpadWaitForUpload;
 
@@ -519,7 +519,7 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
 		Meta = (DisplayName = "Attach game log", ToolTip = "Flag indicating whether to attach game log automatically to captured events. Not available in shipping builds."))
-	bool EnableAutoLogAttachment;
+	bool AttachGameLog;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Enriching Events|Attachments",
 		Meta = (DisplayName = "Attach screenshots", ToolTip = "Flag indicating whether to attach a screenshot of the application to crash and ensure events."))
@@ -586,7 +586,7 @@ class SENTRY_API USentrySettings : public UObject
 	float AppNotRespondingTimeout;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Release Health",
-		Meta = (DisplayName = "Enable automatic session tracking ", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
+		Meta = (DisplayName = "Enable automatic session tracking", ToolTip = "Flag indicating whether the SDK should automatically start a new session when it is initialized."))
 	bool EnableAutoSessionTracking;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Release Health",
@@ -612,23 +612,17 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableTracing && SamplingType == ESentryTracesSamplingType::TracesSampler", EditConditionHides))
 	TSubclassOf<USentryTraceSampler> TracesSampler;
 
-	UPROPERTY(Config, Meta = (DeprecatedProperty, DeprecationMessage = "Structured logging is now always enabled. This setting no longer has any effect and will be removed in the future."))
-	bool EnableStructuredLogging;
-
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Logs",
 		Meta = (DisplayName = "Structured logging categories", ToolTip = "List of UE_LOG categories to forward to Sentry structured logging. Leave empty to forward all."))
-	TArray<FString> StructuredLoggingCategories;
+	TArray<FString> StructuredLogsCategories;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Logs",
 		Meta = (DisplayName = "Forward log messages with verbosity level"))
-	FStructuredLoggingLevels StructuredLoggingLevels;
+	FStructuredLogsLevels StructuredLogsLevels;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Logs",
-		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether to also send breadcrumbs when structured logging is enabled."))
-	bool bSendBreadcrumbsWithStructuredLogging;
-
-	UPROPERTY(Config, Meta = (DeprecatedProperty, DeprecationMessage = "The Sentry metrics API is now always enabled. This setting no longer has any effect and will be removed in the future."))
-	bool EnableMetrics;
+		Meta = (DisplayName = "Also send breadcrumbs", ToolTip = "Whether log messages forwarded to structured logging also produce breadcrumbs. Other log messages follow the breadcrumb verbosity settings."))
+	bool AddBreadcrumbsWithStructuredLogs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Metrics",
 		Meta = (DisplayName = "Collect frame time metrics", ToolTip = "Automatically collect frame time and per-thread performance metrics (frame duration, game thread, render thread, GPU, FPS)."))
@@ -689,12 +683,12 @@ class SENTRY_API USentrySettings : public UObject
 	bool SendDefaultPii;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
-		Meta = (DisplayName = "Require User Consent", ToolTip = "True if user's consent is required before the SDK sends any data to Sentry.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
-	bool bRequireUserConsent;
+		Meta = (DisplayName = "Require user consent", ToolTip = "True if user's consent is required before the SDK sends any data to Sentry.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
+	bool RequireUserConsent;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
-		Meta = (DisplayName = "Default User Consent Given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
-	bool bDefaultUserConsentGiven;
+		Meta = (DisplayName = "Default user consent given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "RequireUserConsent"))
+	bool DefaultUserConsentGiven;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Transport",
 		Meta = (InlineEditConditionToggle))
@@ -735,21 +729,21 @@ class SENTRY_API USentrySettings : public UObject
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Enable session replay", ToolTip = "Captures a short gameplay video leading up to a crash and sends it to Sentry's Session Replay. On desktop platforms (Windows/Mac/Linux), requires the AVCodecsCore plugin plus a codec plugin matching the GPU vendor (NVCodecs for NVIDIA on Windows/Linux, AMFCodecs for AMD on Windows, VTCodecs on Mac) and rebuild after changing. On Xbox, development kits only. On Android, a 30s clip sampled at 1 frame/second.",
 			SentryPlatforms = "!PS5,!Switch", SentryMinEngine = "5.4", SentryRequiresRebuild, SentryExperimental))
-	bool AttachSessionReplay;
+	bool EnableSessionReplay;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Replay duration (milliseconds)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for the crash replay; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration. Capped at 20 seconds: Sentry rejects replay videos larger than 10 MiB, and longer clips risk exceeding that limit.",
-			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "20000"))
+			EditCondition = "EnableSessionReplay", ClampMin = "1000", ClampMax = "20000"))
 	uint32 SessionReplayDurationMs;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Record user input", ToolTip = "Records mouse and touch input so that the replay player shows it on top of the video: the mouse cursor with its clicks, and touches while they are held.",
-			EditCondition = "AttachSessionReplay", SentryPlatforms = "Win64,Linux,Mac,IOS"))
+			EditCondition = "EnableSessionReplay", SentryPlatforms = "Win64,Linux,Mac,IOS"))
 	bool RecordSessionReplayInput;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Advanced recording options", ToolTip = "Low-level encoder/muxer tuning for the desktop (Windows/Mac/Linux) session-replay recorder. Defaults are sensible for most projects.",
-			EditCondition = "AttachSessionReplay", AdvancedDisplay))
+			EditCondition = "EnableSessionReplay", AdvancedDisplay))
 	FSentrySessionReplayOptions SessionReplayOptions;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Game State Capture",
@@ -766,11 +760,11 @@ class SENTRY_API USentrySettings : public UObject
 	bool UploadSymbolsAutomatically;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Project Name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Project name", ToolTip = "Name of the project for which debug symbols should be uploaded.", EditCondition = "UploadSymbolsAutomatically"))
 	FString ProjectName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Organization Name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Organization name", ToolTip = "Name of the organization associated with the project.", EditCondition = "UploadSymbolsAutomatically"))
 	FString OrgName;
 
 	UPROPERTY(EditAnywhere, Category = "Debug Symbols",
@@ -782,7 +776,7 @@ class SENTRY_API USentrySettings : public UObject
 	bool IncludeSources;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
-		Meta = (DisplayName = "Diagnostic Level", ToolTip = "Logs verbosity level during symbol uploading.", EditCondition = "UploadSymbolsAutomatically"))
+		Meta = (DisplayName = "Diagnostic level", ToolTip = "Logs verbosity level during symbol uploading.", EditCondition = "UploadSymbolsAutomatically"))
 	ESentryCliLogLevel DiagnosticLevel;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Symbols",
@@ -807,7 +801,7 @@ class SENTRY_API USentrySettings : public UObject
 	FSentryCrashReporterAppearance CrashReporterAppearance;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",
-		Meta = (DisplayName = "Crash Reporter Endpoint", ToolTip = "Endpoint that Unreal Crash Reporter should use in order to upload crash data to Sentry."))
+		Meta = (DisplayName = "Unreal Crash Reporter endpoint", ToolTip = "Endpoint that Unreal Crash Reporter should use in order to upload crash data to Sentry."))
 	FString CrashReporterUrl;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Unreal Crash Reporter",

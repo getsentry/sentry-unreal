@@ -67,7 +67,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	}
 
 	isScreenshotAttachmentEnabled = settings->AttachScreenshot;
-	isGameLogAttachmentEnabled = settings->EnableAutoLogAttachment;
+	isGameLogAttachmentEnabled = settings->AttachGameLog;
 	isGameStateAttachmentEnabled = settings->AttachGameState;
 
 	if (isGameStateAttachmentEnabled && !isGameStateBackedUp)
@@ -81,7 +81,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 	FString prevSessionReplayPath;
 	FString prevSessionReplaySidecarPath;
 
-	if (settings->AttachSessionReplay)
+	if (settings->EnableSessionReplay)
 	{
 		// Capture the previous run's replay paths before starting the recorder to
 		// avoid a race where onLastRunStatusDetermined picks up the current session's files
@@ -131,7 +131,7 @@ void FAppleSentrySubsystem::InitWithSettings(const USentrySettings* settings, co
 					}
 					return;
 				}
-				if (settings->AttachSessionReplay)
+				if (settings->EnableSessionReplay)
 				{
 					// Deliver the previous run's replay as a structured envelope so it shows
 					// up in the Session Replay product page.

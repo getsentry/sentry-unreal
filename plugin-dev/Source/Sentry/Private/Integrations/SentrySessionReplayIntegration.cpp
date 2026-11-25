@@ -20,7 +20,7 @@ FSentrySessionReplayIntegration::FSentrySessionReplayIntegration(const TSharedRe
 
 bool FSentrySessionReplayIntegration::Setup(const USentrySettings& Settings)
 {
-	if (!Settings.AttachSessionReplay)
+	if (!Settings.EnableSessionReplay)
 	{
 		return false;
 	}

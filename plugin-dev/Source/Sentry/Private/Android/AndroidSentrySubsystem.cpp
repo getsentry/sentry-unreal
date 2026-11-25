@@ -83,7 +83,7 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetNumberField(TEXT("maxBreadcrumbs"), settings->MaxBreadcrumbs);
 	SettingsJson->SetNumberField(TEXT("shutdownTimeout"), settings->ShutdownTimeout);
 	SettingsJson->SetBoolField(TEXT("attachScreenshot"), settings->AttachScreenshot);
-	SettingsJson->SetBoolField(TEXT("attachSessionReplay"), settings->AttachSessionReplay);
+	SettingsJson->SetBoolField(TEXT("attachSessionReplay"), settings->EnableSessionReplay);
 	SettingsJson->SetBoolField(TEXT("attachGameState"), settings->AttachGameState);
 	SettingsJson->SetArrayField(TEXT("inAppInclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppInclude));
 	SettingsJson->SetArrayField(TEXT("inAppExclude"), FAndroidSentryConverters::StrinArrayToJsonArray(settings->InAppExclude));
@@ -92,10 +92,10 @@ void FAndroidSentrySubsystem::InitWithSettings(const USentrySettings* settings, 
 	SettingsJson->SetNumberField(TEXT("anrTimeoutMillis"), settings->AppNotRespondingTimeout * 1000.0f);
 	SettingsJson->SetBoolField(TEXT("enableNdkAppHangTracking"), bNdkAppHangTracking);
 	SettingsJson->SetNumberField(TEXT("ndkAppHangTimeoutMillis"), settings->HangTimeoutDuration * 1000.0f);
-	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidCrashBackend != ESentryAndroidCrashBackend::TombstoneOnly);
+	SettingsJson->SetBoolField(TEXT("enableNdk"), settings->AndroidNativeCrashSource != ESentryAndroidNativeCrashSource::TombstoneOnly);
 	SettingsJson->SetBoolField(TEXT("enableTombstone"),
-		settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneOnly || settings->AndroidCrashBackend == ESentryAndroidCrashBackend::TombstoneMergedWithNdk);
-	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->EnableAutoLogAttachment);
+		settings->AndroidNativeCrashSource == ESentryAndroidNativeCrashSource::TombstoneOnly || settings->AndroidNativeCrashSource == ESentryAndroidNativeCrashSource::TombstoneMergedWithNdk);
+	SettingsJson->SetBoolField(TEXT("enableAutoLogAttachment"), settings->AttachGameLog);
 	SettingsJson->SetBoolField(TEXT("enableStructuredLogging"), true);
 	SettingsJson->SetBoolField(TEXT("enableMetrics"), true);
 	SettingsJson->SetStringField(TEXT("deviceType"), GetDeviceType());

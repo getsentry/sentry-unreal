@@ -70,7 +70,7 @@ void FSentryOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosit
 		NativeImpl->AddLog(FormattedMessage, StructuredLogLevel, Attributes);
 
 		// If we don't want to also send breadcrumbs when structured logging is enabled, return early
-		if (!bSendBreadcrumbsWithStructuredLogging)
+		if (!bAddBreadcrumbsWithStructuredLogs)
 		{
 			return;
 		}
@@ -109,15 +109,15 @@ void FSentryOutputDevice::CacheLoggingSettings(const USentrySettings& Settings)
 	BreadcrumbFlags.Add(ESentryLevel::Info, Settings.AutomaticBreadcrumbsForLogs.bOnInfoLog);
 	BreadcrumbFlags.Add(ESentryLevel::Debug, Settings.AutomaticBreadcrumbsForLogs.bOnDebugLog);
 
-	StructuredLoggingFlags.Add(ESentryLogLevel::Fatal, Settings.StructuredLoggingLevels.bOnFatalLog);
-	StructuredLoggingFlags.Add(ESentryLogLevel::Error, Settings.StructuredLoggingLevels.bOnErrorLog);
-	StructuredLoggingFlags.Add(ESentryLogLevel::Warning, Settings.StructuredLoggingLevels.bOnWarningLog);
-	StructuredLoggingFlags.Add(ESentryLogLevel::Info, Settings.StructuredLoggingLevels.bOnInfoLog);
-	StructuredLoggingFlags.Add(ESentryLogLevel::Debug, Settings.StructuredLoggingLevels.bOnDebugLog);
-	StructuredLoggingFlags.Add(ESentryLogLevel::Trace, Settings.StructuredLoggingLevels.bOnTraceLog);
+	StructuredLoggingFlags.Add(ESentryLogLevel::Fatal, Settings.StructuredLogsLevels.bOnFatalLog);
+	StructuredLoggingFlags.Add(ESentryLogLevel::Error, Settings.StructuredLogsLevels.bOnErrorLog);
+	StructuredLoggingFlags.Add(ESentryLogLevel::Warning, Settings.StructuredLogsLevels.bOnWarningLog);
+	StructuredLoggingFlags.Add(ESentryLogLevel::Info, Settings.StructuredLogsLevels.bOnInfoLog);
+	StructuredLoggingFlags.Add(ESentryLogLevel::Debug, Settings.StructuredLogsLevels.bOnDebugLog);
+	StructuredLoggingFlags.Add(ESentryLogLevel::Trace, Settings.StructuredLogsLevels.bOnTraceLog);
 
-	StructuredLoggingCategories = Settings.StructuredLoggingCategories;
-	bSendBreadcrumbsWithStructuredLogging = Settings.bSendBreadcrumbsWithStructuredLogging;
+	StructuredLogsCategories = Settings.StructuredLogsCategories;
+	bAddBreadcrumbsWithStructuredLogs = Settings.AddBreadcrumbsWithStructuredLogs;
 }
 
 bool FSentryOutputDevice::ShouldForwardToStructuredLogging(const FString& Category, ESentryLogLevel Level) const
@@ -129,9 +129,9 @@ bool FSentryOutputDevice::ShouldForwardToStructuredLogging(const FString& Catego
 	}
 
 	// Check category filter
-	if (StructuredLoggingCategories.Num() > 0)
+	if (StructuredLogsCategories.Num() > 0)
 	{
-		for (const FString& CategoryFilter : StructuredLoggingCategories)
+		for (const FString& CategoryFilter : StructuredLogsCategories)
 		{
 			if (Category.Equals(CategoryFilter, ESearchCase::IgnoreCase))
 			{

@@ -126,7 +126,7 @@ BeforeAll {
     $script:ActivityName = "$script:PackageName/com.epicgames.unreal.GameActivity"
 
     # Project setting overrides shared by every scenario, appended to each scenario's intent extras
-    $script:BaseAppArgs = "\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:EnableAutoLogAttachment=True"
+    $script:BaseAppArgs = "\ -ini:Engine:\[/Script/Sentry.SentrySettings\]:AttachGameLog=True"
 }
 
 Describe 'Sentry Unreal Android Integration Tests (<Platform>)' -ForEach $TestTargets {

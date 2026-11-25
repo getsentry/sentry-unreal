@@ -19,7 +19,7 @@ FString NormalizeSettingName(const FString& Name)
 }
 
 // Mirrors how Unreal's Python API names a property: boolean properties lose their `b` prefix
-// (`bRequireUserConsent` is exposed as `require_user_consent`).
+// (`bFooBar` is exposed as `foo_bar`).
 FString NormalizePropertyName(const FProperty* Property)
 {
 	FString Name = Property->GetName();

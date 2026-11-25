@@ -53,14 +53,14 @@ public class Sentry : ModuleRules
 		// when the user hasn't explicitly configured them and no entry exists in the .ini file
 		string CrashBackend = "Auto";
 		bool bEnableExternalCrashReporter = false;
-		bool bAttachSessionReplay = false;
+		bool bEnableSessionReplay = false;
 
 		if (Target.ProjectFile != null)
 		{
 			ConfigHierarchy EngineConfig = ConfigCache.ReadHierarchy(ConfigHierarchyType.Engine, DirectoryReference.FromFile(Target.ProjectFile), Target.Platform);
 			EngineConfig.GetString("/Script/Sentry.SentrySettings", "CrashBackend", out CrashBackend);
 			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableExternalCrashReporter", out bEnableExternalCrashReporter);
-			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "AttachSessionReplay", out bAttachSessionReplay);
+			EngineConfig.GetBool("/Script/Sentry.SentrySettings", "EnableSessionReplay", out bEnableSessionReplay);
 		}
 
 		bool bIsNativeSelected = string.Equals(CrashBackend, "Native", StringComparison.OrdinalIgnoreCase);
@@ -260,7 +260,7 @@ public class Sentry : ModuleRules
 			}
 		}
 
-		if (bAttachSessionReplay && IsSessionReplaySupported(Target) && IsEncoderAvailable(Target))
+		if (bEnableSessionReplay && IsSessionReplaySupported(Target) && IsEncoderAvailable(Target))
 		{
 			AddEncoderDependencies(Target);
 		}
