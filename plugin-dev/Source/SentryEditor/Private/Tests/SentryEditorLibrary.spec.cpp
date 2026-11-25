@@ -23,18 +23,14 @@ void SentryEditorLibrarySpec::Define()
 		It("should accept the property name as declared in C++", [this]()
 		{
 			TestEqual("Resolved name", USentryEditorLibrary::ResolveSettingName(TEXT("EnableTracing")), FName(TEXT("EnableTracing")));
-			TestEqual("Resolved name", USentryEditorLibrary::ResolveSettingName(TEXT("bRequireUserConsent")), FName(TEXT("bRequireUserConsent")));
+			TestEqual("Resolved name", USentryEditorLibrary::ResolveSettingName(TEXT("RequireUserConsent")), FName(TEXT("RequireUserConsent")));
 		});
 
 		It("should accept the name exposed by the Python API", [this]()
 		{
 			TestEqual("Resolved name", USentryEditorLibrary::ResolveSettingName(TEXT("enable_tracing")), FName(TEXT("EnableTracing")));
 			TestEqual("Resolved name", USentryEditorLibrary::ResolveSettingName(TEXT("traces_sample_rate")), FName(TEXT("TracesSampleRate")));
-		});
-
-		It("should map boolean settings whose b prefix Python drops", [this]()
-		{
-			TestEqual("Resolved name", USentryEditorLibrary::ResolveSettingName(TEXT("require_user_consent")), FName(TEXT("bRequireUserConsent")));
+			TestEqual("Resolved name", USentryEditorLibrary::ResolveSettingName(TEXT("require_user_consent")), FName(TEXT("RequireUserConsent")));
 		});
 
 		It("should ignore case", [this]()

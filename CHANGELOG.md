@@ -9,7 +9,7 @@
 - Replace `UseNativeBackend` with the `CrashBackend` option ([#1717](https://github.com/getsentry/sentry-unreal/pull/1717))
 - Remove `USentrySubsystem::GetBeforeLogHandler` ([#1720](https://github.com/getsentry/sentry-unreal/pull/1720))
 - Remove the deprecated `EnableStructuredLogging` and `EnableMetrics` settings
-- Rename the `EnableAutoLogAttachment` setting to `AttachGameLog`, `AttachSessionReplay` to `EnableSessionReplay`, `EnableAutoCrashCapturing` to `OverrideEngineCrashHandling`, `AndroidCrashBackend` to `AndroidNativeCrashSource` (its `ESentryAndroidCrashBackend` type is now `ESentryAndroidNativeCrashSource`), `StructuredLoggingCategories` to `StructuredLogsCategories`, `StructuredLoggingLevels` to `StructuredLogsLevels` (its `FStructuredLoggingLevels` type is now `FStructuredLogsLevels`), and `bSendBreadcrumbsWithStructuredLogging` to `AddBreadcrumbsWithStructuredLogs`. Update the keys in your project's `.ini` files, as the old ones are no longer read
+- Rename the `EnableAutoLogAttachment` setting to `AttachGameLog`, `AttachSessionReplay` to `EnableSessionReplay`, `EnableAutoCrashCapturing` to `OverrideEngineCrashHandling`, `AndroidCrashBackend` to `AndroidNativeCrashSource` (its `ESentryAndroidCrashBackend` type is now `ESentryAndroidNativeCrashSource`), `StructuredLoggingCategories` to `StructuredLogsCategories`, `StructuredLoggingLevels` to `StructuredLogsLevels` (its `FStructuredLoggingLevels` type is now `FStructuredLogsLevels`), `bSendBreadcrumbsWithStructuredLogging` to `AddBreadcrumbsWithStructuredLogs`, `bRequireUserConsent` to `RequireUserConsent`, and `bDefaultUserConsentGiven` to `DefaultUserConsentGiven`. Update the keys in your project's `.ini` files, as the old ones are no longer read
 
 ### Behavioral Changes
 

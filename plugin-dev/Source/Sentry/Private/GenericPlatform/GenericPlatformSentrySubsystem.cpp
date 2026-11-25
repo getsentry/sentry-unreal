@@ -774,7 +774,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 		sentry_options_set_before_breadcrumb(options, HandleBeforeBreadcrumb, this);
 	}
 
-	if (settings->bRequireUserConsent)
+	if (settings->RequireUserConsent)
 	{
 		sentry_options_set_require_user_consent(options, 1);
 	}
@@ -810,9 +810,9 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 
 	// Best-effort at writing user consent to disk so that user consent can change at runtime and persist
 	// We should never have a valid user consent state return "Unknown", so assume that no consent value is written if we see this
-	if (settings->bRequireUserConsent && GetUserConsent() == EUserConsent::Unknown)
+	if (settings->RequireUserConsent && GetUserConsent() == EUserConsent::Unknown)
 	{
-		if (settings->bDefaultUserConsentGiven)
+		if (settings->DefaultUserConsentGiven)
 		{
 			GiveUserConsent();
 		}

@@ -684,11 +684,11 @@ class SENTRY_API USentrySettings : public UObject
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
 		Meta = (DisplayName = "Require user consent", ToolTip = "True if user's consent is required before the SDK sends any data to Sentry.", SentryPlatforms = "Win64,Linux,Mac:Native,Consoles"))
-	bool bRequireUserConsent;
+	bool RequireUserConsent;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Privacy & PII",
-		Meta = (DisplayName = "Default user consent given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "bRequireUserConsent"))
-	bool bDefaultUserConsentGiven;
+		Meta = (DisplayName = "Default user consent given", ToolTip = "True if the default user consent value is 'given'; false if the default value should be 'revoked'.", EditCondition = "RequireUserConsent"))
+	bool DefaultUserConsentGiven;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Transport",
 		Meta = (InlineEditConditionToggle))

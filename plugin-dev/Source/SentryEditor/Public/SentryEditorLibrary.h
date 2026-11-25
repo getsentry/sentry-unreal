@@ -53,7 +53,7 @@ public:
 	 * Resolves a setting name to the property name declared in C++. Accepts that name as-is (for
 	 * example "EnableTracing") as well as the name Unreal's Python API exposes the setting under
 	 * ("enable_tracing"), including boolean settings whose "b" prefix Python drops
-	 * ("require_user_consent" for "bRequireUserConsent").
+	 * ("foo_bar" for "bFooBar").
 	 *
 	 * @param PropertyName The setting name in either form.
 	 * @return The property name as declared in C++, or None if no setting matches.
