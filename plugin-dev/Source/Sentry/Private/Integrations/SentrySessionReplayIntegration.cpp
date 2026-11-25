@@ -33,6 +33,7 @@ bool FSentrySessionReplayIntegration::Setup(const USentrySettings& Settings)
 
 	Options = Settings.SessionReplayOptions;
 	DurationMs = Settings.SessionReplayDurationMs;
+	bRecordInput = Settings.RecordSessionReplayInput;
 
 	// The recorder hooks the Slate backbuffer, which isn't available yet if Sentry is initialized
 	// before the engine loop finishes. Defer the start until engine init completes in that case.
@@ -72,7 +73,7 @@ void FSentrySessionReplayIntegration::StartRecording()
 	const FString ReplayPath = FPaths::Combine(ReplayDirectory, FString::Printf(TEXT("replay-%s.mp4"), *ReplayId));
 
 	Recorder = MakeUnique<FSentrySessionReplayRecorder>();
-	if (!Recorder->Initialize(Options, DurationMs, ReplayId, ReplayPath))
+	if (!Recorder->Initialize(Options, DurationMs, ReplayId, ReplayPath, bRecordInput))
 	{
 		Recorder.Reset();
 		return;

@@ -17,6 +17,7 @@
 class FRunnableThread;
 class FEvent;
 class FSentryBackBufferCapture;
+class FSentryReplayInputCapture;
 struct FSentrySessionReplayOptions;
 
 /**
@@ -38,7 +39,7 @@ public:
 	FSentrySessionReplayRecorder();
 	virtual ~FSentrySessionReplayRecorder() override;
 
-	bool Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& ReplayId, const FString& ReplayPath);
+	bool Initialize(const FSentrySessionReplayOptions& Options, uint32 DurationMs, const FString& ReplayId, const FString& ReplayPath, bool bRecordInput);
 	void Shutdown();
 
 	bool IsEnabled() const { return bEnabled; }
@@ -47,8 +48,9 @@ public:
 
 	// Called by the encoder thread when the init segment (ftyp+moov) is ready
 	void OnInitSegmentReady(TArray<uint8>&& InitSegment);
-	// Called by the encoder thread when a fragment (moof+mdat) is complete
-	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks);
+	// Called by the encoder thread when a fragment (moof+mdat) is complete, along with
+	// the FPlatformTime::Seconds() its first frame was captured at (negative if unknown)
+	void OnFragmentReady(TArray<uint8>&& Fragment, uint32 FrameCount, uint64 DurationTicks, double CaptureTimeSeconds);
 
 	// FRunnable (rotation thread)
 	virtual bool Init() override;
@@ -61,11 +63,11 @@ private:
 	bool WriteSnapshot(const TArray<uint8>& Bytes);
 
 	// Assembles the platform-agnostic replay model from the most recent on-disk snapshot
-	FSentryReplayInfo BuildReplayInfo() const;
+	FSentryReplayInfo BuildReplayInfo(double ClipStartSeconds) const;
 
 	// Writes the JSON metadata sidecar next to the mp4 (temp + atomic rename) so the
 	// SDK can build and send the replay envelope outside the crash handler
-	void WriteReplayMetadata();
+	void WriteReplayMetadata(double ClipStartSeconds);
 
 	bool bEnabled = false;
 	FThreadSafeBool bSnapshotOnDisk;
@@ -83,12 +85,14 @@ private:
 
 	TUniquePtr<ISentryEncoder> Encoder;
 	TUniquePtr<FSentryBackBufferCapture> Capture;
+	TSharedPtr<FSentryReplayInputCapture> InputCapture;
 
 	struct FFragment
 	{
 		TArray<uint8> Bytes;
 		uint32 FrameCount = 0;
 		uint64 DurationTicks = 0;
+		double CaptureTimeSeconds = -1.0;
 	};
 
 	// Fragment ring + init segment, protected by RingLock

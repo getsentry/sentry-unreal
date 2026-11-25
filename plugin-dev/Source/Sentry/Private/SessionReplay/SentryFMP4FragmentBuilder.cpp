@@ -17,7 +17,7 @@ void FSentryFMP4FragmentBuilder::SetDimensions(uint32 InWidth, uint32 InHeight)
 	Height = InHeight;
 }
 
-void FSentryFMP4FragmentBuilder::AddAccessUnit(const uint8* AnnexB, int64 Size, bool bKeyframe, uint32 DurationTicks)
+void FSentryFMP4FragmentBuilder::AddAccessUnit(const uint8* AnnexB, int64 Size, bool bKeyframe, uint32 DurationTicks, double CaptureTimeSeconds)
 {
 	if (AnnexB == nullptr || Size <= 0)
 	{
@@ -62,6 +62,7 @@ void FSentryFMP4FragmentBuilder::AddAccessUnit(const uint8* AnnexB, int64 Size, 
 	if (CurrentSamples.Num() == 0)
 	{
 		CurrentFragmentDecodeTime = SampleClock;
+		CurrentFragmentCaptureTime = CaptureTimeSeconds;
 	}
 	SampleClock += Sample.Duration;
 
@@ -87,7 +88,7 @@ void FSentryFMP4FragmentBuilder::Flush()
 			DurationTicks += Sample.Duration;
 		}
 		TArray<uint8> Fragment = FSentryFMP4Writer::BuildFragment(NextFragmentSequence++, CurrentFragmentDecodeTime, CurrentSamples);
-		Recorder.OnFragmentReady(MoveTemp(Fragment), FrameCount, DurationTicks);
+		Recorder.OnFragmentReady(MoveTemp(Fragment), FrameCount, DurationTicks, CurrentFragmentCaptureTime);
 	}
 	CurrentSamples.Reset();
 }
@@ -96,6 +97,7 @@ void FSentryFMP4FragmentBuilder::Reset()
 {
 	CurrentSamples.Reset();
 	CurrentFragmentDecodeTime = 0;
+	CurrentFragmentCaptureTime = -1.0;
 	NextFragmentSequence = 1;
 	SampleClock = 0;
 	CachedSps.Empty();

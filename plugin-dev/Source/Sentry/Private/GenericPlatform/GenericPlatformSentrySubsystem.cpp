@@ -731,6 +731,7 @@ void FGenericPlatformSentrySubsystem::InitWithSettings(const USentrySettings* se
 	{
 		sentry_options_set_enable_app_hang_tracking(options, 1);
 		sentry_options_set_app_hang_timeout(options, static_cast<uint64_t>(settings->HangTimeoutDuration * 1000.0));
+		sentry_options_set_app_hang_thread_stackwalk_mode(options, settings->AttachAllThreadsToHangEvents ? SENTRY_THREAD_STACKWALK_MODE_ALL : SENTRY_THREAD_STACKWALK_MODE_HUNG_ONLY);
 	}
 #endif
 

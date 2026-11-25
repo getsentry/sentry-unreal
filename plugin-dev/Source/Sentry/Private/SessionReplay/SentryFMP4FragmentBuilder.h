@@ -49,8 +49,9 @@ public:
 	 * @param bKeyframe    true when this access unit starts with an IDR; each
 	 *                     fMP4 fragment must begin on one
 	 * @param DurationTicks sample duration in FSentryFMP4Writer::TrackTimescale ticks
+	 * @param CaptureTimeSeconds FPlatformTime::Seconds() when the frame was captured, negative if unknown
 	 */
-	void AddAccessUnit(const uint8* AnnexB, int64 Size, bool bKeyframe, uint32 DurationTicks);
+	void AddAccessUnit(const uint8* AnnexB, int64 Size, bool bKeyframe, uint32 DurationTicks, double CaptureTimeSeconds = -1.0);
 
 	// Emits whatever samples have accumulated as a fragment
 	void Flush();
@@ -69,6 +70,7 @@ private:
 
 	TArray<FSentryH264Sample> CurrentSamples;
 	uint64 CurrentFragmentDecodeTime = 0;
+	double CurrentFragmentCaptureTime = -1.0;
 	uint32 NextFragmentSequence = 1;
 	uint64 SampleClock = 0;
 

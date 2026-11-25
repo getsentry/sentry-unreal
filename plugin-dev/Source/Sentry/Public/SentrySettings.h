@@ -571,6 +571,11 @@ class SENTRY_API USentrySettings : public UObject
 			EditCondition = "EnableHangTracking", SentryPlatforms = "Win64,Linux,Mac:Native,Android,Xbox"))
 	bool UseNativeHangTracking;
 
+	UPROPERTY(Config, EditAnywhere, Category = "App Hangs",
+		Meta = (DisplayName = "Attach all threads to hang events", ToolTip = "Attach the stack traces of all threads to hang events captured by the native hang watchdog. Shows what the game thread waits on, for example the render thread or a worker that holds a lock. Each thread is paused briefly while its stack is captured, so a capture takes longer in processes with many threads.",
+			EditCondition = "EnableHangTracking && UseNativeHangTracking", SentryPlatforms = "Win64,Linux,Mac:Native", SentryExperimental))
+	bool AttachAllThreadsToHangEvents;
+
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "App Hangs",
 		Meta = (DisplayName = "Enable main thread hang tracking", ToolTip = "Flag indicating whether to enable tracking of main thread hangs (App Hangs on Apple platforms, ANRs on Android).", SentryPlatforms = "Mac:Cocoa,IOS,Android"))
 	bool EnableAppNotRespondingTracking;
@@ -736,6 +741,11 @@ class SENTRY_API USentrySettings : public UObject
 		Meta = (DisplayName = "Replay duration (milliseconds)", ToolTip = "Requested duration of the retroactive replay window. On desktop platforms (Windows/Mac/Linux) this is the rolling clip length kept on disk for the crash replay; on Xbox the requested length of the OS-captured clip (which may be shorter if not enough frames are buffered). Ignored on Android, where the SDK determines the duration. Capped at 20 seconds: Sentry rejects replay videos larger than 10 MiB, and longer clips risk exceeding that limit.",
 			EditCondition = "AttachSessionReplay", ClampMin = "1000", ClampMax = "20000"))
 	uint32 SessionReplayDurationMs;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
+		Meta = (DisplayName = "Record user input", ToolTip = "Records mouse and touch input so that the replay player shows it on top of the video: the mouse cursor with its clicks, and touches while they are held.",
+			EditCondition = "AttachSessionReplay", SentryPlatforms = "Win64,Linux,Mac,IOS"))
+	bool RecordSessionReplayInput;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Session Replay",
 		Meta = (DisplayName = "Advanced recording options", ToolTip = "Low-level encoder/muxer tuning for the desktop (Windows/Mac/Linux) session-replay recorder. Defaults are sensible for most projects.",
