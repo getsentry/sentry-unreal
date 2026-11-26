@@ -670,7 +670,6 @@ Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Reflect
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.InteropServices.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.InteropServices.JavaScript.dll
-Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.Loader.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.Numerics.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Runtime.Serialization.Primitives.dll
 Source/ThirdParty/Mac/Sentry.CrashReporter.app/Contents/Resources/System.Security.Cryptography.dll
