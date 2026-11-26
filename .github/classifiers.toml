@@ -13,7 +13,9 @@ paths = [
   "plugin-dev/Source/Sentry/Public/**", "plugin-dev/Source/Sentry/Private/*",
   "plugin-dev/Source/Sentry/Private/GenericPlatform/**", "plugin-dev/Source/Sentry/Private/HAL/**",
   "plugin-dev/Source/Sentry/Private/Interface/**", "plugin-dev/Source/Sentry/Private/Utils/**",
-  "plugin-dev/Source/Sentry/Sentry.Build.cs",
+  "plugin-dev/Source/Sentry/Private/Integrations/**", "plugin-dev/Source/Sentry/Private/GameState/**",
+  "plugin-dev/Source/Sentry/Private/HangTracking/**", "plugin-dev/Source/Sentry/Private/Performance/**",
+  "plugin-dev/Source/Sentry/Private/SessionReplay/**", "plugin-dev/Source/Sentry/Sentry.Build.cs",
 ]
 families = ["game-engine", "mobile-native", "native"]
 shared_core = true
