@@ -185,6 +185,8 @@ Supported Unreal Engine versions are listed in `scripts/packaging/engine-version
 
 - When introducing a new public API that becomes part of the common interface, ensure that a corresponding stub is added to its `Null` implementation to avoid compilation errors on unsupported platforms.
 
+- When Android C++ code starts referencing a new `sentry-java` class through JNI (a new entry in `AndroidSentryJavaClasses.cpp`, a class named in a JNI signature, or a superclass that declares a called method), add a matching `-keep` rule to `proguardAdditions` in `Sentry_Android_UPL.xml`. Minified builds strip or rename anything not listed there. Keep the rules narrow (per class, never package-wide).
+
 - Package plugin and update snapshot after adding/removing files under `plugin-dev` dir (use `/pack` skill).
 
 - When adding or changing a `USentrySettings` property that may have platform, engine version, rebuild or experimental limitations, consider suggesting a label via metadata instead of `DisplayName` or `ToolTip` text (see `SentrySettingsLabels.h` for supported keys). Before suggesting, verify in the implementation and native backends that the limitation actually applies. Omit labels when the setting works on all supported platforms and engine versions, and don't label settings outside the current change.
