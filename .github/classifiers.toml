@@ -1,0 +1,73 @@
+# getsentry/sentry-unreal a99fc1f85a99f1e6ef097a05f9ecb4d7227e5b46
+
+rubric = "sdk"
+
+# Runtime module. The whole plugin-dev tree is copied into the release zip (scripts/packaging/pack.ps1) and its
+# C++ source is compiled inside the customer's game build. Generic and HAL code is used by every platform.
+[[area]]
+paths = ["plugin-dev/Source/Sentry/**"]
+families = ["game-engine", "mobile-native", "native"]
+
+[[area]]
+paths = [
+  "plugin-dev/Source/Sentry/Public/**", "plugin-dev/Source/Sentry/Private/*",
+  "plugin-dev/Source/Sentry/Private/GenericPlatform/**", "plugin-dev/Source/Sentry/Private/HAL/**",
+  "plugin-dev/Source/Sentry/Private/Interface/**", "plugin-dev/Source/Sentry/Private/Utils/**",
+  "plugin-dev/Source/Sentry/Private/Integrations/**", "plugin-dev/Source/Sentry/Private/GameState/**",
+  "plugin-dev/Source/Sentry/Private/HangTracking/**", "plugin-dev/Source/Sentry/Private/Performance/**",
+  "plugin-dev/Source/Sentry/Private/SessionReplay/**", "plugin-dev/Source/Sentry/Sentry.Build.cs",
+]
+families = ["game-engine", "mobile-native", "native"]
+shared_core = true
+
+# Editor module, editor Python toolsets, post-build steps and debug symbol upload: run on the game developer's
+# machine and in their CI (the editor also downloads Scripts/ by release tag and sentry-cli by the pinned version).
+[[area]]
+paths = [
+  "plugin-dev/Source/SentryEditor/**", "plugin-dev/Content/**", "plugin-dev/Scripts/**",
+  "plugin-dev/Source/Sentry/Sentry_Android_UPL.xml",
+]
+families = ["tooling", "game-engine"]
+
+[[area]]
+paths = ["plugin-dev/**"]
+families = ["game-engine"]
+
+# Bundled native SDKs: sentry-java and sentry-native submodules, and the sentry-cocoa and desktop crash
+# reporter versions downloaded into the plugin.
+[[area]]
+paths = [
+  ".gitmodules", "modules/sentry-java", "modules/sentry-native", "modules/sentry-cocoa.properties",
+  "modules/sentry-crash-reporter.properties",
+]
+families = ["game-engine", "mobile-native", "native"]
+
+# Bundled SDKs: sentry-java and sentry-native are submodules (gitlinks under modules/); sentry-cocoa and the desktop
+# crash reporter are downloaded at the versions in modules/*.properties; sentry-cli at plugin-dev/sentry-cli.properties.
+# The Android UPL file pins the Sentry Android Gradle plugin, AGP and Kotlin used in customer builds.
+[[kind]]
+paths = [
+  "modules/**", "plugin-dev/sentry-cli.properties", "plugin-dev/Gradle/gradle-wrapper.properties",
+  "plugin-dev/Source/Sentry/Sentry_Android_UPL.xml", "plugin-dev/Source/ThirdParty/**",
+]
+kind = "dependencies"
+
+# Plugin descriptor (modules, platform allow-list, post-build steps), build rules and packaging filters.
+[[kind]]
+paths = [
+  "plugin-dev/Sentry.uplugin", "**/*.Build.cs", "**/*.Target.cs", "plugin-dev/Config/FilterPlugin.ini",
+  "plugin-dev/Source/Sentry/Sentry_Android_UPL.xml", "scripts/**", "docker/**", "fastlane/**",
+]
+kind = "build-release"
+
+[[kind]]
+paths = ["integration-test/**", "plugin-dev/Source/*/Private/Tests/**"]
+kind = "tests"
+
+[[kind]]
+paths = ["sample/**"]
+kind = "samples"
+
+[[kind]]
+paths = [".clang-format", "agents.toml", "CLAUDE.md"]
+kind = "dev-tooling"
