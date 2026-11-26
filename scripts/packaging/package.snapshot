@@ -16,6 +16,7 @@ Resources/Icon128.png
 Scripts/post_build_steps.py
 Scripts/upload_debug_symbols.py
 sentry-cli.properties
+sentry-crash-reporter.properties
 Sentry.uplugin
 Source/Sentry/Private/Android/AndroidSentryAttachment.cpp
 Source/Sentry/Private/Android/AndroidSentryAttachment.h
@@ -341,6 +342,7 @@ Source/Sentry/Public/SentryUser.h
 Source/Sentry/Public/SentryVariant.h
 Source/Sentry/Sentry_Android_UPL.xml
 Source/Sentry/Sentry.Build.cs
+Source/SentryEditor/Private/SentryCrashReporterDownloader.cpp
 Source/SentryEditor/Private/SentryCrashReporterImageryCustomization.cpp
 Source/SentryEditor/Private/SentryCrashReporterViewCustomization.cpp
 Source/SentryEditor/Private/SentryEditorLibrary.cpp
@@ -351,6 +353,7 @@ Source/SentryEditor/Private/SentryShaderSymbols.cpp
 Source/SentryEditor/Private/SentryShaderSymbolsCommandlet.cpp
 Source/SentryEditor/Private/SentrySymToolsDownloader.cpp
 Source/SentryEditor/Private/Tests/SentryEditorLibrary.spec.cpp
+Source/SentryEditor/Public/SentryCrashReporterDownloader.h
 Source/SentryEditor/Public/SentryCrashReporterImageryCustomization.h
 Source/SentryEditor/Public/SentryCrashReporterViewCustomization.h
 Source/SentryEditor/Public/SentryEditorLibrary.h

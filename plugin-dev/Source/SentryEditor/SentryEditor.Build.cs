@@ -37,5 +37,12 @@ public class SentryEditor : ModuleRules
         {
             AddEngineThirdPartyPrivateStaticDependencies(Target, "NVAftermath");
         }
+
+#if UE_5_2_OR_LATER
+        if (Target.Platform == UnrealTargetPlatform.Win64)
+        {
+            PrivateDependencyModuleNames.Add("FileUtilities");
+        }
+#endif
     }
 }

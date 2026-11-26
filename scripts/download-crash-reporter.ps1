@@ -1,6 +1,6 @@
 Set-StrictMode -Version latest
 
-$conf = Get-Content "$PSScriptRoot/../modules/sentry-crash-reporter.properties" -Raw | ConvertFrom-StringData
+$conf = Get-Content "$PSScriptRoot/../plugin-dev/sentry-crash-reporter.properties" -Raw | ConvertFrom-StringData
 $baseUrl = "$($conf.repo)/releases/download/$($conf.version)/sentry-desktop-crash-reporter-$($conf.version)"
 $targetDir = "$PSScriptRoot/../plugin-dev/Source/ThirdParty"
 
