@@ -59,8 +59,9 @@ jobs:
     steps:
       - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
-          path: modules/sentry-cocoa.properties
+          path: modules/sentry-cocoa
           name: Cocoa SDK
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
           pr-strategy: create
 
