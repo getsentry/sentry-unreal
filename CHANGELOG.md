@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Narrow Android keep rules for the Java SDK ([#1735](https://github.com/getsentry/sentry-unreal/pull/1735))
+
 ### Dependencies
 
 - Bump CLI from v0.50.0 to v0.51.0 ([#1730](https://github.com/getsentry/sentry-unreal/pull/1730))

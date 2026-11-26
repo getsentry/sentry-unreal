@@ -65,9 +65,37 @@
             -dontwarn android.app.ApplicationStartInfo
             -dontwarn android.os.ProfilingManager
             -dontwarn android.os.ProfilingResult
-            -dontwarn io.sentry.unreal.**
-            -keep class io.sentry.** { *; }
-            -keep interface io.sentry.** { *; }
+            -keep class io.sentry.unreal.SentryBridgeJava { *; }
+            -keep class io.sentry.Sentry { public *; }
+            -keep class io.sentry.Attachment { public *; }
+            -keep class io.sentry.BaggageHeader { public *; }
+            -keep class io.sentry.Breadcrumb { public *; }
+            -keep class io.sentry.CustomSamplingContext { public *; }
+            -keep class io.sentry.Hint { public *; }
+            -keep class io.sentry.IScope { public *; }
+            -keep class io.sentry.ISpan { public *; }
+            -keep class io.sentry.ITransaction { public *; }
+            -keep class io.sentry.SamplingContext { public *; }
+            -keep class io.sentry.Scope { public *; }
+            -keep class io.sentry.SentryBaseEvent { public *; }
+            -keep class io.sentry.SentryEvent { public *; }
+            -keep class io.sentry.SentryLevel { public *; }
+            -keep class io.sentry.SentryLogEvent { public *; }
+            -keep class io.sentry.SentryLogLevel { public *; }
+            -keep class io.sentry.SentryLongDate { public *; }
+            -keep class io.sentry.SentryMetricsEvent { public *; }
+            -keep class io.sentry.SentryTraceHeader { public *; }
+            -keep class io.sentry.SpanContext { public *; }
+            -keep class io.sentry.SpanOptions { public *; }
+            -keep class io.sentry.TransactionContext { public *; }
+            -keep class io.sentry.TransactionOptions { public *; }
+            -keep class io.sentry.protocol.Feedback { public *; }
+            -keep class io.sentry.protocol.Message { public *; }
+            -keep class io.sentry.protocol.SentryId { public *; }
+            -keep class io.sentry.protocol.User { public *; }
+            -keepnames class io.sentry.SentryDate
+            -keepnames class io.sentry.SentryOptions
+            -keepnames class io.sentry.SpanStatus
         </insert>
     </proguardAdditions>
 
