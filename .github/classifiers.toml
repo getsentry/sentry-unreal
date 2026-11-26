@@ -61,7 +61,7 @@ paths = [
 kind = "build-release"
 
 [[kind]]
-paths = ["integration-test/**"]
+paths = ["integration-test/**", "plugin-dev/Source/*/Private/Tests/**"]
 kind = "tests"
 
 [[kind]]
