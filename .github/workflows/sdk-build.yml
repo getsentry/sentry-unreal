@@ -47,6 +47,8 @@ jobs:
         run: |
           if [[ "$TARGET" == "Android" ]]; then
             submodule="modules/sentry-java"
+          elif [[ "$TARGET" == "IOS" || ( "$TARGET" == "Mac" && "$BACKEND" == "cocoa" ) ]]; then
+            submodule="modules/sentry-cocoa"
           else
             submodule="modules/sentry-native"
           fi
@@ -55,7 +57,7 @@ jobs:
           if [[ -n "$BACKEND" ]]; then
             buildScript="scripts/build-$(echo "$TARGET" | tr '[:upper:]' '[:lower:]')-${BACKEND}.sh"
             artifactName="${TARGET}-${BACKEND}-sdk"
-            path="plugin-dev/Source/ThirdParty/$TARGET/$(echo "$BACKEND" | sed 's/.*/\u&/')"
+            path="plugin-dev/Source/ThirdParty/$TARGET/$(echo "${BACKEND:0:1}" | tr '[:lower:]' '[:upper:]')${BACKEND:1}"
           else
             buildScript="scripts/build-$(echo "$TARGET" | tr '[:upper:]' '[:lower:]').sh"
             artifactName="${TARGET}-sdk"
@@ -71,12 +73,17 @@ jobs:
         run: |
           git submodule status --cached "$SUBMODULE" | tee submodule-status
 
+      - name: Get Xcode version
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          xcodebuild -version | tee xcode-version
+
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         id: cache
         with:
           path: |
             ${{ steps.env.outputs.path }}
-          key: sdk=${{ steps.env.outputs.artifactName }}-${{ hashFiles('submodule-status', 'scripts/build-*.sh', '.github/workflows/sdk-build.yml') }}
+          key: sdk=${{ steps.env.outputs.artifactName }}-${{ hashFiles('submodule-status', 'xcode-version', 'scripts/build-*.sh', '.github/workflows/sdk-build.yml') }}
 
       - name: Install Linux/LinuxArm64 Dependencies
         if: ${{ (inputs.target == 'Linux' || inputs.target == 'LinuxArm64') && steps.cache.outputs.cache-hit != 'true' }}

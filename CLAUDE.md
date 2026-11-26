@@ -242,6 +242,7 @@ When implementing features that wrap native SDK functionality, check APIs in the
 
 2. **Repo submodules** - full SDK sources in `modules/`:
     - `modules/sentry-native` - sentry-native submodule
+    - `modules/sentry-cocoa` - sentry-cocoa submodule
     - `modules/sentry-java` - sentry-java submodule
 
 3. **Local source** - Check env vars specifying local repository path; if not set, prompt user; if not provided, proceed to next source:

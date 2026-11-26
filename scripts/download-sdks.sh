@@ -38,7 +38,7 @@ done
 # Mac: cocoa SDK goes into Mac/Cocoa, native SDK into Mac/Native
 echo "Downloading Mac Cocoa SDK to $PWD/Mac/Cocoa ..."
 rm -rf "./Mac/Cocoa"
-gh run download $runId -n "Mac-cocoa-sdk" -D Mac
+gh run download $runId -n "Mac-cocoa-sdk" -D Mac/Cocoa
 
 echo "Downloading Mac Native SDK to $PWD/Mac/Native ..."
 rm -rf "./Mac/Native"
