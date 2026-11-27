@@ -5,6 +5,7 @@
 ### Features
 
 - Narrow Android keep rules for the Java SDK ([#1735](https://github.com/getsentry/sentry-unreal/pull/1735))
+- Add Sentry Crash Reporter download to plugin settings on Windows ([#1740](https://github.com/getsentry/sentry-unreal/pull/1740))
 
 ### Dependencies
 
