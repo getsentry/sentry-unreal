@@ -4,6 +4,7 @@
 
 #include "IDetailCustomization.h"
 
+class FSentryCrashReporterDownloader;
 class FSentrySymToolsDownloader;
 class IPropertyHandle;
 class FSlateHyperlinkRun;
@@ -47,6 +48,7 @@ private:
 	TSharedRef<SWidget> MakeGeneralSettingsStatusRow(FName IconName, FText Message, FText ButtonMessage);
 	TSharedRef<SWidget> MakeLinuxBinariesStatusRow(FName IconName, FText Message, FText ButtonMessage);
 	TSharedRef<SWidget> MakeSentryCliStatusRow(FName IconName, FText Message, FText ButtonMessage);
+	TSharedRef<SWidget> MakeCrashReporterStatusRow(FName IconName, FText Message, FText ButtonMessage);
 
 	void UpdateProjectName();
 	void UpdateOrganizationName();
@@ -63,12 +65,14 @@ private:
 	int32 GetGeneralSettingsStatusAsInt() const;
 	int32 GetLinuxBinariesStatusAsInt() const;
 	int32 GetSentryCliStatusAsInt() const;
+	int32 GetCrashReporterStatusAsInt() const;
 
 	TSharedPtr<IPropertyHandle> ProjectNameHandle;
 	TSharedPtr<IPropertyHandle> OrganizationNameHandle;
 	TSharedPtr<IPropertyHandle> AuthTokenHandle;
 
 	TSharedPtr<FSentrySymToolsDownloader> CliDownloader;
+	TSharedPtr<FSentryCrashReporterDownloader> CrashReporterDownloader;
 
 	static const FString DefaultCrcEndpoint;
 

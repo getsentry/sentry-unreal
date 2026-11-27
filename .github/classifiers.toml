@@ -38,16 +38,17 @@ families = ["game-engine"]
 [[area]]
 paths = [
   ".gitmodules", "modules/sentry-java", "modules/sentry-native", "modules/sentry-cocoa",
-  "modules/sentry-crash-reporter.properties",
+  "plugin-dev/sentry-crash-reporter.properties",
 ]
 families = ["game-engine", "mobile-native", "native"]
 
-# Bundled SDKs: sentry-java, sentry-native and sentry-cocoa are submodules (gitlinks under modules/); the desktop
-# crash reporter is downloaded at the version in modules/*.properties; sentry-cli at plugin-dev/sentry-cli.properties.
+# Bundled SDKs: sentry-java, sentry-native and sentry-cocoa are submodules (gitlinks under modules/); sentry-cli and
+# the desktop crash reporter are downloaded at the versions in plugin-dev/*.properties.
 # The Android UPL file pins the Sentry Android Gradle plugin, AGP and Kotlin used in customer builds.
 [[kind]]
 paths = [
-  "modules/**", "plugin-dev/sentry-cli.properties", "plugin-dev/Gradle/gradle-wrapper.properties",
+  "modules/**", "plugin-dev/sentry-cli.properties", "plugin-dev/sentry-crash-reporter.properties",
+  "plugin-dev/Gradle/gradle-wrapper.properties",
   "plugin-dev/Source/Sentry/Sentry_Android_UPL.xml", "plugin-dev/Source/ThirdParty/**",
 ]
 kind = "dependencies"

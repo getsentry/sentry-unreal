@@ -183,7 +183,18 @@ public class Sentry : ModuleRules
 
 			if (bEnableExternalCrashReporter)
 			{
-				RuntimeDependencies.Add(Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe"), Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter.exe"));
+				string CrashReporterPath = Path.Combine(PlatformBinariesPath, "Sentry.CrashReporter.exe");
+				string CrashReporterSourcePath = Path.Combine(PlatformThirdPartyPath, "Sentry.CrashReporter.exe");
+
+				if (File.Exists(CrashReporterSourcePath))
+				{
+					RuntimeDependencies.Add(CrashReporterPath, CrashReporterSourcePath);
+				}
+				else
+				{
+					ExternalDependencies.Add(CrashReporterSourcePath);
+					Console.WriteLine("Sentry Crash Reporter executable is missing and won't be included in the build. Download it in Project Settings > Plugins > Sentry > Sentry Crash Reporter.");
+				}
 				StageCrashReporterResources(Target);
 			}
 

@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # 3.5.0
         with:
-          path: modules/sentry-crash-reporter.properties
+          path: plugin-dev/sentry-crash-reporter.properties
           name: Crash Reporter
           ssh-key: ${{ env.CI_DEPLOY_KEY }}
           pr-strategy: create
