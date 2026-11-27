@@ -64,7 +64,7 @@ if (Test-Path "$outDir/Mac/Cocoa")
 {
     Remove-Item "$outDir/Mac/Cocoa" -Recurse
 }
-gh run download $runId -n "Mac-cocoa-sdk" -D "$outDir/Mac"
+gh run download $runId -n "Mac-cocoa-sdk" -D "$outDir/Mac/Cocoa"
 
 Write-Host "Downloading Mac Native SDK to $outDir/Mac/Native ..."
 if (Test-Path "$outDir/Mac/Native")
