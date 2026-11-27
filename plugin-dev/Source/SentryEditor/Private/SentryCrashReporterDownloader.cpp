@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Sentry. All Rights Reserved.
 
 #include "SentryCrashReporterDownloader.h"
+#include "SentryModule.h"
 
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
@@ -114,16 +115,16 @@ ESentryCrashReporterStatus FSentryCrashReporterDownloader::GetStatus() const
 
 bool FSentryCrashReporterDownloader::IsInstalled() const
 {
+	// ThirdParty copies are staged into packaged builds while the editor uses the one in its own Binaries directory at runtime
 	for (const FPlatform& Platform : Platforms)
 	{
-		// ThirdParty copy is staged into packaged builds while Binaries copy is used by the editor at runtime
-		if (!FPaths::FileExists(GetThirdPartyPath(Platform.Name)) || !FPaths::FileExists(GetBinariesPath(Platform.Name)))
+		if (!FPaths::FileExists(GetThirdPartyPath(Platform.Name)))
 		{
 			return false;
 		}
 	}
 
-	return true;
+	return FPaths::FileExists(FPaths::Combine(FSentryModule::Get().GetBinariesPath(), CrashReporterExecName));
 }
 
 FString FSentryCrashReporterDownloader::GetProperty(const FString& Key) const
