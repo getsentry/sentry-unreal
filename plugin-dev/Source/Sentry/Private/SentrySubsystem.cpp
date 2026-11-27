@@ -931,8 +931,18 @@ void USentrySubsystem::AddDefaultContext()
 		return;
 	}
 
+	const FEngineVersion& EngineVersion = FEngineVersion::Current();
+
 	TMap<FString, FSentryVariant> DefaultContext;
-	DefaultContext.Add(TEXT("Engine version"), FEngineVersion::Current().ToString(EVersionComponent::Changelist));
+	DefaultContext.Add(TEXT("Engine version"), EngineVersion.ToString(EVersionComponent::Changelist));
+	if (!EngineVersion.GetBranch().IsEmpty())
+	{
+		DefaultContext.Add(TEXT("Engine branch"), EngineVersion.GetBranch());
+	}
+	if (EngineVersion.GetChangelist() != 0)
+	{
+		DefaultContext.Add(TEXT("Engine changelist"), FString::Printf(TEXT("%u"), EngineVersion.GetChangelist()));
+	}
 	DefaultContext.Add(TEXT("Plugin version"), FSentryModule::Get().GetPluginVersion());
 	DefaultContext.Add(TEXT("Is Marketplace version"), LexToString(FSentryModule::Get().IsMarketplaceVersion()));
 	DefaultContext.Add(TEXT("Configuration"), LexToString(FApp::GetBuildConfiguration()));
@@ -941,6 +951,7 @@ void USentrySubsystem::AddDefaultContext()
 	DefaultContext.Add(TEXT("Is game"), LexToString(FApp::IsGame()));
 	DefaultContext.Add(TEXT("Is standalone"), LexToString(FApp::IsStandalone()));
 	DefaultContext.Add(TEXT("Is unattended"), LexToString(FApp::IsUnattended()));
+	DefaultContext.Add(TEXT("Is promoted build"), LexToString(FApp::GetEngineIsPromotedBuild()));
 	DefaultContext.Add(TEXT("Game name"), FApp::GetName());
 
 	SubsystemNativeImpl->SetContext(TEXT("Unreal Engine"), DefaultContext);
@@ -1026,6 +1037,23 @@ void USentrySubsystem::PromoteTags()
 	if (Settings->TagsPromotion.bPromoteIsUnattended)
 	{
 		PromotedTags.Add(TEXT("Is unattended"), LexToString(FApp::IsUnattended()));
+	}
+
+	if (Settings->TagsPromotion.bPromoteIsPromotedBuild)
+	{
+		PromotedTags.Add(TEXT("Is promoted build"), LexToString(FApp::GetEngineIsPromotedBuild()));
+	}
+
+	const FEngineVersion& EngineVersion = FEngineVersion::Current();
+
+	if (Settings->TagsPromotion.bPromoteEngineBranch && !EngineVersion.GetBranch().IsEmpty())
+	{
+		PromotedTags.Add(TEXT("Engine branch"), EngineVersion.GetBranch());
+	}
+
+	if (Settings->TagsPromotion.bPromoteEngineChangelist && EngineVersion.GetChangelist() != 0)
+	{
+		PromotedTags.Add(TEXT("Engine changelist"), FString::Printf(TEXT("%u"), EngineVersion.GetChangelist()));
 	}
 
 	if (PromotedTags.Num() > 0)

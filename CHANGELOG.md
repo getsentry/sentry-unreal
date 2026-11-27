@@ -5,6 +5,7 @@
 ### Features
 
 - Narrow Android keep rules for the Java SDK ([#1735](https://github.com/getsentry/sentry-unreal/pull/1735))
+- Add engine branch, changelist and promoted build flag to the default `Unreal Engine` context, with opt-in promotion to tags ([#1741](https://github.com/getsentry/sentry-unreal/pull/1741))
 
 ### Dependencies
 
