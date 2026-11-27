@@ -11,6 +11,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "ISettingsEditorModule.h"
 #include "IUATHelperModule.h"
 
 #include "Engine/Engine.h"
@@ -702,6 +703,15 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeCrashReporterStatusRow(FNa
 
 							TSharedPtr<SNotificationItem> EditorNotification = FSlateNotificationManager::Get().AddNotification(Info);
 							EditorNotification->SetCompletionState(Result ? SNotificationItem::CS_Success : SNotificationItem::CS_Fail);
+
+							// The SDK resolves the crash reporter path only during initialization, so the editor has to be restarted to pick up the downloaded executable
+							if (Result)
+							{
+								if (ISettingsEditorModule* SettingsEditorModule = FModuleManager::GetModulePtr<ISettingsEditorModule>("SettingsEditor"))
+								{
+									SettingsEditorModule->OnApplicationRestartRequired();
+								}
+							}
 						});
 					}
 

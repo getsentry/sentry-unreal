@@ -29,6 +29,7 @@ public class SentryEditor : ModuleRules
                 "HTTP",
                 "UATHelper",
                 "SharedSettingsWidgets",
+                "SettingsEditor",
                 "TargetPlatform"
             }
         );
