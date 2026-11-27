@@ -191,15 +191,15 @@ struct FTagsPromotion
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Is promoted build", ToolTip = "Flag indicating whether the `IsPromotedBuild` parameter should be promoted to a captured event's tag."))
-	bool bPromoteIsPromotedBuild = false;
+	bool bPromoteIsPromotedBuild = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Engine branch", ToolTip = "Flag indicating whether the engine branch name should be promoted to a captured event's tag."))
-	bool bPromoteEngineBranch = false;
+	bool bPromoteEngineBranch = true;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "General",
 		Meta = (DisplayName = "Engine changelist", ToolTip = "Flag indicating whether the engine changelist number should be promoted to a captured event's tag."))
-	bool bPromoteEngineChangelist = false;
+	bool bPromoteEngineChangelist = true;
 };
 
 USTRUCT(BlueprintType)
