@@ -192,12 +192,7 @@ public class Sentry : ModuleRules
 				}
 				else
 				{
-					RuntimeDependencies.Add(CrashReporterPath);
-
-					if (!File.Exists(CrashReporterPath))
-					{
-						Console.WriteLine("Sentry Crash Reporter executable is missing. Download it in Project Settings > Plugins > Sentry > Sentry Crash Reporter.");
-					}
+					Console.WriteLine("Sentry Crash Reporter executable is missing and won't be included in the build. Download it in Project Settings > Plugins > Sentry > Sentry Crash Reporter.");
 				}
 				StageCrashReporterResources(Target);
 			}
