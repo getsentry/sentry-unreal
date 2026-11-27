@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Sentry. All Rights Reserved.
 
 #include "SentrySettingsCustomization.h"
+#include "SentryCrashReporterDownloader.h"
 #include "SentryModule.h"
 #include "SentrySettings.h"
 #include "SentrySettingsLabels.h"
@@ -49,9 +50,7 @@ void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata);
 
 FSentrySettingsCustomization::FSentrySettingsCustomization()
 	: CliDownloader(MakeShareable(new FSentrySymToolsDownloader()))
-#if SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED
 	, CrashReporterDownloader(MakeShareable(new FSentryCrashReporterDownloader()))
-#endif
 	, IsCompilingLinuxBinaries(false)
 {
 }
@@ -194,7 +193,7 @@ void FSentrySettingsCustomization::DrawSentryCrashReporterSection(IDetailLayoutB
 	const ISlateStyle& Style = FAppStyle::Get();
 #endif
 
-#if SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED
+#if PLATFORM_WINDOWS
 	TSharedRef<SWidget> CrashReporterMissingWidget = MakeCrashReporterStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
 		FText::FromString(TEXT("Sentry Crash Reporter executables for Windows are missing.")), FText::FromString(TEXT("Download")));
 
@@ -652,7 +651,6 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeSentryCliStatusRow(FName I
 	return Result;
 }
 
-#if SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED
 TSharedRef<SWidget> FSentrySettingsCustomization::MakeCrashReporterStatusRow(FName IconName, FText Message, FText ButtonMessage)
 {
 	// clang-format off
@@ -662,7 +660,11 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeCrashReporterStatusRow(FNa
 		.VAlign(VAlign_Center)
 		[
 			SNew(SImage)
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			.Image(FEditorStyle::Get().GetBrush(IconName))
+#else
 			.Image(FAppStyle::Get().GetBrush(IconName))
+#endif
 		]
 
 		+SHorizontalBox::Slot()
@@ -712,7 +714,6 @@ TSharedRef<SWidget> FSentrySettingsCustomization::MakeCrashReporterStatusRow(FNa
 
 	return Result;
 }
-#endif
 
 void FSentrySettingsCustomization::UpdateProjectName()
 {
@@ -831,7 +832,6 @@ int32 FSentrySettingsCustomization::GetSentryCliStatusAsInt() const
 	return 0;
 }
 
-#if SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED
 int32 FSentrySettingsCustomization::GetCrashReporterStatusAsInt() const
 {
 	if (CrashReporterDownloader.IsValid())
@@ -841,7 +841,6 @@ int32 FSentrySettingsCustomization::GetCrashReporterStatusAsInt() const
 
 	return 0;
 }
-#endif
 
 void OnDocumentationLinkClicked(const FSlateHyperlinkRun::FMetadata& Metadata)
 {

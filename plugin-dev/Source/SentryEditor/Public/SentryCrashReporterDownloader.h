@@ -3,15 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Misc/EngineVersionComparison.h"
-
-#if PLATFORM_WINDOWS && !UE_VERSION_OLDER_THAN(5, 2, 0)
-#define SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED 1
-#else
-#define SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED 0
-#endif
-
-#if SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED
 
 enum class ESentryCrashReporterStatus : uint8
 {
@@ -46,5 +37,3 @@ private:
 	bool bDownloadFailed;
 	bool bIsInstalled;
 };
-
-#endif

@@ -2,17 +2,19 @@
 
 #include "SentryCrashReporterDownloader.h"
 
-#if SENTRY_CRASH_REPORTER_DOWNLOAD_SUPPORTED
-
-#include "Async/Async.h"
-#include "FileUtilities/ZipArchiveReader.h"
-#include "HAL/PlatformFileManager.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Interfaces/IPluginManager.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#include "HAL/PlatformFilemanager.h"
+#else
+#include "HAL/PlatformFileManager.h"
+#endif
 
 namespace
 {
@@ -52,27 +54,7 @@ bool OverwriteFile(const TArray<uint8>& Data, const FString& FilePath)
 	return true;
 }
 
-bool InstallExecutable(const TArray<uint8>& Archive, const FString& ArchivePath, const FString& ThirdPartyPath, const FString& BinariesPath)
-{
-	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-
-	if (!FFileHelper::SaveArrayToFile(Archive, *ArchivePath))
-	{
-		return false;
-	}
-
-	TArray<uint8> Executable;
-	bool bExtracted = false;
-	{
-		const FZipArchiveReader ArchiveReader(PlatformFile.OpenRead(*ArchivePath));
-		bExtracted = ArchiveReader.IsValid() && ArchiveReader.TryReadFile(CrashReporterExecName, Executable);
-	}
-
-	PlatformFile.DeleteFile(*ArchivePath);
-
-	return bExtracted && OverwriteFile(Executable, ThirdPartyPath) && OverwriteFile(Executable, BinariesPath);
-}
-
+#if PLATFORM_WINDOWS
 // Packs the numeric part of a version string the same way as the executable's file version (16 bits per component)
 uint64 PackVersion(const FString& Version)
 {
@@ -100,6 +82,19 @@ uint64 PackVersion(const FString& Version)
 
 	Result = (Result << 16) | (Component & 0xFFFF);
 	return Result << (16 * (3 - Components));
+}
+#endif
+
+// An executable left over from another plugin version doesn't match the pinned one
+bool IsPinnedVersion(const FString& ExecPath, const FString& Version)
+{
+#if PLATFORM_WINDOWS
+	const uint64 FileVersion = FPlatformMisc::GetFileVersion(ExecPath);
+	const uint64 PinnedVersion = PackVersion(Version);
+	return FileVersion == 0 || PinnedVersion == 0 || FileVersion == PinnedVersion;
+#else
+	return true;
+#endif
 }
 } // namespace
 
@@ -131,14 +126,10 @@ void FSentryCrashReporterDownloader::Download(const TFunction<void(bool)>& OnCom
 	PendingDownloads = UE_ARRAY_COUNT(CrashReporterPlatforms);
 	bDownloadFailed = false;
 
-	const FString ArchiveDir = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectIntermediateDir(), TEXT("Sentry")));
-
 	for (const FSentryCrashReporterPlatform& Platform : CrashReporterPlatforms)
 	{
-		const FString ArchiveName = FString::Printf(TEXT("sentry-desktop-crash-reporter-%s-%s.zip"), *Version, Platform.RuntimeId);
-		const FString Url = FString::Printf(TEXT("%s/releases/download/%s/%s"), *Repo, *Version, *ArchiveName);
+		const FString Url = FString::Printf(TEXT("%s/releases/download/%s/sentry-desktop-crash-reporter-%s-%s.exe"), *Repo, *Version, *Version, Platform.RuntimeId);
 
-		const FString ArchivePath = FPaths::Combine(ArchiveDir, ArchiveName);
 		const FString ThirdPartyPath = GetThirdPartyPath(Platform.Name);
 		const FString BinariesPath = GetBinariesPath(Platform.Name);
 
@@ -146,29 +137,16 @@ void FSentryCrashReporterDownloader::Download(const TFunction<void(bool)>& OnCom
 
 		const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 
-		Request->OnProcessRequestComplete().BindLambda([WeakSelf, ArchivePath, ThirdPartyPath, BinariesPath](FHttpRequestPtr HttpRequest, FHttpResponsePtr Response, bool bSuccess)
+		Request->OnProcessRequestComplete().BindLambda([WeakSelf, ThirdPartyPath, BinariesPath](FHttpRequestPtr HttpRequest, FHttpResponsePtr Response, bool bSuccess)
 		{
-			if (!bSuccess || !Response.IsValid() || !EHttpResponseCodes::IsOk(Response->GetResponseCode()))
+			const bool bDownloaded = bSuccess && Response.IsValid() && EHttpResponseCodes::IsOk(Response->GetResponseCode());
+
+			const bool bInstalled = bDownloaded && OverwriteFile(Response->GetContent(), ThirdPartyPath) && OverwriteFile(Response->GetContent(), BinariesPath);
+
+			if (const TSharedPtr<FSentryCrashReporterDownloader> This = WeakSelf.Pin())
 			{
-				if (const TSharedPtr<FSentryCrashReporterDownloader> This = WeakSelf.Pin())
-				{
-					This->OnPlatformCompleted(false);
-				}
-				return;
+				This->OnPlatformCompleted(bInstalled);
 			}
-
-			Async(EAsyncExecution::ThreadPool, [WeakSelf, Response, ArchivePath, ThirdPartyPath, BinariesPath]()
-			{
-				const bool bInstalled = InstallExecutable(Response->GetContent(), ArchivePath, ThirdPartyPath, BinariesPath);
-
-				AsyncTask(ENamedThreads::GameThread, [WeakSelf, bInstalled]()
-				{
-					if (const TSharedPtr<FSentryCrashReporterDownloader> This = WeakSelf.Pin())
-					{
-						This->OnPlatformCompleted(bInstalled);
-					}
-				});
-			});
 		});
 
 		Request->SetURL(Url);
@@ -208,7 +186,7 @@ void FSentryCrashReporterDownloader::OnPlatformCompleted(bool bSuccess)
 
 void FSentryCrashReporterDownloader::RefreshInstalledState()
 {
-	const uint64 ExpectedVersion = PackVersion(GetProperty(TEXT("version")));
+	const FString Version = GetProperty(TEXT("version"));
 
 	bIsInstalled = true;
 
@@ -216,15 +194,7 @@ void FSentryCrashReporterDownloader::RefreshInstalledState()
 	{
 		const FString ExecPath = GetThirdPartyPath(Platform.Name);
 
-		if (!FPaths::FileExists(ExecPath))
-		{
-			bIsInstalled = false;
-			return;
-		}
-
-		// An executable left over from another plugin version doesn't match the pinned one
-		const uint64 FileVersion = FPlatformMisc::GetFileVersion(ExecPath);
-		if (FileVersion != 0 && ExpectedVersion != 0 && FileVersion != ExpectedVersion)
+		if (!FPaths::FileExists(ExecPath) || !IsPinnedVersion(ExecPath, Version))
 		{
 			bIsInstalled = false;
 			return;
@@ -264,5 +234,3 @@ FString FSentryCrashReporterDownloader::GetBinariesPath(const FString& Platform)
 	const FString PluginDir = IPluginManager::Get().FindPlugin(TEXT("Sentry"))->GetBaseDir();
 	return FPaths::ConvertRelativePathToFull(FPaths::Combine(PluginDir, TEXT("Binaries"), Platform, CrashReporterExecName));
 }
-
-#endif
