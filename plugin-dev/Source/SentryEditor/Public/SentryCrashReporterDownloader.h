@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+class IHttpRequest;
+
 enum class ESentryCrashReporterStatus : uint8
 {
 	Missing = 0,
@@ -11,8 +13,7 @@ enum class ESentryCrashReporterStatus : uint8
 	Configured
 };
 
-/** Downloads Sentry Crash Reporter executables for Windows (x64 and ARM64) at the version pinned by the plugin. */
-class FSentryCrashReporterDownloader : public TSharedFromThis<FSentryCrashReporterDownloader>
+class FSentryCrashReporterDownloader
 {
 public:
 	FSentryCrashReporterDownloader();
@@ -22,7 +23,11 @@ public:
 	ESentryCrashReporterStatus GetStatus() const;
 
 private:
-	void OnPlatformCompleted(bool bSuccess);
+	struct FPlatform
+	{
+		const TCHAR* Name;
+		const TCHAR* RuntimeId;
+	};
 
 	void RefreshInstalledState();
 
@@ -31,9 +36,20 @@ private:
 	static FString GetThirdPartyPath(const FString& Platform);
 	static FString GetBinariesPath(const FString& Platform);
 
-	TFunction<void(bool)> OnDownloadCompleted;
+	bool OverwriteFile(const TArray<uint8>& Data, const FString& FilePath) const;
 
-	int32 PendingDownloads;
-	bool bDownloadFailed;
+	bool IsPinnedVersion(const FString& ExecPath, const FString& Version) const;
+
+#if PLATFORM_WINDOWS
+	// Packs the numeric part of a version string the same way as the executable's file version (16 bits per component)
+	uint64 PackVersion(const FString& Version) const;
+#endif
+
+	static const FPlatform Platforms[];
+
+	const static FString CrashReporterExecName;
+
+	TArray<TSharedPtr<IHttpRequest, ESPMode::ThreadSafe>> DownloadRequests;
+
 	bool bIsInstalled;
 };
