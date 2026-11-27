@@ -26,9 +26,7 @@ const FString FSentryCrashReporterDownloader::CrashReporterExecName = TEXT("Sent
 static constexpr float CrashReporterDownloadTimeoutSec = 600.0f;
 
 FSentryCrashReporterDownloader::FSentryCrashReporterDownloader()
-	: bIsInstalled(false)
 {
-	RefreshInstalledState();
 }
 
 FSentryCrashReporterDownloader::~FSentryCrashReporterDownloader()
@@ -88,9 +86,7 @@ void FSentryCrashReporterDownloader::Download(const TFunction<void(bool)>& OnCom
 				return;
 			}
 
-			RefreshInstalledState();
-
-			OnCompleted(State->bSucceeded && bIsInstalled);
+			OnCompleted(State->bSucceeded && IsInstalled());
 		});
 
 		Request->SetURL(Url);
@@ -113,27 +109,21 @@ ESentryCrashReporterStatus FSentryCrashReporterDownloader::GetStatus() const
 		}
 	}
 
-	return bIsInstalled ? ESentryCrashReporterStatus::Configured : ESentryCrashReporterStatus::Missing;
+	return IsInstalled() ? ESentryCrashReporterStatus::Configured : ESentryCrashReporterStatus::Missing;
 }
 
-void FSentryCrashReporterDownloader::RefreshInstalledState()
+bool FSentryCrashReporterDownloader::IsInstalled() const
 {
-	const FString Version = GetProperty(TEXT("version"));
-
-	bIsInstalled = true;
-
 	for (const FPlatform& Platform : Platforms)
 	{
 		// ThirdParty copy is staged into packaged builds while Binaries copy is used by the editor at runtime
-		for (const FString& ExecPath : { GetThirdPartyPath(Platform.Name), GetBinariesPath(Platform.Name) })
+		if (!FPaths::FileExists(GetThirdPartyPath(Platform.Name)) || !FPaths::FileExists(GetBinariesPath(Platform.Name)))
 		{
-			if (!FPaths::FileExists(ExecPath) || !IsPinnedVersion(ExecPath, Version))
-			{
-				bIsInstalled = false;
-				return;
-			}
+			return false;
 		}
 	}
+
+	return true;
 }
 
 FString FSentryCrashReporterDownloader::GetProperty(const FString& Key) const
@@ -188,45 +178,4 @@ bool FSentryCrashReporterDownloader::OverwriteFile(const TArray<uint8>& Data, co
 	}
 
 	return true;
-}
-
-#if PLATFORM_WINDOWS
-uint64 FSentryCrashReporterDownloader::PackVersion(const FString& Version) const
-{
-	uint64 Result = 0;
-	int32 Components = 0;
-	uint64 Component = 0;
-
-	for (const TCHAR Char : Version)
-	{
-		if (FChar::IsDigit(Char))
-		{
-			Component = Component * 10 + (Char - TEXT('0'));
-		}
-		else if (Char == TEXT('.') && Components < 3)
-		{
-			Result = (Result << 16) | (Component & 0xFFFF);
-			Component = 0;
-			++Components;
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	Result = (Result << 16) | (Component & 0xFFFF);
-	return Result << (16 * (3 - Components));
-}
-#endif
-
-bool FSentryCrashReporterDownloader::IsPinnedVersion(const FString& ExecPath, const FString& Version) const
-{
-#if PLATFORM_WINDOWS
-	const uint64 FileVersion = FPlatformMisc::GetFileVersion(ExecPath);
-	const uint64 PinnedVersion = PackVersion(Version);
-	return FileVersion == 0 || PinnedVersion == 0 || FileVersion == PinnedVersion;
-#else
-	return true;
-#endif
 }

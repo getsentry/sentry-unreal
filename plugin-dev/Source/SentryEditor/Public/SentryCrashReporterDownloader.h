@@ -30,7 +30,7 @@ private:
 		const TCHAR* RuntimeId;
 	};
 
-	void RefreshInstalledState();
+	bool IsInstalled() const;
 
 	FString GetProperty(const FString& Key) const;
 
@@ -39,18 +39,9 @@ private:
 
 	bool OverwriteFile(const TArray<uint8>& Data, const FString& FilePath) const;
 
-	bool IsPinnedVersion(const FString& ExecPath, const FString& Version) const;
-
-#if PLATFORM_WINDOWS
-	// Packs the numeric part of a version string the same way as the executable's file version (16 bits per component)
-	uint64 PackVersion(const FString& Version) const;
-#endif
-
 	static const FPlatform Platforms[];
 
 	const static FString CrashReporterExecName;
 
 	TArray<TSharedPtr<IHttpRequest, ESPMode::ThreadSafe>> DownloadRequests;
-
-	bool bIsInstalled;
 };
