@@ -195,13 +195,13 @@ void FSentrySettingsCustomization::DrawSentryCrashReporterSection(IDetailLayoutB
 
 #if PLATFORM_WINDOWS
 	TSharedRef<SWidget> CrashReporterMissingWidget = MakeCrashReporterStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Sentry Crash Reporter executables for Windows are missing.")), FText::FromString(TEXT("Download")));
+		FText::FromString(TEXT("Sentry Crash Reporter executables are missing.")), FText::FromString(TEXT("Download")));
 
 	TSharedRef<SWidget> CrashReporterDownloadingWidget = MakeCrashReporterStatusRow(FName(TEXT("SettingsEditor.WarningIcon")),
-		FText::FromString(TEXT("Downloading Sentry Crash Reporter executables for Windows...")), FText());
+		FText::FromString(TEXT("Downloading Sentry Crash Reporter executables...")), FText());
 
 	TSharedRef<SWidget> CrashReporterConfiguredWidget = MakeCrashReporterStatusRow(FName(TEXT("SettingsEditor.GoodIcon")),
-		FText::FromString(TEXT("Sentry Crash Reporter executables for Windows are ready.")), FText::FromString(TEXT("Reload")));
+		FText::FromString(TEXT("Sentry Crash Reporter executables are ready.")), FText::FromString(TEXT("Reload")));
 
 	// clang-format off
 	SentryCrashReporterCategory.AddCustomRow(FText::FromString(TEXT("SentryCrashReporter")), false)
