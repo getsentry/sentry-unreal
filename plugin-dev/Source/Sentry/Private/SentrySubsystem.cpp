@@ -951,7 +951,7 @@ void USentrySubsystem::AddDefaultContext()
 	DefaultContext.Add(TEXT("Is game"), LexToString(FApp::IsGame()));
 	DefaultContext.Add(TEXT("Is standalone"), LexToString(FApp::IsStandalone()));
 	DefaultContext.Add(TEXT("Is unattended"), LexToString(FApp::IsUnattended()));
-	DefaultContext.Add(TEXT("Is promoted build"), LexToString(FApp::GetEngineIsPromotedBuild()));
+	DefaultContext.Add(TEXT("Is promoted build"), LexToString(FApp::GetEngineIsPromotedBuild() != 0));
 	DefaultContext.Add(TEXT("Game name"), FApp::GetName());
 
 	SubsystemNativeImpl->SetContext(TEXT("Unreal Engine"), DefaultContext);
@@ -1041,7 +1041,7 @@ void USentrySubsystem::PromoteTags()
 
 	if (Settings->TagsPromotion.bPromoteIsPromotedBuild)
 	{
-		PromotedTags.Add(TEXT("Is promoted build"), LexToString(FApp::GetEngineIsPromotedBuild()));
+		PromotedTags.Add(TEXT("Is promoted build"), LexToString(FApp::GetEngineIsPromotedBuild() != 0));
 	}
 
 	const FEngineVersion& EngineVersion = FEngineVersion::Current();
