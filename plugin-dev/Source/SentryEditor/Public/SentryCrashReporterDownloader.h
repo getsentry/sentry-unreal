@@ -17,6 +17,7 @@ class FSentryCrashReporterDownloader
 {
 public:
 	FSentryCrashReporterDownloader();
+	~FSentryCrashReporterDownloader();
 
 	void Download(const TFunction<void(bool)>& OnCompleted);
 

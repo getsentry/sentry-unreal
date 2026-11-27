@@ -31,6 +31,16 @@ FSentryCrashReporterDownloader::FSentryCrashReporterDownloader()
 	RefreshInstalledState();
 }
 
+FSentryCrashReporterDownloader::~FSentryCrashReporterDownloader()
+{
+	// The HTTP module keeps in-flight requests alive, so their completion callbacks must not outlive this object
+	for (const TSharedPtr<IHttpRequest, ESPMode::ThreadSafe>& Request : DownloadRequests)
+	{
+		Request->OnProcessRequestComplete().Unbind();
+		Request->CancelRequest();
+	}
+}
+
 void FSentryCrashReporterDownloader::Download(const TFunction<void(bool)>& OnCompleted)
 {
 	if (GetStatus() == ESentryCrashReporterStatus::Downloading)
