@@ -124,12 +124,14 @@ void FSentryCrashReporterDownloader::RefreshInstalledState()
 
 	for (const FPlatform& Platform : Platforms)
 	{
-		const FString ExecPath = GetThirdPartyPath(Platform.Name);
-
-		if (!FPaths::FileExists(ExecPath) || !IsPinnedVersion(ExecPath, Version))
+		// ThirdParty copy is staged into packaged builds while Binaries copy is used by the editor at runtime
+		for (const FString& ExecPath : { GetThirdPartyPath(Platform.Name), GetBinariesPath(Platform.Name) })
 		{
-			bIsInstalled = false;
-			return;
+			if (!FPaths::FileExists(ExecPath) || !IsPinnedVersion(ExecPath, Version))
+			{
+				bIsInstalled = false;
+				return;
+			}
 		}
 	}
 }
