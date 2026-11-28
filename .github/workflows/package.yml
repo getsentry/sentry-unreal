@@ -176,9 +176,37 @@ jobs:
           path: |
             sentry-unreal-*.zip
 
+  handlers:
+    name: Windows handlers
+    runs-on: ubuntu-latest
+
+    steps:
+      # Each matching artifact is extracted to its own subdirectory, e.g. sdk/Win64-crashpad-sdk
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: Win*-sdk
+          path: sdk
+
+      - name: Collect handlers
+        shell: pwsh
+        run: |
+          New-Item handlers -ItemType Directory
+          foreach ($platform in 'Win64', 'WinArm64') {
+            $suffix = $platform.ToLower()
+            Copy-Item "sdk/${platform}-crashpad-sdk/bin/crashpad_handler.exe" "handlers/crashpad_handler-$suffix.exe"
+            Copy-Item "sdk/${platform}-native-sdk/bin/sentry-crash.exe" "handlers/sentry-crash-$suffix.exe"
+          }
+
+      - name: Upload handlers
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: sentry-unreal-handlers-windows
+          if-no-files-found: error
+          path: handlers/*.exe
+
   merge:
     name: Release artifact
-    needs: pack
+    needs: [pack, handlers]
     runs-on: ubuntu-latest
 
     steps:
