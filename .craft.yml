@@ -6,7 +6,7 @@ versioning:
 preReleaseCommand: pwsh scripts/bump-version.ps1
 targets:
   - name: github
-    includeNames: /^(sentry-unreal-.*\.zip|(crashpad_handler|sentry-crash)-win(arm)?64\.exe)$/i
+    includeNames: /^(sentry-unreal-.*\.zip|(crashpad_handler|sentry-crash)-win-(x|arm)64\.exe)$/i
   - name: registry
     sdks:
       github:getsentry/sentry-unreal:

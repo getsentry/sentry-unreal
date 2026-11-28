@@ -191,8 +191,9 @@ jobs:
         shell: pwsh
         run: |
           New-Item handlers -ItemType Directory
-          foreach ($platform in 'Win64', 'WinArm64') {
-            $suffix = $platform.ToLower()
+          $platforms = @{ Win64 = 'win-x64'; WinArm64 = 'win-arm64' }
+          foreach ($platform in $platforms.Keys) {
+            $suffix = $platforms[$platform]
             Copy-Item "sdk/${platform}-crashpad-sdk/bin/crashpad_handler.exe" "handlers/crashpad_handler-$suffix.exe"
             Copy-Item "sdk/${platform}-native-sdk/bin/sentry-crash.exe" "handlers/sentry-crash-$suffix.exe"
           }
